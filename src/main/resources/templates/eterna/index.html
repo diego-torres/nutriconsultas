@@ -34,6 +34,18 @@
   * Author: BootstrapMade.com
   * License: https://bootstrapmade.com/license/
   ======================================================== -->
+
+  <style th:inline="text">
+		.carousel-pic1 {
+			background-image: url('[(@{/eterna/assets/img/slide/slide-1.jpg})]');
+		}
+    .carousel-pic2 {
+			background-image: url('[(@{/eterna/assets/img/slide/slide-2.jpg})]');
+		}
+    .carousel-pic3 {
+			background-image: url('[(@{/eterna/assets/img/slide/slide-3.jpg})]');
+		}
+	</style>
 </head>
 
 <body>
@@ -108,9 +120,7 @@
         <div class="carousel-inner" role="listbox">
 
           <!-- Slide 1 -->
-          <!-- background-image: url('[(@{/img/axis-back.jpg})]'); -->
-          <!-- '[(@{/eterna/assets img/axis-back.jpg})]' -->
-          <div class="carousel-item active" style="background-image: url('[(@{/eterna/assets/img/slide/slide-1.jpg})]')">
+          <div class="carousel-item active carousel-pic1">
             <div class="carousel-container">
               <div class="carousel-content">
                 <h2 class="animate__animated animate__fadeInDown">Welcome to <span>Eterna</span></h2>
@@ -121,7 +131,7 @@
           </div>
 
           <!-- Slide 2 -->
-          <div class="carousel-item" style="background-image: url('[(@{/eterna/assets/img/slide/slide-2.jpg})]')">
+          <div class="carousel-item carousel-pic2">
             <div class="carousel-container">
               <div class="carousel-content">
                 <h2 class="animate__animated fanimate__adeInDown">Lorem <span>Ipsum Dolor</span></h2>
@@ -132,7 +142,7 @@
           </div>
 
           <!-- Slide 3 -->
-          <div class="carousel-item" style="background-image: url('[(@{/eterna/assets/img/slide/slide-3.jpg})]')">
+          <div class="carousel-item carousel-pic3">
             <div class="carousel-container">
               <div class="carousel-content">
                 <h2 class="animate__animated animate__fadeInDown">Sequi ea <span>Dime Lara</span></h2>
