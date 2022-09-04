@@ -14,4 +14,9 @@ public class WebController {
     logger.debug("Resolving index.html");
     return "eterna/index.html";
   }
+  @GetMapping(path = "/login")
+  public String login() {
+    logger.debug("Resolving login.html");
+    return "sbadmin/login.html";
+  }
 }
