@@ -14,7 +14,7 @@
     <hr class="sidebar-divider my-0">
 
     <!-- Nav Item - Dashboard -->
-    <li class="nav-item" th:classappend="${activeMenu == 'home' ? 'active' : ''}">
+    <li class="nav-item">
       <a class="nav-link" th:href="@{/admin}">
         <i class="fas fa-fw fa-home"></i>
         <span>Inicio</span></a>
@@ -24,34 +24,43 @@
     <hr class="sidebar-divider">
 
     <!-- Nav Item - Pages Collapse Menu -->
-    <li class="nav-item" th:classappend="${activeMenu == 'pacientes' ? 'active' : ''}">
-      <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true"
-        aria-controls="collapseTwo">
+    <li class="nav-item">
+      <a class="nav-link collapsed" th:href="@{/admin/pacientes}">
         <i class="fas fa-fw fa-users"></i>
         <span>Pacientes</span>
       </a>
-      <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-        <div class="bg-white py-2 collapse-inner rounded">
-          <h6 class="collapse-header">Pacientes:</h6>
-          <a class="collapse-item" th:href="@{/admin/pacientes/nuevo}">Nuevo</a>
-          <a class="collapse-item" th:href="@{/admin/pacientes}">Listado</a>
-        </div>
-      </div>
     </li>
-    <li class="nav-item" th:classappend="${activeMenu == 'calendario' ? 'active' : ''}">
-      <a class="nav-link" th:href="@{/admin/calendario}">
-        <i class="fas fa-fw fa-calendar"></i>
-        <span>Calendario</span></a>
+    <!-- Divider -->
+    <hr class="sidebar-divider">
+    <!-- Heading -->
+    <div class="sidebar-heading">
+      Paciente
+    </div>
+
+    <li class="nav-item" th:classappend="${activeMenu == 'perfil' ? 'active' : ''}">
+      <a class="nav-link" th:href="@{/admin/pacientes/{id}(id=${paciente.id})}">
+        <i class="fas fa-fw fa-user"></i>
+        <span>Perfil</span></a>
     </li>
-    <li class="nav-item" th:classappend="${activeMenu == 'dietas' ? 'active' : ''}">
-      <a class="nav-link" th:href="@{/admin/dietas}">
-        <i class="fas fa-fw fa-utensil-spoon"></i>
-        <span>Dietas</span></a>
+    <li class="nav-item">
+      <a class="nav-link" th:href="@{/admin/pacientes/{id}/afiliacion(id=${paciente.id})}">
+        <i class="fas fa-fw fa-pencil-alt"></i>
+        <span>Afiliación</span></a>
     </li>
-    <li class="nav-item" th:classappend="${activeMenu == 'reportes' ? 'active' : ''}">
-      <a class="nav-link" th:href="@{/admin/reportes}">
+    <li class="nav-item">
+      <a class="nav-link" th:href="@{/admin/pacientes/{id}/antecedentes(id=${paciente.id})}">
         <i class="fas fa-fw fa-file-prescription"></i>
-        <span>Reportes</span></a>
+        <span>Antecedentes</span></a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" th:href="@{/admin/pacientes/{id}/desarrollo(id=${paciente.id})}">
+        <i class="fas fa-fw fa-syringe"></i>
+        <span>Desarrollo e Inmunización</span></a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" th:href="@{/admin/pacientes/{id}/historial(id=${paciente.id})}">
+        <i class="fas fa-fw fa-book"></i>
+        <span>Historial</span></a>
     </li>
 
     <!-- Divider -->

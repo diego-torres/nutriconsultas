@@ -84,6 +84,11 @@
                         <input type="text" class="form-control" th:field="*{responsibleName}" placeholder="Maria Perez">
                         <span th:if="${#fields.hasErrors('responsibleName')}" th:errors="*{responsibleName}"></span>
                       </div>
+                      <div class="form-group">
+                        <label>Parentesco</label>
+                        <input type="text" class="form-control" th:field="*{parentesco}" placeholder="Madre">
+                        <span th:if="${#fields.hasErrors('parentesco')}" th:errors="*{parentesco}"></span>
+                      </div>
                       <button type="submit" class="btn btn-success ">Listo!</button>
                     </form>
                   </div>
