@@ -13,7 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
  
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = Replace.ANY)
+@AutoConfigureTestDatabase(replace = Replace.NONE)
 @Rollback(false)
 @ActiveProfiles("test")
 public class UserRepositoryTest {
