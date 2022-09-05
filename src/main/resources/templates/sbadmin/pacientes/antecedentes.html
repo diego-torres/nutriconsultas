@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>Nutriconsultas - Nuevo Paciente</title>
+
+  <!-- Custom fonts for this template-->
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+
+</head>
+
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+    <div th:include="sbadmin/pacientes/sidebar :: sidebar"></div>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+        <div th:include="sbadmin/topbar :: topbar"></div>
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Antecedentes del Paciente [[(${paciente.name})]]</h1>
+          </div>
+
+          <!-- Content Row -->
+          <div class="row">
+            <!-- NEW PACIENTE FORM -->
+            <div class="col-12">
+              <div class="card shadow mb-4">
+                <div class="col-sm-10 offset-sm-1">
+
+                  <div class="info-form p-5">
+                    <form th:action="@{/admin/pacientes/{id}/antecedentes(id=${paciente.id})}" th:object="${paciente}" method="POST">
+                      <input type="hidden" th:field="*{id}" />
+                      <input type="hidden" th:field="*{name}" />
+                      <div class="form-group">
+                        <label>Tipo Sanguineo</label>
+                        <input type="text" class="form-control" th:field="*{tipoSanguineo}" placeholder="O+" maxlength="4">
+                        <span th:if="${#fields.hasErrors('tipoSanguineo')}" th:errors="*{tipoSanguineo}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Antecedentes Prenatales</label>
+                        <textarea class="form-control" rows="3" th:field="*{antecedentesPrenatales}"></textarea>
+                        <span th:if="${#fields.hasErrors('antecedentesPrenatales')}" th:errors="*{antecedentesPrenatales}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Antecedentes Natales</label>
+                        <textarea class="form-control" rows="3" th:field="*{antecedentesNatales}"></textarea>
+                        <span th:if="${#fields.hasErrors('antecedentesNatales')}" th:errors="*{antecedentesNatales}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Antecedentes Patológicos Personales</label>
+                        <textarea class="form-control" rows="3" th:field="*{antecedentesPatologicosPersonales}"></textarea>
+                        <span th:if="${#fields.hasErrors('antecedentesPatologicosPersonales')}" th:errors="*{antecedentesPatologicosPersonales}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Antecedentes Patológicos Familiares</label>
+                        <textarea class="form-control" rows="3" th:field="*{antecedentesPatologicosPersonales}"></textarea>
+                        <span th:if="${#fields.hasErrors('antecedentesPatologicosFamiliares')}" th:errors="*{antecedentesPatologicosFamiliares}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Complicaciones</label>
+                        <textarea class="form-control" rows="3" th:field="*{complicaciones}"></textarea>
+                        <span th:if="${#fields.hasErrors('complicaciones')}" th:errors="*{complicaciones}"></span>
+                      </div>
+                      
+                      <button type="submit" class="btn btn-success ">Listo!</button>
+                    </form>
+                  </div>
+                  <br>
+
+                  <a href="#nav-main" class="btn btn-secondary-outline btn-sm" role="button">↓</a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+
+        <div th:include="sbadmin/footer :: footer"></div>
+
+      </div>
+      <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Bootstrap core JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+
+</body>
+
+</html>
