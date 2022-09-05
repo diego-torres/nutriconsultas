@@ -1,16 +1,12 @@
 package com.nutriconsultas.paciente;
 
 import java.util.Date;
-import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotBlank;
@@ -79,12 +75,9 @@ public class Paciente {
   @Column(columnDefinition = "TEXT")
   private String alergias;
 
-  // BANDERAS DE ENFERMEDADES COMUNES
+  // BANDERAS DE PATOLOGIAS COMUNES
   private Boolean hipertension = false, diabetes = false, hipotiroidismo = false, obesidad = false, anemia = false,
       bulimia = false, anorexia = false;
-
-  @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-  private List<InmunizacionPaciente> inmunizacion;
 
   public Long getId() {
     return id;
@@ -228,14 +221,6 @@ public class Paciente {
 
   public void setAlergias(String alergias) {
     this.alergias = alergias;
-  }
-
-  public List<InmunizacionPaciente> getInmunizacion() {
-    return inmunizacion;
-  }
-
-  public void setInmunizacion(List<InmunizacionPaciente> inmunizacion) {
-    this.inmunizacion = inmunizacion;
   }
 
   public Double getPeso() {

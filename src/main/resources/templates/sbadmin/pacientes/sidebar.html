@@ -54,12 +54,12 @@
     </li>
     <li class="nav-item" th:classappend="${activeMenu == 'desarrollo' ? 'active' : ''}">
       <a class="nav-link" th:href="@{/admin/pacientes/{id}/desarrollo(id=${paciente.id})}">
-        <i class="fas fa-fw fa-syringe"></i>
-        <span>Desarrollo e Inmunización</span></a>
+        <i class="fas fa-fw fa-head-side-cough"></i>
+        <span>Desarrollo</span></a>
     </li>
     <li class="nav-item" th:classappend="${activeMenu == 'historial' ? 'active' : ''}">
       <a class="nav-link" th:href="@{/admin/pacientes/{id}/historial(id=${paciente.id})}">
-        <i class="fas fa-fw fa-book"></i>
+        <i class="fas fa-fw fa-heart"></i>
         <span>Historial</span></a>
     </li>
 

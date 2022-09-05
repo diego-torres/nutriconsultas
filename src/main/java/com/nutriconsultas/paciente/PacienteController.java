@@ -74,7 +74,7 @@ public class PacienteController {
     logger.debug("Cargando perfil de paciente {}", id);
     Paciente _paciente = pacienteRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
-    
+
     _paciente.setName(paciente.getName());
     _paciente.setDob(paciente.getDob());
     _paciente.setEmail(paciente.getEmail());
@@ -84,12 +84,12 @@ public class PacienteController {
     _paciente.setParentesco(paciente.getParentesco());
 
     pacienteRepository.save(_paciente);
-    return String.format("redirect:/admin/pacientes/%d", id) ;
+    return String.format("redirect:/admin/pacientes/%d", id);
   }
 
   @GetMapping(path = "/admin/pacientes/{id}/antecedentes")
-  public String desarrolloPaciente(@PathVariable("id") Long id, Model model) {
-    logger.debug("Cargando perfil de paciente {}", id);
+  public String antecedentesPaciente(@PathVariable("id") Long id, Model model) {
+    logger.debug("Cargando antecedentes de paciente {}", id);
     Paciente paciente = pacienteRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
 
@@ -104,7 +104,7 @@ public class PacienteController {
     logger.debug("Cargando perfil de paciente {}", id);
     Paciente _paciente = pacienteRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
-    
+
     _paciente.setTipoSanguineo(paciente.getTipoSanguineo());
     _paciente.setAntecedentesNatales(paciente.getAntecedentesNatales());
     _paciente.setAntecedentesPatologicosFamiliares(paciente.getAntecedentesPatologicosFamiliares());
@@ -113,7 +113,41 @@ public class PacienteController {
     _paciente.setComplicaciones(paciente.getComplicaciones());
 
     pacienteRepository.save(_paciente);
-    return String.format("redirect:/admin/pacientes/%d", id) ;
+    return String.format("redirect:/admin/pacientes/%d", id);
+  }
+
+  @GetMapping(path = "/admin/pacientes/{id}/desarrollo")
+  public String desarrolloPaciente(@PathVariable("id") Long id, Model model) {
+    logger.debug("Cargando datos de desarrollo de paciente {}", id);
+    Paciente paciente = pacienteRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+
+    model.addAttribute("activeMenu", "desarrollo");
+    model.addAttribute("paciente", paciente);
+    return "sbadmin/pacientes/desarrollo";
+  }
+
+  @PostMapping(path = "/admin/pacientes/{id}/desarrollo")
+  public String cambiaDesarrolloPaciente(@PathVariable("id") Long id, @Valid Paciente paciente, BindingResult result,
+      Model model) {
+    logger.debug("Cargando desarrollo de paciente {}", id);
+    Paciente _paciente = pacienteRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+
+    _paciente.setHistorialAlimenticio(paciente.getHistorialAlimenticio());
+    _paciente.setDesarrolloPsicomotor(paciente.getDesarrolloPsicomotor());
+    _paciente.setAlergias(paciente.getAlergias());
+
+    _paciente.setHipertension(paciente.getHipertension());
+    _paciente.setDiabetes(paciente.getDiabetes());
+    _paciente.setHipotiroidismo(paciente.getHipotiroidismo());
+    _paciente.setObesidad(paciente.getObesidad());
+    _paciente.setAnemia(paciente.getAnemia());
+    _paciente.setBulimia(paciente.getBulimia());
+    _paciente.setAnorexia(paciente.getAnorexia());
+
+    pacienteRepository.save(_paciente);
+    return String.format("redirect:/admin/pacientes/%d", id);
   }
 
 }
