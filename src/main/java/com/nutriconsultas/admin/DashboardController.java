@@ -12,6 +12,6 @@ public class DashboardController {
   @GetMapping(path = "/admin")
   public String index() {
     logger.debug("Resolving Admin Index");
-    return "sbadmin/index.html";
+    return "sbadmin/index";
   }
 }
