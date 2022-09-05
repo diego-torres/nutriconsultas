@@ -42,22 +42,22 @@
         <i class="fas fa-fw fa-user"></i>
         <span>Perfil</span></a>
     </li>
-    <li class="nav-item">
+    <li class="nav-item" th:classappend="${activeMenu == 'afiliacion' ? 'active' : ''}">
       <a class="nav-link" th:href="@{/admin/pacientes/{id}/afiliacion(id=${paciente.id})}">
         <i class="fas fa-fw fa-pencil-alt"></i>
         <span>Afiliación</span></a>
     </li>
-    <li class="nav-item">
+    <li class="nav-item" th:classappend="${activeMenu == 'antecedentes' ? 'active' : ''}">
       <a class="nav-link" th:href="@{/admin/pacientes/{id}/antecedentes(id=${paciente.id})}">
         <i class="fas fa-fw fa-file-prescription"></i>
         <span>Antecedentes</span></a>
     </li>
-    <li class="nav-item">
+    <li class="nav-item" th:classappend="${activeMenu == 'desarrollo' ? 'active' : ''}">
       <a class="nav-link" th:href="@{/admin/pacientes/{id}/desarrollo(id=${paciente.id})}">
         <i class="fas fa-fw fa-syringe"></i>
         <span>Desarrollo e Inmunización</span></a>
     </li>
-    <li class="nav-item">
+    <li class="nav-item" th:classappend="${activeMenu == 'historial' ? 'active' : ''}">
       <a class="nav-link" th:href="@{/admin/pacientes/{id}/historial(id=${paciente.id})}">
         <i class="fas fa-fw fa-book"></i>
         <span>Historial</span></a>

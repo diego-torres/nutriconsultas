@@ -57,4 +57,34 @@ public class PacienteController {
     return "sbadmin/pacientes/perfil";
   }
 
+  @GetMapping(path = "/admin/pacientes/{id}/afiliacion")
+  public String afiliacionPaciente(@PathVariable("id") Long id, Model model) {
+    logger.debug("Cargando perfil de paciente {}", id);
+    Paciente paciente = pacienteRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+
+    model.addAttribute("activeMenu", "afiliacion");
+    model.addAttribute("paciente", paciente);
+    return "sbadmin/pacientes/afiliacion";
+  }
+
+  @PostMapping(path = "/admin/pacientes/{id}/afiliacion")
+  public String cambiaAfiliacionPaciente(@PathVariable("id") Long id, @Valid Paciente paciente, BindingResult result,
+      Model model) {
+    logger.debug("Cargando perfil de paciente {}", id);
+    Paciente _paciente = pacienteRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+    
+    _paciente.setName(paciente.getName());
+    _paciente.setDob(paciente.getDob());
+    _paciente.setEmail(paciente.getEmail());
+    _paciente.setPhone(paciente.getPhone());
+    _paciente.setGender(paciente.getGender());
+    _paciente.setResponsibleName(paciente.getResponsibleName());
+    _paciente.setParentesco(paciente.getParentesco());
+
+    pacienteRepository.save(_paciente);
+    return String.format("redirect:/admin/pacientes/%d", id) ;
+  }
+
 }

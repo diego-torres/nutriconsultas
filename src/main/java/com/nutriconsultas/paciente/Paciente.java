@@ -154,7 +154,7 @@ public class Paciente {
     return parentesco;
   }
 
-  public void setParentezco(String parentesco) {
+  public void setParentesco(String parentesco) {
     this.parentesco = parentesco;
   }
 
