@@ -239,6 +239,8 @@ public class Paciente {
   }
 
   public Double getPeso() {
+    if (peso == null)
+      return 0.0d;
     return peso;
   }
 
@@ -247,6 +249,8 @@ public class Paciente {
   }
 
   public Double getEstatura() {
+    if (estatura == null)
+      return 0.0d;
     return estatura;
   }
 
@@ -255,6 +259,8 @@ public class Paciente {
   }
 
   public Double getImc() {
+    if (imc == null)
+      return 0.0d;
     return imc;
   }
 
