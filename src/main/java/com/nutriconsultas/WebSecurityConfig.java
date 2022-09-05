@@ -1,44 +1,73 @@
 package com.nutriconsultas;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.access.AccessDeniedHandler;
+
+import com.nutriconsultas.auth.UserDetailsServiceImpl;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+  @Autowired
+  private AccessDeniedHandler accessDeniedHandler;
+
+  @Bean
+  public UserDetailsService userDetailsService() {
+    return new UserDetailsServiceImpl();
+  }
+
+  @Bean
+  public BCryptPasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
+
+  @Bean
+  public DaoAuthenticationProvider authenticationProvider() {
+    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+    authProvider.setUserDetailsService(userDetailsService());
+    authProvider.setPasswordEncoder(passwordEncoder());
+
+    return authProvider;
+  }
+
   @Override
   protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-    PasswordEncoder encoder = 
-        PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    auth
-        .inMemoryAuthentication()
-        .withUser("user")
-        .password(encoder.encode("password"))
-        .roles("USER")
-        .and()
-        .withUser("admin")
-        .password(encoder.encode("admin"))
-        .roles("USER", "ADMIN");
+    auth.authenticationProvider(authenticationProvider());
+  }
+
+  @Override
+  @Bean
+  public AuthenticationManager authenticationManagerBean() throws Exception {
+    return super.authenticationManagerBean();
   }
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
-    // super.configure(http);
-    http.csrf().disable()
-    .cors()
-    .and()
-    .authorizeRequests()
-    .antMatchers("/admin/**")
-    .hasRole("admin")
-    .antMatchers("/personal/**")
-    .hasRole("user")
-    .anyRequest()
-    .permitAll();
+    http.csrf().disable();
+
+    http.authorizeRequests()
+        .antMatchers("/", "/home", "/about", "/sbadmin/**", "/eterna/**").permitAll()
+        .antMatchers("/admin/**").authenticated()
+        .antMatchers("/user/**").authenticated()
+        .and()
+        .formLogin()
+        .loginPage("/login").defaultSuccessUrl("/role-route")
+        .permitAll()
+        .and()
+        .logout()
+        .permitAll()
+        .and()
+        .exceptionHandling().accessDeniedHandler(accessDeniedHandler);
   }
 }

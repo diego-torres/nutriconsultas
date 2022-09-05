@@ -1,0 +1,1 @@
+INSERT INTO users (username, password, role, enabled) VALUES('admin@nutriconsultas.net', '$2a$12$8MAW0T36UdkgsOQMe01GM.8b5vQGzDa6qc0beuIJaUA61C9ydavG2','ROLE_ADMIN',TRUE);
