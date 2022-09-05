@@ -19,20 +19,28 @@ public class PacienteController {
   private PacienteRepository pacienteRepository;
 
   @GetMapping(path = "/admin/pacientes/nuevo")
-  public String index(Model model) {
+  public String nuevo(Model model) {
     logger.debug("Nuevo paciente");
     model.addAttribute("paciente", new Paciente());
     return "sbadmin/pacientes/nuevo";
   }
 
+  @GetMapping(path = "/admin/pacientes")
+  public String listado(Model model) {
+    logger.debug("Listado de pacientes");
+    model.addAttribute("paciente", new Paciente());
+    return "sbadmin/pacientes/listado";
+  }
+
   @PostMapping(path = "/admin/pacientes/nuevo")
   public String addPaciente(@Valid Paciente paciente, BindingResult result, Model model) {
+    logger.debug("Grabando nuevo paciente: " + paciente.getName());
     if (result.hasErrors()) {
       return "sbadmin/pacientes/nuevo";
     }
 
     pacienteRepository.save(paciente);
-    return "redirect:/admin/";
+    return "redirect:/admin/pacientes";
   }
 
 }

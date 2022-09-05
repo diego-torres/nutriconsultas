@@ -58,8 +58,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     http.authorizeRequests()
         .antMatchers("/", "/home", "/about", "/sbadmin/**", "/eterna/**").permitAll()
-        .antMatchers("/admin/**").authenticated()
-        .antMatchers("/user/**").authenticated()
+        .antMatchers("/admin/**", "/user/**", "/rest/**").authenticated()
         .and()
         .formLogin()
         .loginPage("/login").defaultSuccessUrl("/role-route")
