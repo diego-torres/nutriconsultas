@@ -39,7 +39,7 @@ public class Consulta {
   private Double imc;
 
   private NivelPeso nivelPeso;
-  private Integer sistolica, diastolica, pulso;
+  private Integer sistolica, diastolica, pulso, indiceGlucemico;
 
   @Column(precision = 5, scale = 2)
   private Double spo2;
@@ -152,6 +152,14 @@ public class Consulta {
 
   public void setNotasInterconsulta(String notasInterconsulta) {
     this.notasInterconsulta = notasInterconsulta;
+  }
+
+  public Integer getIndiceGlucemico() {
+    return indiceGlucemico;
+  }
+
+  public void setIndiceGlucemico(Integer indiceGlucemico) {
+    this.indiceGlucemico = indiceGlucemico;
   }
 
   

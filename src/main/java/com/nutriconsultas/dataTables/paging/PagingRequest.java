@@ -6,7 +6,7 @@ public class PagingRequest {
   private int start;
   private int length;
   private int draw;
-  private List<Order> workOrder;
+  private List<Order> order;
   private List<Column> columns;
   private Search search;
 
@@ -37,12 +37,12 @@ public class PagingRequest {
     this.draw = draw;
   }
 
-  public List<Order> getWorkOrder() {
-    return workOrder;
+  public List<Order> getOrder() {
+    return order;
   }
 
-  public void setWorkOrder(List<Order> workOrder) {
-    this.workOrder = workOrder;
+  public void setWorkOrder(List<Order> order) {
+    this.order = order;
   }
 
   public List<Column> getColumns() {
