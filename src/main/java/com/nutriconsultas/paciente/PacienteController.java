@@ -1,5 +1,8 @@
 package com.nutriconsultas.paciente;
 
+import java.util.Date;
+import java.util.List;
+
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
@@ -12,12 +15,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import com.nutriconsultas.consulta.Consulta;
+import com.nutriconsultas.consulta.ConsultaRepository;
+
 @Controller
 public class PacienteController {
   private static Logger logger = LoggerFactory.getLogger(PacienteController.class);
 
   @Autowired
   private PacienteRepository pacienteRepository;
+
+  @Autowired
+  private ConsultaRepository consultaRepository;
 
   @GetMapping(path = "/admin/pacientes/nuevo")
   public String nuevo(Model model) {
@@ -159,6 +168,61 @@ public class PacienteController {
     model.addAttribute("activeMenu", "historial");
     model.addAttribute("paciente", paciente);
     return "sbadmin/pacientes/historial";
+  }
+
+  @GetMapping(path = "/admin/pacientes/{id}/consulta")
+  public String consultaPaciente(@PathVariable("id") Long id, Model model) {
+    logger.debug("Cargando datos de consultas de paciente {}", id);
+    Paciente paciente = pacienteRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+
+    model.addAttribute("activeMenu", "historial");
+    model.addAttribute("paciente", paciente);
+    Consulta consulta = new Consulta();
+    consulta.setFechaConsulta(new Date());
+    model.addAttribute("consulta", consulta);
+    return "sbadmin/pacientes/consulta";
+  }
+
+  @PostMapping(path = "/admin/pacientes/{id}/consulta")
+  public String agregarConsultaPaciente(@PathVariable("id") Long id, @Valid Consulta consulta, BindingResult result,
+      Model model) {
+    logger.debug("Cargando desarrollo de paciente {}", id);
+    Paciente paciente = pacienteRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+
+    consulta.setPaciente(paciente);
+
+    Double imc = consulta.getPeso() / Math.pow(consulta.getEstatura(), 2);
+    NivelPeso np = imc > 30.0d ? NivelPeso.SOBREPESO
+        : imc > 25.0d ? NivelPeso.ALTO : imc > 18.5d ? NivelPeso.NORMAL : NivelPeso.BAJO;
+
+    if (consulta.getFechaConsulta().compareTo(new Date()) == 0) {
+      logger.debug("Working on today's appointment, setting new patient weight vars");
+      paciente.setPeso(consulta.getPeso());
+      paciente.setEstatura(consulta.getEstatura());
+      paciente.setImc(imc);
+      paciente.setNivelPeso(np);
+      pacienteRepository.save(paciente);
+    } else {
+      List<Consulta> consultasPrevias = consultaRepository.findByPacienteId(id);
+      Boolean laterExists = consultasPrevias.stream()
+          .filter(c -> c.getFechaConsulta().after(consulta.getFechaConsulta())).findAny().isPresent();
+      if (!laterExists) {
+        logger.debug("No other entry found, setting patient weight vars as latest date appointment");
+        paciente.setPeso(consulta.getPeso());
+        paciente.setEstatura(consulta.getEstatura());
+        paciente.setImc(imc);
+        paciente.setNivelPeso(np);
+        pacienteRepository.save(paciente);
+      }
+    }
+
+    consulta.setImc(imc);
+    consulta.setNivelPeso(np);
+
+    consultaRepository.save(consulta);
+    return String.format("redirect:/admin/pacientes/%d/historial", id);
   }
 
 }

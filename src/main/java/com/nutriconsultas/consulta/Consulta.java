@@ -11,6 +11,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -32,8 +36,14 @@ public class Consulta {
   private Date fechaConsulta;
 
   @Column(precision = 5, scale = 2)
+  @NotNull
+  @Min(10)
+  @Max(200)
   private Double peso;
   @Column(precision = 3, scale = 2)
+  @NotNull
+  @Max(3)
+  @DecimalMin(value = "0.5")
   private Double estatura;
   @Column(precision = 3, scale = 1)
   private Double imc;
@@ -162,5 +172,4 @@ public class Consulta {
     this.indiceGlucemico = indiceGlucemico;
   }
 
-  
 }

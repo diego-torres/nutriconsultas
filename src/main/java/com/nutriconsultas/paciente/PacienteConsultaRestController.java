@@ -58,11 +58,11 @@ public class PacienteConsultaRestController {
   private List<String> toStringList(Consulta row) {
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     return Arrays.asList(
-        "<a href='/admin/pacientes/" + row.getId() + "'>" + row.getId() + "</a>",
+        "<a href='/admin/consultas/" + row.getId() + "'>" + row.getId() + "</a>",
         row.getFechaConsulta() != null ? dateFormat.format(row.getFechaConsulta()) : "", //
         row.getPeso().toString(), //
         row.getEstatura().toString(), //
-        row.getImc().toString(), //
+        row.getImc() != null ? String.format("%.2f", row.getImc()) : "",
         row.getSistolica().toString() + "/" + row.getDiastolica().toString(), //
         row.getIndiceGlucemico().toString());
   }
