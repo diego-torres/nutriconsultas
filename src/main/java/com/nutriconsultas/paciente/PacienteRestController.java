@@ -37,7 +37,7 @@ public class PacienteRestController {
   @PostMapping("pacientes")
   public PageArray array(@RequestBody PagingRequest pagingRequest) {
     pagingRequest.setColumns(
-        Stream.of("name", "dob", "email", "phone", "gender", "responsible", "actions")
+        Stream.of("name", "dob", "email", "phone", "gender", "responsible")
             .map(Column::new)
             .collect(Collectors.toList()));
     Page<Paciente> page = getRows(pagingRequest);
@@ -55,13 +55,13 @@ public class PacienteRestController {
 
   private List<String> toStringList(Paciente row) {
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    return Arrays.asList(row.getName(), //
+    return Arrays.asList(
+        "<a href='/admin/pacientes/" + row.getId() + "'>" + row.getName() + "</a>",
         row.getDob() != null ? dateFormat.format(row.getDob()) : "", //
         row.getEmail(), //
         row.getPhone(), //
         row.getGender(), //
-        row.getResponsibleName(), //
-        "<a href='/admin/pacientes/" + row.getId() + "' class='btn btn-outline-dark btn-sm'>Detalle</a>");
+        row.getResponsibleName());
   }
 
   private Page<Paciente> getRows(PagingRequest pagingRequest) {

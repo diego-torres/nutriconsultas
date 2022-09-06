@@ -150,4 +150,15 @@ public class PacienteController {
     return String.format("redirect:/admin/pacientes/%d", id);
   }
 
+  @GetMapping(path = "/admin/pacientes/{id}/historial")
+  public String historialPaciente(@PathVariable("id") Long id, Model model) {
+    logger.debug("Cargando datos de consultas de paciente {}", id);
+    Paciente paciente = pacienteRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+
+    model.addAttribute("activeMenu", "historial");
+    model.addAttribute("paciente", paciente);
+    return "sbadmin/pacientes/historial";
+  }
+
 }
