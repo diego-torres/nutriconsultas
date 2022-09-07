@@ -2,9 +2,12 @@ package com.nutriconsultas.paciente;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -12,12 +15,14 @@ import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nutriconsultas.charts.ChartResponse;
 import com.nutriconsultas.consulta.Consulta;
 import com.nutriconsultas.consulta.ConsultaComparators;
 import com.nutriconsultas.consulta.ConsultaRepository;
@@ -35,6 +40,33 @@ public class PacienteConsultaRestController {
 
   @Autowired
   private ConsultaRepository repo;
+
+  @GetMapping("pacientes/{id}/charts/imc")
+  public ChartResponse imcChart(@PathVariable("id") Long id) {
+    // Implement from repository
+    ChartResponse response = new ChartResponse();
+    List<String> labels = new ArrayList<>();
+    List<String> imc = new ArrayList<>();
+    List<Consulta> consultasPaciente = repo.findByPacienteId(id).stream()
+        .sorted(Comparator.comparing(Consulta::getFechaConsulta)).collect(Collectors.toList());
+    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+    // TODO: Add niveles IMC
+    // NivelPeso np = imc > 30.0d ? NivelPeso.SOBREPESO
+    // : imc > 25.0d ? NivelPeso.ALTO : imc > 18.5d ? NivelPeso.NORMAL :
+    // NivelPeso.BAJO;
+
+    for (Consulta consulta : consultasPaciente) {
+      labels.add(dateFormat.format(consulta.getFechaConsulta()));
+      imc.add(String.format("%.2f", consulta.getImc()));
+    }
+
+    response.setLabels(labels);
+    Map<String, Object> data = new HashMap<>();
+    data.put("imc", imc);
+    response.setData(data);
+    return response;
+  }
 
   @PostMapping("pacientes/{id}/consultas")
   public PageArray Array(@PathVariable("id") Long id, @RequestBody PagingRequest pagingRequest) {
