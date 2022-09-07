@@ -39,7 +39,7 @@ public class PacienteConsultaRestController {
   @PostMapping("pacientes/{id}/consultas")
   public PageArray Array(@PathVariable("id") Long id, @RequestBody PagingRequest pagingRequest) {
     pagingRequest.setColumns(
-        Stream.of("id", "fecha", "peso", "estatura", "imc", "presion", "indGluc")
+        Stream.of("fecha", "peso", "estatura", "imc", "presion", "indGluc")
             .map(Column::new)
             .collect(Collectors.toList()));
     Page<Consulta> page = getRows(id, pagingRequest);
@@ -58,7 +58,6 @@ public class PacienteConsultaRestController {
   private List<String> toStringList(Consulta row) {
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     return Arrays.asList(
-        "<a href='/admin/consultas/" + row.getId() + "'>" + row.getId() + "</a>",
         row.getFechaConsulta() != null ? dateFormat.format(row.getFechaConsulta()) : "", //
         row.getPeso().toString(), //
         row.getEstatura().toString(), //
@@ -66,7 +65,9 @@ public class PacienteConsultaRestController {
         row.getSistolica() != null && row.getDiastolica() != null
             ? row.getSistolica().toString() + "/" + row.getDiastolica().toString()
             : "-", //
-        row.getIndiceGlucemico() != null ? row.getIndiceGlucemico().toString() : "-");
+        row.getIndiceGlucemico() != null ? row.getIndiceGlucemico().toString() : "-", //
+        "<a href='#'' class='btn action-btn btn-danger btn-sm delete-btn' data-id='" + row.getId()
+            + "'><i class='fas fa-trash fa-sm fa-fw'></i> </a>");
   }
 
   private Page<Consulta> getRows(Long pacienteId, PagingRequest pagingRequest) {

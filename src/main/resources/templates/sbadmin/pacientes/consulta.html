@@ -60,12 +60,12 @@
                       </div>
                       <div class="form-group">
                         <label>Peso (Kg.)</label>
-                        <input type="number" step="0.1" th:field="*{peso}" class="form-control" placeholder="90.25">
+                        <input type="number" step="0.01" th:field="*{peso}" class="form-control" placeholder="90.25">
                         <span th:if="${#fields.hasErrors('peso')}" th:errors="*{peso}"></span>
                       </div>
                       <div class="form-group">
                         <label>Estatura (M.)</label>
-                        <input type="number" step="0.1" th:field="*{estatura}" class="form-control" placeholder="1.75">
+                        <input type="number" step="0.01" th:field="*{estatura}" class="form-control" placeholder="1.75">
                         <span th:if="${#fields.hasErrors('estatura')}" th:errors="*{estatura}"></span>
                       </div>
                       <div class="form-group">
