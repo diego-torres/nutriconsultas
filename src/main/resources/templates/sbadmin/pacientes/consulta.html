@@ -52,7 +52,7 @@
                 <div class="col-sm-10 offset-sm-1">
 
                   <div class="info-form p-5">
-                    <form th:action="@{/admin/pacientes/{id}/consulta(id=${paciente.id})}" th:object="${consulta}" method="POST">
+                    <form th:action="@{/admin/pacientes/{pacienteId}/consulta(pacienteId=${paciente.id})}" th:object="${consulta}" method="POST">
                       <div class="form-group">
                         <label>Fecha de la Consulta</label>
                         <input type="date" th:field="*{fechaConsulta}" class="form-control" placeholder="04/31/1997">

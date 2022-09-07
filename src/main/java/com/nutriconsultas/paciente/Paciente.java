@@ -317,4 +317,20 @@ public class Paciente {
     this.anorexia = anorexia;
   }
 
+  @Override
+  public String toString() {
+    return "Paciente [alergias=" + alergias + ", anemia=" + anemia + ", anorexia=" + anorexia + ", antecedentesNatales="
+        + antecedentesNatales + ", antecedentesPatologicosFamiliares=" + antecedentesPatologicosFamiliares
+        + ", antecedentesPatologicosPersonales=" + antecedentesPatologicosPersonales + ", antecedentesPrenatales="
+        + antecedentesPrenatales + ", bulimia=" + bulimia + ", complicaciones=" + complicaciones
+        + ", desarrolloPsicomotor=" + desarrolloPsicomotor + ", diabetes=" + diabetes + ", dob=" + dob + ", email="
+        + email + ", estatura=" + estatura + ", gender=" + gender + ", hipertension=" + hipertension
+        + ", hipotiroidismo=" + hipotiroidismo + ", historialAlimenticio=" + historialAlimenticio + ", id=" + id
+        + ", imc=" + imc + ", name=" + name + ", nivelPeso=" + nivelPeso + ", obesidad=" + obesidad + ", parentesco="
+        + parentesco + ", peso=" + peso + ", phone=" + phone + ", registro=" + registro + ", responsibleName="
+        + responsibleName + ", tipoSanguineo=" + tipoSanguineo + "]";
+  }
+
+  
+
 }

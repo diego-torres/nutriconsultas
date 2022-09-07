@@ -172,4 +172,14 @@ public class Consulta {
     this.indiceGlucemico = indiceGlucemico;
   }
 
+  @Override
+  public String toString() {
+    return "Consulta [diastolica=" + diastolica + ", estatura=" + estatura + ", fechaConsulta=" + fechaConsulta
+        + ", id=" + id + ", imc=" + imc + ", indiceGlucemico=" + indiceGlucemico + ", nivelPeso=" + nivelPeso
+        + ", notasInterconsulta=" + notasInterconsulta + ", paciente=" + paciente + ", peso=" + peso + ", pulso="
+        + pulso + ", sistolica=" + sistolica + ", spo2=" + spo2 + ", temperatura=" + temperatura + "]";
+  }
+
+  
+
 }

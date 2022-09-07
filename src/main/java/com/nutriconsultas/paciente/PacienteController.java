@@ -184,12 +184,12 @@ public class PacienteController {
     return "sbadmin/pacientes/consulta";
   }
 
-  @PostMapping(path = "/admin/pacientes/{id}/consulta")
-  public String agregarConsultaPaciente(@PathVariable("id") Long id, @Valid Consulta consulta, BindingResult result,
+  @PostMapping(path = "/admin/pacientes/{pacienteId}/consulta")
+  public String agregarConsultaPaciente(@PathVariable("pacienteId") Long pacienteId, @Valid Consulta consulta, BindingResult result,
       Model model) {
-    logger.debug("Cargando desarrollo de paciente {}", id);
-    Paciente paciente = pacienteRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+    logger.debug("Grabando consulta {}", consulta);
+    Paciente paciente = pacienteRepository.findById(pacienteId)
+        .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId));
 
     consulta.setPaciente(paciente);
 
@@ -205,11 +205,11 @@ public class PacienteController {
       paciente.setNivelPeso(np);
       pacienteRepository.save(paciente);
     } else {
-      List<Consulta> consultasPrevias = consultaRepository.findByPacienteId(id);
+      List<Consulta> consultasPrevias = consultaRepository.findByPacienteId(pacienteId);
       Boolean laterExists = consultasPrevias.stream()
           .filter(c -> c.getFechaConsulta().after(consulta.getFechaConsulta())).findAny().isPresent();
       if (!laterExists) {
-        logger.debug("No other entry found, setting patient weight vars as latest date appointment");
+        logger.debug("No later consulta exists, setting patient weight vars as latest date appointment");
         paciente.setPeso(consulta.getPeso());
         paciente.setEstatura(consulta.getEstatura());
         paciente.setImc(imc);
@@ -221,8 +221,9 @@ public class PacienteController {
     consulta.setImc(imc);
     consulta.setNivelPeso(np);
 
+    logger.debug("Consulta lista para grabar {}", consulta);
     consultaRepository.save(consulta);
-    return String.format("redirect:/admin/pacientes/%d/historial", id);
+    return String.format("redirect:/admin/pacientes/%d/historial", pacienteId);
   }
 
 }

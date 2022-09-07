@@ -63,8 +63,10 @@ public class PacienteConsultaRestController {
         row.getPeso().toString(), //
         row.getEstatura().toString(), //
         row.getImc() != null ? String.format("%.2f", row.getImc()) : "",
-        row.getSistolica().toString() + "/" + row.getDiastolica().toString(), //
-        row.getIndiceGlucemico().toString());
+        row.getSistolica() != null && row.getDiastolica() != null
+            ? row.getSistolica().toString() + "/" + row.getDiastolica().toString()
+            : "-", //
+        row.getIndiceGlucemico() != null ? row.getIndiceGlucemico().toString() : "-");
   }
 
   private Page<Consulta> getRows(Long pacienteId, PagingRequest pagingRequest) {
