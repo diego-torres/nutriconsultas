@@ -1,7 +1,11 @@
 package com.nutriconsultas.paciente;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -63,7 +67,28 @@ public class PacienteController {
 
     model.addAttribute("activeMenu", "perfil");
     model.addAttribute("paciente", paciente);
+    // calcular ultima consulta
+    DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
+    Consulta citaAnterior = getCitaAnterior(id);
+    String fechaCitaAnterior = "";
+    if (citaAnterior != null) {
+      fechaCitaAnterior = dateFormat.format(citaAnterior.getFechaConsulta());
+    }
+    model.addAttribute("citaAnterior", fechaCitaAnterior);
+    // TODO: Calcular siguiente cita en calendario
+    model.addAttribute("citaSiguiente", "");
     return "sbadmin/pacientes/perfil";
+  }
+
+  private Consulta getCitaAnterior(Long pacienteId) {
+    List<Consulta> consultas = consultaRepository.findByPacienteId(pacienteId);
+    if (!consultas.isEmpty()) {
+      List<Consulta> consultasByDate = consultas.stream()
+          .sorted(Comparator.comparing(Consulta::getFechaConsulta).reversed()).collect(Collectors.toList());
+      return consultasByDate.get(0);
+    } else {
+      return null;
+    }
   }
 
   @GetMapping(path = "/admin/pacientes/{id}/afiliacion")
@@ -185,7 +210,8 @@ public class PacienteController {
   }
 
   @PostMapping(path = "/admin/pacientes/{pacienteId}/consulta")
-  public String agregarConsultaPaciente(@PathVariable("pacienteId") Long pacienteId, @Valid Consulta consulta, BindingResult result,
+  public String agregarConsultaPaciente(@PathVariable("pacienteId") Long pacienteId, @Valid Consulta consulta,
+      BindingResult result,
       Model model) {
     logger.debug("Grabando consulta {}", consulta);
     Paciente paciente = pacienteRepository.findById(pacienteId)

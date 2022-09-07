@@ -56,7 +56,7 @@ public class PacienteConsultaRestController {
   }
 
   private List<String> toStringList(Consulta row) {
-    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
     return Arrays.asList(
         row.getFechaConsulta() != null ? dateFormat.format(row.getFechaConsulta()) : "", //
         row.getPeso().toString(), //
