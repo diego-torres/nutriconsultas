@@ -44,7 +44,6 @@ public class PacienteController {
   public String listado(Model model) {
     logger.debug("Listado de pacientes");
     model.addAttribute("activeMenu", "pacientes");
-    model.addAttribute("paciente", new Paciente());
     return "sbadmin/pacientes/listado";
   }
 
