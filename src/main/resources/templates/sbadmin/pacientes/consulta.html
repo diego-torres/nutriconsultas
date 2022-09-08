@@ -55,47 +55,47 @@
                     <form th:action="@{/admin/pacientes/{pacienteId}/consulta(pacienteId=${paciente.id})}" th:object="${consulta}" method="POST">
                       <div class="form-group">
                         <label>Fecha de la Consulta</label>
-                        <input type="date" th:field="*{fechaConsulta}" class="form-control" placeholder="04/31/1997">
+                        <input type="date" th:field="*{fechaConsulta}" class="form-control">
                         <span th:if="${#fields.hasErrors('fechaConsulta')}" th:errors="*{fechaConsulta}"></span>
                       </div>
                       <div class="form-group">
                         <label>Peso (Kg.)</label>
-                        <input type="number" step="0.01" th:field="*{peso}" class="form-control" placeholder="90.25">
+                        <input type="number" step="0.01" th:field="*{peso}" class="form-control" required min="15" max="200">
                         <span th:if="${#fields.hasErrors('peso')}" th:errors="*{peso}"></span>
                       </div>
                       <div class="form-group">
                         <label>Estatura (M.)</label>
-                        <input type="number" step="0.01" th:field="*{estatura}" class="form-control" placeholder="1.75">
+                        <input type="number" step="0.01" th:field="*{estatura}" class="form-control" required min="0.5" max="3.8">
                         <span th:if="${#fields.hasErrors('estatura')}" th:errors="*{estatura}"></span>
                       </div>
                       <div class="form-group">
                         <label>Sistolica</label>
-                        <input type="number" step="1" th:field="*{sistolica}" class="form-control" placeholder="120">
+                        <input type="number" step="1" th:field="*{sistolica}" class="form-control">
                         <span th:if="${#fields.hasErrors('sistolica')}" th:errors="*{sistolica}"></span>
                       </div>
                       <div class="form-group">
                         <label>Diastolica</label>
-                        <input type="number" step="1" th:field="*{diastolica}" class="form-control" placeholder="80">
+                        <input type="number" step="1" th:field="*{diastolica}" class="form-control">
                         <span th:if="${#fields.hasErrors('diastolica')}" th:errors="*{diastolica}"></span>
                       </div>
                       <div class="form-group">
                         <label>Pulso (lpm)</label>
-                        <input type="number" step="1" th:field="*{pulso}" class="form-control" placeholder="70">
+                        <input type="number" step="1" th:field="*{pulso}" class="form-control">
                         <span th:if="${#fields.hasErrors('pulso')}" th:errors="*{pulso}"></span>
                       </div>
                       <div class="form-group">
                         <label>Indice glucemico</label>
-                        <input type="number" step="1" th:field="*{indiceGlucemico}" class="form-control" placeholder="120">
+                        <input type="number" step="1" th:field="*{indiceGlucemico}" class="form-control">
                         <span th:if="${#fields.hasErrors('indiceGlucemico')}" th:errors="*{indiceGlucemico}"></span>
                       </div>
                       <div class="form-group">
                         <label>SpO2</label>
-                        <input type="number" step="0.1" th:field="*{spo2}" class="form-control" placeholder="98.9">
+                        <input type="number" step="0.1" th:field="*{spo2}" class="form-control">
                         <span th:if="${#fields.hasErrors('spo2')}" th:errors="*{spo2}"></span>
                       </div>
                       <div class="form-group">
                         <label>Temperatura (c)</label>
-                        <input type="number" step="0.1" th:field="*{temperatura}" class="form-control" placeholder="37.5">
+                        <input type="number" step="0.1" th:field="*{temperatura}" class="form-control">
                         <span th:if="${#fields.hasErrors('temperatura')}" th:errors="*{temperatura}"></span>
                       </div>
                       <div class="form-group">

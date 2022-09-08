@@ -57,7 +57,7 @@
                       <input type="hidden" th:field="*{id}" />
                       <input type="hidden" th:field="*{name}" />
                       <div class="form-group">
-                        <label>Historial Alimenticio</label>
+                        <label>Recordatorio 24 Hrs.</label>
                         <textarea class="form-control" rows="3" th:field="*{historialAlimenticio}"></textarea>
                         <span th:if="${#fields.hasErrors('historialAlimenticio')}"
                           th:errors="*{historialAlimenticio}"></span>
