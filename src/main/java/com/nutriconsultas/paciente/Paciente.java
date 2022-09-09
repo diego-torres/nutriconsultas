@@ -77,7 +77,7 @@ public class Paciente {
 
   // BANDERAS DE PATOLOGIAS COMUNES
   private Boolean hipertension = false, diabetes = false, hipotiroidismo = false, obesidad = false, anemia = false,
-      bulimia = false, anorexia = false;
+      bulimia = false, anorexia = false, enfermedadesHepaticas = false;
 
   public Long getId() {
     return id;
@@ -317,6 +317,14 @@ public class Paciente {
     this.anorexia = anorexia;
   }
 
+  public Boolean getEnfermedadesHepaticas() {
+    return enfermedadesHepaticas;
+  }
+
+  public void setEnfermedadesHepaticas(Boolean enfermedadesHepaticas) {
+    this.enfermedadesHepaticas = enfermedadesHepaticas;
+  }
+
   @Override
   public String toString() {
     return "Paciente [alergias=" + alergias + ", anemia=" + anemia + ", anorexia=" + anorexia + ", antecedentesNatales="
@@ -324,13 +332,11 @@ public class Paciente {
         + ", antecedentesPatologicosPersonales=" + antecedentesPatologicosPersonales + ", antecedentesPrenatales="
         + antecedentesPrenatales + ", bulimia=" + bulimia + ", complicaciones=" + complicaciones
         + ", desarrolloPsicomotor=" + desarrolloPsicomotor + ", diabetes=" + diabetes + ", dob=" + dob + ", email="
-        + email + ", estatura=" + estatura + ", gender=" + gender + ", hipertension=" + hipertension
-        + ", hipotiroidismo=" + hipotiroidismo + ", historialAlimenticio=" + historialAlimenticio + ", id=" + id
-        + ", imc=" + imc + ", name=" + name + ", nivelPeso=" + nivelPeso + ", obesidad=" + obesidad + ", parentesco="
-        + parentesco + ", peso=" + peso + ", phone=" + phone + ", registro=" + registro + ", responsibleName="
-        + responsibleName + ", tipoSanguineo=" + tipoSanguineo + "]";
+        + email + ", enfermedadesHepaticas=" + enfermedadesHepaticas + ", estatura=" + estatura + ", gender=" + gender
+        + ", hipertension=" + hipertension + ", hipotiroidismo=" + hipotiroidismo + ", historialAlimenticio="
+        + historialAlimenticio + ", id=" + id + ", imc=" + imc + ", name=" + name + ", nivelPeso=" + nivelPeso
+        + ", obesidad=" + obesidad + ", parentesco=" + parentesco + ", peso=" + peso + ", phone=" + phone
+        + ", registro=" + registro + ", responsibleName=" + responsibleName + ", tipoSanguineo=" + tipoSanguineo + "]";
   }
-
-  
 
 }
