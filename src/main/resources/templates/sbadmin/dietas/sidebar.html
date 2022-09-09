@@ -24,9 +24,9 @@
     <hr class="sidebar-divider">
 
     <!-- Nav Item - Pages Collapse Menu -->
-    <li class="nav-item">
-      <a class="nav-link collapsed" th:href="@{/admin/dietas}">
-        <i class="fas fa-fw fa-users"></i>
+    <li class="nav-item" th:classappend="${activeMenu == 'dietas' ? 'active' : ''}">
+      <a class="nav-link" th:href="@{/admin/dietas}">
+        <i class="fas fa-fw fa-utensil-spoon"></i>
         <span>Dietas</span>
       </a>
     </li>
@@ -37,19 +37,19 @@
       Dieta
     </div>
 
-    <li class="nav-item" th:classappend="${activeMenu == 'perfil' ? 'active' : ''}">
+    <li class="nav-item" th:classappend="${activeMenu == 'alimentos' ? 'active' : ''}">
       <a class="nav-link" th:href="@{/admin/alimentos}">
-        <i class="fas fa-fw fa-user"></i>
+        <i class="fas fa-fw fa-apple-alt"></i>
         <span>SMAE</span></a>
     </li>
-    <li class="nav-item" th:classappend="${activeMenu == 'perfil' ? 'active' : ''}">
+    <li class="nav-item" th:classappend="${activeMenu == 'platillos' ? 'active' : ''}">
       <a class="nav-link" th:href="@{/admin/platillos}">
-        <i class="fas fa-fw fa-user"></i>
+        <i class="fas fa-fw fa-hamburger"></i>
         <span>Platillos</span></a>
     </li>
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
-    <li class="nav-item" th:classappend="${activeMenu == 'afiliacion' ? 'active' : ''}">
+    <li class="nav-item" th:classappend="${activeMenu == 'nueva_dieta' ? 'active' : ''}">
       <a class="nav-link" th:href="@{/admin/dietas/nueva}">
         <i class="fas fa-fw fa-pencil-alt"></i>
         <span>Nueva Dieta</span></a>
@@ -68,25 +68,5 @@
     <i class="fas fa-angle-up"></i>
   </a>
 
-  <!-- Logout Modal-->
-  <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">¿Ya te vas?</h5>
-          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">×</span>
-          </button>
-        </div>
-        <div class="modal-body">Seleccione "Salir" abajo si desea cerrar la sesión del sistema.</div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
-          <form th:action="@{/logout}" method="post">
-            <input class="btn btn-primary" type="submit" value="Salir" />
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div th:include="sbadmin/logout-modal :: logout"></div>
 </div>
