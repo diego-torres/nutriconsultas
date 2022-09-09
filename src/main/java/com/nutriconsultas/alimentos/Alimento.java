@@ -5,6 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class Alimento {
@@ -12,59 +14,64 @@ public class Alimento {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  private String alimento;
+  @NotNull
+  @NotBlank
+  private String nombreAlimento;
+  @NotNull
+  @NotBlank
   private String clasificacion;
-  @Column(precision = 5, scale = 2)
-  private Double cantSugerida;
+  @Column(length = 5)
+  private String cantSugerida;
   private String unidad;
   private Integer pesoBrutoRedondeado;
   private Integer pesoNeto;
-  @Column(precision = 5, scale = 2)
-  private Double energia;
-  @Column(precision = 5, scale = 2)
+  private Integer energia;
+  @Column(precision = 5, scale = 1)
   private Double proteina;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double lipidos;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double hidratosDeCarbono;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double fibra;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double vitA;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double acidoAscorbico;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double hierroNoHem;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double potasio;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double indiceGlicemico;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double cargaGlicemica;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double acidoFolico;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double calcio;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double hierro;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double sodio;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double azucarPorEquivalente;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double selenio;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double fosforo;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double colesterol;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double agSaturados;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double agMonoinsaturados;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double agPoliinsaturados;
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5, scale = 1)
   private Double etanol;
+
+  private Boolean aptoParaRenales = true;
 
   public Long getId() {
     return id;
@@ -74,12 +81,12 @@ public class Alimento {
     this.id = id;
   }
 
-  public String getAlimento() {
-    return alimento;
+  public String getNombreAlimento() {
+    return nombreAlimento;
   }
 
-  public void setAlimento(String alimento) {
-    this.alimento = alimento;
+  public void setNombreAlimento(String nombreAlimento) {
+    this.nombreAlimento = nombreAlimento;
   }
 
   public String getClasificacion() {
@@ -90,11 +97,11 @@ public class Alimento {
     this.clasificacion = clasificacion;
   }
 
-  public Double getCantSugerida() {
+  public String getCantSugerida() {
     return cantSugerida;
   }
 
-  public void setCantSugerida(Double cantSugerida) {
+  public void setCantSugerida(String cantSugerida) {
     this.cantSugerida = cantSugerida;
   }
 
@@ -122,11 +129,11 @@ public class Alimento {
     this.pesoNeto = pesoNeto;
   }
 
-  public Double getEnergia() {
+  public Integer getEnergia() {
     return energia;
   }
 
-  public void setEnergia(Double energia) {
+  public void setEnergia(Integer energia) {
     this.energia = energia;
   }
 
@@ -304,6 +311,14 @@ public class Alimento {
 
   public void setEtanol(Double etanol) {
     this.etanol = etanol;
+  }
+
+  public Boolean getAptoParaRenales() {
+    return aptoParaRenales;
+  }
+
+  public void setAptoParaRenales(Boolean aptoParaRenales) {
+    this.aptoParaRenales = aptoParaRenales;
   }
 
 }

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <!-- Favicons -->
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
+
+  <title>Nutriconsultas - Nuevo Alimento</title>
+
+  <!-- Custom fonts for this template-->
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+
+</head>
+
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+    <div th:include="sbadmin/dietas/sidebar :: sidebar"></div>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+        <div th:include="sbadmin/topbar :: topbar"></div>
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Nuevo Alimento</h1>
+          </div>
+
+          <!-- Content Row -->
+          <div class="row">
+            <!-- NEW ALIMENTO FORM -->
+            <div class="col-12">
+              <div class="card shadow mb-4">
+                <div class="col-sm-10 offset-sm-1">
+
+                  <div class="info-form p-5">
+                    <form th:action="@{/admin/alimentos/nuevo}" th:object="${alimento}" method="POST">
+                      <div class="form-group">
+                        <label>Nombre<span style="color:red;">*</span></label>
+                        <input type="text" th:field="*{nombreAlimento}" class="form-control" required>
+                        <span th:if="${#fields.hasErrors('nombreAlimento')}" th:errors="*{nombreAlimento}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Grupo</label>
+                        <select class="form-control" th:field="*{clasificacion}" aria-label="Seleccione Sexo">
+                          <option selected value="">Seleccione Grupo</option>
+                          <option value="ACEITES Y GRASAS">ACEITES Y GRASAS</option>
+                          <option value="ACEITES Y GRASAS CON PROTEINA">ACEITES Y GRASAS CON PROTEINA</option>
+                          <option value="ALIMENTOS DE ORIGEN ANIMAL ALTO APORTE DE GRASA">ALIMENTOS DE ORIGEN ANIMAL
+                            ALTO APORTE DE GRASA</option>
+                          <option value="ALIMENTOS DE ORIGEN ANIMAL BAJO APORTE DE GRASA">ALIMENTOS DE ORIGEN ANIMAL
+                            BAJO APORTE DE GRASA</option>
+                          <option value="ALIMENTOS DE ORIGEN ANIMAL MODERADO APORTE DE GRASA">ALIMENTOS DE ORIGEN ANIMAL
+                            MODERADO APORTE DE GRASA</option>
+                          <option value="ALIMENTOS DE ORIGEN ANIMAL MUY BAJO APORTE DE GRASA">ALIMENTOS DE ORIGEN ANIMAL
+                            MUY BAJO APORTE DE GRASA</option>
+                          <option value="ALIMENTOS LIBRES EN ENERGIA">ALIMENTOS LIBRES EN ENERGIA</option>
+                          <option value="AZUCARES CON GRASA">AZUCARES CON GRASA</option>
+                          <option value="BEBIDAS ALCOHOLICAS">BEBIDAS ALCOHOLICAS</option>
+                          <option value="CEREALES CON GRASA">CEREALES CON GRASA</option>
+                          <option value="CEREALES SIN GRASA">CEREALES SIN GRASA</option>
+                          <option value="FRUTAS">FRUTAS</option>
+                          <option value="LECHE CON AZUCAR">LECHE CON AZUCAR</option>
+                          <option value="LECHE DESCREMADA">LECHE DESCREMADA</option>
+                          <option value="LECHE ENTERA">LECHE ENTERA</option>
+                          <option value="LECHE SEMIDESCREMADA">LECHE SEMIDESCREMADA</option>
+                          <option value="LEGUMINOSAS">LEGUMINOSAS</option>
+                          <option value="PRODUCTOS YAKULT">PRODUCTOS YAKULT</option>
+                          <option value="VERDURAS">VERDURAS</option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('clasificacion')}" th:errors="*{clasificacion}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Cantidad Sugerida</label>
+                        <input type="text" class="form-control" th:field="*{cantSugerida}" required>
+                        <span th:if="${#fields.hasErrors('cantSugerida')}" th:errors="*{cantSugerida}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Cantidad Sugerida</label>
+                        <input type="text" class="form-control" th:field="*{unidad}" required>
+                        <span th:if="${#fields.hasErrors('unidad')}" th:errors="*{unidad}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Peso bruto redondeado (g)</label>
+                        <input type="number" step="1" class="form-control" th:field="*{pesoBrutoRedondeado}" required min="1" max="300">
+                        <span th:if="${#fields.hasErrors('pesoBrutoRedondeado')}" th:errors="*{pesoBrutoRedondeado}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Peso neto (g)</label>
+                        <input type="number" step="1" class="form-control" th:field="*{pesoNeto}" required min="1" max="300">
+                        <span th:if="${#fields.hasErrors('pesoNeto')}" th:errors="*{pesoNeto}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Energía (kcal)</label>
+                        <input type="number" step="1" class="form-control" th:field="*{energia}" required min="1" max="200">
+                        <span th:if="${#fields.hasErrors('pesoNeto')}" th:errors="*{energia}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Proteína (g)</label>
+                        <input type="number" step="0.1" class="form-control" th:field="*{proteina}" max="20">
+                        <span th:if="${#fields.hasErrors('proteina')}" th:errors="*{proteina}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Lípidos (g)</label>
+                        <input type="number" step="0.1" class="form-control" th:field="*{lipidos}" max="10">
+                        <span th:if="${#fields.hasErrors('lipidos')}" th:errors="*{lipidos}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Hidratos de Carbono (g)</label>
+                        <input type="number" step="0.1" class="form-control" th:field="*{hidratosDeCarbono}" max="20">
+                        <span th:if="${#fields.hasErrors('hidratosDeCarbono')}" th:errors="*{hidratosDeCarbono}"></span>
+                      </div>
+                      <button type="submit" class="btn btn-success ">Listo!</button>
+                    </form>
+                  </div>
+                  <br>
+
+                  <a href="#nav-main" class="btn btn-secondary-outline btn-sm" role="button">↓</a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+
+        <div th:include="sbadmin/footer :: footer"></div>
+
+      </div>
+      <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Bootstrap core JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+
+</body>
+
+</html>
