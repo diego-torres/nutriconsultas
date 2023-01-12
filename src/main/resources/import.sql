@@ -1,4 +1,4 @@
-INSERT INTO users (username, password, role, enabled) VALUES('admin@nutriconsultas.net', '$2a$12$8MAW0T36UdkgsOQMe01GM.8b5vQGzDa6qc0beuIJaUA61C9ydavG2','ROLE_ADMIN',TRUE);
+INSERT INTO users (username, password, role, enabled) VALUES('admin@minutriporcion.net', '$2a$12$8MAW0T36UdkgsOQMe01GM.8b5vQGzDa6qc0beuIJaUA61C9ydavG2','ROLE_ADMIN',TRUE);
 INSERT INTO paciente(name, dob, email, phone, gender, responsible_name) VALUES('Diego A. Torres Fuerte', '1982-04-23', 'diego.torres.fuerte@server.com', '+1 (123) 456-7890', 'M', 'Adulto');
 INSERT INTO paciente(name, dob, email, phone, gender, responsible_name) VALUES('Esperanza Romero Salinas', '1983-08-15', 'espe.romero@server.com', '+1 (980) 765-4321', 'F', 'Adulto');
 INSERT INTO paciente(name, dob, email, phone, gender, responsible_name, parentesco) VALUES('Melanie Torres Romero', '2015-07-15', NULL, NULL, 'F', 'Gregoria Salinas Fernandez', 'Abuela');

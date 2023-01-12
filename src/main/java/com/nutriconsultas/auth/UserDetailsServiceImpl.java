@@ -10,6 +10,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
   @Autowired
   private UserRepository userRepository;
 
+  /* (non-Javadoc)
+   * @see org.springframework.security.core.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
+   */
   @Override
   public UserDetails loadUserByUsername(String username)
       throws UsernameNotFoundException {
