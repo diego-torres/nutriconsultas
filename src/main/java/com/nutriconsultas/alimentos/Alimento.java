@@ -20,7 +20,7 @@ public class Alimento {
   @NotNull
   @NotBlank
   private String clasificacion;
-  @Column(length = 15)
+  @Column(length = 50)
   private String cantSugerida;
   private String unidad;
   private Integer pesoBrutoRedondeado;
