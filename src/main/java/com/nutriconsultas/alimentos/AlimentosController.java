@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
@@ -34,16 +35,26 @@ public class AlimentosController {
     alimento.setClasificacion("ACEITES Y GRASAS");
     alimento.setUnidad("pieza");
     model.addAttribute("alimento", alimento);
-    return "sbadmin/alimentos/nuevo";
+    return "sbadmin/alimentos/formulario";
   }
 
-  @PostMapping(path = "/admin/alimentos/nuevo")
+  @GetMapping(path = "/admin/alimentos/{id}")
+  public String verAlimento(@PathVariable("id") Long id, Model model) {
+    logger.debug("formulario de alta de alimentos");
+    model.addAttribute("activeMenu", "alimentos");
+
+    Alimento alimento = alimentosRepository.getById(id);
+    model.addAttribute("alimento", alimento);
+    return "sbadmin/alimentos/formulario";
+  }
+
+  @PostMapping(path = "/admin/alimentos")
   public String agregarNuevoAlimento(@Valid Alimento alimento, BindingResult result, Model model) {
     logger.debug("Alta de nuevo alimento {}", alimento.getNombreAlimento());
     if (result.hasErrors()) {
-      return "sbadmin/alimentos/nuevo";
+      return "sbadmin/alimentos/formulario";
     }
-
+    
     alimentosRepository.save(alimento);
     return "redirect:/admin/alimentos";
   }

@@ -17,6 +17,7 @@ public class Alimento {
   @NotNull
   @NotBlank
   private String nombreAlimento;
+  private String grupo;
   @NotNull
   @NotBlank
   private String clasificacion;
@@ -319,6 +320,14 @@ public class Alimento {
 
   public void setAptoParaRenales(Boolean aptoParaRenales) {
     this.aptoParaRenales = aptoParaRenales;
+  }
+
+  public String getGrupo() {
+    return grupo;
+  }
+
+  public void setGrupo(String grupo) {
+    this.grupo = grupo;
   }
 
 }
