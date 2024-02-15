@@ -39,7 +39,7 @@ public class AlimentosController {
   }
 
   @GetMapping(path = "/admin/alimentos/{id}")
-  public String verAlimento(@PathVariable("id") Long id, Model model) {
+  public String verAlimento(@PathVariable Long id, Model model) {
     logger.debug("formulario de alta de alimentos");
     model.addAttribute("activeMenu", "alimentos");
 

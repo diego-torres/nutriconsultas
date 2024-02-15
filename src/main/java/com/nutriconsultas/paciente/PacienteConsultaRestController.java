@@ -42,7 +42,7 @@ public class PacienteConsultaRestController {
   private ConsultaRepository repo;
 
   @GetMapping("pacientes/{id}/charts/imc")
-  public ChartResponse imcChart(@PathVariable("id") Long id) {
+  public ChartResponse imcChart(@PathVariable Long id) {
     // Implement from repository
     ChartResponse response = new ChartResponse();
     List<String> labels = new ArrayList<>();
@@ -69,7 +69,7 @@ public class PacienteConsultaRestController {
   }
 
   @PostMapping("pacientes/{id}/consultas")
-  public PageArray Array(@PathVariable("id") Long id, @RequestBody PagingRequest pagingRequest) {
+  public PageArray Array(@PathVariable Long id, @RequestBody PagingRequest pagingRequest) {
     pagingRequest.setColumns(
         Stream.of("fecha", "peso", "estatura", "imc", "presion", "indGluc")
             .map(Column::new)

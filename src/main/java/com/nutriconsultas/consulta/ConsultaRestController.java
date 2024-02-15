@@ -17,7 +17,7 @@ public class ConsultaRestController {
   private ConsultaRepository repo;
 
   @DeleteMapping("consultas/{id}")
-  public String deleteConsulta(@PathVariable("id") Long id) {
+  public String deleteConsulta(@PathVariable Long id) {
     repo.deleteById(id);
     logger.info("La consulta {} ha sido borrada", id);
     return "OK";

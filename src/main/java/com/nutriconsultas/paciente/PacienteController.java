@@ -59,7 +59,7 @@ public class PacienteController {
   }
 
   @GetMapping(path = "/admin/pacientes/{id}")
-  public String perfilPaciente(@PathVariable("id") Long id, Model model) {
+  public String perfilPaciente(@PathVariable Long id, Model model) {
     logger.debug("Cargando perfil de paciente {}", id);
     Paciente paciente = pacienteRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
@@ -91,7 +91,7 @@ public class PacienteController {
   }
 
   @GetMapping(path = "/admin/pacientes/{id}/afiliacion")
-  public String afiliacionPaciente(@PathVariable("id") Long id, Model model) {
+  public String afiliacionPaciente(@PathVariable Long id, Model model) {
     logger.debug("Cargando perfil de paciente {}", id);
     Paciente paciente = pacienteRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
@@ -102,7 +102,7 @@ public class PacienteController {
   }
 
   @PostMapping(path = "/admin/pacientes/{id}/afiliacion")
-  public String cambiaAfiliacionPaciente(@PathVariable("id") Long id, @Valid Paciente paciente, BindingResult result,
+  public String cambiaAfiliacionPaciente(@PathVariable Long id, @Valid Paciente paciente, BindingResult result,
       Model model) {
     logger.debug("Cargando perfil de paciente {}", id);
     Paciente _paciente = pacienteRepository.findById(id)
@@ -121,7 +121,7 @@ public class PacienteController {
   }
 
   @GetMapping(path = "/admin/pacientes/{id}/antecedentes")
-  public String antecedentesPaciente(@PathVariable("id") Long id, Model model) {
+  public String antecedentesPaciente(@PathVariable Long id, Model model) {
     logger.debug("Cargando antecedentes de paciente {}", id);
     Paciente paciente = pacienteRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
@@ -132,7 +132,7 @@ public class PacienteController {
   }
 
   @PostMapping(path = "/admin/pacientes/{id}/antecedentes")
-  public String cambiaAntecedentesPaciente(@PathVariable("id") Long id, @Valid Paciente paciente, BindingResult result,
+  public String cambiaAntecedentesPaciente(@PathVariable Long id, @Valid Paciente paciente, BindingResult result,
       Model model) {
     logger.debug("Cargando perfil de paciente {}", id);
     Paciente _paciente = pacienteRepository.findById(id)
@@ -150,7 +150,7 @@ public class PacienteController {
   }
 
   @GetMapping(path = "/admin/pacientes/{id}/desarrollo")
-  public String desarrolloPaciente(@PathVariable("id") Long id, Model model) {
+  public String desarrolloPaciente(@PathVariable Long id, Model model) {
     logger.debug("Cargando datos de desarrollo de paciente {}", id);
     Paciente paciente = pacienteRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
@@ -161,7 +161,7 @@ public class PacienteController {
   }
 
   @PostMapping(path = "/admin/pacientes/{id}/desarrollo")
-  public String cambiaDesarrolloPaciente(@PathVariable("id") Long id, @Valid Paciente paciente, BindingResult result,
+  public String cambiaDesarrolloPaciente(@PathVariable Long id, @Valid Paciente paciente, BindingResult result,
       Model model) {
     logger.debug("Cargando desarrollo de paciente {}", id);
     Paciente _paciente = pacienteRepository.findById(id)
@@ -184,7 +184,7 @@ public class PacienteController {
   }
 
   @GetMapping(path = "/admin/pacientes/{id}/historial")
-  public String historialPaciente(@PathVariable("id") Long id, Model model) {
+  public String historialPaciente(@PathVariable Long id, Model model) {
     logger.debug("Cargando datos de consultas de paciente {}", id);
     Paciente paciente = pacienteRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
@@ -195,7 +195,7 @@ public class PacienteController {
   }
 
   @GetMapping(path = "/admin/pacientes/{id}/consulta")
-  public String consultaPaciente(@PathVariable("id") Long id, Model model) {
+  public String consultaPaciente(@PathVariable Long id, Model model) {
     logger.debug("Cargando datos de consultas de paciente {}", id);
     Paciente paciente = pacienteRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
@@ -209,7 +209,7 @@ public class PacienteController {
   }
 
   @PostMapping(path = "/admin/pacientes/{pacienteId}/consulta")
-  public String agregarConsultaPaciente(@PathVariable("pacienteId") Long pacienteId, @Valid Consulta consulta,
+  public String agregarConsultaPaciente(@PathVariable Long pacienteId, @Valid Consulta consulta,
       BindingResult result,
       Model model) {
     logger.debug("Grabando consulta {}", consulta);
