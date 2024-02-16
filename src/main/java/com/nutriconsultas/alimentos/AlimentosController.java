@@ -1,10 +1,11 @@
 package com.nutriconsultas.alimentos;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -12,8 +13,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import com.nutriconsultas.controller.AbstractAuthorizedController;
+
 @Controller
-public class AlimentosController {
+public class AlimentosController extends AbstractAuthorizedController {
   private static Logger logger = LoggerFactory.getLogger(AlimentosController.class);
 
   @Autowired
@@ -39,11 +42,11 @@ public class AlimentosController {
   }
 
   @GetMapping(path = "/admin/alimentos/{id}")
-  public String verAlimento(@PathVariable Long id, Model model) {
+  public String verAlimento(@PathVariable @NonNull Long id, Model model) {
     logger.debug("formulario de alta de alimentos");
     model.addAttribute("activeMenu", "alimentos");
 
-    Alimento alimento = alimentosRepository.getById(id);
+    Alimento alimento = alimentosRepository.findById(id).orElse(null);
     model.addAttribute("alimento", alimento);
     return "sbadmin/alimentos/formulario";
   }

@@ -2,14 +2,14 @@ package com.nutriconsultas.paciente;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.validation.constraints.NotBlank;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.validation.constraints.NotBlank;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -44,11 +44,11 @@ public class Paciente {
 
   private String parentesco;
 
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5)
   private Double peso;
-  @Column(precision = 3, scale = 2)
+  @Column(precision = 3)
   private Double estatura;
-  @Column(precision = 3, scale = 1)
+  @Column(precision = 3)
   private Double imc;
 
   private NivelPeso nivelPeso;

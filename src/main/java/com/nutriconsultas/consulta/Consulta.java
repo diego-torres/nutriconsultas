@@ -2,19 +2,19 @@ package com.nutriconsultas.consulta;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -35,26 +35,26 @@ public class Consulta {
   @Temporal(TemporalType.DATE)
   private Date fechaConsulta;
 
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5)
   @NotNull
   @Min(10)
   @Max(200)
   private Double peso;
-  @Column(precision = 3, scale = 2)
+  @Column(precision = 3)
   @NotNull
   @Max(3)
   @DecimalMin(value = "0.5")
   private Double estatura;
-  @Column(precision = 3, scale = 1)
+  @Column(precision = 3)
   private Double imc;
 
   private NivelPeso nivelPeso;
   private Integer sistolica, diastolica, pulso, indiceGlucemico;
 
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5)
   private Double spo2;
 
-  @Column(precision = 5, scale = 2)
+  @Column(precision = 5)
   private Double temperatura;
 
   @Column(columnDefinition = "TEXT")

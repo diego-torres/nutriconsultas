@@ -1,0 +1,29 @@
+{"properties": [
+  {
+    "name": "maps.api.key",
+    "type": "java.lang.String",
+    "description": "A description for 'maps.api.key'"
+  },
+  {
+    "name": "amazon.s3.bucket",
+    "type": "java.lang.String",
+    "description": "A description for 'amazon.s3.bucket'"
+  },
+  {
+    "name": "spring.session.store-type",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.session.store-type'"
+  },{
+    "name": "amazon.s3.region",
+    "type": "java.lang.String",
+    "description": "A description for 'amazon.s3.region'"
+  }, {
+    "name": "amazon.s3.secret",
+    "type": "java.lang.String",
+    "description": "A description for 'amazon.s3.secret'"
+  },{
+    "name": "amazon.s3.key",
+    "type": "java.lang.String",
+    "description": "A description for 'amazon.s3.key'"
+  }
+]}
