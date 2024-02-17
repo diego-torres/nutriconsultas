@@ -29,6 +29,7 @@ public class Platillo {
     private String videoUrl;
     private String pdfUrl;
     private Integer energia;
+    private String ingestasSugeridas;
     @OneToMany(mappedBy = "platillo")
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
