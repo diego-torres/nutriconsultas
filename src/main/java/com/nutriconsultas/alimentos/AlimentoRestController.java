@@ -119,7 +119,7 @@ public class AlimentoRestController {
   }
 
   private Comparator<Alimento> sortRows(PagingRequest pagingRequest) {
-    log.debug("--> sorting Alimento with paging request " + pagingRequest.toString() + ".");
+    log.debug("sorting Alimento with paging request {}.", pagingRequest);
     if (pagingRequest.getOrder() == null) {
       log.debug("page request order is null. Returning empty comparator.");
       return EMPTY_COMPARATOR;
