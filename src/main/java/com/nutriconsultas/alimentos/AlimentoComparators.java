@@ -7,6 +7,9 @@ import java.util.Map;
 import com.nutriconsultas.dataTables.paging.ComparatorKey;
 import com.nutriconsultas.dataTables.paging.Direction;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class AlimentoComparators {
   static Map<ComparatorKey, Comparator<Alimento>> map = new HashMap<>();
 
@@ -46,6 +49,7 @@ public class AlimentoComparators {
   }
 
   public static Comparator<Alimento> getComparator(String name, Direction dir) {
+    log.debug("comparator request name: {}, dir: {}", name, dir);
     return map.get(new ComparatorKey(name, dir));
   }
 
