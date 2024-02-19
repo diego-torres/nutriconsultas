@@ -45,10 +45,10 @@ public class AlimentoRestControllerTest {
         try (Reader reader = new InputStreamReader(getClass().getResourceAsStream("/alimentos.csv"))) {
             log.debug("reading alimentos from csv file");
             List<Alimento> alimentos = new CsvToBeanBuilder<Alimento>(reader)
-            .withType(Alimento.class).build().parse();
+                    .withType(Alimento.class).build().parse();
             log.debug("setting up alimento service with {} alimentos", alimentos.size());
             when(alimentoService.findAll()).thenReturn(alimentos);
-        } catch(IOException e) {
+        } catch (IOException e) {
             log.error("error while reading alimentos from csv file", e);
         }
         log.info("finished setting up alimento service");
@@ -71,7 +71,6 @@ public class AlimentoRestControllerTest {
         columnList.add(new Column("7", "", true, true, new Search("", "false")));
         columnList.add(new Column("8", "", true, true, new Search("", "false")));
         columnList.add(new Column("9", "", true, true, new Search("", "false")));
-
 
         pagingRequest.setColumns(columnList);
         pagingRequest.setStart(0);
