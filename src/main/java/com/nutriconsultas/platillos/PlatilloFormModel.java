@@ -1,14 +1,14 @@
 package com.nutriconsultas.platillos;
 
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper=false)
 public class PlatilloFormModel extends Platillo {
    private String ingredientesJsonString;
    public Platillo toPlatillo() {

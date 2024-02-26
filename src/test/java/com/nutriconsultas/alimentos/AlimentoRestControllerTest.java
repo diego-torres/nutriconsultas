@@ -87,8 +87,8 @@ public class AlimentoRestControllerTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.getRecordsTotal()).isEqualTo(2355);
-        assertThat(result.getRecordsFiltered()).isEqualTo(2355);
+        assertThat(result.getRecordsTotal()).isEqualTo(20);
+        assertThat(result.getRecordsFiltered()).isEqualTo(20);
         assertThat(result.getDraw()).isEqualTo(1);
         assertThat(result.getData()).isNotEmpty();
         assertThat(result.getData().size()).isEqualTo(10);
@@ -123,8 +123,8 @@ public class AlimentoRestControllerTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.getRecordsTotal()).isEqualTo(2355);
-        assertThat(result.getRecordsFiltered()).isEqualTo(2355);
+        assertThat(result.getRecordsTotal()).isEqualTo(20);
+        assertThat(result.getRecordsFiltered()).isEqualTo(20);
         assertThat(result.getDraw()).isEqualTo(1);
         assertThat(result.getData()).isNotEmpty();
         assertThat(result.getData().size()).isEqualTo(10);
@@ -160,8 +160,8 @@ public class AlimentoRestControllerTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.getRecordsTotal()).isEqualTo(2355);
-        assertThat(result.getRecordsFiltered()).isEqualTo(2355);
+        assertThat(result.getRecordsTotal()).isEqualTo(20);
+        assertThat(result.getRecordsFiltered()).isEqualTo(20);
         assertThat(result.getDraw()).isEqualTo(1);
         assertThat(result.getData()).isNotEmpty();
         assertThat(result.getData().size()).isEqualTo(10);
@@ -196,8 +196,8 @@ public class AlimentoRestControllerTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.getRecordsTotal()).isEqualTo(2355);
-        assertThat(result.getRecordsFiltered()).isEqualTo(2355);
+        assertThat(result.getRecordsTotal()).isEqualTo(20);
+        assertThat(result.getRecordsFiltered()).isEqualTo(20);
         assertThat(result.getDraw()).isEqualTo(1);
         assertThat(result.getData()).isEmpty();
         log.info("finished testArrayNoPaging with records {}", result.getRecordsTotal());
@@ -221,8 +221,8 @@ public class AlimentoRestControllerTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.getRecordsTotal()).isEqualTo(2355);
-        assertThat(result.getRecordsFiltered()).isEqualTo(2355);
+        assertThat(result.getRecordsTotal()).isEqualTo(20);
+        assertThat(result.getRecordsFiltered()).isEqualTo(20);
         assertThat(result.getDraw()).isEqualTo(1);
         assertThat(result.getData()).isNotEmpty();
         assertThat(result.getData().size()).isEqualTo(10);
@@ -297,8 +297,8 @@ public class AlimentoRestControllerTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.getRecordsTotal()).isEqualTo(2355);
-        assertThat(result.getRecordsFiltered()).isEqualTo(2355);
+        assertThat(result.getRecordsTotal()).isEqualTo(20);
+        assertThat(result.getRecordsFiltered()).isEqualTo(20);
         assertThat(result.getDraw()).isEqualTo(0);
         assertThat(result.getData()).isNotEmpty();
         assertThat(result.getData().size()).isEqualTo(10);
@@ -364,7 +364,7 @@ public class AlimentoRestControllerTest {
         pagingRequest.setLength(10);
         pagingRequest.setDraw(1);
         pagingRequest.setOrder(Arrays.asList(new Order(0, Direction.asc)));
-        pagingRequest.setSearch(new Search("pera", "false"));
+        pagingRequest.setSearch(new Search("mango", "false"));
         log.debug("arrange paging request {}.", pagingRequest);
 
         // Act
@@ -372,11 +372,11 @@ public class AlimentoRestControllerTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.getRecordsTotal()).isEqualTo(18);
-        assertThat(result.getRecordsFiltered()).isEqualTo(18);
+        assertThat(result.getRecordsTotal()).isEqualTo(2);
+        assertThat(result.getRecordsFiltered()).isEqualTo(2);
         assertThat(result.getDraw()).isEqualTo(1);
         assertThat(result.getData()).isNotEmpty();
-        assertThat(result.getData().size()).isEqualTo(10);
+        assertThat(result.getData().size()).isEqualTo(2);
         log.info("finished testArrayFiltering with records {}", result.getRecordsTotal());
     }
 }

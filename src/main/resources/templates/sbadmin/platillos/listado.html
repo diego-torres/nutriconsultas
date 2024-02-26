@@ -68,7 +68,7 @@
           <!-- Page Heading -->
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Lista de Platillos</h1>
-            <button type="button" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" data-toggle="modal" data-target="#addPlatilloModal" data-entity="customer">
+            <button type="button" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" data-toggle="modal" data-target="#addPlatilloModal">
                 <i class="fas fa-plus fa-sm text-white-50"></i> Agregar Platillo
             </button>
           </div>
@@ -151,6 +151,21 @@
               return JSON.stringify(d);
             }
           },
+        });
+        $('#addPlatilloButton').on('click', function () {
+          if (nombrePlatillo) {
+            $.ajax({
+              url: '/rest/platillos/add',
+              type: 'POST',
+              contentType: 'application/json',
+              data: JSON.stringify({
+                name: $('#nombrePlatillo').val()
+              }),
+              success: function (data) {
+                window.location.href = '/admin/platillos/' + data.id;
+              }
+            });
+          }
         });
 
       })(jQuery);

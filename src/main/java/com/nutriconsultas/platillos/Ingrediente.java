@@ -26,8 +26,8 @@ public class Ingrediente {
     @ManyToOne
     private Alimento alimento;
     
-    @Column(length = 50)
-    private String cantSugerida;
+    @Column(precision = 5)
+    private Double cantSugerida;
     private String unidad;
     private Integer pesoBrutoRedondeado;
     private Integer pesoNeto;
