@@ -1,7 +1,5 @@
 package com.nutriconsultas.model;
 
-import com.nutriconsultas.platillos.Ingrediente;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

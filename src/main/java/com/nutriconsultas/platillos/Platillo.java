@@ -3,6 +3,8 @@ package com.nutriconsultas.platillos;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,10 +32,17 @@ public class Platillo {
     private String pdfUrl;
     private Integer energia = 0;
     private String ingestasSugeridas;
-    @OneToMany(mappedBy = "platillo")
+
+    @OneToMany(mappedBy = "platillo", 
+    cascade = jakarta.persistence.CascadeType.ALL, 
+    orphanRemoval = true, 
+    targetEntity = Ingrediente.class, 
+    fetch = jakarta.persistence.FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
+    @JsonManagedReference
     private List<Ingrediente> ingredientes = new ArrayList<>();
+
     @Column(precision = 5)
     private Double proteina;
     @Column(precision = 5)
@@ -80,103 +89,103 @@ public class Platillo {
     private Double etanol;
 
     public String getImageUrl() {
-        if(this.imageUrl == null || this.imageUrl.isBlank())
+        if (this.imageUrl == null || this.imageUrl.isBlank())
             return "/sbadmin/img/plato-vacio.jpg";
         return imageUrl;
     }
 
     public Integer getEnergia() {
-        if(energia == null)
+        if (energia == null)
             return 0;
         return energia;
     }
 
     public Double getProteina() {
-        if(proteina == null)
+        if (proteina == null)
             return 0.0;
         return proteina;
     }
 
     public Double getLipidos() {
-        if(lipidos == null)
+        if (lipidos == null)
             return 0.0;
         return lipidos;
     }
 
     public Double getHidratosDeCarbono() {
-        if(hidratosDeCarbono == null)
+        if (hidratosDeCarbono == null)
             return 0.0;
         return hidratosDeCarbono;
     }
 
     public Double getFibra() {
-        if(fibra == null)
+        if (fibra == null)
             return 0.0;
         return fibra;
     }
 
     public Double getVitA() {
-        if(vitA == null)
+        if (vitA == null)
             return 0.0;
         return vitA;
     }
 
     public Double getAcidoAscorbico() {
-        if(acidoAscorbico == null)
+        if (acidoAscorbico == null)
             return 0.0;
         return acidoAscorbico;
     }
 
     public Double getHierroNoHem() {
-        if(hierroNoHem == null)
+        if (hierroNoHem == null)
             return 0.0;
         return hierroNoHem;
     }
 
     public Double getPotasio() {
-        if(potasio == null)
+        if (potasio == null)
             return 0.0;
         return potasio;
     }
 
     public Double getIndiceGlicemico() {
-        if(indiceGlicemico == null)
+        if (indiceGlicemico == null)
             return 0.0;
         return indiceGlicemico;
     }
 
     public Double getCargaGlicemica() {
-        if(cargaGlicemica == null)
+        if (cargaGlicemica == null)
             return 0.0;
         return cargaGlicemica;
     }
 
     public Double getAcidoFolico() {
-        if(acidoFolico == null)
+        if (acidoFolico == null)
             return 0.0;
         return acidoFolico;
     }
 
     public Double getCalcio() {
-        if(calcio == null)
+        if (calcio == null)
             return 0.0;
         return calcio;
     }
 
     public Double getHierro() {
-        if(hierro == null)
+        if (hierro == null)
             return 0.0;
         return hierro;
     }
 
     public Double getSodio() {
-        if(sodio == null)
+        if (sodio == null)
             return 0.0;
         return sodio;
     }
 
     public Double getAzucarPorEquivalente() {
-        if(azucarPorEquivalente == null)
+        if (azucarPorEquivalente == null)
             return 0.0;
         return azucarPorEquivalente;
     }

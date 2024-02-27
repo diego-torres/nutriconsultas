@@ -90,7 +90,7 @@ public class PlatilloRestControllerTest {
     log.debug("Paging request: {}", pagingRequest);
 
     // Act
-    PageArray result = platilloRestController.array(pagingRequest);
+    PageArray result = platilloRestController.getPageArray(pagingRequest);
 
     // Assert
     assertThat(result).isNotNull();

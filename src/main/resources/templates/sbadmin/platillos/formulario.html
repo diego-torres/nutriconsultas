@@ -457,19 +457,26 @@
     <script
       th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"
     ></script>
+    <script
+      th:src="@{/sbadmin/vendor/datatables/jquery.dataTables.min.js}"
+    ></script>
+    <script
+      th:src="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.js}"
+    ></script>
 
     <!-- Custom scripts for all pages-->
     <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
     <script th:src="@{/sbadmin/vendor/select2/select2.min.js}"></script>
     <script th:src="@{/sbadmin/js/select2.js}"></script>
-    <script type="text/javascript" lang="javascript">
-      $(document).ready(function () {
+    <script lang="javascript">
+      'use strict';
+      (function ($) {
         // initialize select2
         $("#selIngrediente").select2({
           dropdownParent: $("#addIngredientModal"),
         });
         // initialize dataTable
-        $("#mainGrid").DataTable({
+        $("#ingredientesGrid").DataTable({
           processing: true,
           serverSide: true,
           scrollX: true,
@@ -490,15 +497,22 @@
             },
           },
           ajax: {
-            url: "/rest/platillos/" + $("#id").val() + "/ingredientes",
+            url: "/rest/platillos/" + $("#id").val() + "/ingredientes/data-table",
             type: "POST",
             dataType: "json",
             contentType: "application/json",
             data: function (d) {
               return JSON.stringify(d);
             },
+            error: function (xhr, error, thrown) {
+              console.error(xhr);
+              console.error(error);
+              console.error(thrown);
+            },
           },
         });
+
+        //$("#ingredientesGrid").DataTable().ajax.reload();
 
         // load content on change
         $("#selIngrediente").on("change", function () {
@@ -541,7 +555,7 @@
           var nombre = $("#selIngrediente option:selected").text();
           // add record using platillo REST API
           $.ajax({
-            url: "/rest/platillos/" + $("#id").val() + "/ingredientes",
+            url: "/rest/platillos/" + $("#id").val() + "/ingredientes/add",
             type: "POST",
             contentType: "application/json",
             data: JSON.stringify({
@@ -550,14 +564,15 @@
               peso: peso,
             }),
             success: function (response) {
-              console.debug(response);
+              console.debug("response from add ingredient", response);
+              // reload dataTable
+              $("#ingredientesGrid").DataTable().ajax.reload();
+              // hide modal
+              $("#addIngredientModal").modal("hide");
             },
           });
-          // reload dataTable
-          $("#ingredientesGrid").DataTable().reload();
-          $("#addIngredientModal").modal("hide");
         });
-      });
+      })(jQuery);
     </script>
   </body>
 </html>

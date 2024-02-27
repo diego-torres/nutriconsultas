@@ -8,17 +8,14 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,23 +23,22 @@ import com.nutriconsultas.charts.ChartResponse;
 import com.nutriconsultas.consulta.Consulta;
 import com.nutriconsultas.consulta.ConsultaComparators;
 import com.nutriconsultas.consulta.ConsultaRepository;
+import com.nutriconsultas.controller.AbstractGridController;
 import com.nutriconsultas.dataTables.paging.Column;
-import com.nutriconsultas.dataTables.paging.Order;
-import com.nutriconsultas.dataTables.paging.Page;
-import com.nutriconsultas.dataTables.paging.PageArray;
-import com.nutriconsultas.dataTables.paging.PagingRequest;
+import com.nutriconsultas.dataTables.paging.Direction;
+
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/rest")
-public class PacienteConsultaRestController {
-  private static final Logger logger = LoggerFactory.getLogger(PacienteConsultaRestController.class);
-  private static final Comparator<Consulta> EMPTY_COMPARATOR = (o1, o2) -> 0;
-
+@RequestMapping("/rest/pacientes/{id}/consultas")
+@Slf4j
+public class PacienteConsultaRestController extends AbstractGridController<Consulta> {
   @Autowired
   private ConsultaRepository repo;
 
-  @GetMapping("pacientes/{id}/charts/imc")
+  @GetMapping("charts/imc")
   public ChartResponse imcChart(@PathVariable Long id) {
+    log.info("starting imcChart with id {}.", id);
     // Implement from repository
     ChartResponse response = new ChartResponse();
     List<String> labels = new ArrayList<>();
@@ -65,29 +61,13 @@ public class PacienteConsultaRestController {
     Map<String, Object> data = new HashMap<>();
     data.put("imc", imc);
     response.setData(data);
+    log.info("finish imcChart with response {}.", response);
     return response;
   }
 
-  @PostMapping("pacientes/{id}/consultas")
-  public PageArray Array(@PathVariable Long id, @RequestBody PagingRequest pagingRequest) {
-    pagingRequest.setColumns(
-        Stream.of("fecha", "peso", "estatura", "imc", "presion", "indGluc")
-            .map(Column::new)
-            .collect(Collectors.toList()));
-    Page<Consulta> page = getRows(id, pagingRequest);
-    PageArray pageArray = new PageArray();
-    pageArray.setRecordsFiltered(page.getRecordsFiltered());
-    pageArray.setRecordsTotal(page.getRecordsTotal());
-    pageArray.setDraw(page.getDraw());
-    pageArray.setData(page.getData()
-        .stream()
-        .map(this::toStringList)
-        .collect(Collectors.toList()));
-
-    return pageArray;
-  }
-
-  private List<String> toStringList(Consulta row) {
+  @Override
+  protected List<String> toStringList(Consulta row) {
+    log.debug("converting Consulta row {} to string list.", row);
     DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
     return Arrays.asList(
         row.getFechaConsulta() != null ? dateFormat.format(row.getFechaConsulta()) : "", //
@@ -102,56 +82,35 @@ public class PacienteConsultaRestController {
             + "'><i class='fas fa-trash fa-sm fa-fw'></i> </a>");
   }
 
-  private Page<Consulta> getRows(Long pacienteId, PagingRequest pagingRequest) {
-    return getPage(StreamSupport
-        .stream(repo.findByPacienteId(pacienteId).spliterator(), false)
-        .collect(Collectors.toList()), pagingRequest);
+  @Override
+  protected List<Consulta> getData() {
+    log.debug("getting all Consulta records.");
+    return StreamSupport.stream(repo.findAll().spliterator(), false).collect(Collectors.toList());
   }
 
-  private Page<Consulta> getPage(List<Consulta> rows, PagingRequest pagingRequest) {
-    List<Consulta> filtered = rows.stream()
-        .sorted(sortRows(pagingRequest))
-        // .filter(filterRows(pagingRequest))
-        .skip(pagingRequest.getStart())
-        .limit(pagingRequest.getLength())
+  @Override
+  protected Comparator<Consulta> getComparator(String column, Direction dir) {
+    log.debug("getting Consulta comparator with column {} and direction {}.", column, dir);
+    return ConsultaComparators.getComparator(column, dir);
+  }
+
+  @Override
+  protected List<Column> getColumns() {
+    log.debug("getting Consulta columns.");
+    return Stream.of("fecha", "peso", "estatura", "imc", "presion", "indGluc", "actions")
+        .map(Column::new)
         .collect(Collectors.toList());
-
-    long count = rows.stream()
-        // .filter(filterRows(pagingRequest))
-        .count();
-
-    Page<Consulta> page = new Page<>(filtered);
-    page.setRecordsFiltered((int) count);
-    page.setRecordsTotal((int) count);
-    page.setDraw(pagingRequest.getDraw());
-
-    return page;
   }
-  // filter not required for the list of consultas for a paciente.
 
-  private Comparator<Consulta> sortRows(PagingRequest pagingRequest) {
-    if (pagingRequest.getOrder() == null) {
-      return EMPTY_COMPARATOR;
-    }
-
-    try {
-      Order order = pagingRequest.getOrder().get(0);
-
-      int columnIndex = order.getColumn();
-      Column column = pagingRequest.getColumns().get(columnIndex);
-
-      Comparator<Consulta> comparator = ConsultaComparators.getComparator(column.getData(),
-          order.getDir());
-      if (comparator == null) {
-        return EMPTY_COMPARATOR;
-      }
-
-      return comparator;
-
-    } catch (Exception e) {
-      logger.error(e.getMessage(), e);
-    }
-
-    return EMPTY_COMPARATOR;
+  @Override
+  protected Predicate<Consulta> getPredicate(String value) {
+    log.debug("getting Consulta predicate with value {}.", value);
+    return row -> row.getFechaConsulta().toString().toLowerCase().contains(value)
+        || row.getPeso().toString().toLowerCase().contains(value)
+        || row.getEstatura().toString().toLowerCase().contains(value)
+        || row.getImc().toString().toLowerCase().contains(value)
+        || row.getSistolica().toString().toLowerCase().contains(value)
+        || row.getDiastolica().toString().toLowerCase().contains(value)
+        || row.getIndiceGlucemico().toString().toLowerCase().contains(value);
   }
 }

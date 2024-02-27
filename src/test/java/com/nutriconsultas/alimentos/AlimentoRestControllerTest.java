@@ -83,7 +83,7 @@ public class AlimentoRestControllerTest {
         log.debug("arrange paging request {}.", pagingRequest);
 
         // Act
-        PageArray result = alimentoRestController.array(pagingRequest);
+        PageArray result = alimentoRestController.getPageArray(pagingRequest);
 
         // Assert
         assertThat(result).isNotNull();
@@ -119,7 +119,7 @@ public class AlimentoRestControllerTest {
         pagingRequest.setSearch(new Search("", "false"));
 
         // Act
-        PageArray result = alimentoRestController.array(pagingRequest);
+        PageArray result = alimentoRestController.getPageArray(pagingRequest);
 
         // Assert
         assertThat(result).isNotNull();
@@ -156,7 +156,7 @@ public class AlimentoRestControllerTest {
         log.debug("arrange paging request {}.", pagingRequest);
 
         // Act
-        PageArray result = alimentoRestController.array(pagingRequest);
+        PageArray result = alimentoRestController.getPageArray(pagingRequest);
 
         // Assert
         assertThat(result).isNotNull();
@@ -192,7 +192,7 @@ public class AlimentoRestControllerTest {
         log.debug("arrange paging request {}.", pagingRequest);
 
         // Act
-        PageArray result = alimentoRestController.array(pagingRequest);
+        PageArray result = alimentoRestController.getPageArray(pagingRequest);
 
         // Assert
         assertThat(result).isNotNull();
@@ -217,7 +217,7 @@ public class AlimentoRestControllerTest {
         log.debug("arrange paging request {}.", pagingRequest);
 
         // Act
-        PageArray result = alimentoRestController.array(pagingRequest);
+        PageArray result = alimentoRestController.getPageArray(pagingRequest);
 
         // Assert
         assertThat(result).isNotNull();
@@ -257,7 +257,7 @@ public class AlimentoRestControllerTest {
         log.debug("arrange paging request {}.", pagingRequest);
 
         // Act
-        PageArray result = alimentoRestController.array(pagingRequest);
+        PageArray result = alimentoRestController.getPageArray(pagingRequest);
 
         // Assert
         assertThat(result).isNotNull();
@@ -293,7 +293,7 @@ public class AlimentoRestControllerTest {
         log.debug("arrange paging request {}.", pagingRequest);
 
         // Act
-        PageArray result = alimentoRestController.array(pagingRequest);
+        PageArray result = alimentoRestController.getPageArray(pagingRequest);
 
         // Assert
         assertThat(result).isNotNull();
@@ -331,7 +331,7 @@ public class AlimentoRestControllerTest {
         log.debug("arrange paging request {}.", pagingRequest);
 
         // Act
-        PageArray result = alimentoRestController.array(pagingRequest);
+        PageArray result = alimentoRestController.getPageArray(pagingRequest);
 
         // Assert
         assertThat(result).isNotNull();
@@ -368,7 +368,7 @@ public class AlimentoRestControllerTest {
         log.debug("arrange paging request {}.", pagingRequest);
 
         // Act
-        PageArray result = alimentoRestController.array(pagingRequest);
+        PageArray result = alimentoRestController.getPageArray(pagingRequest);
 
         // Assert
         assertThat(result).isNotNull();

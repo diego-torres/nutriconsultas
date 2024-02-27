@@ -5,9 +5,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,29 +17,24 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.alimentos.AlimentoService;
+import com.nutriconsultas.controller.AbstractGridController;
 import com.nutriconsultas.dataTables.paging.Column;
-import com.nutriconsultas.dataTables.paging.Order;
-import com.nutriconsultas.dataTables.paging.Page;
-import com.nutriconsultas.dataTables.paging.PageArray;
-import com.nutriconsultas.dataTables.paging.PagingRequest;
 import com.nutriconsultas.model.ApiResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("rest")
+@RequestMapping("rest/platillos")
 @Slf4j
-public class PlatilloRestController {
-  private static final Comparator<Platillo> EMPTY_COMPARATOR = (o1, o2) -> 0;
-
+public class PlatilloRestController extends AbstractGridController<Platillo> {
   @Autowired
   private PlatilloService service;
 
   @Autowired
   private AlimentoService alimentoService;
 
-  @PostMapping("platillos/{id}/ingredientes")
-  public ResponseEntity<ApiResponse<Ingrediente>> addIngrediente(@PathVariable Long id,
+  @PostMapping("{id}/ingredientes/add")
+  public ResponseEntity<ApiResponse<Ingrediente>> addIngrediente(@PathVariable @NonNull Long id,
       @RequestBody @NonNull IngredienteFormModel ingrediente) {
     log.info("starting addIngrediente with id {} and ingrediente {}.", id, ingrediente);
     Platillo platillo = service.findById(id);
@@ -51,28 +43,30 @@ public class PlatilloRestController {
     // Calculate ingrediente values
     Ingrediente _ingrediente = new Ingrediente();
     _ingrediente.setAlimento(alimento);
+    _ingrediente.setUnidad(alimento.getUnidad());
     // if cantidad is different than cantSugerida, then calculate the new values
     Boolean calculatedFromCantidad = false;
     if (ingrediente.getCantidad() != null
         && ingrediente.getCantidad() != _ingrediente.getAlimento().getFractionalCantSugerida()) {
+      log.debug("calculating ingrediente from cantidad change.");
       _ingrediente = calculateIngredienteFromCantiadChange(ingrediente.getCantidad().toString(),
           alimento.getFractionalCantSugerida(), _ingrediente, alimento);
       calculatedFromCantidad = true;
     } else {
+      log.debug("cantidad did not changed, setting ingrediente default values.");
       _ingrediente = convertAlimentoToIngrediente(_ingrediente, alimento);
     }
 
     // if peso is different than pesoNeto, then calculate the new values
     if (ingrediente.getPeso() != null && ingrediente.getPeso() != _ingrediente.getAlimento().getPesoNeto()
         && !calculatedFromCantidad) {
+      log.debug("calculating ingrediente from peso change.");
       _ingrediente = calculateIngredienteFromPesoChange(ingrediente.getPeso(), alimento.getPesoNeto(), _ingrediente,
           alimento);
-    } else {
-      _ingrediente = convertAlimentoToIngrediente(_ingrediente, alimento);
-    }
-
+    } 
     _ingrediente.setPlatillo(platillo);
 
+    log.debug("setting ingrediente in platillo: {}.", _ingrediente);
     platillo.getIngredientes().add(_ingrediente);
     service.save(platillo);
     log.info("finish addIngrediente with id {} and ingrediente {}.", id, ingrediente);
@@ -114,20 +108,21 @@ public class PlatilloRestController {
   // calculate ingrediente from cantidad change
   private Ingrediente calculateIngredienteFromCantiadChange(String given, String suggested, Ingrediente ingrediente,
       Alimento alimento) {
-    Boolean hasInteger = given.contains(" ");
+    Boolean hasInteger = given.contains(" ") || !given.contains("//");
     Boolean hasFraction = given.contains("//");
     Integer iGivenIntPart = hasInteger ? Integer.parseInt(given.split(" ")[0]) : 0;
     Integer iGivenNumeratorPart = hasFraction ? Integer.parseInt(given.split(" ")[1].split("//")[0]) : 0;
     Integer iGivenDenominatorPart = hasFraction ? Integer.parseInt(given.split(" ")[1].split("//")[1]) : 0;
     Double dGiven = iGivenIntPart.doubleValue() + (hasFraction ? (iGivenNumeratorPart / iGivenDenominatorPart) : 0d);
     Double dFactor = dGiven / alimento.getCantSugerida();
-
+    
+    log.debug("setting cantSugerida to {}.", dGiven);
     ingrediente.setCantSugerida(dGiven);
     if (alimento.getAcidoAscorbico() != null)
       ingrediente.setAcidoAscorbico(alimento.getAcidoAscorbico() * dFactor);
 
     if (alimento.getAcidoFolico() != null)
-      ingrediente.setAcidoFolico(alimento.getAcidoAscorbico() * dFactor);
+      ingrediente.setAcidoFolico(alimento.getAcidoFolico() * dFactor);
 
     if (alimento.getAgMonoinsaturados() != null)
       ingrediente.setAgMonoinsaturados(alimento.getAgMonoinsaturados() * dFactor);
@@ -206,6 +201,8 @@ public class PlatilloRestController {
       Alimento alimento) {
     Double dFactor = (double) given / (double) suggested;
 
+    ingrediente.setCantSugerida(dFactor * alimento.getCantSugerida());
+
     if (alimento.getAcidoAscorbico() != null)
       ingrediente.setAcidoAscorbico(alimento.getAcidoAscorbico() * dFactor);
 
@@ -284,7 +281,7 @@ public class PlatilloRestController {
     return ingrediente;
   }
 
-  @PostMapping("platillos/add")
+  @PostMapping("add")
   public Platillo add(@RequestBody @NonNull Platillo platillo) {
     log.info("starting add with platillo {}.", platillo);
     Platillo saved = service.save(platillo);
@@ -292,31 +289,20 @@ public class PlatilloRestController {
     return saved;
   }
 
-  @PostMapping("platillos")
-  public PageArray array(@RequestBody PagingRequest pagingRequest) {
-    log.info("starting array with paging request {}.", pagingRequest);
-    String[] columns = { "platillo", "ingestas", "kcal", "prot", "lip", "hc" };
-    log.debug("setting columns at page request {}", (Object) columns);
-    pagingRequest.setColumns(
-        Stream.of(columns)
-            .map(Column::new)
-            .collect(Collectors.toList()));
-    Page<Platillo> page = getRows(pagingRequest);
-    log.debug("Platillos page with records {}", page.getRecordsTotal());
-    PageArray pageArray = new PageArray();
-    pageArray.setRecordsFiltered(page.getRecordsFiltered());
-    pageArray.setRecordsTotal(page.getRecordsTotal());
-    pageArray.setDraw(page.getDraw());
-    pageArray.setData(page.getData()
-        .stream()
-        .map(this::toStringList)
-        .collect(Collectors.toList()));
-
-    log.info("finish Platillos page array with records {}", pageArray.getRecordsTotal());
-    return pageArray;
+  @Override
+  protected List<Column> getColumns() {
+    log.debug("getting Platillo columns.");
+    return Arrays.asList(
+        new Column("platillo"), //
+        new Column("ingestas"), //
+        new Column("kcal"), //
+        new Column("prot"), //
+        new Column("lip"), //
+        new Column("hc"));
   }
 
-  private List<String> toStringList(Platillo row) {
+  @Override
+  protected List<String> toStringList(Platillo row) {
     log.debug("converting Platillo row {} to string list.", row);
     return Arrays.asList(
         "<a href='/admin/platillos/" + row.getId() + "'>" + row.getName() + "</a>",
@@ -327,56 +313,23 @@ public class PlatilloRestController {
         String.format("%.1f", row.getHidratosDeCarbono()));
   }
 
-  private Page<Platillo> getRows(PagingRequest pagingRequest) {
-    log.debug("starting getRows with paging request {}.", pagingRequest);
-    return getPage(StreamSupport.stream(service.findAll().spliterator(), false).toList(), pagingRequest);
+  @Override
+  protected List<Platillo> getData() {
+    log.debug("getting all Platillos.");
+    return service.findAll();
   }
 
-  private Page<Platillo> getPage(List<Platillo> platillos, PagingRequest pagingRequest) {
-    log.debug("converting {} platillos to page with paging request {}", platillos.size(), pagingRequest);
-    List<Platillo> filtered = platillos.stream()
-        .filter(filterRows(pagingRequest))
-        .sorted(sortRows(pagingRequest))
-        .skip(pagingRequest.getStart())
-        .limit(pagingRequest.getLength())
-        .toList();
-    log.debug("filtered records {}", filtered.size());
-
-    long count = platillos.stream()
-        .filter(filterRows(pagingRequest))
-        .count();
-
-    log.debug("total records {}", count);
-
-    Page<Platillo> page = new Page<>(filtered);
-    page.setRecordsFiltered((int) count);
-    page.setRecordsTotal((int) count);
-    page.setDraw(pagingRequest.getDraw());
-
-    log.debug("returning Platillos page with records {}", page.getRecordsTotal());
-    return page;
+  @Override
+  protected Predicate<Platillo> getPredicate(String value) {
+    log.debug("getting Platillo predicate with value {}.", value);
+    return platillo -> platillo.getName().toLowerCase().contains(value.toLowerCase())
+        || platillo.getIngestasSugeridas().toLowerCase().contains(value.toLowerCase());
   }
 
-  private Predicate<Platillo> filterRows(PagingRequest pagingRequest) {
-    log.debug("filtering Platillo rows with paging request {}", pagingRequest);
-    String searchValue = pagingRequest.getSearch().getValue();
-    if (searchValue == null || searchValue.isEmpty()) {
-      return platillo -> true;
-    }
-    return platillo -> platillo.getName().toLowerCase().contains(searchValue.toLowerCase())
-        || platillo.getIngestasSugeridas().toLowerCase().contains(searchValue.toLowerCase());
-  }
-
-  private Comparator<Platillo> sortRows(PagingRequest pagingRequest) {
-    log.debug("sorting Platillo rows with paging request {}", pagingRequest);
-    Comparator<Platillo> comparator = EMPTY_COMPARATOR;
-    if (pagingRequest.getOrder() != null) {
-      Order order = pagingRequest.getOrder().get(0);
-      String column = pagingRequest.getColumns().get(order.getColumn()).getData();
-      comparator = PlatilloComparators.getComparator(column, order.getDir());
-    }
-    log.debug("sorting rows with comparator {}", comparator);
-    return comparator;
+  @Override
+  protected Comparator<Platillo> getComparator(String column, com.nutriconsultas.dataTables.paging.Direction dir) {
+    log.debug("getting Platillo comparator with column {} and direction {}.", column, dir);
+    return PlatilloComparators.getComparator(column, dir);
   }
 
 }
