@@ -68,7 +68,7 @@
                   </thead>
                 </table>
 
-                <!-- Logout Modal-->
+                <!-- Delete Consulta Modal-->
                 <div class="modal fade" id="deleteConsultaModal" tabindex="-1" role="dialog"
                   aria-labelledby="exampleModalLabel" aria-hidden="true">
                   <div class="modal-dialog" role="document">
@@ -144,7 +144,7 @@
             },
           },
           "ajax": {
-            "url": '/rest/pacientes/[[(${paciente.id})]]/consultas',
+            "url": '/rest/pacientes/[[(${paciente.id})]]/consultas/data-table',
             "type": "POST",
             "dataType": "json",
             "contentType": "application/json",

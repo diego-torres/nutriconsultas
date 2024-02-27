@@ -7,6 +7,8 @@ import java.util.function.Predicate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,6 +25,12 @@ public class IngredienteRestController extends AbstractGridItemController<Ingred
   @Autowired
   private PlatilloService platilloService;
 
+  @DeleteMapping("/{ingredienteId}")
+  public void delete(@NonNull @PathVariable Long ingredienteId) {
+    log.debug("deleting Ingrediente with id {}.", ingredienteId);
+    platilloService.deleteIngrediente(ingredienteId);
+  }
+
   @Override
   protected List<String> toStringList(Ingrediente row) {
     log.debug("converting Ingrediente row {} to string list.", row);
@@ -31,7 +39,8 @@ public class IngredienteRestController extends AbstractGridItemController<Ingred
         row.getFractionalCantSugerida(), //
         row.getUnidad(), //
         row.getPesoNeto().toString(), //
-        "<a href='/admin/ingredientes/" + row.getId() + "'>Editar</a>");
+        "<a href='#'' class='btn action-btn btn-danger btn-sm delete-btn' data-id='" + row.getId()
+        + "'><i class='fas fa-trash fa-sm fa-fw'></i> </a>");
   }
 
   @Override

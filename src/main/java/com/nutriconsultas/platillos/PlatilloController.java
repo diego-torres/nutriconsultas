@@ -66,7 +66,17 @@ public class PlatilloController extends AbstractAuthorizedController {
     @PostMapping("/admin/platillos/save")
     public String save(@ModelAttribute @NonNull Platillo platillo) {
         log.debug("Starting save with platillo {}", platillo);
-        service.save(platillo);
+
+        @SuppressWarnings("null")
+        Platillo dbPlatillo = service.findById(platillo.getId());
+        if (dbPlatillo != null) {
+            dbPlatillo.setName(platillo.getName());
+            dbPlatillo.setDescription(platillo.getDescription());
+            service.save(dbPlatillo);
+        } else {
+            service.save(platillo);
+        }
+        
         log.debug("Finishing save with platillo {}", platillo);
         return "redirect:/admin/platillos/" + platillo.getId();
     }

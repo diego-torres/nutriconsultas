@@ -8,4 +8,5 @@ public interface PlatilloService {
     List<Platillo> findAll();
     Platillo findById(@NonNull Long id);
     Platillo save(@NonNull Platillo platillo);
+    void deleteIngrediente(@NonNull Long id);
 }

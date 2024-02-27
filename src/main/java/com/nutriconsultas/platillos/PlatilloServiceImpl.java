@@ -32,4 +32,10 @@ public class PlatilloServiceImpl implements PlatilloService {
         return platilloRepository.findAll();
     }
 
+    @Override
+    public void deleteIngrediente(@NonNull Long id) {
+        log.info("Deleting ingrediente with id: {}", id);
+        platilloRepository.deleteIngrediente(id);
+    }
+
 }
