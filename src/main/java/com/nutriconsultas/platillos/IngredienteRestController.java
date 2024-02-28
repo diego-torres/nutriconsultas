@@ -26,9 +26,9 @@ public class IngredienteRestController extends AbstractGridItemController<Ingred
   private PlatilloService platilloService;
 
   @DeleteMapping("/{ingredienteId}")
-  public void delete(@NonNull @PathVariable Long ingredienteId) {
+  public void delete(@NonNull @PathVariable Long id,  @NonNull @PathVariable Long ingredienteId) {
     log.debug("deleting Ingrediente with id {}.", ingredienteId);
-    platilloService.deleteIngrediente(ingredienteId);
+    platilloService.deleteIngrediente(id, ingredienteId);
   }
 
   @Override

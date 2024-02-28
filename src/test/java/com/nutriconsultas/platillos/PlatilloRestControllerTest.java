@@ -19,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.nutriconsultas.alimentos.Alimento;
-import com.nutriconsultas.alimentos.AlimentoService;
 import com.nutriconsultas.dataTables.paging.Direction;
 import com.nutriconsultas.dataTables.paging.Order;
 import com.nutriconsultas.dataTables.paging.PageArray;
@@ -39,9 +38,6 @@ public class PlatilloRestControllerTest {
 
   @Mock
   private PlatilloService platilloService;
-
-  @Mock
-  private AlimentoService alimentoService;
 
   @SuppressWarnings("null")
   @Test
@@ -126,14 +122,16 @@ public class PlatilloRestControllerTest {
     ingrediente.setCantidad("1");
     ingrediente.setPeso(100);
 
+    Ingrediente _Ingrediente = new Ingrediente();
+    _Ingrediente.setId(1L);
+    _Ingrediente.setAlimento(alimento);
+    _Ingrediente.setCantSugerida(1d);
+    _Ingrediente.setPesoNeto(100);
+
     log.debug("Ingrediente to add: {}", ingrediente);
 
     // Mock the save method
-    when(platilloService.save(any(Platillo.class))).thenReturn(platillo);
-
-    // Mock the findById method
-    when(platilloService.findById(1L)).thenReturn(platillo);
-    when(alimentoService.findById(1L)).thenReturn(alimento);
+    when(platilloService.addIngrediente(1L, 1L, "1", 100)).thenReturn(_Ingrediente);
 
     // Act
     ResponseEntity<ApiResponse<Ingrediente>> result = platilloRestController.addIngrediente(1L, ingrediente);
@@ -141,7 +139,7 @@ public class PlatilloRestControllerTest {
     // Assert
     assertThat(result).isNotNull();
     assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
-    assertThat(result.getBody().getData()).isEqualTo(platillo.getIngredientes().get(0));
+    assertThat(result.getBody().getData()).isEqualTo(_Ingrediente);
   }
 
 }

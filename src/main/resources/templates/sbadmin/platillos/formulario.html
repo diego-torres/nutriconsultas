@@ -187,71 +187,26 @@
                 <div class="card mb-4 mb-lg-0">
                   <div class="card-body p-0">
                     <ul class="list-group list-group-flush rounded-3">
-                      <li
-                        class="list-group-item d-flex justify-content-between align-items-center p-3"
-                      >
-                        <span
-                          ><i class="fas fa-bolt fa-lg text-warning"></i>
-                          Energ&iacute;a:</span
-                        >
-                        <p class="mb-0" th:text="${platillo.energia + ' Kcal'}">
-                          0.0 Kcal
-                        </p>
+                      <li class="list-group-item d-flex justify-content-between align-items-center p-3" >
+                        <span><i class="fas fa-bolt fa-lg text-warning"></i>Energ&iacute;a:</span>
+                        <p class="mb-0" th:text="${platillo.energia + ' Kcal'}">0.0 Kcal</p>
                       </li>
-                      <li
-                        class="list-group-item d-flex justify-content-between align-items-center p-3"
-                      >
-                        <span
-                          ><i
-                            class="fas fa-dumbbell fa-lg"
-                            style="color: #333333"
-                          ></i>
-                          Protenina</span
-                        >
-                        <p class="mb-0" th:text="${platillo.proteina}">0.0</p>
+                      <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <span><i class="fas fa-dumbbell fa-lg" style="color: #333333"></i>Protenina</span>
+                        <!-- display proteina formatted to 2 decimal places -->
+                        <p class="mb-0" th:text="${#numbers.formatDecimal(platillo.proteina, 1, 2)}">0.0</p>
                       </li>
-                      <li
-                        class="list-group-item d-flex justify-content-between align-items-center p-3"
-                      >
-                        <span
-                          ><i
-                            class="fas fa-heart fa-lg"
-                            style="color: #f00"
-                          ></i>
-                          L&iacute;pidos</span
-                        >
-                        <p class="mb-0" th:text="${platillo.lipidos}">0.0</p>
+                      <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <span><i class="fas fa-heart fa-lg" style="color: #f00"></i>L&iacute;pidos</span>
+                        <p class="mb-0" th:text="${#numbers.formatDecimal(platillo.lipidos, 1, 2)}">0.0</p>
                       </li>
-                      <li
-                        class="list-group-item d-flex justify-content-between align-items-center p-3"
-                      >
-                        <span
-                          ><i
-                            class="fas fa-carrot fa-lg"
-                            style="color: #dd0"
-                          ></i>
-                          Carbohidratos</span
-                        >
-                        <p class="mb-0" th:text="${platillo.hidratosDeCarbono}">
-                          0.0
-                        </p>
+                      <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <span><i class="fas fa-atom fa-lg" style="color: #dd0"></i>Carbohidratos</span>
+                        <p class="mb-0" th:text="${#numbers.formatDecimal(platillo.hidratosDeCarbono, 1, 2)}">0.0</p>
                       </li>
-                      <li
-                        class="list-group-item d-flex justify-content-between align-items-center p-3"
-                      >
-                        <span
-                          ><i
-                            class="fas fa-cubes fa-lg"
-                            style="color: #333"
-                          ></i>
-                          Azucar</span
-                        >
-                        <p
-                          class="mb-0"
-                          th:text="${platillo.azucarPorEquivalente}"
-                        >
-                          0.0
-                        </p>
+                      <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <span><i class="fas fa-cubes fa-lg" style="color: #333"></i>Azucar</span>
+                        <p class="mb-0" th:text="${#numbers.formatDecimal(platillo.azucarPorEquivalente, 1, 2)}">0.0</p>
                       </li>
                     </ul>
                   </div>
@@ -550,11 +505,8 @@
               peso: peso,
             }),
             success: function (response) {
-              console.debug("response from add ingredient", response);
-              // reload dataTable
-              $("#ingredientesGrid").DataTable().ajax.reload();
-              // hide modal
-              $("#addIngredientModal").modal("hide");
+              // page reload
+              location.reload();
             },
           });
         });
