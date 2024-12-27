@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,7 @@ import com.nutriconsultas.controller.AbstractAuthorizedController;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 @Controller
@@ -70,7 +72,6 @@ public class PlatilloController extends AbstractAuthorizedController {
     public String save(@ModelAttribute @NonNull Platillo platillo) {
         log.debug("Starting save with platillo {}", platillo);
 
-        @SuppressWarnings("null")
         Platillo dbPlatillo = service.findById(platillo.getId());
         if (dbPlatillo != null) {
             dbPlatillo.setName(platillo.getName());
@@ -85,7 +86,7 @@ public class PlatilloController extends AbstractAuthorizedController {
     }
     
     @PostMapping("/admin/platillos/{id}/picture")
-    public String uploadPicture(@PathVariable @NonNull Long id, @RequestParam("file") MultipartFile file, Model model) {
+    public String uploadPicture(@PathVariable @NonNull Long id, @RequestParam("imgPlatillo") MultipartFile file, Model model) {
         log.debug("Starting uploadPicture with id {}", id);
         model.addAttribute("activeMenu", "platillos");
 
@@ -117,6 +118,13 @@ public class PlatilloController extends AbstractAuthorizedController {
 
         return "redirect:/admin/platillos/" + id;
     }
+
+    @GetMapping(value = "admin/platillos/platillo/{id}/{imageName}", produces = MediaType.IMAGE_JPEG_VALUE)
+    public @ResponseBody byte[] getImage(@PathVariable @NonNull Long id, @PathVariable @NonNull String imageName, Model model) throws IOException {
+        log.debug("Starting getImage with id {} and imageName {}", id, imageName);
+        return service.getPicture(id, imageName);
+    }
+    
     
     
 }

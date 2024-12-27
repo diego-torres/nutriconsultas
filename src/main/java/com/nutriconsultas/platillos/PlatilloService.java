@@ -1,5 +1,6 @@
 package com.nutriconsultas.platillos;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.lang.NonNull;
@@ -17,4 +18,6 @@ public interface PlatilloService {
       @NonNull Integer peso);
   
   void savePicture(@NonNull Long id, @NonNull byte[] bytes, @NonNull String fileExtension);
+
+  byte[] getPicture(@NonNull Long id, @NonNull String fileName) throws IOException;
 }

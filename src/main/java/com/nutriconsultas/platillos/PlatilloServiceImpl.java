@@ -1,5 +1,6 @@
 package com.nutriconsultas.platillos;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -12,9 +13,13 @@ import com.nutriconsultas.alimentos.AlimentosRepository;
 
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
+import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
@@ -136,18 +141,60 @@ public class PlatilloServiceImpl implements PlatilloService {
     log.info("Finish savePicture with id: {}", id);
   }
 
+  @Override
+  public byte[] getPicture(@NonNull Long id, @NonNull String fileName) throws IOException {
+    log.info("Starting getPicture with id: {}", id);
+    S3Client s3Client = getClient();
+    String key = "platillo/" + id + "/" + fileName;
+    try {
+      return s3Client.getObject(builder -> builder.bucket(bucketName).key(key)).readAllBytes();
+    } catch (S3Exception e) {
+      log.error("Error getting picture from S3", e);
+      return null;
+    }
+  }
+
   private void uploadPictureToS3(Long id, byte[] bytes, String fileExtension) {
     String key = "platillo/" + id + "/picture." + fileExtension;
     log.info("Uploading picture to S3 with key: {}", key);
     S3Client s3Client = getClient();
     try{
+      // delete image if exists
+      if (imageExists(id, fileExtension)) {
+        log.debug("Deleting existing image with key: {}", key);
+        s3Client.deleteObject(builder -> builder.bucket(bucketName).key(key));
+      }
+
       s3Client.putObject(PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(key)
                     .build(), 
                     RequestBody.fromBytes(bytes));
+
+      // update the file name in the db
+      Platillo platillo = platilloRepository.findById(id).orElse(null);
+      if (platillo != null) {
+        platillo.setImageUrl(key);
+        platilloRepository.save(platillo);
+      }
     } catch (S3Exception e) {
       log.error("Error uploading picture to S3", e);
+    }
+  }
+
+  private boolean imageExists(Long id, String fileExtension) {
+    S3Client s3Client = getClient();
+    String key = "platillo/" + id + "/picture" + fileExtension;
+    try {
+      HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+              .bucket(bucketName)
+              .key(key)
+              .build();
+      HeadObjectResponse headObjectResponse = s3Client.headObject(headObjectRequest);
+      String contentType = headObjectResponse.contentType();
+      return contentType.length() > 0;
+    } catch (AwsServiceException | SdkClientException e) {
+      return false;
     }
   }
 

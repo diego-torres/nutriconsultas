@@ -169,12 +169,12 @@
                     <input
                       type="file"
                       class="custom-file-input"
-                      id="customFile"
-                      name="file"
+                      id="imgPlatillo"
+                      name="imgPlatillo"
                       accept="image/*"
                       required
                     />
-                    <label class="custom-file-label" for="customFile">
+                    <label class="custom-file-label" for="imgPlatillo">
                       Seleccionar archivo
                     </label>
                   </div>
@@ -574,6 +574,11 @@
               location.reload();
             },
           });
+        });
+
+        $("#imgPlatillo").on("change", function () {
+          var fileName = $(this).val().split("\\").pop();
+          $(this).next(".custom-file-label").addClass("selected").html(fileName);
         });
 
         $(document).on('click', '.delete-btn', function (event) {
