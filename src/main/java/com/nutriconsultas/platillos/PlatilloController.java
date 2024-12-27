@@ -1,5 +1,6 @@
 package com.nutriconsultas.platillos;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,6 +18,8 @@ import com.nutriconsultas.controller.AbstractAuthorizedController;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @Slf4j
@@ -81,6 +84,39 @@ public class PlatilloController extends AbstractAuthorizedController {
         return "redirect:/admin/platillos/" + platillo.getId();
     }
     
+    @PostMapping("/admin/platillos/{id}/picture")
+    public String uploadPicture(@PathVariable @NonNull Long id, @RequestParam("file") MultipartFile file, Model model) {
+        log.debug("Starting uploadPicture with id {}", id);
+        model.addAttribute("activeMenu", "platillos");
+
+        if (file.isEmpty()) {
+            log.error("Failed to upload picture because the file is empty");
+            model.addAttribute("errorMessage", "The file is empty");
+            return "sbadmin/platillos/formulario";
+        }
+
+        try {
+            byte[] bytes = file.getBytes();
+            // Assuming you have a method in PlatilloService to handle picture saving
+            String fileName = file.getOriginalFilename();
+            String fileExtension = "";
+            if (fileName != null) {
+                int dotIndex = fileName.lastIndexOf('.');
+                if (dotIndex > 0 && dotIndex < fileName.length() - 1) {
+                    fileExtension = fileName.substring(dotIndex + 1);
+                }
+                log.debug("File extension is {}", fileExtension);
+            }
+            service.savePicture(id, bytes, fileExtension);
+            log.debug("Successfully uploaded picture for platillo with id {}", id);
+        } catch (IOException e) {
+            log.error("Failed to upload picture for platillo with id {}", id, e);
+            model.addAttribute("errorMessage", "Failed to upload picture");
+            return "sbadmin/platillos/formulario";
+        }
+
+        return "redirect:/admin/platillos/" + id;
+    }
     
     
 }

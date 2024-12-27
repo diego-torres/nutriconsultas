@@ -4,15 +4,21 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.alimentos.AlimentosRepository;
-import com.nutriconsultas.model.ApiResponse;
 
 import lombok.extern.slf4j.Slf4j;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 @Slf4j
@@ -22,6 +28,19 @@ public class PlatilloServiceImpl implements PlatilloService {
 
   @Autowired
   private AlimentosRepository alimentoRepository;
+
+  @Value("${amazon.s3.region}")
+  private String awsRegion;
+
+  @Value("${amazon.s3.bucket}")
+  private String bucketName;
+
+  @Value("${amazon.s3.key}")
+  private String accessKey;
+
+  @Value("${amazon.s3.secret}")
+  private String secretKey;
+
 
   @Override
   public Platillo findById(@NonNull Long id) {
@@ -108,6 +127,41 @@ public class PlatilloServiceImpl implements PlatilloService {
     platilloRepository.save(platillo);
     log.info("finish addIngrediente with platillo: {}", platillo);
     return ingrediente;
+  }
+
+  @Override
+  public void savePicture(@NonNull Long id, @NonNull byte[] bytes, @NonNull String fileExtension) {
+    log.info("Starting savePicture with id: {}", id);
+    uploadPictureToS3(id, bytes, fileExtension);
+    log.info("Finish savePicture with id: {}", id);
+  }
+
+  private void uploadPictureToS3(Long id, byte[] bytes, String fileExtension) {
+    String key = "platillo/" + id + "/picture." + fileExtension;
+    log.info("Uploading picture to S3 with key: {}", key);
+    S3Client s3Client = getClient();
+    try{
+      s3Client.putObject(PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build(), 
+                    RequestBody.fromBytes(bytes));
+    } catch (S3Exception e) {
+      log.error("Error uploading picture to S3", e);
+    }
+  }
+
+  private S3Client getClient(){
+    return S3Client
+              .builder()
+              .region(Region.of(awsRegion))
+              .credentialsProvider(new AwsCredentialsProvider() {
+                @Override
+                public software.amazon.awssdk.auth.credentials.AwsCredentials resolveCredentials() {
+                  return software.amazon.awssdk.auth.credentials.AwsBasicCredentials.create(accessKey, secretKey);
+                }
+              })
+              .build();
   }
 
   // summarize platillo macronutrientes
