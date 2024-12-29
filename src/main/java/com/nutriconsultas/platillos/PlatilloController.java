@@ -59,8 +59,8 @@ public class PlatilloController extends AbstractAuthorizedController {
         Platillo platillo = service.findById(id);
         model.addAttribute("platillo", platillo);
         List<String> ingestas = new ArrayList<>(); 
-        if(platillo.getIngestasSugeridas()!=null){
-            ingestas = Arrays.asList(platillo.getIngestasSugeridas().split(","));   
+        if(platillo.getIngestasSugeridas()!=null && !platillo.getIngestasSugeridas().isEmpty()){
+            ingestas = Arrays.asList(platillo.getIngestasSugeridas().split(","));
         }
         model.addAttribute("ingestas", ingestas);
         log.debug("Finishing editar with platillo {}", platillo);

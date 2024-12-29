@@ -226,6 +226,8 @@
                     <option value="Merienda">Merienda</option>
                     <option value="Cena">Cena</option>
                     <option value="Colaci&oacute;n">Colaci&oacute;n</option>
+                    <option value="Despu&eacute;s de entrenar">Despu&eacute;s de entrenar</option>
+                    <option value="Antes de entrenar">Antes de entrenar</option>
                     <option value="Antes de dormir">Antes de dormir</option>
                   </select>
                 </div>
@@ -406,8 +408,7 @@
                       <span
                         th:each="ingesta : ${ingestas}"
                         th:text="${ingesta}"
-                        class="label label-info"
-                      ></span>
+                        class="label label-info label-ingesta"></span>
                       <a
                         href="#"
                         class="btn btn-primary btn-sm ml-2"
@@ -735,6 +736,111 @@
               alimentoId: id,
               cantidad: cantidad,
               peso: peso,
+            }),
+            success: function (response) {
+              // page reload
+              location.reload();
+            },
+          });
+        });
+
+        // activate ingesta add button on ingesta select change
+        $("#ingesta").on("change", function () {
+          var ingesta = $(this).val();
+          if (ingesta != "") {
+            $("#addIngestaButton").prop("disabled", false);
+          } else {
+            $("#addIngestaButton").prop("disabled", true);
+          }
+        });
+
+        // add ingesta button
+        $("#addIngestaButton").on("click", function () {
+          var ingesta = $("#ingesta").val();
+          // add record using platillo REST API
+          $.ajax({
+            url: "/rest/platillos/" + $("#id").val() + "/ingestas/add",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+              ingesta: ingesta,
+            }),
+            success: function (response) {
+              // page reload
+              location.reload();
+            },
+          });
+        });
+
+        // delete ingesta on label click
+        $(document).on("click", ".label-ingesta", function (event) {
+          var ingesta = $(event.currentTarget).text();
+          swal({
+            title: "Borrar Ingesta !",
+            text: "Esta seguro que desea borrar la ingesta?",
+            type: "warning",
+            showCancelButton: true,
+            closeOnConfirm: false,
+            showLoaderOnConfirm: true,
+            confirmButtonColor: "#5cb85c",
+            cancelButtonColor: "#d33",
+            cancelButtonText: "No",
+            confirmButtonText: "Si",
+          },
+          function () {
+            $.ajax({
+              url: "/rest/platillos/" + $("#id").val() + "/ingestas/" + ingesta,
+              type: "DELETE",
+              success: function (response) {
+                swal({
+                  title: "Borrado!",
+                  text: "La ingesta ha sido borrada.",
+                  type: "success",
+                  timer: 2000,
+                });
+                location.reload();
+              },
+              error: function (error) {
+                swal({
+                  title: "Error!",
+                  text: error.responseJSON.message,
+                  type: "error",
+                  timer: 5000,
+                });
+              },
+            });
+          }
+        ); 
+        });
+
+        // add pdf button
+        $("#addPdfButton").on("click", function () {
+          var pdfUrl = $("#pdfUrl").val();
+          // add record using platillo REST API
+          $.ajax({
+            url: "/rest/platillos/" + $("#id").val() + "/pdf/add",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+              pdfUrl: pdfUrl,
+            }),
+            success: function (response) {
+              // page reload
+              location.reload();
+            },
+          });
+        });
+
+        // add video button
+        $("#addVideoButton").on("click", function () {
+          var videoUrl = $("#videoUrl").val();
+          // add record using platillo REST API
+          $.ajax({
+            url: "/rest/platillos/" + $("#id").val() + "/video/add",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+              videoUrl: videoUrl,
             }),
             success: function (response) {
               // page reload
