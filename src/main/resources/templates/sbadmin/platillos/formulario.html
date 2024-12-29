@@ -248,6 +248,56 @@
           </div>
         </div>
 
+        <!-- add pdf modal -->
+        <div
+          class="modal fade"
+          id="addPdfModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="addPdfModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="addPdfModalLabel">
+                  Subir archivo PDF
+                </h5>
+                <button
+                  class="close"
+                  type="button"
+                  data-dismiss="modal"
+                  aria-label="Close">
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form
+                  th:action="@{/admin/platillos/{id}/pdf(id=${platillo.id})}"
+                  method="post"
+                  enctype="multipart/form-data">
+                  <div class="form-group custom-file">   
+                    <input
+                      type="file"
+                      class="custom-file-input"
+                      id="pdfPlatillo"
+                      name="pdfPlatillo"
+                      accept=".pdf"
+                      required
+                    />
+                    <label for="pdfPlatillo" class="custom-file-label">Archivo PDF</label>
+                  </div>
+                  <hr />
+                  <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                      Subir
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Main Content -->
         <div id="content">
           <div th:insert="~{sbadmin/topbar :: topbar}"></div>
@@ -639,7 +689,14 @@
           });
         });
 
+        // add ingesta button
         $("#imgPlatillo").on("change", function () {
+          var fileName = $(this).val().split("\\").pop();
+          $(this).next(".custom-file-label").addClass("selected").html(fileName);
+        });
+
+        // add pdf instructions button
+        $("#pdfPlatillo").on("change", function () {
           var fileName = $(this).val().split("\\").pop();
           $(this).next(".custom-file-label").addClass("selected").html(fileName);
         });
