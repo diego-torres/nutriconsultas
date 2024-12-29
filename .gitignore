@@ -12,3 +12,4 @@ buildNumber.properties
 .vscode
 .env
 src/test/.DS_Store
+.env.test
