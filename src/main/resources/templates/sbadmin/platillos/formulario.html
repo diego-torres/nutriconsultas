@@ -190,6 +190,64 @@
           </div>
         </div>
 
+        <!-- add ingesta modal -->
+        <div
+          class="modal fade"
+          id="addIngestaModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="addIngestaModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="addIngestaModalLabel">
+                  Agregar Ingesta Sugerida
+                </h5>
+                <button
+                  class="close"
+                  type="button"
+                  data-dismiss="modal"
+                  aria-label="Close">
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="ingesta">Ingesta</label>
+                  <select
+                    id="ingesta"
+                    class="form-control js-example-basic-single"
+                    required="true">
+                    <option value="">Selecciona una ingesta</option>
+                    <option value="Al despertar">Al Despertar</option>
+                    <option value="Desayuno">Desayuno</option>
+                    <option value="Almuerzo">Almuerzo</option>
+                    <option value="Merienda">Merienda</option>
+                    <option value="Cena">Cena</option>
+                    <option value="Colaci&oacute;n">Colaci&oacute;n</option>
+                    <option value="Antes de dormir">Antes de dormir</option>
+                  </select>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  id="addIngestaButton"
+                  class="btn btn-success"
+                  disabled="true">
+                  Agregar
+                </button>
+                <button
+                  id="cancelButton"
+                  class="btn btn-danger"
+                  data-dismiss="modal">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Main Content -->
         <div id="content">
           <div th:insert="~{sbadmin/topbar :: topbar}"></div>
