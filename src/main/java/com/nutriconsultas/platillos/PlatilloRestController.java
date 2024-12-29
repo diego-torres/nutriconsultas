@@ -141,7 +141,7 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
   protected Predicate<Platillo> getPredicate(String value) {
     log.debug("getting Platillo predicate with value {}.", value);
     return platillo -> platillo.getName().toLowerCase().contains(value.toLowerCase())
-        || platillo.getIngestasSugeridas().toLowerCase().contains(value.toLowerCase());
+        || (platillo.getIngestasSugeridas() != null && platillo.getIngestasSugeridas().toLowerCase().contains(value.toLowerCase()));
   }
 
   @Override

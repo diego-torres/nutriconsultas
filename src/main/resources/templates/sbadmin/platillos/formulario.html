@@ -67,6 +67,7 @@
                     id="selIngrediente"
                     class="form-control js-example-basic-single"
                     required="true"
+                    style="width: 100%"
                   >
                     <option value="">Selecciona un alimento</option>
                     <option
@@ -645,6 +646,7 @@
         // initialize select2
         $("#selIngrediente").select2({
           dropdownParent: $("#addIngredientModal"),
+          width: 'resolve'
         });
         // initialize dataTable
         $("#ingredientesGrid").DataTable({
