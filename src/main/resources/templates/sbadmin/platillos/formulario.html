@@ -223,6 +223,7 @@
                     <option value="Al despertar">Al Despertar</option>
                     <option value="Desayuno">Desayuno</option>
                     <option value="Almuerzo">Almuerzo</option>
+                    <option value="Comida">Comida</option>
                     <option value="Merienda">Merienda</option>
                     <option value="Cena">Cena</option>
                     <option value="Colaci&oacute;n">Colaci&oacute;n</option>
@@ -339,8 +340,7 @@
               <div class="modal-footer">
                 <button
                   id="addVideoButton"
-                  class="btn btn-success"
-                  disabled="true">
+                  class="btn btn-success">
                   Agregar
                 </button>
                 <button
@@ -585,7 +585,7 @@
                                   <li class="list-group-item d-flex align-items-center p-3" >
                                     <span><i class="fas fa-book fa-lg"></i>&nbsp;&nbsp;&nbsp;</span>
                                     <p th:if="${platillo.pdfUrl == null || platillo.pdfUrl == '' }" class="mb-0">No hay archivo PDF con instrucciones</p>
-                                    <a th:unless="${platillo.pdfUrl == null || platillo.pdfUrl == '' }" class="mb-0" th:href="${platillo.pdfUrl}" th:text="${platillo.pdfUrl}"> Instrucciones</a>
+                                    <a target="_blank" th:unless="${platillo.pdfUrl == null || platillo.pdfUrl == '' }" class="mb-0" th:href="${platillo.pdfUrl}"> Instrucciones en PDF</a>
                                     &nbsp;&nbsp;&nbsp;<a href="#" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addPdfModal">
                                       <i class="fas fa-upload"></i>
                                       Subir
@@ -595,7 +595,7 @@
                                     <span><i class="fas fa-video fa-lg"></i>&nbsp;&nbsp;&nbsp;</span>
                                     <!-- display proteina formatted to 2 decimal places -->
                                     <p th:if="${platillo.videoUrl == null || platillo.videoUrl == '' }" class="mb-0">No hay video con instrucciones</p>
-                                    <a th:unless="${platillo.videoUrl == null || platillo.videoUrl == '' }" class="mb-0" th:href="${platillo.videoUrl}" th:text="${platillo.videoUrl}"> Video</a>
+                                    <a target="_blank" th:unless="${platillo.videoUrl == null || platillo.videoUrl == '' }" class="mb-0" th:href="${platillo.videoUrl}"> Instrucciones en video</a>
                                     &nbsp;&nbsp;&nbsp;<a href="#" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addVideoModal">
                                       <i class="fas fa-upload"></i>
                                       Subir
@@ -811,24 +811,6 @@
             });
           }
         ); 
-        });
-
-        // add pdf button
-        $("#addPdfButton").on("click", function () {
-          var pdfUrl = $("#pdfUrl").val();
-          // add record using platillo REST API
-          $.ajax({
-            url: "/rest/platillos/" + $("#id").val() + "/pdf/add",
-            type: "POST",
-            contentType: "application/json",
-            data: JSON.stringify({
-              pdfUrl: pdfUrl,
-            }),
-            success: function (response) {
-              // page reload
-              location.reload();
-            },
-          });
         });
 
         // add video button

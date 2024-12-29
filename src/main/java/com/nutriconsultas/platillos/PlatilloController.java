@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+
 @Controller
 @Slf4j
 public class PlatilloController extends AbstractAuthorizedController {
@@ -125,6 +126,35 @@ public class PlatilloController extends AbstractAuthorizedController {
         return service.getPicture(id, imageName);
     }
     
+    @PostMapping("/admin/platillos/{id}/pdf")
+    public String uploadPdf(@PathVariable @NonNull Long id, @RequestParam("pdfPlatillo") MultipartFile file, Model model) {
+        log.debug("Starting uploadPdf with id {}", id);
+        model.addAttribute("activeMenu", "platillos");
+
+        if (file.isEmpty()) {
+            log.error("Failed to upload pdf because the file is empty");
+            model.addAttribute("errorMessage", "The file is empty");
+            return "sbadmin/platillos/formulario";
+        }
+
+        try {
+            byte[] bytes = file.getBytes();
+            service.savePdf(id, bytes);
+            log.debug("Successfully uploaded pdf for platillo with id {}", id);
+        } catch (IOException e) {
+            log.error("Failed to upload pdf for platillo with id {}", id, e);
+            model.addAttribute("errorMessage", "Failed to upload pdf");
+            return "sbadmin/platillos/formulario";
+        }
+
+        return "redirect:/admin/platillos/" + id;
+    }
+
+    @GetMapping(value = "admin/platillos/platillo/{id}/instrucciones.pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public @ResponseBody byte[] getPdf(@PathVariable @NonNull Long id, Model model) throws IOException {
+        log.debug("Starting getPdf with id {}", id);
+        return service.getPicture(id, "instrucciones.pdf");
+    }
     
     
 }

@@ -46,7 +46,6 @@ public class PlatilloServiceImpl implements PlatilloService {
   @Value("${amazon.s3.secret}")
   private String secretKey;
 
-
   @Override
   public Platillo findById(@NonNull Long id) {
     log.info("Retrieving platillo with id: {}", id);
@@ -142,6 +141,34 @@ public class PlatilloServiceImpl implements PlatilloService {
   }
 
   @Override
+  public void savePdf(Long id, byte[] bytes) {
+    log.info("Starting savePdf with id: {}", id);
+    S3Client s3Client = getClient();
+    String key = "platillo/" + id + "/instrucciones.pdf";
+    
+    try {
+      if (keyExists(key)) {
+        log.debug("Deleting existing pdf with key: {}", key);
+        s3Client.deleteObject(builder -> builder.bucket(bucketName).key(key));
+      }
+  
+      s3Client.putObject(PutObjectRequest.builder()
+          .bucket(bucketName)
+          .key(key)
+          .build(),
+          RequestBody.fromBytes(bytes));
+      
+      Platillo platillo = platilloRepository.findById(id).orElse(null);
+      if (platillo != null) {
+        platillo.setPdfUrl(key);
+        platilloRepository.save(platillo);
+      }
+    } catch (S3Exception e) {
+      log.error("Error uploading pdf to S3", e);
+    }
+  }
+
+  @Override
   public byte[] getPicture(@NonNull Long id, @NonNull String fileName) throws IOException {
     log.info("Starting getPicture with id: {}", id);
     S3Client s3Client = getClient();
@@ -158,7 +185,7 @@ public class PlatilloServiceImpl implements PlatilloService {
     String key = "platillo/" + id + "/picture." + fileExtension;
     log.info("Uploading picture to S3 with key: {}", key);
     S3Client s3Client = getClient();
-    try{
+    try {
       // delete image if exists
       if (imageExists(id, fileExtension)) {
         log.debug("Deleting existing image with key: {}", key);
@@ -166,10 +193,10 @@ public class PlatilloServiceImpl implements PlatilloService {
       }
 
       s3Client.putObject(PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(key)
-                    .build(), 
-                    RequestBody.fromBytes(bytes));
+          .bucket(bucketName)
+          .key(key)
+          .build(),
+          RequestBody.fromBytes(bytes));
 
       // update the file name in the db
       Platillo platillo = platilloRepository.findById(id).orElse(null);
@@ -183,13 +210,17 @@ public class PlatilloServiceImpl implements PlatilloService {
   }
 
   private boolean imageExists(Long id, String fileExtension) {
+    String key = "platillo/" + id + "/picture." + fileExtension;
+    return keyExists(key);
+  }
+
+  private boolean keyExists(String key) {
     S3Client s3Client = getClient();
-    String key = "platillo/" + id + "/picture" + fileExtension;
     try {
       HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
-              .bucket(bucketName)
-              .key(key)
-              .build();
+          .bucket(bucketName)
+          .key(key)
+          .build();
       HeadObjectResponse headObjectResponse = s3Client.headObject(headObjectRequest);
       String contentType = headObjectResponse.contentType();
       return contentType.length() > 0;
@@ -198,17 +229,17 @@ public class PlatilloServiceImpl implements PlatilloService {
     }
   }
 
-  private S3Client getClient(){
+  private S3Client getClient() {
     return S3Client
-              .builder()
-              .region(Region.of(awsRegion))
-              .credentialsProvider(new AwsCredentialsProvider() {
-                @Override
-                public software.amazon.awssdk.auth.credentials.AwsCredentials resolveCredentials() {
-                  return software.amazon.awssdk.auth.credentials.AwsBasicCredentials.create(accessKey, secretKey);
-                }
-              })
-              .build();
+        .builder()
+        .region(Region.of(awsRegion))
+        .credentialsProvider(new AwsCredentialsProvider() {
+          @Override
+          public software.amazon.awssdk.auth.credentials.AwsCredentials resolveCredentials() {
+            return software.amazon.awssdk.auth.credentials.AwsBasicCredentials.create(accessKey, secretKey);
+          }
+        })
+        .build();
   }
 
   // summarize platillo macronutrientes
@@ -303,9 +334,12 @@ public class PlatilloServiceImpl implements PlatilloService {
     Boolean hasInteger = given.contains(" ") || !given.contains("/");
     Boolean hasFraction = given.contains("/");
     Integer iGivenIntPart = hasInteger ? Integer.parseInt(given.split(" ")[0]) : 0;
-    Integer iGivenNumeratorPart = hasInteger ? hasFraction ? Integer.parseInt(given.split(" ")[1].split("/")[0]) : 0 : Integer.parseInt(given.split("/")[0]);
-    Integer iGivenDenominatorPart = hasInteger ? hasFraction ? Integer.parseInt(given.split(" ")[1].split("/")[1]) : 0 : Integer.parseInt(given.split("/")[1]);
-    Double dGiven = iGivenIntPart.doubleValue() + (hasFraction ? (iGivenNumeratorPart.doubleValue() / iGivenDenominatorPart.doubleValue()) : 0d);
+    Integer iGivenNumeratorPart = hasInteger ? hasFraction ? Integer.parseInt(given.split(" ")[1].split("/")[0]) : 0
+        : Integer.parseInt(given.split("/")[0]);
+    Integer iGivenDenominatorPart = hasInteger ? hasFraction ? Integer.parseInt(given.split(" ")[1].split("/")[1]) : 0
+        : Integer.parseInt(given.split("/")[1]);
+    Double dGiven = iGivenIntPart.doubleValue()
+        + (hasFraction ? (iGivenNumeratorPart.doubleValue() / iGivenDenominatorPart.doubleValue()) : 0d);
     Double dFactor = dGiven / alimento.getCantSugerida();
 
     log.debug("setting cantSugerida to {}.", dGiven);
@@ -380,10 +414,10 @@ public class PlatilloServiceImpl implements PlatilloService {
       ingrediente.setVitA(alimento.getVitA() * dFactor);
 
     if (alimento.getPesoBrutoRedondeado() != null)
-      ingrediente.setPesoBrutoRedondeado( (int) Math.round(alimento.getPesoBrutoRedondeado() * dFactor));
+      ingrediente.setPesoBrutoRedondeado((int) Math.round(alimento.getPesoBrutoRedondeado() * dFactor));
 
     if (alimento.getPesoNeto() != null)
-      ingrediente.setPesoNeto( (int) Math.round(alimento.getPesoNeto() * dFactor));
+      ingrediente.setPesoNeto((int) Math.round(alimento.getPesoNeto() * dFactor));
   }
 
   // convert alimento to ingrediente

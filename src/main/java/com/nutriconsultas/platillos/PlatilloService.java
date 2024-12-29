@@ -20,4 +20,6 @@ public interface PlatilloService {
   void savePicture(@NonNull Long id, @NonNull byte[] bytes, @NonNull String fileExtension);
 
   byte[] getPicture(@NonNull Long id, @NonNull String fileName) throws IOException;
+
+  void savePdf(Long id, byte[] bytes);
 }

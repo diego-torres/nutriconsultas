@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.nutriconsultas.alimentos.AlimentoService;
 import com.nutriconsultas.controller.AbstractGridController;
 import com.nutriconsultas.dataTables.paging.Column;
 import com.nutriconsultas.model.ApiResponse;
@@ -28,9 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 public class PlatilloRestController extends AbstractGridController<Platillo> {
   @Autowired
   private PlatilloService service;
-
-  @Autowired
-  private AlimentoService alimentoService;
 
   @PostMapping("{id}/ingredientes/add")
   public ResponseEntity<ApiResponse<Ingrediente>> addIngrediente(@PathVariable @NonNull Long id,
@@ -89,6 +85,18 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
     }
     log.info("finish deleteIngesta with id {} and ingesta {}.", id, ingesta);
     return ResponseEntity.ok(new ApiResponse<Platillo>(_platillo));
+  }
+
+  // "/rest/platillos/" + $("#id").val() + "/video/add"
+  @PostMapping("{id}/video/add")
+  public ResponseEntity<ApiResponse<Platillo>> addVideo(@PathVariable @NonNull Long id,
+      @RequestBody @NonNull VideoFormModel video) {
+    log.info("starting addVideo with id {} and video {}.", id, video);
+    Platillo _platillo = service.findById(id);
+    _platillo.setVideoUrl(video.getVideoUrl());
+    Platillo saved = service.save(_platillo);
+    log.info("finish addVideo with id {} and video {}.", id, video);
+    return ResponseEntity.ok(new ApiResponse<Platillo>(saved));
   }
 
   @PostMapping("add")
