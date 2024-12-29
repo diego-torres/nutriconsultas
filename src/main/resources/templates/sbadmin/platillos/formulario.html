@@ -298,6 +298,60 @@
           </div>
         </div>
 
+        <!-- add video modal -->
+        <!-- this modal only sets the url to a youtube video -->
+        <div
+          class="modal fade"
+          id="addVideoModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="addVideoModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="addVideoModalLabel">
+                  Subir video
+                </h5>
+                <button
+                  class="close"
+                  type="button"
+                  data-dismiss="modal"
+                  aria-label="Close">
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="videoUrl">URL del video</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="videoUrl"
+                    name="videoUrl"
+                    placeholder="URL del video"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  id="addVideoButton"
+                  class="btn btn-success"
+                  disabled="true">
+                  Agregar
+                </button>
+                <button
+                  id="cancelButton"
+                  class="btn btn-danger"
+                  data-dismiss="modal">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Main Content -->
         <div id="content">
           <div th:insert="~{sbadmin/topbar :: topbar}"></div>
