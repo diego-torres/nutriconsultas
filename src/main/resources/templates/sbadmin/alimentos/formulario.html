@@ -29,13 +29,13 @@
 
   <!-- Page Wrapper -->
   <div id="wrapper">
-    <div th:include="sbadmin/dietas/sidebar :: sidebar"></div>
+    <div th:insert="~{sbadmin/dietas/sidebar :: sidebar}"></div>
     <!-- Content Wrapper -->
     <div id="content-wrapper" class="d-flex flex-column">
 
       <!-- Main Content -->
       <div id="content">
-        <div th:include="sbadmin/topbar :: topbar"></div>
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
         <!-- Begin Page Content -->
         <div class="container-fluid">
 
@@ -306,13 +306,6 @@
                             <span th:if="${#fields.hasErrors('etanol')}" th:errors="*{etanol}"></span>
                           </div>
                         </div>
-                        <div class="col-md-3">
-                          <div class="form-group">
-                            <label>Apto para Renales</label>
-                            <input type="checkbox" class="form-control" th:field="*{aptoParaRenales}">
-                            <span th:if="${#fields.hasErrors('aptoParaRenales')}" th:errors="*{aptoParaRenales}"></span>
-                          </div>
-                        </div>
                       </div>
                       <button type="submit" class="btn btn-success ">Listo!</button>
                     </form>
@@ -330,7 +323,7 @@
         </div>
         <!-- End of Main Content -->
 
-        <div th:include="sbadmin/footer :: footer"></div>
+        <div th:insert="~{sbadmin/footer :: footer}"></div>
 
       </div>
       <!-- End of Content Wrapper -->

@@ -6,8 +6,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import com.nutriconsultas.controller.AbstractAuthorizedController;
+
 @Controller
-public class DietaController {
+public class DietaController extends AbstractAuthorizedController {
   private static Logger logger = LoggerFactory.getLogger(DietaController.class);
   
   @GetMapping(path = "/admin/dietas")

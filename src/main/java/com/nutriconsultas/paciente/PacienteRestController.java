@@ -8,52 +8,28 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nutriconsultas.controller.AbstractGridController;
 import com.nutriconsultas.dataTables.paging.Column;
-import com.nutriconsultas.dataTables.paging.Order;
-import com.nutriconsultas.dataTables.paging.Page;
-import com.nutriconsultas.dataTables.paging.PageArray;
-import com.nutriconsultas.dataTables.paging.PagingRequest;
+import com.nutriconsultas.dataTables.paging.Direction;
+
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/rest")
-public class PacienteRestController {
-  private static final Logger logger = LoggerFactory.getLogger(PacienteRestController.class);
-  private static final Comparator<Paciente> EMPTY_COMPARATOR = (o1, o2) -> 0;
+@RequestMapping("/rest/pacientes")
+@Slf4j
+public class PacienteRestController extends AbstractGridController<Paciente> {
 
   @Autowired
-  private PacienteRepository repo;
+  private PacienteService service;
 
-  @PostMapping("pacientes")
-  public PageArray array(@RequestBody PagingRequest pagingRequest) {
-    pagingRequest.setColumns(
-        Stream.of("nombre", "dob", "email", "phone", "gender", "responsible")
-            .map(Column::new)
-            .collect(Collectors.toList()));
-    Page<Paciente> page = getRows(pagingRequest);
-    PageArray pageArray = new PageArray();
-    pageArray.setRecordsFiltered(page.getRecordsFiltered());
-    pageArray.setRecordsTotal(page.getRecordsTotal());
-    pageArray.setDraw(page.getDraw());
-    pageArray.setData(page.getData()
-        .stream()
-        .map(this::toStringList)
-        .collect(Collectors.toList()));
-
-    return pageArray;
-  }
-
-  private List<String> toStringList(Paciente row) {
+  @Override
+  protected List<String> toStringList(Paciente row) {
+    log.debug("converting Paciente row {} to string list.", row);
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     return Arrays.asList(
         "<a href='/admin/pacientes/" + row.getId() + "'>" + row.getName() + "</a>",
@@ -64,68 +40,32 @@ public class PacienteRestController {
         row.getResponsibleName());
   }
 
-  private Page<Paciente> getRows(PagingRequest pagingRequest) {
-    return getPage(StreamSupport
-        .stream(repo.findAll().spliterator(), false)
-        .collect(Collectors.toList()), pagingRequest);
+  @Override
+  protected List<Paciente> getData() {
+    log.debug("getting all Paciente records.");
+    return service.findAll();
   }
 
-  private Page<Paciente> getPage(List<Paciente> rows, PagingRequest pagingRequest) {
-    List<Paciente> filtered = rows.stream()
-        .sorted(sortRows(pagingRequest))
-        .filter(filterRows(pagingRequest))
-        .skip(pagingRequest.getStart())
-        .limit(pagingRequest.getLength())
-        .collect(Collectors.toList());
-
-    long count = rows.stream()
-        .filter(filterRows(pagingRequest))
-        .count();
-
-    Page<Paciente> page = new Page<>(filtered);
-    page.setRecordsFiltered((int) count);
-    page.setRecordsTotal((int) count);
-    page.setDraw(pagingRequest.getDraw());
-
-    return page;
-  }
-
-  private Predicate<Paciente> filterRows(PagingRequest pagingRequest) {
-    if (pagingRequest.getSearch() == null || !StringUtils.hasLength(pagingRequest.getSearch().getValue())) {
-      return row -> true;
-    }
-
-    String value = pagingRequest.getSearch().getValue().toLowerCase();
-
+  @Override
+  protected Predicate<Paciente> getPredicate(String value) {
     return row -> row.getName().toLowerCase().contains(value)
         || row.getName().toLowerCase().startsWith(value)
         || row.getResponsibleName().toLowerCase().contains(value)
         || row.getResponsibleName().toLowerCase().startsWith(value);
   }
 
-  private Comparator<Paciente> sortRows(PagingRequest pagingRequest) {
-    if (pagingRequest.getOrder() == null) {
-      return EMPTY_COMPARATOR;
-    }
-
-    try {
-      Order order = pagingRequest.getOrder().get(0);
-
-      int columnIndex = order.getColumn();
-      Column column = pagingRequest.getColumns().get(columnIndex);
-
-      Comparator<Paciente> comparator = PacienteComparators.getComparator(column.getData(),
-          order.getDir());
-      if (comparator == null) {
-        return EMPTY_COMPARATOR;
-      }
-
-      return comparator;
-
-    } catch (Exception e) {
-      logger.error(e.getMessage(), e);
-    }
-
-    return EMPTY_COMPARATOR;
+  @Override
+  protected Comparator<Paciente> getComparator(String column, Direction dir) {
+    log.debug("getting Paciente comparator with column {} and direction {}.", column, dir);
+    return PacienteComparators.getComparator(column, dir);
   }
+
+  @Override
+  protected List<Column> getColumns() {
+    log.debug("getting Paciente columns.");
+    return Stream.of("nombre", "dob", "email", "phone", "gender", "responsible")
+        .map(Column::new)
+        .collect(Collectors.toList());
+  }
+
 }

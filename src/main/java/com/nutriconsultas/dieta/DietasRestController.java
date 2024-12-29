@@ -1,68 +1,59 @@
 package com.nutriconsultas.dieta;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nutriconsultas.controller.AbstractGridController;
 import com.nutriconsultas.dataTables.paging.Column;
-import com.nutriconsultas.dataTables.paging.Page;
-import com.nutriconsultas.dataTables.paging.PageArray;
-import com.nutriconsultas.dataTables.paging.PagingRequest;
+import com.nutriconsultas.dataTables.paging.Direction;
+
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/rest")
-public class DietasRestController {
+@RequestMapping("/rest/dietas")
+@Slf4j
+public class DietasRestController extends AbstractGridController<Dieta> {
 
   @Autowired
-  private DietaRepository repo;
+  private DietaService dietaService;
 
-  @PostMapping("dietas")
-  public PageArray array(@RequestBody PagingRequest pagingRequest) {
-    pagingRequest.setColumns(
-        Stream.of("nombre", "dob", "email", "phone", "gender", "responsible")
-            .map(Column::new)
-            .collect(Collectors.toList()));
-    Page<Dieta> page = getRows(pagingRequest);
-    PageArray pageArray = new PageArray();
-    pageArray.setRecordsFiltered(page.getRecordsFiltered());
-    pageArray.setRecordsTotal(page.getRecordsTotal());
-    pageArray.setDraw(page.getDraw());
-    pageArray.setData(page.getData()
-        .stream()
-        .map(this::toStringList)
-        .collect(Collectors.toList()));
-
-    return pageArray;
+  @Override
+  protected List<String> toStringList(Dieta row) {
+    log.debug("converting Dieta row {} to string list.", row);
+    return Arrays.asList(
+        "<a href='/admin/dietas/" + row.getId() + "'>" + row.getNombre() + "</a>");
   }
 
-  private List<String> toStringList(Dieta row) {
-    return Arrays.asList("");
-  }
-  private Page<Dieta> getRows(PagingRequest pagingRequest) {
-    return getPage(StreamSupport
-        .stream(repo.findAll().spliterator(), false)
-        .collect(Collectors.toList()), pagingRequest);
+  @Override
+  protected List<Dieta> getData() {
+    log.debug("getting all Dieta records.");
+    return dietaService.getDietas();
   }
 
-  private Page<Dieta> getPage(List<Dieta> rows, PagingRequest pagingRequest) {
-    List<Dieta> filtered = rows.stream()
-        .skip(pagingRequest.getStart())
-        .limit(pagingRequest.getLength())
+  @Override
+  protected Predicate<Dieta> getPredicate(String value) {
+    return row -> row.getNombre().toLowerCase().contains(value)
+        || row.getNombre().toLowerCase().startsWith(value);
+  }
+
+  @Override
+  protected Comparator<Dieta> getComparator(String column, Direction dir) {
+    log.debug("getting Dieta comparator with column {} and direction {}.", column, dir);
+    return DietaComparators.getComparator(column, dir);
+  }
+
+  @Override
+  protected List<Column> getColumns() {
+    return Stream.of("nombre")
+        .map(Column::new)
         .collect(Collectors.toList());
-
-    Page<Dieta> page = new Page<>(filtered);
-    page.setRecordsFiltered(0);
-    page.setRecordsTotal(0);
-    page.setDraw(pagingRequest.getDraw());
-
-    return page;
   }
 }

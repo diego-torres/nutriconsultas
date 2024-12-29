@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <!-- Favicons -->
+    <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon" />
+    <link
+      th:href="@{/eterna/assets/img/apple-touch-icon.png}"
+      rel="apple-touch-icon"
+    />
+
+    <title>Minutriporcion - Platillo</title>
+
+    <!-- Custom fonts for this template-->
+    <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css" />
+    <link th:href="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" />
+    <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet" />
+
+    <!-- Custom styles for this template-->
+    <!-- <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet" /> -->
+    <link th:href="@{/sbadmin/css/sb-admin-2.css}" rel="stylesheet" />
+    <link th:href="@{/sbadmin/vendor/select2/select2.min.css}" rel="stylesheet" />
+  </head>
+
+  <body id="page-top">
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+      <div th:insert="~{sbadmin/dietas/sidebar :: sidebar}"></div>
+      <!-- Content Wrapper -->
+      <div id="content-wrapper" class="d-flex flex-column">
+        <!-- add ingrediente modal -->
+        <div
+          class="modal fade"
+          id="addIngredientModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="addIngredientModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="addIngredientModalLabel">
+                  Agregar Ingrediente
+                </h5>
+                <button
+                  class="close"
+                  type="button"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="selIngrediente">Ingrediente</label>
+                  <select
+                    id="selIngrediente"
+                    class="form-control js-example-basic-single"
+                    required="true"
+                  >
+                    <option value="">Selecciona un alimento</option>
+                    <option
+                      th:each="alimento : ${alimentosList}"
+                      th:value="${alimento.id}"
+                      th:text="${alimento.nombreAlimento}"
+                    ></option>
+                  </select>
+                </div>
+                <div
+                  id="ingredientesLoader"
+                  class="circle-loader"
+                  style="display: none"
+                ></div>
+                <div id="ingredientesContent" style="display: none">
+                  <div class="form-group">
+                    <label for="cantidad">Cantidad</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="cantidad"
+                      name="cantidad"
+                      placeholder="Cantidad"
+                      required="true"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="unidad">Unidad</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="unidad"
+                      name="unidad"
+                      placeholder="Unidad"
+                      required="true"
+                      disabled="true"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="peso">Peso</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="peso"
+                      name="peso"
+                      placeholder="peso"
+                      required="true"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  id="addIngredientButton"
+                  class="btn btn-success"
+                  disabled="true"
+                >
+                  Agregar
+                </button>
+                <button
+                  id="cancelButton"
+                  class="btn btn-danger"
+                  data-dismiss="modal"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- picture upload modal -->
+        <div
+          class="modal fade"
+          id="addImageModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="addImageModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="addImageModalLabel">
+                  Cambiar Imagen
+                </h5>
+                <button
+                  class="close"
+                  type="button"
+                  data-dismiss="modal"
+                  aria-label="Close">
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form
+                  th:action="@{/admin/platillos/{id}/picture(id=${platillo.id})}"
+                  method="post"
+                  enctype="multipart/form-data">
+                  <div class="form-group custom-file">
+                    <input
+                      type="file"
+                      class="custom-file-input"
+                      id="imgPlatillo"
+                      name="imgPlatillo"
+                      accept="image/*"
+                      required
+                    />
+                    <label class="custom-file-label" for="imgPlatillo">
+                      Seleccionar archivo
+                    </label>
+                  </div>
+                  <hr />
+                  <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                      Subir
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- add ingesta modal -->
+        <div
+          class="modal fade"
+          id="addIngestaModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="addIngestaModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="addIngestaModalLabel">
+                  Agregar Ingesta Sugerida
+                </h5>
+                <button
+                  class="close"
+                  type="button"
+                  data-dismiss="modal"
+                  aria-label="Close">
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="ingesta">Ingesta</label>
+                  <select
+                    id="ingesta"
+                    class="form-control js-example-basic-single"
+                    required="true">
+                    <option value="">Selecciona una ingesta</option>
+                    <option value="Al despertar">Al Despertar</option>
+                    <option value="Desayuno">Desayuno</option>
+                    <option value="Almuerzo">Almuerzo</option>
+                    <option value="Comida">Comida</option>
+                    <option value="Merienda">Merienda</option>
+                    <option value="Cena">Cena</option>
+                    <option value="Colaci&oacute;n">Colaci&oacute;n</option>
+                    <option value="Despu&eacute;s de entrenar">Despu&eacute;s de entrenar</option>
+                    <option value="Antes de entrenar">Antes de entrenar</option>
+                    <option value="Antes de dormir">Antes de dormir</option>
+                  </select>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  id="addIngestaButton"
+                  class="btn btn-success"
+                  disabled="true">
+                  Agregar
+                </button>
+                <button
+                  id="cancelButton"
+                  class="btn btn-danger"
+                  data-dismiss="modal">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- add pdf modal -->
+        <div
+          class="modal fade"
+          id="addPdfModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="addPdfModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="addPdfModalLabel">
+                  Subir archivo PDF
+                </h5>
+                <button
+                  class="close"
+                  type="button"
+                  data-dismiss="modal"
+                  aria-label="Close">
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form
+                  th:action="@{/admin/platillos/{id}/pdf(id=${platillo.id})}"
+                  method="post"
+                  enctype="multipart/form-data">
+                  <div class="form-group custom-file">   
+                    <input
+                      type="file"
+                      class="custom-file-input"
+                      id="pdfPlatillo"
+                      name="pdfPlatillo"
+                      accept=".pdf"
+                      required
+                    />
+                    <label for="pdfPlatillo" class="custom-file-label">Archivo PDF</label>
+                  </div>
+                  <hr />
+                  <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                      Subir
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- add video modal -->
+        <!-- this modal only sets the url to a youtube video -->
+        <div
+          class="modal fade"
+          id="addVideoModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="addVideoModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="addVideoModalLabel">
+                  Subir video
+                </h5>
+                <button
+                  class="close"
+                  type="button"
+                  data-dismiss="modal"
+                  aria-label="Close">
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="videoUrl">URL del video</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="videoUrl"
+                    name="videoUrl"
+                    placeholder="URL del video"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  id="addVideoButton"
+                  class="btn btn-success">
+                  Agregar
+                </button>
+                <button
+                  id="cancelButton"
+                  class="btn btn-danger"
+                  data-dismiss="modal">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div id="content">
+          <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+          <!-- Begin Page Content -->
+          <div class="container-fluid">
+            <!-- Page Heading -->
+            <div
+              class="d-sm-flex align-items-center justify-content-between mb-4"
+            >
+              <h1
+                th:if="${platillo.id == null || platillo.id == 0}"
+                class="h3 mb-0 text-gray-800"
+              >
+                Nuevo Alimento
+              </h1>
+              <h1
+                th:unless="${platillo.id == null || platillo.id == 0}"
+                class="h3 mb-0 text-gray-800"
+                th:text="${platillo.name}"
+              >
+                Modificar alimento
+              </h1>
+            </div>
+
+            <!-- Content Row -->
+            <div class="row">
+              <div class="col-lg-4">
+                <div class="card mb-4">
+                  <div class="card-body text-center">
+                    <div class="img-wrapper">
+                      <img th:src="@{${platillo.imageUrl}}"
+                        class="img-fluid img-replaceable"
+                        alt="Imagen del platillo"
+                        />
+                      <div class="img-overlay">
+                        <button
+                          type="button"
+                          class="btn btn-primary"
+                          data-toggle="modal"
+                          data-target="#addImageModal"
+                        >
+                          <i class="fas fa-upload"></i>
+                          Cambiar Imagen
+                        </button>
+                      </div>
+                    </div>
+                    <h5 class="card-title mt-3" th:text="${platillo.name}">
+                      Imagen del platillo
+                    </h5>
+                    <div class="d-flex justify-content-center mb-2">
+                      <!-- for each element in the ingestas list, draw a span label -->
+                      <span
+                        th:each="ingesta : ${ingestas}"
+                        th:text="${ingesta}"
+                        class="label label-info label-ingesta"></span>
+                      <a
+                        href="#"
+                        class="btn btn-primary btn-sm ml-2"
+                        data-toggle="modal"
+                        data-target="#addIngestaModal">
+                        <i class="fas fa-plus"></i> Ingesta Sugerida
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="card mb-4 mb-lg-0">
+                  <div class="card-body p-0">
+                    <ul class="list-group list-group-flush rounded-3">
+                      <li class="list-group-item d-flex justify-content-between align-items-center p-3" >
+                        <span><i class="fas fa-bolt fa-lg text-warning"></i> Energ&iacute;a:</span>
+                        <p class="mb-0" th:text="${platillo.energia + ' Kcal'}">0.0 Kcal</p>
+                      </li>
+                      <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <span><i class="fas fa-dumbbell fa-lg" style="color: #333333"></i> Protenina</span>
+                        <!-- display proteina formatted to 2 decimal places -->
+                        <p class="mb-0" th:text="${#numbers.formatDecimal(platillo.proteina, 1, 2)}">0.0</p>
+                      </li>
+                      <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <span><i class="fas fa-heart fa-lg" style="color: #f00"></i> L&iacute;pidos</span>
+                        <p class="mb-0" th:text="${#numbers.formatDecimal(platillo.lipidos, 1, 2)}">0.0</p>
+                      </li>
+                      <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <span><i class="fas fa-atom fa-lg" style="color: #dd0"></i> Carbohidratos</span>
+                        <p class="mb-0" th:text="${#numbers.formatDecimal(platillo.hidratosDeCarbono, 1, 2)}">0.0</p>
+                      </li>
+                      <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <span><i class="fas fa-cubes fa-lg" style="color: #333"></i> Azucar</span>
+                        <p class="mb-0" th:text="${#numbers.formatDecimal(platillo.azucarPorEquivalente, 1, 2)}">0.0</p>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-8">
+                <form th:action="@{save}" th:object="${platillo}" method="post">
+                  <input type="hidden" th:field="*{id}" />
+                  <div class="card mb-4">
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-sm-3">
+                          <p class="mb-0">Nombre del platillo</p>
+                        </div>
+                        <div class="col-sm-9">
+                          <!-- input for platillo.name -->
+                          <input
+                            type="text"
+                            th:field="*{name}"
+                            class="form-control"
+                            autocomplete="nombre-platillo"
+                            required
+                          />
+                        </div>
+                      </div>
+                      <hr />
+                      <div class="row">
+                        <div class="col-sm-3">
+                          <p class="mb-0">Descripci&oacute;n</p>
+                        </div>
+                        <div class="col-sm-9">
+                          <!-- input for platillo.description -->
+                          <input
+                            type="text"
+                            th:field="*{description}"
+                            class="form-control"
+                          />
+                        </div>
+                      </div>
+                      <!-- submit button -->
+                      <hr />
+                      <div class="row">
+                        <div class="col-sm-3"></div>
+                        <div class="col-sm-9">
+                          <button
+                            type="submit"
+                            class="btn btn-primary"
+                            th:text="${platillo.id == null || platillo.id == 0 ? 'Guardar' : 'Actualizar'}"
+                          >
+                            Guardar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+                <!-- new row -->
+                <div class="row">
+                  <!-- new column -->
+                  <div class="col-md-12">
+                    <!-- card that contains a tabular control for ingredientes and multimedia -->
+                    <div class="card mb-4 mb-md-0">
+                      <div class="card-body">
+                        <!-- tab selectors for ingredientes and multimedia tabs -->
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                          <li class="nav-item" role="presentation">
+                            <a
+                              class="nav-link active"
+                              id="ingredientes-tab"
+                              data-toggle="tab"
+                              href="#ingredientes"
+                              role="tab"
+                              aria-controls="ingredientes"
+                              aria-selected="true"
+                              >Ingredientes</a
+                            >
+                          </li>
+                          <li class="nav-item" role="presentation">
+                            <a
+                              class="nav-link"
+                              id="multimedia-tab"
+                              data-toggle="tab"
+                              href="#multimedia"
+                              role="tab"
+                              aria-controls="multimedia"
+                              aria-selected="false"
+                              >Modo de preparaci&oacute;n</a
+                            >
+                          </li>
+                        </ul>
+                        <!-- tabular control for ingredientes and multimedia -->
+                        <div class="tab-content" id="myTabContent">
+                          <!-- tab for ingredientes -->
+                          <div
+                            class="tab-pane fade show active"
+                            id="ingredientes"
+                            role="tabpanel"
+                            aria-labelledby="ingredientes-tab"
+                          >
+                            <!-- add button -->
+                            <div
+                              class="d-sm-flex align-items-center justify-content-between mb-4"
+                            >
+                              <button
+                                type="button"
+                                class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
+                                data-toggle="modal"
+                                data-target="#addIngredientModal"
+                              >
+                                <i class="fas fa-plus fa-sm text-white-50"></i>
+                                Agregar Ingrediente
+                              </button>
+                            </div>
+                            <!-- ingredientes dataTable -->
+                            <table
+                              id="ingredientesGrid"
+                              class="table table-striped table-bordered dt-responsive nowrap"
+                              style="width: 100%"
+                            >
+                              <thead>
+                                <tr>
+                                  <th>Ingrediente</th>
+                                  <th>Cantidad</th>
+                                  <th>Unidad</th>
+                                  <th>Peso</th>
+                                  <th>Acciones</th>
+                                </tr>
+                              </thead>
+                            </table>
+                          </div>
+                          <!-- tab for multimedia -->
+                          <div
+                            class="tab-pane fade"
+                            id="multimedia"
+                            role="tabpanel"
+                            aria-labelledby="multimedia-tab">
+                            <!-- multimedia card -->
+                            <div class="card mb-4 mb-lg-0">
+                              <div class="card-body p-0">
+                                <ul class="list-group list-group-flush rounded-3">
+                                  <li class="list-group-item d-flex align-items-center p-3" >
+                                    <span><i class="fas fa-book fa-lg"></i>&nbsp;&nbsp;&nbsp;</span>
+                                    <p th:if="${platillo.pdfUrl == null || platillo.pdfUrl == '' }" class="mb-0">No hay archivo PDF con instrucciones</p>
+                                    <a target="_blank" th:unless="${platillo.pdfUrl == null || platillo.pdfUrl == '' }" class="mb-0" th:href="${platillo.pdfUrl}"> Instrucciones en PDF</a>
+                                    &nbsp;&nbsp;&nbsp;<a href="#" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addPdfModal">
+                                      <i class="fas fa-upload"></i>
+                                      Subir
+                                    </a>
+                                  </li>
+                                  <li class="list-group-item d-flex align-items-center p-3">
+                                    <span><i class="fas fa-video fa-lg"></i>&nbsp;&nbsp;&nbsp;</span>
+                                    <!-- display proteina formatted to 2 decimal places -->
+                                    <p th:if="${platillo.videoUrl == null || platillo.videoUrl == '' }" class="mb-0">No hay video con instrucciones</p>
+                                    <a target="_blank" th:unless="${platillo.videoUrl == null || platillo.videoUrl == '' }" class="mb-0" th:href="${platillo.videoUrl}"> Instrucciones en video</a>
+                                    &nbsp;&nbsp;&nbsp;<a href="#" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addVideoModal">
+                                      <i class="fas fa-upload"></i>
+                                      Subir
+                                    </a>
+                                  </li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- /.container-fluid -->
+        </div>
+        <!-- End of Main Content -->
+
+        <div th:insert="~{sbadmin/footer :: footer}"></div>
+      </div>
+      <!-- End of Content Wrapper -->
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Bootstrap core JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+    <script
+      th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"
+    ></script>
+
+    <!-- Core plugin JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/datatables/jquery.dataTables.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/select2/select2.min.js}"></script>
+    <script th:src="@{/sbadmin/js/select2.js}"></script>
+    <script lang="javascript">
+      'use strict';
+      (function ($) {
+        // initialize select2
+        $("#selIngrediente").select2({
+          dropdownParent: $("#addIngredientModal"),
+        });
+        // initialize dataTable
+        $("#ingredientesGrid").DataTable({
+          processing: true,
+          serverSide: true,
+          scrollX: true,
+          columnDefs: [
+           { targets: -1, orderable: false }
+          ],
+          language: {
+            emptyTable: "No hay registros",
+            lengthMenu: "Mostrar _MENU_ registros por página",
+            zeroRecords: "No se encontraron registros",
+            info: "Mostrando página _PAGE_ de _PAGES_",
+            infoEmpty: "No hay registros disponibles",
+            infoFiltered: "(filtrado de _MAX_ registros totales)",
+            loadingRecords: "Buscando...",
+            search: "Buscar:",
+            paginate: {
+              first: "Inicio",
+              last: "Fin",
+              next: "Siguiente",
+              previous: "Anterior",
+            },
+          },
+          ajax: {
+            url: "/rest/platillos/" + $("#id").val() + "/ingredientes/data-table",
+            type: "POST",
+            dataType: "json",
+            contentType: "application/json",
+            data: function (d) {
+              return JSON.stringify(d);
+            },
+            error: function (xhr, error, thrown) {
+              console.error(xhr);
+              console.error(error);
+              console.error(thrown);
+            },
+          },
+        });
+
+        //$("#ingredientesGrid").DataTable().ajax.reload();
+
+        // load content on change
+        $("#selIngrediente").on("change", function () {
+          var id = $(this).val();
+          if (id != "") {
+            $("#ingredientesLoader").show();
+            $("#ingredientesContent").hide();
+            $.ajax({
+              url: "/rest/alimentos/" + id,
+              type: "GET",
+              success: function (response) {
+                console.debug(response);
+                $("#cantidad").val(response.fractionalCantSugerida);
+                $("#peso").val(response.pesoNeto);
+                $("#unidad").val(response.unidad);
+                $("#ingredientesLoader").hide();
+                $("#ingredientesContent").show();
+                // enable add button
+                $("#addIngredientButton").prop("disabled", false);
+              },
+            });
+          }
+        });
+        // reset form on modal close
+        $("#addIngredientModal").on("hidden.bs.modal", function () {
+          $("#ingredientesContent").hide();
+          $("#selIngrediente").val("");
+          $("#selIngrediente").trigger("change");
+          $("#cantidad").val("");
+          $("#unidad").val("");
+          $("#peso").val("");
+          $("#addIngredientButton").prop("disabled", true);
+        });
+        // add ingredient button
+        $("#addIngredientButton").on("click", function () {
+          var id = $("#selIngrediente").val();
+          var cantidad = $("#cantidad").val();
+          var peso = $("#peso").val();
+          var unidad = $("#unidad").val();
+          var nombre = $("#selIngrediente option:selected").text();
+          // add record using platillo REST API
+          $.ajax({
+            url: "/rest/platillos/" + $("#id").val() + "/ingredientes/add",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+              alimentoId: id,
+              cantidad: cantidad,
+              peso: peso,
+            }),
+            success: function (response) {
+              // page reload
+              location.reload();
+            },
+          });
+        });
+
+        // activate ingesta add button on ingesta select change
+        $("#ingesta").on("change", function () {
+          var ingesta = $(this).val();
+          if (ingesta != "") {
+            $("#addIngestaButton").prop("disabled", false);
+          } else {
+            $("#addIngestaButton").prop("disabled", true);
+          }
+        });
+
+        // add ingesta button
+        $("#addIngestaButton").on("click", function () {
+          var ingesta = $("#ingesta").val();
+          // add record using platillo REST API
+          $.ajax({
+            url: "/rest/platillos/" + $("#id").val() + "/ingestas/add",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+              ingesta: ingesta,
+            }),
+            success: function (response) {
+              // page reload
+              location.reload();
+            },
+          });
+        });
+
+        // delete ingesta on label click
+        $(document).on("click", ".label-ingesta", function (event) {
+          var ingesta = $(event.currentTarget).text();
+          swal({
+            title: "Borrar Ingesta !",
+            text: "Esta seguro que desea borrar la ingesta?",
+            type: "warning",
+            showCancelButton: true,
+            closeOnConfirm: false,
+            showLoaderOnConfirm: true,
+            confirmButtonColor: "#5cb85c",
+            cancelButtonColor: "#d33",
+            cancelButtonText: "No",
+            confirmButtonText: "Si",
+          },
+          function () {
+            $.ajax({
+              url: "/rest/platillos/" + $("#id").val() + "/ingestas/" + ingesta,
+              type: "DELETE",
+              success: function (response) {
+                swal({
+                  title: "Borrado!",
+                  text: "La ingesta ha sido borrada.",
+                  type: "success",
+                  timer: 2000,
+                });
+                location.reload();
+              },
+              error: function (error) {
+                swal({
+                  title: "Error!",
+                  text: error.responseJSON.message,
+                  type: "error",
+                  timer: 5000,
+                });
+              },
+            });
+          }
+        ); 
+        });
+
+        // add video button
+        $("#addVideoButton").on("click", function () {
+          var videoUrl = $("#videoUrl").val();
+          // add record using platillo REST API
+          $.ajax({
+            url: "/rest/platillos/" + $("#id").val() + "/video/add",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+              videoUrl: videoUrl,
+            }),
+            success: function (response) {
+              // page reload
+              location.reload();
+            },
+          });
+        });
+
+        // add ingesta button
+        $("#imgPlatillo").on("change", function () {
+          var fileName = $(this).val().split("\\").pop();
+          $(this).next(".custom-file-label").addClass("selected").html(fileName);
+        });
+
+        // add pdf instructions button
+        $("#pdfPlatillo").on("change", function () {
+          var fileName = $(this).val().split("\\").pop();
+          $(this).next(".custom-file-label").addClass("selected").html(fileName);
+        });
+
+        $(document).on('click', '.delete-btn', function (event) {
+          const id = $(event.currentTarget).data('id');
+          swal({
+            title: 'Borrar Ingrediente !',
+            text: 'Esta seguro que desea borrar el ingrediente?',
+            type: 'warning',
+            showCancelButton: true,
+            closeOnConfirm: false,
+            showLoaderOnConfirm: true,
+            confirmButtonColor: '#5cb85c',
+            cancelButtonColor: '#d33',
+            cancelButtonText: 'No',
+            confirmButtonText: 'Si',
+          },
+            function () {
+              $.ajax({
+                url: "/rest/platillos/" + $("#id").val() + "/ingredientes/" + id,
+                type: 'DELETE',
+                DataType: 'json',
+                success: function (response) {
+                  swal({
+                    title: 'Borrado!',
+                    text: 'El ingrediente ha sido borrado.',
+                    type: 'success',
+                    timer: 2000,
+                  });
+                  $('#ingredientesGrid').DataTable().ajax.reload(null, false);
+                  location.reload();
+                },
+                error: function (error) {
+                  swal({
+                    title: 'Error!',
+                    text: error.responseJSON.message,
+                    type: 'error',
+                    timer: 5000,
+                  })
+                }
+              });
+            });
+        });
+
+      })(jQuery);
+    </script>
+  </body>
+</html>

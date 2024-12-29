@@ -1,0 +1,21 @@
+id,acidoAscorbico,acidoFolico,agMonoinsaturados,agPoliinsaturados,agSaturados,azucarPorEquivalente,calcio,cantSugerida,cargaGlicemica,clasificacion,colesterol,energia,etanol,fibra,fosforo,hidratosDeCarbono,hierro,hierroNoHem,indiceGlicemico,lipidos,pesoBrutoRedondeado,pesoNeto,potasio,proteina,selenio,sodio,unidad,vitA,nombreAlimento
+784,56.7,0,,,,12,,4.00,0,FRUTAS,,48,,45568,,15.2,,1.2,0,0.4,140,129,0,1.1,,,pieza,36.1,Naranja chica
+692,9.9,0,,,,0,,300.00,0,FRUTAS,,59,,1.4,,15,,1.7,0,0.1,30,90,0,1.1,,,g,25.2,Ciricote
+700,14.8,0,,,,0,,60.00,0,FRUTAS,,61,,0.36,,15.4,,3.2,0,0.3,60,60,0,1.1,,,g,0.4,Coloc
+706,7,7.3,,,,11.7,,1.00,0,FRUTAS,,59,,3.2,,14.9,,0.8,0,0.1,244,244,242,1.1,,,taza,66,Durazno enlatado en agua
+711,97.6,39.8,,,,45573,,1.00,0,FRUTAS,,53,,3.3,,12.7,,0.7,0,0.5,166,166,254,1.1,,,taza,44.8,Fresa rebanada
+875,21,0,,,,0,,1.00,0,FRUTAS,,62,,5.4,,14.4,,0.5,0,0.8,150,150,330,1.1,,,taza,7.5,Tuna picada
+693,14.4,2.4,,,,0,,3.00,45572,FRUTAS,,73,,2.2,,18.1,,0.2,39,0.4,198,158,273.6,1.1,,,pieza,50.4,Ciruela criolla roja o amarilla
+750,110.1,0,,,,0,,1.00,3.5,FRUTAS,,62,,1.6,,16.1,,1.2,20,0,207,145,273.9,1.2,,,pieza,486.9,mango manila
+802,1.7,0,,,,11,,0.67,0,FRUTAS,,59,,0.9,,16.1,,0.1,0,0.2,85,85,49.9,0.3,,,frasco,56.6,Papilla de mango con tapioca
+804,2,1.7,,,,11.3,,1.00,0,FRUTAS,,61,,2.3,,16.1,,0.1,0,0.3,130,130,156,0.3,,,frasco,50.7,Papilla de manzana y chabacano
+859,0.5,0.3,,,,10.8,,0.50,0,FRUTAS,,43,,0.3,,11.1,,0.1,0,0.1,29,29,7.5,0.1,,,rebanada,0.5,Salsa de arandanos en gelatina enlatada
+895,,5,,,,0,5.4,0.5,0,CEREALES SIN GRASA,,74,,0.1,,15,0.3,,0,0.2,20,20,,2.5,,0.4,taza,,Fideo cocido
+896,,0,,,,0,0,2,0,CEREALES SIN GRASA,,72,,0,,13.3,0.3,,0,1,20,20,,2.6,,399.4,cucharada,,Fideo con tomate deshidratado
+897,,4.2,,,,0.7,4.2,20,0,CEREALES SIN GRASA,,72,,0.7,,14.5,0.6,,0,0.5,20,20,,2.7,,1.1,g,,Fideo crudo
+898,,0,,,,0,0,2,0,CEREALES SIN GRASA,,72,,0,,13.3,0.3,,0,1,20,20,,2.6,,399.4,cucharada,,Fideo seco deshidratado
+899,,20,,,,1.8,107.8,1,26.6,CEREALES CON GRASA,,100,,0.8,,15.1,2,,76,3.4,35,35,,2.3,,223.3,pieza,,Wafle
+900,,17.9,,,,1,17.9,1,26.6,CEREALES CON GRASA,,97,,0.6,,13.9,1.6,,76,3.8,35,35,,2.3,,184.1,pieza,,Wafle con mantequilla
+901,,15.9,,,,0.8,15.9,1,23.6,CEREALES CON GRASA,,86,,0.4,,12.4,1.4,,769,3.3,31,31,,2,,181.7,pieza,,Wafle estilo casero
+902,,10.8,,,,1.3,17.9,1,0,CEREALES CON GRASA,,84,,1.4,,13.2,1.6,,0,2.9,35,35,,2.3,,198.5,pieza,,Wafle integral
+903,,25.8,,,,0.6,25.8,2,0,CEREALES CON GRASA,,112,,9,,16.3,2.3,,0,3.9,40,40,,3,,258.1,pieza,,Wafle miniatura

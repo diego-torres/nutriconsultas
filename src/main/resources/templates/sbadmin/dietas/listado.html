@@ -29,13 +29,13 @@
 
   <!-- Page Wrapper -->
   <div id="wrapper">
-    <div th:include="sbadmin/dietas/sidebar :: sidebar"></div>
+    <div th:insert="~{sbadmin/dietas/sidebar :: sidebar}"></div>
     <!-- Content Wrapper -->
     <div id="content-wrapper" class="d-flex flex-column">
 
       <!-- Main Content -->
       <div id="content">
-        <div th:include="sbadmin/topbar :: topbar"></div>
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
         <!-- Begin Page Content -->
         <div class="container-fluid">
 
@@ -70,7 +70,7 @@
         </div>
         <!-- End of Main Content -->
 
-        <div th:include="sbadmin/footer :: footer"></div>
+        <div th:insert="~{sbadmin/footer :: footer}"></div>
 
       </div>
       <!-- End of Content Wrapper -->
@@ -114,7 +114,7 @@
             },
           },
           "ajax": {
-            "url": '/rest/dietas',
+            "url": '/rest/dietas/data-table',
             "type": "POST",
             "dataType": "json",
             "contentType": "application/json",

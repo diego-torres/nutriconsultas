@@ -30,13 +30,13 @@
 
   <!-- Page Wrapper -->
   <div id="wrapper">
-    <div th:include="sbadmin/pacientes/sidebar :: sidebar"></div>
+    <div th:insert="~{sbadmin/pacientes/sidebar :: sidebar}"></div>
     <!-- Content Wrapper -->
     <div id="content-wrapper" class="d-flex flex-column">
 
       <!-- Main Content -->
       <div id="content">
-        <div th:include="sbadmin/topbar :: topbar"></div>
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
         <!-- Begin Page Content -->
         <div class="container-fluid">
 
@@ -68,7 +68,7 @@
                   </thead>
                 </table>
 
-                <!-- Logout Modal-->
+                <!-- Delete Consulta Modal-->
                 <div class="modal fade" id="deleteConsultaModal" tabindex="-1" role="dialog"
                   aria-labelledby="exampleModalLabel" aria-hidden="true">
                   <div class="modal-dialog" role="document">
@@ -99,7 +99,7 @@
         </div>
         <!-- End of Main Content -->
 
-        <div th:include="sbadmin/footer :: footer"></div>
+        <div th:insert="~{sbadmin/footer :: footer}"></div>
 
       </div>
       <!-- End of Content Wrapper -->
@@ -144,7 +144,7 @@
             },
           },
           "ajax": {
-            "url": '/rest/pacientes/[[(${paciente.id})]]/consultas',
+            "url": '/rest/pacientes/[[(${paciente.id})]]/consultas/data-table',
             "type": "POST",
             "dataType": "json",
             "contentType": "application/json",

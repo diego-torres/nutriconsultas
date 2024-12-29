@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.micrometer.common.lang.NonNull;
+
 @RestController
 @RequestMapping("/rest")
 public class ConsultaRestController {
@@ -17,9 +19,13 @@ public class ConsultaRestController {
   private ConsultaRepository repo;
 
   @DeleteMapping("consultas/{id}")
-  public String deleteConsulta(@PathVariable("id") Long id) {
-    repo.deleteById(id);
-    logger.info("La consulta {} ha sido borrada", id);
-    return "OK";
+  public String deleteConsulta(@PathVariable @NonNull Long id) {
+    if (id != null) {
+      repo.deleteById(id);
+      logger.info("La consulta {} ha sido borrada", id);
+      return "OK";
+    } else {
+      return "Invalid ID";
+    }
   }
 }
