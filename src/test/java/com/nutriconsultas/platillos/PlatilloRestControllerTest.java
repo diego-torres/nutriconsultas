@@ -39,7 +39,6 @@ public class PlatilloRestControllerTest {
   @Mock
   private PlatilloService platilloService;
 
-  @SuppressWarnings("null")
   @Test
   public void testAdd() {
     log.info("Starting testAdd");

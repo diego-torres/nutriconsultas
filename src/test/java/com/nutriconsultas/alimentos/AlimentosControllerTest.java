@@ -14,11 +14,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -35,7 +35,7 @@ public class AlimentosControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private AlimentoService alimentoService;
 
     @BeforeEach
@@ -65,7 +65,6 @@ public class AlimentosControllerTest {
     }
 
     @Test
-    @SuppressWarnings({ "null" })
     @WithMockUser(username = "admin", roles = { "ADMIN" })
     public void testNuevoAlimento() throws Exception {
         log.info("Starting testNuevoAlimento");
@@ -79,7 +78,6 @@ public class AlimentosControllerTest {
     }
 
     @Test
-    @SuppressWarnings({ "null" })
     @WithMockUser(username = "admin", roles = { "ADMIN" })
     public void testVerAlimento() throws Exception {
         log.info("Starting testVerAlimento");
@@ -95,7 +93,6 @@ public class AlimentosControllerTest {
     }
 
     @Test
-    @SuppressWarnings({ "null" })
     @WithMockUser(username = "admin", roles = { "ADMIN" })
     public void testAgregarNuevoAlimento() throws Exception {
         log.info("Starting testAgregarNuevoAlimento");

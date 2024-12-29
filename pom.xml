@@ -10,8 +10,7 @@
   <version>2.0-SNAPSHOT</version>
 
   <name>nutriconsultas-web</name>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
+  <url>https://minutriporcion.com</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -23,7 +22,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.2.3</version>
+    <version>3.4.1</version>
     <relativePath />
   </parent>
   <dependencies>
