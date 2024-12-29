@@ -35,7 +35,7 @@ public class IngredienteRestController extends AbstractGridItemController<Ingred
   protected List<String> toStringList(Ingrediente row) {
     log.debug("converting Ingrediente row {} to string list.", row);
     return Arrays.asList(
-        "<a href='/admin/ingredientes/" + row.getId() + "'>" + row.getAlimento().getNombreAlimento() + "</a>",
+        row.getAlimento().getNombreAlimento(),
         row.getFractionalCantSugerida(), //
         row.getUnidad(), //
         row.getPesoNeto().toString(), //

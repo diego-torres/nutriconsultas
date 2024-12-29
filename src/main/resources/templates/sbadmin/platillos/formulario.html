@@ -246,6 +246,13 @@
                         th:text="${ingesta}"
                         class="label label-info"
                       ></span>
+                      <a
+                        href="#"
+                        class="btn btn-primary btn-sm ml-2"
+                        data-toggle="modal"
+                        data-target="#addIngestaModal">
+                        <i class="fas fa-plus"></i> Ingesta Sugerida
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -253,24 +260,24 @@
                   <div class="card-body p-0">
                     <ul class="list-group list-group-flush rounded-3">
                       <li class="list-group-item d-flex justify-content-between align-items-center p-3" >
-                        <span><i class="fas fa-bolt fa-lg text-warning"></i>Energ&iacute;a:</span>
+                        <span><i class="fas fa-bolt fa-lg text-warning"></i> Energ&iacute;a:</span>
                         <p class="mb-0" th:text="${platillo.energia + ' Kcal'}">0.0 Kcal</p>
                       </li>
                       <li class="list-group-item d-flex justify-content-between align-items-center p-3">
-                        <span><i class="fas fa-dumbbell fa-lg" style="color: #333333"></i>Protenina</span>
+                        <span><i class="fas fa-dumbbell fa-lg" style="color: #333333"></i> Protenina</span>
                         <!-- display proteina formatted to 2 decimal places -->
                         <p class="mb-0" th:text="${#numbers.formatDecimal(platillo.proteina, 1, 2)}">0.0</p>
                       </li>
                       <li class="list-group-item d-flex justify-content-between align-items-center p-3">
-                        <span><i class="fas fa-heart fa-lg" style="color: #f00"></i>L&iacute;pidos</span>
+                        <span><i class="fas fa-heart fa-lg" style="color: #f00"></i> L&iacute;pidos</span>
                         <p class="mb-0" th:text="${#numbers.formatDecimal(platillo.lipidos, 1, 2)}">0.0</p>
                       </li>
                       <li class="list-group-item d-flex justify-content-between align-items-center p-3">
-                        <span><i class="fas fa-atom fa-lg" style="color: #dd0"></i>Carbohidratos</span>
+                        <span><i class="fas fa-atom fa-lg" style="color: #dd0"></i> Carbohidratos</span>
                         <p class="mb-0" th:text="${#numbers.formatDecimal(platillo.hidratosDeCarbono, 1, 2)}">0.0</p>
                       </li>
                       <li class="list-group-item d-flex justify-content-between align-items-center p-3">
-                        <span><i class="fas fa-cubes fa-lg" style="color: #333"></i>Azucar</span>
+                        <span><i class="fas fa-cubes fa-lg" style="color: #333"></i> Azucar</span>
                         <p class="mb-0" th:text="${#numbers.formatDecimal(platillo.azucarPorEquivalente, 1, 2)}">0.0</p>
                       </li>
                     </ul>
@@ -407,35 +414,33 @@
                             class="tab-pane fade"
                             id="multimedia"
                             role="tabpanel"
-                            aria-labelledby="multimedia-tab"
-                          >
-                            <!-- add button -->
-                            <div
-                              class="d-sm-flex align-items-center justify-content-between mb-4"
-                            >
-                              <button
-                                type="button"
-                                class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
-                                data-toggle="modal"
-                                data-target="#addInstructionstModal"
-                              >
-                                <i class="fas fa-plus fa-sm text-white-50"></i>
-                                Agregar Instrucciones
-                              </button>
+                            aria-labelledby="multimedia-tab">
+                            <!-- multimedia card -->
+                            <div class="card mb-4 mb-lg-0">
+                              <div class="card-body p-0">
+                                <ul class="list-group list-group-flush rounded-3">
+                                  <li class="list-group-item d-flex align-items-center p-3" >
+                                    <span><i class="fas fa-book fa-lg"></i>&nbsp;&nbsp;&nbsp;</span>
+                                    <p th:if="${platillo.pdfUrl == null || platillo.pdfUrl == '' }" class="mb-0">No hay archivo PDF con instrucciones</p>
+                                    <a th:unless="${platillo.pdfUrl == null || platillo.pdfUrl == '' }" class="mb-0" th:href="${platillo.pdfUrl}" th:text="${platillo.pdfUrl}"> Instrucciones</a>
+                                    &nbsp;&nbsp;&nbsp;<a href="#" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addPdfModal">
+                                      <i class="fas fa-upload"></i>
+                                      Subir
+                                    </a>
+                                  </li>
+                                  <li class="list-group-item d-flex align-items-center p-3">
+                                    <span><i class="fas fa-video fa-lg"></i>&nbsp;&nbsp;&nbsp;</span>
+                                    <!-- display proteina formatted to 2 decimal places -->
+                                    <p th:if="${platillo.videoUrl == null || platillo.videoUrl == '' }" class="mb-0">No hay video con instrucciones</p>
+                                    <a th:unless="${platillo.videoUrl == null || platillo.videoUrl == '' }" class="mb-0" th:href="${platillo.videoUrl}" th:text="${platillo.videoUrl}"> Video</a>
+                                    &nbsp;&nbsp;&nbsp;<a href="#" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addVideoModal">
+                                      <i class="fas fa-upload"></i>
+                                      Subir
+                                    </a>
+                                  </li>
+                                </ul>
+                              </div>
                             </div>
-                            <!-- multimedia dataTable -->
-                            <table
-                              id="multimediaGrid"
-                              class="table table-striped table-bordered dt-responsive nowrap"
-                              style="width: 100%"
-                            >
-                              <thead>
-                                <tr>
-                                  <th>Nombre</th>
-                                  <th>Acciones</th>
-                                </tr>
-                              </thead>
-                            </table>
                           </div>
                         </div>
                       </div>
@@ -608,6 +613,7 @@
                     timer: 2000,
                   });
                   $('#ingredientesGrid').DataTable().ajax.reload(null, false);
+                  location.reload();
                 },
                 error: function (error) {
                   swal({
