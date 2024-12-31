@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+  <head>
+    <title>Minutriporcion - Dietas</title>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <!-- Favicons -->
+    <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon" />
+    <link
+      th:href="@{/eterna/assets/img/apple-touch-icon.png}"
+      rel="apple-touch-icon"
+    />
+
+    <!-- Custom fonts for this template-->
+    <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css" />
+    <link th:href="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet" />
+    <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet" />
+
+    <!-- Custom styles for this template-->
+    <!-- <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet" /> -->
+    <link th:href="@{/sbadmin/css/sb-admin-2.css}" rel="stylesheet" />
+    <link th:href="@{/sbadmin/vendor/select2/select2.min.css}" rel="stylesheet" />
+  </head>
+  <body id="page-top">
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+      <div th:insert="~{sbadmin/dietas/sidebar :: sidebar}"></div>
+      <!-- Content Wrapper -->
+      <div id="content-wrapper" class="d-flex flex-column">
+        <!-- any modals here -->
+        <!-- Add platillo modal per ingesta -->
+        <div
+          class="modal fade"
+          id="platilloModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="platilloModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="platilloModalLabel">Agregar platillo</h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form th:action="@{/platillos/save}" method="post">
+                  <input type="hidden" id="ingestaField" />
+                  <div class="form-group">
+                    <label for="platillo">Platillo</label>
+                    <select
+                      class="form-control"
+                      id="platillo"
+                      name="platillo">
+                      <option th:each="platillo : ${platillos}" th:value="${platillo.id}" th:text="${platillo.name}"></option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="porciones">Porciones</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="porciones"
+                      value="1"
+                      min="1"
+                      max="3"
+                      name="porciones" />
+                  </div>
+                  <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add ingesta modal -->
+        <div
+          class="modal fade"
+          id="ingestaModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="ingestaModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="ingestaModalLabel">Agregar ingesta</h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form th:action="@{/ingestas/save}" th:object="${dieta}" method="post">
+                  <div class="form-group">
+                    <label for="nombre">Nombre</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="nombre"
+                      name="nombre"
+                      th:field="*{nombre}"
+                    />
+                  </div>
+                  <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Delete platillo modal -->
+        <div
+          class="modal fade"
+          id="deletePlatilloModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="deletePlatilloModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="deletePlatilloModalLabel">Eliminar platillo</h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <p>¿Estás seguro de eliminar este platillo?</p>
+              </div>
+              <div class="modal-footer">
+                <form method="post">
+                  <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- end of any modals -->
+        <!-- Main Content -->
+        <div id="content">
+          <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+          <!-- Begin Page Content -->
+          <div class="container-fluid">
+            <!-- Page Heading -->
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+              <h1 th:if="${dieta.id == null || dieta.id ==0}" class="h3 mb-0 text-gray-800">Nueva Dieta</h1>
+              <h1 th:unless="${dieta.id == null || dieta.id ==0}" class="h3 mb-0 text-gray-800" th:text="${dieta.nombre}">Modificar Dieta</h1>
+            </div>
+            <!-- Content Row -->
+            <div class="row">
+              <!-- Pie chart column -->
+              <div class="col-lg-4">
+                <!-- pie chart card -->
+                <div th:if="${dieta.kcal != null && dieta.kcal > 0}" class="card shadow mb-4">
+                  <!-- Card Header - Dropdown -->
+                  <div
+                      class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                      <h6 class="m-0 font-weight-bold text-primary">Distribuci&oacute;n cal&oacute;rica</h6>
+                  </div>
+                  <!-- Card Body -->
+                  <div class="card-body">
+                      <div class="chart-pie pt-4 pb-2">
+                          <canvas id="myPieChart"></canvas>
+                      </div>
+                      <div class="mt-4 text-center small">
+                          <span class="mr-2">
+                              <i class="fas fa-circle text-primary"></i> Prote&iacute;nas
+                          </span>
+                          <span class="mr-2">
+                              <i class="fas fa-circle text-success"></i> L&iacute;pidos
+                          </span>
+                          <span class="mr-2">
+                              <i class="fas fa-circle text-info"></i> Hidratos de Carbono
+                          </span>
+                      </div>
+                  </div>
+              
+                </div>
+                <div th:unless="${dieta.kcal != null && dieta.kcal > 0}" class="card shadow mb-4">
+                  <div class="card-body text-center">
+                    <div class="img-wrapper">
+                      <img th:src="@{/sbadmin/img/plato.webp}"
+                        class="img-fluid"
+                      alt="Plato del buen comer" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-8">
+                <form th:action="@{/dietas/save}" th:object="${dieta}" method="post">
+                  <input type="hidden" th:field="*{id}" />
+                  <div class="card mb-4">
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-sm-3">
+                          <p class="mb-0">Nombre de la dieta</p>
+                        </div>
+                        <div class="col-sm-9">
+                          <input
+                            type="text"
+                            class="form-control"
+                            th:field="*{nombre}"
+                            placeholder="Nombre de la dieta"
+                          />
+                      </div>
+                    </div>
+                    <!-- submit button -->
+                    <hr />
+                    <div class="row">
+                      <div class="col-sm-3"></div>
+                      <div class="col-sm-9">
+                        <!-- buton to add ingesta -->
+                        <button
+                          type="button"
+                          class="btn btn-success"
+                          data-toggle="modal"
+                          data-target="#ingestaModal">
+                          <i class="fas fa-plus"></i> Agregar ingesta
+                        </button>
+                        <button
+                          type="submit"
+                          class="btn btn-primary"
+                          th:text="${dieta.id == null || dieta.id == 0 ? 'Guardar' : 'Cambiar Nombre'}"
+                        >
+                          Guardar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+                <!-- row for tabular control -->
+                <div class="row">
+                  <!-- column for tabular control -->
+                  <div class="col-md-12">
+                    <!-- card tht contains a tabular control for each ingesta -->
+                    <div class="card mb-4 mb-md-0">
+                      <div class="card-body">
+                        <ul class="nav nav-tabs" id="ingestaTab" role="tablist">
+                          <li th:each="ingesta : ${dieta.ingestas}" class="nav-item">
+                            <a 
+                              th:id="'ingesta-tab-' + ${ingesta.id}" 
+                              th:attr="data-target='#ingesta-' + ${ingesta.id}, 
+                                      aria-controls='ingesta-' + ${ingesta.id}, 
+                                      aria-selected=${ingesta.id == minId ? 'true' : 'false'}"
+                              class="nav-link" 
+                              data-toggle="tab" 
+                              th:href="'#ingesta-' + ${ingesta.id}" 
+                              role="tab" 
+                              th:text="${ingesta.nombre}"></a>
+                          </li>
+                        </ul>
+                        <!-- tab content per ingesta, should include a grid with platillos -->
+                        <div class="tab-content" id="ingestaTabContent">
+                          <div th:each="ingesta : ${dieta.ingestas}" 
+                            th:id="'ingesta-' + ${ingesta.id}" 
+                            th:classappend="${ingesta.id == minId ? 'tab-pane fade show active' : 'tab-pane fade'}" 
+                            role="tabpanel" 
+                            th:aria-labelledby="'ingesta-tab-' + ${ingesta.id}">
+                            <!-- add platillo button -->
+                            <div
+                              class="d-sm-flex align-items-center justify-content-between mb-4"
+                              style="margin-top:15px">
+                              <button 
+                                type="button" 
+                                class="btn btn-success" 
+                                data-toggle="modal" 
+                                data-target="#platilloModal"
+                                data-ingesta="${ingesta.id}">
+                                <i class="fas fa-plus"></i> Agregar platillo</button>
+                            </div>
+                            <!-- table for platillos -->
+                            <div class="table-responsive">
+                              <table
+                                class="table table-bordered"
+                                id="dataTable"
+                                width="100%"
+                                cellspacing="0"
+                              >
+                                <thead>
+                                  <tr>
+                                    <th>Nombre</th>
+                                    <th>Porciones</th>
+                                    <th>Calor&iacute;as</th>
+                                    <th>Prote&iacute;nas</th>
+                                    <th>L&iacute;pidos</th>
+                                    <th>Hidratos de Carbono</th>
+                                    <th>Acciones</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr th:each="platillo : ${ingesta.platillos}">
+                                    <td th:text="${platillo.name}"></td>
+                                    <td th:text="${platillo.porciones}"></td>
+                                    <td th:text="${platillo.calorias}"></td>
+                                    <td th:text="${platillo.proteinas}"></td>
+                                    <td th:text="${platillo.lipidos}"></td>
+                                    <td th:text="${platillo.hidratos}"></td>
+                                    <td>
+                                      <button 
+                                        type="button" 
+                                        class="btn btn-danger" 
+                                        data-ingesta="${ingesta.id}" 
+                                        data-platillo="${platillo.id}" 
+                                        data-toggle="modal" 
+                                        data-target="#deletePlatilloModal">
+                                        <i class="fas fa-trash"></i>
+                                      </button>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                            <!-- end table-responsive -->
+                          </div>
+                          <!-- end tab pane -->
+                        </div>
+                        <!-- end tab content per ingesta -->
+                      </div>
+                      <!-- end card body -->
+                    </div>
+                    <!-- end card for tabular control -->
+                  </div>
+                  <!-- end column for tabular control -->
+                </div>
+                <!-- end row for tabular control -->
+              </div>
+            </div>
+          </div>
+          <!-- /.container-fluid -->
+        </div>
+      </div>
+      <!-- End of Content Wrapper -->
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Bootstrap core JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/datatables/jquery.dataTables.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+
+    <!-- Page level plugins -->
+    <script th:src="@{/sbadmin/vendor/chart.js/Chart.min.js}"></script>
+
+    <!-- Page level custom scripts -->
+    <script th:src="@{/sbadmin/js/demo/chart-pie-demo.js}"></script>
+
+    <script th:src="@{/sbadmin/vendor/select2/select2.min.js}"></script>
+    <script th:src="@{/sbadmin/js/select2.js}"></script>
+    <script lang="javascript">
+      'use strict';
+      (function ($) {
+        $(document).ready(function () {
+          // Set up the pie chart
+          var ctx = document.getElementById('myPieChart');
+          if(ctx) {
+            var myPieChart = new Chart(ctx, {
+              type: 'doughnut',
+              data: {
+                labels: ['Proteínas', 'Lípidos', 'Hidratos de Carbono'],
+                datasets: [
+                  {
+                    data: [
+                      /*[[${dieta.proteina}]], [[${dieta.lipidos}]], [[${dieta.hidratosDeCarbono}]]*/
+                    ],
+                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
+                    hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
+                    hoverBorderColor: 'rgba(234, 236, 244, 1)',
+                  },
+                ],
+              },
+              options: {
+                maintainAspectRatio: false,
+                tooltips: {
+                  backgroundColor: 'rgb(255,255,255)',
+                  bodyFontColor: '#858796',
+                  borderColor: '#dddfeb',
+                  borderWidth: 1,
+                  xPadding: 15,
+                  yPadding: 15,
+                  displayColors: false,
+                  caretPadding: 10,
+                },
+                legend: {
+                  display: false,
+                },
+                cutoutPercentage: 80,
+              },
+            });
+          }
+
+          // Set up the delete platillo modal
+          $('#deletePlatilloModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var ingesta = button.data('ingesta');
+            var platillo = button.data('platillo');
+            var modal = $(this);
+            modal.find('.modal-footer form').attr('action', '/platillos/delete/' + platillo);
+          });
+
+          // Set up the ingesta modal
+          $('#ingestaModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var modal = $(this);
+            modal.find('.modal-footer form').attr('action', '/ingestas/save');
+          });
+
+          // Set up the platillo modal
+          $('#platilloModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var ingesta = button.data('ingesta');
+            var modal = $(this);
+            modal.find('#ingestaField').val();
+          });
+        });
+      })(jQuery);
+    </script>
+  </body>
+</html>

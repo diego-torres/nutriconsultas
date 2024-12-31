@@ -32,6 +32,30 @@
     <div th:insert="~{sbadmin/dietas/sidebar :: sidebar}"></div>
     <!-- Content Wrapper -->
     <div id="content-wrapper" class="d-flex flex-column">
+      <!-- Add Dieta modal -->
+      <div class="modal fade" id="addDietaModal" tabindex="-1" role="dialog" aria-labelledby="addDietaModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="addDietaModalLabel">Agregar Dieta</h5>
+              <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label for="nombreDieta">Nombre</label>
+                <input type="text" class="form-control" id="nombreDieta" name="nombreDieta" placeholder="Nombre de la dieta" required />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button id="addDietaButton" class="btn btn-success">Siguiente</button>
+              <button id="cancelButton" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Main Content -->
       <div id="content">
@@ -42,6 +66,9 @@
           <!-- Page Heading -->
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Lista de Dietas</h1>
+            <button type="button" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" data-toggle="modal" data-target="#addDietaModal">
+              <i class="fas fa-plus fa-sm text-white-50"></i> Agregar Dieta
+            </button>
           </div>
 
           <!-- Content Row -->
@@ -53,11 +80,13 @@
                     style="width: 100%;">
                     <thead>
                       <tr>
-                        <th>Folio</th>
-                        <th>Nombre</th>
-                        <th>kcal</th>
-                        <th>prot</th>
-                        <th>lip</th>
+                        <th>Dieta</th>
+                        <th>Ingestas</th>
+                        <th>Distribuci&oacute;n</th>
+                        <th>Kcal</th>
+                        <th>Prot</th>
+                        <th>Lip</th>
+                        <th>H.C.</th>
                       </tr>
                     </thead>
                   </table>
@@ -122,6 +151,21 @@
               return JSON.stringify(d);
             }
           },
+        });
+
+        $('#addDietaButton').click(function () {
+          var nombreDieta = $('#nombreDieta').val();
+          $.ajax({
+            url: '/rest/dietas/add',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+              nombre: nombreDieta
+            }),
+            success: function (data) {
+              window.location.href = '/admin/dietas/' + data.id;
+            }
+          });
         });
 
       })(jQuery);

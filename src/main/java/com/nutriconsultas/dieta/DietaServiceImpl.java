@@ -21,9 +21,9 @@ public class DietaServiceImpl implements DietaService {
     }
 
     @Override
-    public void saveDieta(@NonNull Dieta dieta) {
+    public Dieta saveDieta(@NonNull Dieta dieta) {
         log.info("Saving dieta with id: " + dieta.getId());
-        dietaRepository.save(dieta);
+        return dietaRepository.save(dieta);
     }
 
     @Override
