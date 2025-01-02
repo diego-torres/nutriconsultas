@@ -277,10 +277,11 @@
                             th:classappend="${ingesta.id == minId ? 'tab-pane fade show active' : 'tab-pane fade'}" 
                             role="tabpanel" 
                             th:aria-labelledby="'ingesta-tab-' + ${ingesta.id}">
-                            <!-- add platillo button -->
+                            <!-- ingesta action buttons -->
                             <div
-                              class="d-sm-flex align-items-center justify-content-between mb-4"
+                              class="d-sm-flex align-items-center mb-4"
                               style="margin-top:15px">
+                              <!-- add platillo button -->
                               <button 
                                 type="button" 
                                 class="btn btn-success" 
@@ -288,6 +289,28 @@
                                 data-target="#platilloModal"
                                 data-ingesta="${ingesta.id}">
                                 <i class="fas fa-plus"></i> Agregar platillo</button>
+                              <!-- cambiar nombre de ingesta button -->
+                              <button 
+                                type="button" 
+                                class="btn btn-primary" 
+                                data-ingesta="${ingesta.id}" 
+                                data-toggle="modal" 
+                                data-target="#ingestaModal" style="margin-left:15px">
+                                <i class="fas fa-edit"></i> Cambiar nombre</button>
+
+                              <!-- remove ingesta button -->
+                              <button 
+                                type="button" 
+                                class="btn btn-danger" 
+                                data-ingesta="${ingesta.id}" 
+                                data-toggle="modal" 
+                                data-target="#deleteIngestaModal" style="margin-left:15px">
+                                <i class="fas fa-trash"></i> Eliminar ingesta</button>
+                            </div>
+                            <!-- remove ingesta button -->
+                            <div
+                              class="d-sm-flex align-items-center justify-content-between mb-4">
+                              
                             </div>
                             <!-- table for platillos -->
                             <div class="table-responsive">
