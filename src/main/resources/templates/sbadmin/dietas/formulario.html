@@ -107,15 +107,14 @@
                 </button>
               </div>
               <div class="modal-body">
-                <form th:action="@{/ingestas/save}" th:object="${dieta}" method="post">
+                <form th:action="@{/admin/dietas/{id}/ingestas/add(id=${dieta.id})}" method="post">
                   <div class="form-group">
                     <label for="nombre">Nombre</label>
                     <input
                       type="text"
                       class="form-control"
-                      id="nombre"
-                      name="nombre"
-                      th:field="*{nombre}"
+                      id="ingesta"
+                      name="ingesta"
                     />
                   </div>
                   <button type="submit" class="btn btn-primary">Guardar</button>

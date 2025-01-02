@@ -9,4 +9,5 @@ public interface DietaService {
     Dieta saveDieta(@NonNull Dieta dieta);
     void deleteDieta(@NonNull Long id);
     List<Dieta> getDietas();
+    void addIngesta(Long id, String nombreIngesta);
 }
