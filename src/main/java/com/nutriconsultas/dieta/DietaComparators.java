@@ -24,8 +24,8 @@ public final class DietaComparators {
         map.put(new ComparatorKey("ingestas", Direction.desc), byIngestas.reversed());
 
         // compare kcal
-        map.put(new ComparatorKey("kcal", Direction.asc), Comparator.comparing(Dieta::getKcal));
-        map.put(new ComparatorKey("kcal", Direction.desc), Comparator.comparing(Dieta::getKcal).reversed());
+        map.put(new ComparatorKey("kcal", Direction.asc), Comparator.comparing(Dieta::getEnergia));
+        map.put(new ComparatorKey("kcal", Direction.desc), Comparator.comparing(Dieta::getEnergia).reversed());
 
         // compare proteina
         map.put(new ComparatorKey("prot", Direction.asc), Comparator.comparing(Dieta::getProteina));

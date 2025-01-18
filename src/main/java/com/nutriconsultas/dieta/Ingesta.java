@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.nutriconsultas.model.AbstractMacroNutrible;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -16,13 +17,15 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Ingesta {
+@EqualsAndHashCode(callSuper = false)
+public class Ingesta extends AbstractMacroNutrible {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -43,4 +46,11 @@ public class Ingesta {
       targetEntity = PlatilloIngesta.class, //
       fetch = FetchType.LAZY)
   private List<PlatilloIngesta> platillos = new ArrayList<>();
+
+  @OneToMany(mappedBy = "ingesta", //
+      cascade = CascadeType.ALL, //
+      orphanRemoval = true, //
+      targetEntity = AlimentoIngesta.class, //
+      fetch = FetchType.LAZY)
+  private List<AlimentoIngesta> alimentos = new ArrayList<>();
 }

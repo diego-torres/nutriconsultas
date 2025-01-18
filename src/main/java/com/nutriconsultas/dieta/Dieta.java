@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.nutriconsultas.model.AbstractMacroNutrible;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,19 +21,12 @@ import lombok.ToString;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Dieta {
+@EqualsAndHashCode(callSuper=false)
+public class Dieta extends AbstractMacroNutrible {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
   private String nombre;
-  private Integer kcal;
-
-  @Column(precision = 5)
-  private Double proteina;
-  @Column(precision = 5)
-  private Double lipidos;
-  @Column(precision = 5)
-  private Double hidratosDeCarbono;
 
   @OneToMany(mappedBy = "dieta", 
     cascade = jakarta.persistence.CascadeType.ALL, 

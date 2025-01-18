@@ -3,10 +3,12 @@ package com.nutriconsultas.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @MappedSuperclass
-public abstract class AbstractFraccionable {
+@EqualsAndHashCode(callSuper=false)
+public abstract class AbstractFraccionable extends AbstractNutrible {
   @Column(precision = 5)
   protected Double cantSugerida;
 

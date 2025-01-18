@@ -86,6 +86,66 @@
           </div>
         </div>
 
+        <!-- Add alimento modal per ingesta -->
+        <div
+          class="modal fade"
+          id="alimentoModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="alimentoModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="alimentoModalLabel">Agregar alimento</h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form th:action="@{/alimentos/save}" method="post">
+                  <input type="hidden" id="ingestaField" />
+                  <div class="form-group">
+                    <label for="alimento">Alimento</label>
+                    <select
+                      class="form-control"
+                      id="alimento"
+                      name="alimento">
+                      <option th:each="alimento : ${alimentos}" th:value="${alimento.id}" th:text="${alimento.name}"></option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="porciones">Porciones</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="porciones"
+                      value="1"
+                      min="1"
+                      max="3"
+                      name="porciones" />
+                  </div>
+                  <div class="form-group">
+                    <label for="porciones">Tipo de porci&oacute;n</label>
+                    <select
+                      class="form-control"
+                      id="tipoPorcion"
+                      name="tipoPorcion">
+                      <option value="gramos">Gramos</option>
+                      <option value="porcion">Porci&oacute;n</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Add ingesta modal -->
         <div
           class="modal fade"
@@ -172,7 +232,7 @@
               <!-- Pie chart column -->
               <div class="col-lg-4">
                 <!-- pie chart card -->
-                <div th:if="${dieta.kcal != null && dieta.kcal > 0}" class="card shadow mb-4">
+                <div th:if="${dieta.energia != null && dieta.energia > 0}" class="card shadow mb-4">
                   <!-- Card Header - Dropdown -->
                   <div
                       class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
@@ -197,7 +257,7 @@
                   </div>
               
                 </div>
-                <div th:unless="${dieta.kcal != null && dieta.kcal > 0}" class="card shadow mb-4">
+                <div th:unless="${dieta.energia != null && dieta.energia > 0}" class="card shadow mb-4">
                   <div class="card-body text-center">
                     <div class="img-wrapper">
                       <img th:src="@{/sbadmin/img/plato.webp}"
@@ -289,6 +349,17 @@
                                 data-target="#platilloModal"
                                 data-ingesta="${ingesta.id}">
                                 <i class="fas fa-plus"></i> Agregar platillo</button>
+                              
+                              <!-- add alimento button -->
+                              <button 
+                                type="button" 
+                                class="btn btn-success" 
+                                data-toggle="modal" 
+                                data-target="#alimentoModal"
+                                data-ingesta="${ingesta.id}"
+                                style="margin-left:15px">
+                                <i class="fas fa-plus"></i> Agregar alimento</button>
+                              
                               <!-- cambiar nombre de ingesta button -->
                               <button 
                                 type="button" 
