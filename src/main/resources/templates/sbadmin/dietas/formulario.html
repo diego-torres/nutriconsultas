@@ -167,7 +167,8 @@
                 </button>
               </div>
               <div class="modal-body">
-                <form th:action="@{/admin/dietas/{id}/ingestas/add(id=${dieta.id})}" method="post">
+                <form th:action="@{/admin/dietas/{id}/ingestas/save(id=${dieta.id})}" method="post">
+                  <input type="hidden" id="ingestaId" name="ingestaId" />
                   <div class="form-group">
                     <label for="nombre">Nombre</label>
                     <input
@@ -317,13 +318,14 @@
                     <div class="card mb-4 mb-md-0">
                       <div class="card-body">
                         <ul class="nav nav-tabs" id="ingestaTab" role="tablist">
-                          <li th:each="ingesta : ${dieta.ingestas}" class="nav-item">
+                          <li th:each="ingesta : ${ingestas}" class="nav-item">
                             <a 
                               th:id="'ingesta-tab-' + ${ingesta.id}" 
                               th:attr="data-target='#ingesta-' + ${ingesta.id}, 
                                       aria-controls='ingesta-' + ${ingesta.id}, 
                                       aria-selected=${ingesta.id == minId ? 'true' : 'false'}"
-                              class="nav-link" 
+                              class="nav-link"
+                              th:classappend="${ingesta.id == minId ? 'active' : ''}" 
                               data-toggle="tab" 
                               th:href="'#ingesta-' + ${ingesta.id}" 
                               role="tab" 
@@ -347,7 +349,7 @@
                                 class="btn btn-success" 
                                 data-toggle="modal" 
                                 data-target="#platilloModal"
-                                data-ingesta="${ingesta.id}">
+                                th:attr="data-ingesta=${ingesta.id}">
                                 <i class="fas fa-plus"></i> Agregar platillo</button>
                               
                               <!-- add alimento button -->
@@ -356,7 +358,7 @@
                                 class="btn btn-success" 
                                 data-toggle="modal" 
                                 data-target="#alimentoModal"
-                                data-ingesta="${ingesta.id}"
+                                th:attr="data-ingesta=${ingesta.id}"
                                 style="margin-left:15px">
                                 <i class="fas fa-plus"></i> Agregar alimento</button>
                               
@@ -364,7 +366,7 @@
                               <button 
                                 type="button" 
                                 class="btn btn-primary" 
-                                data-ingesta="${ingesta.id}" 
+                                th:attr="data-ingesta=${ingesta.id},data-nombre=${ingesta.nombre}"
                                 data-toggle="modal" 
                                 data-target="#ingestaModal" style="margin-left:15px">
                                 <i class="fas fa-edit"></i> Cambiar nombre</button>
@@ -373,7 +375,7 @@
                               <button 
                                 type="button" 
                                 class="btn btn-danger" 
-                                data-ingesta="${ingesta.id}" 
+                                th:attr="data-ingesta=${ingesta.id}"
                                 data-toggle="modal" 
                                 data-target="#deleteIngestaModal" style="margin-left:15px">
                                 <i class="fas fa-trash"></i> Eliminar ingesta</button>
@@ -465,7 +467,7 @@
     <script th:src="@{/sbadmin/vendor/chart.js/Chart.min.js}"></script>
 
     <!-- Page level custom scripts -->
-    <script th:src="@{/sbadmin/js/demo/chart-pie-demo.js}"></script>
+    <!-- <script th:src="@{/sbadmin/js/demo/chart-pie-demo.js}"></script> -->
 
     <script th:src="@{/sbadmin/vendor/select2/select2.min.js}"></script>
     <script th:src="@{/sbadmin/js/select2.js}"></script>
@@ -524,7 +526,17 @@
           $('#ingestaModal').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget);
             var modal = $(this);
-            modal.find('.modal-footer form').attr('action', '/ingestas/save');
+            var ingestaId = button.data('ingesta');
+            var nombreIngesta = button.data('nombre');
+            if(ingestaId && ingestaId > 0) {
+              modal.find('#ingestaId').val(ingestaId);
+              modal.find('#ingesta').val(nombreIngesta);
+              modal.find('#ingestaModalLabel').text('Cambiar nombre de ingesta');
+            } else {
+              modal.find('#ingestaId').val('0');
+              modal.find('#ingesta').val('');
+              modal.find('#ingestaModalLabel').text('Agregar ingesta');
+            }
           });
 
           // Set up the platillo modal

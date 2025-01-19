@@ -52,4 +52,23 @@ public class DietaServiceImpl implements DietaService {
             dietaRepository.save(dieta);
         }
     }
+
+    @Override
+    public void renameIngesta(Long id, Long ingestaId, String nombreIngesta) {
+        log.info("Renaming ingesta in dieta with id: " + id);
+        Dieta dieta = dietaRepository.findById(id).orElse(null);
+        if (dieta != null) {
+            log.debug("dieta: {}", dieta);
+            dieta.getIngestas().forEach(ingesta -> {
+                if (ingesta.getId() == ingestaId) {
+                    log.debug("Renaming ingesta with id: {}", id);
+                    ingesta.setNombre(nombreIngesta);
+                }
+            });
+            log.debug("Saving dieta with updated ingesta {}", dieta);
+            dietaRepository.save(dieta);
+        } else {
+            log.warn("Dieta with id {} not found in an attempt to rename one of its ingestas", id);
+        }
+    }
 }

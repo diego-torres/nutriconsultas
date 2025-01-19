@@ -8,5 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class IngestaFormModel {
+  private Long ingestaId;
   private String ingesta;
 }
