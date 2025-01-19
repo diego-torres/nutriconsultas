@@ -184,6 +184,41 @@
             </div>
           </div>
         </div>
+
+        <!-- delete ingesta modal -->
+        <div
+          class="modal fade"
+          id="deleteIngestaModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="deleteIngestaModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="deleteIngestaModalLabel">Eliminar ingesta</h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <p>¿Estás seguro de eliminar esta ingesta?</p>
+              </div>
+              <div class="modal-footer">
+                <form method="post" th:action="@{/admin/dietas/{id}/ingestas/delete(id=${dieta.id})}">
+                  <input type="hidden" id="ingestaId" name="ingestaId" />
+                  <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Delete platillo modal -->
         <div
           class="modal fade"
@@ -537,6 +572,14 @@
               modal.find('#ingesta').val('');
               modal.find('#ingestaModalLabel').text('Agregar ingesta');
             }
+          });
+
+          // setup delete ingesta modal
+          $('#deleteIngestaModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var ingesta = button.data('ingesta');
+            var modal = $(this);
+            modal.find('#ingestaId').val(ingesta);
           });
 
           // Set up the platillo modal

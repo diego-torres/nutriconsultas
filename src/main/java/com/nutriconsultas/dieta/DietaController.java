@@ -84,6 +84,15 @@ public class DietaController extends AbstractAuthorizedController {
     return "redirect:/admin/dietas/" + id;
   }
 
+  @PostMapping(path = "/admin/dietas/{id}/ingestas/delete")
+  public String deleteIngesta(@PathVariable @NonNull Long id, @ModelAttribute IngestaFormModel ingestaModel, Model model) {
+    logger.debug("Eliminar ingesta con id {} de dieta con id {}", ingestaModel, id);
+    Dieta dieta = dietaService.getDieta(id);
+    dieta.getIngestas().removeIf(ingesta -> ingesta.getId().equals(ingestaModel.getIngestaId()));
+    dietaService.saveDieta(dieta);
+    return "redirect:/admin/dietas/" + id;
+  }
+
   @PostMapping(path = "/admin/dietas/save")
   public String saveDieta(@RequestParam @NonNull Long id, @RequestParam @NonNull String nombre, Model model) {
     logger.debug("Guardar dieta with id {}, {}", id, nombre);
