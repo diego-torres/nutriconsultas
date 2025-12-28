@@ -197,3 +197,69 @@ To skip linting during build (not recommended):
 ```bash
 mvn clean install -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dpmd.skip=true
 ```
+
+### CI/CD Integration
+
+The GitHub Actions workflow (`.github/workflows/maven.yml`) automatically runs linting validation on every push and pull request:
+
+1. **Lint Job** - Runs before the build:
+   - Verifies code formatting with Spring Java Format
+   - Runs Checkstyle (with strict mode enabled via `ci` profile)
+   - Runs SpotBugs
+   - Runs PMD
+   - Validates Thymeleaf templates
+   - Uploads linting reports as artifacts
+
+2. **Build Job** - Runs after linting passes:
+   - Builds the project
+   - Runs tests
+   - Uploads test results
+
+The workflow uses the `ci` Maven profile which enables strict linting (fails on errors). For local development, linting tools report issues but don't fail the build by default.
+
+**View linting results:**
+- Go to the Actions tab in GitHub
+- Click on a workflow run
+- Download the artifacts (checkstyle-results, spotbugs-results, pmd-results) to view detailed reports
+
+### Git Pre-commit Hook
+
+A pre-commit hook is installed to automatically validate and format code before each commit. The hook:
+
+1. Checks if any staged Java files need formatting
+2. Automatically formats files if needed
+3. Re-stages the formatted files
+4. Allows the commit to proceed
+
+#### Installation
+
+For new clones or to reinstall the hook:
+
+```bash
+./setup-git-hooks.sh
+```
+
+Or manually copy the hook:
+
+```bash
+cp git-hooks/pre-commit .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
+The hook will run automatically on every commit.
+
+#### Usage
+
+**To bypass the hook** (not recommended):
+
+```bash
+git commit --no-verify
+```
+
+**To manually test the hook:**
+
+```bash
+.git/hooks/pre-commit
+```
+
+**Note:** The hook formats all Java files in the project (Spring Java Format doesn't support formatting only specific files). If you have uncommitted changes, they will be formatted as well. It's recommended to commit or stash changes before committing.

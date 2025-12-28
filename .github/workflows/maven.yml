@@ -10,17 +10,99 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-
+  lint:
+    name: Lint and Format Check
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up JDK 21
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
+    - name: Cache Maven dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-m2-
+    - name: Cache Maven wrapper
+      uses: actions/cache@v4
+      if: hashFiles('.mvn/wrapper/maven-wrapper.properties') != ''
+      with:
+        path: ~/.m2/wrapper
+        key: ${{ runner.os }}-maven-wrapper-${{ hashFiles('.mvn/wrapper/maven-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-wrapper-
+    - name: Verify code formatting
+      run: mvn -B spring-javaformat:check
+    - name: Run Checkstyle
+      run: mvn -B checkstyle:check -Pci
+    - name: Run SpotBugs
+      run: mvn -B spotbugs:check
+    - name: Run PMD
+      run: mvn -B pmd:check
+    - name: Validate Thymeleaf templates
+      run: mvn -B test-compile exec:java -Dexec.mainClass="com.nutriconsultas.ThymeleafValidator" -Dexec.args="src/main/resources/templates"
+    - name: Upload Checkstyle results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: checkstyle-results
+        path: target/checkstyle-result.xml
+        retention-days: 7
+    - name: Upload SpotBugs results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: spotbugs-results
+        path: target/spotbugsXml.xml
+        retention-days: 7
+    - name: Upload PMD results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: pmd-results
+        path: target/pmd.xml
+        retention-days: 7
+
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+    - name: Cache Maven dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-m2-
+    - name: Cache Maven wrapper
+      uses: actions/cache@v4
+      if: hashFiles('.mvn/wrapper/maven-wrapper.properties') != ''
+      with:
+        path: ~/.m2/wrapper
+        key: ${{ runner.os }}-maven-wrapper-${{ hashFiles('.mvn/wrapper/maven-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-wrapper-
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: target/surefire-reports
+        retention-days: 7
