@@ -57,15 +57,19 @@
                 </button>
               </div>
               <div class="modal-body">
-                <form th:action="@{/platillos/save}" method="post">
-                  <input type="hidden" id="ingestaField" />
+                <form th:action="@{/admin/dietas/{id}/platillos/save(id=${dieta.id})}" method="post">
+                  <input type="hidden" id="ingestaPlatillo" name="ingestaPlatillo" />
                   <div class="form-group">
                     <label for="platillo">Platillo</label>
                     <select
-                      class="form-control"
+                      class="form-control js-example-basic-single"
                       id="platillo"
-                      name="platillo">
-                      <option th:each="platillo : ${platillos}" th:value="${platillo.id}" th:text="${platillo.name}"></option>
+                      name="platillo"
+                      style="width: 100%">
+                      <option 
+                        th:each="platillo : ${platillos}" 
+                        th:value="${platillo.id}" 
+                        th:text="${platillo.name}"></option>
                     </select>
                   </div>
                   <div class="form-group">
@@ -390,7 +394,7 @@
                               <!-- add alimento button -->
                               <button 
                                 type="button" 
-                                class="btn btn-success" 
+                                class="btn btn-warning" 
                                 data-toggle="modal" 
                                 data-target="#alimentoModal"
                                 th:attr="data-ingesta=${ingesta.id}"
@@ -510,6 +514,15 @@
       'use strict';
       (function ($) {
         $(document).ready(function () {
+
+          // initialize select2 for platillo
+          $('#platillo').select2({
+            placeholder: 'Selecciona un platillo',
+            allowClear: true,
+            dropdownParent: '#platilloModal',
+            width:'resolve'
+          });
+
           // Set up the pie chart
           var ctx = document.getElementById('myPieChart');
           if(ctx) {
@@ -547,6 +560,14 @@
               },
             });
           }
+
+          // Set up the add platillo modal
+          $('#platilloModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var ingesta = button.data('ingesta');
+            var modal = $(this);
+            modal.find('#ingestaPlatillo').val(ingesta);
+          });
 
           // Set up the delete platillo modal
           $('#deletePlatilloModal').on('show.bs.modal', function (event) {
