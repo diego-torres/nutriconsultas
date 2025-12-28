@@ -1,6 +1,15 @@
 # nutriconsultas
 registro de consultorio de nutrición
 
+## Contributing
+
+When creating a pull request, please use the [PR template](.github/pull_request_template.md) which includes checklists for:
+- Spring Boot best practices
+- Thymeleaf template guidelines
+- Code quality requirements
+- Testing requirements
+- Security and performance considerations
+
 ## Development Setup
 
 ### Prerequisites
