@@ -24,6 +24,10 @@ This is a Spring Boot 3.4.1 web application for managing a nutrition consultatio
 - **SpotBugs**: Static analysis for bugs
 - **PMD**: Code quality analysis
 - **Thymeleaf Validator**: Validates template syntax
+  - Modular architecture with per-template validators
+  - Package: `com.nutriconsultas.validation.template`
+  - Each template group has its own validator defining required mock model variables
+  - To add a validator: extend `BaseTemplateValidator` and register in `TemplateValidatorRegistry`
 - All tools run during build lifecycle
 
 ### Code Style
@@ -98,6 +102,10 @@ This is a Spring Boot 3.4.1 web application for managing a nutrition consultatio
 6. Access model attributes with `${attributeName}`
 7. Use `th:text` for text content, `th:utext` for HTML content
 8. Validate templates using ThymeleafValidator
+9. **Template Validation**: When creating new templates, ensure a validator exists in `com.nutriconsultas.validation.template` package
+   - If a template needs specific mock variables, create a validator extending `BaseTemplateValidator`
+   - Register the validator in `TemplateValidatorRegistry`
+   - Validators define mock model variables needed for template validation
 
 ### Database
 1. Use JPA entities with proper relationships

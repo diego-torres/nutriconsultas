@@ -168,9 +168,71 @@ mvn pmd:check
 ```
 
 **Thymeleaf Template Validation:**
+Template validation runs automatically during the test lifecycle via `ThymeleafTemplateValidationTest`. To run it:
 ```bash
-mvn test-compile exec:java -Dexec.mainClass="com.nutriconsultas.ThymeleafValidator" -Dexec.args="src/main/resources/templates"
+mvn test -Dtest=ThymeleafTemplateValidationTest
 ```
+
+Or run all tests (which includes template validation):
+```bash
+mvn test
+```
+
+To run validation manually (standalone):
+```bash
+mvn exec:java -Dexec.mainClass="com.nutriconsultas.ThymeleafValidator" -Dexec.args="src/main/resources/templates"
+```
+
+**Note:** Template validation no longer blocks application startup. It runs during the test phase, allowing `mvn spring-boot:run` to start the application even if templates need fixes.
+
+### Template Validation Architecture
+
+The Thymeleaf validator uses a modular architecture where each template or template group has its own validator class. This allows for template-specific mock model variables to be defined based on the needs of each template.
+
+**Package Structure:**
+- `com.nutriconsultas.validation.template` - Template validator package
+  - `TemplateValidator` - Interface for template validators
+  - `BaseTemplateValidator` - Base implementation with common mocks
+  - `TemplateValidatorRegistry` - Registry that manages all validators
+  - `WebContextFactory` - Factory for creating web contexts
+  - Individual validators:
+    - `PacienteTemplateValidator` - For `sbadmin/pacientes/*` templates
+    - `PlatilloTemplateValidator` - For `sbadmin/platillos/*` templates
+    - `DietaTemplateValidator` - For `sbadmin/dietas/*` templates
+    - `AlimentoTemplateValidator` - For `sbadmin/alimentos/*` templates
+    - `EternaTemplateValidator` - For `eterna/*` templates
+    - `DefaultTemplateValidator` - Fallback for templates without specific validators
+
+**Creating a New Template Validator:**
+
+1. Create a new class extending `BaseTemplateValidator`:
+```java
+public class MyTemplateValidator extends BaseTemplateValidator {
+    @Override
+    public String getTemplatePathPattern() {
+        return "sbadmin/mymodule/*";
+    }
+    
+    @Override
+    public Map<String, Object> createMockModelVariables() {
+        Map<String, Object> variables = super.createMockModelVariables();
+        // Add template-specific mocks
+        variables.put("myObject", createMockBean("id", 0L, "name", ""));
+        return variables;
+    }
+}
+```
+
+2. Register it in `TemplateValidatorRegistry`:
+```java
+register(new MyTemplateValidator());
+```
+
+**Validation Requirements:**
+- Each template validator must implement `TemplateValidator` interface
+- Validators define mock model variables needed for their templates
+- The registry finds the appropriate validator based on template path patterns
+- Templates are validated with template-specific mocks, ensuring accurate validation
 
 ### Reports
 

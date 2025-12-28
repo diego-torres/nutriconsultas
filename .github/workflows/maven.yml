@@ -46,7 +46,7 @@ jobs:
     - name: Run PMD
       run: mvn -B pmd:check
     - name: Validate Thymeleaf templates
-      run: mvn -B test-compile exec:java -Dexec.mainClass="com.nutriconsultas.ThymeleafValidator" -Dexec.args="src/main/resources/templates"
+      run: mvn -B test -Dtest=ThymeleafTemplateValidationTest
     - name: Upload Checkstyle results
       uses: actions/upload-artifact@v4
       if: always()

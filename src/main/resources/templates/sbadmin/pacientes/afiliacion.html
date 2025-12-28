@@ -41,7 +41,7 @@
 
           <!-- Page Heading -->
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Datos de Afiliación Paciente [[(${paciente.id})]]</h1>
+            <h1 class="h3 mb-0 text-gray-800">Datos de Afiliación Paciente [[(${paciente != null ? paciente.id : ''})]]</h1>
           </div>
 
           <!-- Content Row -->
@@ -52,7 +52,7 @@
                 <div class="col-sm-10 offset-sm-1">
 
                   <div class="info-form p-5">
-                    <form th:action="@{/admin/pacientes/{id}/afiliacion(id=${paciente.id})}" th:object="${paciente}" method="POST">
+                    <form th:action="@{/admin/pacientes/{id}/afiliacion(id=${paciente != null ? paciente.id : 0})}" th:object="${paciente}" method="POST">
                       <input type="hidden" th:field="*{id}" />
                       <div class="form-group">
                         <label>Nombre<span style="color:red;">*</span></label>

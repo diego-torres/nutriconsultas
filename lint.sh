@@ -77,12 +77,12 @@ echo ""
 
 # Step 5: Validate Thymeleaf templates
 print_status "Step 5/5: Validating Thymeleaf templates..."
-if mvn exec:java@validate-thymeleaf -Dexec.mainClass="com.nutriconsultas.ThymeleafValidator" -Dexec.args="src/main/resources/templates" 2>&1 | grep -q "Validation complete"; then
+if mvn test -Dtest=ThymeleafTemplateValidationTest -q; then
     print_status "✓ Thymeleaf templates validated"
 else
     print_warning "✗ Thymeleaf validation found issues (see output above)"
-    # Try alternative approach
-    if mvn test-compile exec:java -Dexec.mainClass="com.nutriconsultas.ThymeleafValidator" -Dexec.args="src/main/resources/templates" > /dev/null 2>&1; then
+    # Try alternative approach (manual execution)
+    if mvn exec:java -Dexec.mainClass="com.nutriconsultas.ThymeleafValidator" -Dexec.args="src/main/resources/templates" > /dev/null 2>&1; then
         print_status "✓ Thymeleaf templates validated (alternative method)"
     else
         print_warning "✗ Thymeleaf validation failed - templates may have issues"

@@ -41,8 +41,8 @@
 
           <!-- Page Heading -->
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 th:if="${alimento.id == null || alimento.id == 0}" class="h3 mb-0 text-gray-800">Nuevo Alimento</h1>
-            <h1 th:unless="${alimento.id == null || alimento.id == 0}" class="h3 mb-0 text-gray-800">Modificar alimento</h1>
+            <h1 th:if="${alimento == null || alimento.id == null || alimento.id == 0}" class="h3 mb-0 text-gray-800">Nuevo Alimento</h1>
+            <h1 th:unless="${alimento == null || alimento.id == null || alimento.id == 0}" class="h3 mb-0 text-gray-800">Modificar alimento</h1>
           </div>
 
           <!-- Content Row -->
@@ -60,7 +60,7 @@
                           <div class="form-group">
                             <label>Nombre<span style="color:red;">*</span></label>
                             <input type="text" th:field="*{nombreAlimento}" class="form-control" required>
-                            <span th:if="${#fields.hasErrors('nombreAlimento')}" th:errors="*{nombreAlimento}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('nombreAlimento')}" th:errors="*{nombreAlimento}"></span>
                           </div>
                         </div>
                         <div class="col-md-6">
@@ -94,7 +94,7 @@
                               <option value="PRODUCTOS YAKULT">PRODUCTOS YAKULT</option>
                               <option value="VERDURAS">VERDURAS</option>
                             </select>
-                            <span th:if="${#fields.hasErrors('clasificacion')}" th:errors="*{clasificacion}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('clasificacion')}" th:errors="*{clasificacion}"></span>
                           </div>
                         </div>
                       </div>
@@ -103,14 +103,14 @@
                           <div class="form-group">
                             <label>Cantidad Sugerida</label>
                             <input type="text" class="form-control" th:field="*{cantSugerida}" required>
-                            <span th:if="${#fields.hasErrors('cantSugerida')}" th:errors="*{cantSugerida}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('cantSugerida')}" th:errors="*{cantSugerida}"></span>
                           </div>
                         </div>
                         <div class="col-md-6">
                           <div class="form-group">
                             <label>Unidad</label>
                             <input type="text" class="form-control" th:field="*{unidad}" required>
-                            <span th:if="${#fields.hasErrors('unidad')}" th:errors="*{unidad}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('unidad')}" th:errors="*{unidad}"></span>
                           </div>
                         </div>
                       </div>
@@ -120,7 +120,7 @@
                             <label>Peso bruto redondeado (g)</label>
                             <input type="number" step="1" class="form-control" th:field="*{pesoBrutoRedondeado}"
                               required min="1" max="300">
-                            <span th:if="${#fields.hasErrors('pesoBrutoRedondeado')}"
+                            <span th:if="${fields != null and fields.hasErrors('pesoBrutoRedondeado')}"
                               th:errors="*{pesoBrutoRedondeado}"></span>
                           </div>
                         </div>
@@ -129,7 +129,7 @@
                             <label>Peso neto (g)</label>
                             <input type="number" step="1" class="form-control" th:field="*{pesoNeto}" required min="1"
                               max="300">
-                            <span th:if="${#fields.hasErrors('pesoNeto')}" th:errors="*{pesoNeto}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('pesoNeto')}" th:errors="*{pesoNeto}"></span>
                           </div>
                         </div>
                         <div class="col-md-4">
@@ -137,7 +137,7 @@
                             <label>Energía (kcal)</label>
                             <input type="number" step="1" class="form-control" th:field="*{energia}" required min="1"
                               max="200">
-                            <span th:if="${#fields.hasErrors('energia')}" th:errors="*{energia}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('energia')}" th:errors="*{energia}"></span>
                           </div>
                         </div>
                       </div>
@@ -146,28 +146,28 @@
                           <div class="form-group">
                             <label>Proteína (g)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{proteina}" max="20">
-                            <span th:if="${#fields.hasErrors('proteina')}" th:errors="*{proteina}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('proteina')}" th:errors="*{proteina}"></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>Lípidos (g)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{lipidos}" max="10">
-                            <span th:if="${#fields.hasErrors('lipidos')}" th:errors="*{lipidos}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('lipidos')}" th:errors="*{lipidos}"></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>Hidratos de Carbono (g)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{hidratosDeCarbono}" max="20">
-                            <span th:if="${#fields.hasErrors('hidratosDeCarbono')}" th:errors="*{hidratosDeCarbono}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('hidratosDeCarbono')}" th:errors="*{hidratosDeCarbono}"></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>Fibra (g)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{fibra}" max="4">
-                            <span th:if="${#fields.hasErrors('fibra')}" th:errors="*{fibra}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('fibra')}" th:errors="*{fibra}"></span>
                           </div>
                         </div>
                       </div>
@@ -176,28 +176,28 @@
                           <div class="form-group">
                             <label>Vitamina A (&micro;g RE)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{vitA}" max="900">
-                            <span th:if="${#fields.hasErrors('vitA')}" th:errors="*{vitA}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('vitA')}" th:errors="*{vitA}"></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>Acido Ascórbico (mg)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{acidoAscorbico}" max="400">
-                            <span th:if="${#fields.hasErrors('acidoAscorbico')}" th:errors="*{acidoAscorbico}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('acidoAscorbico')}" th:errors="*{acidoAscorbico}"></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>Acido Fólico (&micro;g)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{acidoFolico}" max="100">
-                            <span th:if="${#fields.hasErrors('acidoFolico')}" th:errors="*{acidoFolico}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('acidoFolico')}" th:errors="*{acidoFolico}"></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>Hierro NO HEM (mg)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{hierroNoHem}" max="15">
-                            <span th:if="${#fields.hasErrors('hierroNoHem')}" th:errors="*{hierroNoHem}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('hierroNoHem')}" th:errors="*{hierroNoHem}"></span>
                           </div>
                         </div>
                       </div>
@@ -206,28 +206,28 @@
                           <div class="form-group">
                             <label>Potasio (mg)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{potasio}" max="999">
-                            <span th:if="${#fields.hasErrors('potasio')}" th:errors="*{potasio}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('potasio')}" th:errors="*{potasio}"></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>Índice glicémico</label>
                             <input type="number" step="1" class="form-control" th:field="*{indiceGlicemico}" max="150">
-                            <span th:if="${#fields.hasErrors('indiceGlicemico')}" th:errors="*{indiceGlicemico}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('indiceGlicemico')}" th:errors="*{indiceGlicemico}"></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>Carga glicémica</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{cargaGlicemica}" max="10">
-                            <span th:if="${#fields.hasErrors('cargaGlicemica')}" th:errors="*{cargaGlicemica}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('cargaGlicemica')}" th:errors="*{cargaGlicemica}"></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>Calcio (mg)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{calcio}" max="2000">
-                            <span th:if="${#fields.hasErrors('calcio')}" th:errors="*{calcio}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('calcio')}" th:errors="*{calcio}"></span>
                           </div>
                         </div>
                       </div>
@@ -236,28 +236,28 @@
                           <div class="form-group">
                             <label>Hierro (mg)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{hierro}" max="20">
-                            <span th:if="${#fields.hasErrors('hierro')}" th:errors="*{hierro}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('hierro')}" th:errors="*{hierro}"></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>Sodio (mg)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{sodio}" max="2000">
-                            <span th:if="${#fields.hasErrors('sodio')}" th:errors="*{sodio}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('sodio')}" th:errors="*{sodio}"></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>Azúcar por equivalente (g)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{azucarPorEquivalente}" max="10">
-                            <span th:if="${#fields.hasErrors('azucarPorEquivalente')}" th:errors="*{azucarPorEquivalente}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('azucarPorEquivalente')}" th:errors="*{azucarPorEquivalente}"></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>Selenio (&micro;g)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{selenio}" max="10">
-                            <span th:if="${#fields.hasErrors('selenio')}" th:errors="*{selenio}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('selenio')}" th:errors="*{selenio}"></span>
                           </div>
                         </div>
                       </div>
@@ -266,28 +266,28 @@
                           <div class="form-group">
                             <label>Fosforo (g)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{fosforo}" max="200">
-                            <span th:if="${#fields.hasErrors('fosforo')}" th:errors="*{fosforo}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('fosforo')}" th:errors="*{fosforo}"></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>Colesterol (mg)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{colesterol}" max="200">
-                            <span th:if="${#fields.hasErrors('colesterol')}" th:errors="*{colesterol}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('colesterol')}" th:errors="*{colesterol}"></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>AG saturados (g)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{agSaturados}" max="10">
-                            <span th:if="${#fields.hasErrors('agSaturados')}" th:errors="*{agSaturados}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('agSaturados')}" th:errors="*{agSaturados}"></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>AG monoinsaturados (g)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{agMonoinsaturados}" max="10">
-                            <span th:if="${#fields.hasErrors('agMonoinsaturados')}" th:errors="*{agMonoinsaturados}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('agMonoinsaturados')}" th:errors="*{agMonoinsaturados}"></span>
                           </div>
                         </div>
                       </div>
@@ -296,14 +296,14 @@
                           <div class="form-group">
                             <label>AG poliinsaturados (g)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{agPoliinsaturados}" max="10">
-                            <span th:if="${#fields.hasErrors('agPoliinsaturados')}" th:errors="*{agPoliinsaturados}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('agPoliinsaturados')}" th:errors="*{agPoliinsaturados}"></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div class="form-group">
                             <label>Etanol (g)</label>
                             <input type="number" step="0.1" class="form-control" th:field="*{etanol}" max="50">
-                            <span th:if="${#fields.hasErrors('etanol')}" th:errors="*{etanol}"></span>
+                            <span th:if="${fields != null and fields.hasErrors('etanol')}" th:errors="*{etanol}"></span>
                           </div>
                         </div>
                       </div>

@@ -57,7 +57,7 @@
                 </button>
               </div>
               <div class="modal-body">
-                <form th:action="@{/admin/dietas/{id}/platillos/save(id=${dieta.id})}" method="post">
+                <form th:action="@{/admin/dietas/{id}/platillos/save(id=${dieta != null ? dieta.id : 0})}" method="post">
                   <input type="hidden" id="ingestaPlatillo" name="ingestaPlatillo" />
                   <div class="form-group">
                     <label for="platillo">Platillo</label>
@@ -171,7 +171,7 @@
                 </button>
               </div>
               <div class="modal-body">
-                <form th:action="@{/admin/dietas/{id}/ingestas/save(id=${dieta.id})}" method="post">
+                <form th:action="@{/admin/dietas/{id}/ingestas/save(id=${dieta != null ? dieta.id : 0})}" method="post">
                   <input type="hidden" id="ingestaId" name="ingestaId" />
                   <div class="form-group">
                     <label for="nombre">Nombre</label>
@@ -213,7 +213,7 @@
                 <p>¿Estás seguro de eliminar esta ingesta?</p>
               </div>
               <div class="modal-footer">
-                <form method="post" th:action="@{/admin/dietas/{id}/ingestas/delete(id=${dieta.id})}">
+                <form method="post" th:action="@{/admin/dietas/{id}/ingestas/delete(id=${dieta != null ? dieta.id : 0})}">
                   <input type="hidden" id="ingestaId" name="ingestaId" />
                   <button type="submit" class="btn btn-danger">Eliminar</button>
                 </form>
@@ -264,15 +264,15 @@
           <div class="container-fluid">
             <!-- Page Heading -->
             <div class="d-sm-flex align-items-center justify-content-between mb-4">
-              <h1 th:if="${dieta.id == null || dieta.id ==0}" class="h3 mb-0 text-gray-800">Nueva Dieta</h1>
-              <h1 th:unless="${dieta.id == null || dieta.id ==0}" class="h3 mb-0 text-gray-800" th:text="${dieta.nombre}">Modificar Dieta</h1>
+              <h1 th:if="${dieta == null || dieta.id == null || dieta.id ==0}" class="h3 mb-0 text-gray-800">Nueva Dieta</h1>
+              <h1 th:unless="${dieta == null || dieta.id == null || dieta.id ==0}" class="h3 mb-0 text-gray-800" th:text="${dieta != null ? dieta.nombre : 'Modificar Dieta'}">Modificar Dieta</h1>
             </div>
             <!-- Content Row -->
             <div class="row">
               <!-- Pie chart column -->
               <div class="col-lg-4">
                 <!-- pie chart card -->
-                <div th:if="${dieta.energia != null && dieta.energia > 0}" class="card shadow mb-4">
+                <div th:if="${dieta != null && dieta.energia != null && dieta.energia > 0}" class="card shadow mb-4">
                   <!-- Card Header - Dropdown -->
                   <div
                       class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
@@ -297,7 +297,7 @@
                   </div>
               
                 </div>
-                <div th:unless="${dieta.energia != null && dieta.energia > 0}" class="card shadow mb-4">
+                <div th:unless="${dieta != null && dieta.energia != null && dieta.energia > 0}" class="card shadow mb-4">
                   <div class="card-body text-center">
                     <div class="img-wrapper">
                       <img th:src="@{/sbadmin/img/plato.webp}"
@@ -341,7 +341,7 @@
                         <button
                           type="submit"
                           class="btn btn-primary"
-                          th:text="${dieta.id == null || dieta.id == 0 ? 'Guardar' : 'Cambiar Nombre'}"
+                          th:text="${dieta == null || dieta.id == null || dieta.id == 0 ? 'Guardar' : 'Cambiar Nombre'}"
                         >
                           Guardar
                         </button>

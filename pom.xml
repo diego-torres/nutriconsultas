@@ -262,14 +262,16 @@
           </execution>
         </executions>
       </plugin>
-      <!-- Exec Plugin for Thymeleaf Validation -->
+      <!-- Exec Plugin for Thymeleaf Validation (manual execution only) -->
+      <!-- Template validation now runs as part of the test lifecycle via ThymeleafTemplateValidationTest -->
+      <!-- To run manually: mvn exec:java -Dexec.mainClass="com.nutriconsultas.ThymeleafValidator" -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.1.0</version>
         <configuration>
           <mainClass>com.nutriconsultas.ThymeleafValidator</mainClass>
-          <classpathScope>compile</classpathScope>
+          <classpathScope>test</classpathScope>
         </configuration>
         <dependencies>
           <dependency>
@@ -278,15 +280,7 @@
             <version>3.3.4</version>
           </dependency>
         </dependencies>
-        <executions>
-          <execution>
-            <id>validate-thymeleaf</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>java</goal>
-            </goals>
-          </execution>
-        </executions>
+        <!-- No executions - only for manual use -->
       </plugin>
     </plugins>
   </build>

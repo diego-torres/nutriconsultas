@@ -96,8 +96,19 @@ src/
 5. **Thymeleaf Validator**
    - Custom validator for Thymeleaf templates
    - Validates template syntax
-   - Runs during `validate` phase
-   - Command: `mvn test-compile exec:java -Dexec.mainClass="com.nutriconsultas.ThymeleafValidator"`
+   - Runs during `test` phase (via `ThymeleafTemplateValidationTest`)
+   - Command: `mvn test -Dtest=ThymeleafTemplateValidationTest` or `mvn test`
+   - Manual execution: `mvn exec:java -Dexec.mainClass="com.nutriconsultas.ThymeleafValidator"`
+   - **Architecture**: Modular validator system with per-template validators
+   - **Package**: `com.nutriconsultas.validation.template`
+   - **Key Components**:
+     - `TemplateValidator` - Interface for template validators
+     - `BaseTemplateValidator` - Base class with common mock variables
+     - `TemplateValidatorRegistry` - Manages all validators
+     - `WebContextFactory` - Creates web contexts for validation
+   - **Template Validators**: Each template group has its own validator that defines required mock model variables
+   - **Adding Validators**: Create a class extending `BaseTemplateValidator` and register it in `TemplateValidatorRegistry`
+   - **Note**: Template validation no longer blocks application startup (`mvn spring-boot:run`). It runs as part of the test lifecycle.
 
 ### Running All Linting Tools
 ```bash

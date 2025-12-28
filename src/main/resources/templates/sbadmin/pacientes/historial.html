@@ -43,7 +43,7 @@
           <!-- Page Heading -->
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Historial de Consultas</h1>
-            <a th:href="@{/admin/pacientes/{id}/consulta(id=${paciente.id})}"
+            <a th:href="@{/admin/pacientes/{id}/consulta(id=${paciente != null ? paciente.id : 0})}"
               class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
                 class="fas fa-plus fa-sm text-white-50"></i> Agregar Consulta</a>
           </div>
@@ -144,7 +144,7 @@
             },
           },
           "ajax": {
-            "url": '/rest/pacientes/[[(${paciente.id})]]/consultas/data-table',
+            "url": '/rest/pacientes/[[(${paciente != null ? paciente.id : 0})]]/consultas/data-table',
             "type": "POST",
             "dataType": "json",
             "contentType": "application/json",
