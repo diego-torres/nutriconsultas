@@ -29,40 +29,45 @@ import com.nutriconsultas.paciente.Paciente;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Consulta {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
 
-  @ManyToOne(optional = false)
-  @JoinColumn(name = "paciente_id")
-  private Paciente paciente;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-  @DateTimeFormat(pattern = "yyyy-MM-dd")
-  @Temporal(TemporalType.DATE)
-  private Date fechaConsulta;
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "paciente_id")
+	private Paciente paciente;
 
-  @Column(precision = 5)
-  @NotNull
-  @Min(10)
-  @Max(200)
-  private Double peso;
-  @Column(precision = 3)
-  @NotNull
-  @Max(3)
-  @DecimalMin(value = "0.5")
-  private Double estatura;
-  @Column(precision = 3)
-  private Double imc;
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@Temporal(TemporalType.DATE)
+	private Date fechaConsulta;
 
-  private NivelPeso nivelPeso;
-  private Integer sistolica, diastolica, pulso, indiceGlucemico;
+	@Column(precision = 5)
+	@NotNull
+	@Min(10)
+	@Max(200)
+	private Double peso;
 
-  @Column(precision = 5)
-  private Double spo2;
+	@Column(precision = 3)
+	@NotNull
+	@Max(3)
+	@DecimalMin(value = "0.5")
+	private Double estatura;
 
-  @Column(precision = 5)
-  private Double temperatura;
+	@Column(precision = 3)
+	private Double imc;
 
-  @Column(columnDefinition = "TEXT")
-  private String notasInterconsulta;  
+	private NivelPeso nivelPeso;
+
+	private Integer sistolica, diastolica, pulso, indiceGlucemico;
+
+	@Column(precision = 5)
+	private Double spo2;
+
+	@Column(precision = 5)
+	private Double temperatura;
+
+	@Column(columnDefinition = "TEXT")
+	private String notasInterconsulta;
+
 }

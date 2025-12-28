@@ -21,19 +21,22 @@ import lombok.ToString;
 @Entity
 @EqualsAndHashCode(callSuper = false)
 public class Ingrediente extends AbstractFraccionable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String description;
 
-    @ManyToOne(optional = false)
-    @JsonBackReference
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private Platillo platillo;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @ManyToOne
-    private Alimento alimento;
+	private String description;
 
-    private String unidad;
+	@ManyToOne(optional = false)
+	@JsonBackReference
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
+	private Platillo platillo;
+
+	@ManyToOne
+	private Alimento alimento;
+
+	private String unidad;
+
 }

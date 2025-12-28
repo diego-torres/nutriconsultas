@@ -16,13 +16,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @ActiveProfiles("test")
 public class DashboardControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+	@Autowired
+	private MockMvc mockMvc;
 
-    @Test
-    public void testMethodName() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/"))
-            .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.view().name("eterna/index"));
-    }
+	@Test
+	public void testMethodName() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/"))
+			.andExpect(MockMvcResultMatchers.status().isOk())
+			.andExpect(MockMvcResultMatchers.view().name("eterna/index"));
+	}
+
 }

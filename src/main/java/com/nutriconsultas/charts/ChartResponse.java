@@ -11,6 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChartResponse {
-  private List<String> labels;
-  private Map<String, Object> data;
+
+	private List<String> labels;
+
+	private Map<String, Object> data;
+
 }

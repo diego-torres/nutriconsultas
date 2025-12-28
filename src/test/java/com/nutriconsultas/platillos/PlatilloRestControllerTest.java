@@ -33,112 +33,113 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @ActiveProfiles("test")
 public class PlatilloRestControllerTest {
-  @InjectMocks
-  private PlatilloRestController platilloRestController;
 
-  @Mock
-  private PlatilloService platilloService;
+	@InjectMocks
+	private PlatilloRestController platilloRestController;
 
-  @Test
-  public void testAdd() {
-    log.info("Starting testAdd");
-    // Arrange
-    Platillo platillo = new Platillo();
-    platillo.setName("Test platillo");
-    log.debug("Platillo to add: {}", platillo);
+	@Mock
+	private PlatilloService platilloService;
 
-    // Mock the save method
-    when(platilloService.save(any(Platillo.class))).thenReturn(platillo);
+	@Test
+	public void testAdd() {
+		log.info("Starting testAdd");
+		// Arrange
+		Platillo platillo = new Platillo();
+		platillo.setName("Test platillo");
+		log.debug("Platillo to add: {}", platillo);
 
-    // Act
-    Platillo result = platilloRestController.add(platillo);
+		// Mock the save method
+		when(platilloService.save(any(Platillo.class))).thenReturn(platillo);
 
-    // Assert
-    assertThat(result).isNotNull();
-    assertThat(result.getName()).isEqualTo(platillo.getName());
-  }
+		// Act
+		Platillo result = platilloRestController.add(platillo);
 
-  @Test
-  public void testArray() {
-    log.info("Starting testArray");
-    // Read CSV file from classpath and convert to list of Platillo
-    try (Reader reader = new InputStreamReader(getClass().getResourceAsStream("/platillos.csv"))) {
-      log.debug("Reading platillos.csv");
-      List<Platillo> platillos = new CsvToBeanBuilder<Platillo>(reader)
-          .withType(Platillo.class)
-          .withIgnoreLeadingWhiteSpace(true)
-          .build()
-          .parse();
-      log.debug("Platillos read from CSV: {}", platillos);
-      when(platilloService.findAll()).thenReturn(platillos);
-    } catch (IOException e) {
-      log.error("Error reading platillos.csv", e);
-    }
-    // Arrange
-    PagingRequest pagingRequest = new PagingRequest();
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result.getName()).isEqualTo(platillo.getName());
+	}
 
-    pagingRequest.setStart(0);
-    pagingRequest.setLength(10);
-    pagingRequest.setDraw(1);
-    pagingRequest.setOrder(Arrays.asList(new Order(0, Direction.asc)));
-    pagingRequest.setSearch(new Search("", "false"));
-    log.debug("Paging request: {}", pagingRequest);
+	@Test
+	public void testArray() {
+		log.info("Starting testArray");
+		// Read CSV file from classpath and convert to list of Platillo
+		try (Reader reader = new InputStreamReader(getClass().getResourceAsStream("/platillos.csv"))) {
+			log.debug("Reading platillos.csv");
+			List<Platillo> platillos = new CsvToBeanBuilder<Platillo>(reader).withType(Platillo.class)
+				.withIgnoreLeadingWhiteSpace(true)
+				.build()
+				.parse();
+			log.debug("Platillos read from CSV: {}", platillos);
+			when(platilloService.findAll()).thenReturn(platillos);
+		}
+		catch (IOException e) {
+			log.error("Error reading platillos.csv", e);
+		}
+		// Arrange
+		PagingRequest pagingRequest = new PagingRequest();
 
-    // Act
-    PageArray result = platilloRestController.getPageArray(pagingRequest);
+		pagingRequest.setStart(0);
+		pagingRequest.setLength(10);
+		pagingRequest.setDraw(1);
+		pagingRequest.setOrder(Arrays.asList(new Order(0, Direction.asc)));
+		pagingRequest.setSearch(new Search("", "false"));
+		log.debug("Paging request: {}", pagingRequest);
 
-    // Assert
-    assertThat(result).isNotNull();
-    assertThat(result.getRecordsTotal()).isEqualTo(20);
-    assertThat(result.getRecordsFiltered()).isEqualTo(20);
-    assertThat(result.getDraw()).isEqualTo(1);
-    assertThat(result.getData()).isNotEmpty();
-    assertThat(result.getData().size()).isEqualTo(10);
-    log.info("finished testArray with records {}", result.getRecordsTotal());
-  }
+		// Act
+		PageArray result = platilloRestController.getPageArray(pagingRequest);
 
-  // Test addIngrediente
-  @SuppressWarnings("null")
-  @Test
-  public void testAddIngrediente() {
-    log.info("Starting testAddIngrediente");
-    // Arrange
-    Platillo platillo = new Platillo();
-    platillo.setId(1L);
-    platillo.setName("Test platillo");
-    log.debug("Platillo to add ingrediente: {}", platillo);
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result.getRecordsTotal()).isEqualTo(20);
+		assertThat(result.getRecordsFiltered()).isEqualTo(20);
+		assertThat(result.getDraw()).isEqualTo(1);
+		assertThat(result.getData()).isNotEmpty();
+		assertThat(result.getData().size()).isEqualTo(10);
+		log.info("finished testArray with records {}", result.getRecordsTotal());
+	}
 
-    Alimento alimento = new Alimento();
-    alimento.setId(1L);
-    alimento.setNombreAlimento("Test alimento");
-    alimento.setCantSugerida(1d);
-    alimento.setUnidad("pieza");
-    alimento.setPesoNeto(100);
-    alimento.setPesoBrutoRedondeado(100);
+	// Test addIngrediente
+	@SuppressWarnings("null")
+	@Test
+	public void testAddIngrediente() {
+		log.info("Starting testAddIngrediente");
+		// Arrange
+		Platillo platillo = new Platillo();
+		platillo.setId(1L);
+		platillo.setName("Test platillo");
+		log.debug("Platillo to add ingrediente: {}", platillo);
 
-    IngredienteFormModel ingrediente = new IngredienteFormModel();
-    ingrediente.setAlimentoId(1L);
-    ingrediente.setCantidad("1");
-    ingrediente.setPeso(100);
+		Alimento alimento = new Alimento();
+		alimento.setId(1L);
+		alimento.setNombreAlimento("Test alimento");
+		alimento.setCantSugerida(1d);
+		alimento.setUnidad("pieza");
+		alimento.setPesoNeto(100);
+		alimento.setPesoBrutoRedondeado(100);
 
-    Ingrediente _Ingrediente = new Ingrediente();
-    _Ingrediente.setId(1L);
-    _Ingrediente.setAlimento(alimento);
-    _Ingrediente.setCantSugerida(1d);
-    _Ingrediente.setPesoNeto(100);
+		IngredienteFormModel ingrediente = new IngredienteFormModel();
+		ingrediente.setAlimentoId(1L);
+		ingrediente.setCantidad("1");
+		ingrediente.setPeso(100);
 
-    log.debug("Ingrediente to add: {}", ingrediente);
+		Ingrediente _Ingrediente = new Ingrediente();
+		_Ingrediente.setId(1L);
+		_Ingrediente.setAlimento(alimento);
+		_Ingrediente.setCantSugerida(1d);
+		_Ingrediente.setPesoNeto(100);
 
-    // Mock the save method
-    when(platilloService.addIngrediente(1L, 1L, "1", 100)).thenReturn(_Ingrediente);
+		log.debug("Ingrediente to add: {}", ingrediente);
 
-    // Act
-    ResponseEntity<ApiResponse<Ingrediente>> result = platilloRestController.addIngrediente(1L, ingrediente);
+		// Mock the save method
+		when(platilloService.addIngrediente(1L, 1L, "1", 100)).thenReturn(_Ingrediente);
 
-    // Assert
-    assertThat(result).isNotNull();
-    assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
-    assertThat(result.getBody().getData()).isEqualTo(_Ingrediente);
-  }
+		// Act
+		ResponseEntity<ApiResponse<Ingrediente>> result = platilloRestController.addIngrediente(1L, ingrediente);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+		assertThat(result.getBody().getData()).isEqualTo(_Ingrediente);
+	}
 
 }

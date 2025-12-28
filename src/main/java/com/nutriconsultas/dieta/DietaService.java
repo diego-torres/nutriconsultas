@@ -5,10 +5,17 @@ import java.util.List;
 import org.springframework.lang.NonNull;
 
 public interface DietaService {
-    Dieta getDieta(@NonNull Long id);
-    Dieta saveDieta(@NonNull Dieta dieta);
-    void deleteDieta(@NonNull Long id);
-    List<Dieta> getDietas();
-    void addIngesta(Long id, String nombreIngesta);
-    void renameIngesta(Long id, Long ingestaId, String nombreIngesta);
+
+	Dieta getDieta(@NonNull Long id);
+
+	Dieta saveDieta(@NonNull Dieta dieta);
+
+	void deleteDieta(@NonNull Long id);
+
+	List<Dieta> getDietas();
+
+	void addIngesta(Long id, String nombreIngesta);
+
+	void renameIngesta(Long id, Long ingestaId, String nombreIngesta);
+
 }

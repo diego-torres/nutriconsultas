@@ -26,31 +26,34 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 public class Ingesta extends AbstractMacroNutrible {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-  private String nombre;
 
-  public Ingesta(String nombre) {
-    this.nombre = nombre;
-  }
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-  @ManyToOne
-  @JoinColumn(name = "dieta_id")
-  @JsonBackReference
-  private Dieta dieta;
+	private String nombre;
 
-  @OneToMany(mappedBy = "ingesta", //
-      cascade = CascadeType.ALL, //
-      orphanRemoval = true, //
-      targetEntity = PlatilloIngesta.class, //
-      fetch = FetchType.LAZY)
-  private List<PlatilloIngesta> platillos = new ArrayList<>();
+	public Ingesta(String nombre) {
+		this.nombre = nombre;
+	}
 
-  @OneToMany(mappedBy = "ingesta", //
-      cascade = CascadeType.ALL, //
-      orphanRemoval = true, //
-      targetEntity = AlimentoIngesta.class, //
-      fetch = FetchType.LAZY)
-  private List<AlimentoIngesta> alimentos = new ArrayList<>();
+	@ManyToOne
+	@JoinColumn(name = "dieta_id")
+	@JsonBackReference
+	private Dieta dieta;
+
+	@OneToMany(mappedBy = "ingesta", //
+			cascade = CascadeType.ALL, //
+			orphanRemoval = true, //
+			targetEntity = PlatilloIngesta.class, //
+			fetch = FetchType.LAZY)
+	private List<PlatilloIngesta> platillos = new ArrayList<>();
+
+	@OneToMany(mappedBy = "ingesta", //
+			cascade = CascadeType.ALL, //
+			orphanRemoval = true, //
+			targetEntity = AlimentoIngesta.class, //
+			fetch = FetchType.LAZY)
+	private List<AlimentoIngesta> alimentos = new ArrayList<>();
+
 }

@@ -10,12 +10,14 @@ import com.nutriconsultas.controller.AbstractAuthorizedController;
 
 @Controller
 public class DashboardController extends AbstractAuthorizedController {
-  private static Logger logger = LoggerFactory.getLogger(DashboardController.class);
 
-  @GetMapping(path = "/admin")
-  public String index(Model model) {
-    logger.debug("Resolving Admin Index");
-    model.addAttribute("activeMenu", "home");
-    return "sbadmin/index";
-  }
+	private static Logger logger = LoggerFactory.getLogger(DashboardController.class);
+
+	@GetMapping(path = "/admin")
+	public String index(Model model) {
+		logger.debug("Resolving Admin Index");
+		model.addAttribute("activeMenu", "home");
+		return "sbadmin/index";
+	}
+
 }

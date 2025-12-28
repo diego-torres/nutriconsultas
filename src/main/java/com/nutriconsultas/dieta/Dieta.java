@@ -21,20 +21,20 @@ import lombok.ToString;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper = false)
 public class Dieta extends AbstractMacroNutrible {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-  private String nombre;
 
-  @OneToMany(mappedBy = "dieta", 
-    cascade = jakarta.persistence.CascadeType.ALL, 
-    orphanRemoval = true, 
-    targetEntity = Ingesta.class, 
-    fetch = jakarta.persistence.FetchType.LAZY)
-  @ToString.Exclude
-  @EqualsAndHashCode.Exclude
-  @JsonManagedReference
-  private List<Ingesta> ingestas = new ArrayList<>();
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	private String nombre;
+
+	@OneToMany(mappedBy = "dieta", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true,
+			targetEntity = Ingesta.class, fetch = jakarta.persistence.FetchType.LAZY)
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
+	@JsonManagedReference
+	private List<Ingesta> ingestas = new ArrayList<>();
+
 }

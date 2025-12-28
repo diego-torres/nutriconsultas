@@ -8,23 +8,24 @@ import com.nutriconsultas.dataTables.paging.ComparatorKey;
 import com.nutriconsultas.dataTables.paging.Direction;
 
 public final class PacienteComparators {
-  static Map<ComparatorKey, Comparator<Paciente>> map = new HashMap<>();
 
-  static {
-    map.put(new ComparatorKey("nombre", Direction.asc), Comparator.comparing(Paciente::getName));
-    map.put(new ComparatorKey("nombre", Direction.desc), Comparator.comparing(Paciente::getName).reversed());
+	static Map<ComparatorKey, Comparator<Paciente>> map = new HashMap<>();
 
-    map.put(new ComparatorKey("dob", Direction.asc), Comparator.comparing(Paciente::getDob));
-    map.put(new ComparatorKey("dob", Direction.desc), Comparator.comparing(Paciente::getDob));
+	static {
+		map.put(new ComparatorKey("nombre", Direction.asc), Comparator.comparing(Paciente::getName));
+		map.put(new ComparatorKey("nombre", Direction.desc), Comparator.comparing(Paciente::getName).reversed());
 
-    // TODO: Add more sorting columns
-  }
+		map.put(new ComparatorKey("dob", Direction.asc), Comparator.comparing(Paciente::getDob));
+		map.put(new ComparatorKey("dob", Direction.desc), Comparator.comparing(Paciente::getDob));
 
-  public static Comparator<Paciente> getComparator(String name, Direction dir) {
-    return map.get(new ComparatorKey(name, dir));
-  }
+		// TODO: Add more sorting columns
+	}
 
-  private PacienteComparators() {
-  }
+	public static Comparator<Paciente> getComparator(String name, Direction dir) {
+		return map.get(new ComparatorKey(name, dir));
+	}
+
+	private PacienteComparators() {
+	}
 
 }

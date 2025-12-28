@@ -13,19 +13,22 @@ import io.micrometer.common.lang.NonNull;
 @RestController
 @RequestMapping("/rest")
 public class ConsultaRestController {
-  private static final Logger logger = LoggerFactory.getLogger(ConsultaRestController.class);
 
-  @Autowired
-  private ConsultaRepository repo;
+	private static final Logger logger = LoggerFactory.getLogger(ConsultaRestController.class);
 
-  @DeleteMapping("consultas/{id}")
-  public String deleteConsulta(@PathVariable @NonNull Long id) {
-    if (id != null) {
-      repo.deleteById(id);
-      logger.info("La consulta {} ha sido borrada", id);
-      return "OK";
-    } else {
-      return "Invalid ID";
-    }
-  }
+	@Autowired
+	private ConsultaRepository repo;
+
+	@DeleteMapping("consultas/{id}")
+	public String deleteConsulta(@PathVariable @NonNull Long id) {
+		if (id != null) {
+			repo.deleteById(id);
+			logger.info("La consulta {} ha sido borrada", id);
+			return "OK";
+		}
+		else {
+			return "Invalid ID";
+		}
+	}
+
 }

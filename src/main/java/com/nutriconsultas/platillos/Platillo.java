@@ -25,23 +25,28 @@ import lombok.ToString;
 @Entity
 @EqualsAndHashCode(callSuper = false)
 public class Platillo extends AbstractNutrible {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
-    private String description;
-    private String imageUrl;
-    private String videoUrl;
-    private String pdfUrl;
-    private String ingestasSugeridas;
 
-    @OneToMany(mappedBy = "platillo", 
-    cascade = CascadeType.ALL, 
-    orphanRemoval = true, 
-    targetEntity = Ingrediente.class, 
-    fetch = FetchType.LAZY)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    @JsonManagedReference
-    private List<Ingrediente> ingredientes = new ArrayList<>();
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	private String name;
+
+	private String description;
+
+	private String imageUrl;
+
+	private String videoUrl;
+
+	private String pdfUrl;
+
+	private String ingestasSugeridas;
+
+	@OneToMany(mappedBy = "platillo", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = Ingrediente.class,
+			fetch = FetchType.LAZY)
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
+	@JsonManagedReference
+	private List<Ingrediente> ingredientes = new ArrayList<>();
+
 }

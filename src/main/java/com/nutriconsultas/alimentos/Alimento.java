@@ -17,17 +17,21 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper = false)
 public class Alimento extends AbstractFraccionable {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
 
-  @NotNull
-  @NotBlank
-  private String nombreAlimento;
-  @NotNull
-  @NotBlank
-  private String clasificacion;
-  private String unidad;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@NotNull
+	@NotBlank
+	private String nombreAlimento;
+
+	@NotNull
+	@NotBlank
+	private String clasificacion;
+
+	private String unidad;
+
 }

@@ -12,25 +12,25 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AlimentoServiceImpl implements AlimentoService {
 
-    @Autowired
-    AlimentosRepository alimentosRepository;
+	@Autowired
+	AlimentosRepository alimentosRepository;
 
-    @Override
-    public List<Alimento> findAll() {
-        log.info("Retrieving all alimentos from database.");
-        return alimentosRepository.findAll();
-    }
+	@Override
+	public List<Alimento> findAll() {
+		log.info("Retrieving all alimentos from database.");
+		return alimentosRepository.findAll();
+	}
 
-    @Override
-    public Alimento findById(@NonNull Long id) {
-        log.info("Retrieving alimento with id: {}", id);
-        return alimentosRepository.findById(id).orElse(null);
-    }
+	@Override
+	public Alimento findById(@NonNull Long id) {
+		log.info("Retrieving alimento with id: {}", id);
+		return alimentosRepository.findById(id).orElse(null);
+	}
 
-    @Override
-    public Alimento save(@NonNull Alimento alimento) {
-        log.info("Saving alimento: {}", alimento);
-        return alimentosRepository.save(alimento);
-    }
+	@Override
+	public Alimento save(@NonNull Alimento alimento) {
+		log.info("Saving alimento: {}", alimento);
+		return alimentosRepository.save(alimento);
+	}
 
 }

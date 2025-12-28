@@ -6,20 +6,22 @@ import java.util.List;
 import org.springframework.lang.NonNull;
 
 public interface PlatilloService {
-  List<Platillo> findAll();
 
-  Platillo findById(@NonNull Long id);
+	List<Platillo> findAll();
 
-  Platillo save(@NonNull Platillo platillo);
+	Platillo findById(@NonNull Long id);
 
-  void deleteIngrediente(@NonNull Long id, @NonNull Long ingredienteId);
+	Platillo save(@NonNull Platillo platillo);
 
-  Ingrediente addIngrediente(@NonNull Long id, @NonNull Long alimentoId, @NonNull String cantidad,
-      @NonNull Integer peso);
-  
-  void savePicture(@NonNull Long id, @NonNull byte[] bytes, @NonNull String fileExtension);
+	void deleteIngrediente(@NonNull Long id, @NonNull Long ingredienteId);
 
-  byte[] getPicture(@NonNull Long id, @NonNull String fileName) throws IOException;
+	Ingrediente addIngrediente(@NonNull Long id, @NonNull Long alimentoId, @NonNull String cantidad,
+			@NonNull Integer peso);
 
-  void savePdf(Long id, byte[] bytes);
+	void savePicture(@NonNull Long id, @NonNull byte[] bytes, @NonNull String fileExtension);
+
+	byte[] getPicture(@NonNull Long id, @NonNull String fileName) throws IOException;
+
+	void savePdf(Long id, byte[] bytes);
+
 }

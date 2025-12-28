@@ -12,11 +12,13 @@ import com.nutriconsultas.controller.WebController;
 @SpringBootTest
 @ActiveProfiles("test")
 public class SmokeTest {
-  @Autowired
-  WebController controller;
 
-  @Test
-  public void contextLoads() throws Exception {
-    assertThat(controller).isNotNull();
-  }
+	@Autowired
+	WebController controller;
+
+	@Test
+	public void contextLoads() throws Exception {
+		assertThat(controller).isNotNull();
+	}
+
 }

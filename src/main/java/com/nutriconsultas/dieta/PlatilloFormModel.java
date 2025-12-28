@@ -8,7 +8,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PlatilloFormModel {
-  private Long ingestaPlatillo;
-  private Long platillo;
-  private Integer porciones; 
+
+	private Long ingestaPlatillo;
+
+	private Long platillo;
+
+	private Integer porciones;
+
 }

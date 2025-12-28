@@ -7,5 +7,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
-  public List<Consulta> findByPacienteId(Long pacienteId);
+
+	public List<Consulta> findByPacienteId(Long pacienteId);
+
 }

@@ -17,6 +17,10 @@
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <java.version>21</java.version>
+    <checkstyle.version>3.3.1</checkstyle.version>
+    <spotbugs.version>4.7.3</spotbugs.version>
+    <pmd.version>3.21.2</pmd.version>
+    <spring-javaformat.version>0.0.47</spring-javaformat.version>
   </properties>
 
   <parent>
@@ -149,6 +153,128 @@
             </exclude>
           </excludes>
         </configuration>
+      </plugin>
+      <!-- Checkstyle Plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${checkstyle.version}</version>
+        <configuration>
+          <configLocation>checkstyle.xml</configLocation>
+          <encoding>UTF-8</encoding>
+          <consoleOutput>true</consoleOutput>
+          <failsOnError>false</failsOnError>
+          <linkXRef>false</linkXRef>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <id>validate</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>10.12.5</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <!-- SpotBugs Plugin -->
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>${spotbugs.version}</version>
+        <configuration>
+          <effort>Max</effort>
+          <threshold>Low</threshold>
+          <xmlOutput>true</xmlOutput>
+          <spotbugsXmlOutput>false</spotbugsXmlOutput>
+          <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
+        </configuration>
+        <executions>
+          <execution>
+            <id>spotbugs</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- PMD Plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>${pmd.version}</version>
+        <configuration>
+          <targetJdk>21</targetJdk>
+          <rulesets>
+            <ruleset>/category/java/bestpractices.xml</ruleset>
+            <ruleset>/category/java/codestyle.xml</ruleset>
+            <ruleset>/category/java/design.xml</ruleset>
+            <ruleset>/category/java/errorprone.xml</ruleset>
+            <ruleset>/category/java/performance.xml</ruleset>
+            <ruleset>/category/java/security.xml</ruleset>
+          </rulesets>
+          <excludeRoots>
+            <excludeRoot>target/generated-sources</excludeRoot>
+            <excludeRoot>target/generated-test-sources</excludeRoot>
+          </excludeRoots>
+        </configuration>
+        <executions>
+          <execution>
+            <id>pmd</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-core</artifactId>
+            <version>3.9.0</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <!-- Spring Java Format Plugin -->
+      <plugin>
+        <groupId>io.spring.javaformat</groupId>
+        <artifactId>spring-javaformat-maven-plugin</artifactId>
+        <version>${spring-javaformat.version}</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>apply</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Exec Plugin for Thymeleaf Validation -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <mainClass>com.nutriconsultas.ThymeleafValidator</mainClass>
+          <classpathScope>test</classpathScope>
+        </configuration>
+        <executions>
+          <execution>
+            <id>validate-thymeleaf</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

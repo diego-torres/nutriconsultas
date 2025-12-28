@@ -9,8 +9,10 @@ import jakarta.transaction.Transactional;
 
 @Repository
 public interface PlatilloRepository extends JpaRepository<Platillo, Long> {
-  @Modifying
-  @Transactional
-  @Query("delete from Ingrediente i where i.id = ?1")
-  void deleteIngrediente(Long id);
+
+	@Modifying
+	@Transactional
+	@Query("delete from Ingrediente i where i.id = ?1")
+	void deleteIngrediente(Long id);
+
 }
