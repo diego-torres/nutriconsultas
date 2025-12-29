@@ -78,6 +78,21 @@ public class DietaController extends AbstractAuthorizedController {
 
 		model.addAttribute("alimentos", alimentoService.findAll());
 
+		// Calculate distribution percentages for pie chart
+		Double kCal = getKCal(dieta);
+		if (kCal != null && kCal > 0.01) {
+			Double distProteina = getTotalProteina(dieta) * 4 / kCal * 100;
+			Double distLipido = getTotalLipidos(dieta) * 9 / kCal * 100;
+			Double distHidratoCarbono = getTotalHidratosDeCarbono(dieta) * 4 / kCal * 100;
+			model.addAttribute("distribucionProteina", distProteina);
+			model.addAttribute("distribucionLipido", distLipido);
+			model.addAttribute("distribucionHidratoCarbono", distHidratoCarbono);
+			model.addAttribute("hasDistribucion", true);
+		}
+		else {
+			model.addAttribute("hasDistribucion", false);
+		}
+
 		return "sbadmin/dietas/formulario";
 	}
 
@@ -347,6 +362,46 @@ public class DietaController extends AbstractAuthorizedController {
 		result.setEtanol(ingrediente.getEtanol());
 
 		return result;
+	}
+
+	private Double getKCal(Dieta dieta) {
+		return getTotalProteina(dieta) * 4 + getTotalLipidos(dieta) * 9 + getTotalHidratosDeCarbono(dieta) * 4;
+	}
+
+	private Double getTotalProteina(Dieta dieta) {
+		return dieta.getIngestas()
+			.stream()
+			.mapToDouble(i -> i.getPlatillos()
+				.stream()
+				.mapToDouble(p -> p.getProteina() != null ? p.getProteina() : 0.0)
+				.sum()
+					+ i.getAlimentos().stream().mapToDouble(a -> a.getProteina() != null ? a.getProteina() : 0.0).sum())
+			.sum();
+	}
+
+	private Double getTotalLipidos(Dieta dieta) {
+		return dieta.getIngestas()
+			.stream()
+			.mapToDouble(i -> i.getPlatillos()
+				.stream()
+				.mapToDouble(p -> p.getLipidos() != null ? p.getLipidos() : 0.0)
+				.sum()
+					+ i.getAlimentos().stream().mapToDouble(a -> a.getLipidos() != null ? a.getLipidos() : 0.0).sum())
+			.sum();
+	}
+
+	private Double getTotalHidratosDeCarbono(Dieta dieta) {
+		return dieta.getIngestas()
+			.stream()
+			.mapToDouble(i -> i.getPlatillos()
+				.stream()
+				.mapToDouble(p -> p.getHidratosDeCarbono() != null ? p.getHidratosDeCarbono() : 0.0)
+				.sum()
+					+ i.getAlimentos()
+						.stream()
+						.mapToDouble(a -> a.getHidratosDeCarbono() != null ? a.getHidratosDeCarbono() : 0.0)
+						.sum())
+			.sum();
 	}
 
 }

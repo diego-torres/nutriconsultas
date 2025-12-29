@@ -303,7 +303,7 @@
               <!-- Pie chart column -->
               <div class="col-lg-4">
                 <!-- pie chart card -->
-                <div th:if="${dieta != null && dieta.energia != null && dieta.energia > 0}" class="card shadow mb-4">
+                <div th:if="${hasDistribucion != null && hasDistribucion}" class="card shadow mb-4">
                   <!-- Card Header - Dropdown -->
                   <div
                       class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
@@ -312,7 +312,10 @@
                   <!-- Card Body -->
                   <div class="card-body">
                       <div class="chart-pie pt-4 pb-2">
-                          <canvas id="myPieChart"></canvas>
+                          <canvas id="myPieChart" 
+                                  th:data-proteina="${distribucionProteina != null ? distribucionProteina : 0}"
+                                  th:data-lipido="${distribucionLipido != null ? distribucionLipido : 0}"
+                                  th:data-hidrato="${distribucionHidratoCarbono != null ? distribucionHidratoCarbono : 0}"></canvas>
                       </div>
                       <div class="mt-4 text-center small">
                           <span class="mr-2">
@@ -328,7 +331,7 @@
                   </div>
               
                 </div>
-                <div th:unless="${dieta != null && dieta.energia != null && dieta.energia > 0}" class="card shadow mb-4">
+                <div th:unless="${hasDistribucion != null && hasDistribucion}" class="card shadow mb-4">
                   <div class="card-body text-center">
                     <div class="img-wrapper">
                       <img th:src="@{/sbadmin/img/plato.webp}"
@@ -562,7 +565,6 @@
       'use strict';
       (function ($) {
         $(document).ready(function () {
-
           // initialize select2 for platillo
           $('#platillo').select2({
             placeholder: 'Selecciona un platillo',
@@ -581,40 +583,56 @@
 
           // Set up the pie chart
           var ctx = document.getElementById('myPieChart');
-          if(ctx) {
-            var myPieChart = new Chart(ctx, {
-              type: 'doughnut',
-              data: {
-                labels: ['Proteínas', 'Lípidos', 'Hidratos de Carbono'],
-                datasets: [
-                  {
-                    data: [
-                      /*[[${dieta.proteina}]], [[${dieta.lipidos}]], [[${dieta.hidratosDeCarbono}]]*/
-                    ],
-                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
-                    hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
-                    hoverBorderColor: 'rgba(234, 236, 244, 1)',
+          if(ctx && typeof Chart !== 'undefined') {
+            var distribucionProteina = parseFloat(ctx.getAttribute('data-proteina')) || 0;
+            var distribucionLipido = parseFloat(ctx.getAttribute('data-lipido')) || 0;
+            var distribucionHidratoCarbono = parseFloat(ctx.getAttribute('data-hidrato')) || 0;
+            
+            // Only create chart if we have valid data
+            if(distribucionProteina > 0 || distribucionLipido > 0 || distribucionHidratoCarbono > 0) {
+              var myPieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                  labels: ['Proteínas', 'Lípidos', 'Hidratos de Carbono'],
+                  datasets: [
+                    {
+                      data: [
+                        distribucionProteina,
+                        distribucionLipido,
+                        distribucionHidratoCarbono
+                      ],
+                      backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
+                      hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
+                      hoverBorderColor: 'rgba(234, 236, 244, 1)',
+                    },
+                  ],
+                },
+                options: {
+                  maintainAspectRatio: false,
+                  tooltips: {
+                    backgroundColor: 'rgb(255,255,255)',
+                    bodyFontColor: '#858796',
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
+                    callbacks: {
+                      label: function(tooltipItem, data) {
+                        var label = data.labels[tooltipItem.index] || '';
+                        var value = data.datasets[0].data[tooltipItem.index];
+                        return label + ': ' + value.toFixed(1) + '%';
+                      }
+                    }
                   },
-                ],
-              },
-              options: {
-                maintainAspectRatio: false,
-                tooltips: {
-                  backgroundColor: 'rgb(255,255,255)',
-                  bodyFontColor: '#858796',
-                  borderColor: '#dddfeb',
-                  borderWidth: 1,
-                  xPadding: 15,
-                  yPadding: 15,
-                  displayColors: false,
-                  caretPadding: 10,
+                  legend: {
+                    display: false,
+                  },
+                  cutoutPercentage: 80,
                 },
-                legend: {
-                  display: false,
-                },
-                cutoutPercentage: 80,
-              },
-            });
+              });
+            }
           }
 
           // Set up the add platillo modal
