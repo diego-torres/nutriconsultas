@@ -48,21 +48,21 @@ jobs:
     - name: Validate Thymeleaf templates
       run: mvn -B test -Dtest=ThymeleafTemplateValidationTest
     - name: Upload Checkstyle results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: always()
       with:
         name: checkstyle-results
         path: target/checkstyle-result.xml
         retention-days: 7
     - name: Upload SpotBugs results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: always()
       with:
         name: spotbugs-results
         path: target/spotbugsXml.xml
         retention-days: 7
     - name: Upload PMD results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: always()
       with:
         name: pmd-results
@@ -100,7 +100,7 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
     - name: Upload test results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: always()
       with:
         name: test-results
