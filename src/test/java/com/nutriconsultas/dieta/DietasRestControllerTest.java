@@ -14,6 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.nutriconsultas.dataTables.paging.Direction;
@@ -21,6 +23,7 @@ import com.nutriconsultas.dataTables.paging.Order;
 import com.nutriconsultas.dataTables.paging.PageArray;
 import com.nutriconsultas.dataTables.paging.PagingRequest;
 import com.nutriconsultas.dataTables.paging.Search;
+import com.nutriconsultas.model.ApiResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -250,6 +253,261 @@ public class DietasRestControllerTest {
 		assertThat(distribution).isNotEmpty();
 		assertThat(distribution).doesNotContain("NaN");
 		log.info("Finishing testGetPageArray_DietWithPlatillos_ShowsCorrectDistribution");
+	}
+
+	@Test
+	public void testDeletePlatilloIngesta_Success_RemovesPlatilloFromIngesta() {
+		log.info("Starting testDeletePlatilloIngesta_Success_RemovesPlatilloFromIngesta");
+
+		// Arrange
+		Long dietaId = 2L;
+		Long ingestaId = 2L;
+		Long platilloIngestaId = 1L;
+
+		// Create a copy of dietaConPlatillos for the test
+		Dieta dietaBeforeDelete = new Dieta();
+		dietaBeforeDelete.setId(dietaId);
+		dietaBeforeDelete.setNombre("Dieta con Platillos");
+		dietaBeforeDelete.setIngestas(new ArrayList<>());
+
+		Ingesta ingestaBeforeDelete = new Ingesta();
+		ingestaBeforeDelete.setId(ingestaId);
+		ingestaBeforeDelete.setNombre("Desayuno");
+		ingestaBeforeDelete.setDieta(dietaBeforeDelete);
+		ingestaBeforeDelete.setPlatillos(new ArrayList<>());
+
+		PlatilloIngesta platilloToDelete = new PlatilloIngesta();
+		platilloToDelete.setId(platilloIngestaId);
+		platilloToDelete.setName("Platillo de prueba");
+		platilloToDelete.setIngesta(ingestaBeforeDelete);
+		ingestaBeforeDelete.getPlatillos().add(platilloToDelete);
+		dietaBeforeDelete.getIngestas().add(ingestaBeforeDelete);
+
+		// Create dieta after delete (without the platillo)
+		Dieta dietaAfterDelete = new Dieta();
+		dietaAfterDelete.setId(dietaId);
+		dietaAfterDelete.setNombre("Dieta con Platillos");
+		dietaAfterDelete.setIngestas(new ArrayList<>());
+
+		Ingesta ingestaAfterDelete = new Ingesta();
+		ingestaAfterDelete.setId(ingestaId);
+		ingestaAfterDelete.setNombre("Desayuno");
+		ingestaAfterDelete.setDieta(dietaAfterDelete);
+		ingestaAfterDelete.setPlatillos(new ArrayList<>());
+		dietaAfterDelete.getIngestas().add(ingestaAfterDelete);
+
+		when(dietaService.getDieta(dietaId)).thenReturn(dietaBeforeDelete);
+		when(dietaService.saveDieta(dietaBeforeDelete)).thenReturn(dietaAfterDelete);
+
+		// Act
+		ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.deletePlatilloIngesta(dietaId, ingestaId,
+				platilloIngestaId);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(result.getBody()).isNotNull();
+		assertThat(result.getBody().getData()).isNotNull();
+		assertThat(result.getBody().getData().getId()).isEqualTo(dietaId);
+		// Verify that the platillo was removed from the ingesta
+		Ingesta ingestaResult = result.getBody()
+			.getData()
+			.getIngestas()
+			.stream()
+			.filter(i -> i.getId().equals(ingestaId))
+			.findFirst()
+			.orElse(null);
+		assertThat(ingestaResult).isNotNull();
+		assertThat(ingestaResult.getPlatillos()).isEmpty();
+		log.info("Finishing testDeletePlatilloIngesta_Success_RemovesPlatilloFromIngesta");
+	}
+
+	@Test
+	public void testDeletePlatilloIngesta_DietaNotFound_ReturnsNotFound() {
+		log.info("Starting testDeletePlatilloIngesta_DietaNotFound_ReturnsNotFound");
+
+		// Arrange
+		Long dietaId = 999L;
+		Long ingestaId = 2L;
+		Long platilloIngestaId = 1L;
+
+		when(dietaService.getDieta(dietaId)).thenReturn(null);
+
+		// Act
+		ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.deletePlatilloIngesta(dietaId, ingestaId,
+				platilloIngestaId);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		log.info("Finishing testDeletePlatilloIngesta_DietaNotFound_ReturnsNotFound");
+	}
+
+	@Test
+	public void testDeletePlatilloIngesta_IngestaNotFound_StillReturnsOk() {
+		log.info("Starting testDeletePlatilloIngesta_IngestaNotFound_StillReturnsOk");
+
+		// Arrange
+		Long dietaId = 2L;
+		Long ingestaId = 999L; // Non-existent ingesta
+		Long platilloIngestaId = 1L;
+
+		// Create dieta without the target ingesta
+		Dieta dieta = new Dieta();
+		dieta.setId(dietaId);
+		dieta.setNombre("Dieta sin la ingesta objetivo");
+		dieta.setIngestas(new ArrayList<>());
+
+		Ingesta otherIngesta = new Ingesta();
+		otherIngesta.setId(888L);
+		otherIngesta.setNombre("Otra ingesta");
+		otherIngesta.setDieta(dieta);
+		otherIngesta.setPlatillos(new ArrayList<>());
+		dieta.getIngestas().add(otherIngesta);
+
+		when(dietaService.getDieta(dietaId)).thenReturn(dieta);
+		when(dietaService.saveDieta(dieta)).thenReturn(dieta);
+
+		// Act
+		ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.deletePlatilloIngesta(dietaId, ingestaId,
+				platilloIngestaId);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(result.getBody()).isNotNull();
+		assertThat(result.getBody().getData()).isNotNull();
+		// The dieta should remain unchanged since the ingesta doesn't exist
+		assertThat(result.getBody().getData().getIngestas()).hasSize(1);
+		log.info("Finishing testDeletePlatilloIngesta_IngestaNotFound_StillReturnsOk");
+	}
+
+	@Test
+	public void testDeletePlatilloIngesta_PlatilloNotFound_StillReturnsOk() {
+		log.info("Starting testDeletePlatilloIngesta_PlatilloNotFound_StillReturnsOk");
+
+		// Arrange
+		Long dietaId = 2L;
+		Long ingestaId = 2L;
+		Long platilloIngestaId = 999L; // Non-existent platillo
+
+		// Create dieta with ingesta but without the target platillo
+		Dieta dieta = new Dieta();
+		dieta.setId(dietaId);
+		dieta.setNombre("Dieta sin el platillo objetivo");
+		dieta.setIngestas(new ArrayList<>());
+
+		Ingesta ingesta = new Ingesta();
+		ingesta.setId(ingestaId);
+		ingesta.setNombre("Desayuno");
+		ingesta.setDieta(dieta);
+		ingesta.setPlatillos(new ArrayList<>());
+		dieta.getIngestas().add(ingesta);
+
+		when(dietaService.getDieta(dietaId)).thenReturn(dieta);
+		when(dietaService.saveDieta(dieta)).thenReturn(dieta);
+
+		// Act
+		ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.deletePlatilloIngesta(dietaId, ingestaId,
+				platilloIngestaId);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(result.getBody()).isNotNull();
+		assertThat(result.getBody().getData()).isNotNull();
+		// The ingesta should remain unchanged since the platillo doesn't exist
+		Ingesta ingestaResult = result.getBody()
+			.getData()
+			.getIngestas()
+			.stream()
+			.filter(i -> i.getId().equals(ingestaId))
+			.findFirst()
+			.orElse(null);
+		assertThat(ingestaResult).isNotNull();
+		assertThat(ingestaResult.getPlatillos()).isEmpty();
+		log.info("Finishing testDeletePlatilloIngesta_PlatilloNotFound_StillReturnsOk");
+	}
+
+	@Test
+	public void testDeletePlatilloIngesta_MultiplePlatillos_RemovesOnlyTargetPlatillo() {
+		log.info("Starting testDeletePlatilloIngesta_MultiplePlatillos_RemovesOnlyTargetPlatillo");
+
+		// Arrange
+		Long dietaId = 2L;
+		Long ingestaId = 2L;
+		Long platilloIngestaIdToDelete = 1L;
+		Long platilloIngestaIdToKeep = 2L;
+
+		// Create dieta with multiple platillos
+		Dieta dietaBeforeDelete = new Dieta();
+		dietaBeforeDelete.setId(dietaId);
+		dietaBeforeDelete.setNombre("Dieta con múltiples platillos");
+		dietaBeforeDelete.setIngestas(new ArrayList<>());
+
+		Ingesta ingesta = new Ingesta();
+		ingesta.setId(ingestaId);
+		ingesta.setNombre("Desayuno");
+		ingesta.setDieta(dietaBeforeDelete);
+		ingesta.setPlatillos(new ArrayList<>());
+
+		PlatilloIngesta platilloToDelete = new PlatilloIngesta();
+		platilloToDelete.setId(platilloIngestaIdToDelete);
+		platilloToDelete.setName("Platillo a eliminar");
+		platilloToDelete.setIngesta(ingesta);
+
+		PlatilloIngesta platilloToKeep = new PlatilloIngesta();
+		platilloToKeep.setId(platilloIngestaIdToKeep);
+		platilloToKeep.setName("Platillo a mantener");
+		platilloToKeep.setIngesta(ingesta);
+
+		ingesta.getPlatillos().add(platilloToDelete);
+		ingesta.getPlatillos().add(platilloToKeep);
+		dietaBeforeDelete.getIngestas().add(ingesta);
+
+		// Create dieta after delete (with only one platillo)
+		Dieta dietaAfterDelete = new Dieta();
+		dietaAfterDelete.setId(dietaId);
+		dietaAfterDelete.setNombre("Dieta con múltiples platillos");
+		dietaAfterDelete.setIngestas(new ArrayList<>());
+
+		Ingesta ingestaAfterDelete = new Ingesta();
+		ingestaAfterDelete.setId(ingestaId);
+		ingestaAfterDelete.setNombre("Desayuno");
+		ingestaAfterDelete.setDieta(dietaAfterDelete);
+		ingestaAfterDelete.setPlatillos(new ArrayList<>());
+
+		PlatilloIngesta remainingPlatillo = new PlatilloIngesta();
+		remainingPlatillo.setId(platilloIngestaIdToKeep);
+		remainingPlatillo.setName("Platillo a mantener");
+		remainingPlatillo.setIngesta(ingestaAfterDelete);
+		ingestaAfterDelete.getPlatillos().add(remainingPlatillo);
+		dietaAfterDelete.getIngestas().add(ingestaAfterDelete);
+
+		when(dietaService.getDieta(dietaId)).thenReturn(dietaBeforeDelete);
+		when(dietaService.saveDieta(dietaBeforeDelete)).thenReturn(dietaAfterDelete);
+
+		// Act
+		ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.deletePlatilloIngesta(dietaId, ingestaId,
+				platilloIngestaIdToDelete);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(result.getBody()).isNotNull();
+		assertThat(result.getBody().getData()).isNotNull();
+		// Verify that only the target platillo was removed
+		Ingesta ingestaResult = result.getBody()
+			.getData()
+			.getIngestas()
+			.stream()
+			.filter(i -> i.getId().equals(ingestaId))
+			.findFirst()
+			.orElse(null);
+		assertThat(ingestaResult).isNotNull();
+		assertThat(ingestaResult.getPlatillos()).hasSize(1);
+		assertThat(ingestaResult.getPlatillos().get(0).getId()).isEqualTo(platilloIngestaIdToKeep);
+		log.info("Finishing testDeletePlatilloIngesta_MultiplePlatillos_RemovesOnlyTargetPlatillo");
 	}
 
 }

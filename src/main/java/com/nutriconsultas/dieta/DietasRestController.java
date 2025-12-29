@@ -8,16 +8,21 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nutriconsultas.controller.AbstractGridController;
 import com.nutriconsultas.dataTables.paging.Column;
 import com.nutriconsultas.dataTables.paging.Direction;
+import com.nutriconsultas.model.ApiResponse;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/rest/dietas")
@@ -36,6 +41,28 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		Dieta _dieta = dietaService.saveDieta(dieta);
 		log.info("finish addDieta with dieta {}.", dieta);
 		return _dieta;
+	}
+
+	@DeleteMapping("{dietaId}/ingestas/{ingestaId}/platillos/{platilloIngestaId}")
+	public ResponseEntity<ApiResponse<Dieta>> deletePlatilloIngesta(@PathVariable @NonNull Long dietaId,
+			@PathVariable @NonNull Long ingestaId, @PathVariable @NonNull Long platilloIngestaId) {
+		log.info("starting deletePlatilloIngesta with dietaId {}, ingestaId {}, platilloIngestaId {}.", dietaId,
+				ingestaId, platilloIngestaId);
+		Dieta dieta = dietaService.getDieta(dietaId);
+		if (dieta != null) {
+			dieta.getIngestas()
+				.stream()
+				.filter(ingesta -> ingesta.getId().equals(ingestaId))
+				.findFirst()
+				.ifPresent(ingesta -> ingesta.getPlatillos()
+					.removeIf(platillo -> platillo.getId().equals(platilloIngestaId)));
+			Dieta saved = dietaService.saveDieta(dieta);
+			log.info("finish deletePlatilloIngesta with dietaId {}, ingestaId {}, platilloIngestaId {}.", dietaId,
+					ingestaId, platilloIngestaId);
+			return ResponseEntity.ok(new ApiResponse<Dieta>(saved));
+		}
+		log.warn("Dieta with id {} not found when trying to delete platilloIngesta", dietaId);
+		return ResponseEntity.notFound().build();
 	}
 
 	@Override

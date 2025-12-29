@@ -247,9 +247,7 @@
                 <p>¿Estás seguro de eliminar este platillo?</p>
               </div>
               <div class="modal-footer">
-                <form method="post">
-                  <button type="submit" class="btn btn-danger">Eliminar</button>
-                </form>
+                <button type="button" class="btn btn-danger" id="confirmDeletePlatillo">Eliminar</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
               </div>
             </div>
@@ -455,8 +453,7 @@
                                       <button 
                                         type="button" 
                                         class="btn btn-danger" 
-                                        data-ingesta="${ingesta.id}" 
-                                        data-platillo="${platillo.id}" 
+                                        th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id}" 
                                         data-toggle="modal" 
                                         data-target="#deletePlatilloModal">
                                         <i class="fas fa-trash"></i>
@@ -572,10 +569,48 @@
           // Set up the delete platillo modal
           $('#deletePlatilloModal').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget);
+            var dieta = button.data('dieta');
             var ingesta = button.data('ingesta');
             var platillo = button.data('platillo');
             var modal = $(this);
-            modal.find('.modal-footer form').attr('action', '/platillos/delete/' + platillo);
+            
+            // Store the IDs in the modal for use in the delete action
+            modal.data('dieta', dieta);
+            modal.data('ingesta', ingesta);
+            modal.data('platillo', platillo);
+          });
+
+          // Handle the delete confirmation
+          $('#confirmDeletePlatillo').on('click', function () {
+            var modal = $('#deletePlatilloModal');
+            var dieta = modal.data('dieta');
+            var ingesta = modal.data('ingesta');
+            var platillo = modal.data('platillo');
+            
+            $.ajax({
+              url: '/rest/dietas/' + dieta + '/ingestas/' + ingesta + '/platillos/' + platillo,
+              type: 'DELETE',
+              dataType: 'json',
+              success: function (response) {
+                swal({
+                  title: 'Eliminado!',
+                  text: 'El platillo ha sido eliminado de la ingesta.',
+                  type: 'success',
+                  timer: 2000,
+                });
+                modal.modal('hide');
+                // Reload the page to refresh the data
+                location.reload();
+              },
+              error: function (error) {
+                swal({
+                  title: 'Error!',
+                  text: error.responseJSON && error.responseJSON.message ? error.responseJSON.message : 'Error al eliminar el platillo.',
+                  type: 'error',
+                  timer: 5000,
+                });
+              }
+            });
           });
 
           // Set up the ingesta modal
