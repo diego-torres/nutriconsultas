@@ -60,12 +60,16 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 
 	private String getDist(Dieta row) {
 		// use protein, lipid, and carbohydrate values to calculate distribution
-		Double distProteina, distLipido, distHidratoCarbono, kCal;
-		kCal = getKCal(row);
+		Double kCal = getKCal(row);
 
-		distProteina = getTotalProteina(row) * 4 / kCal;
-		distLipido = getTotalLipidos(row) * 9 / kCal;
-		distHidratoCarbono = getTotalHidratosDeCarbono(row) * 4 / kCal;
+		// If diet is empty (kCal is 0 or very small), return empty string
+		if (kCal == null || kCal == 0 || kCal < 0.01) {
+			return "";
+		}
+
+		Double distProteina = getTotalProteina(row) * 4 / kCal;
+		Double distLipido = getTotalLipidos(row) * 9 / kCal;
+		Double distHidratoCarbono = getTotalHidratosDeCarbono(row) * 4 / kCal;
 
 		return String.format("%.1f", distProteina) + " / " + String.format("%.1f", distLipido) + " / "
 				+ String.format("%.1f", distHidratoCarbono);
