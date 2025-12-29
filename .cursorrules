@@ -20,15 +20,38 @@ This is a Spring Boot 3.4.1 web application for managing a nutrition consultatio
 - Run `mvn spring-javaformat:apply` before committing
 
 ### Linting Tools
+- **Spring Java Format**: Automatic code formatting
+  - Command: `mvn spring-javaformat:apply`
+  - Fixes: spacing, indentation, braces automatically
+  - Runs during `validate` phase
 - **Checkstyle**: Enforces code style (checkstyle.xml)
+  - Command: `mvn checkstyle:check`
+  - Common fixes: rename variables, add braces, fix line length (120 chars max), remove unused imports
+  - Runs during `validate` phase
 - **SpotBugs**: Static analysis for bugs
+  - Command: `mvn spotbugs:check`
+  - Common fixes: null checks, resource leaks, inefficient operations
+  - Exclude false positives in `spotbugs-exclude.xml`
+  - Runs during `verify` phase
 - **PMD**: Code quality analysis
+  - Command: `mvn pmd:check`
+  - Custom ruleset: `pmd-ruleset.xml` (excludes ShortVariable for loop variables)
+  - Common fixes:
+    - **MethodArgumentCouldBeFinal**: Add `final` to method parameters
+    - **LocalVariableCouldBeFinal**: Add `final` to local variables
+    - **OnlyOneReturn**: Refactor to single return point
+    - **LongVariable**: Shorten variable names
+    - **UnusedAssignment**: Remove unused assignments
+    - **GuardLogStatement**: Add log level guards (e.g., `if (logger.isDebugEnabled())`)
+    - **AvoidCatchingGenericException**: Catch specific exceptions
+  - Runs during `verify` phase
 - **Thymeleaf Validator**: Validates template syntax
   - Modular architecture with per-template validators
   - Package: `com.nutriconsultas.validation.template`
   - Each template group has its own validator defining required mock model variables
   - To add a validator: extend `BaseTemplateValidator` and register in `TemplateValidatorRegistry`
 - All tools run during build lifecycle
+- Run all tools: `./lint.sh`
 
 ### Code Style
 - Follow Spring Boot best practices

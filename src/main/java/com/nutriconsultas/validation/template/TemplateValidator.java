@@ -34,14 +34,17 @@ public interface TemplateValidator {
 	 * @param webContext the web context with mock variables
 	 * @return true if the template is valid, false otherwise
 	 */
-	default boolean validateTemplate(TemplateEngine templateEngine, String templateName, IWebContext webContext) {
+	default boolean validateTemplate(final TemplateEngine templateEngine, final String templateName,
+			final IWebContext webContext) {
+		boolean result = false;
 		try {
 			templateEngine.process(templateName, webContext);
-			return true;
+			result = true;
 		}
-		catch (Exception e) {
-			return false;
+		catch (final Exception e) {
+			// Return false on exception
 		}
+		return result;
 	}
 
 	/**
@@ -49,13 +52,17 @@ public interface TemplateValidator {
 	 * @param templatePath the template path to check
 	 * @return true if this validator handles the template
 	 */
-	default boolean handlesTemplate(String templatePath) {
-		String pattern = getTemplatePathPattern();
+	default boolean handlesTemplate(final String templatePath) {
+		final String pattern = getTemplatePathPattern();
+		boolean result;
 		if (pattern.endsWith("*")) {
-			String prefix = pattern.substring(0, pattern.length() - 1);
-			return templatePath.startsWith(prefix);
+			final String prefix = pattern.substring(0, pattern.length() - 1);
+			result = templatePath.startsWith(prefix);
 		}
-		return templatePath.equals(pattern);
+		else {
+			result = templatePath.equals(pattern);
+		}
+		return result;
 	}
 
 }

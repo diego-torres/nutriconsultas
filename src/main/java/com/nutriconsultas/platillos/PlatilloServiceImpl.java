@@ -48,13 +48,13 @@ public class PlatilloServiceImpl implements PlatilloService {
 	private String secretKey;
 
 	@Override
-	public Platillo findById(@NonNull Long id) {
+	public Platillo findById(@NonNull final Long id) {
 		log.info("Retrieving platillo with id: {}", id);
 		return platilloRepository.findById(id).orElse(null);
 	}
 
 	@Override
-	public Platillo save(@NonNull Platillo platillo) {
+	public Platillo save(@NonNull final Platillo platillo) {
 		log.info("Saving platillo: {}", platillo);
 		return platilloRepository.save(platillo);
 	}
@@ -66,7 +66,7 @@ public class PlatilloServiceImpl implements PlatilloService {
 	}
 
 	@Override
-	public void deleteIngrediente(@NonNull Long id, @NonNull Long ingredienteId) {
+	public void deleteIngrediente(@NonNull final Long id, @NonNull final Long ingredienteId) {
 		log.info("Deleting ingrediente with id: {}", id);
 		// platilloRepository.deleteIngrediente(ingredienteId);
 
@@ -78,18 +78,18 @@ public class PlatilloServiceImpl implements PlatilloService {
 	}
 
 	@Override
-	public Ingrediente addIngrediente(@NonNull Long id, @NonNull Long alimentoId, @NonNull String cantidad,
-			@NonNull Integer peso) {
+	public Ingrediente addIngrediente(@NonNull final Long id, @NonNull final Long alimentoId,
+			@NonNull final String cantidad, @NonNull final Integer peso) {
 		log.info("Start addIngrediente with id: {} to platillo with id: {} as ingrediente", alimentoId, id);
 
-		Platillo platillo = platilloRepository.findById(id).orElse(null);
+		final Platillo platillo = platilloRepository.findById(id).orElse(null);
 		if (platillo == null) {
 			log.error("Platillo with id: {} not found.", id);
 			return null;
 		}
 		log.debug("Platillo found to add ingrediente: {}", platillo);
 
-		Alimento alimento = alimentoRepository.findById(alimentoId).orElse(null);
+		final Alimento alimento = alimentoRepository.findById(alimentoId).orElse(null);
 		if (alimento == null) {
 			log.error("Alimento with id: {} not found.", alimentoId);
 			return null;
@@ -97,7 +97,7 @@ public class PlatilloServiceImpl implements PlatilloService {
 		log.debug("Alimento found to add ingrediente: {}", alimento);
 
 		// Calculate ingrediente values
-		Ingrediente ingrediente = new Ingrediente();
+		final Ingrediente ingrediente = new Ingrediente();
 		ingrediente.setAlimento(alimento);
 		ingrediente.setUnidad(alimento.getUnidad());
 
@@ -136,17 +136,17 @@ public class PlatilloServiceImpl implements PlatilloService {
 	}
 
 	@Override
-	public void savePicture(@NonNull Long id, @NonNull byte[] bytes, @NonNull String fileExtension) {
+	public void savePicture(@NonNull final Long id, @NonNull final byte[] bytes, @NonNull final String fileExtension) {
 		log.info("Starting savePicture with id: {}", id);
 		uploadPictureToS3(id, bytes, fileExtension);
 		log.info("Finish savePicture with id: {}", id);
 	}
 
 	@Override
-	public void savePdf(@NonNull Long id, byte[] bytes) {
+	public void savePdf(@NonNull final Long id, final byte[] bytes) {
 		log.info("Starting savePdf with id: {}", id);
-		S3Client s3Client = getClient();
-		String key = "platillo/" + id + "/instrucciones.pdf";
+		final S3Client s3Client = getClient();
+		final String key = "platillo/" + id + "/instrucciones.pdf";
 
 		try {
 			if (keyExists(key)) {
@@ -157,35 +157,36 @@ public class PlatilloServiceImpl implements PlatilloService {
 			s3Client.putObject(PutObjectRequest.builder().bucket(bucketName).key(key).build(),
 					RequestBody.fromBytes(bytes));
 
-			Platillo platillo = platilloRepository.findById(id).orElse(null);
+			final Platillo platillo = platilloRepository.findById(id).orElse(null);
 			if (platillo != null) {
 				platillo.setPdfUrl(key);
 				platilloRepository.save(platillo);
 			}
 		}
-		catch (S3Exception e) {
+		catch (final S3Exception e) {
 			log.error("Error uploading pdf to S3", e);
 		}
 	}
 
 	@Override
-	public byte[] getPicture(@NonNull Long id, @NonNull String fileName) throws IOException {
+	public byte[] getPicture(@NonNull final Long id, @NonNull final String fileName) throws IOException {
 		log.info("Starting getPicture with id: {}", id);
-		S3Client s3Client = getClient();
-		String key = "platillo/" + id + "/" + fileName;
+		final S3Client s3Client = getClient();
+		final String key = "platillo/" + id + "/" + fileName;
+		byte[] result = null;
 		try {
-			return s3Client.getObject(builder -> builder.bucket(bucketName).key(key)).readAllBytes();
+			result = s3Client.getObject(builder -> builder.bucket(bucketName).key(key)).readAllBytes();
 		}
-		catch (S3Exception e) {
+		catch (final S3Exception e) {
 			log.error("Error getting picture from S3", e);
-			return null;
 		}
+		return result;
 	}
 
-	private void uploadPictureToS3(@NonNull Long id, byte[] bytes, String fileExtension) {
-		String key = "platillo/" + id + "/picture." + fileExtension;
+	private void uploadPictureToS3(@NonNull final Long id, final byte[] bytes, final String fileExtension) {
+		final String key = "platillo/" + id + "/picture." + fileExtension;
 		log.info("Uploading picture to S3 with key: {}", key);
-		S3Client s3Client = getClient();
+		final S3Client s3Client = getClient();
 		try {
 			// delete image if exists
 			if (imageExists(id, fileExtension)) {
@@ -197,31 +198,31 @@ public class PlatilloServiceImpl implements PlatilloService {
 					RequestBody.fromBytes(bytes));
 
 			// update the file name in the db
-			Platillo platillo = platilloRepository.findById(id).orElse(null);
+			final Platillo platillo = platilloRepository.findById(id).orElse(null);
 			if (platillo != null) {
 				platillo.setImageUrl(key);
 				platilloRepository.save(platillo);
 			}
 		}
-		catch (S3Exception e) {
+		catch (final S3Exception e) {
 			log.error("Error uploading picture to S3", e);
 		}
 	}
 
-	private boolean imageExists(Long id, String fileExtension) {
-		String key = "platillo/" + id + "/picture." + fileExtension;
+	private boolean imageExists(final Long id, final String fileExtension) {
+		final String key = "platillo/" + id + "/picture." + fileExtension;
 		return keyExists(key);
 	}
 
-	private boolean keyExists(String key) {
-		S3Client s3Client = getClient();
+	private boolean keyExists(final String key) {
+		final S3Client s3Client = getClient();
 		try {
-			HeadObjectRequest headObjectRequest = HeadObjectRequest.builder().bucket(bucketName).key(key).build();
-			HeadObjectResponse headObjectResponse = s3Client.headObject(headObjectRequest);
-			String contentType = headObjectResponse.contentType();
+			final HeadObjectRequest headObjectRequest = HeadObjectRequest.builder().bucket(bucketName).key(key).build();
+			final HeadObjectResponse headObjectResponse = s3Client.headObject(headObjectRequest);
+			final String contentType = headObjectResponse.contentType();
 			return contentType.length() > 0;
 		}
-		catch (AwsServiceException | SdkClientException e) {
+		catch (final AwsServiceException | SdkClientException e) {
 			return false;
 		}
 	}
@@ -236,15 +237,15 @@ public class PlatilloServiceImpl implements PlatilloService {
 	}
 
 	// summarize platillo macronutrientes
-	private void summarizeMacronutrientesPlatillo(Platillo platillo) {
+	private void summarizeMacronutrientesPlatillo(final Platillo platillo) {
 		resetMacronutrientesPlatillo(platillo);
-		for (Ingrediente i : platillo.getIngredientes()) {
+		for (final Ingrediente i : platillo.getIngredientes()) {
 			addMacronutrientesPlatillo(platillo, i);
 		}
 	}
 
 	// reset platillo macronutrientes
-	private void resetMacronutrientesPlatillo(Platillo platillo) {
+	private void resetMacronutrientesPlatillo(final Platillo platillo) {
 		platillo.setAcidoAscorbico(0d);
 		platillo.setAcidoFolico(0d);
 		platillo.setAgMonoinsaturados(0d);
@@ -271,7 +272,7 @@ public class PlatilloServiceImpl implements PlatilloService {
 	}
 
 	// add macronutrientes to platillo
-	private void addMacronutrientesPlatillo(Platillo platillo, Ingrediente ingrediente) {
+	private void addMacronutrientesPlatillo(final Platillo platillo, final Ingrediente ingrediente) {
 		if (ingrediente.getAcidoAscorbico() != null)
 			platillo.setAcidoAscorbico(platillo.getAcidoAscorbico() + ingrediente.getAcidoAscorbico());
 		if (ingrediente.getAcidoFolico() != null)
@@ -322,20 +323,21 @@ public class PlatilloServiceImpl implements PlatilloService {
 	}
 
 	// calculate ingrediente from cantidad change
-	private void calculateIngredienteFromCantiadChange(String given, String suggested, Ingrediente ingrediente,
-			Alimento alimento) {
-		given = given.trim();
-		Boolean hasInteger = given.contains(" ") || !given.contains("/");
-		Boolean hasFraction = given.contains("/");
-		Integer iGivenIntPart = hasInteger ? Integer.parseInt(given.split(" ")[0]) : 0;
-		Integer iGivenNumeratorPart = hasInteger ? hasFraction ? Integer.parseInt(given.split(" ")[1].split("/")[0]) : 0
-				: Integer.parseInt(given.split("/")[0]);
-		Integer iGivenDenominatorPart = hasInteger
-				? hasFraction ? Integer.parseInt(given.split(" ")[1].split("/")[1]) : 0
-				: Integer.parseInt(given.split("/")[1]);
-		Double dGiven = iGivenIntPart.doubleValue()
+	private void calculateIngredienteFromCantiadChange(final String given, final String suggested,
+			final Ingrediente ingrediente, final Alimento alimento) {
+		final String trimmedGiven = given.trim();
+		final Boolean hasInteger = trimmedGiven.contains(" ") || !trimmedGiven.contains("/");
+		final Boolean hasFraction = trimmedGiven.contains("/");
+		final Integer iGivenIntPart = hasInteger ? Integer.parseInt(trimmedGiven.split(" ")[0]) : 0;
+		final Integer iGivenNumeratorPart = hasInteger
+				? hasFraction ? Integer.parseInt(trimmedGiven.split(" ")[1].split("/")[0]) : 0
+				: Integer.parseInt(trimmedGiven.split("/")[0]);
+		final Integer iGivenDenominatorPart = hasInteger
+				? hasFraction ? Integer.parseInt(trimmedGiven.split(" ")[1].split("/")[1]) : 0
+				: Integer.parseInt(trimmedGiven.split("/")[1]);
+		final Double dGiven = iGivenIntPart.doubleValue()
 				+ (hasFraction ? (iGivenNumeratorPart.doubleValue() / iGivenDenominatorPart.doubleValue()) : 0d);
-		Double dFactor = dGiven / alimento.getCantSugerida();
+		final Double dFactor = dGiven / alimento.getCantSugerida();
 
 		log.debug("setting cantSugerida to {}.", dGiven);
 		ingrediente.setCantSugerida(dGiven);
@@ -416,7 +418,7 @@ public class PlatilloServiceImpl implements PlatilloService {
 	}
 
 	// convert alimento to ingrediente
-	private void convertAlimentoToIngrediente(Ingrediente ingrediente, Alimento alimento) {
+	private void convertAlimentoToIngrediente(final Ingrediente ingrediente, final Alimento alimento) {
 		ingrediente.setCantSugerida(alimento.getCantSugerida());
 		ingrediente.setAcidoAscorbico(alimento.getAcidoAscorbico());
 		ingrediente.setAcidoFolico(alimento.getAcidoAscorbico());
@@ -446,9 +448,9 @@ public class PlatilloServiceImpl implements PlatilloService {
 	}
 
 	// calculate ingrediente from peso change
-	private void calculateIngredienteFromPesoChange(Integer given, Integer suggested, Ingrediente ingrediente,
-			Alimento alimento) {
-		Double dFactor = (double) given / (double) suggested;
+	private void calculateIngredienteFromPesoChange(final Integer given, final Integer suggested,
+			final Ingrediente ingrediente, final Alimento alimento) {
+		final Double dFactor = (double) given / (double) suggested;
 
 		ingrediente.setCantSugerida(dFactor * alimento.getCantSugerida());
 

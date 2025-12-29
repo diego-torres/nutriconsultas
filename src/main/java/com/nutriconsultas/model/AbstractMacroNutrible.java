@@ -20,27 +20,35 @@ public class AbstractMacroNutrible {
 	private Double hidratosDeCarbono;
 
 	public Integer getEnergia() {
-		if (energia == null)
-			return 0;
-		return energia;
+		Integer result = 0;
+		if (energia != null) {
+			result = energia;
+		}
+		return result;
 	}
 
 	public Double getProteina() {
-		if (proteina == null)
-			return 0.0;
-		return proteina;
+		Double result = 0.0;
+		if (proteina != null) {
+			result = proteina;
+		}
+		return result;
 	}
 
 	public Double getLipidos() {
-		if (lipidos == null)
-			return 0.0;
-		return lipidos;
+		Double result = 0.0;
+		if (lipidos != null) {
+			result = lipidos;
+		}
+		return result;
 	}
 
 	public Double getHidratosDeCarbono() {
-		if (hidratosDeCarbono == null)
-			return 0.0;
-		return hidratosDeCarbono;
+		Double result = 0.0;
+		if (hidratosDeCarbono != null) {
+			result = hidratosDeCarbono;
+		}
+		return result;
 	}
 
 }

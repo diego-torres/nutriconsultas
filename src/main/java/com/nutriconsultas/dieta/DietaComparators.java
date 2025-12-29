@@ -16,9 +16,9 @@ public final class DietaComparators {
 		map.put(new ComparatorKey("dieta", Direction.desc), Comparator.comparing(Dieta::getNombre).reversed());
 
 		// compare by nombre ingestas
-		Comparator<Dieta> byIngestas = (d1, d2) -> {
-			String i1 = d1.getIngestas().stream().map(Ingesta::getNombre).reduce("", String::concat);
-			String i2 = d2.getIngestas().stream().map(Ingesta::getNombre).reduce("", String::concat);
+		final Comparator<Dieta> byIngestas = (final Dieta d1, final Dieta d2) -> {
+			final String i1 = d1.getIngestas().stream().map(Ingesta::getNombre).reduce("", String::concat);
+			final String i2 = d2.getIngestas().stream().map(Ingesta::getNombre).reduce("", String::concat);
 			return i1.compareTo(i2);
 		};
 		map.put(new ComparatorKey("ingestas", Direction.asc), byIngestas);
@@ -41,7 +41,7 @@ public final class DietaComparators {
 		map.put(new ComparatorKey("hc", Direction.desc), Comparator.comparing(Dieta::getHidratosDeCarbono).reversed());
 	}
 
-	public static Comparator<Dieta> getComparator(String name, Direction dir) {
+	public static Comparator<Dieta> getComparator(final String name, final Direction dir) {
 		return map.get(new ComparatorKey(name, dir));
 	}
 

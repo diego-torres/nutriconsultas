@@ -135,6 +135,13 @@ To automatically format all Java code:
 mvn spring-javaformat:apply
 ```
 
+This will format all Java source files according to Spring's coding standards. The formatting is automatically applied during the `validate` phase of the Maven build lifecycle.
+
+**Fixing Formatting Issues:**
+- Run `mvn spring-javaformat:apply` to fix all formatting issues automatically
+- The pre-commit hook automatically formats code before each commit
+- Formatting issues are typically spacing, indentation, and brace placement
+
 #### Run All Linting Tools
 
 To run all linting and formatting tools at once:
@@ -157,15 +164,49 @@ This script will:
 mvn checkstyle:check
 ```
 
+**Fixing Checkstyle Issues:**
+- Review the report at `target/checkstyle-result.xml`
+- Common issues:
+  - **Line length**: Keep lines under 120 characters
+  - **Naming conventions**: Follow Java naming standards (PascalCase for classes, camelCase for methods/variables)
+  - **Missing braces**: Always use braces for if/for/while statements
+  - **Unused imports**: Remove unused imports
+  - **Whitespace**: Follow consistent whitespace rules
+- Most issues can be auto-fixed by running `mvn spring-javaformat:apply`
+- For naming issues, manually rename variables/classes to match conventions
+
 **SpotBugs:**
 ```bash
 mvn spotbugs:check
 ```
 
+**Fixing SpotBugs Issues:**
+- Review the report at `target/spotbugsXml.xml` or HTML report at `target/reports/spotbugs.html`
+- Common issues:
+  - **Null pointer dereferences**: Add null checks
+  - **Resource leaks**: Ensure resources are closed in finally blocks or use try-with-resources
+  - **Inefficient operations**: Optimize string concatenation, use StringBuilder for loops
+  - **Bad practices**: Fix equals/hashCode implementations, avoid comparing strings with ==
+- Some issues may be false positives and can be excluded in `spotbugs-exclude.xml`
+
 **PMD:**
 ```bash
 mvn pmd:check
 ```
+
+**Fixing PMD Issues:**
+- Review the report at `target/pmd.xml` or HTML report at `target/reports/pmd.html`
+- Common issues and fixes:
+  - **MethodArgumentCouldBeFinal**: Add `final` keyword to method parameters that aren't reassigned
+  - **LocalVariableCouldBeFinal**: Add `final` keyword to local variables that aren't reassigned
+  - **OnlyOneReturn**: Refactor methods to use a single return point (use a result variable)
+  - **LongVariable**: Shorten excessively long variable names
+  - **ShortVariable**: Loop variables like `i`, `j`, `k` are acceptable (excluded in custom ruleset)
+  - **UnusedAssignment**: Remove unused variable assignments
+  - **GuardLogStatement**: Wrap logger calls with log level checks (e.g., `if (logger.isDebugEnabled())`)
+  - **AvoidCatchingGenericException**: Catch specific exceptions instead of generic `Exception`
+- The project uses a custom PMD ruleset (`pmd-ruleset.xml`) that excludes ShortVariable for loop variables
+- Most violations can be fixed by adding `final` keywords and refactoring methods
 
 **Thymeleaf Template Validation:**
 Template validation runs automatically during the test lifecycle via `ThymeleafTemplateValidationTest`. To run it:
@@ -246,6 +287,7 @@ After running the linting tools, reports are generated in the `target/` director
 
 - `checkstyle.xml` - Checkstyle rules configuration
 - `spotbugs-exclude.xml` - SpotBugs exclusion patterns for generated code
+- `pmd-ruleset.xml` - Custom PMD ruleset configuration (excludes ShortVariable for loop variables)
 
 ### IDE Integration
 

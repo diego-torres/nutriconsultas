@@ -35,18 +35,18 @@ public class AlimentosInitializer implements CommandLineRunner {
 	}
 
 	@Override
-	public void run(String... args) {
-		long count = alimentosRepository.count();
+	public void run(final String... args) {
+		final long count = alimentosRepository.count();
 		log.info("Checking alimentos table. Current count: {}", count);
 
 		if (count == 0) {
 			log.info("Alimentos table is empty. Initializing from alimentos.sql...");
 			try {
 				initializeAlimentos();
-				long newCount = alimentosRepository.count();
+				final long newCount = alimentosRepository.count();
 				log.info("Successfully initialized alimentos table from alimentos.sql. New count: {}", newCount);
 			}
-			catch (Exception e) {
+			catch (final Exception e) {
 				log.error("Failed to initialize alimentos table from alimentos.sql", e);
 			}
 		}
@@ -56,10 +56,10 @@ public class AlimentosInitializer implements CommandLineRunner {
 	}
 
 	private void initializeAlimentos() throws IOException, SQLException {
-		Resource resource = getAlimentosSqlResource();
-		EncodedResource encodedResource = new EncodedResource(resource, StandardCharsets.UTF_8);
+		final Resource resource = getAlimentosSqlResource();
+		final EncodedResource encodedResource = new EncodedResource(resource, StandardCharsets.UTF_8);
 
-		Connection connection = dataSource.getConnection();
+		final Connection connection = dataSource.getConnection();
 		if (connection == null) {
 			throw new SQLException("Failed to obtain database connection");
 		}
@@ -71,14 +71,14 @@ public class AlimentosInitializer implements CommandLineRunner {
 
 	private @NonNull Resource getAlimentosSqlResource() throws IOException {
 		// Try to load from classpath first (if moved to resources)
-		ClassPathResource classPathResource = new ClassPathResource("alimentos.sql");
+		final ClassPathResource classPathResource = new ClassPathResource("alimentos.sql");
 		if (classPathResource.exists()) {
 			log.debug("Loading alimentos.sql from classpath");
 			return classPathResource;
 		}
 
 		// Fallback to root directory
-		File sqlFile = new File("alimentos.sql");
+		final File sqlFile = new File("alimentos.sql");
 		if (!sqlFile.exists()) {
 			throw new IOException("alimentos.sql file not found in classpath or root directory");
 		}

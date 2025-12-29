@@ -16,9 +16,9 @@ public class IngredienteComparators {
 
 	static {
 		// create a comparator to compare by alimento.nombreAlimento
-		Comparator<Ingrediente> nombreAlimentoComparator = new Comparator<Ingrediente>() {
+		final Comparator<Ingrediente> nombreAlimentoComparator = new Comparator<Ingrediente>() {
 			@Override
-			public int compare(Ingrediente o1, Ingrediente o2) {
+			public int compare(final Ingrediente o1, final Ingrediente o2) {
 				return o1.getAlimento().getNombreAlimento().compareTo(o2.getAlimento().getNombreAlimento());
 			}
 		};
@@ -40,7 +40,7 @@ public class IngredienteComparators {
 		map.put(new ComparatorKey("peso", Direction.desc), Comparator.comparing(Ingrediente::getPesoNeto).reversed());
 	}
 
-	public static Comparator<Ingrediente> getComparator(String name, Direction dir) {
+	public static Comparator<Ingrediente> getComparator(final String name, final Direction dir) {
 		log.debug("comparator request name: {}, dir: {}", name, dir);
 		return map.get(new ComparatorKey(name, dir));
 	}

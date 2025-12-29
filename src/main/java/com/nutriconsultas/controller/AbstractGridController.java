@@ -21,12 +21,12 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class AbstractGridController<T> {
 
 	@PostMapping("data-table")
-	public PageArray getPageArray(@RequestBody PagingRequest pagingRequest) {
+	public PageArray getPageArray(@RequestBody final PagingRequest pagingRequest) {
 		log.info("starting getPageArray with pagingRequest: {}", pagingRequest);
 		pagingRequest.setColumns(getColumns());
-		Page<T> page = getRows(pagingRequest);
+		final Page<T> page = getRows(pagingRequest);
 		log.debug("page with records: {}", page.getRecordsTotal());
-		PageArray pageArray = new PageArray();
+		final PageArray pageArray = new PageArray();
 		pageArray.setData(page.getData().stream().map(this::toStringList).collect(Collectors.toList()));
 		pageArray.setDraw(page.getDraw());
 		pageArray.setRecordsFiltered(page.getRecordsFiltered());
@@ -45,14 +45,14 @@ public abstract class AbstractGridController<T> {
 
 	protected abstract List<Column> getColumns();
 
-	protected Page<T> getRows(PagingRequest pagingRequest) {
+	protected Page<T> getRows(final PagingRequest pagingRequest) {
 		log.debug("starting getRows with pagingRequest: {}", pagingRequest);
 		return getPage(pagingRequest, getData());
 	}
 
-	protected Page<T> getPage(PagingRequest pagingRequest, List<T> data) {
+	protected Page<T> getPage(final PagingRequest pagingRequest, final List<T> data) {
 		log.debug("getPage: {}", pagingRequest);
-		List<T> filtered = data.stream()
+		final List<T> filtered = data.stream()
 			.filter(filterRows(pagingRequest))
 			.sorted(sortRows(pagingRequest))
 			.skip(pagingRequest.getStart())
@@ -61,11 +61,11 @@ public abstract class AbstractGridController<T> {
 
 		log.debug("filtered records {}", filtered.size());
 
-		long count = data.stream().filter(filterRows(pagingRequest)).count();
+		final long count = data.stream().filter(filterRows(pagingRequest)).count();
 
 		log.debug("total records {}", count);
 
-		Page<T> result = new Page<>(filtered);
+		final Page<T> result = new Page<>(filtered);
 		result.setRecordsFiltered((int) count);
 		result.setRecordsTotal((int) count);
 		result.setDraw(pagingRequest.getDraw());
@@ -74,23 +74,23 @@ public abstract class AbstractGridController<T> {
 		return result;
 	}
 
-	private Predicate<T> filterRows(PagingRequest pagingRequest) {
+	private Predicate<T> filterRows(final PagingRequest pagingRequest) {
 		log.debug("filterRows: {}", pagingRequest);
 		Predicate<T> predicate = t -> true;
 		if (pagingRequest.getSearch() != null) {
-			String value = pagingRequest.getSearch().getValue().toLowerCase();
+			final String value = pagingRequest.getSearch().getValue().toLowerCase();
 			predicate = getPredicate(value);
 		}
 		log.debug("filterRows: {}", predicate);
 		return predicate;
 	}
 
-	private Comparator<T> sortRows(PagingRequest pagingRequest) {
+	private Comparator<T> sortRows(final PagingRequest pagingRequest) {
 		log.debug("start sortRows: {}", pagingRequest);
 		Comparator<T> comparator = (o1, o2) -> 0;
 		if (pagingRequest.getOrder() != null) {
-			Order order = pagingRequest.getOrder().get(0);
-			String column = pagingRequest.getColumns().get(order.getColumn()).getData();
+			final Order order = pagingRequest.getOrder().get(0);
+			final String column = pagingRequest.getColumns().get(order.getColumn()).getData();
 			comparator = getComparator(column, order.getDir());
 		}
 		log.debug("finish sortRows: {}", comparator);

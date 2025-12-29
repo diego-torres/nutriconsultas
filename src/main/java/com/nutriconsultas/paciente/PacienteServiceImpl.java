@@ -16,24 +16,24 @@ public class PacienteServiceImpl implements PacienteService {
 	private PacienteRepository repo;
 
 	@Override
-	public void delete(@NonNull Long id) {
+	public void delete(@NonNull final Long id) {
 		log.info("deleting Paciente with id {}.", id);
 		repo.deleteById(id);
 		log.info("Paciente {} deleted successfully.", id);
 	}
 
 	@Override
-	public Paciente findById(@NonNull Long id) {
+	public Paciente findById(@NonNull final Long id) {
 		log.info("finding Paciente with id {}.", id);
-		Paciente paciente = repo.findById(id).orElse(null);
+		final Paciente paciente = repo.findById(id).orElse(null);
 		log.info("Paciente found {}.", paciente);
 		return paciente;
 	}
 
 	@Override
-	public Paciente save(@NonNull Paciente paciente) {
+	public Paciente save(@NonNull final Paciente paciente) {
 		log.info("saving Paciente {}.", paciente);
-		Paciente saved = repo.save(paciente);
+		final Paciente saved = repo.save(paciente);
 		log.info("Paciente saved {}.", saved);
 		return saved;
 	}

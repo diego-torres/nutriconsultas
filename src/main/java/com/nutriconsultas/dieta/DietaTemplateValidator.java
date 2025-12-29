@@ -19,11 +19,11 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 
 	@Override
 	public Map<String, Object> createMockModelVariables() {
-		Map<String, Object> variables = super.createMockModelVariables();
+		final Map<String, Object> variables = super.createMockModelVariables();
 
 		// Create mock ingestas list
-		List<Ingesta> mockIngestas = new ArrayList<>();
-		Ingesta mockIngesta = new Ingesta();
+		final List<Ingesta> mockIngestas = new ArrayList<>();
+		final Ingesta mockIngesta = new Ingesta();
 		mockIngesta.setId(1L);
 		mockIngesta.setNombre("Desayuno");
 		mockIngesta.setEnergia(0);
@@ -31,8 +31,8 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		mockIngesta.setLipidos(0.0);
 		mockIngesta.setHidratosDeCarbono(0.0);
 		// Add mock platillo with numeric values for validation
-		List<PlatilloIngesta> mockPlatillos = new ArrayList<>();
-		PlatilloIngesta mockPlatillo = new PlatilloIngesta();
+		final List<PlatilloIngesta> mockPlatillos = new ArrayList<>();
+		final PlatilloIngesta mockPlatillo = new PlatilloIngesta();
 		mockPlatillo.setId(1L);
 		mockPlatillo.setName("Platillo de ejemplo");
 		mockPlatillo.setPortions(1);
@@ -44,8 +44,8 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		mockIngesta.setPlatillos(mockPlatillos);
 
 		// Add mock alimentos for more complete validation
-		List<AlimentoIngesta> mockAlimentos = new ArrayList<>();
-		AlimentoIngesta mockAlimento = new AlimentoIngesta();
+		final List<AlimentoIngesta> mockAlimentos = new ArrayList<>();
+		final AlimentoIngesta mockAlimento = new AlimentoIngesta();
 		mockAlimento.setId(1L);
 		mockAlimento.setName("Alimento de ejemplo");
 		mockAlimento.setPortions(1);
@@ -59,7 +59,7 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		mockIngestas.add(mockIngesta);
 
 		// Create Dieta object with ingestas
-		Dieta mockDieta = new Dieta();
+		final Dieta mockDieta = new Dieta();
 		mockDieta.setId(0L);
 		mockDieta.setNombre("");
 		mockDieta.setEnergia(0);
@@ -72,15 +72,15 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 
 		// Calculate distribution percentages for chart validation
 		// Using the same calculation logic as DietaController
-		double totalProteina = calculateTotalProteina(mockDieta);
-		double totalLipidos = calculateTotalLipidos(mockDieta);
-		double totalHidratosDeCarbono = calculateTotalHidratosDeCarbono(mockDieta);
-		double kCal = totalProteina * 4 + totalLipidos * 9 + totalHidratosDeCarbono * 4;
+		final double totalProteina = calculateTotalProteina(mockDieta);
+		final double totalLipidos = calculateTotalLipidos(mockDieta);
+		final double totalHidratosDeCarbono = calculateTotalHidratosDeCarbono(mockDieta);
+		final double kCal = totalProteina * 4 + totalLipidos * 9 + totalHidratosDeCarbono * 4;
 
 		if (kCal > 0.01) {
-			double distProteina = totalProteina * 4 / kCal * 100;
-			double distLipido = totalLipidos * 9 / kCal * 100;
-			double distHidratoCarbono = totalHidratosDeCarbono * 4 / kCal * 100;
+			final double distProteina = totalProteina * 4 / kCal * 100;
+			final double distLipido = totalLipidos * 9 / kCal * 100;
+			final double distHidratoCarbono = totalHidratosDeCarbono * 4 / kCal * 100;
 			variables.put("distribucionProteina", distProteina);
 			variables.put("distribucionLipido", distLipido);
 			variables.put("distribucionHidratoCarbono", distHidratoCarbono);
@@ -99,7 +99,7 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 	 * @param dieta the dieta to calculate from
 	 * @return total protein in grams
 	 */
-	private double calculateTotalProteina(Dieta dieta) {
+	private double calculateTotalProteina(final Dieta dieta) {
 		return dieta.getIngestas()
 			.stream()
 			.mapToDouble(i -> i.getPlatillos()
@@ -116,7 +116,7 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 	 * @param dieta the dieta to calculate from
 	 * @return total lipids in grams
 	 */
-	private double calculateTotalLipidos(Dieta dieta) {
+	private double calculateTotalLipidos(final Dieta dieta) {
 		return dieta.getIngestas()
 			.stream()
 			.mapToDouble(i -> i.getPlatillos()
@@ -133,7 +133,7 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 	 * @param dieta the dieta to calculate from
 	 * @return total carbohydrates in grams
 	 */
-	private double calculateTotalHidratosDeCarbono(Dieta dieta) {
+	private double calculateTotalHidratosDeCarbono(final Dieta dieta) {
 		return dieta.getIngestas()
 			.stream()
 			.mapToDouble(i -> i.getPlatillos()

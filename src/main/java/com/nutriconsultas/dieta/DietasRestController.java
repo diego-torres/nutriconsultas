@@ -33,22 +33,25 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	private DietaService dietaService;
 
 	@PostMapping("add")
-	public Dieta addDieta(@RequestBody Dieta dieta) {
+	public Dieta addDieta(@RequestBody final Dieta dieta) {
 		log.info("starting addDieta with dieta {}.", dieta);
-		List<Ingesta> ingestas = Stream.of("Desayuno", "Comida", "Cena").map(Ingesta::new).collect(Collectors.toList());
+		final List<Ingesta> ingestas = Stream.of("Desayuno", "Comida", "Cena")
+			.map(Ingesta::new)
+			.collect(Collectors.toList());
 		ingestas.forEach(i -> i.setDieta(dieta));
 		dieta.setIngestas(ingestas);
-		Dieta _dieta = dietaService.saveDieta(dieta);
+		final Dieta _dieta = dietaService.saveDieta(dieta);
 		log.info("finish addDieta with dieta {}.", dieta);
 		return _dieta;
 	}
 
 	@DeleteMapping("{dietaId}/ingestas/{ingestaId}/platillos/{platilloIngestaId}")
-	public ResponseEntity<ApiResponse<Dieta>> deletePlatilloIngesta(@PathVariable @NonNull Long dietaId,
-			@PathVariable @NonNull Long ingestaId, @PathVariable @NonNull Long platilloIngestaId) {
+	public ResponseEntity<ApiResponse<Dieta>> deletePlatilloIngesta(@PathVariable @NonNull final Long dietaId,
+			@PathVariable @NonNull final Long ingestaId, @PathVariable @NonNull final Long platilloIngestaId) {
 		log.info("starting deletePlatilloIngesta with dietaId {}, ingestaId {}, platilloIngestaId {}.", dietaId,
 				ingestaId, platilloIngestaId);
-		Dieta dieta = dietaService.getDieta(dietaId);
+		final Dieta dieta = dietaService.getDieta(dietaId);
+		ResponseEntity<ApiResponse<Dieta>> result;
 		if (dieta != null) {
 			dieta.getIngestas()
 				.stream()
@@ -56,21 +59,25 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 				.findFirst()
 				.ifPresent(ingesta -> ingesta.getPlatillos()
 					.removeIf(platillo -> platillo.getId().equals(platilloIngestaId)));
-			Dieta saved = dietaService.saveDieta(dieta);
+			final Dieta saved = dietaService.saveDieta(dieta);
 			log.info("finish deletePlatilloIngesta with dietaId {}, ingestaId {}, platilloIngestaId {}.", dietaId,
 					ingestaId, platilloIngestaId);
-			return ResponseEntity.ok(new ApiResponse<Dieta>(saved));
+			result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
 		}
-		log.warn("Dieta with id {} not found when trying to delete platilloIngesta", dietaId);
-		return ResponseEntity.notFound().build();
+		else {
+			log.warn("Dieta with id {} not found when trying to delete platilloIngesta", dietaId);
+			result = ResponseEntity.notFound().build();
+		}
+		return result;
 	}
 
 	@DeleteMapping("{dietaId}/ingestas/{ingestaId}/alimentos/{alimentoIngestaId}")
-	public ResponseEntity<ApiResponse<Dieta>> deleteAlimentoIngesta(@PathVariable @NonNull Long dietaId,
-			@PathVariable @NonNull Long ingestaId, @PathVariable @NonNull Long alimentoIngestaId) {
+	public ResponseEntity<ApiResponse<Dieta>> deleteAlimentoIngesta(@PathVariable @NonNull final Long dietaId,
+			@PathVariable @NonNull final Long ingestaId, @PathVariable @NonNull final Long alimentoIngestaId) {
 		log.info("starting deleteAlimentoIngesta with dietaId {}, ingestaId {}, alimentoIngestaId {}.", dietaId,
 				ingestaId, alimentoIngestaId);
-		Dieta dieta = dietaService.getDieta(dietaId);
+		final Dieta dieta = dietaService.getDieta(dietaId);
+		ResponseEntity<ApiResponse<Dieta>> result;
 		if (dieta != null) {
 			dieta.getIngestas()
 				.stream()
@@ -78,13 +85,16 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 				.findFirst()
 				.ifPresent(ingesta -> ingesta.getAlimentos()
 					.removeIf(alimento -> alimento.getId().equals(alimentoIngestaId)));
-			Dieta saved = dietaService.saveDieta(dieta);
+			final Dieta saved = dietaService.saveDieta(dieta);
 			log.info("finish deleteAlimentoIngesta with dietaId {}, ingestaId {}, alimentoIngestaId {}.", dietaId,
 					ingestaId, alimentoIngestaId);
-			return ResponseEntity.ok(new ApiResponse<Dieta>(saved));
+			result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
 		}
-		log.warn("Dieta with id {} not found when trying to delete alimentoIngesta", dietaId);
-		return ResponseEntity.notFound().build();
+		else {
+			log.warn("Dieta with id {} not found when trying to delete alimentoIngesta", dietaId);
+			result = ResponseEntity.notFound().build();
+		}
+		return result;
 	}
 
 	@Override
@@ -95,7 +105,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	}
 
 	@Override
-	protected List<String> toStringList(Dieta row) {
+	protected List<String> toStringList(final Dieta row) {
 		log.debug("converting Dieta row {} to string list.", row);
 		return Arrays.asList("<a href='/admin/dietas/" + row.getId() + "'>" + row.getNombre() + "</a>",
 				getIngestas(row), getDist(row), String.format("%.1f", getKCal(row)),
@@ -103,32 +113,35 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 				String.format("%.1f", getTotalHidratosDeCarbono(row)));
 	}
 
-	private String getIngestas(Dieta row) {
+	private String getIngestas(final Dieta row) {
 		return row.getIngestas().stream().map(Ingesta::getNombre).collect(Collectors.joining(", "));
 	}
 
-	private String getDist(Dieta row) {
+	private String getDist(final Dieta row) {
 		// use protein, lipid, and carbohydrate values to calculate distribution
-		Double kCal = getKCal(row);
+		final Double kCal = getKCal(row);
 
 		// If diet is empty (kCal is 0 or very small), return empty string
+		String result;
 		if (kCal == null || kCal == 0 || kCal < 0.01) {
-			return "";
+			result = "";
 		}
+		else {
+			final Double distProteina = getTotalProteina(row) * 4 / kCal;
+			final Double distLipido = getTotalLipidos(row) * 9 / kCal;
+			final Double distHidratoCarbono = getTotalHidratosDeCarbono(row) * 4 / kCal;
 
-		Double distProteina = getTotalProteina(row) * 4 / kCal;
-		Double distLipido = getTotalLipidos(row) * 9 / kCal;
-		Double distHidratoCarbono = getTotalHidratosDeCarbono(row) * 4 / kCal;
-
-		return String.format("%.1f", distProteina) + " / " + String.format("%.1f", distLipido) + " / "
-				+ String.format("%.1f", distHidratoCarbono);
+			result = String.format("%.1f", distProteina) + " / " + String.format("%.1f", distLipido) + " / "
+					+ String.format("%.1f", distHidratoCarbono);
+		}
+		return result;
 	}
 
-	private Double getKCal(Dieta row) {
+	private Double getKCal(final Dieta row) {
 		return getTotalProteina(row) * 4 + getTotalLipidos(row) * 9 + getTotalHidratosDeCarbono(row) * 4;
 	}
 
-	private Double getTotalProteina(Dieta row) {
+	private Double getTotalProteina(final Dieta row) {
 		return row.getIngestas()
 			.stream()
 			.mapToDouble(i -> i.getPlatillos()
@@ -139,7 +152,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 			.sum();
 	}
 
-	private Double getTotalLipidos(Dieta row) {
+	private Double getTotalLipidos(final Dieta row) {
 		return row.getIngestas()
 			.stream()
 			.mapToDouble(i -> i.getPlatillos()
@@ -150,7 +163,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 			.sum();
 	}
 
-	private Double getTotalHidratosDeCarbono(Dieta row) {
+	private Double getTotalHidratosDeCarbono(final Dieta row) {
 		return row.getIngestas()
 			.stream()
 			.mapToDouble(i -> i.getPlatillos()
@@ -171,14 +184,14 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	}
 
 	@Override
-	protected Predicate<Dieta> getPredicate(String value) {
+	protected Predicate<Dieta> getPredicate(final String value) {
 		return row -> row.getNombre().toLowerCase().contains(value) || row.getNombre().toLowerCase().startsWith(value)
 				|| row.getIngestas().stream().anyMatch(i -> i.getNombre().toLowerCase().contains(value))
 				|| row.getIngestas().stream().anyMatch(i -> i.getNombre().toLowerCase().startsWith(value));
 	}
 
 	@Override
-	protected Comparator<Dieta> getComparator(String column, Direction dir) {
+	protected Comparator<Dieta> getComparator(final String column, final Direction dir) {
 		log.debug("getting Dieta comparator with column {} and direction {}.", column, dir);
 		return DietaComparators.getComparator(column, dir);
 	}

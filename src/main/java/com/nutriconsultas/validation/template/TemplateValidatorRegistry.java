@@ -35,7 +35,7 @@ public class TemplateValidatorRegistry {
 	 * specific validators should be registered before general ones.
 	 * @param validator the validator to register
 	 */
-	public void register(TemplateValidator validator) {
+	public void register(final TemplateValidator validator) {
 		validators.add(validator);
 	}
 
@@ -45,13 +45,15 @@ public class TemplateValidatorRegistry {
 	 * @param templatePath the template path (e.g., "sbadmin/pacientes/perfil")
 	 * @return the validator for this template, or null if none found
 	 */
-	public TemplateValidator findValidator(String templatePath) {
-		for (TemplateValidator validator : validators) {
+	public TemplateValidator findValidator(final String templatePath) {
+		TemplateValidator result = null;
+		for (final TemplateValidator validator : validators) {
 			if (validator.handlesTemplate(templatePath)) {
-				return validator;
+				result = validator;
+				break;
 			}
 		}
-		return null;
+		return result;
 	}
 
 	/**

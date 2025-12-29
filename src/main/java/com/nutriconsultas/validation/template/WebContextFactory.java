@@ -30,11 +30,11 @@ public class WebContextFactory {
 	 * @param mockVariables the mock model variables to include in the context
 	 * @return an IWebContext instance
 	 */
-	public static IWebContext createWebContext(Map<String, Object> mockVariables) {
-		ServletContext servletContext = createMockServletContext();
-		HttpServletRequest request = createMockHttpServletRequest(servletContext);
-		HttpServletResponse response = createMockHttpServletResponse();
-		IWebExchange webExchange = createMockWebExchange(request, response, servletContext);
+	public static IWebContext createWebContext(final Map<String, Object> mockVariables) {
+		final ServletContext servletContext = createMockServletContext();
+		final HttpServletRequest request = createMockHttpServletRequest(servletContext);
+		final HttpServletResponse response = createMockHttpServletResponse();
+		final IWebExchange webExchange = createMockWebExchange(request, response, servletContext);
 
 		return new IWebContext() {
 			@Override
@@ -43,12 +43,12 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public boolean containsVariable(String name) {
+			public boolean containsVariable(final String name) {
 				return mockVariables.containsKey(name);
 			}
 
 			@Override
-			public Object getVariable(String name) {
+			public Object getVariable(final String name) {
 				return mockVariables.get(name);
 			}
 
@@ -64,11 +64,11 @@ public class WebContextFactory {
 		};
 	}
 
-	private static IWebExchange createMockWebExchange(HttpServletRequest request, HttpServletResponse response,
-			ServletContext servletContext) {
-		IWebRequest webRequest = createMockWebRequest(request);
-		IWebApplication webApplication = createMockWebApplication(servletContext);
-		Map<String, Object> attributes = new HashMap<>();
+	private static IWebExchange createMockWebExchange(final HttpServletRequest request,
+			final HttpServletResponse response, final ServletContext servletContext) {
+		final IWebRequest webRequest = createMockWebRequest(request);
+		final IWebApplication webApplication = createMockWebApplication(servletContext);
+		final Map<String, Object> attributes = new HashMap<>();
 
 		return new IWebExchange() {
 			@Override
@@ -102,22 +102,22 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public boolean containsAttribute(String name) {
+			public boolean containsAttribute(final String name) {
 				return attributes.containsKey(name);
 			}
 
 			@Override
-			public void setAttributeValue(String name, Object value) {
+			public void setAttributeValue(final String name, final Object value) {
 				attributes.put(name, value);
 			}
 
 			@Override
-			public String transformURL(String url) {
+			public String transformURL(final String url) {
 				return url;
 			}
 
 			@Override
-			public Object getAttributeValue(String name) {
+			public Object getAttributeValue(final String name) {
 				return attributes.get(name);
 			}
 
@@ -137,7 +137,7 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public void removeAttribute(String name) {
+			public void removeAttribute(final String name) {
 				attributes.remove(name);
 			}
 
@@ -148,7 +148,7 @@ public class WebContextFactory {
 		};
 	}
 
-	private static IWebRequest createMockWebRequest(HttpServletRequest request) {
+	private static IWebRequest createMockWebRequest(final HttpServletRequest request) {
 		return new IWebRequest() {
 			@Override
 			public String getMethod() {
@@ -186,14 +186,14 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public String getHeaderValue(String name) {
+			public String getHeaderValue(final String name) {
 				return request.getHeader(name);
 			}
 
 			@Override
-			public String[] getHeaderValues(String name) {
-				Enumeration<String> headers = request.getHeaders(name);
-				List<String> result = new java.util.ArrayList<>();
+			public String[] getHeaderValues(final String name) {
+				final Enumeration<String> headers = request.getHeaders(name);
+				final List<String> result = new java.util.ArrayList<>();
 				if (headers != null) {
 					while (headers.hasMoreElements()) {
 						result.add(headers.nextElement());
@@ -204,8 +204,8 @@ public class WebContextFactory {
 
 			@Override
 			public Set<String> getAllHeaderNames() {
-				Enumeration<String> headerNames = request.getHeaderNames();
-				Set<String> result = new java.util.HashSet<>();
+				final Enumeration<String> headerNames = request.getHeaderNames();
+				final Set<String> result = new java.util.HashSet<>();
 				if (headerNames != null) {
 					while (headerNames.hasMoreElements()) {
 						result.add(headerNames.nextElement());
@@ -215,12 +215,12 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public String getParameterValue(String name) {
+			public String getParameterValue(final String name) {
 				return request.getParameter(name);
 			}
 
 			@Override
-			public String[] getParameterValues(String name) {
+			public String[] getParameterValues(final String name) {
 				return request.getParameterValues(name);
 			}
 
@@ -230,24 +230,26 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public String getCookieValue(String name) {
-				jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+			public String getCookieValue(final String name) {
+				final jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+				String result = null;
 				if (cookies != null) {
-					for (jakarta.servlet.http.Cookie cookie : cookies) {
+					for (final jakarta.servlet.http.Cookie cookie : cookies) {
 						if (name.equals(cookie.getName())) {
-							return cookie.getValue();
+							result = cookie.getValue();
+							break;
 						}
 					}
 				}
-				return null;
+				return result;
 			}
 
 			@Override
 			public Set<String> getAllCookieNames() {
-				jakarta.servlet.http.Cookie[] cookies = request.getCookies();
-				Set<String> result = new java.util.HashSet<>();
+				final jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+				final Set<String> result = new java.util.HashSet<>();
 				if (cookies != null) {
-					for (jakarta.servlet.http.Cookie cookie : cookies) {
+					for (final jakarta.servlet.http.Cookie cookie : cookies) {
 						result.add(cookie.getName());
 					}
 				}
@@ -255,26 +257,28 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public boolean containsCookie(String name) {
-				jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+			public boolean containsCookie(final String name) {
+				final jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+				boolean result = false;
 				if (cookies != null) {
-					for (jakarta.servlet.http.Cookie cookie : cookies) {
+					for (final jakarta.servlet.http.Cookie cookie : cookies) {
 						if (name.equals(cookie.getName())) {
-							return true;
+							result = true;
+							break;
 						}
 					}
 				}
-				return false;
+				return result;
 			}
 
 			@Override
-			public boolean containsParameter(String name) {
+			public boolean containsParameter(final String name) {
 				return request.getParameter(name) != null;
 			}
 
 			@Override
 			public int getHeaderCount() {
-				Enumeration<String> headerNames = request.getHeaderNames();
+				final Enumeration<String> headerNames = request.getHeaderNames();
 				int count = 0;
 				if (headerNames != null) {
 					while (headerNames.hasMoreElements()) {
@@ -286,19 +290,19 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public boolean containsHeader(String name) {
+			public boolean containsHeader(final String name) {
 				return request.getHeader(name) != null;
 			}
 
 			@Override
 			public java.util.Map<String, String[]> getHeaderMap() {
-				java.util.Map<String, String[]> map = new HashMap<>();
-				Enumeration<String> headerNames = request.getHeaderNames();
+				final java.util.Map<String, String[]> map = new HashMap<>();
+				final Enumeration<String> headerNames = request.getHeaderNames();
 				if (headerNames != null) {
 					while (headerNames.hasMoreElements()) {
-						String headerName = headerNames.nextElement();
-						Enumeration<String> headers = request.getHeaders(headerName);
-						java.util.List<String> values = new java.util.ArrayList<>();
+						final String headerName = headerNames.nextElement();
+						final Enumeration<String> headers = request.getHeaders(headerName);
+						final java.util.List<String> values = new java.util.ArrayList<>();
 						if (headers != null) {
 							while (headers.hasMoreElements()) {
 								values.add(headers.nextElement());
@@ -323,10 +327,10 @@ public class WebContextFactory {
 
 			@Override
 			public java.util.Map<String, String[]> getCookieMap() {
-				java.util.Map<String, String[]> map = new HashMap<>();
-				jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+				final java.util.Map<String, String[]> map = new HashMap<>();
+				final jakarta.servlet.http.Cookie[] cookies = request.getCookies();
 				if (cookies != null) {
-					for (jakarta.servlet.http.Cookie cookie : cookies) {
+					for (final jakarta.servlet.http.Cookie cookie : cookies) {
 						map.put(cookie.getName(), new String[] { cookie.getValue() });
 					}
 				}
@@ -339,11 +343,11 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public String[] getCookieValues(String name) {
-				List<String> values = new java.util.ArrayList<>();
-				jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+			public String[] getCookieValues(final String name) {
+				final List<String> values = new java.util.ArrayList<>();
+				final jakarta.servlet.http.Cookie[] cookies = request.getCookies();
 				if (cookies != null) {
-					for (jakarta.servlet.http.Cookie cookie : cookies) {
+					for (final jakarta.servlet.http.Cookie cookie : cookies) {
 						if (name.equals(cookie.getName())) {
 							values.add(cookie.getValue());
 						}
@@ -354,18 +358,18 @@ public class WebContextFactory {
 		};
 	}
 
-	private static IWebApplication createMockWebApplication(ServletContext servletContext) {
+	private static IWebApplication createMockWebApplication(final ServletContext servletContext) {
 		return new IWebApplication() {
 			@Override
-			public String getAttributeValue(String name) {
-				Object attr = servletContext.getAttribute(name);
+			public String getAttributeValue(final String name) {
+				final Object attr = servletContext.getAttribute(name);
 				return attr != null ? attr.toString() : null;
 			}
 
 			@Override
 			public Set<String> getAllAttributeNames() {
-				Enumeration<String> names = servletContext.getAttributeNames();
-				Set<String> result = new java.util.HashSet<>();
+				final Enumeration<String> names = servletContext.getAttributeNames();
+				final Set<String> result = new java.util.HashSet<>();
 				if (names != null) {
 					while (names.hasMoreElements()) {
 						result.add(names.nextElement());
@@ -375,23 +379,23 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public void setAttributeValue(String name, Object value) {
+			public void setAttributeValue(final String name, final Object value) {
 				servletContext.setAttribute(name, value);
 			}
 
 			@Override
-			public void removeAttribute(String name) {
+			public void removeAttribute(final String name) {
 				servletContext.removeAttribute(name);
 			}
 
 			@Override
-			public boolean containsAttribute(String name) {
+			public boolean containsAttribute(final String name) {
 				return servletContext.getAttribute(name) != null;
 			}
 
 			@Override
 			public int getAttributeCount() {
-				Enumeration<String> names = servletContext.getAttributeNames();
+				final Enumeration<String> names = servletContext.getAttributeNames();
 				int count = 0;
 				if (names != null) {
 					while (names.hasMoreElements()) {
@@ -403,28 +407,30 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public boolean resourceExists(String path) {
+			public boolean resourceExists(final String path) {
+				boolean result = false;
 				try {
-					return servletContext.getResource(path) != null;
+					result = servletContext.getResource(path) != null;
 				}
-				catch (java.net.MalformedURLException e) {
-					return false;
+				catch (final java.net.MalformedURLException e) {
+					// Return false on exception
 				}
+				return result;
 			}
 
 			@Override
-			public java.io.InputStream getResourceAsStream(String path) {
+			public java.io.InputStream getResourceAsStream(final String path) {
 				return servletContext.getResourceAsStream(path);
 			}
 
 			@Override
 			public java.util.Map<String, Object> getAttributeMap() {
-				java.util.Map<String, Object> map = new HashMap<>();
-				Enumeration<String> names = servletContext.getAttributeNames();
+				final java.util.Map<String, Object> map = new HashMap<>();
+				final Enumeration<String> names = servletContext.getAttributeNames();
 				if (names != null) {
 					while (names.hasMoreElements()) {
-						String name = names.nextElement();
-						Object value = servletContext.getAttribute(name);
+						final String name = names.nextElement();
+						final Object value = servletContext.getAttribute(name);
 						map.put(name, value);
 					}
 				}
@@ -443,7 +449,7 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public ServletContext getContext(String uripath) {
+			public ServletContext getContext(final String uripath) {
 				return this;
 			}
 
@@ -468,47 +474,47 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public String getMimeType(String file) {
+			public String getMimeType(final String file) {
 				return null;
 			}
 
 			@Override
-			public java.util.Set<String> getResourcePaths(String path) {
+			public java.util.Set<String> getResourcePaths(final String path) {
 				return null;
 			}
 
 			@Override
-			public java.net.URL getResource(String path) {
+			public java.net.URL getResource(final String path) {
 				return null;
 			}
 
 			@Override
-			public java.io.InputStream getResourceAsStream(String path) {
+			public java.io.InputStream getResourceAsStream(final String path) {
 				return null;
 			}
 
 			@Override
-			public jakarta.servlet.RequestDispatcher getRequestDispatcher(String path) {
+			public jakarta.servlet.RequestDispatcher getRequestDispatcher(final String path) {
 				return null;
 			}
 
 			@Override
-			public jakarta.servlet.RequestDispatcher getNamedDispatcher(String name) {
+			public jakarta.servlet.RequestDispatcher getNamedDispatcher(final String name) {
 				return null;
 			}
 
 			@Override
-			public void log(String msg) {
+			public void log(final String msg) {
 				// No-op for validation
 			}
 
 			@Override
-			public void log(String message, Throwable throwable) {
+			public void log(final String message, final Throwable throwable) {
 				// No-op for validation
 			}
 
 			@Override
-			public String getRealPath(String path) {
+			public String getRealPath(final String path) {
 				return null;
 			}
 
@@ -518,7 +524,7 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public String getInitParameter(String name) {
+			public String getInitParameter(final String name) {
 				return null;
 			}
 
@@ -528,12 +534,12 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public boolean setInitParameter(String name, String value) {
+			public boolean setInitParameter(final String name, final String value) {
 				return false;
 			}
 
 			@Override
-			public Object getAttribute(String name) {
+			public Object getAttribute(final String name) {
 				return attributes.get(name);
 			}
 
@@ -543,12 +549,12 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public void setAttribute(String name, Object object) {
+			public void setAttribute(final String name, final Object object) {
 				attributes.put(name, object);
 			}
 
 			@Override
-			public void removeAttribute(String name) {
+			public void removeAttribute(final String name) {
 				attributes.remove(name);
 			}
 
@@ -558,29 +564,30 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public jakarta.servlet.ServletRegistration.Dynamic addServlet(String servletName,
-					jakarta.servlet.Servlet servlet) {
+			public jakarta.servlet.ServletRegistration.Dynamic addServlet(final String servletName,
+					final jakarta.servlet.Servlet servlet) {
 				return null;
 			}
 
 			@Override
-			public jakarta.servlet.ServletRegistration.Dynamic addServlet(String servletName, String className) {
+			public jakarta.servlet.ServletRegistration.Dynamic addServlet(final String servletName,
+					final String className) {
 				return null;
 			}
 
 			@Override
-			public jakarta.servlet.ServletRegistration.Dynamic addServlet(String servletName,
-					Class<? extends jakarta.servlet.Servlet> servletClass) {
+			public jakarta.servlet.ServletRegistration.Dynamic addServlet(final String servletName,
+					final Class<? extends jakarta.servlet.Servlet> servletClass) {
 				return null;
 			}
 
 			@Override
-			public <T extends jakarta.servlet.Servlet> T createServlet(Class<T> clazz) {
+			public <T extends jakarta.servlet.Servlet> T createServlet(final Class<T> clazz) {
 				return null;
 			}
 
 			@Override
-			public jakarta.servlet.ServletRegistration getServletRegistration(String servletName) {
+			public jakarta.servlet.ServletRegistration getServletRegistration(final String servletName) {
 				return null;
 			}
 
@@ -590,29 +597,30 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public jakarta.servlet.FilterRegistration.Dynamic addFilter(String filterName,
-					jakarta.servlet.Filter filter) {
+			public jakarta.servlet.FilterRegistration.Dynamic addFilter(final String filterName,
+					final jakarta.servlet.Filter filter) {
 				return null;
 			}
 
 			@Override
-			public jakarta.servlet.FilterRegistration.Dynamic addFilter(String filterName, String className) {
+			public jakarta.servlet.FilterRegistration.Dynamic addFilter(final String filterName,
+					final String className) {
 				return null;
 			}
 
 			@Override
-			public jakarta.servlet.FilterRegistration.Dynamic addFilter(String filterName,
-					Class<? extends jakarta.servlet.Filter> filterClass) {
+			public jakarta.servlet.FilterRegistration.Dynamic addFilter(final String filterName,
+					final Class<? extends jakarta.servlet.Filter> filterClass) {
 				return null;
 			}
 
 			@Override
-			public <T extends jakarta.servlet.Filter> T createFilter(Class<T> clazz) {
+			public <T extends jakarta.servlet.Filter> T createFilter(final Class<T> clazz) {
 				return null;
 			}
 
 			@Override
-			public jakarta.servlet.FilterRegistration getFilterRegistration(String filterName) {
+			public jakarta.servlet.FilterRegistration getFilterRegistration(final String filterName) {
 				return null;
 			}
 
@@ -628,7 +636,7 @@ public class WebContextFactory {
 
 			@Override
 			public void setSessionTrackingModes(
-					java.util.Set<jakarta.servlet.SessionTrackingMode> sessionTrackingModes) {
+					final java.util.Set<jakarta.servlet.SessionTrackingMode> sessionTrackingModes) {
 				// No-op
 			}
 
@@ -643,22 +651,22 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public void addListener(String className) {
+			public void addListener(final String className) {
 				// No-op
 			}
 
 			@Override
-			public <T extends java.util.EventListener> void addListener(T t) {
+			public <T extends java.util.EventListener> void addListener(final T t) {
 				// No-op
 			}
 
 			@Override
-			public void addListener(Class<? extends java.util.EventListener> listenerClass) {
+			public void addListener(final Class<? extends java.util.EventListener> listenerClass) {
 				// No-op
 			}
 
 			@Override
-			public <T extends java.util.EventListener> T createListener(Class<T> clazz) {
+			public <T extends java.util.EventListener> T createListener(final Class<T> clazz) {
 				return null;
 			}
 
@@ -673,7 +681,7 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public void declareRoles(String... roleNames) {
+			public void declareRoles(final String... roleNames) {
 				// No-op
 			}
 
@@ -683,7 +691,8 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public jakarta.servlet.ServletRegistration.Dynamic addJspFile(String servletName, String jspFile) {
+			public jakarta.servlet.ServletRegistration.Dynamic addJspFile(final String servletName,
+					final String jspFile) {
 				return null;
 			}
 
@@ -693,7 +702,7 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public void setSessionTimeout(int sessionTimeout) {
+			public void setSessionTimeout(final int sessionTimeout) {
 				// No-op
 			}
 
@@ -703,7 +712,7 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public void setRequestCharacterEncoding(String encoding) {
+			public void setRequestCharacterEncoding(final String encoding) {
 				// No-op
 			}
 
@@ -713,13 +722,13 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public void setResponseCharacterEncoding(String encoding) {
+			public void setResponseCharacterEncoding(final String encoding) {
 				// No-op
 			}
 		};
 	}
 
-	private static HttpServletRequest createMockHttpServletRequest(ServletContext servletContext) {
+	private static HttpServletRequest createMockHttpServletRequest(final ServletContext servletContext) {
 		return new HttpServletRequest() {
 			private final Map<String, Object> attributes = new HashMap<>();
 
@@ -734,17 +743,17 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public long getDateHeader(String name) {
+			public long getDateHeader(final String name) {
 				return -1;
 			}
 
 			@Override
-			public String getHeader(String name) {
+			public String getHeader(final String name) {
 				return null;
 			}
 
 			@Override
-			public Enumeration<String> getHeaders(String name) {
+			public Enumeration<String> getHeaders(final String name) {
 				return java.util.Collections.emptyEnumeration();
 			}
 
@@ -789,7 +798,7 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public boolean isUserInRole(String role) {
+			public boolean isUserInRole(final String role) {
 				return false;
 			}
 
@@ -819,7 +828,7 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public jakarta.servlet.http.HttpSession getSession(boolean create) {
+			public jakarta.servlet.http.HttpSession getSession(final boolean create) {
 				return null;
 			}
 
@@ -849,12 +858,12 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public boolean authenticate(HttpServletResponse response) {
+			public boolean authenticate(final HttpServletResponse response) {
 				return false;
 			}
 
 			@Override
-			public void login(String username, String password) {
+			public void login(final String username, final String password) {
 				// No-op
 			}
 
@@ -869,17 +878,17 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public jakarta.servlet.http.Part getPart(String name) {
+			public jakarta.servlet.http.Part getPart(final String name) {
 				return null;
 			}
 
 			@Override
-			public <T extends HttpUpgradeHandler> T upgrade(Class<T> httpUpgradeHandlerClass) {
+			public <T extends HttpUpgradeHandler> T upgrade(final Class<T> httpUpgradeHandlerClass) {
 				return null;
 			}
 
 			@Override
-			public Object getAttribute(String name) {
+			public Object getAttribute(final String name) {
 				return attributes.get(name);
 			}
 
@@ -894,7 +903,7 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public void setCharacterEncoding(String env) {
+			public void setCharacterEncoding(final String env) {
 				// No-op
 			}
 
@@ -919,7 +928,7 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public String getParameter(String name) {
+			public String getParameter(final String name) {
 				return null;
 			}
 
@@ -929,7 +938,7 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public String[] getParameterValues(String name) {
+			public String[] getParameterValues(final String name) {
 				return null;
 			}
 
@@ -974,12 +983,12 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public void setAttribute(String name, Object o) {
+			public void setAttribute(final String name, final Object o) {
 				attributes.put(name, o);
 			}
 
 			@Override
-			public void removeAttribute(String name) {
+			public void removeAttribute(final String name) {
 				attributes.remove(name);
 			}
 
@@ -999,7 +1008,7 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public jakarta.servlet.RequestDispatcher getRequestDispatcher(String path) {
+			public jakarta.servlet.RequestDispatcher getRequestDispatcher(final String path) {
 				return null;
 			}
 
@@ -1049,8 +1058,8 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public jakarta.servlet.AsyncContext startAsync(jakarta.servlet.ServletRequest servletRequest,
-					jakarta.servlet.ServletResponse servletResponse) {
+			public jakarta.servlet.AsyncContext startAsync(final jakarta.servlet.ServletRequest servletRequest,
+					final jakarta.servlet.ServletResponse servletResponse) {
 				return null;
 			}
 
@@ -1079,72 +1088,72 @@ public class WebContextFactory {
 	private static HttpServletResponse createMockHttpServletResponse() {
 		return new HttpServletResponse() {
 			@Override
-			public void addCookie(jakarta.servlet.http.Cookie cookie) {
+			public void addCookie(final jakarta.servlet.http.Cookie cookie) {
 				// No-op
 			}
 
 			@Override
-			public boolean containsHeader(String name) {
+			public boolean containsHeader(final String name) {
 				return false;
 			}
 
 			@Override
-			public String encodeURL(String url) {
+			public String encodeURL(final String url) {
 				return url;
 			}
 
 			@Override
-			public String encodeRedirectURL(String url) {
+			public String encodeRedirectURL(final String url) {
 				return url;
 			}
 
 			@Override
-			public void sendError(int sc, String msg) {
+			public void sendError(final int sc, final String msg) {
 				// No-op
 			}
 
 			@Override
-			public void sendError(int sc) {
+			public void sendError(final int sc) {
 				// No-op
 			}
 
 			@Override
-			public void sendRedirect(String location) {
+			public void sendRedirect(final String location) {
 				// No-op
 			}
 
 			@Override
-			public void setDateHeader(String name, long date) {
+			public void setDateHeader(final String name, final long date) {
 				// No-op
 			}
 
 			@Override
-			public void addDateHeader(String name, long date) {
+			public void addDateHeader(final String name, final long date) {
 				// No-op
 			}
 
 			@Override
-			public void setHeader(String name, String value) {
+			public void setHeader(final String name, final String value) {
 				// No-op
 			}
 
 			@Override
-			public void addHeader(String name, String value) {
+			public void addHeader(final String name, final String value) {
 				// No-op
 			}
 
 			@Override
-			public void setIntHeader(String name, int value) {
+			public void setIntHeader(final String name, final int value) {
 				// No-op
 			}
 
 			@Override
-			public void addIntHeader(String name, int value) {
+			public void addIntHeader(final String name, final int value) {
 				// No-op
 			}
 
 			@Override
-			public void setStatus(int sc) {
+			public void setStatus(final int sc) {
 				// No-op
 			}
 
@@ -1154,12 +1163,12 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public String getHeader(String name) {
+			public String getHeader(final String name) {
 				return null;
 			}
 
 			@Override
-			public java.util.Collection<String> getHeaders(String name) {
+			public java.util.Collection<String> getHeaders(final String name) {
 				return new java.util.ArrayList<>();
 			}
 
@@ -1189,27 +1198,27 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public void setCharacterEncoding(String charset) {
+			public void setCharacterEncoding(final String charset) {
 				// No-op
 			}
 
 			@Override
-			public void setContentLength(int len) {
+			public void setContentLength(final int len) {
 				// No-op
 			}
 
 			@Override
-			public void setContentLengthLong(long length) {
+			public void setContentLengthLong(final long length) {
 				// No-op
 			}
 
 			@Override
-			public void setContentType(String type) {
+			public void setContentType(final String type) {
 				// No-op
 			}
 
 			@Override
-			public void setBufferSize(int size) {
+			public void setBufferSize(final int size) {
 				// No-op
 			}
 
@@ -1239,7 +1248,7 @@ public class WebContextFactory {
 			}
 
 			@Override
-			public void setLocale(Locale loc) {
+			public void setLocale(final Locale loc) {
 				// No-op
 			}
 

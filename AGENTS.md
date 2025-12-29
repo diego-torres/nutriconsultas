@@ -89,9 +89,18 @@ src/
 
 4. **PMD** (v3.21.2)
    - Code quality analysis
+   - Custom ruleset: `pmd-ruleset.xml` (excludes ShortVariable for loop variables)
    - Rulesets: bestpractices, codestyle, design, errorprone, performance, security
    - Runs during `verify` phase
    - Command: `mvn pmd:check`
+   - **Fixing PMD Violations:**
+     - **MethodArgumentCouldBeFinal**: Add `final` to method parameters
+     - **LocalVariableCouldBeFinal**: Add `final` to local variables
+     - **OnlyOneReturn**: Refactor to single return point
+     - **LongVariable**: Shorten variable names
+     - **UnusedAssignment**: Remove unused assignments
+     - **GuardLogStatement**: Add log level guards
+     - **AvoidCatchingGenericException**: Catch specific exceptions
 
 5. **Thymeleaf Validator**
    - Custom validator for Thymeleaf templates
@@ -114,6 +123,42 @@ src/
 ```bash
 ./lint.sh
 ```
+
+### Fixing Code Quality Issues
+
+**Spring Java Format:**
+```bash
+mvn spring-javaformat:apply
+```
+- Automatically fixes formatting issues (spacing, indentation, braces)
+- Runs automatically during `validate` phase
+- Pre-commit hook also formats code before commits
+
+**Checkstyle:**
+```bash
+mvn checkstyle:check
+```
+- Review `target/checkstyle-result.xml` for violations
+- Common fixes: rename variables, add braces, fix line length, remove unused imports
+- Most formatting issues are fixed by Spring Java Format
+
+**SpotBugs:**
+```bash
+mvn spotbugs:check
+```
+- Review `target/spotbugsXml.xml` or HTML report
+- Fix null checks, resource leaks, inefficient operations
+- Exclude false positives in `spotbugs-exclude.xml`
+
+**PMD:**
+```bash
+mvn pmd:check
+```
+- Review `target/pmd.xml` or HTML report
+- Add `final` keywords to parameters and local variables
+- Refactor methods with multiple returns to single return point
+- Fix long variable names, unused assignments, add log guards
+- Custom ruleset excludes ShortVariable for loop variables
 
 ### Git Pre-commit Hook
 - Automatically formats code before commit

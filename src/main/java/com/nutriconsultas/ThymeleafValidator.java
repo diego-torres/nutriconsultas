@@ -38,7 +38,7 @@ import com.nutriconsultas.validation.template.WebContextFactory;
  */
 public class ThymeleafValidator {
 
-	private static final Logger logger = LoggerFactory.getLogger(ThymeleafValidator.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ThymeleafValidator.class);
 
 	private static final String TEMPLATES_DIR = "src/main/resources/templates";
 
@@ -57,67 +57,76 @@ public class ThymeleafValidator {
 	 * Creates a new ThymeleafValidator with a custom validator registry.
 	 * @param validatorRegistry the validator registry to use
 	 */
-	public ThymeleafValidator(TemplateValidatorRegistry validatorRegistry) {
+	public ThymeleafValidator(final TemplateValidatorRegistry validatorRegistry) {
 		this.validatorRegistry = validatorRegistry;
 	}
 
-	public static void main(String[] args) {
-		String templatesPath = args.length > 0 ? args[0] : TEMPLATES_DIR;
-		ThymeleafValidator validator = new ThymeleafValidator();
-		boolean isValid = validator.validateTemplates(templatesPath);
+	public static void main(final String[] args) {
+		final String templatesPath = args.length > 0 ? args[0] : TEMPLATES_DIR;
+		final ThymeleafValidator validator = new ThymeleafValidator();
+		final boolean isValid = validator.validateTemplates(templatesPath);
 		System.exit(isValid ? 0 : 1);
 	}
 
-	public boolean validateTemplates(String templatesPath) {
+	public boolean validateTemplates(final String templatesPath) {
 		// Temporarily suppress Thymeleaf ERROR logs during validation
 		// (expected runtime errors like #fields are handled and don't indicate template
 		// problems)
-		Level originalThymeleafLevel = suppressThymeleafErrorLogs();
+		final Level originalLevel = suppressThymeleafErrorLogs();
+		boolean result = false;
 
 		try {
-			TemplateEngine templateEngine = createTemplateEngine(templatesPath);
-			Path templatesDir = Paths.get(templatesPath);
+			final TemplateEngine templateEngine = createTemplateEngine(templatesPath);
+			final Path templatesDir = Paths.get(templatesPath);
 
 			if (!Files.exists(templatesDir)) {
-				logger.error("Templates directory does not exist: {}", templatesPath);
+				if (LOGGER.isErrorEnabled()) {
+					LOGGER.error("Templates directory does not exist: {}", templatesPath);
+				}
 				return false;
 			}
 
-			logger.info("Validating Thymeleaf templates in: {}", templatesPath);
-			int totalFiles = 0;
+			if (LOGGER.isInfoEnabled()) {
+				LOGGER.info("Validating Thymeleaf templates in: {}", templatesPath);
+			}
 			int validFiles = 0;
 
 			try (Stream<Path> paths = Files.walk(templatesDir)) {
-				List<Path> htmlFiles = paths.filter(Files::isRegularFile)
+				final List<Path> htmlFiles = paths.filter(Files::isRegularFile)
 					.filter(p -> p.toString().endsWith(".html"))
 					.toList();
 
-				totalFiles = htmlFiles.size();
+				final int totalFiles = htmlFiles.size();
 
-				for (Path htmlFile : htmlFiles) {
+				for (final Path htmlFile : htmlFiles) {
 					if (validateTemplate(templateEngine, htmlFile, templatesDir)) {
 						validFiles++;
 					}
 				}
+
+				if (LOGGER.isInfoEnabled()) {
+					LOGGER.info("Validation complete: {}/{} templates valid", validFiles, totalFiles);
+				}
 			}
 			catch (Exception e) {
-				logger.error("Error walking templates directory", e);
+				LOGGER.error("Error walking templates directory", e);
 				return false;
 			}
 
-			logger.info("Validation complete: {}/{} templates valid", validFiles, totalFiles);
-
 			if (!errors.isEmpty()) {
-				logger.error("Found {} errors:", errors.size());
-				errors.forEach(error -> logger.error("  - {}", error));
+				if (LOGGER.isErrorEnabled()) {
+					LOGGER.error("Found {} errors:", errors.size());
+					errors.forEach(error -> LOGGER.error("  - {}", error));
+				}
 			}
 
-			return errors.isEmpty();
+			result = errors.isEmpty();
 		}
 		finally {
 			// Restore original Thymeleaf logger level
-			restoreThymeleafLogLevel(originalThymeleafLevel);
+			restoreThymeleafLogLevel(originalLevel);
 		}
+		return result;
 	}
 
 	/**
@@ -127,29 +136,33 @@ public class ThymeleafValidator {
 	 */
 	private Level suppressThymeleafErrorLogs() {
 		try {
-			LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+			final LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 			// Suppress both the general Thymeleaf logger and the TemplateEngine logger
-			ch.qos.logback.classic.Logger thymeleafLogger = loggerContext.getLogger("org.thymeleaf");
-			ch.qos.logback.classic.Logger templateEngineLogger = loggerContext
+			final ch.qos.logback.classic.Logger thymeleafLogger = loggerContext.getLogger("org.thymeleaf");
+			final ch.qos.logback.classic.Logger templateLogger = loggerContext
 				.getLogger("org.thymeleaf.TemplateEngine");
-			Level originalThymeleafLevel = thymeleafLogger.getEffectiveLevel();
-			Level originalTemplateEngineLevel = templateEngineLogger.getEffectiveLevel();
+			final Level originalThymeleafLevel = thymeleafLogger.getEffectiveLevel();
+			final Level originalTemplateLevel = templateLogger.getEffectiveLevel();
 			// Set to OFF to completely suppress ERROR logs (expected runtime errors)
 			// These are handled by our exception handling and don't indicate template
 			// problems
 			thymeleafLogger.setLevel(Level.OFF);
-			templateEngineLogger.setLevel(Level.OFF);
+			templateLogger.setLevel(Level.OFF);
 			// Return the first non-null level for restoration
-			return originalTemplateEngineLevel != null ? originalTemplateEngineLevel : originalThymeleafLevel;
+			return originalTemplateLevel != null ? originalTemplateLevel : originalThymeleafLevel;
 		}
 		catch (ClassCastException e) {
 			// Not using logback, skip suppression
-			logger.debug("Not using logback, cannot suppress Thymeleaf error logs");
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Not using logback, cannot suppress Thymeleaf error logs");
+			}
 			return null;
 		}
-		catch (Exception e) {
+		catch (RuntimeException e) {
 			// If logback configuration fails, continue without suppression
-			logger.debug("Could not suppress Thymeleaf error logs: {}", e.getMessage());
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Could not suppress Thymeleaf error logs: {}", e.getMessage());
+			}
 			return null;
 		}
 	}
@@ -158,23 +171,25 @@ public class ThymeleafValidator {
 	 * Restores the original Thymeleaf logger level.
 	 * @param originalLevel the original level to restore, or null if not set
 	 */
-	private void restoreThymeleafLogLevel(Level originalLevel) {
+	private void restoreThymeleafLogLevel(final Level originalLevel) {
 		if (originalLevel != null) {
 			try {
-				LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-				ch.qos.logback.classic.Logger thymeleafLogger = loggerContext.getLogger("org.thymeleaf");
-				ch.qos.logback.classic.Logger templateEngineLogger = loggerContext
+				final LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+				final ch.qos.logback.classic.Logger thymeleafLogger = loggerContext.getLogger("org.thymeleaf");
+				final ch.qos.logback.classic.Logger templateLogger = loggerContext
 					.getLogger("org.thymeleaf.TemplateEngine");
 				thymeleafLogger.setLevel(originalLevel);
-				templateEngineLogger.setLevel(originalLevel);
+				templateLogger.setLevel(originalLevel);
 			}
-			catch (Exception e) {
-				logger.debug("Could not restore Thymeleaf log level: {}", e.getMessage());
+			catch (RuntimeException e) {
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug("Could not restore Thymeleaf log level: {}", e.getMessage());
+				}
 			}
 		}
 	}
 
-	private TemplateEngine createTemplateEngine(String templatesPath) {
+	private TemplateEngine createTemplateEngine(final String templatesPath) {
 		TemplateEngine templateEngine = new TemplateEngine();
 		FileTemplateResolver templateResolver = new FileTemplateResolver();
 		templateResolver.setPrefix(templatesPath + File.separator);
@@ -186,34 +201,33 @@ public class ThymeleafValidator {
 		return templateEngine;
 	}
 
-	private boolean validateTemplate(TemplateEngine templateEngine, Path htmlFile, Path templatesDir) {
+	private boolean validateTemplate(final TemplateEngine templateEngine, final Path htmlFile,
+			final Path templatesDir) {
 		try {
-			String relativePath = templatesDir.relativize(htmlFile).toString().replace(".html", "");
-			String templateName = relativePath.replace(File.separator, "/");
+			final String relativePath = templatesDir.relativize(htmlFile).toString().replace(".html", "");
+			final String templateName = relativePath.replace(File.separator, "/");
 
 			// Find the appropriate validator for this template
 			TemplateValidator validator = validatorRegistry.findValidator(templateName);
 			if (validator == null) {
-				logger.warn("No validator found for template: {}, using default", templateName);
+				if (LOGGER.isWarnEnabled()) {
+					LOGGER.warn("No validator found for template: {}, using default", templateName);
+				}
 				validator = validatorRegistry.findValidator("*");
 			}
 
 			// Create mock model variables using the template-specific validator
-			Map<String, Object> mockVariables = validator.createMockModelVariables();
+			final Map<String, Object> mockVariables = validator.createMockModelVariables();
 
 			// Create web context with mock variables
-			IWebContext webContext = WebContextFactory.createWebContext(mockVariables);
+			final IWebContext webContext = WebContextFactory.createWebContext(mockVariables);
 
 			// Try to process the template directly to catch exceptions for analysis
-			try {
-				templateEngine.process(templateName, webContext);
-				logger.debug("✓ Valid: {} (using validator: {})", htmlFile, validator.getClass().getSimpleName());
-				return true;
+			templateEngine.process(templateName, webContext);
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("✓ Valid: {} (using validator: {})", htmlFile, validator.getClass().getSimpleName());
 			}
-			catch (Exception e) {
-				// Re-throw to be handled by outer catch block
-				throw e;
-			}
+			return true;
 		}
 		catch (org.thymeleaf.exceptions.TemplateInputException e) {
 			// Check if it's a syntax error (parsing error) vs runtime error (null
@@ -267,34 +281,44 @@ public class ThymeleafValidator {
 				// Templates may reference variables that don't exist in validation
 				// context
 				// This is acceptable - the template syntax is valid
-				logger.debug("✓ Valid (runtime null/missing property access expected): {}", htmlFile);
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug("✓ Valid (runtime null/missing property access expected): {}", htmlFile);
+				}
 				return true;
 			}
 			// Otherwise, it's a real syntax error
-			String errorMsg = String.format("%s: %s", htmlFile, e.getMessage());
+			final String errorMsg = String.format("%s: %s", htmlFile, e.getMessage());
 			errors.add(errorMsg);
-			logger.error("✗ Invalid: {} - {}", htmlFile, e.getMessage());
+			if (LOGGER.isErrorEnabled()) {
+				LOGGER.error("✗ Invalid: {} - {}", htmlFile, e.getMessage());
+			}
 			return false;
 		}
 		catch (java.lang.NullPointerException e) {
 			// NullPointerException during validation is usually a runtime issue (missing
 			// binding context, etc.)
 			// not a syntax error. This is acceptable for template validation.
-			String message = e.getMessage();
+			final String message = e.getMessage();
 			if (message != null && message.contains("target is null for method")) {
-				logger.debug("✓ Valid (runtime null binding context expected): {}", htmlFile);
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug("✓ Valid (runtime null binding context expected): {}", htmlFile);
+				}
 				return true;
 			}
 			// Re-throw if it's not a known runtime issue
-			String errorMsg = String.format("%s: %s", htmlFile, e.getMessage());
+			final String errorMsg = String.format("%s: %s", htmlFile, e.getMessage());
 			errors.add(errorMsg);
-			logger.error("✗ Invalid: {} - {}", htmlFile, e.getMessage());
+			if (LOGGER.isErrorEnabled()) {
+				LOGGER.error("✗ Invalid: {} - {}", htmlFile, e.getMessage());
+			}
 			return false;
 		}
-		catch (Exception e) {
-			String errorMsg = String.format("%s: %s", htmlFile, e.getMessage());
+		catch (RuntimeException e) {
+			final String errorMsg = String.format("%s: %s", htmlFile, e.getMessage());
 			errors.add(errorMsg);
-			logger.error("✗ Invalid: {} - {}", htmlFile, e.getMessage());
+			if (LOGGER.isErrorEnabled()) {
+				LOGGER.error("✗ Invalid: {} - {}", htmlFile, e.getMessage());
+			}
 			return false;
 		}
 	}

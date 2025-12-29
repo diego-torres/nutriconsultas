@@ -44,7 +44,7 @@ jobs:
     - name: Run SpotBugs
       run: mvn -B spotbugs:check
     - name: Run PMD
-      run: mvn -B pmd:check
+      run: mvn -B pmd:check -Pci
     - name: Validate Thymeleaf templates
       run: mvn -B test -Dtest=ThymeleafTemplateValidationTest
     - name: Upload Checkstyle results

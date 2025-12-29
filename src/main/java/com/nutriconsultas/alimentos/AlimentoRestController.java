@@ -28,15 +28,15 @@ public class AlimentoRestController extends AbstractGridController<Alimento> {
 	private AlimentoService service;
 
 	@GetMapping("{id}")
-	public Alimento get(@PathVariable @NonNull Long id) {
+	public Alimento get(@PathVariable @NonNull final Long id) {
 		log.info("starting get with id {}.", id);
-		Alimento alimento = service.findById(id);
+		final Alimento alimento = service.findById(id);
 		log.info("finish get with alimento {}.", alimento);
 		return alimento;
 	}
 
 	@Override
-	protected List<String> toStringList(Alimento row) {
+	protected List<String> toStringList(final Alimento row) {
 		log.debug("converting Alimento row {} to string list.", row);
 		return Arrays.asList("<a href='/admin/alimentos/" + row.getId() + "'>" + row.getNombreAlimento() + "</a>",
 				row.getClasificacion(), //
@@ -57,7 +57,7 @@ public class AlimentoRestController extends AbstractGridController<Alimento> {
 	}
 
 	@Override
-	protected Predicate<Alimento> getPredicate(String value) {
+	protected Predicate<Alimento> getPredicate(final String value) {
 		log.debug("getting Alimento predicate with value {}.", value);
 		return row -> row.getNombreAlimento().toLowerCase().contains(value)
 				|| row.getNombreAlimento().toLowerCase().startsWith(value)
@@ -66,7 +66,8 @@ public class AlimentoRestController extends AbstractGridController<Alimento> {
 	}
 
 	@Override
-	protected Comparator<Alimento> getComparator(String column, com.nutriconsultas.dataTables.paging.Direction dir) {
+	protected Comparator<Alimento> getComparator(final String column,
+			final com.nutriconsultas.dataTables.paging.Direction dir) {
 		log.debug("getting Alimento comparator with column {} and direction {}.", column, dir);
 		return AlimentoComparators.getComparator(column, dir);
 	}

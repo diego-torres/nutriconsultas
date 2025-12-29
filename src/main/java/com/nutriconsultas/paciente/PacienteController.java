@@ -34,7 +34,7 @@ public class PacienteController extends AbstractAuthorizedController {
 	private ConsultaRepository consultaRepository;
 
 	@GetMapping(path = "/admin/pacientes/nuevo")
-	public String nuevo(Model model) {
+	public String nuevo(final Model model) {
 		log.debug("Starting nuevo method");
 		model.addAttribute("activeMenu", "pacientes");
 		model.addAttribute("paciente", new Paciente());
@@ -43,55 +43,54 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/pacientes")
-	public String listado(Model model) {
+	public String listado(final Model model) {
 		log.debug("Listado de pacientes");
 		model.addAttribute("activeMenu", "pacientes");
 		return "sbadmin/pacientes/listado";
 	}
 
 	@PostMapping(path = "/admin/pacientes/nuevo")
-	public String addPaciente(@Valid Paciente paciente, BindingResult result, Model model) {
+	public String addPaciente(@Valid final Paciente paciente, final BindingResult result, final Model model) {
 		log.debug("Grabando nuevo paciente: " + paciente.getName());
+		String resultView;
 		if (result.hasErrors()) {
-			return "sbadmin/pacientes/nuevo";
+			resultView = "sbadmin/pacientes/nuevo";
 		}
-
-		pacienteRepository.save(paciente);
-		return "redirect:/admin/pacientes";
+		else {
+			pacienteRepository.save(paciente);
+			resultView = "redirect:/admin/pacientes";
+		}
+		return resultView;
 	}
 
 	@GetMapping(path = "/admin/pacientes/{id}")
-	public String perfilPaciente(@PathVariable @NonNull Long id, Model model) {
+	public String perfilPaciente(@PathVariable @NonNull final Long id, final Model model) {
 		log.debug("Cargando perfil de paciente {}", id);
-		Paciente paciente = pacienteRepository.findById(id)
+		final Paciente paciente = pacienteRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
 
 		model.addAttribute("activeMenu", "perfil");
 		model.addAttribute("paciente", paciente);
 		// calcular ultima consulta
-		DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
-		Consulta citaAnterior = getCitaAnterior(id);
-		String fechaCitaAnterior = "";
-		if (citaAnterior != null) {
-			fechaCitaAnterior = dateFormat.format(citaAnterior.getFechaConsulta());
-		}
+		final DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
+		final Consulta citaAnterior = getCitaAnterior(id);
+		final String fechaCitaAnterior = citaAnterior != null ? dateFormat.format(citaAnterior.getFechaConsulta()) : "";
 		model.addAttribute("citaAnterior", fechaCitaAnterior);
 		// TODO: Calcular siguiente cita en calendario
 		model.addAttribute("citaSiguiente", "");
 		return "sbadmin/pacientes/perfil";
 	}
 
-	private Consulta getCitaAnterior(Long pacienteId) {
-		List<Consulta> consultas = consultaRepository.findByPacienteId(pacienteId);
+	private Consulta getCitaAnterior(final Long pacienteId) {
+		final List<Consulta> consultas = consultaRepository.findByPacienteId(pacienteId);
+		Consulta result = null;
 		if (!consultas.isEmpty()) {
-			List<Consulta> consultasByDate = consultas.stream()
+			final List<Consulta> consultasByDate = consultas.stream()
 				.sorted(Comparator.comparing(Consulta::getFechaConsulta).reversed())
 				.collect(Collectors.toList());
-			return consultasByDate.get(0);
+			result = consultasByDate.get(0);
 		}
-		else {
-			return null;
-		}
+		return result;
 	}
 
 	@GetMapping(path = "/admin/pacientes/{id}/afiliacion")

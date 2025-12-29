@@ -72,75 +72,99 @@ public class AbstractNutrible extends AbstractMacroNutrible {
 	private Double etanol;
 
 	public Double getFibra() {
-		if (fibra == null)
-			return 0.0;
-		return fibra;
+		Double result = 0.0;
+		if (fibra != null) {
+			result = fibra;
+		}
+		return result;
 	}
 
 	public Double getVitA() {
-		if (vitA == null)
-			return 0.0;
-		return vitA;
+		Double result = 0.0;
+		if (vitA != null) {
+			result = vitA;
+		}
+		return result;
 	}
 
 	public Double getAcidoAscorbico() {
-		if (acidoAscorbico == null)
-			return 0.0;
-		return acidoAscorbico;
+		Double result = 0.0;
+		if (acidoAscorbico != null) {
+			result = acidoAscorbico;
+		}
+		return result;
 	}
 
 	public Double getHierroNoHem() {
-		if (hierroNoHem == null)
-			return 0.0;
-		return hierroNoHem;
+		Double result = 0.0;
+		if (hierroNoHem != null) {
+			result = hierroNoHem;
+		}
+		return result;
 	}
 
 	public Double getPotasio() {
-		if (potasio == null)
-			return 0.0;
-		return potasio;
+		Double result = 0.0;
+		if (potasio != null) {
+			result = potasio;
+		}
+		return result;
 	}
 
 	public Double getIndiceGlicemico() {
-		if (indiceGlicemico == null)
-			return 0.0;
-		return indiceGlicemico;
+		Double result = 0.0;
+		if (indiceGlicemico != null) {
+			result = indiceGlicemico;
+		}
+		return result;
 	}
 
 	public Double getCargaGlicemica() {
-		if (cargaGlicemica == null)
-			return 0.0;
-		return cargaGlicemica;
+		Double result = 0.0;
+		if (cargaGlicemica != null) {
+			result = cargaGlicemica;
+		}
+		return result;
 	}
 
 	public Double getAcidoFolico() {
-		if (acidoFolico == null)
-			return 0.0;
-		return acidoFolico;
+		Double result = 0.0;
+		if (acidoFolico != null) {
+			result = acidoFolico;
+		}
+		return result;
 	}
 
 	public Double getCalcio() {
-		if (calcio == null)
-			return 0.0;
-		return calcio;
+		Double result = 0.0;
+		if (calcio != null) {
+			result = calcio;
+		}
+		return result;
 	}
 
 	public Double getHierro() {
-		if (hierro == null)
-			return 0.0;
-		return hierro;
+		Double result = 0.0;
+		if (hierro != null) {
+			result = hierro;
+		}
+		return result;
 	}
 
 	public Double getSodio() {
-		if (sodio == null)
-			return 0.0;
-		return sodio;
+		Double result = 0.0;
+		if (sodio != null) {
+			result = sodio;
+		}
+		return result;
 	}
 
 	public Double getAzucarPorEquivalente() {
-		if (azucarPorEquivalente == null)
-			return 0.0;
-		return azucarPorEquivalente;
+		Double result = 0.0;
+		if (azucarPorEquivalente != null) {
+			result = azucarPorEquivalente;
+		}
+		return result;
 	}
 
 }

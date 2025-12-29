@@ -28,7 +28,7 @@ import com.nutriconsultas.platillos.PlatilloService;
 @Controller
 public class DietaController extends AbstractAuthorizedController {
 
-	private static Logger logger = LoggerFactory.getLogger(DietaController.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DietaController.class);
 
 	@Autowired
 	private DietaService dietaService;
@@ -40,32 +40,33 @@ public class DietaController extends AbstractAuthorizedController {
 	private AlimentoService alimentoService;
 
 	@GetMapping(path = "/admin/dietas")
-	public String listado(Model model) {
-		logger.debug("Lista de dietas");
+	public String listado(final Model model) {
+		LOGGER.debug("Lista de dietas");
 		model.addAttribute("activeMenu", "dietas");
 		return "sbadmin/dietas/listado";
 	}
 
 	@PostMapping(path = "/admin/dietas/save")
-	public String saveDieta(@RequestParam @NonNull Long id, @RequestParam @NonNull String nombre, Model model) {
-		logger.debug("Guardar dieta with id {}, {}", id, nombre);
-		Dieta _dieta = dietaService.getDieta(id);
+	public String saveDieta(@RequestParam @NonNull final Long id, @RequestParam @NonNull final String nombre,
+			final Model model) {
+		LOGGER.debug("Guardar dieta with id {}, {}", id, nombre);
+		final Dieta _dieta = dietaService.getDieta(id);
 		_dieta.setNombre(nombre);
 		dietaService.saveDieta(_dieta);
 		return "redirect:/admin/dietas/" + id;
 	}
 
 	@GetMapping(path = "/admin/dietas/{id}")
-	public String editar(@PathVariable @NonNull Long id, Model model) {
-		logger.debug("Editar dieta con id {}", id);
+	public String editar(@PathVariable @NonNull final Long id, final Model model) {
+		LOGGER.debug("Editar dieta con id {}", id);
 		model.addAttribute("activeMenu", "dietas");
 
-		Dieta dieta = dietaService.getDieta(id);
-		logger.debug("Dieta encontrada: {}", dieta);
+		final Dieta dieta = dietaService.getDieta(id);
+		LOGGER.debug("Dieta encontrada: {}", dieta);
 		model.addAttribute("dieta", dieta);
 
 		// Sort the ingestas list by id
-		List<Ingesta> sortedIngestas = dieta.getIngestas()
+		final List<Ingesta> sortedIngestas = dieta.getIngestas()
 			.stream()
 			.sorted(Comparator.comparingLong(Ingesta::getId))
 			.collect(Collectors.toList());
@@ -79,11 +80,11 @@ public class DietaController extends AbstractAuthorizedController {
 		model.addAttribute("alimentos", alimentoService.findAll());
 
 		// Calculate distribution percentages for pie chart
-		Double kCal = getKCal(dieta);
+		final Double kCal = getKCal(dieta);
 		if (kCal != null && kCal > 0.01) {
-			Double distProteina = getTotalProteina(dieta) * 4 / kCal * 100;
-			Double distLipido = getTotalLipidos(dieta) * 9 / kCal * 100;
-			Double distHidratoCarbono = getTotalHidratosDeCarbono(dieta) * 4 / kCal * 100;
+			final Double distProteina = getTotalProteina(dieta) * 4 / kCal * 100;
+			final Double distLipido = getTotalLipidos(dieta) * 9 / kCal * 100;
+			final Double distHidratoCarbono = getTotalHidratosDeCarbono(dieta) * 4 / kCal * 100;
 			model.addAttribute("distribucionProteina", distProteina);
 			model.addAttribute("distribucionLipido", distLipido);
 			model.addAttribute("distribucionHidratoCarbono", distHidratoCarbono);
@@ -97,32 +98,37 @@ public class DietaController extends AbstractAuthorizedController {
 	}
 
 	@PostMapping(path = "/admin/dietas/{id}/ingestas/save")
-	public String saveIngesta(@PathVariable @NonNull Long id, @ModelAttribute IngestaFormModel ingesta, Model model) {
-		logger.debug("Agregar ingesta {} a dieta con id {}", ingesta, id);
+	public String saveIngesta(@PathVariable @NonNull final Long id, @ModelAttribute final IngestaFormModel ingesta,
+			final Model model) {
+		LOGGER.debug("Agregar ingesta {} a dieta con id {}", ingesta, id);
 		model.addAttribute("activeMenu", "dietas");
 
+		String result;
 		if (ingesta.getIngestaId() == 0) {
-			logger.debug("nueva ingesta en dieta, agregar");
+			LOGGER.debug("nueva ingesta en dieta, agregar");
 			dietaService.addIngesta(id, ingesta.getIngesta());
+			result = "redirect:/admin/dietas/" + id;
 		}
 		else {
-			logger.debug("Ingesta existente, cambiar nombre");
-			Long ingestaId = ingesta.getIngestaId();
+			LOGGER.debug("Ingesta existente, cambiar nombre");
+			final Long ingestaId = ingesta.getIngestaId();
 			if (ingestaId == null) {
-				logger.error("Ingesta ID is null, cannot rename");
-				return "redirect:/admin/dietas/" + id;
+				LOGGER.error("Ingesta ID is null, cannot rename");
+				result = "redirect:/admin/dietas/" + id;
 			}
-			dietaService.renameIngesta(id, ingestaId, ingesta.getIngesta());
+			else {
+				dietaService.renameIngesta(id, ingestaId, ingesta.getIngesta());
+				result = "redirect:/admin/dietas/" + id;
+			}
 		}
-
-		return "redirect:/admin/dietas/" + id;
+		return result;
 	}
 
 	@PostMapping(path = "/admin/dietas/{id}/ingestas/delete")
-	public String deleteIngesta(@PathVariable @NonNull Long id, @ModelAttribute IngestaFormModel ingestaModel,
-			Model model) {
-		logger.debug("Eliminar ingesta con id {} de dieta con id {}", ingestaModel, id);
-		Dieta dieta = dietaService.getDieta(id);
+	public String deleteIngesta(@PathVariable @NonNull final Long id,
+			@ModelAttribute final IngestaFormModel ingestaModel, final Model model) {
+		LOGGER.debug("Eliminar ingesta con id {} de dieta con id {}", ingestaModel, id);
+		final Dieta dieta = dietaService.getDieta(id);
 		dieta.getIngestas().removeIf(ingesta -> ingesta.getId().equals(ingestaModel.getIngestaId()));
 		dietaService.saveDieta(dieta);
 		return "redirect:/admin/dietas/" + id;
@@ -131,7 +137,7 @@ public class DietaController extends AbstractAuthorizedController {
 	@PostMapping(path = "/admin/dietas/{id}/platillos/save")
 	public String savePlatillo(@PathVariable @NonNull Long id, @ModelAttribute PlatilloFormModel platilloModel,
 			Model model) {
-		logger.debug("Agregar platillo {} a ingesta con id {}", platilloModel, id);
+		LOGGER.debug("Agregar platillo {} a ingesta con id {}", platilloModel, id);
 		Dieta dieta = dietaService.getDieta(id);
 		Ingesta ingesta = dieta.getIngestas()
 			.stream()
@@ -139,7 +145,7 @@ public class DietaController extends AbstractAuthorizedController {
 			.findFirst()
 			.orElse(null);
 		if (ingesta != null && platilloModel.getPlatillo() != null) {
-			logger.debug("ingresar platillo en ingesta {}, de la dieta {}", ingesta, dieta);
+			LOGGER.debug("ingresar platillo en ingesta {}, de la dieta {}", ingesta, dieta);
 			Long platilloId = Objects.requireNonNull(platilloModel.getPlatillo());
 			Platillo platillo = platilloService.findById(platilloId);
 			if (platillo != null) {
@@ -168,7 +174,7 @@ public class DietaController extends AbstractAuthorizedController {
 	@PostMapping(path = "/admin/dietas/{id}/alimentos/save")
 	public String saveAlimento(@PathVariable @NonNull Long id, @ModelAttribute AlimentoFormModel alimentoModel,
 			Model model) {
-		logger.debug("Agregar alimento {} a ingesta con id {}", alimentoModel, id);
+		LOGGER.debug("Agregar alimento {} a ingesta con id {}", alimentoModel, id);
 		Dieta dieta = dietaService.getDieta(id);
 		Ingesta ingesta = dieta.getIngestas()
 			.stream()
@@ -176,7 +182,7 @@ public class DietaController extends AbstractAuthorizedController {
 			.findFirst()
 			.orElse(null);
 		if (ingesta != null && alimentoModel.getAlimento() != null) {
-			logger.debug("ingresar alimento en ingesta {}, de la dieta {}", ingesta, dieta);
+			LOGGER.debug("ingresar alimento en ingesta {}, de la dieta {}", ingesta, dieta);
 			Long alimentoId = Objects.requireNonNull(alimentoModel.getAlimento());
 			Alimento alimento = alimentoService.findById(alimentoId);
 			if (alimento != null) {

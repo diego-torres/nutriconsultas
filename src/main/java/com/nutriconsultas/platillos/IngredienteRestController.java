@@ -27,13 +27,13 @@ public class IngredienteRestController extends AbstractGridItemController<Ingred
 	private PlatilloService platilloService;
 
 	@DeleteMapping("/{ingredienteId}")
-	public void delete(@NonNull @PathVariable Long id, @NonNull @PathVariable Long ingredienteId) {
+	public void delete(@NonNull @PathVariable final Long id, @NonNull @PathVariable final Long ingredienteId) {
 		log.debug("deleting Ingrediente with id {}.", ingredienteId);
 		platilloService.deleteIngrediente(id, ingredienteId);
 	}
 
 	@Override
-	protected List<String> toStringList(Ingrediente row) {
+	protected List<String> toStringList(final Ingrediente row) {
 		log.debug("converting Ingrediente row {} to string list.", row);
 		return Arrays.asList(row.getAlimento().getNombreAlimento(), row.getFractionalCantSugerida(), //
 				row.getUnidad(), //
@@ -53,19 +53,19 @@ public class IngredienteRestController extends AbstractGridItemController<Ingred
 	}
 
 	@Override
-	protected List<Ingrediente> getData(@NonNull Long id) {
+	protected List<Ingrediente> getData(@NonNull final Long id) {
 		log.debug("getting Ingrediente rows for Platillo id {}.", id);
 		return platilloService.findById(id).getIngredientes();
 	}
 
 	@Override
-	protected Predicate<Ingrediente> getPredicate(String value) {
+	protected Predicate<Ingrediente> getPredicate(final String value) {
 		log.debug("getting predicate for value {}.", value);
 		return ingrediente -> ingrediente.getAlimento().getNombreAlimento().toLowerCase().contains(value.toLowerCase());
 	}
 
 	@Override
-	protected Comparator<Ingrediente> getComparator(String column, Direction dir) {
+	protected Comparator<Ingrediente> getComparator(final String column, final Direction dir) {
 		log.debug("getting comparator for column {} and direction {}.", column, dir);
 		return IngredienteComparators.getComparator(column, dir);
 	}

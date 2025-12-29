@@ -34,10 +34,10 @@ public class PlatilloController extends AbstractAuthorizedController {
 	private AlimentoService alimentoService;
 
 	@GetMapping(path = "/admin/platillos/nuevo")
-	public String nuevo(Model model) {
+	public String nuevo(final Model model) {
 		log.debug("Starting nuevo");
 		model.addAttribute("activeMenu", "platillos");
-		Platillo platillo = new Platillo();
+		final Platillo platillo = new Platillo();
 		platillo.setId(0L);
 		model.addAttribute("platillo", platillo);
 		log.debug("Finishing nuevo platillo con valores predeterminados: {}", platillo);
@@ -45,7 +45,7 @@ public class PlatilloController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/platillos")
-	public String listado(Model model) {
+	public String listado(final Model model) {
 		log.debug("Starting listado");
 		model.addAttribute("activeMenu", "platillos");
 		log.debug("Finishing listado");
@@ -53,10 +53,10 @@ public class PlatilloController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/platillos/{id}")
-	public String editar(@PathVariable @NonNull Long id, Model model) {
+	public String editar(@PathVariable @NonNull final Long id, final Model model) {
 		log.debug("Starting editar with id {}", id);
 		model.addAttribute("activeMenu", "platillos");
-		Platillo platillo = service.findById(id);
+		final Platillo platillo = service.findById(id);
 		model.addAttribute("platillo", platillo);
 		List<String> ingestas = new ArrayList<>();
 		if (platillo.getIngestasSugeridas() != null && !platillo.getIngestasSugeridas().isEmpty()) {
@@ -69,102 +69,109 @@ public class PlatilloController extends AbstractAuthorizedController {
 	}
 
 	@PostMapping("/admin/platillos/save")
-	public String save(@ModelAttribute @NonNull Platillo platillo) {
+	public String save(@ModelAttribute @NonNull final Platillo platillo) {
 		log.debug("Starting save with platillo {}", platillo);
 
-		Long platilloId = platillo.getId();
+		final Long platilloId = platillo.getId();
+		String result;
 		if (platilloId == null) {
 			log.error("Platillo ID is null, cannot save");
-			return "redirect:/admin/platillos";
-		}
-		Platillo dbPlatillo = service.findById(platilloId);
-		if (dbPlatillo != null) {
-			dbPlatillo.setName(platillo.getName());
-			dbPlatillo.setDescription(platillo.getDescription());
-			service.save(dbPlatillo);
+			result = "redirect:/admin/platillos";
 		}
 		else {
-			service.save(platillo);
+			final Platillo dbPlatillo = service.findById(platilloId);
+			if (dbPlatillo != null) {
+				dbPlatillo.setName(platillo.getName());
+				dbPlatillo.setDescription(platillo.getDescription());
+				service.save(dbPlatillo);
+			}
+			else {
+				service.save(platillo);
+			}
+			log.debug("Finishing save with platillo {}", platillo);
+			result = "redirect:/admin/platillos/" + platillo.getId();
 		}
-
-		log.debug("Finishing save with platillo {}", platillo);
-		return "redirect:/admin/platillos/" + platillo.getId();
+		return result;
 	}
 
 	@PostMapping("/admin/platillos/{id}/picture")
-	public String uploadPicture(@PathVariable @NonNull Long id, @RequestParam("imgPlatillo") MultipartFile file,
-			Model model) {
+	public String uploadPicture(@PathVariable @NonNull final Long id,
+			@RequestParam("imgPlatillo") final MultipartFile file, final Model model) {
 		log.debug("Starting uploadPicture with id {}", id);
 		model.addAttribute("activeMenu", "platillos");
 
+		String result;
 		if (file.isEmpty()) {
 			log.error("Failed to upload picture because the file is empty");
 			model.addAttribute("errorMessage", "The file is empty");
-			return "sbadmin/platillos/formulario";
+			result = "sbadmin/platillos/formulario";
 		}
-
-		try {
-			byte[] bytes = file.getBytes();
-			// Assuming you have a method in PlatilloService to handle picture saving
-			String fileName = file.getOriginalFilename();
-			String fileExtension = "";
-			if (fileName != null) {
-				int dotIndex = fileName.lastIndexOf('.');
-				if (dotIndex > 0 && dotIndex < fileName.length() - 1) {
-					fileExtension = fileName.substring(dotIndex + 1);
+		else {
+			try {
+				final byte[] bytes = file.getBytes();
+				// Assuming you have a method in PlatilloService to handle picture saving
+				final String fileName = file.getOriginalFilename();
+				String fileExtension = "";
+				if (fileName != null) {
+					final int dotIndex = fileName.lastIndexOf('.');
+					if (dotIndex > 0 && dotIndex < fileName.length() - 1) {
+						fileExtension = fileName.substring(dotIndex + 1);
+					}
+					log.debug("File extension is {}", fileExtension);
 				}
-				log.debug("File extension is {}", fileExtension);
+				if (fileExtension == null) {
+					fileExtension = "";
+				}
+				service.savePicture(id, bytes, fileExtension);
+				log.debug("Successfully uploaded picture for platillo with id {}", id);
+				result = "redirect:/admin/platillos/" + id;
 			}
-			if (fileExtension == null) {
-				fileExtension = "";
+			catch (final IOException e) {
+				log.error("Failed to upload picture for platillo with id {}", id, e);
+				model.addAttribute("errorMessage", "Failed to upload picture");
+				result = "sbadmin/platillos/formulario";
 			}
-			service.savePicture(id, bytes, fileExtension);
-			log.debug("Successfully uploaded picture for platillo with id {}", id);
 		}
-		catch (IOException e) {
-			log.error("Failed to upload picture for platillo with id {}", id, e);
-			model.addAttribute("errorMessage", "Failed to upload picture");
-			return "sbadmin/platillos/formulario";
-		}
-
-		return "redirect:/admin/platillos/" + id;
+		return result;
 	}
 
 	@GetMapping(value = "admin/platillos/platillo/{id}/{imageName}", produces = MediaType.IMAGE_JPEG_VALUE)
-	public @ResponseBody byte[] getImage(@PathVariable @NonNull Long id, @PathVariable @NonNull String imageName,
-			Model model) throws IOException {
+	public @ResponseBody byte[] getImage(@PathVariable @NonNull final Long id,
+			@PathVariable @NonNull final String imageName, final Model model) throws IOException {
 		log.debug("Starting getImage with id {} and imageName {}", id, imageName);
 		return service.getPicture(id, imageName);
 	}
 
 	@PostMapping("/admin/platillos/{id}/pdf")
-	public String uploadPdf(@PathVariable @NonNull Long id, @RequestParam("pdfPlatillo") MultipartFile file,
-			Model model) {
+	public String uploadPdf(@PathVariable @NonNull final Long id, @RequestParam("pdfPlatillo") final MultipartFile file,
+			final Model model) {
 		log.debug("Starting uploadPdf with id {}", id);
 		model.addAttribute("activeMenu", "platillos");
 
+		String result;
 		if (file.isEmpty()) {
 			log.error("Failed to upload pdf because the file is empty");
 			model.addAttribute("errorMessage", "The file is empty");
-			return "sbadmin/platillos/formulario";
+			result = "sbadmin/platillos/formulario";
 		}
-
-		try {
-			byte[] bytes = file.getBytes();
-			service.savePdf(id, bytes);
-			log.debug("Successfully uploaded pdf for platillo with id {}", id);
+		else {
+			try {
+				final byte[] bytes = file.getBytes();
+				service.savePdf(id, bytes);
+				log.debug("Successfully uploaded pdf for platillo with id {}", id);
+				result = "redirect:/admin/platillos/" + id;
+			}
+			catch (final IOException e) {
+				log.error("Failed to upload pdf for platillo with id {}", id, e);
+				model.addAttribute("errorMessage", "Failed to upload pdf");
+				result = "sbadmin/platillos/formulario";
+			}
 		}
-		catch (IOException e) {
-			log.error("Failed to upload pdf for platillo with id {}", id, e);
-			model.addAttribute("errorMessage", "Failed to upload pdf");
-			return "sbadmin/platillos/formulario";
-		}
-
-		return "redirect:/admin/platillos/" + id;
+		return result;
 	}
 
 	@GetMapping(value = "admin/platillos/platillo/{id}/instrucciones.pdf", produces = MediaType.APPLICATION_PDF_VALUE)
-	public @ResponseBody byte[] getPdf(@PathVariable @NonNull Long id, Model model) throws IOException {
+	public @ResponseBody byte[] getPdf(@PathVariable @NonNull final Long id, final Model model) throws IOException {
 		log.debug("Starting getPdf with id {}", id);
 		return service.getPicture(id, "instrucciones.pdf");
 	}

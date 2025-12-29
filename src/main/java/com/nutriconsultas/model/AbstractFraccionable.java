@@ -18,23 +18,23 @@ public abstract class AbstractFraccionable extends AbstractNutrible {
 			return "";
 		}
 
-		Integer intPart = cantSugerida.intValue();
+		final Integer intPart = cantSugerida.intValue();
 		// convert the fractional part to a fraction
-		Double fractionalPart = cantSugerida - intPart;
-		Double tolerance = 1.0E-6;
+		final Double fractionalPart = cantSugerida - intPart;
+		final Double tolerance = 1.0E-6;
 		Double h1 = 1d;
 		Double h2 = 0d;
 		Double k1 = 0d;
 		Double k2 = 1d;
 		Double b = fractionalPart;
 		do {
-			Double a = Math.floor(b);
-			Double aux = h1;
+			final Double a = Math.floor(b);
+			final Double aux = h1;
 			h1 = a * h1 + h2;
 			h2 = aux;
-			aux = k1;
+			final Double aux2 = k1;
 			k1 = a * k1 + k2;
-			k2 = aux;
+			k2 = aux2;
 			b = 1 / (b - a);
 		}
 		while (Math.abs(fractionalPart - h1 / k1) > fractionalPart * tolerance);

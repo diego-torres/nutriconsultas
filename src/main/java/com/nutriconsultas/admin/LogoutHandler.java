@@ -30,7 +30,7 @@ public class LogoutHandler extends SecurityContextLogoutHandler {
 	 * @param clientRegistrationRepository the {@code ClientRegistrationRepository} for
 	 * this application.
 	 */
-	public LogoutHandler(ClientRegistrationRepository clientRegistrationRepository) {
+	public LogoutHandler(final ClientRegistrationRepository clientRegistrationRepository) {
 		this.clientRegistrationRepository = clientRegistrationRepository;
 	}
 
@@ -42,8 +42,8 @@ public class LogoutHandler extends SecurityContextLogoutHandler {
 	 * @param authentication the current authentication.
 	 */
 	@Override
-	public void logout(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
-			Authentication authentication) {
+	public void logout(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse,
+			final Authentication authentication) {
 
 		// Invalidate the session and clear the security context
 		super.logout(httpServletRequest, httpServletResponse, authentication);
@@ -52,11 +52,13 @@ public class LogoutHandler extends SecurityContextLogoutHandler {
 		// page.
 		// URL will look like
 		// https://YOUR-DOMAIN/v2/logout?clientId=YOUR-CLIENT-ID&returnTo=http://localhost:3000
-		String issuer = (String) getClientRegistration().getProviderDetails().getConfigurationMetadata().get("issuer");
-		String clientId = getClientRegistration().getClientId();
-		String returnTo = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString();
+		final String issuer = (String) getClientRegistration().getProviderDetails()
+			.getConfigurationMetadata()
+			.get("issuer");
+		final String clientId = getClientRegistration().getClientId();
+		final String returnTo = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString();
 
-		String logoutUrl = UriComponentsBuilder
+		final String logoutUrl = UriComponentsBuilder
 			.fromUriString(issuer + "v2/logout?client_id={clientId}&returnTo={returnTo}")
 			.encode()
 			.buildAndExpand(clientId, returnTo)
@@ -65,8 +67,9 @@ public class LogoutHandler extends SecurityContextLogoutHandler {
 		try {
 			httpServletResponse.sendRedirect(logoutUrl);
 		}
-		catch (IOException ioe) {
+		catch (final IOException ioe) {
 			// Handle or log error redirecting to logout URL
+			// Logging is handled by the framework
 		}
 	}
 

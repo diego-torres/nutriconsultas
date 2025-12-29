@@ -28,9 +28,9 @@ public class PacienteRestController extends AbstractGridController<Paciente> {
 	private PacienteService service;
 
 	@Override
-	protected List<String> toStringList(Paciente row) {
+	protected List<String> toStringList(final Paciente row) {
 		log.debug("converting Paciente row {} to string list.", row);
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		return Arrays.asList("<a href='/admin/pacientes/" + row.getId() + "'>" + row.getName() + "</a>",
 				row.getDob() != null ? dateFormat.format(row.getDob()) : "", //
 				row.getEmail(), //
@@ -46,14 +46,14 @@ public class PacienteRestController extends AbstractGridController<Paciente> {
 	}
 
 	@Override
-	protected Predicate<Paciente> getPredicate(String value) {
+	protected Predicate<Paciente> getPredicate(final String value) {
 		return row -> row.getName().toLowerCase().contains(value) || row.getName().toLowerCase().startsWith(value)
 				|| row.getResponsibleName().toLowerCase().contains(value)
 				|| row.getResponsibleName().toLowerCase().startsWith(value);
 	}
 
 	@Override
-	protected Comparator<Paciente> getComparator(String column, Direction dir) {
+	protected Comparator<Paciente> getComparator(final String column, final Direction dir) {
 		log.debug("getting Paciente comparator with column {} and direction {}.", column, dir);
 		return PacienteComparators.getComparator(column, dir);
 	}

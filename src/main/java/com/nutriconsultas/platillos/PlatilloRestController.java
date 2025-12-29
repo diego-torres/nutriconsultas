@@ -30,87 +30,97 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 	private PlatilloService service;
 
 	@PostMapping("{id}/ingredientes/add")
-	public ResponseEntity<ApiResponse<Ingrediente>> addIngrediente(@PathVariable @NonNull Long id,
-			@RequestBody @NonNull IngredienteFormModel ingrediente) {
+	public ResponseEntity<ApiResponse<Ingrediente>> addIngrediente(@PathVariable @NonNull final Long id,
+			@RequestBody @NonNull final IngredienteFormModel ingrediente) {
 		log.info("starting addIngrediente with id {} and ingrediente {}.", id, ingrediente);
-		Long alimentoId = ingrediente.getAlimentoId();
-		String cantidad = ingrediente.getCantidad();
-		Integer peso = ingrediente.getPeso();
+		final Long alimentoId = ingrediente.getAlimentoId();
+		final String cantidad = ingrediente.getCantidad();
+		final Integer peso = ingrediente.getPeso();
+		ResponseEntity<ApiResponse<Ingrediente>> result;
 		if (alimentoId == null || cantidad == null || peso == null) {
 			log.error("Missing required fields: alimentoId={}, cantidad={}, peso={}", alimentoId, cantidad, peso);
-			return ResponseEntity.badRequest().build();
+			result = ResponseEntity.badRequest().build();
 		}
-		Ingrediente _ingrediente = service.addIngrediente(id, alimentoId, cantidad, peso);
-
-		log.info("finish addIngrediente with id {} and ingrediente {}.", id, ingrediente);
-		return ResponseEntity.ok(new ApiResponse<Ingrediente>(_ingrediente));
+		else {
+			final Ingrediente _ingrediente = service.addIngrediente(id, alimentoId, cantidad, peso);
+			log.info("finish addIngrediente with id {} and ingrediente {}.", id, ingrediente);
+			result = ResponseEntity.ok(new ApiResponse<Ingrediente>(_ingrediente));
+		}
+		return result;
 	}
 
 	@PostMapping("{id}/ingestas/add")
-	public ResponseEntity<ApiResponse<Platillo>> addIngesta(@PathVariable @NonNull Long id,
-			@RequestBody @NonNull IngestaFormModel ingesta) {
+	public ResponseEntity<ApiResponse<Platillo>> addIngesta(@PathVariable @NonNull final Long id,
+			@RequestBody @NonNull final IngestaFormModel ingesta) {
 		log.info("starting addIngesta with id {} and ingesta {}.", id, ingesta);
-		Platillo _platillo = service.findById(id);
+		final Platillo _platillo = service.findById(id);
 		String ingestas = _platillo.getIngestasSugeridas();
 
 		// prevent duplicate ingestas
+		ResponseEntity<ApiResponse<Platillo>> result;
 		if (ingestas != null && ingestas.contains(ingesta.getIngesta())) {
 			log.info("finish addIngesta with id {} and ingesta {} - DUPLICATE requested.", id, ingesta);
-			return ResponseEntity.ok(new ApiResponse<Platillo>(_platillo));
-		}
-
-		if (ingestas == null || ingestas.isEmpty()) {
-			ingestas = ingesta.getIngesta();
+			result = ResponseEntity.ok(new ApiResponse<Platillo>(_platillo));
 		}
 		else {
-			ingestas += ", " + ingesta.getIngesta();
+			if (ingestas == null || ingestas.isEmpty()) {
+				ingestas = ingesta.getIngesta();
+			}
+			else {
+				ingestas += ", " + ingesta.getIngesta();
+			}
+			_platillo.setIngestasSugeridas(ingestas);
+			final Platillo saved = service.save(_platillo);
+			log.info("finish addIngesta with id {} and ingesta {}.", id, ingesta);
+			result = ResponseEntity.ok(new ApiResponse<Platillo>(saved));
 		}
-		_platillo.setIngestasSugeridas(ingestas);
-		Platillo saved = service.save(_platillo);
-		log.info("finish addIngesta with id {} and ingesta {}.", id, ingesta);
-		return ResponseEntity.ok(new ApiResponse<Platillo>(saved));
+		return result;
 	}
 
 	@DeleteMapping("{id}/ingestas/{ingesta}")
-	public ResponseEntity<ApiResponse<Platillo>> deleteIngesta(@PathVariable @NonNull Long id,
-			@PathVariable @NonNull String ingesta) {
+	public ResponseEntity<ApiResponse<Platillo>> deleteIngesta(@PathVariable @NonNull final Long id,
+			@PathVariable @NonNull final String ingesta) {
 		log.info("starting deleteIngesta with id {} and ingesta {}.", id, ingesta);
-		Platillo _platillo = service.findById(id);
-		String ingestas = _platillo.getIngestasSugeridas();
+		final Platillo _platillo = service.findById(id);
+		final String ingestas = _platillo.getIngestasSugeridas();
+		ResponseEntity<ApiResponse<Platillo>> result;
 		if (ingestas != null) {
-			ingestas = ingestas.replace(ingesta, "").replace(",,", ",").trim();
-			if (ingestas.startsWith(",")) {
-				ingestas = ingestas.substring(1);
+			String updatedIngestas = ingestas.replace(ingesta, "").replace(",,", ",").trim();
+			if (updatedIngestas.startsWith(",")) {
+				updatedIngestas = updatedIngestas.substring(1);
 			}
-			if (ingestas.endsWith(",")) {
-				ingestas = ingestas.substring(0, ingestas.length() - 1);
+			if (updatedIngestas.endsWith(",")) {
+				updatedIngestas = updatedIngestas.substring(0, updatedIngestas.length() - 1);
 			}
-			_platillo.setIngestasSugeridas(ingestas);
-			log.debug("Ingestas after delete: [{}]", ingestas);
-			Platillo saved = service.save(_platillo);
+			_platillo.setIngestasSugeridas(updatedIngestas);
+			log.debug("Ingestas after delete: [{}]", updatedIngestas);
+			final Platillo saved = service.save(_platillo);
 			log.info("finish deleteIngesta with id {} and ingesta {}.", id, ingesta);
-			return ResponseEntity.ok(new ApiResponse<Platillo>(saved));
+			result = ResponseEntity.ok(new ApiResponse<Platillo>(saved));
 		}
-		log.info("finish deleteIngesta with id {} and ingesta {}.", id, ingesta);
-		return ResponseEntity.ok(new ApiResponse<Platillo>(_platillo));
+		else {
+			log.info("finish deleteIngesta with id {} and ingesta {}.", id, ingesta);
+			result = ResponseEntity.ok(new ApiResponse<Platillo>(_platillo));
+		}
+		return result;
 	}
 
 	// "/rest/platillos/" + $("#id").val() + "/video/add"
 	@PostMapping("{id}/video/add")
-	public ResponseEntity<ApiResponse<Platillo>> addVideo(@PathVariable @NonNull Long id,
-			@RequestBody @NonNull VideoFormModel video) {
+	public ResponseEntity<ApiResponse<Platillo>> addVideo(@PathVariable @NonNull final Long id,
+			@RequestBody @NonNull final VideoFormModel video) {
 		log.info("starting addVideo with id {} and video {}.", id, video);
-		Platillo _platillo = service.findById(id);
+		final Platillo _platillo = service.findById(id);
 		_platillo.setVideoUrl(video.getVideoUrl());
-		Platillo saved = service.save(_platillo);
+		final Platillo saved = service.save(_platillo);
 		log.info("finish addVideo with id {} and video {}.", id, video);
 		return ResponseEntity.ok(new ApiResponse<Platillo>(saved));
 	}
 
 	@PostMapping("add")
-	public Platillo add(@RequestBody @NonNull Platillo platillo) {
+	public Platillo add(@RequestBody @NonNull final Platillo platillo) {
 		log.info("starting add with platillo {}.", platillo);
-		Platillo saved = service.save(platillo);
+		final Platillo saved = service.save(platillo);
 		log.info("finish add with platillo {}.", saved);
 		return saved;
 	}
@@ -127,7 +137,7 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 	}
 
 	@Override
-	protected List<String> toStringList(Platillo row) {
+	protected List<String> toStringList(final Platillo row) {
 		log.debug("converting Platillo row {} to string list.", row);
 		return Arrays.asList("<a href='/admin/platillos/" + row.getId() + "'>" + row.getName() + "</a>",
 				row.getIngestasSugeridas() == null ? "" : row.getIngestasSugeridas(),
@@ -143,7 +153,7 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 	}
 
 	@Override
-	protected Predicate<Platillo> getPredicate(String value) {
+	protected Predicate<Platillo> getPredicate(final String value) {
 		log.debug("getting Platillo predicate with value {}.", value);
 		return platillo -> platillo.getName().toLowerCase().contains(value.toLowerCase())
 				|| (platillo.getIngestasSugeridas() != null
@@ -151,7 +161,8 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 	}
 
 	@Override
-	protected Comparator<Platillo> getComparator(String column, com.nutriconsultas.dataTables.paging.Direction dir) {
+	protected Comparator<Platillo> getComparator(final String column,
+			final com.nutriconsultas.dataTables.paging.Direction dir) {
 		log.debug("getting Platillo comparator with column {} and direction {}.", column, dir);
 		return PlatilloComparators.getComparator(column, dir);
 	}

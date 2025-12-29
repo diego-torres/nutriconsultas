@@ -22,7 +22,7 @@ public class AlimentosController extends AbstractAuthorizedController {
 	private AlimentoService alimentoService;
 
 	@GetMapping(path = "/admin/alimentos")
-	public String listado(Model model) {
+	public String listado(final Model model) {
 		log.info("Start Listado de alimentos");
 		model.addAttribute("activeMenu", "alimentos");
 		log.debug("set alimentos as the active menu");
@@ -31,12 +31,12 @@ public class AlimentosController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/alimentos/nuevo")
-	public String nuevoAlimento(Model model) {
+	public String nuevoAlimento(final Model model) {
 		log.info("Start nuevo alimento");
 		model.addAttribute("activeMenu", "alimentos");
 		log.debug("set alimentos as the active menu");
 		// asignar valores por defecto
-		Alimento alimento = new Alimento();
+		final Alimento alimento = new Alimento();
 		alimento.setClasificacion("ACEITES Y GRASAS");
 		alimento.setUnidad("pieza");
 		model.addAttribute("alimento", alimento);
@@ -46,12 +46,12 @@ public class AlimentosController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/alimentos/{id}")
-	public String verAlimento(@PathVariable @NonNull Long id, Model model) {
+	public String verAlimento(@PathVariable @NonNull final Long id, final Model model) {
 		log.info("Start verAlimento with id {}", id);
 		model.addAttribute("activeMenu", "alimentos");
 		log.debug("set alimentos as the active menu");
 
-		Alimento alimento = alimentoService.findById(id);
+		final Alimento alimento = alimentoService.findById(id);
 		model.addAttribute("alimento", alimento);
 		log.info("finish ver alimento with model {} to view sbadmin/alimentos/formulario and form falues {}", model,
 				alimento);
@@ -59,18 +59,22 @@ public class AlimentosController extends AbstractAuthorizedController {
 	}
 
 	@PostMapping(path = "/admin/alimentos")
-	public String agregarNuevoAlimento(@Valid @NonNull Alimento alimento, BindingResult result, Model model) {
+	public String agregarNuevoAlimento(@Valid @NonNull final Alimento alimento, final BindingResult result,
+			final Model model) {
 		log.info("Start agregar nuevo alimento with values {}, and binding result {}", alimento, result);
+		String resultView;
 		if (result.hasErrors()) {
 			log.warn("Found {} errors on binding result", result.getErrorCount());
-			return "sbadmin/alimentos/formulario";
+			resultView = "sbadmin/alimentos/formulario";
 		}
-
-		Alimento _alimento = alimentoService.save(alimento);
-		log.info(
-				"finish agregar nuevo alimento post method, after saving with values {}, redirecting to /admin/alimentos",
-				_alimento);
-		return "redirect:/admin/alimentos";
+		else {
+			final Alimento _alimento = alimentoService.save(alimento);
+			log.info(
+					"finish agregar nuevo alimento post method, after saving with values {}, redirecting to /admin/alimentos",
+					_alimento);
+			resultView = "redirect:/admin/alimentos";
+		}
+		return resultView;
 	}
 
 }

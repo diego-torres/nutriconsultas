@@ -38,30 +38,30 @@ public class PacienteConsultaRestController extends AbstractGridController<Consu
 	private ConsultaRepository repo;
 
 	@GetMapping("charts/imc")
-	public ChartResponse imcChart(@PathVariable Long id) {
+	public ChartResponse imcChart(@PathVariable final Long id) {
 		log.info("starting imcChart with id {}.", id);
 		// Implement from repository
-		ChartResponse response = new ChartResponse();
-		List<String> labels = new ArrayList<>();
-		List<String> imc = new ArrayList<>();
-		List<Consulta> consultasPaciente = repo.findByPacienteId(id)
+		final ChartResponse response = new ChartResponse();
+		final List<String> labels = new ArrayList<>();
+		final List<String> imc = new ArrayList<>();
+		final List<Consulta> consultasPaciente = repo.findByPacienteId(id)
 			.stream()
 			.sorted(Comparator.comparing(Consulta::getFechaConsulta))
 			.collect(Collectors.toList());
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 		// TODO: Add niveles IMC
 		// NivelPeso np = imc > 30.0d ? NivelPeso.SOBREPESO
 		// : imc > 25.0d ? NivelPeso.ALTO : imc > 18.5d ? NivelPeso.NORMAL :
 		// NivelPeso.BAJO;
 
-		for (Consulta consulta : consultasPaciente) {
+		for (final Consulta consulta : consultasPaciente) {
 			labels.add(dateFormat.format(consulta.getFechaConsulta()));
 			imc.add(String.format("%.2f", consulta.getImc()));
 		}
 
 		response.setLabels(labels);
-		Map<String, Object> data = new HashMap<>();
+		final Map<String, Object> data = new HashMap<>();
 		data.put("imc", imc);
 		response.setData(data);
 		log.info("finish imcChart with response {}.", response);
@@ -69,9 +69,9 @@ public class PacienteConsultaRestController extends AbstractGridController<Consu
 	}
 
 	@Override
-	protected List<String> toStringList(Consulta row) {
+	protected List<String> toStringList(final Consulta row) {
 		log.debug("converting Consulta row {} to string list.", row);
-		DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
+		final DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
 		return Arrays.asList(row.getFechaConsulta() != null ? dateFormat.format(row.getFechaConsulta()) : "", //
 				row.getPeso().toString(), //
 				row.getEstatura().toString(), //
@@ -90,7 +90,7 @@ public class PacienteConsultaRestController extends AbstractGridController<Consu
 	}
 
 	@Override
-	protected Comparator<Consulta> getComparator(String column, Direction dir) {
+	protected Comparator<Consulta> getComparator(final String column, final Direction dir) {
 		log.debug("getting Consulta comparator with column {} and direction {}.", column, dir);
 		return ConsultaComparators.getComparator(column, dir);
 	}
@@ -104,7 +104,7 @@ public class PacienteConsultaRestController extends AbstractGridController<Consu
 	}
 
 	@Override
-	protected Predicate<Consulta> getPredicate(String value) {
+	protected Predicate<Consulta> getPredicate(final String value) {
 		log.debug("getting Consulta predicate with value {}.", value);
 		return row -> row.getFechaConsulta().toString().toLowerCase().contains(value)
 				|| row.getPeso().toString().toLowerCase().contains(value)

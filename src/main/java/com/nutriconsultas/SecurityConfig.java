@@ -20,12 +20,13 @@ public class SecurityConfig {
 
 	private final LogoutHandler logoutHandler;
 
-	public SecurityConfig(LogoutHandler logoutHandler) {
+	public SecurityConfig(final LogoutHandler logoutHandler) {
 		this.logoutHandler = logoutHandler;
 	}
 
 	@Bean
-	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	// package-private
+	SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
 		log.info("ENABLING security filter chain.");
 
 		http.cors(withDefaults())
