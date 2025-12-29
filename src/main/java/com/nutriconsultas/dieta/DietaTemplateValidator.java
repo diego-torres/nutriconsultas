@@ -30,8 +30,18 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		mockIngesta.setProteina(0.0);
 		mockIngesta.setLipidos(0.0);
 		mockIngesta.setHidratosDeCarbono(0.0);
-		// Add empty platillos list to ingesta
-		mockIngesta.setPlatillos(new ArrayList<>());
+		// Add mock platillo with numeric values for validation
+		List<PlatilloIngesta> mockPlatillos = new ArrayList<>();
+		PlatilloIngesta mockPlatillo = new PlatilloIngesta();
+		mockPlatillo.setId(1L);
+		mockPlatillo.setName("Platillo de ejemplo");
+		mockPlatillo.setPortions(1);
+		mockPlatillo.setEnergia(250);
+		mockPlatillo.setProteina(15.75);
+		mockPlatillo.setLipidos(8.5);
+		mockPlatillo.setHidratosDeCarbono(30.25);
+		mockPlatillos.add(mockPlatillo);
+		mockIngesta.setPlatillos(mockPlatillos);
 		mockIngestas.add(mockIngesta);
 
 		// Create Dieta object with ingestas

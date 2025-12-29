@@ -445,10 +445,10 @@
                                   <tr th:each="platillo : ${ingesta.platillos}">
                                     <td th:text="${platillo.name}"></td>
                                     <td th:text="${platillo.portions}"></td>
-                                    <td th:text="${platillo.energia}"></td>
-                                    <td th:text="${platillo.proteina}"></td>
-                                    <td th:text="${platillo.lipidos}"></td>
-                                    <td th:text="${platillo.hidratosDeCarbono}"></td>
+                                    <td th:text="${#numbers.formatDecimal(platillo.energia, 1, 2)}"></td>
+                                    <td th:text="${#numbers.formatDecimal(platillo.proteina, 1, 2)}"></td>
+                                    <td th:text="${#numbers.formatDecimal(platillo.lipidos, 1, 2)}"></td>
+                                    <td th:text="${#numbers.formatDecimal(platillo.hidratosDeCarbono, 1, 2)}"></td>
                                     <td>
                                       <button 
                                         type="button" 
