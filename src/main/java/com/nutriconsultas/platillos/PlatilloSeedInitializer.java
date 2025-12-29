@@ -84,7 +84,7 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 
 		// Read platillos from auxiliary table
 		List<Map<String, Object>> platillos = jdbc
-			.queryForList("SELECT name, description FROM public.seed_platillo ORDER BY name");
+			.queryForList("SELECT name, description, ingestas_sugeridas FROM public.seed_platillo ORDER BY name");
 
 		log.info("Found {} platillos in auxiliary table", platillos.size());
 
@@ -99,11 +99,13 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 		for (Map<String, Object> row : platillos) {
 			String name = (String) row.get("name");
 			String description = (String) row.get("description");
+			String ingestasSugeridas = (String) row.get("ingestas_sugeridas");
 
 			// Create platillo
 			Platillo platillo = new Platillo();
 			platillo.setName(name);
 			platillo.setDescription(description);
+			platillo.setIngestasSugeridas(ingestasSugeridas);
 			platillo = platilloRepository.save(platillo);
 
 			Long platilloId = platillo.getId();
