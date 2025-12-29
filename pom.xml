@@ -18,7 +18,7 @@
     <maven.compiler.target>21</maven.compiler.target>
     <java.version>21</java.version>
     <checkstyle.version>3.3.1</checkstyle.version>
-    <spotbugs.version>4.7.3</spotbugs.version>
+    <spotbugs.version>4.9.8.2</spotbugs.version>
     <pmd.version>3.21.2</pmd.version>
     <spring-javaformat.version>0.0.47</spring-javaformat.version>
   </properties>
@@ -240,7 +240,6 @@
           <effort>Max</effort>
           <threshold>Low</threshold>
           <xmlOutput>true</xmlOutput>
-          <spotbugsXmlOutput>false</spotbugsXmlOutput>
           <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
         </configuration>
         <executions>
