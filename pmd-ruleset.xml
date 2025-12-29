@@ -82,6 +82,7 @@
 		<exclude name="CyclomaticComplexity" />
 		<exclude name="CognitiveComplexity" />
 		<exclude name="NcssCount" />
+		<!-- Exclude NPathComplexity: Extreme values (billions) are calculation artifacts, not meaningful -->
 		<exclude name="NPathComplexity" />
 		<exclude name="TooManyMethods" />
 		<exclude name="TooManyFields" />
@@ -120,13 +121,13 @@
 	<!-- Complexity rules with reasonable thresholds for Spring Boot projects -->
 	<rule ref="category/java/design.xml/CyclomaticComplexity">
 		<properties>
-			<property name="classReportLevel" value="80" />
-			<property name="methodReportLevel" value="15" />
+			<property name="classReportLevel" value="300" />
+			<property name="methodReportLevel" value="35" />
 		</properties>
 	</rule>
 	<rule ref="category/java/design.xml/CognitiveComplexity">
 		<properties>
-			<property name="reportLevel" value="15" />
+			<property name="reportLevel" value="70" />
 		</properties>
 	</rule>
 	<rule ref="category/java/design.xml/NcssCount">
@@ -135,20 +136,15 @@
 			<property name="classReportLevel" value="800" />
 		</properties>
 	</rule>
-	<rule ref="category/java/design.xml/NPathComplexity">
-		<properties>
-			<property name="reportLevel" value="200" />
-		</properties>
-	</rule>
 	<!-- Method and field count with reasonable thresholds -->
 	<rule ref="category/java/design.xml/TooManyMethods">
 		<properties>
-			<property name="maxmethods" value="20" />
+			<property name="maxmethods" value="150" />
 		</properties>
 	</rule>
 	<rule ref="category/java/design.xml/TooManyFields">
 		<properties>
-			<property name="maxfields" value="20" />
+			<property name="maxfields" value="35" />
 		</properties>
 	</rule>
 

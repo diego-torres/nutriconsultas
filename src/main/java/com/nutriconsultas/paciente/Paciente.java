@@ -94,7 +94,20 @@ public class Paciente {
 	private String alergias;
 
 	// BANDERAS DE PATOLOGIAS COMUNES
-	private Boolean hipertension = false, diabetes = false, hipotiroidismo = false, obesidad = false, anemia = false,
-			bulimia = false, anorexia = false, enfermedadesHepaticas = false;
+	private Boolean hipertension = false;
+
+	private Boolean diabetes = false;
+
+	private Boolean hipotiroidismo = false;
+
+	private Boolean obesidad = false;
+
+	private Boolean anemia = false;
+
+	private Boolean bulimia = false;
+
+	private Boolean anorexia = false;
+
+	private Boolean enfermedadesHepaticas = false;
 
 }

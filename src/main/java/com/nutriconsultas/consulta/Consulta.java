@@ -59,7 +59,13 @@ public class Consulta {
 
 	private NivelPeso nivelPeso;
 
-	private Integer sistolica, diastolica, pulso, indiceGlucemico;
+	private Integer sistolica;
+
+	private Integer diastolica;
+
+	private Integer pulso;
+
+	private Integer indiceGlucemico;
 
 	@Column(precision = 5)
 	private Double spo2;

@@ -73,7 +73,7 @@ public class ThymeleafValidator {
 		// (expected runtime errors like #fields are handled and don't indicate template
 		// problems)
 		final Level originalLevel = suppressThymeleafErrorLogs();
-		boolean result = false;
+		boolean result;
 
 		try {
 			final TemplateEngine templateEngine = createTemplateEngine(templatesPath);

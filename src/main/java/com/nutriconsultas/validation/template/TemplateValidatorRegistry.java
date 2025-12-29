@@ -35,7 +35,7 @@ public class TemplateValidatorRegistry {
 	 * specific validators should be registered before general ones.
 	 * @param validator the validator to register
 	 */
-	public void register(final TemplateValidator validator) {
+	public final void register(final TemplateValidator validator) {
 		validators.add(validator);
 	}
 
