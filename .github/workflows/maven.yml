@@ -38,7 +38,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-wrapper-
     - name: Verify code formatting
-      run: mvn -B spring-javaformat:check
+      run: mvn -B spring-javaformat:validate
     - name: Run Checkstyle
       run: mvn -B checkstyle:check -Pci
     - name: Run SpotBugs
