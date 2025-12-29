@@ -329,22 +329,45 @@
 
                         <div class="col-lg-6 mb-4">
 
-                            <!-- Illustrations -->
+                            <!-- Upcoming Appointments -->
                             <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Illustrations</h6>
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Próximas Citas</h6>
+                                    <a th:href="@{/admin/calendario}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-calendar"></i> Ver Calendario
+                                    </a>
                                 </div>
                                 <div class="card-body">
-                                    <div class="text-center">
-                                        <img class="img-fluid px-3 px-sm-4 mt-3 mb-4" style="width: 25rem;"
-                                            src="img/undraw_posting_photo.svg" alt="...">
+                                    <div th:if="${upcomingAppointments != null && !upcomingAppointments.isEmpty()}">
+                                        <div th:each="appointment : ${upcomingAppointments}" class="mb-3 pb-3 border-bottom">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <h6 class="font-weight-bold mb-1" th:text="${appointment.title}">Título</h6>
+                                                    <p class="mb-1">
+                                                        <i class="fas fa-user text-gray-400"></i>
+                                                        <span th:text="${appointment.paciente != null ? appointment.paciente.name : 'Sin paciente'}">Paciente</span>
+                                                    </p>
+                                                    <p class="mb-0 text-xs text-gray-500">
+                                                        <i class="fas fa-clock text-gray-400"></i>
+                                                        <span th:text="${#temporals.format(appointment.eventDateTime, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                                                        <span th:if="${appointment.durationMinutes != null}">
+                                                            - <span th:text="${appointment.durationMinutes + ' min'}">Duración</span>
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                                <span class="badge" 
+                                                      th:classappend="${appointment.status.name() == 'SCHEDULED' ? 'badge-primary' : (appointment.status.name() == 'COMPLETED' ? 'badge-success' : 'badge-danger')}"
+                                                      th:text="${appointment.status.name()}">Estado</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p>Add some quality, svg illustrations to your project courtesy of <a
-                                            target="_blank" rel="nofollow" href="https://undraw.co/">unDraw</a>, a
-                                        constantly updated collection of beautiful svg images that you can use
-                                        completely free and without attribution!</p>
-                                    <a target="_blank" rel="nofollow" href="https://undraw.co/">Browse Illustrations on
-                                        unDraw &rarr;</a>
+                                    <div th:if="${upcomingAppointments == null || upcomingAppointments.isEmpty()}" class="text-center text-gray-500">
+                                        <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                                        <p>No hay citas próximas programadas</p>
+                                        <a th:href="@{/admin/calendario/nuevo}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-plus"></i> Crear Nueva Cita
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
 
