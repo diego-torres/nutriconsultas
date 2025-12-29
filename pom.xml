@@ -241,6 +241,7 @@
           <threshold>Low</threshold>
           <xmlOutput>true</xmlOutput>
           <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
+          <failOnError>false</failOnError>
         </configuration>
         <executions>
           <execution>
@@ -339,6 +340,13 @@
             <artifactId>maven-pmd-plugin</artifactId>
             <configuration>
               <failOnViolation>true</failOnViolation>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+            <configuration>
+              <failOnError>true</failOnError>
             </configuration>
           </plugin>
         </plugins>
