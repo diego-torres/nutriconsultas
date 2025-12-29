@@ -446,11 +446,11 @@
                                 <tbody>
                                   <tr th:each="platillo : ${ingesta.platillos}">
                                     <td th:text="${platillo.name}"></td>
-                                    <td th:text="${platillo.porciones}"></td>
-                                    <td th:text="${platillo.calorias}"></td>
-                                    <td th:text="${platillo.proteinas}"></td>
+                                    <td th:text="${platillo.portions}"></td>
+                                    <td th:text="${platillo.energia}"></td>
+                                    <td th:text="${platillo.proteina}"></td>
                                     <td th:text="${platillo.lipidos}"></td>
-                                    <td th:text="${platillo.hidratos}"></td>
+                                    <td th:text="${platillo.hidratosDeCarbono}"></td>
                                     <td>
                                       <button 
                                         type="button" 
