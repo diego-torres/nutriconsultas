@@ -13,3 +13,4 @@ buildNumber.properties
 .env
 src/test/.DS_Store
 .env.test
+.DS_Store

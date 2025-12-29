@@ -18,28 +18,31 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SecurityConfig {
 
-  private final LogoutHandler logoutHandler;
+	private final LogoutHandler logoutHandler;
 
-  public SecurityConfig(LogoutHandler logoutHandler) {
-    this.logoutHandler = logoutHandler;
-  }
+	public SecurityConfig(final LogoutHandler logoutHandler) {
+		this.logoutHandler = logoutHandler;
+	}
 
-  @Bean
-  SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    log.info("ENABLING security filter chain.");
+	@Bean
+	// package-private
+	SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
+		log.info("ENABLING security filter chain.");
 
-      http.cors(withDefaults())
-              .csrf(csrf -> csrf.disable())
-              .headers(headers -> headers
-                      .frameOptions(options -> options.sameOrigin()))
-              .authorizeHttpRequests(
-                      ar -> ar.requestMatchers("/rest/**").authenticated()
-                              .requestMatchers("/admin/**").authenticated()
-                              .anyRequest().permitAll())
-              .oauth2Login(withDefaults())
-              .logout(logout -> logout.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                      .addLogoutHandler(logoutHandler));
+		http.cors(withDefaults())
+			.csrf(csrf -> csrf.disable())
+			.headers(headers -> headers.frameOptions(options -> options.sameOrigin()))
+			.authorizeHttpRequests(ar -> ar.requestMatchers("/rest/**")
+				.authenticated()
+				.requestMatchers("/admin/**")
+				.authenticated()
+				.anyRequest()
+				.permitAll())
+			.oauth2Login(withDefaults())
+			.logout(logout -> logout.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+				.addLogoutHandler(logoutHandler));
 
-    return http.build();
-  }
+		return http.build();
+	}
+
 }

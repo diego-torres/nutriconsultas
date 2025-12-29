@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Search {
-  private String value;
-  private String regexp;
+
+	private String value;
+
+	private String regexp;
+
 }

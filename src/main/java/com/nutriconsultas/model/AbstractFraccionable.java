@@ -3,38 +3,43 @@ package com.nutriconsultas.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @MappedSuperclass
-public abstract class AbstractFraccionable {
-  @Column(precision = 5)
-  protected Double cantSugerida;
+@EqualsAndHashCode(callSuper = false)
+public abstract class AbstractFraccionable extends AbstractNutrible {
 
-  public String getFractionalCantSugerida() {
-    if (cantSugerida == null) {
-      return "";
-    }
+	@Column(precision = 5)
+	protected Double cantSugerida;
 
-    Integer intPart = cantSugerida.intValue();
-    // convert the fractional part to a fraction
-    Double fractionalPart = cantSugerida - intPart;
-    Double tolerance = 1.0E-6;
-    Double h1 = 1d;
-    Double h2 = 0d;
-    Double k1 = 0d;
-    Double k2 = 1d;
-    Double b = fractionalPart;
-    do {
-      Double a = Math.floor(b);
-      Double aux = h1;
-      h1 = a * h1 + h2;
-      h2 = aux;
-      aux = k1;
-      k1 = a * k1 + k2;
-      k2 = aux;
-      b = 1 / (b - a);
-    } while (Math.abs(fractionalPart - h1 / k1) > fractionalPart * tolerance);
+	public String getFractionalCantSugerida() {
+		if (cantSugerida == null) {
+			return "";
+		}
 
-    return intPart > 0 ? intPart + " " : "" + h1.intValue() + "/" + k1.intValue();
-  }
+		final Integer intPart = cantSugerida.intValue();
+		// convert the fractional part to a fraction
+		final Double fractionalPart = cantSugerida - intPart;
+		final Double tolerance = 1.0E-6;
+		Double h1 = 1d;
+		Double h2 = 0d;
+		Double k1 = 0d;
+		Double k2 = 1d;
+		Double b = fractionalPart;
+		do {
+			final Double a = Math.floor(b);
+			final Double aux = h1;
+			h1 = a * h1 + h2;
+			h2 = aux;
+			final Double aux2 = k1;
+			k1 = a * k1 + k2;
+			k2 = aux2;
+			b = 1 / (b - a);
+		}
+		while (Math.abs(fractionalPart - h1 / k1) > fractionalPart * tolerance);
+
+		return intPart > 0 ? intPart + " " : "" + h1.intValue() + "/" + k1.intValue();
+	}
+
 }

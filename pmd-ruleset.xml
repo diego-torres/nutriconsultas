@@ -1,0 +1,197 @@
+<?xml version="1.0"?>
+<ruleset name="Custom PMD Ruleset"
+	xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+	<description>Custom PMD ruleset for nutriconsultas Spring Boot project - Balanced ruleset following best practices</description>
+
+	<!-- Best Practices: Keep most rules, exclude only Spring Boot-specific issues -->
+	<rule ref="category/java/bestpractices.xml">
+		<!-- Exclude GuardLogStatement: SLF4J handles log level checks efficiently -->
+		<exclude name="GuardLogStatement" />
+		<!-- Exclude UnusedFormalParameter: Common in interface implementations and overrides -->
+		<exclude name="UnusedFormalParameter" />
+		<!-- Exclude AvoidUsingHardCodedIP: May be needed for localhost/development -->
+		<exclude name="AvoidUsingHardCodedIP" />
+		<!-- Exclude AbstractClassWithoutAbstractMethod: Valid pattern for base classes -->
+		<exclude name="AbstractClassWithoutAbstractMethod" />
+		<!-- Keep UnusedAssignment: Catches real bugs -->
+		<!-- Keep OneDeclarationPerLine: Improves readability -->
+		<!-- Keep other best practice rules -->
+	</rule>
+
+	<!-- Code Style: Exclude only pedantic rules, keep important ones -->
+	<rule ref="category/java/codestyle.xml">
+		<!-- Exclude ShortVariable: Loop variables (i, j, k) are acceptable -->
+		<exclude name="ShortVariable" />
+		<!-- Exclude LocalVariableCouldBeFinal: Too noisy, Spring Java Format handles style -->
+		<exclude name="LocalVariableCouldBeFinal" />
+		<!-- Exclude MethodArgumentCouldBeFinal: Too noisy for Spring Boot projects -->
+		<exclude name="MethodArgumentCouldBeFinal" />
+		<!-- Exclude ControlStatementBraces: Spring Java Format handles this -->
+		<exclude name="ControlStatementBraces" />
+		<!-- Exclude LongVariable: Descriptive names are preferred -->
+		<exclude name="LongVariable" />
+		<!-- Exclude OnlyOneReturn: Multiple returns improve readability in many cases -->
+		<exclude name="OnlyOneReturn" />
+		<!-- Exclude UnnecessaryFullyQualifiedName: Sometimes improves clarity -->
+		<exclude name="UnnecessaryFullyQualifiedName" />
+		<!-- Exclude UseDiamondOperator: Style preference -->
+		<exclude name="UseDiamondOperator" />
+		<!-- Exclude PackageCase: Package names follow conventions -->
+		<exclude name="PackageCase" />
+		<!-- Exclude CommentDefaultAccessModifier: Not necessary with modern Java -->
+		<exclude name="CommentDefaultAccessModifier" />
+		<!-- Exclude LocalVariableNamingConventions: Checkstyle handles this -->
+		<exclude name="LocalVariableNamingConventions" />
+		<!-- Exclude UnnecessaryBoxing: Modern Java handles autoboxing well -->
+		<exclude name="UnnecessaryBoxing" />
+		<!-- Exclude AtLeastOneConstructor: Lombok generates constructors -->
+		<exclude name="AtLeastOneConstructor" />
+		<!-- Exclude ModifierOrder: Spring Java Format handles this -->
+		<exclude name="ModifierOrder" />
+		<!-- Exclude FieldNamingConventions: Checkstyle handles this -->
+		<exclude name="FieldNamingConventions" />
+		<!-- Exclude FieldDeclarationsShouldBeAtStartOfClass: Lombok annotations break this -->
+		<exclude name="FieldDeclarationsShouldBeAtStartOfClass" />
+		<!-- Exclude BooleanGetMethodName: Spring/JavaBean conventions allow is/get -->
+		<exclude name="BooleanGetMethodName" />
+		<!-- Exclude UselessParentheses: Sometimes improves readability -->
+		<exclude name="UselessParentheses" />
+		<!-- Exclude UnnecessaryModifier: Interface methods are implicitly public -->
+		<exclude name="UnnecessaryModifier" />
+		<!-- Exclude UnnecessaryAnnotationValueElement: Style preference -->
+		<exclude name="UnnecessaryAnnotationValueElement" />
+		<!-- Exclude LambdaCanBeMethodReference: Both styles are acceptable -->
+		<exclude name="LambdaCanBeMethodReference" />
+		<!-- Exclude ConfusingTernary: Sometimes improves readability -->
+		<exclude name="ConfusingTernary" />
+		<!-- Exclude UnnecessaryCast: Sometimes needed for type safety -->
+		<exclude name="UnnecessaryCast" />
+		<!-- Exclude CallSuperInConstructor: Not always applicable -->
+		<exclude name="CallSuperInConstructor" />
+		<!-- Exclude ShortClassName: DTOs and utilities may have short names -->
+		<exclude name="ShortClassName" />
+		<!-- Keep other code style rules that catch real issues -->
+	</rule>
+
+	<!-- Design: Use thresholds instead of excluding, exclude only Spring Boot-specific issues -->
+	<rule ref="category/java/design.xml">
+		<!-- Exclude rules that will be configured with custom thresholds -->
+		<exclude name="CyclomaticComplexity" />
+		<exclude name="CognitiveComplexity" />
+		<exclude name="NcssCount" />
+		<!-- Exclude NPathComplexity: Extreme values (billions) are calculation artifacts, not meaningful -->
+		<exclude name="NPathComplexity" />
+		<exclude name="TooManyMethods" />
+		<exclude name="TooManyFields" />
+		<!-- Exclude Spring Boot-specific design issues -->
+		<exclude name="LawOfDemeter" />
+		<!-- Exclude DataClass: DTOs and entities are often data classes -->
+		<exclude name="DataClass" />
+		<!-- Exclude GodClass: Controllers may have many dependencies -->
+		<exclude name="GodClass" />
+		<!-- Exclude ExcessivePublicCount: Spring beans are often public -->
+		<exclude name="ExcessivePublicCount" />
+		<!-- Exclude LoosePackageCoupling: Spring Boot encourages cross-package dependencies -->
+		<exclude name="LoosePackageCoupling" />
+		<!-- Exclude CouplingBetweenObjects: Spring DI creates coupling -->
+		<exclude name="CouplingBetweenObjects" />
+		<!-- Exclude UseUtilityClass: Utility classes are valid patterns -->
+		<exclude name="UseUtilityClass" />
+		<!-- Exclude CollapsibleIfStatements: Sometimes improves readability -->
+		<exclude name="CollapsibleIfStatements" />
+		<!-- Exclude UselessOverridingMethod: May be needed for documentation -->
+		<exclude name="UselessOverridingMethod" />
+		<!-- Exclude SimplifiedTernary: Sometimes explicit is clearer -->
+		<exclude name="SimplifiedTernary" />
+		<!-- Exclude ClassWithOnlyPrivateConstructorsShouldBeFinal: Utility classes pattern -->
+		<exclude name="ClassWithOnlyPrivateConstructorsShouldBeFinal" />
+		<!-- Exclude ConstructorCallsOverridableMethod: Spring handles this -->
+		<exclude name="ConstructorCallsOverridableMethod" />
+		<!-- Exclude MutableStaticState: May be needed for Spring configuration -->
+		<exclude name="MutableStaticState" />
+		<!-- Exclude AvoidCatchingGenericException: Sometimes needed in Spring error handlers -->
+		<exclude name="AvoidCatchingGenericException" />
+		<!-- Exclude SignatureDeclareThrowsException: Spring handles exceptions -->
+		<exclude name="SignatureDeclareThrowsException" />
+		<!-- Keep other design rules -->
+	</rule>
+	<!-- Complexity rules with reasonable thresholds for Spring Boot projects -->
+	<rule ref="category/java/design.xml/CyclomaticComplexity">
+		<properties>
+			<property name="classReportLevel" value="300" />
+			<property name="methodReportLevel" value="35" />
+		</properties>
+	</rule>
+	<rule ref="category/java/design.xml/CognitiveComplexity">
+		<properties>
+			<property name="reportLevel" value="70" />
+		</properties>
+	</rule>
+	<rule ref="category/java/design.xml/NcssCount">
+		<properties>
+			<property name="methodReportLevel" value="100" />
+			<property name="classReportLevel" value="800" />
+		</properties>
+	</rule>
+	<!-- Method and field count with reasonable thresholds -->
+	<rule ref="category/java/design.xml/TooManyMethods">
+		<properties>
+			<property name="maxmethods" value="150" />
+		</properties>
+	</rule>
+	<rule ref="category/java/design.xml/TooManyFields">
+		<properties>
+			<property name="maxfields" value="35" />
+		</properties>
+	</rule>
+
+	<!-- Error Prone: Keep most rules, they catch real bugs -->
+	<rule ref="category/java/errorprone.xml">
+		<!-- Exclude AvoidCatchingNPE: Sometimes needed for defensive programming -->
+		<exclude name="AvoidCatchingNPE" />
+		<!-- Exclude UseLocaleWithCaseConversions: May not always be necessary -->
+		<exclude name="UseLocaleWithCaseConversions" />
+		<!-- Exclude SimpleDateFormatNeedsLocale: Use java.time instead -->
+		<exclude name="SimpleDateFormatNeedsLocale" />
+		<!-- Exclude AvoidDuplicateLiterals: May be too strict for constants -->
+		<exclude name="AvoidDuplicateLiterals" />
+		<!-- Exclude ReturnEmptyCollectionRatherThanNull: Sometimes null is valid -->
+		<exclude name="ReturnEmptyCollectionRatherThanNull" />
+		<!-- Exclude EmptyCatchBlock: Sometimes needed for logging/cleanup -->
+		<exclude name="EmptyCatchBlock" />
+		<!-- Exclude AvoidLiteralsInIfCondition: Magic numbers are sometimes acceptable -->
+		<exclude name="AvoidLiteralsInIfCondition" />
+		<!-- Exclude CompareObjectsWithEquals: Sometimes intentional -->
+		<exclude name="CompareObjectsWithEquals" />
+		<!-- Exclude ReplaceJavaUtilDate: Migration in progress -->
+		<exclude name="ReplaceJavaUtilDate" />
+		<!-- Exclude CloseResource: Spring manages resources -->
+		<exclude name="CloseResource" />
+		<!-- Keep other error-prone rules: they catch real bugs -->
+	</rule>
+
+	<!-- Performance: Keep important rules, exclude only when necessary -->
+	<rule ref="category/java/performance.xml">
+		<!-- Exclude UseStringBufferForStringAppends: Modern JVM optimizes StringBuilder -->
+		<exclude name="UseStringBufferForStringAppends" />
+		<!-- Exclude ReplaceJavaUtilDate: Migration in progress -->
+		<exclude name="ReplaceJavaUtilDate" />
+		<!-- Exclude AvoidInstantiatingObjectsInLoops: Sometimes necessary -->
+		<exclude name="AvoidInstantiatingObjectsInLoops" />
+		<!-- Exclude AddEmptyString: Sometimes needed for type conversion -->
+		<exclude name="AddEmptyString" />
+		<!-- Keep other performance rules -->
+	</rule>
+
+	<!-- Security: Keep most rules, they're important -->
+	<rule ref="category/java/security.xml">
+		<!-- Exclude AvoidUsingHardCodedIP: May be needed for localhost/development -->
+		<exclude name="AvoidUsingHardCodedIP" />
+		<!-- Keep other security rules: they catch security vulnerabilities -->
+	</rule>
+
+</ruleset>
+

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <!-- Exclude generated sources -->
+  <Match>
+    <Source name="~.*generated.*"/>
+  </Match>
+  
+  <!-- Exclude Lombok generated code -->
+  <Match>
+    <Class name="~.*\$\$.*"/>
+  </Match>
+  
+  <!-- Exclude test files from certain checks if needed -->
+  <Match>
+    <Source name="~.*Test\.java"/>
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+</FindBugsFilter>
+

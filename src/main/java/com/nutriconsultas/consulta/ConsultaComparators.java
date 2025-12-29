@@ -8,19 +8,22 @@ import com.nutriconsultas.dataTables.paging.ComparatorKey;
 import com.nutriconsultas.dataTables.paging.Direction;
 
 public final class ConsultaComparators {
-  static Map<ComparatorKey, Comparator<Consulta>> map = new HashMap<>();
 
-  static {
-    map.put(new ComparatorKey("fecha", Direction.asc), Comparator.comparing(Consulta::getFechaConsulta));
-    map.put(new ComparatorKey("fecha", Direction.desc), Comparator.comparing(Consulta::getFechaConsulta).reversed());
+	static Map<ComparatorKey, Comparator<Consulta>> map = new HashMap<>();
 
-    // TODO: Add more sorting columns
-  }
+	static {
+		map.put(new ComparatorKey("fecha", Direction.asc), Comparator.comparing(Consulta::getFechaConsulta));
+		map.put(new ComparatorKey("fecha", Direction.desc),
+				Comparator.comparing(Consulta::getFechaConsulta).reversed());
 
-  public static Comparator<Consulta> getComparator(String name, Direction dir) {
-    return map.get(new ComparatorKey(name, dir));
-  }
+		// TODO: Add more sorting columns
+	}
 
-  private ConsultaComparators() {
-  }
+	public static Comparator<Consulta> getComparator(String name, Direction dir) {
+		return map.get(new ComparatorKey(name, dir));
+	}
+
+	private ConsultaComparators() {
+	}
+
 }

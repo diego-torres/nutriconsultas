@@ -12,7 +12,7 @@
   <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
   <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
 
-  <title>Minutriporcion - Perfil de Paciente: [[(${paciente.id})]]</title>
+  <title>Minutriporcion - Perfil de Paciente: [[(${paciente != null ? paciente.id : ''})]]</title>
 
   <!-- Custom fonts for this template-->
   <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
@@ -43,11 +43,11 @@
             <div class="col-lg-4">
               <div class="card mb-4">
                 <div class="card-body text-center">
-                  <img th:src="${paciente.gender == 'M' ? '/sbadmin/img/ava3.webp' : '/sbadmin/img/ava5.webp'}"
+                  <img th:src="${paciente != null && paciente.gender == 'M' ? '/sbadmin/img/ava3.webp' : '/sbadmin/img/ava5.webp'}"
                     alt="avatar" class="rounded-circle img-fluid" style="width: 150px;">
-                  <h5 class="my-3">[[(${paciente.name})]]</h5>
-                  <p class="text-muted mb-1"><i class="fas fa-envelope"></i> [[(${paciente.email})]]</p>
-                  <p class="text-muted mb-4"><i class="fas fa-phone"></i> [[(${paciente.phone})]]</p>
+                  <h5 class="my-3">[[(${paciente != null ? paciente.name : ''})]]</h5>
+                  <p class="text-muted mb-1"><i class="fas fa-envelope"></i> [[(${paciente != null ? paciente.email : ''})]]</p>
+                  <p class="text-muted mb-4"><i class="fas fa-phone"></i> [[(${paciente != null ? paciente.phone : ''})]]</p>
                 </div>
               </div>
               <div class="card mb-4 mb-lg-0">
@@ -266,7 +266,7 @@
     });
 
 
-    ajax_chart(myLineChart, '/rest/pacientes/[[(${paciente.id})]]/consultas/charts/imc');
+    ajax_chart(myLineChart, '/rest/pacientes/[[(${paciente != null ? paciente.id : 0})]]/consultas/charts/imc');
 
     // function to update our chart
     function ajax_chart(chart, url, data) {

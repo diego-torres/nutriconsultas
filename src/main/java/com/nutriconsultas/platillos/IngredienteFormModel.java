@@ -8,7 +8,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class IngredienteFormModel {
-    private Long alimentoId;
-    private String cantidad;
-    private Integer peso;
+
+	private Long alimentoId;
+
+	private String cantidad;
+
+	private Integer peso;
+
 }

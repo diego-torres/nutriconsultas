@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -67,6 +67,7 @@
                     id="selIngrediente"
                     class="form-control js-example-basic-single"
                     required="true"
+                    style="width: 100%"
                   >
                     <option value="">Selecciona un alimento</option>
                     <option
@@ -162,7 +163,7 @@
               </div>
               <div class="modal-body">
                 <form
-                  th:action="@{/admin/platillos/{id}/picture(id=${platillo.id})}"
+                  th:action="@{/admin/platillos/{id}/picture(id=${platillo != null ? platillo.id : 0})}"
                   method="post"
                   enctype="multipart/form-data">
                   <div class="form-group custom-file">
@@ -275,7 +276,7 @@
               </div>
               <div class="modal-body">
                 <form
-                  th:action="@{/admin/platillos/{id}/pdf(id=${platillo.id})}"
+                  th:action="@{/admin/platillos/{id}/pdf(id=${platillo != null ? platillo.id : 0})}"
                   method="post"
                   enctype="multipart/form-data">
                   <div class="form-group custom-file">   
@@ -364,13 +365,13 @@
               class="d-sm-flex align-items-center justify-content-between mb-4"
             >
               <h1
-                th:if="${platillo.id == null || platillo.id == 0}"
+                th:if="${platillo == null || platillo.id == null || platillo.id == 0}"
                 class="h3 mb-0 text-gray-800"
               >
                 Nuevo Alimento
               </h1>
               <h1
-                th:unless="${platillo.id == null || platillo.id == 0}"
+                th:unless="${platillo == null || platillo.id == null || platillo.id == 0}"
                 class="h3 mb-0 text-gray-800"
                 th:text="${platillo.name}"
               >
@@ -384,7 +385,7 @@
                 <div class="card mb-4">
                   <div class="card-body text-center">
                     <div class="img-wrapper">
-                      <img th:src="@{${platillo.imageUrl}}"
+                      <img th:src="@{${platillo != null && platillo.imageUrl != null ? platillo.imageUrl : ''}}"
                         class="img-fluid img-replaceable"
                         alt="Imagen del platillo"
                         />
@@ -645,6 +646,7 @@
         // initialize select2
         $("#selIngrediente").select2({
           dropdownParent: $("#addIngredientModal"),
+          width: 'resolve'
         });
         // initialize dataTable
         $("#ingredientesGrid").DataTable({

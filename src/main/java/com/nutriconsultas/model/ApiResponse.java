@@ -8,12 +8,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ApiResponse<T> {
-    private int status;
-    private String message;
-    private T data;
-    public ApiResponse(T data) {
-        this.status = 200;
-        this.message = "OK";
-        this.data = data;
-    }
+
+	private int status;
+
+	private String message;
+
+	private T data;
+
+	public ApiResponse(T data) {
+		this.status = 200;
+		this.message = "OK";
+		this.data = data;
+	}
+
 }

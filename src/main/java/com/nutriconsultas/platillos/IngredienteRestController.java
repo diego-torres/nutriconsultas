@@ -22,54 +22,52 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("rest/platillos/{id}/ingredientes")
 @Slf4j
 public class IngredienteRestController extends AbstractGridItemController<Ingrediente> {
-  @Autowired
-  private PlatilloService platilloService;
 
-  @DeleteMapping("/{ingredienteId}")
-  public void delete(@NonNull @PathVariable Long id,  @NonNull @PathVariable Long ingredienteId) {
-    log.debug("deleting Ingrediente with id {}.", ingredienteId);
-    platilloService.deleteIngrediente(id, ingredienteId);
-  }
+	@Autowired
+	private PlatilloService platilloService;
 
-  @Override
-  protected List<String> toStringList(Ingrediente row) {
-    log.debug("converting Ingrediente row {} to string list.", row);
-    return Arrays.asList(
-        row.getAlimento().getNombreAlimento(),
-        row.getFractionalCantSugerida(), //
-        row.getUnidad(), //
-        row.getPesoNeto().toString(), //
-        "<a href='#'' class='btn action-btn btn-danger btn-sm delete-btn' data-id='" + row.getId()
-        + "'><i class='fas fa-trash fa-sm fa-fw'></i> </a>");
-  }
+	@DeleteMapping("/{ingredienteId}")
+	public void delete(@NonNull @PathVariable final Long id, @NonNull @PathVariable final Long ingredienteId) {
+		log.debug("deleting Ingrediente with id {}.", ingredienteId);
+		platilloService.deleteIngrediente(id, ingredienteId);
+	}
 
-  @Override
-  protected List<Column> getColumns() {
-    log.debug("getting Platillo columns.");
-    return Arrays.asList(
-        new Column("ingrediente"), //
-        new Column("cantidad"), //
-        new Column("unidad"), //
-        new Column("peso"), //
-        new Column("acciones"));
-  }
+	@Override
+	protected List<String> toStringList(final Ingrediente row) {
+		log.debug("converting Ingrediente row {} to string list.", row);
+		return Arrays.asList(row.getAlimento().getNombreAlimento(), row.getFractionalCantSugerida(), //
+				row.getUnidad(), //
+				row.getPesoNeto().toString(), //
+				"<a href='#'' class='btn action-btn btn-danger btn-sm delete-btn' data-id='" + row.getId()
+						+ "'><i class='fas fa-trash fa-sm fa-fw'></i> </a>");
+	}
 
-  @Override
-  protected List<Ingrediente> getData(@NonNull Long id) {
-    log.debug("getting Ingrediente rows for Platillo id {}.", id);
-    return platilloService.findById(id).getIngredientes();
-  }
+	@Override
+	protected List<Column> getColumns() {
+		log.debug("getting Platillo columns.");
+		return Arrays.asList(new Column("ingrediente"), //
+				new Column("cantidad"), //
+				new Column("unidad"), //
+				new Column("peso"), //
+				new Column("acciones"));
+	}
 
-  @Override
-  protected Predicate<Ingrediente> getPredicate(String value) {
-    log.debug("getting predicate for value {}.", value);
-    return ingrediente -> ingrediente.getAlimento().getNombreAlimento().toLowerCase().contains(value.toLowerCase());
-  }
+	@Override
+	protected List<Ingrediente> getData(@NonNull final Long id) {
+		log.debug("getting Ingrediente rows for Platillo id {}.", id);
+		return platilloService.findById(id).getIngredientes();
+	}
 
-  @Override
-  protected Comparator<Ingrediente> getComparator(String column, Direction dir) {
-    log.debug("getting comparator for column {} and direction {}.", column, dir);
-    return IngredienteComparators.getComparator(column, dir);
-  }
+	@Override
+	protected Predicate<Ingrediente> getPredicate(final String value) {
+		log.debug("getting predicate for value {}.", value);
+		return ingrediente -> ingrediente.getAlimento().getNombreAlimento().toLowerCase().contains(value.toLowerCase());
+	}
+
+	@Override
+	protected Comparator<Ingrediente> getComparator(final String column, final Direction dir) {
+		log.debug("getting comparator for column {} and direction {}.", column, dir);
+		return IngredienteComparators.getComparator(column, dir);
+	}
 
 }

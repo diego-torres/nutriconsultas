@@ -1,0 +1,258 @@
+# Cursor Rules for Nutriconsultas Project
+
+## Project Context
+This is a Spring Boot 3.4.1 web application for managing a nutrition consultation clinic. The project uses Java 21, Thymeleaf templates, PostgreSQL database, and Spring Security with OAuth2 authentication.
+
+## Technology Stack
+- Spring Boot 3.4.1
+- Java 21
+- Thymeleaf (template engine)
+- PostgreSQL (production), H2 (testing)
+- Spring Security with OAuth2 (Auth0)
+- Maven build system
+- Lombok for reducing boilerplate
+
+## Code Quality Requirements
+
+### Formatting
+- Use Spring Java Format (automatically applied via Maven)
+- Maximum line length: 120 characters
+- Run `mvn spring-javaformat:apply` before committing
+
+### Linting Tools
+- **Spring Java Format**: Automatic code formatting
+  - Command: `mvn spring-javaformat:apply`
+  - Fixes: spacing, indentation, braces automatically
+  - Runs during `validate` phase
+- **Checkstyle**: Enforces code style (checkstyle.xml)
+  - Command: `mvn checkstyle:check`
+  - Common fixes: rename variables, add braces, fix line length (120 chars max), remove unused imports
+  - Runs during `validate` phase
+- **SpotBugs**: Static analysis for bugs
+  - Command: `mvn spotbugs:check`
+  - Common fixes: null checks, resource leaks, inefficient operations
+  - Exclude false positives in `spotbugs-exclude.xml`
+  - Runs during `verify` phase
+- **PMD**: Code quality analysis
+  - Command: `mvn pmd:check`
+  - Custom ruleset: `pmd-ruleset.xml` (excludes ShortVariable for loop variables)
+  - Common fixes:
+    - **MethodArgumentCouldBeFinal**: Add `final` to method parameters
+    - **LocalVariableCouldBeFinal**: Add `final` to local variables
+    - **OnlyOneReturn**: Refactor to single return point
+    - **LongVariable**: Shorten variable names
+    - **UnusedAssignment**: Remove unused assignments
+    - **GuardLogStatement**: Add log level guards (e.g., `if (logger.isDebugEnabled())`)
+    - **AvoidCatchingGenericException**: Catch specific exceptions
+  - Runs during `verify` phase
+- **Thymeleaf Validator**: Validates template syntax
+  - Modular architecture with per-template validators
+  - Package: `com.nutriconsultas.validation.template`
+  - Each template group has its own validator defining required mock model variables
+  - To add a validator: extend `BaseTemplateValidator` and register in `TemplateValidatorRegistry`
+- All tools run during build lifecycle
+- Run all tools: `./lint.sh`
+
+### Code Style
+- Follow Spring Boot best practices
+- Use constructor injection (preferred over field injection)
+- Use Lombok `@Slf4j` for logging
+- Maximum method length: 150 lines
+- Maximum parameters: 7 per method
+- Use `@Valid` for validation
+- Remove unused imports
+
+## Project Structure
+
+### Controllers
+- **Web Controllers**: Use `@Controller` for Thymeleaf views
+- **REST Controllers**: Use `@RestController` for API endpoints
+- **Base Classes**:
+  - `AbstractAuthorizedController`: For authenticated pages (adds user info to model)
+  - `AbstractGridController`: For grid/list views
+  - `AbstractGridItemController`: For grid item operations
+- Controllers should be in package-specific directories (admin, paciente, dieta, etc.)
+
+### Services
+- Implement service interfaces
+- Use `@Service` annotation
+- Use `@Transactional` for database operations
+- Follow naming: `XxxService` interface, `XxxServiceImpl` implementation
+
+### Repositories
+- Extend `JpaRepository<Entity, ID>`
+- Use `@Repository` annotation (optional, Spring detects automatically)
+- Use `@Query` for custom queries (prefer JPQL over native SQL)
+
+### Templates
+- **Admin Templates**: Located in `src/main/resources/templates/sbadmin/`
+  - Used for authenticated admin pages (`/admin/**`)
+  - Include fragments: sidebar, topbar, footer
+  - Return path format: `"sbadmin/{module}/{view}"`
+- **Public Templates**: Located in `src/main/resources/templates/eterna/`
+  - Used for public pages (homepage, about, etc.)
+  - Return path format: `"eterna/{view}"`
+- Use Thymeleaf fragments for reusable components
+- Use `th:` namespace for all Thymeleaf attributes
+- Use `@{...}` for URL generation
+- Use `${...}` for model attributes
+
+### Security
+- All `/rest/**` endpoints require authentication
+- All `/admin/**` endpoints require authentication
+- Public routes are accessible without authentication
+- Use `AbstractAuthorizedController` for authenticated pages
+- Security configuration in `SecurityConfig.java`
+
+## Best Practices
+
+### Spring Boot
+1. Use constructor injection for dependencies
+2. Use `@Slf4j` from Lombok for logging
+3. Use `@Valid` with Jakarta Validation annotations
+4. Externalize configuration to `application.properties`
+5. Use `@Configuration` classes for bean definitions
+6. Write unit tests for services, integration tests for controllers
+7. Use `@Transactional` on service methods, not controllers
+8. Use proper exception handling with `@ControllerAdvice`
+
+### Thymeleaf
+1. Always use `th:` namespace attributes
+2. Use fragments for reusable components (sidebar, footer, etc.)
+3. Use `th:errors` to display validation errors
+4. Use `th:if`/`th:unless` for conditional rendering
+5. Use `@{...}` for URL generation (respects context path)
+6. Access model attributes with `${attributeName}`
+7. Use `th:text` for text content, `th:utext` for HTML content
+8. Validate templates using ThymeleafValidator
+9. **Template Validation**: When creating new templates, ensure a validator exists in `com.nutriconsultas.validation.template` package
+   - If a template needs specific mock variables, create a validator extending `BaseTemplateValidator`
+   - Register the validator in `TemplateValidatorRegistry`
+   - Validators define mock model variables needed for template validation
+
+### Database
+1. Use JPA entities with proper relationships
+2. Use Spring Data JPA repositories
+3. Use `@Transactional` on service methods
+4. Use `Pageable` for pagination
+5. Prefer JPQL over native SQL queries
+6. Use `@Query` annotation for custom queries
+
+### Testing
+1. Use H2 database for tests (configured in test profile)
+2. Use `@SpringBootTest` for integration tests
+3. Use `@WebMvcTest` for controller tests
+4. Use `@MockBean` for mocking dependencies
+5. Use Spring Security Test for security testing
+6. Test data in `src/test/resources/`
+
+## File Naming Conventions
+- Controllers: `XxxController.java`
+- Services: `XxxService.java` (interface), `XxxServiceImpl.java` (implementation)
+- Repositories: `XxxRepository.java`
+- Entities: `Xxx.java` (singular, PascalCase)
+- Templates: `{view}.html` (lowercase, kebab-case)
+- Test classes: `XxxTest.java` or `XxxControllerTest.java`
+
+## Common Patterns
+
+### Controller Example
+```java
+@Controller
+@Slf4j
+public class ExampleController extends AbstractAuthorizedController {
+    
+    private final ExampleService service;
+    
+    public ExampleController(ExampleService service) {
+        this.service = service;
+    }
+    
+    @GetMapping("/example")
+    public String list(Model model) {
+        model.addAttribute("items", service.findAll());
+        model.addAttribute("activeMenu", "example");
+        return "sbadmin/example/list";
+    }
+}
+```
+
+### Service Example
+```java
+@Service
+@Slf4j
+public class ExampleServiceImpl implements ExampleService {
+    
+    private final ExampleRepository repository;
+    
+    public ExampleServiceImpl(ExampleRepository repository) {
+        this.repository = repository;
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Example> findAll() {
+        return repository.findAll();
+    }
+}
+```
+
+### REST Controller Example
+```java
+@RestController
+@RequestMapping("/rest/example")
+@Slf4j
+public class ExampleRestController {
+    
+    private final ExampleService service;
+    
+    // REST endpoints...
+}
+```
+
+## Environment Variables
+The application requires these environment variables (set in `.env` file):
+- `JDBC_DATABASE_URL`
+- `JDBC_DATABASE_USERNAME`
+- `JDBC_DATABASE_PASSWORD`
+- `AUTH_CLIENT`, `AUTH_SECRET`, `AUTH_ISSUER`
+- `AWS_BUCKET`, `AWS_KEY`, `AWS_SECRET`
+- `MAPS_KEY` (optional)
+
+## Development Workflow
+1. Make code changes
+2. Run `mvn spring-javaformat:apply` to format code
+3. Run `./lint.sh` to check code quality
+4. Run `mvn test` to run tests
+5. Commit changes (pre-commit hook will format code automatically)
+
+## Important Notes
+- Application runs on port 3000
+- Database: PostgreSQL (development), H2 (testing)
+- Session storage: JDBC-backed (PostgreSQL)
+- Static assets: `src/main/resources/static/`
+- All Thymeleaf templates must be valid (validated during build)
+- Code formatting is enforced via git pre-commit hook
+- CI/CD runs linting in strict mode (`ci` profile)
+
+## When Making Changes
+1. **New Controller**: Extend `AbstractAuthorizedController` if authentication required
+2. **New Template**: Place in `sbadmin/` (admin) or `eterna/` (public) directory
+3. **New Service**: Create interface and implementation
+4. **New Entity**: Add JPA annotations, create repository
+5. **New Test**: Mirror package structure, use appropriate test annotations
+6. **Template Changes**: Ensure Thymeleaf syntax is valid
+7. **Security Changes**: Update `SecurityConfig.java` if needed
+
+## Avoid
+- ❌ Field injection (use constructor injection)
+- ❌ Star imports
+- ❌ Unused imports
+- ❌ Methods longer than 150 lines
+- ❌ More than 7 parameters per method
+- ❌ Native SQL queries (prefer JPQL)
+- ❌ Hardcoded values (use properties)
+- ❌ Missing validation annotations
+- ❌ Missing `@Transactional` on service methods
+- ❌ Mixing template directories (sbadmin vs eterna)
+

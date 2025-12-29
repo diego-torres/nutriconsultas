@@ -22,66 +22,92 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Paciente {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
 
-  @NotBlank(message = "El nombre es requerido")
-  @Column(nullable = false, length = 100, unique = true)
-  private String name;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-  @DateTimeFormat(pattern = "yyyy-MM-dd")
-  @Temporal(TemporalType.DATE)
-  private Date dob;
+	@NotBlank(message = "El nombre es requerido")
+	@Column(nullable = false, length = 100, unique = true)
+	private String name;
 
-  @DateTimeFormat(iso = ISO.DATE_TIME)
-  @Temporal(TemporalType.TIMESTAMP)
-  private Date registro = new Date();
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@Temporal(TemporalType.DATE)
+	private Date dob;
 
-  @Column(length = 100)
-  private String email;
-  @Column(length = 25)
-  private String phone;
-  @Column(length = 1)
-  private String gender;
+	@DateTimeFormat(iso = ISO.DATE_TIME)
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date registro = new Date();
 
-  @Column(length = 100)
-  private String responsibleName;
+	@Column(length = 100)
+	private String email;
 
-  private String parentesco;
+	@Column(length = 25)
+	private String phone;
 
-  @Column(precision = 5)
-  private Double peso;
-  @Column(precision = 3)
-  private Double estatura;
-  @Column(precision = 3)
-  private Double imc;
+	@Column(length = 1)
+	private String gender;
 
-  private NivelPeso nivelPeso;
+	@Column(length = 100)
+	private String responsibleName;
 
-  // ANTECEDENTES
-  @Column(columnDefinition = "TEXT")
-  private String antecedentesPrenatales;
-  @Column(columnDefinition = "TEXT")
-  private String antecedentesNatales;
-  @Column(columnDefinition = "TEXT")
-  private String antecedentesPatologicosPersonales;
-  @Column(columnDefinition = "TEXT")
-  private String antecedentesPatologicosFamiliares;
-  @Column(columnDefinition = "TEXT")
-  private String complicaciones;
-  @Column(length = 4)
-  private String tipoSanguineo;
+	private String parentesco;
 
-  // NUTRICION Y DESARROLLO
-  @Column(columnDefinition = "TEXT")
-  private String historialAlimenticio;
-  @Column(columnDefinition = "TEXT")
-  private String desarrolloPsicomotor;
-  @Column(columnDefinition = "TEXT")
-  private String alergias;
+	@Column(precision = 5)
+	private Double peso;
 
-  // BANDERAS DE PATOLOGIAS COMUNES
-  private Boolean hipertension = false, diabetes = false, hipotiroidismo = false, obesidad = false, anemia = false,
-      bulimia = false, anorexia = false, enfermedadesHepaticas = false;
+	@Column(precision = 3)
+	private Double estatura;
+
+	@Column(precision = 3)
+	private Double imc;
+
+	private NivelPeso nivelPeso;
+
+	// ANTECEDENTES
+	@Column(columnDefinition = "TEXT")
+	private String antecedentesPrenatales;
+
+	@Column(columnDefinition = "TEXT")
+	private String antecedentesNatales;
+
+	@Column(columnDefinition = "TEXT")
+	private String antecedentesPatologicosPersonales;
+
+	@Column(columnDefinition = "TEXT")
+	private String antecedentesPatologicosFamiliares;
+
+	@Column(columnDefinition = "TEXT")
+	private String complicaciones;
+
+	@Column(length = 4)
+	private String tipoSanguineo;
+
+	// NUTRICION Y DESARROLLO
+	@Column(columnDefinition = "TEXT")
+	private String historialAlimenticio;
+
+	@Column(columnDefinition = "TEXT")
+	private String desarrolloPsicomotor;
+
+	@Column(columnDefinition = "TEXT")
+	private String alergias;
+
+	// BANDERAS DE PATOLOGIAS COMUNES
+	private Boolean hipertension = false;
+
+	private Boolean diabetes = false;
+
+	private Boolean hipotiroidismo = false;
+
+	private Boolean obesidad = false;
+
+	private Boolean anemia = false;
+
+	private Boolean bulimia = false;
+
+	private Boolean anorexia = false;
+
+	private Boolean enfermedadesHepaticas = false;
+
 }

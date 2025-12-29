@@ -7,11 +7,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class WebController {
-  private static Logger logger = LoggerFactory.getLogger(WebController.class);
 
-  @GetMapping(path = "/")
-  public String index() {
-    logger.debug("Resolving index");
-    return "eterna/index";
-  }
+	private static Logger logger = LoggerFactory.getLogger(WebController.class);
+
+	@GetMapping(path = "/")
+	public String index() {
+		logger.debug("Resolving index");
+		return "eterna/index";
+	}
+
 }

@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ComparatorKey {
-  String name;
-  Direction dir;
+
+	String name;
+
+	Direction dir;
+
 }

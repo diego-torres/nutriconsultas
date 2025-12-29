@@ -33,84 +33,86 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/rest/pacientes/{id}/consultas")
 @Slf4j
 public class PacienteConsultaRestController extends AbstractGridController<Consulta> {
-  @Autowired
-  private ConsultaRepository repo;
 
-  @GetMapping("charts/imc")
-  public ChartResponse imcChart(@PathVariable Long id) {
-    log.info("starting imcChart with id {}.", id);
-    // Implement from repository
-    ChartResponse response = new ChartResponse();
-    List<String> labels = new ArrayList<>();
-    List<String> imc = new ArrayList<>();
-    List<Consulta> consultasPaciente = repo.findByPacienteId(id).stream()
-        .sorted(Comparator.comparing(Consulta::getFechaConsulta)).collect(Collectors.toList());
-    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	@Autowired
+	private ConsultaRepository repo;
 
-    // TODO: Add niveles IMC
-    // NivelPeso np = imc > 30.0d ? NivelPeso.SOBREPESO
-    // : imc > 25.0d ? NivelPeso.ALTO : imc > 18.5d ? NivelPeso.NORMAL :
-    // NivelPeso.BAJO;
+	@GetMapping("charts/imc")
+	public ChartResponse imcChart(@PathVariable final Long id) {
+		log.info("starting imcChart with id {}.", id);
+		// Implement from repository
+		final ChartResponse response = new ChartResponse();
+		final List<String> labels = new ArrayList<>();
+		final List<String> imc = new ArrayList<>();
+		final List<Consulta> consultasPaciente = repo.findByPacienteId(id)
+			.stream()
+			.sorted(Comparator.comparing(Consulta::getFechaConsulta))
+			.collect(Collectors.toList());
+		final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-    for (Consulta consulta : consultasPaciente) {
-      labels.add(dateFormat.format(consulta.getFechaConsulta()));
-      imc.add(String.format("%.2f", consulta.getImc()));
-    }
+		// TODO: Add niveles IMC
+		// NivelPeso np = imc > 30.0d ? NivelPeso.SOBREPESO
+		// : imc > 25.0d ? NivelPeso.ALTO : imc > 18.5d ? NivelPeso.NORMAL :
+		// NivelPeso.BAJO;
 
-    response.setLabels(labels);
-    Map<String, Object> data = new HashMap<>();
-    data.put("imc", imc);
-    response.setData(data);
-    log.info("finish imcChart with response {}.", response);
-    return response;
-  }
+		for (final Consulta consulta : consultasPaciente) {
+			labels.add(dateFormat.format(consulta.getFechaConsulta()));
+			imc.add(String.format("%.2f", consulta.getImc()));
+		}
 
-  @Override
-  protected List<String> toStringList(Consulta row) {
-    log.debug("converting Consulta row {} to string list.", row);
-    DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
-    return Arrays.asList(
-        row.getFechaConsulta() != null ? dateFormat.format(row.getFechaConsulta()) : "", //
-        row.getPeso().toString(), //
-        row.getEstatura().toString(), //
-        row.getImc() != null ? String.format("%.2f", row.getImc()) : "",
-        row.getSistolica() != null && row.getDiastolica() != null
-            ? row.getSistolica().toString() + "/" + row.getDiastolica().toString()
-            : "-", //
-        row.getIndiceGlucemico() != null ? row.getIndiceGlucemico().toString() : "-", //
-        "<a href='#'' class='btn action-btn btn-danger btn-sm delete-btn' data-id='" + row.getId()
-            + "'><i class='fas fa-trash fa-sm fa-fw'></i> </a>");
-  }
+		response.setLabels(labels);
+		final Map<String, Object> data = new HashMap<>();
+		data.put("imc", imc);
+		response.setData(data);
+		log.info("finish imcChart with response {}.", response);
+		return response;
+	}
 
-  @Override
-  protected List<Consulta> getData() {
-    log.debug("getting all Consulta records.");
-    return StreamSupport.stream(repo.findAll().spliterator(), false).collect(Collectors.toList());
-  }
+	@Override
+	protected List<String> toStringList(final Consulta row) {
+		log.debug("converting Consulta row {} to string list.", row);
+		final DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
+		return Arrays.asList(row.getFechaConsulta() != null ? dateFormat.format(row.getFechaConsulta()) : "", //
+				row.getPeso().toString(), //
+				row.getEstatura().toString(), //
+				row.getImc() != null ? String.format("%.2f", row.getImc()) : "",
+				row.getSistolica() != null && row.getDiastolica() != null
+						? row.getSistolica().toString() + "/" + row.getDiastolica().toString() : "-", //
+				row.getIndiceGlucemico() != null ? row.getIndiceGlucemico().toString() : "-", //
+				"<a href='#'' class='btn action-btn btn-danger btn-sm delete-btn' data-id='" + row.getId()
+						+ "'><i class='fas fa-trash fa-sm fa-fw'></i> </a>");
+	}
 
-  @Override
-  protected Comparator<Consulta> getComparator(String column, Direction dir) {
-    log.debug("getting Consulta comparator with column {} and direction {}.", column, dir);
-    return ConsultaComparators.getComparator(column, dir);
-  }
+	@Override
+	protected List<Consulta> getData() {
+		log.debug("getting all Consulta records.");
+		return StreamSupport.stream(repo.findAll().spliterator(), false).collect(Collectors.toList());
+	}
 
-  @Override
-  protected List<Column> getColumns() {
-    log.debug("getting Consulta columns.");
-    return Stream.of("fecha", "peso", "estatura", "imc", "presion", "indGluc", "actions")
-        .map(Column::new)
-        .collect(Collectors.toList());
-  }
+	@Override
+	protected Comparator<Consulta> getComparator(final String column, final Direction dir) {
+		log.debug("getting Consulta comparator with column {} and direction {}.", column, dir);
+		return ConsultaComparators.getComparator(column, dir);
+	}
 
-  @Override
-  protected Predicate<Consulta> getPredicate(String value) {
-    log.debug("getting Consulta predicate with value {}.", value);
-    return row -> row.getFechaConsulta().toString().toLowerCase().contains(value)
-        || row.getPeso().toString().toLowerCase().contains(value)
-        || row.getEstatura().toString().toLowerCase().contains(value)
-        || row.getImc().toString().toLowerCase().contains(value)
-        || row.getSistolica().toString().toLowerCase().contains(value)
-        || row.getDiastolica().toString().toLowerCase().contains(value)
-        || row.getIndiceGlucemico().toString().toLowerCase().contains(value);
-  }
+	@Override
+	protected List<Column> getColumns() {
+		log.debug("getting Consulta columns.");
+		return Stream.of("fecha", "peso", "estatura", "imc", "presion", "indGluc", "actions")
+			.map(Column::new)
+			.collect(Collectors.toList());
+	}
+
+	@Override
+	protected Predicate<Consulta> getPredicate(final String value) {
+		log.debug("getting Consulta predicate with value {}.", value);
+		return row -> row.getFechaConsulta().toString().toLowerCase().contains(value)
+				|| row.getPeso().toString().toLowerCase().contains(value)
+				|| row.getEstatura().toString().toLowerCase().contains(value)
+				|| row.getImc().toString().toLowerCase().contains(value)
+				|| row.getSistolica().toString().toLowerCase().contains(value)
+				|| row.getDiastolica().toString().toLowerCase().contains(value)
+				|| row.getIndiceGlucemico().toString().toLowerCase().contains(value);
+	}
+
 }
