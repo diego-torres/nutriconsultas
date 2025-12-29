@@ -111,15 +111,17 @@
                 </button>
               </div>
               <div class="modal-body">
-                <form th:action="@{/alimentos/save}" method="post">
-                  <input type="hidden" id="ingestaField" />
+                <form th:action="@{/admin/dietas/{id}/alimentos/save(id=${dieta != null ? dieta.id : 0})}" method="post">
+                  <input type="hidden" id="ingestaAlimento" name="ingestaAlimento" />
                   <div class="form-group">
                     <label for="alimento">Alimento</label>
                     <select
-                      class="form-control"
+                      class="form-control js-example-basic-single"
                       id="alimento"
-                      name="alimento">
-                      <option th:each="alimento : ${alimentos}" th:value="${alimento.id}" th:text="${alimento.name}"></option>
+                      name="alimento"
+                      style="width: 100%">
+                      <option value="">Selecciona un alimento</option>
+                      <option th:each="alimento : ${alimentos}" th:value="${alimento.id}" th:text="${alimento.nombreAlimento}"></option>
                     </select>
                   </div>
                   <div class="form-group">
@@ -134,7 +136,7 @@
                       name="porciones" />
                   </div>
                   <div class="form-group">
-                    <label for="porciones">Tipo de porci&oacute;n</label>
+                    <label for="tipoPorcion">Tipo de porci&oacute;n</label>
                     <select
                       class="form-control"
                       id="tipoPorcion"
@@ -248,6 +250,37 @@
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-danger" id="confirmDeletePlatillo">Eliminar</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delete alimento modal -->
+        <div
+          class="modal fade"
+          id="deleteAlimentoModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="deleteAlimentoModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="deleteAlimentoModalLabel">Eliminar alimento</h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <p>¿Estás seguro de eliminar este alimento?</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="confirmDeleteAlimento">Eliminar</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
               </div>
             </div>
@@ -460,6 +493,24 @@
                                       </button>
                                     </td>
                                   </tr>
+                                  <tr th:each="alimento : ${ingesta.alimentos}">
+                                    <td th:text="${alimento.name}"></td>
+                                    <td th:text="${alimento.portions}"></td>
+                                    <td th:text="${#numbers.formatDecimal(alimento.energia, 1, 2)}"></td>
+                                    <td th:text="${#numbers.formatDecimal(alimento.proteina, 1, 2)}"></td>
+                                    <td th:text="${#numbers.formatDecimal(alimento.lipidos, 1, 2)}"></td>
+                                    <td th:text="${#numbers.formatDecimal(alimento.hidratosDeCarbono, 1, 2)}"></td>
+                                    <td>
+                                      <button 
+                                        type="button" 
+                                        class="btn btn-danger" 
+                                        th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id}" 
+                                        data-toggle="modal" 
+                                        data-target="#deleteAlimentoModal">
+                                        <i class="fas fa-trash"></i>
+                                      </button>
+                                    </td>
+                                  </tr>
                                 </tbody>
                               </table>
                             </div>
@@ -517,6 +568,14 @@
             placeholder: 'Selecciona un platillo',
             allowClear: true,
             dropdownParent: '#platilloModal',
+            width:'resolve'
+          });
+
+          // initialize select2 for alimento
+          $('#alimento').select2({
+            placeholder: 'Selecciona un alimento',
+            allowClear: true,
+            dropdownParent: '#alimentoModal',
             width:'resolve'
           });
 
@@ -613,6 +672,53 @@
             });
           });
 
+          // Set up the delete alimento modal
+          $('#deleteAlimentoModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var dieta = button.data('dieta');
+            var ingesta = button.data('ingesta');
+            var alimento = button.data('alimento');
+            var modal = $(this);
+            
+            // Store the IDs in the modal for use in the delete action
+            modal.data('dieta', dieta);
+            modal.data('ingesta', ingesta);
+            modal.data('alimento', alimento);
+          });
+
+          // Handle the delete alimento confirmation
+          $('#confirmDeleteAlimento').on('click', function () {
+            var modal = $('#deleteAlimentoModal');
+            var dieta = modal.data('dieta');
+            var ingesta = modal.data('ingesta');
+            var alimento = modal.data('alimento');
+            
+            $.ajax({
+              url: '/rest/dietas/' + dieta + '/ingestas/' + ingesta + '/alimentos/' + alimento,
+              type: 'DELETE',
+              dataType: 'json',
+              success: function (response) {
+                swal({
+                  title: 'Eliminado!',
+                  text: 'El alimento ha sido eliminado de la ingesta.',
+                  type: 'success',
+                  timer: 2000,
+                });
+                modal.modal('hide');
+                // Reload the page to refresh the data
+                location.reload();
+              },
+              error: function (error) {
+                swal({
+                  title: 'Error!',
+                  text: error.responseJSON && error.responseJSON.message ? error.responseJSON.message : 'Error al eliminar el alimento.',
+                  type: 'error',
+                  timer: 5000,
+                });
+              }
+            });
+          });
+
           // Set up the ingesta modal
           $('#ingestaModal').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget);
@@ -643,7 +749,19 @@
             var button = $(event.relatedTarget);
             var ingesta = button.data('ingesta');
             var modal = $(this);
-            modal.find('#ingestaField').val();
+            modal.find('#ingestaPlatillo').val(ingesta);
+          });
+
+          // Set up the alimento modal
+          $('#alimentoModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var ingesta = button.data('ingesta');
+            var modal = $(this);
+            modal.find('#ingestaAlimento').val(ingesta);
+            // Reset form
+            modal.find('#alimento').val('').trigger('change');
+            modal.find('#porciones').val('1');
+            modal.find('#tipoPorcion').val('gramos');
           });
         });
       })(jQuery);

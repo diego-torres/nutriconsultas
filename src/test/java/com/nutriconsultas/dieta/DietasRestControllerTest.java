@@ -510,4 +510,274 @@ public class DietasRestControllerTest {
 		log.info("Finishing testDeletePlatilloIngesta_MultiplePlatillos_RemovesOnlyTargetPlatillo");
 	}
 
+	@Test
+	public void testDeleteAlimentoIngesta_Success_RemovesAlimentoFromIngesta() {
+		log.info("Starting testDeleteAlimentoIngesta_Success_RemovesAlimentoFromIngesta");
+
+		// Arrange
+		Long dietaId = 2L;
+		Long ingestaId = 2L;
+		Long alimentoIngestaId = 1L;
+
+		// Create a dieta with alimento
+		Dieta dietaBeforeDelete = new Dieta();
+		dietaBeforeDelete.setId(dietaId);
+		dietaBeforeDelete.setNombre("Dieta con Alimentos");
+		dietaBeforeDelete.setIngestas(new ArrayList<>());
+
+		Ingesta ingestaBeforeDelete = new Ingesta();
+		ingestaBeforeDelete.setId(ingestaId);
+		ingestaBeforeDelete.setNombre("Desayuno");
+		ingestaBeforeDelete.setDieta(dietaBeforeDelete);
+		ingestaBeforeDelete.setAlimentos(new ArrayList<>());
+
+		AlimentoIngesta alimentoToDelete = new AlimentoIngesta();
+		alimentoToDelete.setId(alimentoIngestaId);
+		alimentoToDelete.setName("Pollo");
+		alimentoToDelete.setIngesta(ingestaBeforeDelete);
+		ingestaBeforeDelete.getAlimentos().add(alimentoToDelete);
+		dietaBeforeDelete.getIngestas().add(ingestaBeforeDelete);
+
+		// Create dieta after delete (without the alimento)
+		Dieta dietaAfterDelete = new Dieta();
+		dietaAfterDelete.setId(dietaId);
+		dietaAfterDelete.setNombre("Dieta con Alimentos");
+		dietaAfterDelete.setIngestas(new ArrayList<>());
+
+		Ingesta ingestaAfterDelete = new Ingesta();
+		ingestaAfterDelete.setId(ingestaId);
+		ingestaAfterDelete.setNombre("Desayuno");
+		ingestaAfterDelete.setDieta(dietaAfterDelete);
+		ingestaAfterDelete.setAlimentos(new ArrayList<>());
+		dietaAfterDelete.getIngestas().add(ingestaAfterDelete);
+
+		when(dietaService.getDieta(dietaId)).thenReturn(dietaBeforeDelete);
+		when(dietaService.saveDieta(dietaBeforeDelete)).thenReturn(dietaAfterDelete);
+
+		// Act
+		ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.deleteAlimentoIngesta(dietaId, ingestaId,
+				alimentoIngestaId);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(result.getBody()).isNotNull();
+		assertThat(result.getBody().getData()).isNotNull();
+		assertThat(result.getBody().getData().getId()).isEqualTo(dietaId);
+		// Verify that the alimento was removed from the ingesta
+		Ingesta ingestaResult = result.getBody()
+			.getData()
+			.getIngestas()
+			.stream()
+			.filter(i -> i.getId().equals(ingestaId))
+			.findFirst()
+			.orElse(null);
+		assertThat(ingestaResult).isNotNull();
+		assertThat(ingestaResult.getAlimentos()).isEmpty();
+		log.info("Finishing testDeleteAlimentoIngesta_Success_RemovesAlimentoFromIngesta");
+	}
+
+	@Test
+	public void testDeleteAlimentoIngesta_DietaNotFound_ReturnsNotFound() {
+		log.info("Starting testDeleteAlimentoIngesta_DietaNotFound_ReturnsNotFound");
+
+		// Arrange
+		Long dietaId = 999L;
+		Long ingestaId = 2L;
+		Long alimentoIngestaId = 1L;
+
+		when(dietaService.getDieta(dietaId)).thenReturn(null);
+
+		// Act
+		ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.deleteAlimentoIngesta(dietaId, ingestaId,
+				alimentoIngestaId);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		log.info("Finishing testDeleteAlimentoIngesta_DietaNotFound_ReturnsNotFound");
+	}
+
+	@Test
+	public void testGetTotalProteina_DietWithAlimentos_IncludesAlimentos() throws Exception {
+		log.info("Starting testGetTotalProteina_DietWithAlimentos_IncludesAlimentos");
+
+		// Arrange
+		Dieta dieta = new Dieta();
+		dieta.setId(1L);
+		dieta.setNombre("Dieta con Alimentos y Platillos");
+		dieta.setIngestas(new ArrayList<>());
+
+		Ingesta ingesta = new Ingesta();
+		ingesta.setId(1L);
+		ingesta.setNombre("Desayuno");
+		ingesta.setDieta(dieta);
+		ingesta.setPlatillos(new ArrayList<>());
+		ingesta.setAlimentos(new ArrayList<>());
+
+		// Add platillo with 30g protein
+		PlatilloIngesta platillo = new PlatilloIngesta();
+		platillo.setId(1L);
+		platillo.setProteina(30.0);
+		ingesta.getPlatillos().add(platillo);
+
+		// Add alimento with 20g protein
+		AlimentoIngesta alimento = new AlimentoIngesta();
+		alimento.setId(1L);
+		alimento.setProteina(20.0);
+		ingesta.getAlimentos().add(alimento);
+
+		dieta.getIngestas().add(ingesta);
+
+		// Use reflection to access private method getTotalProteina
+		Method getTotalProteinaMethod = DietasRestController.class.getDeclaredMethod("getTotalProteina", Dieta.class);
+		getTotalProteinaMethod.setAccessible(true);
+
+		// Act
+		Double result = (Double) getTotalProteinaMethod.invoke(dietasRestController, dieta);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result).isEqualTo(50.0); // 30 + 20
+		log.info("Finishing testGetTotalProteina_DietWithAlimentos_IncludesAlimentos with result: {}", result);
+	}
+
+	@Test
+	public void testGetTotalLipidos_DietWithAlimentos_IncludesAlimentos() throws Exception {
+		log.info("Starting testGetTotalLipidos_DietWithAlimentos_IncludesAlimentos");
+
+		// Arrange
+		Dieta dieta = new Dieta();
+		dieta.setId(1L);
+		dieta.setNombre("Dieta con Alimentos y Platillos");
+		dieta.setIngestas(new ArrayList<>());
+
+		Ingesta ingesta = new Ingesta();
+		ingesta.setId(1L);
+		ingesta.setNombre("Desayuno");
+		ingesta.setDieta(dieta);
+		ingesta.setPlatillos(new ArrayList<>());
+		ingesta.setAlimentos(new ArrayList<>());
+
+		// Add platillo with 15g lipids
+		PlatilloIngesta platillo = new PlatilloIngesta();
+		platillo.setId(1L);
+		platillo.setLipidos(15.0);
+		ingesta.getPlatillos().add(platillo);
+
+		// Add alimento with 10g lipids
+		AlimentoIngesta alimento = new AlimentoIngesta();
+		alimento.setId(1L);
+		alimento.setLipidos(10.0);
+		ingesta.getAlimentos().add(alimento);
+
+		dieta.getIngestas().add(ingesta);
+
+		// Use reflection to access private method getTotalLipidos
+		Method getTotalLipidosMethod = DietasRestController.class.getDeclaredMethod("getTotalLipidos", Dieta.class);
+		getTotalLipidosMethod.setAccessible(true);
+
+		// Act
+		Double result = (Double) getTotalLipidosMethod.invoke(dietasRestController, dieta);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result).isEqualTo(25.0); // 15 + 10
+		log.info("Finishing testGetTotalLipidos_DietWithAlimentos_IncludesAlimentos with result: {}", result);
+	}
+
+	@Test
+	public void testGetTotalHidratosDeCarbono_DietWithAlimentos_IncludesAlimentos() throws Exception {
+		log.info("Starting testGetTotalHidratosDeCarbono_DietWithAlimentos_IncludesAlimentos");
+
+		// Arrange
+		Dieta dieta = new Dieta();
+		dieta.setId(1L);
+		dieta.setNombre("Dieta con Alimentos y Platillos");
+		dieta.setIngestas(new ArrayList<>());
+
+		Ingesta ingesta = new Ingesta();
+		ingesta.setId(1L);
+		ingesta.setNombre("Desayuno");
+		ingesta.setDieta(dieta);
+		ingesta.setPlatillos(new ArrayList<>());
+		ingesta.setAlimentos(new ArrayList<>());
+
+		// Add platillo with 50g carbohydrates
+		PlatilloIngesta platillo = new PlatilloIngesta();
+		platillo.setId(1L);
+		platillo.setHidratosDeCarbono(50.0);
+		ingesta.getPlatillos().add(platillo);
+
+		// Add alimento with 30g carbohydrates
+		AlimentoIngesta alimento = new AlimentoIngesta();
+		alimento.setId(1L);
+		alimento.setHidratosDeCarbono(30.0);
+		ingesta.getAlimentos().add(alimento);
+
+		dieta.getIngestas().add(ingesta);
+
+		// Use reflection to access private method getTotalHidratosDeCarbono
+		Method getTotalHidratosDeCarbonoMethod = DietasRestController.class
+			.getDeclaredMethod("getTotalHidratosDeCarbono", Dieta.class);
+		getTotalHidratosDeCarbonoMethod.setAccessible(true);
+
+		// Act
+		Double result = (Double) getTotalHidratosDeCarbonoMethod.invoke(dietasRestController, dieta);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result).isEqualTo(80.0); // 50 + 30
+		log.info("Finishing testGetTotalHidratosDeCarbono_DietWithAlimentos_IncludesAlimentos with result: {}", result);
+	}
+
+	@Test
+	public void testGetDist_DietWithAlimentos_ReturnsCorrectDistribution() throws Exception {
+		log.info("Starting testGetDist_DietWithAlimentos_ReturnsCorrectDistribution");
+
+		// Arrange
+		Dieta dieta = new Dieta();
+		dieta.setId(1L);
+		dieta.setNombre("Dieta con Alimentos");
+		dieta.setIngestas(new ArrayList<>());
+
+		Ingesta ingesta = new Ingesta();
+		ingesta.setId(1L);
+		ingesta.setNombre("Desayuno");
+		ingesta.setDieta(dieta);
+		ingesta.setPlatillos(new ArrayList<>());
+		ingesta.setAlimentos(new ArrayList<>());
+
+		// Add alimento: Protein: 20g, Lipids: 10g, Carbohydrates: 30g
+		// Total kcal: 20*4 + 10*9 + 30*4 = 80 + 90 + 120 = 290 kcal
+		AlimentoIngesta alimento = new AlimentoIngesta();
+		alimento.setId(1L);
+		alimento.setProteina(20.0);
+		alimento.setLipidos(10.0);
+		alimento.setHidratosDeCarbono(30.0);
+		ingesta.getAlimentos().add(alimento);
+
+		dieta.getIngestas().add(ingesta);
+
+		// Use reflection to access private method getDist
+		Method getDistMethod = DietasRestController.class.getDeclaredMethod("getDist", Dieta.class);
+		getDistMethod.setAccessible(true);
+
+		// Act
+		String result = (String) getDistMethod.invoke(dietasRestController, dieta);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result).isNotEmpty();
+		assertThat(result).contains("/");
+		String[] parts = result.split(" / ");
+		assertThat(parts).hasSize(3);
+		// Verify that all parts are valid numbers (not NaN)
+		for (String part : parts) {
+			assertThat(part).isNotEqualTo("NaN");
+			Double.parseDouble(part); // Should not throw exception
+		}
+		log.info("Finishing testGetDist_DietWithAlimentos_ReturnsCorrectDistribution with result: '{}'", result);
+	}
+
 }

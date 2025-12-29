@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.nutriconsultas.alimentos.Alimento;
+import com.nutriconsultas.alimentos.AlimentoService;
 import com.nutriconsultas.platillos.Ingrediente;
 import com.nutriconsultas.platillos.Platillo;
 import com.nutriconsultas.platillos.PlatilloService;
@@ -47,6 +48,9 @@ public class DietaControllerTest {
 
 	@MockitoBean
 	private PlatilloService platilloService;
+
+	@MockitoBean
+	private AlimentoService alimentoService;
 
 	private Dieta dieta;
 
@@ -117,6 +121,11 @@ public class DietaControllerTest {
 		// Setup mocks
 		when(dietaService.getDieta(1L)).thenReturn(dieta);
 		when(platilloService.findById(1L)).thenReturn(platillo);
+
+		List<Alimento> alimentos = new ArrayList<>();
+		alimentos.add(alimento);
+		when(alimentoService.findAll()).thenReturn(alimentos);
+		when(alimentoService.findById(1L)).thenReturn(alimento);
 	}
 
 	@Test
@@ -325,6 +334,165 @@ public class DietaControllerTest {
 		verify(platilloService, times(1)).findAll();
 
 		log.info("Finishing testEditarDieta");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testSaveAlimentoSuccess() throws Exception {
+		log.info("Starting testSaveAlimento_Success");
+
+		// Verify initial state
+		assertThat(ingesta.getAlimentos()).isEmpty();
+
+		// Perform POST request
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/alimentos/save")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("ingestaAlimento", "1")
+				.param("alimento", "1")
+				.param("porciones", "2")
+				.param("tipoPorcion", "porcion")
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
+
+		// Verify that dietaService methods were called
+		verify(dietaService, times(1)).getDieta(1L);
+		verify(alimentoService, times(1)).findById(1L);
+		verify(dietaService, times(1)).saveDieta(any(Dieta.class));
+
+		log.info("Finishing testSaveAlimento_Success");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testSaveAlimentoWithDefaultPortions() throws Exception {
+		log.info("Starting testSaveAlimento_WithDefaultPortions");
+
+		// Perform POST request without porciones (should default to 1)
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/alimentos/save")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("ingestaAlimento", "1")
+				.param("alimento", "1")
+				.param("tipoPorcion", "gramos")
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
+
+		// Verify that dietaService methods were called
+		verify(dietaService, times(1)).getDieta(1L);
+		verify(alimentoService, times(1)).findById(1L);
+		verify(dietaService, times(1)).saveDieta(any(Dieta.class));
+
+		log.info("Finishing testSaveAlimento_WithDefaultPortions");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testSaveAlimentoIngestaNotFound() throws Exception {
+		log.info("Starting testSaveAlimento_IngestaNotFound");
+
+		// Perform POST request with non-existent ingesta ID
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/alimentos/save")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("ingestaAlimento", "999")
+				.param("alimento", "1")
+				.param("porciones", "1")
+				.param("tipoPorcion", "porcion")
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
+
+		// Verify that dietaService.getDieta was called but saveDieta was not
+		verify(dietaService, times(1)).getDieta(1L);
+		verify(alimentoService, never()).findById(any(Long.class));
+		verify(dietaService, never()).saveDieta(any(Dieta.class));
+
+		log.info("Finishing testSaveAlimento_IngestaNotFound");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testSaveAlimentoAlimentoNotFound() throws Exception {
+		log.info("Starting testSaveAlimento_AlimentoNotFound");
+
+		// Setup mock to return null for alimento
+		when(alimentoService.findById(999L)).thenReturn(null);
+
+		// Perform POST request with non-existent alimento ID
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/alimentos/save")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("ingestaAlimento", "1")
+				.param("alimento", "999")
+				.param("porciones", "1")
+				.param("tipoPorcion", "porcion")
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
+
+		// Verify that alimentoService.findById was called but saveDieta was not
+		verify(dietaService, times(1)).getDieta(1L);
+		verify(alimentoService, times(1)).findById(999L);
+		verify(dietaService, never()).saveDieta(any(Dieta.class));
+
+		log.info("Finishing testSaveAlimento_AlimentoNotFound");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testSaveAlimentoWithNullAlimentoId() throws Exception {
+		log.info("Starting testSaveAlimento_WithNullAlimentoId");
+
+		// Perform POST request with null alimento ID
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/alimentos/save")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("ingestaAlimento", "1")
+				.param("porciones", "1")
+				.param("tipoPorcion", "porcion")
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
+
+		// Verify that alimentoService.findById was never called
+		verify(dietaService, times(1)).getDieta(1L);
+		verify(alimentoService, never()).findById(any(Long.class));
+		verify(dietaService, never()).saveDieta(any(Dieta.class));
+
+		log.info("Finishing testSaveAlimento_WithNullAlimentoId");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testEditarDieta_LoadsAlimentos() throws Exception {
+		log.info("Starting testEditarDieta_LoadsAlimentos");
+
+		// Setup mock for findAll platillos and alimentos
+		List<Platillo> platillos = new ArrayList<>();
+		platillos.add(platillo);
+		when(platilloService.findAll()).thenReturn(platillos);
+
+		List<Alimento> alimentos = new ArrayList<>();
+		alimentos.add(alimento);
+		when(alimentoService.findAll()).thenReturn(alimentos);
+
+		// Perform GET request
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/1"))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.view().name("sbadmin/dietas/formulario"))
+			.andExpect(MockMvcResultMatchers.model().attribute("activeMenu", "dietas"))
+			.andExpect(MockMvcResultMatchers.model().attribute("dieta", dieta))
+			.andExpect(MockMvcResultMatchers.model().attribute("alimentos", alimentos));
+
+		// Verify that services were called
+		verify(dietaService, times(1)).getDieta(1L);
+		verify(platilloService, times(1)).findAll();
+		verify(alimentoService, times(1)).findAll();
+
+		log.info("Finishing testEditarDieta_LoadsAlimentos");
 	}
 
 }

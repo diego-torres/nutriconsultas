@@ -65,6 +65,28 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		return ResponseEntity.notFound().build();
 	}
 
+	@DeleteMapping("{dietaId}/ingestas/{ingestaId}/alimentos/{alimentoIngestaId}")
+	public ResponseEntity<ApiResponse<Dieta>> deleteAlimentoIngesta(@PathVariable @NonNull Long dietaId,
+			@PathVariable @NonNull Long ingestaId, @PathVariable @NonNull Long alimentoIngestaId) {
+		log.info("starting deleteAlimentoIngesta with dietaId {}, ingestaId {}, alimentoIngestaId {}.", dietaId,
+				ingestaId, alimentoIngestaId);
+		Dieta dieta = dietaService.getDieta(dietaId);
+		if (dieta != null) {
+			dieta.getIngestas()
+				.stream()
+				.filter(ingesta -> ingesta.getId().equals(ingestaId))
+				.findFirst()
+				.ifPresent(ingesta -> ingesta.getAlimentos()
+					.removeIf(alimento -> alimento.getId().equals(alimentoIngestaId)));
+			Dieta saved = dietaService.saveDieta(dieta);
+			log.info("finish deleteAlimentoIngesta with dietaId {}, ingestaId {}, alimentoIngestaId {}.", dietaId,
+					ingestaId, alimentoIngestaId);
+			return ResponseEntity.ok(new ApiResponse<Dieta>(saved));
+		}
+		log.warn("Dieta with id {} not found when trying to delete alimentoIngesta", dietaId);
+		return ResponseEntity.notFound().build();
+	}
+
 	@Override
 	protected List<Column> getColumns() {
 		return Stream.of("dieta", "ingestas", "dist", "kcal", "prot", "lip", "hc")
@@ -109,21 +131,36 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	private Double getTotalProteina(Dieta row) {
 		return row.getIngestas()
 			.stream()
-			.mapToDouble(i -> i.getPlatillos().stream().mapToDouble(p -> p.getProteina()).sum())
+			.mapToDouble(i -> i.getPlatillos()
+				.stream()
+				.mapToDouble(p -> p.getProteina() != null ? p.getProteina() : 0.0)
+				.sum()
+					+ i.getAlimentos().stream().mapToDouble(a -> a.getProteina() != null ? a.getProteina() : 0.0).sum())
 			.sum();
 	}
 
 	private Double getTotalLipidos(Dieta row) {
 		return row.getIngestas()
 			.stream()
-			.mapToDouble(i -> i.getPlatillos().stream().mapToDouble(p -> p.getLipidos()).sum())
+			.mapToDouble(i -> i.getPlatillos()
+				.stream()
+				.mapToDouble(p -> p.getLipidos() != null ? p.getLipidos() : 0.0)
+				.sum()
+					+ i.getAlimentos().stream().mapToDouble(a -> a.getLipidos() != null ? a.getLipidos() : 0.0).sum())
 			.sum();
 	}
 
 	private Double getTotalHidratosDeCarbono(Dieta row) {
 		return row.getIngestas()
 			.stream()
-			.mapToDouble(i -> i.getPlatillos().stream().mapToDouble(p -> p.getHidratosDeCarbono()).sum())
+			.mapToDouble(i -> i.getPlatillos()
+				.stream()
+				.mapToDouble(p -> p.getHidratosDeCarbono() != null ? p.getHidratosDeCarbono() : 0.0)
+				.sum()
+					+ i.getAlimentos()
+						.stream()
+						.mapToDouble(a -> a.getHidratosDeCarbono() != null ? a.getHidratosDeCarbono() : 0.0)
+						.sum())
 			.sum();
 	}
 
