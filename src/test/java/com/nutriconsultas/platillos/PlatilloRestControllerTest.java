@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @ExtendWith(MockitoExtension.class)
 @Slf4j
 @ActiveProfiles("test")
+@SuppressWarnings("null")
 public class PlatilloRestControllerTest {
 
 	@InjectMocks
@@ -99,7 +100,6 @@ public class PlatilloRestControllerTest {
 	}
 
 	// Test addIngrediente
-	@SuppressWarnings("null")
 	@Test
 	public void testAddIngrediente() {
 		log.info("Starting testAddIngrediente");

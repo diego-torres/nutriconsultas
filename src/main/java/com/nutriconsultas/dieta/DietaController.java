@@ -2,6 +2,7 @@ package com.nutriconsultas.dieta;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -84,7 +85,12 @@ public class DietaController extends AbstractAuthorizedController {
 		}
 		else {
 			logger.debug("Ingesta existente, cambiar nombre");
-			dietaService.renameIngesta(id, ingesta.getIngestaId(), ingesta.getIngesta());
+			Long ingestaId = ingesta.getIngestaId();
+			if (ingestaId == null) {
+				logger.error("Ingesta ID is null, cannot rename");
+				return "redirect:/admin/dietas/" + id;
+			}
+			dietaService.renameIngesta(id, ingestaId, ingesta.getIngesta());
 		}
 
 		return "redirect:/admin/dietas/" + id;
@@ -110,13 +116,29 @@ public class DietaController extends AbstractAuthorizedController {
 			.filter(i -> i.getId().equals(platilloModel.getIngestaPlatillo()))
 			.findFirst()
 			.orElse(null);
-		if (ingesta != null) {
+		if (ingesta != null && platilloModel.getPlatillo() != null) {
 			logger.debug("ingresar platillo en ingesta {}, de la dieta {}", ingesta, dieta);
-			Platillo platillo = platilloService.findById(platilloModel.getPlatillo());
-			// map the found platillo to a PlatilloIngesta
+			Long platilloId = Objects.requireNonNull(platilloModel.getPlatillo());
+			Platillo platillo = platilloService.findById(platilloId);
+			if (platillo != null) {
+				// map the found platillo to a PlatilloIngesta
+				PlatilloIngesta platilloIngesta = mapPlatilloIngesta(platillo);
+				platilloIngesta.setIngesta(ingesta);
+				platilloIngesta.setPortions(platilloModel.getPorciones() != null ? platilloModel.getPorciones() : 1);
 
-			// ingesta.getPlatillos().add(platilloService.findById(platilloModel.getPlatillo()));
-			// dietaService.saveDieta(dieta);
+				// map ingredientes from platillo to ingredientes of platilloIngesta
+				if (platillo.getIngredientes() != null) {
+					for (Ingrediente ingrediente : platillo.getIngredientes()) {
+						IngredientePlatilloIngesta ingredientePlatilloIngesta = mapFromIngredienteToIngredientePlatilloIngesta(
+								ingrediente);
+						ingredientePlatilloIngesta.setPlatillo(platilloIngesta);
+						platilloIngesta.getIngredientes().add(ingredientePlatilloIngesta);
+					}
+				}
+
+				ingesta.getPlatillos().add(platilloIngesta);
+				dietaService.saveDieta(dieta);
+			}
 		}
 		return "redirect:/admin/dietas/" + id;
 	}
@@ -155,7 +177,6 @@ public class DietaController extends AbstractAuthorizedController {
 		platilloIngesta.setAzucarPorEquivalente(platillo.getAzucarPorEquivalente());
 		platilloIngesta.setEtanol(platillo.getEtanol());
 		platilloIngesta.setFosforo(platillo.getFosforo());
-		platilloIngesta.setPotasio(platillo.getPotasio());
 
 		return platilloIngesta;
 	}
@@ -166,18 +187,36 @@ public class DietaController extends AbstractAuthorizedController {
 		result.setDescription(ingrediente.getDescription());
 		result.setCantSugerida(ingrediente.getCantSugerida());
 		result.setAlimento(ingrediente.getAlimento());
+		result.setUnidad(ingrediente.getUnidad());
 
+		// map macro nutrients from AbstractMacroNutrible
+		result.setEnergia(ingrediente.getEnergia());
+		result.setProteina(ingrediente.getProteina());
+		result.setLipidos(ingrediente.getLipidos());
+		result.setHidratosDeCarbono(ingrediente.getHidratosDeCarbono());
+
+		// map nutrients from AbstractNutrible
+		result.setPesoBrutoRedondeado(ingrediente.getPesoBrutoRedondeado());
+		result.setPesoNeto(ingrediente.getPesoNeto());
+		result.setFibra(ingrediente.getFibra());
+		result.setVitA(ingrediente.getVitA());
 		result.setAcidoAscorbico(ingrediente.getAcidoAscorbico());
+		result.setHierroNoHem(ingrediente.getHierroNoHem());
+		result.setPotasio(ingrediente.getPotasio());
+		result.setIndiceGlicemico(ingrediente.getIndiceGlicemico());
+		result.setCargaGlicemica(ingrediente.getCargaGlicemica());
 		result.setAcidoFolico(ingrediente.getAcidoFolico());
+		result.setCalcio(ingrediente.getCalcio());
+		result.setHierro(ingrediente.getHierro());
+		result.setSodio(ingrediente.getSodio());
+		result.setAzucarPorEquivalente(ingrediente.getAzucarPorEquivalente());
+		result.setSelenio(ingrediente.getSelenio());
+		result.setFosforo(ingrediente.getFosforo());
+		result.setColesterol(ingrediente.getColesterol());
+		result.setAgSaturados(ingrediente.getAgSaturados());
 		result.setAgMonoinsaturados(ingrediente.getAgMonoinsaturados());
 		result.setAgPoliinsaturados(ingrediente.getAgPoliinsaturados());
-		result.setAgSaturados(ingrediente.getAgSaturados());
-		result.setCalcio(ingrediente.getCalcio());
-		result.setCargaGlicemica(ingrediente.getCargaGlicemica());
-		result.setColesterol(ingrediente.getColesterol());
-		result.setEnergia(ingrediente.getEnergia());
-		result.setFibra(ingrediente.getFibra());
-		result.setHierro(ingrediente.getHierro());
+		result.setEtanol(ingrediente.getEtanol());
 
 		return result;
 	}

@@ -42,7 +42,7 @@ public class DietaServiceImpl implements DietaService {
 	}
 
 	@Override
-	public void addIngesta(Long id, String nombreIngesta) {
+	public void addIngesta(@NonNull Long id, String nombreIngesta) {
 		log.info("Adding ingesta to dieta with id: " + id);
 		Dieta dieta = dietaRepository.findById(id).orElse(null);
 		if (dieta != null) {
@@ -55,7 +55,7 @@ public class DietaServiceImpl implements DietaService {
 	}
 
 	@Override
-	public void renameIngesta(Long id, Long ingestaId, String nombreIngesta) {
+	public void renameIngesta(@NonNull Long id, @NonNull Long ingestaId, String nombreIngesta) {
 		log.info("Renaming ingesta in dieta with id: " + id);
 		Dieta dieta = dietaRepository.findById(id).orElse(null);
 		if (dieta != null) {

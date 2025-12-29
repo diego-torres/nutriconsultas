@@ -143,7 +143,7 @@ public class PlatilloServiceImpl implements PlatilloService {
 	}
 
 	@Override
-	public void savePdf(Long id, byte[] bytes) {
+	public void savePdf(@NonNull Long id, byte[] bytes) {
 		log.info("Starting savePdf with id: {}", id);
 		S3Client s3Client = getClient();
 		String key = "platillo/" + id + "/instrucciones.pdf";
@@ -182,7 +182,7 @@ public class PlatilloServiceImpl implements PlatilloService {
 		}
 	}
 
-	private void uploadPictureToS3(Long id, byte[] bytes, String fileExtension) {
+	private void uploadPictureToS3(@NonNull Long id, byte[] bytes, String fileExtension) {
 		String key = "platillo/" + id + "/picture." + fileExtension;
 		log.info("Uploading picture to S3 with key: {}", key);
 		S3Client s3Client = getClient();

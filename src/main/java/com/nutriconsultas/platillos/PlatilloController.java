@@ -72,7 +72,12 @@ public class PlatilloController extends AbstractAuthorizedController {
 	public String save(@ModelAttribute @NonNull Platillo platillo) {
 		log.debug("Starting save with platillo {}", platillo);
 
-		Platillo dbPlatillo = service.findById(platillo.getId());
+		Long platilloId = platillo.getId();
+		if (platilloId == null) {
+			log.error("Platillo ID is null, cannot save");
+			return "redirect:/admin/platillos";
+		}
+		Platillo dbPlatillo = service.findById(platilloId);
 		if (dbPlatillo != null) {
 			dbPlatillo.setName(platillo.getName());
 			dbPlatillo.setDescription(platillo.getDescription());
@@ -109,6 +114,9 @@ public class PlatilloController extends AbstractAuthorizedController {
 					fileExtension = fileName.substring(dotIndex + 1);
 				}
 				log.debug("File extension is {}", fileExtension);
+			}
+			if (fileExtension == null) {
+				fileExtension = "";
 			}
 			service.savePicture(id, bytes, fileExtension);
 			log.debug("Successfully uploaded picture for platillo with id {}", id);

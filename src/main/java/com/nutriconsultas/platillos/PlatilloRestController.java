@@ -33,8 +33,14 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 	public ResponseEntity<ApiResponse<Ingrediente>> addIngrediente(@PathVariable @NonNull Long id,
 			@RequestBody @NonNull IngredienteFormModel ingrediente) {
 		log.info("starting addIngrediente with id {} and ingrediente {}.", id, ingrediente);
-		Ingrediente _ingrediente = service.addIngrediente(id, ingrediente.getAlimentoId(), ingrediente.getCantidad(),
-				ingrediente.getPeso());
+		Long alimentoId = ingrediente.getAlimentoId();
+		String cantidad = ingrediente.getCantidad();
+		Integer peso = ingrediente.getPeso();
+		if (alimentoId == null || cantidad == null || peso == null) {
+			log.error("Missing required fields: alimentoId={}, cantidad={}, peso={}", alimentoId, cantidad, peso);
+			return ResponseEntity.badRequest().build();
+		}
+		Ingrediente _ingrediente = service.addIngrediente(id, alimentoId, cantidad, peso);
 
 		log.info("finish addIngrediente with id {} and ingrediente {}.", id, ingrediente);
 		return ResponseEntity.ok(new ApiResponse<Ingrediente>(_ingrediente));

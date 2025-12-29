@@ -14,8 +14,8 @@ public interface DietaService {
 
 	List<Dieta> getDietas();
 
-	void addIngesta(Long id, String nombreIngesta);
+	void addIngesta(@NonNull Long id, String nombreIngesta);
 
-	void renameIngesta(Long id, Long ingestaId, String nombreIngesta);
+	void renameIngesta(@NonNull Long id, @NonNull Long ingestaId, String nombreIngesta);
 
 }

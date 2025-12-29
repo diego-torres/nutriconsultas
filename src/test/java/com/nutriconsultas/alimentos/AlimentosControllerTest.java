@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @AutoConfigureMockMvc
 @Slf4j
 @ActiveProfiles("test")
+@SuppressWarnings("null")
 public class AlimentosControllerTest {
 
 	@Autowired
