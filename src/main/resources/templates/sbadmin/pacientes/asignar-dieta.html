@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <!-- Favicons -->
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
+
+  <title>Minutriporcion - Asignar Dieta a Paciente</title>
+
+  <!-- Custom fonts for this template-->
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+
+</head>
+
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/pacientes/sidebar :: sidebar}"></div>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Asignar Dieta a Paciente [[(${paciente != null ? paciente.name : ''})]]</h1>
+          </div>
+
+          <!-- Content Row -->
+          <div class="row">
+            <!-- ASSIGN DIETA FORM -->
+            <div class="col-12">
+              <div class="card shadow mb-4">
+                <div class="col-sm-10 offset-sm-1">
+
+                  <div class="info-form p-5">
+                    <form th:action="@{/admin/pacientes/{id}/dietas/asignar(id=${paciente != null ? paciente.id : 0})}" 
+                          th:object="${pacienteDieta}" method="POST">
+                      <div class="form-group">
+                        <label>Dieta<span style="color:red;">*</span></label>
+                        <select class="form-control" name="dietaId" required>
+                          <option value="">Seleccione una dieta</option>
+                          <option th:each="dieta : ${dietasDisponibles}" 
+                                  th:value="${dieta.id}" 
+                                  th:text="${dieta.nombre}">
+                          </option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('dieta')}" th:errors="*{dieta}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Fecha de Inicio<span style="color:red;">*</span></label>
+                        <input type="date" th:field="*{startDate}" class="form-control" required>
+                        <span th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Fecha de Fin (Opcional)</label>
+                        <input type="date" th:field="*{endDate}" class="form-control">
+                        <span th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Estado<span style="color:red;">*</span></label>
+                        <select class="form-control" th:field="*{status}" required>
+                          <option th:value="ACTIVE">ACTIVA</option>
+                          <option th:value="COMPLETED">COMPLETADA</option>
+                          <option th:value="CANCELLED">CANCELADA</option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Notas</label>
+                        <textarea class="form-control" rows="3" th:field="*{notes}" placeholder="Notas adicionales sobre la asignación de la dieta..."></textarea>
+                        <span th:if="${#fields.hasErrors('notes')}" th:errors="*{notes}"></span>
+                      </div>
+                      <button type="submit" class="btn btn-success">Asignar Dieta</button>
+                      <a th:href="@{/admin/pacientes/{id}(id=${paciente.id})}" class="btn btn-secondary">Cancelar</a>
+                    </form>
+                  </div>
+                  <br>
+
+                  <a href="#nav-main" class="btn btn-secondary-outline btn-sm" role="button">↓</a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+
+        <div th:insert="~{sbadmin/footer :: footer}"></div>
+
+      </div>
+      <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Bootstrap core JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+
+</body>
+
+</html>
+

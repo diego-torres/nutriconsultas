@@ -1,6 +1,7 @@
 package com.nutriconsultas.paciente;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -13,6 +14,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -48,6 +50,15 @@ public class PacienteControllerTest {
 
 	@Mock
 	private BodyFatCalculatorService bodyFatCalculatorService;
+
+	@Mock
+	private PacienteDietaService pacienteDietaService;
+
+	@Mock
+	private com.nutriconsultas.dieta.DietaService dietaService;
+
+	@Mock
+	private com.nutriconsultas.dieta.DietaRepository dietaRepository;
 
 	@Mock
 	private BindingResult bindingResult;
@@ -476,6 +487,559 @@ public class PacienteControllerTest {
 		verify(model).addAttribute("citaAnterior", "");
 		verify(model).addAttribute("citaSiguiente", "");
 		log.info("finished testPerfilPacienteWithNoEvents");
+	}
+
+	@Test
+	public void testPerfilPaciente() {
+		log.info("starting testPerfilPaciente");
+		// Arrange
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(calendarEventService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.perfilPaciente(1L, model);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
+		verify(model).addAttribute("activeMenu", "perfil");
+		verify(model).addAttribute("paciente", paciente);
+		// Dietas were moved to separate page, so they should not be in perfil anymore
+		verify(model, org.mockito.Mockito.never()).addAttribute(eq("dietasAsignadas"), any());
+		verify(model, org.mockito.Mockito.never()).addAttribute(eq("dietasActivas"), any());
+		verify(model, org.mockito.Mockito.never()).addAttribute(eq("dietasDisponibles"), any());
+		log.info("finished testPerfilPaciente");
+	}
+
+	@Test
+	public void testAsignarDieta() {
+		log.info("starting testAsignarDieta");
+		// Arrange
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.asignarDieta(1L, model);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/asignar-dieta");
+		verify(model).addAttribute("paciente", paciente);
+		verify(model).addAttribute("dietasDisponibles", new ArrayList<>());
+		verify(model).addAttribute(eq("pacienteDieta"), any(PacienteDieta.class));
+		log.info("finished testAsignarDieta");
+	}
+
+	@Test
+	public void testGuardarAsignacionDieta() {
+		log.info("starting testGuardarAsignacionDieta");
+		// Arrange
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		pacienteDieta.setStartDate(new Date());
+		pacienteDieta.setStatus(PacienteDietaStatus.ACTIVE);
+
+		final com.nutriconsultas.dieta.Dieta dieta = new com.nutriconsultas.dieta.Dieta();
+		dieta.setId(1L);
+		dieta.setNombre("Dieta de Prueba");
+
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.of(dieta));
+		when(pacienteDietaService.assignDieta(any(Long.class), any(Long.class), any(PacienteDieta.class)))
+			.thenReturn(pacienteDieta);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L);
+
+		// Assert
+		assertThat(result).isEqualTo("redirect:/admin/pacientes/1/dietas");
+		verify(pacienteRepository).findById(1L);
+		verify(dietaRepository).findById(1L);
+		verify(pacienteDietaService).assignDieta(eq(1L), eq(1L), any(PacienteDieta.class));
+		log.info("finished testGuardarAsignacionDieta");
+	}
+
+	@Test
+	public void testGuardarAsignacionDietaWithErrors() {
+		log.info("starting testGuardarAsignacionDietaWithErrors");
+		// Arrange
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		// No startDate set - should trigger validation error
+		// status has default value ACTIVE, so we need to set it to null explicitly
+		pacienteDieta.setStatus(null);
+
+		final com.nutriconsultas.dieta.Dieta dieta = new com.nutriconsultas.dieta.Dieta();
+		dieta.setId(1L);
+		dieta.setNombre("Dieta de Prueba");
+
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.of(dieta));
+		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
+		when(bindingResult.getAllErrors()).thenReturn(new ArrayList<>());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/asignar-dieta");
+		verify(pacienteRepository).findById(1L);
+		verify(dietaRepository).findById(1L);
+		verify(bindingResult).rejectValue(eq("startDate"), eq("NotNull"), eq("La fecha de inicio es requerida"));
+		verify(bindingResult).rejectValue(eq("status"), eq("NotNull"), eq("El estado es requerido"));
+		verify(model).addAttribute("activeMenu", "perfil");
+		verify(model).addAttribute("paciente", paciente);
+		verify(model).addAttribute("dietasDisponibles", new ArrayList<>());
+		verify(pacienteDietaService, org.mockito.Mockito.never()).assignDieta(any(Long.class), any(Long.class),
+				any(PacienteDieta.class));
+		log.info("finished testGuardarAsignacionDietaWithErrors");
+	}
+
+	@Test
+	public void testGuardarAsignacionDietaWithNullStartDate() {
+		log.info("starting testGuardarAsignacionDietaWithNullStartDate");
+		// Arrange
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		pacienteDieta.setStatus(PacienteDietaStatus.ACTIVE);
+		// startDate is null
+
+		final com.nutriconsultas.dieta.Dieta dieta = new com.nutriconsultas.dieta.Dieta();
+		dieta.setId(1L);
+		dieta.setNombre("Dieta de Prueba");
+
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.of(dieta));
+		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
+		when(bindingResult.getAllErrors()).thenReturn(new ArrayList<>());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/asignar-dieta");
+		verify(bindingResult).rejectValue(eq("startDate"), eq("NotNull"), eq("La fecha de inicio es requerida"));
+		verify(pacienteDietaService, org.mockito.Mockito.never()).assignDieta(any(Long.class), any(Long.class),
+				any(PacienteDieta.class));
+		log.info("finished testGuardarAsignacionDietaWithNullStartDate");
+	}
+
+	@Test
+	public void testGuardarAsignacionDietaWithNullStatus() {
+		log.info("starting testGuardarAsignacionDietaWithNullStatus");
+		// Arrange
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		pacienteDieta.setStartDate(new Date());
+		// status has default value, so we need to set it to null explicitly
+		pacienteDieta.setStatus(null);
+
+		final com.nutriconsultas.dieta.Dieta dieta = new com.nutriconsultas.dieta.Dieta();
+		dieta.setId(1L);
+		dieta.setNombre("Dieta de Prueba");
+
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.of(dieta));
+		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
+		when(bindingResult.getAllErrors()).thenReturn(new ArrayList<>());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/asignar-dieta");
+		verify(bindingResult).rejectValue(eq("status"), eq("NotNull"), eq("El estado es requerido"));
+		verify(pacienteDietaService, org.mockito.Mockito.never()).assignDieta(any(Long.class), any(Long.class),
+				any(PacienteDieta.class));
+		log.info("finished testGuardarAsignacionDietaWithNullStatus");
+	}
+
+	@Test
+	public void testGuardarAsignacionDietaThrowsExceptionWhenPacienteNotFound() {
+		log.info("starting testGuardarAsignacionDietaThrowsExceptionWhenPacienteNotFound");
+		// Arrange
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		pacienteDieta.setStartDate(new Date());
+		pacienteDieta.setStatus(PacienteDietaStatus.ACTIVE);
+
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act & Assert
+		assertThatThrownBy(() -> controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("No se ha encontrado paciente con folio");
+		verify(pacienteRepository).findById(1L);
+		verify(pacienteDietaService, org.mockito.Mockito.never()).assignDieta(any(Long.class), any(Long.class),
+				any(PacienteDieta.class));
+		log.info("finished testGuardarAsignacionDietaThrowsExceptionWhenPacienteNotFound");
+	}
+
+	@Test
+	public void testGuardarAsignacionDietaThrowsExceptionWhenDietaNotFound() {
+		log.info("starting testGuardarAsignacionDietaThrowsExceptionWhenDietaNotFound");
+		// Arrange
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		pacienteDieta.setStartDate(new Date());
+		pacienteDieta.setStatus(PacienteDietaStatus.ACTIVE);
+
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act & Assert
+		assertThatThrownBy(() -> controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("No se ha encontrado dieta con id");
+		verify(pacienteRepository).findById(1L);
+		verify(dietaRepository).findById(1L);
+		verify(pacienteDietaService, org.mockito.Mockito.never()).assignDieta(any(Long.class), any(Long.class),
+				any(PacienteDieta.class));
+		log.info("finished testGuardarAsignacionDietaThrowsExceptionWhenDietaNotFound");
+	}
+
+	@Test
+	public void testGuardarAsignacionDietaThrowsExceptionWhenPacienteDietaIsNull() {
+		log.info("starting testGuardarAsignacionDietaThrowsExceptionWhenPacienteDietaIsNull");
+		// Arrange
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act & Assert
+		assertThatThrownBy(() -> controller.guardarAsignacionDieta(1L, null, bindingResult, model, 1L))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("PacienteDieta cannot be null");
+		verify(pacienteDietaService, org.mockito.Mockito.never()).assignDieta(any(Long.class), any(Long.class),
+				any(PacienteDieta.class));
+		log.info("finished testGuardarAsignacionDietaThrowsExceptionWhenPacienteDietaIsNull");
+	}
+
+	@Test
+	public void testEditarAsignacionDieta() {
+		log.info("starting testEditarAsignacionDieta");
+		// Arrange
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		pacienteDieta.setId(1L);
+		pacienteDieta.setPaciente(paciente);
+
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteDietaService.findById(1L)).thenReturn(pacienteDieta);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.editarAsignacionDieta(1L, 1L, model);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/editar-dieta");
+		verify(model).addAttribute("paciente", paciente);
+		verify(model).addAttribute("pacienteDieta", pacienteDieta);
+		log.info("finished testEditarAsignacionDieta");
+	}
+
+	@Test
+	public void testActualizarAsignacionDieta() {
+		log.info("starting testActualizarAsignacionDieta");
+		// Arrange
+		final Date startDate = new Date();
+		final Date endDate = new Date(System.currentTimeMillis() + 86400000); // Tomorrow
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		pacienteDieta.setStartDate(startDate);
+		pacienteDieta.setEndDate(endDate);
+		pacienteDieta.setStatus(PacienteDietaStatus.COMPLETED);
+		pacienteDieta.setNotes("Test notes for dietary plan");
+
+		// Create existing entity with paciente and dieta set
+		final PacienteDieta existing = new PacienteDieta();
+		existing.setId(1L);
+		existing.setPaciente(paciente);
+		final com.nutriconsultas.dieta.Dieta dieta = new com.nutriconsultas.dieta.Dieta();
+		dieta.setId(1L);
+		dieta.setNombre("Dieta Test");
+		existing.setDieta(dieta);
+		existing.setStartDate(new Date());
+		existing.setStatus(PacienteDietaStatus.ACTIVE);
+
+		when(pacienteDietaService.findById(1L)).thenReturn(existing);
+		when(pacienteDietaService.updateAssignment(any(Long.class), any(PacienteDieta.class)))
+			.thenReturn(pacienteDieta);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model);
+
+		// Assert
+		assertThat(result).isEqualTo("redirect:/admin/pacientes/1/dietas");
+		// Verify that paciente and dieta were set from existing entity
+		assertThat(pacienteDieta.getPaciente()).isEqualTo(paciente);
+		assertThat(pacienteDieta.getDieta()).isEqualTo(dieta);
+		assertThat(pacienteDieta.getId()).isEqualTo(1L);
+		verify(pacienteDietaService).findById(1L);
+		verify(pacienteDietaService).updateAssignment(eq(1L), any(PacienteDieta.class));
+		log.info("finished testActualizarAsignacionDieta");
+	}
+
+	@Test
+	public void testActualizarAsignacionDietaWithValidationErrors() {
+		log.info("starting testActualizarAsignacionDietaWithValidationErrors");
+		// Arrange - test with null startDate (manual validation error)
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		pacienteDieta.setStartDate(null); // This should trigger validation error
+		pacienteDieta.setStatus(PacienteDietaStatus.ACTIVE);
+
+		// Create existing entity with paciente and dieta set
+		final PacienteDieta existing = new PacienteDieta();
+		existing.setId(1L);
+		existing.setPaciente(paciente);
+		final com.nutriconsultas.dieta.Dieta dieta = new com.nutriconsultas.dieta.Dieta();
+		dieta.setId(1L);
+		dieta.setNombre("Dieta Test");
+		existing.setDieta(dieta);
+
+		when(pacienteDietaService.findById(1L)).thenReturn(existing);
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/editar-dieta");
+		verify(pacienteDietaService).findById(1L);
+		verify(bindingResult).rejectValue("startDate", "NotNull", "La fecha de inicio es requerida");
+		verify(model).addAttribute("activeMenu", "perfil");
+		verify(model).addAttribute("paciente", paciente);
+		verify(model).addAttribute("pacienteDieta", pacienteDieta);
+		verify(pacienteDietaService, org.mockito.Mockito.never()).updateAssignment(any(Long.class),
+				any(PacienteDieta.class));
+		log.info("finished testActualizarAsignacionDietaWithValidationErrors");
+	}
+
+	@Test
+	public void testActualizarAsignacionDietaWithNullStatus() {
+		log.info("starting testActualizarAsignacionDietaWithNullStatus");
+		// Arrange - test with null status (manual validation error)
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		pacienteDieta.setStartDate(new Date());
+		pacienteDieta.setStatus(null); // This should trigger validation error
+
+		// Create existing entity with paciente and dieta set
+		final PacienteDieta existing = new PacienteDieta();
+		existing.setId(1L);
+		existing.setPaciente(paciente);
+		final com.nutriconsultas.dieta.Dieta dieta = new com.nutriconsultas.dieta.Dieta();
+		dieta.setId(1L);
+		dieta.setNombre("Dieta Test");
+		existing.setDieta(dieta);
+
+		when(pacienteDietaService.findById(1L)).thenReturn(existing);
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/editar-dieta");
+		verify(pacienteDietaService).findById(1L);
+		verify(bindingResult).rejectValue("status", "NotNull", "El estado es requerido");
+		verify(model).addAttribute("activeMenu", "perfil");
+		verify(model).addAttribute("paciente", paciente);
+		verify(model).addAttribute("pacienteDieta", pacienteDieta);
+		verify(pacienteDietaService, org.mockito.Mockito.never()).updateAssignment(any(Long.class),
+				any(PacienteDieta.class));
+		log.info("finished testActualizarAsignacionDietaWithNullStatus");
+	}
+
+	@Test
+	public void testActualizarAsignacionDietaWhenNotFound() {
+		log.info("starting testActualizarAsignacionDietaWhenNotFound");
+		// Arrange
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		pacienteDieta.setStartDate(new Date());
+		pacienteDieta.setStatus(PacienteDietaStatus.ACTIVE);
+
+		when(pacienteDietaService.findById(1L)).thenReturn(null);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act & Assert
+		assertThatThrownBy(() -> controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("No se ha encontrado asignación de dieta con id");
+
+		verify(pacienteDietaService).findById(1L);
+		verify(pacienteDietaService, org.mockito.Mockito.never()).updateAssignment(any(Long.class),
+				any(PacienteDieta.class));
+		log.info("finished testActualizarAsignacionDietaWhenNotFound");
+	}
+
+	@Test
+	public void testCancelarAsignacionDieta() {
+		log.info("starting testCancelarAsignacionDieta");
+		// Arrange
+		org.mockito.Mockito.doNothing().when(pacienteDietaService).cancelAssignment(1L);
+
+		// Act
+		final String result = controller.cancelarAsignacionDieta(1L, 1L);
+
+		// Assert
+		assertThat(result).isEqualTo("redirect:/admin/pacientes/1/dietas");
+		verify(pacienteDietaService).cancelAssignment(1L);
+		log.info("finished testCancelarAsignacionDieta");
+	}
+
+	@Test
+	public void testDietasPaciente() {
+		log.info("starting testDietasPaciente");
+		// Arrange
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteDietaService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
+		when(pacienteDietaService.findActiveByPacienteId(1L)).thenReturn(new ArrayList<>());
+		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.dietasPaciente(1L, model);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/dietas");
+		verify(model).addAttribute("activeMenu", "plan-alimentario");
+		verify(model).addAttribute("paciente", paciente);
+		verify(model).addAttribute("dietasAsignadas", new ArrayList<>());
+		verify(model).addAttribute("dietasActivas", new ArrayList<>());
+		verify(model).addAttribute("dietasDisponibles", new ArrayList<>());
+		log.info("finished testDietasPaciente");
+	}
+
+	@Test
+	public void testDietasPacienteCalculatesMacronutrientes() {
+		log.info("starting testDietasPacienteCalculatesMacronutrientes");
+		// Arrange
+		final com.nutriconsultas.dieta.Dieta dieta = new com.nutriconsultas.dieta.Dieta();
+		dieta.setId(1L);
+		dieta.setNombre("Dieta de Prueba");
+		// Create mock ingestas with platillos and alimentos
+		final com.nutriconsultas.dieta.Ingesta ingesta = new com.nutriconsultas.dieta.Ingesta();
+		ingesta.setId(1L);
+		ingesta.setNombre("Desayuno");
+		final com.nutriconsultas.dieta.PlatilloIngesta platillo = new com.nutriconsultas.dieta.PlatilloIngesta();
+		platillo.setId(1L);
+		platillo.setProteina(20.0);
+		platillo.setLipidos(10.0);
+		platillo.setHidratosDeCarbono(50.0);
+		ingesta.getPlatillos().add(platillo);
+		dieta.getIngestas().add(ingesta);
+
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		pacienteDieta.setId(1L);
+		pacienteDieta.setPaciente(paciente);
+		pacienteDieta.setDieta(dieta);
+		pacienteDieta.setStartDate(new Date());
+		pacienteDieta.setStatus(PacienteDietaStatus.ACTIVE);
+
+		final List<PacienteDieta> dietasAsignadas = new ArrayList<>();
+		dietasAsignadas.add(pacienteDieta);
+
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteDietaService.findByPacienteId(1L)).thenReturn(dietasAsignadas);
+		when(pacienteDietaService.findActiveByPacienteId(1L)).thenReturn(dietasAsignadas);
+		when(dietaService.getDieta(1L)).thenReturn(dieta);
+		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.dietasPaciente(1L, model);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/dietas");
+		verify(model).addAttribute("activeMenu", "plan-alimentario");
+		verify(model).addAttribute("paciente", paciente);
+		// getDieta is called twice: once for dietasAsignadas and once for dietasActivas
+		verify(dietaService, org.mockito.Mockito.times(2)).getDieta(1L);
+		// Verify that macronutrientes were calculated and set
+		assertThat(dieta.getProteina()).isEqualTo(20.0);
+		assertThat(dieta.getLipidos()).isEqualTo(10.0);
+		assertThat(dieta.getHidratosDeCarbono()).isEqualTo(50.0);
+		// Verify that kilocalorías were calculated and set
+		// Formula: protein * 4 + lipids * 9 + carbohydrates * 4
+		// 20 * 4 + 10 * 9 + 50 * 4 = 80 + 90 + 200 = 370 kcal
+		assertThat(dieta.getEnergia()).isEqualTo(370);
+		log.info("finished testDietasPacienteCalculatesMacronutrientes");
+	}
+
+	@Test
+	public void testDietasPacienteHandlesDietaWithoutIngestas() {
+		log.info("starting testDietasPacienteHandlesDietaWithoutIngestas");
+		// Arrange
+		final com.nutriconsultas.dieta.Dieta dieta = new com.nutriconsultas.dieta.Dieta();
+		dieta.setId(1L);
+		dieta.setNombre("Dieta Vacía");
+		// ingestas is initialized as empty ArrayList by default, so no need to set it
+
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		pacienteDieta.setId(1L);
+		pacienteDieta.setPaciente(paciente);
+		pacienteDieta.setDieta(dieta);
+		pacienteDieta.setStartDate(new Date());
+		pacienteDieta.setStatus(PacienteDietaStatus.ACTIVE);
+
+		final List<PacienteDieta> dietasAsignadas = new ArrayList<>();
+		dietasAsignadas.add(pacienteDieta);
+
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteDietaService.findByPacienteId(1L)).thenReturn(dietasAsignadas);
+		when(pacienteDietaService.findActiveByPacienteId(1L)).thenReturn(dietasAsignadas);
+		when(dietaService.getDieta(1L)).thenReturn(dieta);
+		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.dietasPaciente(1L, model);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/dietas");
+		// getDieta is called twice: once for dietasAsignadas and once for dietasActivas
+		verify(dietaService, org.mockito.Mockito.times(2)).getDieta(1L);
+		// Verify that macronutrientes are 0 when there are no ingestas
+		// Note: getTotalProteina returns 0.0 when ingestas is null or empty
+		assertThat(dieta.getProteina()).isNotNull();
+		assertThat(dieta.getProteina()).isEqualTo(0.0);
+		assertThat(dieta.getLipidos()).isNotNull();
+		assertThat(dieta.getLipidos()).isEqualTo(0.0);
+		assertThat(dieta.getHidratosDeCarbono()).isNotNull();
+		assertThat(dieta.getHidratosDeCarbono()).isEqualTo(0.0);
+		// Verify that kilocalorías are 0 when there are no ingestas
+		assertThat(dieta.getEnergia()).isNotNull();
+		assertThat(dieta.getEnergia()).isEqualTo(0);
+		log.info("finished testDietasPacienteHandlesDietaWithoutIngestas");
+	}
+
+	@Test
+	public void testDietasPacienteThrowsExceptionWhenPacienteNotFound() {
+		log.info("starting testDietasPacienteThrowsExceptionWhenPacienteNotFound");
+		// Arrange
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act & Assert
+		assertThatThrownBy(() -> controller.dietasPaciente(1L, model)).isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("No se ha encontrado paciente con folio");
+		log.info("finished testDietasPacienteThrowsExceptionWhenPacienteNotFound");
 	}
 
 }

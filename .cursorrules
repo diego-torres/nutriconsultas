@@ -146,6 +146,57 @@ This is a Spring Boot 3.4.1 web application for managing a nutrition consultatio
 5. Use Spring Security Test for security testing
 6. Test data in `src/test/resources/`
 
+### Testing Requirements (MANDATORY)
+**CRITICAL: All code changes MUST include tests and template validations.**
+
+When implementing features or making changes:
+
+1. **Create Service Tests:**
+   - Create `XxxServiceTest.java` in `src/test/java/` mirroring package structure
+   - Use `@ExtendWith(MockitoExtension.class)` for unit tests
+   - Mock dependencies with `@Mock`, inject service with `@InjectMocks`
+   - Test all public methods, including success and error cases
+   - Use AssertJ: `assertThat()`, `assertThatThrownBy()`
+
+2. **Create Controller Tests:**
+   - Create or update `XxxControllerTest.java`
+   - Use `@SpringBootTest` with `@AutoConfigureMockMvc` for web tests
+   - Or use `@ExtendWith(MockitoExtension.class)` with `@InjectMocks` for unit-style tests
+   - Test all endpoints (GET, POST, PUT, DELETE)
+   - Verify model attributes, view names, redirects
+   - Use `@WithMockUser` for authenticated endpoints
+   - Test validation errors and success paths
+
+3. **Update Template Validators:**
+   - If creating new templates, update corresponding `XxxTemplateValidator`
+   - Add mock model variables for all template variables used
+   - Validators in `com.nutriconsultas.validation.template` package
+   - Register new validators in `TemplateValidatorRegistry` if needed
+
+4. **Test Coverage:**
+   - Test happy paths, error cases, edge cases
+   - Verify exception handling
+   - Test validation logic
+   - Run `mvn test` before committing
+
+**Example Service Test:**
+```java
+@ExtendWith(MockitoExtension.class)
+@Slf4j
+@ActiveProfiles("test")
+public class ExampleServiceTest {
+    @InjectMocks
+    private ExampleServiceImpl service;
+    @Mock
+    private ExampleRepository repository;
+    
+    @Test
+    public void testMethodName() {
+        // Arrange, Act, Assert
+    }
+}
+```
+
 ## File Naming Conventions
 - Controllers: `XxxController.java`
 - Services: `XxxService.java` (interface), `XxxServiceImpl.java` (implementation)

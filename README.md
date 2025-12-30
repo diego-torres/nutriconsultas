@@ -226,6 +226,34 @@ mvn exec:java -Dexec.mainClass="com.nutriconsultas.ThymeleafValidator" -Dexec.ar
 
 **Note:** Template validation no longer blocks application startup. It runs during the test phase, allowing `mvn spring-boot:run` to start the application even if templates need fixes.
 
+### Testing Requirements
+
+**IMPORTANT: All code changes must include tests and template validations.**
+
+When making changes to the codebase:
+
+1. **Always create tests for new functionality:**
+   - Service classes: Create `XxxServiceTest.java` with unit tests
+   - Controller classes: Create or update `XxxControllerTest.java` with integration tests
+   - Test all public methods, edge cases, and error conditions
+   - Use JUnit 5, Mockito, and AssertJ
+
+2. **Always update template validators for new templates:**
+   - If creating new Thymeleaf templates, update the corresponding `XxxTemplateValidator`
+   - Add all mock model variables needed for template validation
+   - Ensure templates can be validated without runtime errors
+
+3. **Run tests before committing:**
+   ```bash
+   mvn test
+   ```
+   This will run all unit tests, integration tests, and template validations.
+
+4. **Test coverage expectations:**
+   - New services: Test all public methods
+   - New controllers: Test all endpoints
+   - New templates: Ensure validator includes all required variables
+
 ### Template Validation Architecture
 
 The Thymeleaf validator uses a modular architecture where each template or template group has its own validator class. This allows for template-specific mock model variables to be defined based on the needs of each template.

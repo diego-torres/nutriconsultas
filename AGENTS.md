@@ -184,6 +184,77 @@ mvn pmd:check
 mvn test
 ```
 
+### Testing Requirements for Agents
+
+**CRITICAL: All code changes MUST include tests and template validations.**
+
+When implementing new features or modifying existing code, agents MUST:
+
+1. **Create Unit Tests for Services:**
+   - Create test class: `XxxServiceTest.java` in `src/test/java/` mirroring package structure
+   - Use `@ExtendWith(MockitoExtension.class)` for unit tests
+   - Mock dependencies using `@Mock` annotations
+   - Test all public methods including edge cases and error conditions
+   - Use AssertJ for assertions: `assertThat()`
+   - Follow naming: `testMethodName` for test methods
+
+2. **Create Integration Tests for Controllers:**
+   - Create or update test class: `XxxControllerTest.java`
+   - Use `@SpringBootTest` with `@AutoConfigureMockMvc` for web layer tests
+   - Use `@ExtendWith(MockitoExtension.class)` with `@InjectMocks` for unit-style controller tests
+   - Test all endpoints (GET, POST, etc.)
+   - Verify model attributes, view names, and redirects
+   - Use `@WithMockUser` for authenticated endpoints
+   - Test validation errors and success paths
+
+3. **Update Template Validators:**
+   - If creating new templates, update the corresponding `XxxTemplateValidator` class
+   - Add mock model variables needed for template validation
+   - Ensure all template variables used in new templates are included in the validator
+   - Validators are in `com.nutriconsultas.validation.template` package
+   - Register new validators in `TemplateValidatorRegistry` if creating a new template group
+
+4. **Test Coverage:**
+   - Aim for comprehensive coverage of new code
+   - Test happy paths, error cases, and edge cases
+   - Verify exception handling
+   - Test validation logic
+
+**Example Test Structure:**
+```java
+@ExtendWith(MockitoExtension.class)
+@Slf4j
+@ActiveProfiles("test")
+public class ExampleServiceTest {
+    @InjectMocks
+    private ExampleServiceImpl service;
+    
+    @Mock
+    private ExampleRepository repository;
+    
+    @BeforeEach
+    public void setup() {
+        // Setup test data
+    }
+    
+    @Test
+    public void testMethodName() {
+        // Arrange, Act, Assert
+    }
+}
+```
+
+**Template Validator Update Example:**
+```java
+@Override
+public Map<String, Object> createMockModelVariables() {
+    Map<String, Object> variables = super.createMockModelVariables();
+    // Add new mock variables for new templates
+    variables.put("newVariable", createMockObject());
+    return variables;
+}
+```
+
 ## Security Configuration
 
 ### Authentication

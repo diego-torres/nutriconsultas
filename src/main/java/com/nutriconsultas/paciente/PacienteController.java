@@ -23,6 +23,8 @@ import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventService;
 import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.controller.AbstractAuthorizedController;
+import com.nutriconsultas.dieta.DietaRepository;
+import com.nutriconsultas.dieta.DietaService;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -39,6 +41,15 @@ public class PacienteController extends AbstractAuthorizedController {
 
 	@Autowired
 	private BodyFatCalculatorService bodyFatCalculatorService;
+
+	@Autowired
+	private PacienteDietaService pacienteDietaService;
+
+	@Autowired
+	private DietaService dietaService;
+
+	@Autowired
+	private DietaRepository dietaRepository;
 
 	@GetMapping(path = "/admin/pacientes/nuevo")
 	public String nuevo(final Model model) {
@@ -241,6 +252,59 @@ public class PacienteController extends AbstractAuthorizedController {
 		return String.format("redirect:/admin/pacientes/%d", id);
 	}
 
+	@GetMapping(path = "/admin/pacientes/{id}/dietas")
+	public String dietasPaciente(@PathVariable @NonNull final Long id, final Model model) {
+		log.debug("Cargando dietas asignadas de paciente {}", id);
+		final Paciente paciente = pacienteRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+
+		model.addAttribute("activeMenu", "plan-alimentario");
+		model.addAttribute("paciente", paciente);
+		// obtener dietas asignadas
+		final List<PacienteDieta> dietasAsignadas = pacienteDietaService.findByPacienteId(id);
+		// Calcular macronutrientes para cada dieta asignada
+		// Load dieta with ingestas to calculate macronutrientes
+		for (final PacienteDieta pacienteDieta : dietasAsignadas) {
+			if (pacienteDieta.getDieta() != null) {
+				final com.nutriconsultas.dieta.Dieta dieta = dietaService.getDieta(pacienteDieta.getDieta().getId());
+				if (dieta != null) {
+					// Calculate and set macronutrientes
+					dieta.setProteina(getTotalProteina(dieta));
+					dieta.setLipidos(getTotalLipidos(dieta));
+					dieta.setHidratosDeCarbono(getTotalHidratosDeCarbono(dieta));
+					// Calculate and set kilocalorías
+					final Double kCal = getTotalKCal(dieta);
+					dieta.setEnergia(kCal != null ? kCal.intValue() : 0);
+					// Update the dieta in pacienteDieta
+					pacienteDieta.setDieta(dieta);
+				}
+			}
+		}
+		model.addAttribute("dietasAsignadas", dietasAsignadas);
+		final List<PacienteDieta> dietasActivas = pacienteDietaService.findActiveByPacienteId(id);
+		// Calcular macronutrientes para dietas activas
+		for (final PacienteDieta pacienteDieta : dietasActivas) {
+			if (pacienteDieta.getDieta() != null) {
+				final com.nutriconsultas.dieta.Dieta dieta = dietaService.getDieta(pacienteDieta.getDieta().getId());
+				if (dieta != null) {
+					// Calculate and set macronutrientes
+					dieta.setProteina(getTotalProteina(dieta));
+					dieta.setLipidos(getTotalLipidos(dieta));
+					dieta.setHidratosDeCarbono(getTotalHidratosDeCarbono(dieta));
+					// Calculate and set kilocalorías
+					final Double kCal = getTotalKCal(dieta);
+					dieta.setEnergia(kCal != null ? kCal.intValue() : 0);
+					// Update the dieta in pacienteDieta
+					pacienteDieta.setDieta(dieta);
+				}
+			}
+		}
+		model.addAttribute("dietasActivas", dietasActivas);
+		// obtener todas las dietas disponibles para asignar
+		model.addAttribute("dietasDisponibles", dietaService.getDietas());
+		return "sbadmin/pacientes/dietas";
+	}
+
 	@GetMapping(path = "/admin/pacientes/{id}/historial")
 	public String historialPaciente(@PathVariable @NonNull Long id, Model model) {
 		log.debug("Cargando datos de consultas de paciente {}", id);
@@ -371,6 +435,151 @@ public class PacienteController extends AbstractAuthorizedController {
 		return String.format("redirect:/admin/pacientes/%d/historial", pacienteId);
 	}
 
+	@GetMapping(path = "/admin/pacientes/{id}/dietas/asignar")
+	public String asignarDieta(@PathVariable @NonNull final Long id, final Model model) {
+		log.debug("Cargando formulario para asignar dieta a paciente {}", id);
+		final Paciente paciente = pacienteRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+
+		model.addAttribute("activeMenu", "perfil");
+		model.addAttribute("paciente", paciente);
+		model.addAttribute("dietasDisponibles", dietaService.getDietas());
+		model.addAttribute("pacienteDieta", new PacienteDieta());
+		return "sbadmin/pacientes/asignar-dieta";
+	}
+
+	@PostMapping(path = "/admin/pacientes/{id}/dietas/asignar")
+	public String guardarAsignacionDieta(@PathVariable @NonNull final Long id, final PacienteDieta pacienteDieta,
+			final BindingResult result, final Model model,
+			@org.springframework.web.bind.annotation.RequestParam(required = true) @NonNull final Long dietaId) {
+		log.debug("Guardando asignación de dieta {} para paciente {}", dietaId, id);
+
+		// Check if pacienteDieta is null before using it
+		if (pacienteDieta == null) {
+			throw new IllegalArgumentException("PacienteDieta cannot be null");
+		}
+
+		// Set paciente and dieta from parameters before validation
+		// This is necessary because paciente and dieta are validated as @NotNull but come
+		// from
+		// path variable and request parameter, not from form binding
+		final Paciente paciente = pacienteRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+		final com.nutriconsultas.dieta.Dieta dieta = dietaRepository.findById(dietaId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado dieta con id " + dietaId));
+
+		pacienteDieta.setPaciente(paciente);
+		pacienteDieta.setDieta(dieta);
+
+		// Manual validation since paciente and dieta come from parameters, not form
+		// binding
+		boolean hasErrors = false;
+		if (pacienteDieta.getStartDate() == null) {
+			result.rejectValue("startDate", "NotNull", "La fecha de inicio es requerida");
+			hasErrors = true;
+		}
+		if (pacienteDieta.getStatus() == null) {
+			result.rejectValue("status", "NotNull", "El estado es requerido");
+			hasErrors = true;
+		}
+		if (pacienteDieta.getPaciente() == null) {
+			result.rejectValue("paciente", "NotNull", "El paciente es requerido");
+			hasErrors = true;
+		}
+		if (pacienteDieta.getDieta() == null) {
+			result.rejectValue("dieta", "NotNull", "La dieta es requerida");
+			hasErrors = true;
+		}
+
+		if (hasErrors) {
+			log.error("Validation errors found: {}", result.getAllErrors());
+			result.getAllErrors()
+				.forEach(error -> log.error("Error: {} - {}", error.getObjectName(), error.getDefaultMessage()));
+			model.addAttribute("activeMenu", "perfil");
+			model.addAttribute("paciente", paciente);
+			model.addAttribute("dietasDisponibles", dietaService.getDietas());
+			return "sbadmin/pacientes/asignar-dieta";
+		}
+
+		final PacienteDieta saved = pacienteDietaService.assignDieta(id, dietaId, pacienteDieta);
+		log.debug("Dieta asignada exitosamente: {}", saved);
+		return String.format("redirect:/admin/pacientes/%d/dietas", id);
+	}
+
+	@GetMapping(path = "/admin/pacientes/{pacienteId}/dietas/{id}/editar")
+	public String editarAsignacionDieta(@PathVariable @NonNull final Long pacienteId,
+			@PathVariable @NonNull final Long id, final Model model) {
+		log.debug("Cargando formulario para editar asignación de dieta {}", id);
+		final Paciente paciente = pacienteRepository.findById(pacienteId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId));
+		final PacienteDieta pacienteDieta = pacienteDietaService.findById(id);
+		if (pacienteDieta == null) {
+			throw new IllegalArgumentException("No se ha encontrado asignación de dieta con id " + id);
+		}
+
+		model.addAttribute("activeMenu", "perfil");
+		model.addAttribute("paciente", paciente);
+		model.addAttribute("pacienteDieta", pacienteDieta);
+		return "sbadmin/pacientes/editar-dieta";
+	}
+
+	@PostMapping(path = "/admin/pacientes/{pacienteId}/dietas/{id}/editar")
+	public String actualizarAsignacionDieta(@PathVariable @NonNull final Long pacienteId,
+			@PathVariable @NonNull final Long id, final PacienteDieta pacienteDieta, final BindingResult result,
+			final Model model) {
+		log.debug("Actualizando asignación de dieta {}", id);
+
+		// Load existing assignment to preserve paciente and dieta relationships
+		// These are not in the form, so they need to be set from the existing entity
+		final PacienteDieta existing = pacienteDietaService.findById(id);
+		if (existing == null) {
+			throw new IllegalArgumentException("No se ha encontrado asignación de dieta con id " + id);
+		}
+
+		// Set paciente and dieta from existing entity
+		// This prevents validation errors since these fields are @NotNull but not in the
+		// form
+		pacienteDieta.setPaciente(existing.getPaciente());
+		pacienteDieta.setDieta(existing.getDieta());
+		pacienteDieta.setId(existing.getId());
+
+		// Manual validation for fields that come from the form
+		boolean hasErrors = false;
+		if (pacienteDieta.getStartDate() == null) {
+			result.rejectValue("startDate", "NotNull", "La fecha de inicio es requerida");
+			hasErrors = true;
+		}
+		if (pacienteDieta.getStatus() == null) {
+			result.rejectValue("status", "NotNull", "El estado es requerido");
+			hasErrors = true;
+		}
+
+		if (hasErrors) {
+			log.error("Validation errors found: {}", result.getAllErrors());
+			result.getAllErrors()
+				.forEach(error -> log.error("Error: {} - {}", error.getObjectName(), error.getDefaultMessage()));
+			final Paciente paciente = pacienteRepository.findById(pacienteId)
+				.orElseThrow(
+						() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId));
+			model.addAttribute("activeMenu", "perfil");
+			model.addAttribute("paciente", paciente);
+			model.addAttribute("pacienteDieta", pacienteDieta);
+			return "sbadmin/pacientes/editar-dieta";
+		}
+
+		final PacienteDieta updated = pacienteDietaService.updateAssignment(id, pacienteDieta);
+		log.info("Asignación de dieta actualizada exitosamente: {}", updated);
+		return String.format("redirect:/admin/pacientes/%d/dietas", pacienteId);
+	}
+
+	@PostMapping(path = "/admin/pacientes/{pacienteId}/dietas/{id}/cancelar")
+	public String cancelarAsignacionDieta(@PathVariable @NonNull final Long pacienteId,
+			@PathVariable @NonNull final Long id) {
+		log.debug("Cancelando asignación de dieta {}", id);
+		pacienteDietaService.cancelAssignment(id);
+		return String.format("redirect:/admin/pacientes/%d/dietas", pacienteId);
+	}
+
 	/**
 	 * Calculates age from date of birth.
 	 * @param dob Date of birth
@@ -388,6 +597,84 @@ public class PacienteController extends AbstractAuthorizedController {
 		}
 		return currentDate.getYear() - birthDate.getYear()
 				- (currentDate.getDayOfYear() < birthDate.getDayOfYear() ? 1 : 0);
+	}
+
+	/**
+	 * Calculates total protein from a dieta.
+	 * @param dieta the dieta to calculate protein from
+	 * @return total protein in grams
+	 */
+	private Double getTotalProteina(final com.nutriconsultas.dieta.Dieta dieta) {
+		if (dieta == null || dieta.getIngestas() == null) {
+			return 0.0;
+		}
+		return dieta.getIngestas().stream().mapToDouble(i -> {
+			double platillosProteina = i.getPlatillos() != null
+					? i.getPlatillos().stream().mapToDouble(p -> p.getProteina() != null ? p.getProteina() : 0.0).sum()
+					: 0.0;
+			double alimentosProteina = i.getAlimentos() != null
+					? i.getAlimentos().stream().mapToDouble(a -> a.getProteina() != null ? a.getProteina() : 0.0).sum()
+					: 0.0;
+			return platillosProteina + alimentosProteina;
+		}).sum();
+	}
+
+	/**
+	 * Calculates total lipids from a dieta.
+	 * @param dieta the dieta to calculate lipids from
+	 * @return total lipids in grams
+	 */
+	private Double getTotalLipidos(final com.nutriconsultas.dieta.Dieta dieta) {
+		if (dieta == null || dieta.getIngestas() == null) {
+			return 0.0;
+		}
+		return dieta.getIngestas().stream().mapToDouble(i -> {
+			double platillosLipidos = i.getPlatillos() != null
+					? i.getPlatillos().stream().mapToDouble(p -> p.getLipidos() != null ? p.getLipidos() : 0.0).sum()
+					: 0.0;
+			double alimentosLipidos = i.getAlimentos() != null
+					? i.getAlimentos().stream().mapToDouble(a -> a.getLipidos() != null ? a.getLipidos() : 0.0).sum()
+					: 0.0;
+			return platillosLipidos + alimentosLipidos;
+		}).sum();
+	}
+
+	/**
+	 * Calculates total carbohydrates from a dieta.
+	 * @param dieta the dieta to calculate carbohydrates from
+	 * @return total carbohydrates in grams
+	 */
+	private Double getTotalHidratosDeCarbono(final com.nutriconsultas.dieta.Dieta dieta) {
+		if (dieta == null || dieta.getIngestas() == null) {
+			return 0.0;
+		}
+		return dieta.getIngestas().stream().mapToDouble(i -> {
+			double platillosHidratos = i.getPlatillos() != null ? i.getPlatillos()
+				.stream()
+				.mapToDouble(p -> p.getHidratosDeCarbono() != null ? p.getHidratosDeCarbono() : 0.0)
+				.sum() : 0.0;
+			double alimentosHidratos = i.getAlimentos() != null ? i.getAlimentos()
+				.stream()
+				.mapToDouble(a -> a.getHidratosDeCarbono() != null ? a.getHidratosDeCarbono() : 0.0)
+				.sum() : 0.0;
+			return platillosHidratos + alimentosHidratos;
+		}).sum();
+	}
+
+	/**
+	 * Calculates total kilocalories from a dieta. Formula: protein * 4 + lipids * 9 +
+	 * carbohydrates * 4
+	 * @param dieta the dieta to calculate kilocalories from
+	 * @return total kilocalories
+	 */
+	private Double getTotalKCal(final com.nutriconsultas.dieta.Dieta dieta) {
+		if (dieta == null) {
+			return 0.0;
+		}
+		final Double proteina = getTotalProteina(dieta);
+		final Double lipidos = getTotalLipidos(dieta);
+		final Double hidratosDeCarbono = getTotalHidratosDeCarbono(dieta);
+		return proteina * 4 + lipidos * 9 + hidratosDeCarbono * 4;
 	}
 
 }
