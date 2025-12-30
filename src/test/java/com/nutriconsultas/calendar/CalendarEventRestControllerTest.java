@@ -807,8 +807,7 @@ public class CalendarEventRestControllerTest {
 			final long actualDuration = endDate.getTime() - startDate.getTime();
 			final long expectedDuration = events.get(0).getDurationMinutes() * 60 * 1000L;
 			assertThat(actualDuration).isEqualTo(expectedDuration);
-		}
-		catch (final java.text.ParseException e) {
+		} catch (final java.text.ParseException e) {
 			throw new AssertionError("Failed to parse date", e);
 		}
 		log.info("finished testCalendarEventEndTimeCalculation");

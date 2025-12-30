@@ -139,7 +139,7 @@ This will format all Java source files according to Spring's coding standards. T
 
 **Fixing Formatting Issues:**
 - Run `mvn spring-javaformat:apply` to fix all formatting issues automatically
-- The pre-commit hook automatically formats code before each commit
+- The pre-commit hook runs checkstyle validation (not automatic formatting)
 - Formatting issues are typically spacing, indentation, and brace placement
 
 #### Run All Linting Tools
@@ -387,12 +387,12 @@ The workflow uses the `ci` Maven profile which enables strict linting (fails on 
 
 ### Git Pre-commit Hook
 
-A pre-commit hook is installed to automatically validate and format code before each commit. The hook:
+A pre-commit hook is installed to validate code quality before each commit. The hook:
 
-1. Checks if any staged Java files need formatting
-2. Automatically formats files if needed
-3. Re-stages the formatted files
-4. Allows the commit to proceed
+1. Checks if any Java files are staged
+2. Runs checkstyle validation to ensure code quality standards
+3. Blocks the commit if checkstyle violations are found
+4. Allows the commit to proceed if all checks pass
 
 #### Installation
 

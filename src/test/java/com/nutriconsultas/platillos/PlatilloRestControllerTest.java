@@ -72,8 +72,7 @@ public class PlatilloRestControllerTest {
 				.parse();
 			log.debug("Platillos read from CSV: {}", platillos);
 			when(platilloService.findAll()).thenReturn(platillos);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			log.error("Error reading platillos.csv", e);
 		}
 		// Arrange

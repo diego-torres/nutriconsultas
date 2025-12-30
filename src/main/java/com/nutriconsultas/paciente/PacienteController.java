@@ -73,8 +73,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		String resultView;
 		if (result.hasErrors()) {
 			resultView = "sbadmin/pacientes/nuevo";
-		}
-		else {
+		} else {
 			pacienteRepository.save(paciente);
 			resultView = "redirect:/admin/pacientes";
 		}
@@ -359,8 +358,7 @@ public class PacienteController extends AbstractAuthorizedController {
 					evento.setIndiceGrasaCorporal(bodyFatPercentage);
 				}
 			}
-		}
-		final LocalDate today = LocalDate.now();
+		} final LocalDate today = LocalDate.now();
 		final Date eventDate = evento.getEventDateTime();
 		if (eventDate != null) {
 			// Comparar solo la fecha (sin hora)
@@ -383,8 +381,7 @@ public class PacienteController extends AbstractAuthorizedController {
 				if (paciente != null) {
 					pacienteRepository.save(paciente);
 				}
-			}
-			else {
+			} else {
 				List<CalendarEvent> eventosPrevios = calendarEventService.findByPacienteId(pacienteId);
 				Boolean laterExists = eventosPrevios.stream()
 					.filter(e -> e.getEventDateTime() != null && e.getEventDateTime().after(eventDate))
@@ -498,8 +495,7 @@ public class PacienteController extends AbstractAuthorizedController {
 			model.addAttribute("paciente", paciente);
 			model.addAttribute("dietasDisponibles", dietaService.getDietas());
 			return "sbadmin/pacientes/asignar-dieta";
-		}
-		final PacienteDieta saved = pacienteDietaService.assignDieta(id, dietaId, pacienteDieta);
+		} final PacienteDieta saved = pacienteDietaService.assignDieta(id, dietaId, pacienteDieta);
 		log.debug("Dieta asignada exitosamente: {}", saved);
 		return String.format("redirect:/admin/pacientes/%d/dietas", id);
 	}
@@ -563,8 +559,7 @@ public class PacienteController extends AbstractAuthorizedController {
 			model.addAttribute("paciente", paciente);
 			model.addAttribute("pacienteDieta", pacienteDieta);
 			return "sbadmin/pacientes/editar-dieta";
-		}
-		final PacienteDieta updated = pacienteDietaService.updateAssignment(id, pacienteDieta);
+		} final PacienteDieta updated = pacienteDietaService.updateAssignment(id, pacienteDieta);
 		log.info("Asignación de dieta actualizada exitosamente: {}", updated);
 		return String.format("redirect:/admin/pacientes/%d/dietas", pacienteId);
 	}
@@ -585,8 +580,7 @@ public class PacienteController extends AbstractAuthorizedController {
 	private Integer calculateAge(final Date dob) {
 		if (dob == null) {
 			return null;
-		}
-		final LocalDate birthDate = dob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		} final LocalDate birthDate = dob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 		final LocalDate currentDate = LocalDate.now();
 		if (birthDate.isAfter(currentDate)) {
 			log.warn("Date of birth is in the future: {}", dob);
@@ -667,8 +661,7 @@ public class PacienteController extends AbstractAuthorizedController {
 	private Double getTotalKCal(final com.nutriconsultas.dieta.Dieta dieta) {
 		if (dieta == null) {
 			return 0.0;
-		}
-		final Double proteina = getTotalProteina(dieta);
+		} final Double proteina = getTotalProteina(dieta);
 		final Double lipidos = getTotalLipidos(dieta);
 		final Double hidratosDeCarbono = getTotalHidratosDeCarbono(dieta);
 		return proteina * 4 + lipidos * 9 + hidratosDeCarbono * 4;

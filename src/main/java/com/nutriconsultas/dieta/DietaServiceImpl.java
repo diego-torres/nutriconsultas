@@ -68,8 +68,7 @@ public class DietaServiceImpl implements DietaService {
 			});
 			log.debug("Saving dieta with updated ingesta {}", dieta);
 			dietaRepository.save(dieta);
-		}
-		else {
+		} else {
 			log.warn("Dieta with id {} not found in an attempt to rename one of its ingestas", id);
 		}
 	}

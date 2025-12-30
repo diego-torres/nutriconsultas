@@ -66,8 +66,7 @@ public class LogoutHandler extends SecurityContextLogoutHandler {
 
 		try {
 			httpServletResponse.sendRedirect(logoutUrl);
-		}
-		catch (final IOException ioe) {
+		} catch (final IOException ioe) {
 			// Handle or log error redirecting to logout URL
 			// Logging is handled by the framework
 		}

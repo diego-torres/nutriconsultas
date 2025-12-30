@@ -89,8 +89,7 @@ public class DietaController extends AbstractAuthorizedController {
 			model.addAttribute("distribucionLipido", distLipido);
 			model.addAttribute("distribucionHidratoCarbono", distHidratoCarbono);
 			model.addAttribute("hasDistribucion", true);
-		}
-		else {
+		} else {
 			model.addAttribute("hasDistribucion", false);
 		}
 
@@ -108,15 +107,13 @@ public class DietaController extends AbstractAuthorizedController {
 			LOGGER.debug("nueva ingesta en dieta, agregar");
 			dietaService.addIngesta(id, ingesta.getIngesta());
 			result = "redirect:/admin/dietas/" + id;
-		}
-		else {
+		} else {
 			LOGGER.debug("Ingesta existente, cambiar nombre");
 			final Long ingestaId = ingesta.getIngestaId();
 			if (ingestaId == null) {
 				LOGGER.error("Ingesta ID is null, cannot rename");
 				result = "redirect:/admin/dietas/" + id;
-			}
-			else {
+			} else {
 				dietaService.renameIngesta(id, ingestaId, ingesta.getIngesta());
 				result = "redirect:/admin/dietas/" + id;
 			}

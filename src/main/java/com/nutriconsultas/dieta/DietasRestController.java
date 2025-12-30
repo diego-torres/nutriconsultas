@@ -63,8 +63,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 			log.info("finish deletePlatilloIngesta with dietaId {}, ingestaId {}, platilloIngestaId {}.", dietaId,
 					ingestaId, platilloIngestaId);
 			result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
-		}
-		else {
+		} else {
 			log.warn("Dieta with id {} not found when trying to delete platilloIngesta", dietaId);
 			result = ResponseEntity.notFound().build();
 		}
@@ -89,8 +88,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 			log.info("finish deleteAlimentoIngesta with dietaId {}, ingestaId {}, alimentoIngestaId {}.", dietaId,
 					ingestaId, alimentoIngestaId);
 			result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
-		}
-		else {
+		} else {
 			log.warn("Dieta with id {} not found when trying to delete alimentoIngesta", dietaId);
 			result = ResponseEntity.notFound().build();
 		}
@@ -125,8 +123,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		String result;
 		if (kCal == null || kCal == 0 || kCal < 0.01) {
 			result = "";
-		}
-		else {
+		} else {
 			final Double distProteina = getTotalProteina(row) * 4 / kCal;
 			final Double distLipido = getTotalLipidos(row) * 9 / kCal;
 			final Double distHidratoCarbono = getTotalHidratosDeCarbono(row) * 4 / kCal;
