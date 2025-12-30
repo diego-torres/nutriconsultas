@@ -55,15 +55,18 @@
                   <ul class="list-group list-group-flush rounded-3">
                     <li class="list-group-item d-flex justify-content-between align-items-center p-3">
                       <i class="fas fa-weight fa-lg" style="color: #55acee;"></i>
-                      <p class="mb-0">[[(${paciente.peso})]] kg.</p>
+                      <p class="mb-0" th:if="${ultimoPeso != null}">[[(${ultimoPeso})]] kg.</p>
+                      <p class="mb-0 text-muted" th:if="${ultimoPeso == null}">N/A</p>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center p-3">
                       <i class="fas fa-ruler-vertical fa-lg" style="color: #ac2bac;"></i>
-                      <p class="mb-0">[[(${paciente.estatura})]] m.</p>
+                      <p class="mb-0" th:if="${ultimaEstatura != null}">[[(${ultimaEstatura})]] m.</p>
+                      <p class="mb-0 text-muted" th:if="${ultimaEstatura == null}">N/A</p>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center p-3">
                       <i class="fas fa-chart-bar fa-lg" style="color: #ccff55;"></i>
-                      <p class="mb-0">[[(${#numbers.formatDecimal(paciente.imc,1,'COMMA',2,'POINT')})]] imc.</p>
+                      <p class="mb-0" th:if="${ultimoImc != null}">[[(${#numbers.formatDecimal(ultimoImc,1,'COMMA',2,'POINT')})]] imc.</p>
+                      <p class="mb-0 text-muted" th:if="${ultimoImc == null}">N/A</p>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center p-3">
                       <i class="fas fa-calendar fa-lg" style="color: #ac2bac;"></i>
@@ -133,7 +136,20 @@
                   <div class="card shadow mb-4">
                     <!-- Card Header - Dropdown -->
                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                      <h6 class="m-0 font-weight-bold text-primary">Indice de Masa Corporal Historico</h6>
+                      <h6 class="m-0 font-weight-bold text-primary" id="chartTitle">Indice de Masa Corporal Historico</h6>
+                      <div class="dropdown no-arrow">
+                        <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="chartTypeDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          <i class="fas fa-chart-line"></i> Tipo de Gráfica
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="chartTypeDropdown">
+                          <a class="dropdown-item" href="#" data-chart-type="imc">
+                            <i class="fas fa-weight"></i> IMC
+                          </a>
+                          <a class="dropdown-item" href="#" data-chart-type="grasa-corporal">
+                            <i class="fas fa-percentage"></i> Índice de Grasa Corporal
+                          </a>
+                        </div>
+                      </div>
                     </div>
                     <!-- Card Body -->
                     <div class="card-body">
@@ -266,7 +282,34 @@
     });
 
 
-    ajax_chart(myLineChart, '/rest/pacientes/[[(${paciente != null ? paciente.id : 0})]]/consultas/charts/imc');
+    var currentChartType = 'imc';
+    var pacienteId = [[(${paciente != null ? paciente.id : 0})]];
+
+    // Load initial chart
+    loadChart('imc');
+
+    // Chart type dropdown handler
+    $('.dropdown-item[data-chart-type]').on('click', function(e) {
+      e.preventDefault();
+      var chartType = $(this).data('chart-type');
+      currentChartType = chartType;
+      loadChart(chartType);
+      // Update dropdown button text
+      var buttonText = chartType === 'imc' ? '<i class="fas fa-weight"></i> IMC' : '<i class="fas fa-percentage"></i> Índice de Grasa Corporal';
+      $('#chartTypeDropdown').html(buttonText + ' <i class="fas fa-caret-down"></i>');
+      // Update chart title
+      $('#chartTitle').text(chartType === 'imc' ? 'Indice de Masa Corporal Historico' : 'Indice de Grasa Corporal Historico');
+    });
+
+    // function to load chart
+    function loadChart(chartType) {
+      var url = '/rest/pacientes/' + pacienteId + '/consultas/charts/' + chartType;
+      ajax_chart(myLineChart, url);
+      
+      // Update chart label
+      myLineChart.data.datasets[0].label = chartType === 'imc' ? 'IMC' : 'Índice de Grasa Corporal (%)';
+      myLineChart.update();
+    }
 
     // function to update our chart
     function ajax_chart(chart, url, data) {
@@ -275,7 +318,9 @@
         $.getJSON(url, data).done(function(response) {
             console.debug("response", response);
             chart.data.labels = response.labels;
-            chart.data.datasets[0].data = response.data.imc; // or you can iterate for multiple datasets
+            // Determine which data field to use based on chart type
+            var dataField = currentChartType === 'imc' ? 'imc' : 'grasaCorporal';
+            chart.data.datasets[0].data = response.data[dataField] || [];
             chart.update(); // finally update our chart
         });
     }

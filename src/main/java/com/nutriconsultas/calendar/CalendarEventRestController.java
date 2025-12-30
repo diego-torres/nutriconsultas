@@ -2,21 +2,40 @@ package com.nutriconsultas.calendar;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nutriconsultas.controller.AbstractGridController;
 import com.nutriconsultas.dataTables.paging.Column;
 import com.nutriconsultas.dataTables.paging.Direction;
+import com.nutriconsultas.paciente.BodyFatCalculatorService;
+import com.nutriconsultas.paciente.NivelPeso;
+import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.PacienteRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,6 +46,12 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 
 	@Autowired
 	private CalendarEventService service;
+
+	@Autowired
+	private PacienteRepository pacienteRepository;
+
+	@Autowired
+	private BodyFatCalculatorService bodyFatCalculatorService;
 
 	@Override
 	protected List<String> toStringList(final CalendarEvent row) {
@@ -90,6 +115,510 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		return Stream.of("title", "eventDateTime", "paciente", "duration", "status")
 			.map(Column::new)
 			.collect(Collectors.toList());
+	}
+
+	@GetMapping("/events")
+	public List<Map<String, Object>> getCalendarEvents(
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final Date start,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final Date end) {
+		log.debug("Getting calendar events from {} to {}", start, end);
+		final List<CalendarEvent> events;
+		if (start != null && end != null) {
+			events = service.findEventsBetweenDates(start, end);
+		}
+		else {
+			events = service.findAll();
+		}
+		return events.stream().map(this::toCalendarEventMap).collect(Collectors.toList());
+	}
+
+	private Map<String, Object> toCalendarEventMap(final CalendarEvent event) {
+		final Map<String, Object> eventMap = new HashMap<>();
+		eventMap.put("id", event.getId().toString());
+		eventMap.put("title", event.getTitle());
+		if (event.getEventDateTime() != null) {
+			eventMap.put("start", formatDateForCalendar(event.getEventDateTime()));
+			if (event.getDurationMinutes() != null && event.getDurationMinutes() > 0) {
+				final Calendar cal = Calendar.getInstance();
+				cal.setTime(event.getEventDateTime());
+				cal.add(Calendar.MINUTE, event.getDurationMinutes());
+				eventMap.put("end", formatDateForCalendar(cal.getTime()));
+			}
+		}
+		eventMap.put("allDay", false);
+		// Set event color based on status
+		if (event.getStatus() != null) {
+			eventMap.put("backgroundColor", getEventColor(event.getStatus()));
+			eventMap.put("borderColor", getEventColor(event.getStatus()));
+		}
+		final Map<String, Object> extendedProps = new HashMap<>();
+		if (event.getPaciente() != null) {
+			extendedProps.put("paciente", event.getPaciente().getName());
+			extendedProps.put("pacienteId", event.getPaciente().getId());
+		}
+		if (event.getStatus() != null) {
+			extendedProps.put("status", event.getStatus().name());
+		}
+		if (event.getDescription() != null) {
+			extendedProps.put("description", event.getDescription());
+		}
+		if (event.getSummaryNotes() != null) {
+			extendedProps.put("summaryNotes", event.getSummaryNotes());
+		}
+		extendedProps.put("durationMinutes", event.getDurationMinutes());
+		if (event.getPeso() != null) {
+			extendedProps.put("peso", event.getPeso());
+		}
+		if (event.getEstatura() != null) {
+			extendedProps.put("estatura", event.getEstatura());
+		}
+		if (event.getImc() != null) {
+			extendedProps.put("imc", event.getImc());
+		}
+		if (event.getIndiceGrasaCorporal() != null) {
+			extendedProps.put("indiceGrasaCorporal", event.getIndiceGrasaCorporal());
+		}
+		if (event.getNivelPeso() != null) {
+			extendedProps.put("nivelPeso", event.getNivelPeso().name());
+		}
+		if (event.getSistolica() != null) {
+			extendedProps.put("sistolica", event.getSistolica());
+		}
+		if (event.getDiastolica() != null) {
+			extendedProps.put("diastolica", event.getDiastolica());
+		}
+		if (event.getPulso() != null) {
+			extendedProps.put("pulso", event.getPulso());
+		}
+		if (event.getIndiceGlucemico() != null) {
+			extendedProps.put("indiceGlucemico", event.getIndiceGlucemico());
+		}
+		if (event.getSpo2() != null) {
+			extendedProps.put("spo2", event.getSpo2());
+		}
+		if (event.getTemperatura() != null) {
+			extendedProps.put("temperatura", event.getTemperatura());
+		}
+		eventMap.put("extendedProps", extendedProps);
+		eventMap.put("url", "/admin/calendario/" + event.getId());
+		return eventMap;
+	}
+
+	private String getEventColor(final EventStatus status) {
+		return switch (status) {
+			case SCHEDULED -> "#4e73df"; // Primary blue
+			case COMPLETED -> "#1cc88a"; // Success green
+			case CANCELLED -> "#e74a3b"; // Danger red
+		};
+	}
+
+	private String formatDateForCalendar(final Date date) {
+		if (date == null) {
+			return null;
+		}
+		final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		return dateFormat.format(date);
+	}
+
+	@GetMapping("/pacientes")
+	public List<Map<String, Object>> getPacientes() {
+		log.debug("Getting all pacientes for appointment creation");
+		final List<Paciente> pacientes = pacienteRepository.findAll();
+		return pacientes.stream().map(p -> {
+			final Map<String, Object> pacienteMap = new HashMap<>();
+			pacienteMap.put("id", p.getId());
+			pacienteMap.put("name", p.getName());
+			return pacienteMap;
+		}).collect(Collectors.toList());
+	}
+
+	@GetMapping("/next-available-time")
+	public Map<String, Object> getNextAvailableTime(@RequestParam final String date) {
+		log.debug("Finding next available time for date: {}", date);
+		Date parsedDate;
+		try {
+			// Parse date string (format: YYYY-MM-DD)
+			final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			parsedDate = dateFormat.parse(date);
+		}
+		catch (final java.text.ParseException e) {
+			log.error("Error parsing date: {}", date, e);
+			final Map<String, Object> errorResult = new HashMap<>();
+			errorResult.put("available", false);
+			errorResult.put("error", "Invalid date format");
+			return errorResult;
+		}
+		final Calendar cal = Calendar.getInstance();
+		cal.setTime(parsedDate);
+		cal.set(Calendar.HOUR_OF_DAY, 8);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+
+		// Check if the requested date is in the past (before today)
+		// For past dates, do not attempt to calculate available time
+		// This allows saving unplanned historical consultation records
+		final Calendar now = Calendar.getInstance();
+		now.set(Calendar.HOUR_OF_DAY, 0);
+		now.set(Calendar.MINUTE, 0);
+		now.set(Calendar.SECOND, 0);
+		now.set(Calendar.MILLISECOND, 0);
+		final Calendar requestedDate = Calendar.getInstance();
+		requestedDate.setTime(parsedDate);
+		requestedDate.set(Calendar.HOUR_OF_DAY, 0);
+		requestedDate.set(Calendar.MINUTE, 0);
+		requestedDate.set(Calendar.SECOND, 0);
+		requestedDate.set(Calendar.MILLISECOND, 0);
+
+		// If the requested date is in the past, return the date with default time
+		// without calculating availability (for historical records)
+		// No availability calculation is performed for past dates
+		if (requestedDate.before(now)) {
+			log.debug("Date {} is in the past, returning default time without availability check", date);
+			final Map<String, Object> result = new HashMap<>();
+			result.put("available", true);
+			result.put("dateTime", formatDateForCalendar(cal.getTime()));
+			result.put("isPastDate", true);
+			return result; // Exit early - do not attempt to calculate available time
+		}
+
+		final Calendar endOfDay = Calendar.getInstance();
+		endOfDay.setTime(parsedDate);
+		endOfDay.set(Calendar.HOUR_OF_DAY, 17);
+		endOfDay.set(Calendar.MINUTE, 0);
+		endOfDay.set(Calendar.SECOND, 0);
+		endOfDay.set(Calendar.MILLISECOND, 0);
+
+		// Get all events for this date
+		final Calendar startOfDay = Calendar.getInstance();
+		startOfDay.setTime(parsedDate);
+		startOfDay.set(Calendar.HOUR_OF_DAY, 0);
+		startOfDay.set(Calendar.MINUTE, 0);
+		startOfDay.set(Calendar.SECOND, 0);
+		startOfDay.set(Calendar.MILLISECOND, 0);
+
+		final Calendar nextDay = Calendar.getInstance();
+		nextDay.setTime(parsedDate);
+		nextDay.add(Calendar.DAY_OF_MONTH, 1);
+		nextDay.set(Calendar.HOUR_OF_DAY, 0);
+		nextDay.set(Calendar.MINUTE, 0);
+		nextDay.set(Calendar.SECOND, 0);
+		nextDay.set(Calendar.MILLISECOND, 0);
+
+		final List<CalendarEvent> events = service.findEventsBetweenDates(Objects.requireNonNull(startOfDay.getTime()),
+				Objects.requireNonNull(nextDay.getTime()));
+
+		// If the requested date is today, start from current time if it's after 8 AM
+		final Calendar nowWithTime = Calendar.getInstance();
+		if (requestedDate.equals(now)) {
+			// It's today, check if current time is after 8 AM
+			if (nowWithTime.get(Calendar.HOUR_OF_DAY) >= 8) {
+				// Current time is after 8 AM, start from current time
+				cal.setTime(nowWithTime.getTime());
+				cal.set(Calendar.SECOND, 0);
+				cal.set(Calendar.MILLISECOND, 0);
+				// Round up to next hour
+				if (cal.get(Calendar.MINUTE) > 0) {
+					cal.add(Calendar.HOUR_OF_DAY, 1);
+					cal.set(Calendar.MINUTE, 0);
+				}
+			}
+			// Otherwise, cal is already set to 8:00 AM, which is fine
+		}
+
+		// Find next available hour
+		while (cal.before(endOfDay) || cal.equals(endOfDay)) {
+			final Date candidateTime = cal.getTime();
+			final Calendar candidateEnd = Calendar.getInstance();
+			candidateEnd.setTime(candidateTime);
+			candidateEnd.add(Calendar.HOUR_OF_DAY, 1);
+
+			// Check if this hour is available (no overlapping events)
+			boolean isAvailable = true;
+			for (final CalendarEvent event : events) {
+				final Calendar eventStart = Calendar.getInstance();
+				eventStart.setTime(event.getEventDateTime());
+				final Calendar eventEnd = Calendar.getInstance();
+				eventEnd.setTime(event.getEventDateTime());
+				eventEnd.add(Calendar.MINUTE, event.getDurationMinutes() != null ? event.getDurationMinutes() : 60);
+
+				// Check for overlap
+				if (candidateTime.before(eventEnd.getTime()) && candidateEnd.getTime().after(eventStart.getTime())) {
+					isAvailable = false;
+					break;
+				}
+			}
+
+			if (isAvailable) {
+				final Map<String, Object> result = new HashMap<>();
+				result.put("available", true);
+				result.put("dateTime", formatDateForCalendar(candidateTime));
+				return result;
+			}
+
+			cal.add(Calendar.HOUR_OF_DAY, 1);
+		}
+
+		// No available time found
+		final Map<String, Object> result = new HashMap<>();
+		result.put("available", false);
+		return result;
+	}
+
+	@PostMapping("/events")
+	public ResponseEntity<Map<String, Object>> saveEvent(@RequestBody final Map<String, Object> eventData) {
+		log.debug("Saving new calendar event: {}", eventData);
+		try {
+			final CalendarEvent event = new CalendarEvent();
+			event.setTitle((String) eventData.get("title"));
+			if (eventData.get("description") != null) {
+				event.setDescription((String) eventData.get("description"));
+			}
+			if (eventData.get("durationMinutes") != null) {
+				event.setDurationMinutes(Integer.parseInt(eventData.get("durationMinutes").toString()));
+			}
+			else {
+				event.setDurationMinutes(60);
+			}
+			if (eventData.get("status") != null) {
+				event.setStatus(EventStatus.valueOf((String) eventData.get("status")));
+			}
+			else {
+				event.setStatus(EventStatus.SCHEDULED);
+			}
+			if (eventData.get("eventDateTime") != null) {
+				final String dateTimeStr = (String) eventData.get("eventDateTime");
+				Date parsedDate = null;
+				// Try parsing with different formats
+				final String[] formats = { "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm", "yyyy-MM-dd HH:mm:ss",
+						"yyyy-MM-dd HH:mm" };
+				for (final String format : formats) {
+					try {
+						final DateFormat dateFormat = new SimpleDateFormat(format);
+						parsedDate = dateFormat.parse(dateTimeStr);
+						break;
+					}
+					catch (final java.text.ParseException e) {
+						// Try next format
+						continue;
+					}
+				}
+				if (parsedDate == null) {
+					log.error("Error parsing eventDateTime: {}", dateTimeStr);
+					final Map<String, Object> errorResponse = new HashMap<>();
+					errorResponse.put("success", false);
+					errorResponse.put("error", "Invalid date format: " + dateTimeStr);
+					return ResponseEntity.badRequest().body(errorResponse);
+				}
+				event.setEventDateTime(parsedDate);
+			}
+			if (eventData.get("pacienteId") != null) {
+				final Long pacienteId = Long.parseLong(eventData.get("pacienteId").toString());
+				final Paciente paciente = pacienteRepository.findById(pacienteId)
+					.orElseThrow(
+							() -> new IllegalArgumentException("No se ha encontrado paciente con id " + pacienteId));
+				event.setPaciente(paciente);
+			}
+			if (eventData.get("peso") != null) {
+				event.setPeso(Double.parseDouble(eventData.get("peso").toString()));
+			}
+			if (eventData.get("estatura") != null) {
+				event.setEstatura(Double.parseDouble(eventData.get("estatura").toString()));
+			}
+			if (eventData.get("imc") != null) {
+				event.setImc(Double.parseDouble(eventData.get("imc").toString()));
+			}
+			if (eventData.get("indiceGrasaCorporal") != null) {
+				event.setIndiceGrasaCorporal(Double.parseDouble(eventData.get("indiceGrasaCorporal").toString()));
+			}
+			if (eventData.get("nivelPeso") != null) {
+				event.setNivelPeso(com.nutriconsultas.paciente.NivelPeso.valueOf((String) eventData.get("nivelPeso")));
+			}
+			if (eventData.get("sistolica") != null) {
+				event.setSistolica(Integer.parseInt(eventData.get("sistolica").toString()));
+			}
+			if (eventData.get("diastolica") != null) {
+				event.setDiastolica(Integer.parseInt(eventData.get("diastolica").toString()));
+			}
+			if (eventData.get("pulso") != null) {
+				event.setPulso(Integer.parseInt(eventData.get("pulso").toString()));
+			}
+			if (eventData.get("indiceGlucemico") != null) {
+				event.setIndiceGlucemico(Integer.parseInt(eventData.get("indiceGlucemico").toString()));
+			}
+			if (eventData.get("spo2") != null) {
+				event.setSpo2(Double.parseDouble(eventData.get("spo2").toString()));
+			}
+			if (eventData.get("temperatura") != null) {
+				event.setTemperatura(Double.parseDouble(eventData.get("temperatura").toString()));
+			}
+			final CalendarEvent savedEvent = service.save(event);
+			final Map<String, Object> response = new HashMap<>();
+			response.put("success", true);
+			response.put("event", toCalendarEventMap(savedEvent));
+			return ResponseEntity.ok(response);
+		}
+		catch (final Exception e) {
+			log.error("Error saving calendar event", e);
+			final Map<String, Object> errorResponse = new HashMap<>();
+			errorResponse.put("success", false);
+			errorResponse.put("error", e.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+		}
+	}
+
+	@GetMapping("/events/{id}")
+	public ResponseEntity<Map<String, Object>> getEvent(@PathVariable @NonNull final Long id) {
+		log.debug("Getting calendar event with id: {}", id);
+		try {
+			final CalendarEvent event = service.findById(id);
+			if (event == null) {
+				final Map<String, Object> errorResponse = new HashMap<>();
+				errorResponse.put("success", false);
+				errorResponse.put("error", "Event not found");
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+			}
+			final Map<String, Object> response = new HashMap<>();
+			response.put("success", true);
+			response.put("event", toCalendarEventMap(event));
+			return ResponseEntity.ok(response);
+		}
+		catch (final Exception e) {
+			log.error("Error getting calendar event", e);
+			final Map<String, Object> errorResponse = new HashMap<>();
+			errorResponse.put("success", false);
+			errorResponse.put("error", e.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+		}
+	}
+
+	@PostMapping("/events/{id}")
+	public ResponseEntity<Map<String, Object>> updateEvent(@PathVariable @NonNull final Long id,
+			@RequestBody final Map<String, Object> eventData) {
+		log.debug("Updating calendar event {}: {}", id, eventData);
+		try {
+			final CalendarEvent existingEvent = service.findById(id);
+			if (existingEvent == null) {
+				final Map<String, Object> errorResponse = new HashMap<>();
+				errorResponse.put("success", false);
+				errorResponse.put("error", "Event not found");
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+			}
+			if (eventData.get("status") != null) {
+				existingEvent.setStatus(EventStatus.valueOf((String) eventData.get("status")));
+			}
+			if (eventData.get("summaryNotes") != null) {
+				existingEvent.setSummaryNotes((String) eventData.get("summaryNotes"));
+			}
+			// Handle peso and estatura, and calculate IMC and body fat if needed
+			Double peso = null;
+			Double estatura = null;
+			if (eventData.get("peso") != null) {
+				peso = Double.parseDouble(eventData.get("peso").toString());
+				existingEvent.setPeso(peso);
+			}
+			if (eventData.get("estatura") != null) {
+				estatura = Double.parseDouble(eventData.get("estatura").toString());
+				existingEvent.setEstatura(estatura);
+			}
+
+			// Calculate IMC if peso and estatura are provided
+			Double imc = null;
+			NivelPeso nivelPeso = null;
+			if (peso != null && estatura != null && estatura > 0) {
+				imc = peso / Math.pow(estatura, 2);
+				nivelPeso = imc > 30.0d ? NivelPeso.SOBREPESO
+						: imc > 25.0d ? NivelPeso.ALTO : imc > 18.5d ? NivelPeso.NORMAL : NivelPeso.BAJO;
+				existingEvent.setImc(imc);
+				existingEvent.setNivelPeso(nivelPeso);
+
+				// Calculate body fat percentage if patient data is available
+				final Paciente paciente = existingEvent.getPaciente();
+				if (paciente != null && paciente.getDob() != null && paciente.getGender() != null) {
+					final Integer age = calculateAge(paciente.getDob());
+					if (age != null) {
+						final Double bodyFatPercentage = bodyFatCalculatorService.calculateBodyFatPercentage(imc, age,
+								paciente.getGender());
+						existingEvent.setIndiceGrasaCorporal(bodyFatPercentage);
+					}
+				}
+			}
+			else {
+				// If IMC is explicitly provided, use it
+				if (eventData.get("imc") != null) {
+					existingEvent.setImc(Double.parseDouble(eventData.get("imc").toString()));
+				}
+				// If indiceGrasaCorporal is explicitly provided, use it
+				if (eventData.get("indiceGrasaCorporal") != null) {
+					existingEvent
+						.setIndiceGrasaCorporal(Double.parseDouble(eventData.get("indiceGrasaCorporal").toString()));
+				}
+			}
+			if (eventData.get("nivelPeso") != null) {
+				existingEvent
+					.setNivelPeso(com.nutriconsultas.paciente.NivelPeso.valueOf((String) eventData.get("nivelPeso")));
+			}
+			if (eventData.get("sistolica") != null) {
+				existingEvent.setSistolica(Integer.parseInt(eventData.get("sistolica").toString()));
+			}
+			if (eventData.get("diastolica") != null) {
+				existingEvent.setDiastolica(Integer.parseInt(eventData.get("diastolica").toString()));
+			}
+			if (eventData.get("pulso") != null) {
+				existingEvent.setPulso(Integer.parseInt(eventData.get("pulso").toString()));
+			}
+			if (eventData.get("indiceGlucemico") != null) {
+				existingEvent.setIndiceGlucemico(Integer.parseInt(eventData.get("indiceGlucemico").toString()));
+			}
+			if (eventData.get("spo2") != null) {
+				existingEvent.setSpo2(Double.parseDouble(eventData.get("spo2").toString()));
+			}
+			if (eventData.get("temperatura") != null) {
+				existingEvent.setTemperatura(Double.parseDouble(eventData.get("temperatura").toString()));
+			}
+			final CalendarEvent savedEvent = service.save(existingEvent);
+			final Map<String, Object> response = new HashMap<>();
+			response.put("success", true);
+			response.put("event", toCalendarEventMap(savedEvent));
+			return ResponseEntity.ok(response);
+		}
+		catch (final Exception e) {
+			log.error("Error updating calendar event", e);
+			final Map<String, Object> errorResponse = new HashMap<>();
+			errorResponse.put("success", false);
+			errorResponse.put("error", e.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+		}
+	}
+
+	/**
+	 * Calculates age from date of birth.
+	 * @param dob Date of birth (can be java.util.Date or java.sql.Date)
+	 * @return Age in years, or null if dob is null or in the future
+	 */
+	private Integer calculateAge(final Date dob) {
+		if (dob == null) {
+			return null;
+		}
+		try {
+			// Handle both java.util.Date and java.sql.Date
+			// java.sql.Date doesn't support toInstant(), so we convert to java.util.Date
+			// first
+			final java.util.Date utilDate = dob instanceof java.sql.Date ? new java.util.Date(dob.getTime())
+					: (java.util.Date) dob;
+			final LocalDate birthDate = utilDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			final LocalDate currentDate = LocalDate.now();
+			if (birthDate.isAfter(currentDate)) {
+				log.warn("Date of birth is in the future: {}", dob);
+				return null;
+			}
+			return currentDate.getYear() - birthDate.getYear()
+					- (currentDate.getDayOfYear() < birthDate.getDayOfYear() ? 1 : 0);
+		}
+		catch (final Exception e) {
+			log.warn("Error calculating age from date of birth: {}", dob, e);
+			return null;
+		}
 	}
 
 }

@@ -28,6 +28,7 @@ public class CalendarTemplateValidator extends BaseTemplateValidator {
 		event.setDescription("");
 		event.setDurationMinutes(60);
 		event.setStatus(EventStatus.SCHEDULED);
+		event.setSummaryNotes(null); // Can be null or empty string
 
 		// Create a mock Paciente for the event
 		Paciente paciente = new Paciente();

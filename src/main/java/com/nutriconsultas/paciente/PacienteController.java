@@ -19,9 +19,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import com.nutriconsultas.consulta.Consulta;
-import com.nutriconsultas.consulta.ConsultaRepository;
+import com.nutriconsultas.calendar.CalendarEvent;
+import com.nutriconsultas.calendar.CalendarEventService;
+import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.controller.AbstractAuthorizedController;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 @Controller
 @Slf4j
@@ -31,7 +35,10 @@ public class PacienteController extends AbstractAuthorizedController {
 	private PacienteRepository pacienteRepository;
 
 	@Autowired
-	private ConsultaRepository consultaRepository;
+	private CalendarEventService calendarEventService;
+
+	@Autowired
+	private BodyFatCalculatorService bodyFatCalculatorService;
 
 	@GetMapping(path = "/admin/pacientes/nuevo")
 	public String nuevo(final Model model) {
@@ -73,22 +80,70 @@ public class PacienteController extends AbstractAuthorizedController {
 		model.addAttribute("paciente", paciente);
 		// calcular ultima consulta
 		final DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
-		final Consulta citaAnterior = getCitaAnterior(id);
-		final String fechaCitaAnterior = citaAnterior != null ? dateFormat.format(citaAnterior.getFechaConsulta()) : "";
+		final CalendarEvent citaAnterior = getCitaAnterior(id);
+		final String fechaCitaAnterior = citaAnterior != null ? dateFormat.format(citaAnterior.getEventDateTime()) : "";
 		model.addAttribute("citaAnterior", fechaCitaAnterior);
-		// TODO: Calcular siguiente cita en calendario
-		model.addAttribute("citaSiguiente", "");
+		// calcular siguiente cita en calendario
+		final CalendarEvent citaSiguiente = getCitaSiguiente(id);
+		final String fechaCitaSiguiente = citaSiguiente != null ? dateFormat.format(citaSiguiente.getEventDateTime())
+				: "";
+		model.addAttribute("citaSiguiente", fechaCitaSiguiente);
+		// obtener último registro médico (peso, estatura, IMC)
+		final CalendarEvent ultimoRegistro = getUltimoRegistroMedico(id);
+		if (ultimoRegistro != null) {
+			model.addAttribute("ultimoPeso", ultimoRegistro.getPeso());
+			model.addAttribute("ultimaEstatura", ultimoRegistro.getEstatura());
+			model.addAttribute("ultimoImc", ultimoRegistro.getImc());
+		}
 		return "sbadmin/pacientes/perfil";
 	}
 
-	private Consulta getCitaAnterior(final Long pacienteId) {
-		final List<Consulta> consultas = consultaRepository.findByPacienteId(pacienteId);
-		Consulta result = null;
-		if (!consultas.isEmpty()) {
-			final List<Consulta> consultasByDate = consultas.stream()
-				.sorted(Comparator.comparing(Consulta::getFechaConsulta).reversed())
+	private CalendarEvent getCitaAnterior(@NonNull final Long pacienteId) {
+		final Date now = new Date();
+		final List<CalendarEvent> eventos = calendarEventService.findByPacienteId(pacienteId);
+		CalendarEvent result = null;
+		if (!eventos.isEmpty()) {
+			final List<CalendarEvent> eventosPasados = eventos.stream()
+				.filter(e -> e.getEventDateTime() != null && e.getEventDateTime().before(now))
+				.filter(e -> e.getStatus() == EventStatus.COMPLETED)
+				.sorted(Comparator.comparing(CalendarEvent::getEventDateTime).reversed())
 				.collect(Collectors.toList());
-			result = consultasByDate.get(0);
+			if (!eventosPasados.isEmpty()) {
+				result = eventosPasados.get(0);
+			}
+		}
+		return result;
+	}
+
+	private CalendarEvent getCitaSiguiente(@NonNull final Long pacienteId) {
+		final Date now = new Date();
+		final List<CalendarEvent> eventos = calendarEventService.findByPacienteId(pacienteId);
+		CalendarEvent result = null;
+		if (!eventos.isEmpty()) {
+			final List<CalendarEvent> eventosFuturos = eventos.stream()
+				.filter(e -> e.getEventDateTime() != null && e.getEventDateTime().after(now))
+				.filter(e -> e.getStatus() == EventStatus.SCHEDULED)
+				.sorted(Comparator.comparing(CalendarEvent::getEventDateTime))
+				.collect(Collectors.toList());
+			if (!eventosFuturos.isEmpty()) {
+				result = eventosFuturos.get(0);
+			}
+		}
+		return result;
+	}
+
+	private CalendarEvent getUltimoRegistroMedico(@NonNull final Long pacienteId) {
+		final List<CalendarEvent> eventos = calendarEventService.findByPacienteId(pacienteId);
+		CalendarEvent result = null;
+		if (!eventos.isEmpty()) {
+			final List<CalendarEvent> eventosConDatos = eventos.stream()
+				.filter(e -> e.getEventDateTime() != null)
+				.filter(e -> e.getPeso() != null || e.getEstatura() != null || e.getImc() != null)
+				.sorted(Comparator.comparing(CalendarEvent::getEventDateTime).reversed())
+				.collect(Collectors.toList());
+			if (!eventosConDatos.isEmpty()) {
+				result = eventosConDatos.get(0);
+			}
 		}
 		return result;
 	}
@@ -205,55 +260,146 @@ public class PacienteController extends AbstractAuthorizedController {
 
 		model.addAttribute("activeMenu", "historial");
 		model.addAttribute("paciente", paciente);
-		Consulta consulta = new Consulta();
-		consulta.setFechaConsulta(new Date());
-		model.addAttribute("consulta", consulta);
+		CalendarEvent evento = new CalendarEvent();
+		evento.setEventDateTime(new Date());
+		evento.setPaciente(paciente);
+		evento.setTitle("Consulta");
+		evento.setDurationMinutes(60);
+		evento.setStatus(EventStatus.SCHEDULED);
+		model.addAttribute("consulta", evento);
 		return "sbadmin/pacientes/consulta";
 	}
 
 	@PostMapping(path = "/admin/pacientes/{pacienteId}/consulta")
-	public String agregarConsultaPaciente(@PathVariable @NonNull Long pacienteId, @Valid Consulta consulta,
+	public String agregarConsultaPaciente(@PathVariable @NonNull Long pacienteId, @Valid CalendarEvent evento,
 			BindingResult result, Model model) {
-		log.debug("Grabando consulta {}", consulta);
+		log.debug("Grabando consulta {}", evento);
 		Paciente paciente = pacienteRepository.findById(pacienteId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId));
 
-		consulta.setPaciente(paciente);
+		evento.setPaciente(paciente);
 
-		Double imc = consulta.getPeso() / Math.pow(consulta.getEstatura(), 2);
-		NivelPeso np = imc > 30.0d ? NivelPeso.SOBREPESO
-				: imc > 25.0d ? NivelPeso.ALTO : imc > 18.5d ? NivelPeso.NORMAL : NivelPeso.BAJO;
+		Double imc = null;
+		NivelPeso np = null;
+		if (evento.getPeso() != null && evento.getEstatura() != null) {
+			imc = evento.getPeso() / Math.pow(evento.getEstatura(), 2);
+			np = imc > 30.0d ? NivelPeso.SOBREPESO
+					: imc > 25.0d ? NivelPeso.ALTO : imc > 18.5d ? NivelPeso.NORMAL : NivelPeso.BAJO;
 
-		if (consulta.getFechaConsulta().compareTo(new Date()) == 0) {
-			log.debug("Working on today's appointment, setting new patient weight vars");
-			paciente.setPeso(consulta.getPeso());
-			paciente.setEstatura(consulta.getEstatura());
-			paciente.setImc(imc);
-			paciente.setNivelPeso(np);
-			pacienteRepository.save(paciente);
-		}
-		else {
-			List<Consulta> consultasPrevias = consultaRepository.findByPacienteId(pacienteId);
-			Boolean laterExists = consultasPrevias.stream()
-				.filter(c -> c.getFechaConsulta().after(consulta.getFechaConsulta()))
-				.findAny()
-				.isPresent();
-			if (!laterExists) {
-				log.debug("No later consulta exists, setting patient weight vars as latest date appointment");
-				paciente.setPeso(consulta.getPeso());
-				paciente.setEstatura(consulta.getEstatura());
-				paciente.setImc(imc);
-				paciente.setNivelPeso(np);
-				pacienteRepository.save(paciente);
+			// Calcular índice de grasa corporal si hay datos del paciente
+			if (paciente.getDob() != null && paciente.getGender() != null) {
+				Integer age = calculateAge(paciente.getDob());
+				if (age != null) {
+					Double bodyFatPercentage = bodyFatCalculatorService.calculateBodyFatPercentage(imc, age,
+							paciente.getGender());
+					evento.setIndiceGrasaCorporal(bodyFatPercentage);
+				}
 			}
 		}
 
-		consulta.setImc(imc);
-		consulta.setNivelPeso(np);
+		Date today = new Date();
+		Date eventDate = evento.getEventDateTime();
+		if (eventDate != null) {
+			// Comparar solo la fecha (sin hora)
+			java.util.Calendar calToday = java.util.Calendar.getInstance();
+			calToday.setTime(today);
+			calToday.set(java.util.Calendar.HOUR_OF_DAY, 0);
+			calToday.set(java.util.Calendar.MINUTE, 0);
+			calToday.set(java.util.Calendar.SECOND, 0);
+			calToday.set(java.util.Calendar.MILLISECOND, 0);
 
-		log.debug("Consulta lista para grabar {}", consulta);
-		consultaRepository.save(consulta);
+			java.util.Calendar calEvent = java.util.Calendar.getInstance();
+			calEvent.setTime(eventDate);
+			calEvent.set(java.util.Calendar.HOUR_OF_DAY, 0);
+			calEvent.set(java.util.Calendar.MINUTE, 0);
+			calEvent.set(java.util.Calendar.SECOND, 0);
+			calEvent.set(java.util.Calendar.MILLISECOND, 0);
+
+			if (calToday.getTime().compareTo(calEvent.getTime()) == 0) {
+				log.debug("Working on today's appointment, setting new patient weight vars");
+				if (evento.getPeso() != null) {
+					paciente.setPeso(evento.getPeso());
+				}
+				if (evento.getEstatura() != null) {
+					paciente.setEstatura(evento.getEstatura());
+				}
+				if (imc != null) {
+					paciente.setImc(imc);
+				}
+				if (np != null) {
+					paciente.setNivelPeso(np);
+				}
+				if (paciente != null) {
+					pacienteRepository.save(paciente);
+				}
+			}
+			else {
+				List<CalendarEvent> eventosPrevios = calendarEventService.findByPacienteId(pacienteId);
+				Boolean laterExists = eventosPrevios.stream()
+					.filter(e -> e.getEventDateTime() != null && e.getEventDateTime().after(eventDate))
+					.findAny()
+					.isPresent();
+				if (!laterExists) {
+					log.debug("No later evento exists, setting patient weight vars as latest date appointment");
+					if (evento.getPeso() != null) {
+						paciente.setPeso(evento.getPeso());
+					}
+					if (evento.getEstatura() != null) {
+						paciente.setEstatura(evento.getEstatura());
+					}
+					if (imc != null) {
+						paciente.setImc(imc);
+					}
+					if (np != null) {
+						paciente.setNivelPeso(np);
+					}
+					if (paciente != null) {
+						pacienteRepository.save(paciente);
+					}
+				}
+			}
+		}
+
+		if (imc != null) {
+			evento.setImc(imc);
+		}
+		if (np != null) {
+			evento.setNivelPeso(np);
+		}
+
+		// Asegurar que el evento tenga título y estado si no los tiene
+		if (evento.getTitle() == null || evento.getTitle().trim().isEmpty()) {
+			evento.setTitle("Consulta");
+		}
+		if (evento.getStatus() == null) {
+			evento.setStatus(EventStatus.COMPLETED);
+		}
+		if (evento.getDurationMinutes() == null) {
+			evento.setDurationMinutes(60);
+		}
+
+		log.debug("Evento lista para grabar {}", evento);
+		calendarEventService.save(evento);
 		return String.format("redirect:/admin/pacientes/%d/historial", pacienteId);
+	}
+
+	/**
+	 * Calculates age from date of birth.
+	 * @param dob Date of birth
+	 * @return Age in years, or null if dob is null or in the future
+	 */
+	private Integer calculateAge(final Date dob) {
+		if (dob == null) {
+			return null;
+		}
+		final LocalDate birthDate = dob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		final LocalDate currentDate = LocalDate.now();
+		if (birthDate.isAfter(currentDate)) {
+			log.warn("Date of birth is in the future: {}", dob);
+			return null;
+		}
+		return currentDate.getYear() - birthDate.getYear()
+				- (currentDate.getDayOfYear() < birthDate.getDayOfYear() ? 1 : 0);
 	}
 
 }
