@@ -335,7 +335,7 @@ public class AlimentoRestControllerTest {
 
 		// Assert
 		assertThat(result).isNotNull();
-		assertThat(result.getRecordsTotal()).isEqualTo(0);
+		assertThat(result.getRecordsTotal()).isEqualTo(20);
 		assertThat(result.getRecordsFiltered()).isEqualTo(0);
 		assertThat(result.getDraw()).isEqualTo(1);
 		assertThat(result.getData()).isEmpty();
@@ -372,7 +372,7 @@ public class AlimentoRestControllerTest {
 
 		// Assert
 		assertThat(result).isNotNull();
-		assertThat(result.getRecordsTotal()).isEqualTo(2);
+		assertThat(result.getRecordsTotal()).isEqualTo(20);
 		assertThat(result.getRecordsFiltered()).isEqualTo(2);
 		assertThat(result.getDraw()).isEqualTo(1);
 		assertThat(result.getData()).isNotEmpty();

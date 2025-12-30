@@ -320,6 +320,79 @@
         </dependencies>
         <!-- No executions - only for manual use -->
       </plugin>
+      <!-- JaCoCo Plugin for Test Coverage -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.12</version>
+        <configuration>
+          <rules>
+            <!-- Overall project coverage rules -->
+            <!-- Best practice thresholds based on industry standards:
+                 - Instruction: 45% (current: 45%) - Good starting point
+                 - Branch: 30% (current: 30%) - Reasonable for complex business logic
+                 - Line: 46% (current: 54% actual) - Conservative threshold to allow growth
+                 - Method: 36% (current: 36%) - Good baseline
+                 
+                 Industry best practices:
+                 - 70-80% line coverage = Excellent
+                 - 50-70% line coverage = Good
+                 - 30-50% line coverage = Acceptable (starting point)
+                 - Below 30% = Needs improvement
+                 
+                 Note: These thresholds are set based on current coverage levels.
+                 As coverage improves, these thresholds should be increased.
+            -->
+            <rule>
+              <element>BUNDLE</element>
+              <limits>
+                <limit>
+                  <counter>INSTRUCTION</counter>
+                  <value>COVEREDRATIO</value>
+                  <minimum>0.45</minimum>
+                </limit>
+                <limit>
+                  <counter>BRANCH</counter>
+                  <value>COVEREDRATIO</value>
+                  <minimum>0.30</minimum>
+                </limit>
+                <limit>
+                  <counter>LINE</counter>
+                  <value>COVEREDRATIO</value>
+                  <minimum>0.46</minimum>
+                </limit>
+                <limit>
+                  <counter>METHOD</counter>
+                  <value>COVEREDRATIO</value>
+                  <minimum>0.36</minimum>
+                </limit>
+              </limits>
+            </rule>
+          </rules>
+        </configuration>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>check</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -348,6 +421,12 @@
             <configuration>
               <failOnError>true</failOnError>
             </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <!-- CI uses same coverage thresholds as default configuration -->
+            <!-- Coverage check will fail build if thresholds not met -->
           </plugin>
         </plugins>
       </build>

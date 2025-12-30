@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <!-- Favicons -->
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
+
+  <title>Minutriporcion - Calendario</title>
+
+  <!-- Custom fonts for this template-->
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+
+  <!-- FullCalendar CSS is injected automatically by the JavaScript in v6 -->
+
+  <!-- Custom styles for this template-->
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+  <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
+  <style>
+    #calendar {
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    .fc-event {
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .fc-event:hover {
+      opacity: 0.8;
+    }
+    .fc-toolbar-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #5a5c69;
+    }
+    /* Estilos para todos los botones del calendario */
+    .fc-button {
+      background-color: #4e73df;
+      border-color: #4e73df;
+      color: #fff;
+      font-weight: 400;
+      padding: 0.375rem 0.75rem;
+      font-size: 0.875rem;
+      border-radius: 0.35rem;
+      transition: all 0.15s ease-in-out;
+    }
+    .fc-button:hover {
+      background-color: #2e59d9;
+      border-color: #2e59d9;
+      color: #fff;
+    }
+    .fc-button:focus {
+      background-color: #2e59d9;
+      border-color: #2e59d9;
+      color: #fff;
+      box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+    .fc-button:not(:disabled):active,
+    .fc-button:not(:disabled).fc-button-active {
+      background-color: #224abe;
+      border-color: #224abe;
+      color: #fff;
+    }
+    .fc-button:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+    /* Botones de navegación (prev, next, today) */
+    .fc-prev-button,
+    .fc-next-button,
+    .fc-today-button {
+      background-color: #4e73df;
+      border-color: #4e73df;
+      color: #fff;
+    }
+    .fc-prev-button:hover,
+    .fc-next-button:hover,
+    .fc-today-button:hover {
+      background-color: #2e59d9;
+      border-color: #2e59d9;
+      color: #fff;
+    }
+    /* Botones de vista (Mes, Semana, Día) */
+    .fc-dayGridMonth-button,
+    .fc-timeGridWeek-button,
+    .fc-timeGridDay-button {
+      background-color: #fff;
+      border-color: #4e73df;
+      color: #4e73df;
+    }
+    .fc-dayGridMonth-button:hover,
+    .fc-timeGridWeek-button:hover,
+    .fc-timeGridDay-button:hover {
+      background-color: #4e73df;
+      border-color: #4e73df;
+      color: #fff;
+    }
+    .fc-dayGridMonth-button.fc-button-active,
+    .fc-timeGridWeek-button.fc-button-active,
+    .fc-timeGridDay-button.fc-button-active {
+      background-color: #4e73df;
+      border-color: #4e73df;
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/sidebar :: sidebar}"></div>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Calendario de Citas</h1>
+            <a th:href="@{/admin/calendario/nuevo}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+              <i class="fas fa-plus fa-sm text-white-50"></i> Nueva Cita
+            </a>
+          </div>
+
+          <!-- Content Row -->
+          <div class="row">
+            <div class="col-12">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary">Vista del Calendario</h6>
+                </div>
+                <div class="card-body">
+                  <div id="calendar"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- /.container-fluid -->
+
+          <!-- Modal para Detalles de Evento -->
+          <div class="modal fade" id="eventDetailsModal" tabindex="-1" role="dialog" aria-labelledby="eventDetailsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="eventDetailsModalLabel">Detalles de la Cita</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <div id="eventDetailsContent">
+                    <!-- Event details will be loaded here -->
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal para Nueva Cita -->
+          <div class="modal fade" id="nuevaCitaModal" tabindex="-1" role="dialog" aria-labelledby="nuevaCitaModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="nuevaCitaModalLabel">Nueva Cita</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <form id="nuevaCitaForm">
+                  <div class="modal-body">
+                    <div class="form-group">
+                      <label for="pacienteSelect">Paciente<span style="color:red;">*</span></label>
+                      <select class="form-control" id="pacienteSelect" name="pacienteId" required>
+                        <option value="">Cargando pacientes...</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="fechaHoraInput">Fecha y Hora<span style="color:red;">*</span></label>
+                      <input type="datetime-local" class="form-control" id="fechaHoraInput" name="eventDateTime" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="tituloInput">Título<span style="color:red;">*</span></label>
+                      <input type="text" class="form-control" id="tituloInput" name="title" placeholder="Consulta de nutrición" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="descripcionInput">Descripción</label>
+                      <textarea class="form-control" id="descripcionInput" name="description" rows="4" placeholder="Descripción de la cita"></textarea>
+                    </div>
+                    <div class="form-group">
+                      <label for="duracionInput">Duración (minutos)<span style="color:red;">*</span></label>
+                      <input type="number" class="form-control" id="duracionInput" name="durationMinutes" min="1" value="60" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="estadoSelect">Estado<span style="color:red;">*</span></label>
+                      <select class="form-control" id="estadoSelect" name="status" required>
+                        <option value="SCHEDULED" selected>Agendado</option>
+                        <option value="COMPLETED">Completado</option>
+                        <option value="CANCELLED">Cancelado</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cita</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- End of Main Content -->
+
+        <div th:insert="~{sbadmin/footer :: footer}"></div>
+
+      </div>
+      <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Bootstrap core JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+
+    <!-- FullCalendar JavaScript -->
+    <script th:src="@{/sbadmin/vendor/fullcalendar/index.global.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/fullcalendar/locales/es.global.min.js}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
+    <script lang="javascript">
+      'use strict';
+      
+      // Function to wait for dependencies and initialize calendar
+      function waitForDependencies() {
+        if (typeof jQuery === 'undefined' || typeof FullCalendar === 'undefined') {
+          // Dependencies not loaded yet, wait a bit more
+          setTimeout(waitForDependencies, 50);
+          return;
+        }
+        
+        // All dependencies loaded, initialize calendar
+        jQuery(document).ready(function($) {
+
+          let calendar;
+
+          const calendarEl = document.getElementById('calendar');
+          if (!calendarEl) {
+            console.error('Calendar element not found');
+            return;
+          }
+
+          calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          locale: 'es',
+          headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+          },
+          buttonText: {
+            today: 'Hoy',
+            month: 'Mes',
+            week: 'Semana',
+            day: 'Día'
+          },
+          events: function(fetchInfo, successCallback, failureCallback) {
+            const start = fetchInfo.start.toISOString();
+            const end = fetchInfo.end.toISOString();
+            $.ajax({
+              url: '/rest/calendario/events',
+              type: 'GET',
+              data: {
+                start: start,
+                end: end
+              },
+              success: function(data) {
+                successCallback(data);
+              },
+              error: function(xhr, status, error) {
+                console.error('Error loading calendar events:', error);
+                failureCallback();
+              }
+            });
+          },
+          dateClick: function(info) {
+            // Click en un día del mes - encontrar próxima hora disponible
+            const clickedDate = info.dateStr;
+            
+            // Check if the clicked date is in the past (before today)
+            // Compare dates at midnight to avoid timezone issues
+            const clickedDateObj = new Date(clickedDate + 'T00:00:00');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // If the date is in the past, don't calculate available time
+            // Allow manual entry for historical consultation records
+            // This permits saving unplanned historical consultation records
+            if (clickedDateObj < today) {
+              // Set default time (8:00 AM) for past dates
+              // No availability calculation is attempted for historical records
+              const year = clickedDateObj.getFullYear();
+              const month = String(clickedDateObj.getMonth() + 1).padStart(2, '0');
+              const day = String(clickedDateObj.getDate()).padStart(2, '0');
+              const dateTimeLocal = year + '-' + month + '-' + day + 'T08:00';
+              
+              $('#fechaHoraInput').val(dateTimeLocal);
+              $('#nuevaCitaModal').modal('show');
+              return; // Exit early - do not attempt to calculate available time
+            }
+            
+            // Only for future dates (today or later), calculate next available time
+            $.ajax({
+              url: '/rest/calendario/next-available-time',
+              type: 'GET',
+              data: {
+                date: clickedDate
+              },
+              success: function(response) {
+                if (response.available) {
+                  // Convertir fecha ISO a formato datetime-local
+                  const dateTime = new Date(response.dateTime);
+                  const year = dateTime.getFullYear();
+                  const month = String(dateTime.getMonth() + 1).padStart(2, '0');
+                  const day = String(dateTime.getDate()).padStart(2, '0');
+                  const hours = String(dateTime.getHours()).padStart(2, '0');
+                  const minutes = String(dateTime.getMinutes()).padStart(2, '0');
+                  const dateTimeLocal = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
+                  
+                  $('#fechaHoraInput').val(dateTimeLocal);
+                  $('#nuevaCitaModal').modal('show');
+                } else {
+                  swal({
+                    title: 'Sin horarios disponibles',
+                    text: 'No hay horas disponibles para esta fecha. Por favor, seleccione otra fecha.',
+                    type: 'warning',
+                    timer: 4000
+                  });
+                }
+              },
+              error: function(xhr, status, error) {
+                console.error('Error finding available time:', error);
+                alert('Error al buscar hora disponible. Por favor, intente nuevamente.');
+              }
+            });
+          },
+          select: function(info) {
+            // Click en un horario específico (vista semana/día)
+            const start = info.start;
+            
+            // Check if the selected date/time is in the past
+            // For past dates, allow manual entry for historical consultation records
+            const now = new Date();
+            if (start < now) {
+              // For past dates, use the selected time as-is (no availability calculation)
+              // This allows saving historical consultation records
+            }
+            
+            const year = start.getFullYear();
+            const month = String(start.getMonth() + 1).padStart(2, '0');
+            const day = String(start.getDate()).padStart(2, '0');
+            const hours = String(start.getHours()).padStart(2, '0');
+            const minutes = String(start.getMinutes()).padStart(2, '0');
+            const dateTimeLocal = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
+            
+            $('#fechaHoraInput').val(dateTimeLocal);
+            $('#nuevaCitaModal').modal('show');
+          },
+          selectable: true,
+          selectMirror: true,
+          eventClick: function(info) {
+            info.jsEvent.preventDefault();
+            // Navigate to event detail page
+            const eventId = info.event.id;
+            window.location.href = '/admin/calendario/' + eventId;
+          },
+          eventMouseEnter: function(info) {
+            // Show tooltip with event details
+            const paciente = info.event.extendedProps.paciente || 'Sin paciente';
+            const status = info.event.extendedProps.status || 'Sin estado';
+            const description = info.event.extendedProps.description || '';
+            let tooltip = info.event.title + '\n';
+            tooltip += 'Paciente: ' + paciente + '\n';
+            tooltip += 'Estado: ' + status;
+            if (description) {
+              tooltip += '\n' + description;
+            }
+            $(info.el).attr('title', tooltip);
+          },
+          eventDisplay: 'block',
+          eventTimeFormat: {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          },
+          slotMinTime: '06:00:00',
+          slotMaxTime: '22:00:00',
+          height: 'auto',
+          aspectRatio: 1.8
+        });
+
+        calendar.render();
+
+        // Cargar lista de pacientes al abrir el modal
+        $('#nuevaCitaModal').on('show.bs.modal', function() {
+          const pacienteSelect = $('#pacienteSelect');
+          if (pacienteSelect.find('option').length <= 1) {
+            pacienteSelect.html('<option value="">Cargando pacientes...</option>');
+            $.ajax({
+              url: '/rest/calendario/pacientes',
+              type: 'GET',
+              success: function(data) {
+                pacienteSelect.html('<option value="">Seleccione un paciente</option>');
+                $.each(data, function(index, paciente) {
+                  pacienteSelect.append($('<option></option>')
+                    .attr('value', paciente.id)
+                    .text(paciente.name));
+                });
+              },
+              error: function(xhr, status, error) {
+                console.error('Error loading pacientes:', error);
+                pacienteSelect.html('<option value="">Error al cargar pacientes</option>');
+              }
+            });
+          }
+        });
+
+        // Limpiar formulario al cerrar el modal
+        $('#nuevaCitaModal').on('hidden.bs.modal', function() {
+          $('#nuevaCitaForm')[0].reset();
+          $('#duracionInput').val('60');
+          $('#estadoSelect').val('SCHEDULED');
+        });
+
+        // Handle form submission via AJAX
+        $('#nuevaCitaForm').on('submit', function(e) {
+          e.preventDefault();
+          
+          const formData = {
+            pacienteId: $('#pacienteSelect').val(),
+            eventDateTime: $('#fechaHoraInput').val(),
+            title: $('#tituloInput').val(),
+            description: $('#descripcionInput').val(),
+            durationMinutes: parseInt($('#duracionInput').val()),
+            status: $('#estadoSelect').val()
+          };
+
+          // Validate required fields
+          if (!formData.pacienteId || !formData.eventDateTime || !formData.title) {
+            alert('Por favor, complete todos los campos requeridos.');
+            return;
+          }
+
+          // Disable submit button to prevent double submission
+          const submitButton = $(this).find('button[type="submit"]');
+          submitButton.prop('disabled', true).text('Guardando...');
+
+          $.ajax({
+            url: '/rest/calendario/events',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function(response) {
+              if (response.success) {
+                // Refresh calendar to show new event
+                calendar.refetchEvents();
+                // Close modal
+                $('#nuevaCitaModal').modal('hide');
+                // Reset form
+                $('#nuevaCitaForm')[0].reset();
+                $('#duracionInput').val('60');
+                $('#estadoSelect').val('SCHEDULED');
+              } else {
+                alert('Error al guardar la cita: ' + (response.error || 'Error desconocido'));
+                submitButton.prop('disabled', false).text('Guardar Cita');
+              }
+            },
+            error: function(xhr, status, error) {
+              console.error('Error saving event:', error);
+              let errorMessage = 'Error al guardar la cita.';
+              if (xhr.responseJSON && xhr.responseJSON.error) {
+                errorMessage = xhr.responseJSON.error;
+              }
+              alert(errorMessage);
+              submitButton.prop('disabled', false).text('Guardar Cita');
+            }
+          });
+        });
+
+        // Function to show event details modal
+        function showEventDetailsModal(event) {
+          const props = event.extendedProps || {};
+          const startDate = new Date(event.start);
+          const endDate = event.end ? new Date(event.end) : null;
+          
+          // Format date and time
+          const dateStr = startDate.toLocaleDateString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          });
+          const timeStr = startDate.toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          const endTimeStr = endDate ? endDate.toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit'
+          }) : '';
+          
+          let html = '<div class="event-details-container">';
+          html += '<div class="row mb-3">';
+          html += '<div class="col-md-12">';
+          html += '<h5 class="mb-3">' + escapeHtml(event.title) + '</h5>';
+          html += '</div>';
+          html += '</div>';
+          
+          html += '<div class="row mb-3">';
+          html += '<div class="col-md-6">';
+          html += '<p><strong>Paciente:</strong> ' + escapeHtml(props.paciente || 'N/A') + '</p>';
+          html += '<p><strong>Fecha:</strong> ' + dateStr + '</p>';
+          html += '<p><strong>Hora:</strong> ' + timeStr;
+          if (endTimeStr) {
+            html += ' - ' + endTimeStr;
+          }
+          html += '</p>';
+          html += '</div>';
+          html += '<div class="col-md-6">';
+          html += '<p><strong>Estado:</strong> ';
+          const statusBadgeClass = props.status === 'COMPLETED' ? 'badge-success' : 
+                                   props.status === 'CANCELLED' ? 'badge-danger' : 'badge-primary';
+          html += '<span class="badge ' + statusBadgeClass + '">' + escapeHtml(props.status || 'SCHEDULED') + '</span>';
+          html += '</p>';
+          html += '<p><strong>Duración:</strong> ' + (props.durationMinutes || 60) + ' minutos</p>';
+          html += '</div>';
+          html += '</div>';
+          
+          if (props.description) {
+            html += '<div class="row mb-3">';
+            html += '<div class="col-md-12">';
+            html += '<p><strong>Descripción:</strong></p>';
+            html += '<p class="text-muted">' + escapeHtml(props.description) + '</p>';
+            html += '</div>';
+            html += '</div>';
+          }
+          
+          html += '<hr>';
+          
+          // Status change section
+          html += '<div class="row mb-3">';
+          html += '<div class="col-md-12">';
+          html += '<h6>Cambiar Estado</h6>';
+          html += '<div class="btn-group" role="group">';
+          if (props.status !== 'COMPLETED') {
+            html += '<button type="button" class="btn btn-success" onclick="updateEventStatus(' + event.id + ', \'COMPLETED\')">Marcar como Completado</button>';
+          }
+          if (props.status !== 'CANCELLED') {
+            html += '<button type="button" class="btn btn-danger" onclick="updateEventStatus(' + event.id + ', \'CANCELLED\')">Cancelar</button>';
+          }
+          if (props.status !== 'SCHEDULED') {
+            html += '<button type="button" class="btn btn-primary" onclick="updateEventStatus(' + event.id + ', \'SCHEDULED\')">Reagendar</button>';
+          }
+          html += '</div>';
+          html += '</div>';
+          html += '</div>';
+          
+          html += '<hr>';
+          
+          // Summary notes section with wizard
+          html += '<div class="row mb-3">';
+          html += '<div class="col-md-12">';
+          html += '<h6>Notas de Resumen</h6>';
+          html += '<button type="button" class="btn btn-info mb-3" onclick="showSummaryNotesWizard(' + event.id + ', ' + JSON.stringify(props.summaryNotes || '').replace(/"/g, '&quot;') + ')">';
+          html += '<i class="fas fa-edit"></i> ' + (props.summaryNotes ? 'Editar Notas' : 'Agregar Notas');
+          html += '</button>';
+          if (props.summaryNotes) {
+            html += '<div class="summary-notes-preview mt-2 p-3 bg-light rounded">';
+            html += '<p class="mb-0"><strong>Notas actuales:</strong></p>';
+            html += '<p class="text-muted">' + escapeHtml(props.summaryNotes) + '</p>';
+            html += '</div>';
+          }
+          html += '</div>';
+          html += '</div>';
+          
+          html += '</div>';
+          
+          $('#eventDetailsContent').html(html);
+          $('#eventDetailsModal').modal('show');
+        }
+        
+        // Function to update event status
+        function updateEventStatus(eventId, newStatus) {
+          if (!confirm('¿Está seguro de que desea cambiar el estado a ' + newStatus + '?')) {
+            return;
+          }
+          
+          $.ajax({
+            url: '/rest/calendario/events/' + eventId,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ status: newStatus }),
+            success: function(response) {
+              if (response.success) {
+                calendar.refetchEvents();
+                $('#eventDetailsModal').modal('hide');
+                alert('Estado actualizado correctamente.');
+              } else {
+                alert('Error al actualizar el estado: ' + (response.error || 'Error desconocido'));
+              }
+            },
+            error: function(xhr, status, error) {
+              console.error('Error updating event status:', error);
+              alert('Error al actualizar el estado del evento.');
+            }
+          });
+        }
+        
+        // Function to show summary notes wizard
+        function showSummaryNotesWizard(eventId, currentNotes) {
+          // Create wizard modal
+          let wizardHtml = '<div class="modal fade" id="summaryNotesWizardModal" tabindex="-1" role="dialog">';
+          wizardHtml += '<div class="modal-dialog modal-lg" role="document">';
+          wizardHtml += '<div class="modal-content">';
+          wizardHtml += '<div class="modal-header">';
+          wizardHtml += '<h5 class="modal-title">Notas de Resumen - Consulta Nutricional</h5>';
+          wizardHtml += '<button type="button" class="close" data-dismiss="modal" aria-label="Close">';
+          wizardHtml += '<span aria-hidden="true">&times;</span>';
+          wizardHtml += '</button>';
+          wizardHtml += '</div>';
+          wizardHtml += '<form id="summaryNotesWizardForm">';
+          wizardHtml += '<div class="modal-body">';
+          
+          // Wizard steps
+          wizardHtml += '<ul class="nav nav-pills mb-3" id="wizardTabs" role="tablist">';
+          wizardHtml += '<li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#step1">Información General</a></li>';
+          wizardHtml += '<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#step2">Evaluación Nutricional</a></li>';
+          wizardHtml += '<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#step3">Plan de Alimentación</a></li>';
+          wizardHtml += '<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#step4">Recomendaciones</a></li>';
+          wizardHtml += '<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#step5">Resumen Final</a></li>';
+          wizardHtml += '</ul>';
+          
+          wizardHtml += '<div class="tab-content" id="wizardTabContent">';
+          
+          // Step 1: General Information
+          wizardHtml += '<div class="tab-pane fade show active" id="step1" role="tabpanel">';
+          wizardHtml += '<h6>Información General de la Consulta</h6>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>Motivo de la consulta:</label>';
+          wizardHtml += '<textarea class="form-control" name="motivo" rows="3" placeholder="Describa el motivo principal de la consulta"></textarea>';
+          wizardHtml += '</div>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>Peso actual (kg):</label>';
+          wizardHtml += '<input type="number" class="form-control" name="pesoActual" step="0.1" placeholder="Ej: 70.5">';
+          wizardHtml += '</div>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>Altura (cm):</label>';
+          wizardHtml += '<input type="number" class="form-control" name="altura" step="0.1" placeholder="Ej: 170">';
+          wizardHtml += '</div>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>IMC calculado:</label>';
+          wizardHtml += '<input type="text" class="form-control" name="imc" readonly>';
+          wizardHtml += '</div>';
+          wizardHtml += '</div>';
+          
+          // Step 2: Nutritional Assessment
+          wizardHtml += '<div class="tab-pane fade" id="step2" role="tabpanel">';
+          wizardHtml += '<h6>Evaluación Nutricional</h6>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>Hábitos alimentarios actuales:</label>';
+          wizardHtml += '<textarea class="form-control" name="habitosAlimentarios" rows="3" placeholder="Describa los hábitos alimentarios del paciente"></textarea>';
+          wizardHtml += '</div>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>Nivel de actividad física:</label>';
+          wizardHtml += '<select class="form-control" name="actividadFisica">';
+          wizardHtml += '<option value="">Seleccione...</option>';
+          wizardHtml += '<option value="sedentario">Sedentario</option>';
+          wizardHtml += '<option value="ligero">Ligero (1-3 días/semana)</option>';
+          wizardHtml += '<option value="moderado">Moderado (3-5 días/semana)</option>';
+          wizardHtml += '<option value="intenso">Intenso (6-7 días/semana)</option>';
+          wizardHtml += '</select>';
+          wizardHtml += '</div>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>Alergias o intolerancias:</label>';
+          wizardHtml += '<textarea class="form-control" name="alergias" rows="2" placeholder="Liste alergias o intolerancias conocidas"></textarea>';
+          wizardHtml += '</div>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>Medicamentos actuales:</label>';
+          wizardHtml += '<textarea class="form-control" name="medicamentos" rows="2" placeholder="Liste medicamentos que está tomando"></textarea>';
+          wizardHtml += '</div>';
+          wizardHtml += '</div>';
+          
+          // Step 3: Meal Plan
+          wizardHtml += '<div class="tab-pane fade" id="step3" role="tabpanel">';
+          wizardHtml += '<h6>Plan de Alimentación</h6>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>Calorías diarias recomendadas:</label>';
+          wizardHtml += '<input type="number" class="form-control" name="caloriasDiarias" placeholder="Ej: 2000">';
+          wizardHtml += '</div>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>Distribución de macronutrientes:</label>';
+          wizardHtml += '<div class="row">';
+          wizardHtml += '<div class="col-md-4"><label>Proteínas (%)</label><input type="number" class="form-control" name="proteinas" min="0" max="100" placeholder="Ej: 30"></div>';
+          wizardHtml += '<div class="col-md-4"><label>Carbohidratos (%)</label><input type="number" class="form-control" name="carbohidratos" min="0" max="100" placeholder="Ej: 40"></div>';
+          wizardHtml += '<div class="col-md-4"><label>Grasas (%)</label><input type="number" class="form-control" name="grasas" min="0" max="100" placeholder="Ej: 30"></div>';
+          wizardHtml += '</div>';
+          wizardHtml += '</div>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>Recomendaciones específicas del plan:</label>';
+          wizardHtml += '<textarea class="form-control" name="recomendacionesPlan" rows="4" placeholder="Describa recomendaciones específicas del plan de alimentación"></textarea>';
+          wizardHtml += '</div>';
+          wizardHtml += '</div>';
+          
+          // Step 4: Recommendations
+          wizardHtml += '<div class="tab-pane fade" id="step4" role="tabpanel">';
+          wizardHtml += '<h6>Recomendaciones y Observaciones</h6>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>Recomendaciones generales:</label>';
+          wizardHtml += '<textarea class="form-control" name="recomendacionesGenerales" rows="3" placeholder="Recomendaciones generales para el paciente"></textarea>';
+          wizardHtml += '</div>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>Suplementos recomendados:</label>';
+          wizardHtml += '<textarea class="form-control" name="suplementos" rows="2" placeholder="Liste suplementos recomendados, si aplica"></textarea>';
+          wizardHtml += '</div>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>Próximos pasos:</label>';
+          wizardHtml += '<textarea class="form-control" name="proximosPasos" rows="2" placeholder="Qué debe hacer el paciente antes de la próxima consulta"></textarea>';
+          wizardHtml += '</div>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>Fecha de próxima consulta:</label>';
+          wizardHtml += '<input type="date" class="form-control" name="proximaConsulta">';
+          wizardHtml += '</div>';
+          wizardHtml += '</div>';
+          
+          // Step 5: Final Summary
+          wizardHtml += '<div class="tab-pane fade" id="step5" role="tabpanel">';
+          wizardHtml += '<h6>Resumen Final</h6>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>Notas adicionales:</label>';
+          wizardHtml += '<textarea class="form-control" name="notasAdicionales" rows="4" placeholder="Cualquier información adicional relevante"></textarea>';
+          wizardHtml += '</div>';
+          wizardHtml += '<div class="form-group">';
+          wizardHtml += '<label>Resumen completo (generado automáticamente):</label>';
+          wizardHtml += '<textarea class="form-control" id="summaryNotesFinal" rows="10" readonly></textarea>';
+          wizardHtml += '</div>';
+          wizardHtml += '</div>';
+          
+          wizardHtml += '</div>'; // End tab-content
+          wizardHtml += '</div>'; // End modal-body
+          wizardHtml += '<div class="modal-footer">';
+          wizardHtml += '<button type="button" class="btn btn-secondary" id="wizardPrevBtn" onclick="wizardPrevious()" style="display:none;">Anterior</button>';
+          wizardHtml += '<button type="button" class="btn btn-primary" id="wizardNextBtn" onclick="wizardNext()">Siguiente</button>';
+          wizardHtml += '<button type="button" class="btn btn-success" id="wizardSaveBtn" onclick="saveSummaryNotes(' + eventId + ')" style="display:none;">Guardar Notas</button>';
+          wizardHtml += '<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>';
+          wizardHtml += '</div>';
+          wizardHtml += '</form>';
+          wizardHtml += '</div>';
+          wizardHtml += '</div>';
+          wizardHtml += '</div>';
+          
+          // Remove existing wizard modal if present
+          $('#summaryNotesWizardModal').remove();
+          $('body').append(wizardHtml);
+          
+          // Initialize wizard
+          window.currentWizardStep = 1;
+          window.totalWizardSteps = 5;
+          
+          // Calculate IMC when weight and height are entered
+          $('#summaryNotesWizardModal').on('input', 'input[name="pesoActual"], input[name="altura"]', function() {
+            const peso = parseFloat($('#summaryNotesWizardModal input[name="pesoActual"]').val());
+            const altura = parseFloat($('#summaryNotesWizardModal input[name="altura"]').val());
+            if (peso && altura && altura > 0) {
+              const imc = (peso / Math.pow(altura / 100, 2)).toFixed(2);
+              $('#summaryNotesWizardModal input[name="imc"]').val(imc + ' kg/m²');
+            } else {
+              $('#summaryNotesWizardModal input[name="imc"]').val('');
+            }
+          });
+          
+          // Generate summary when moving to final step
+          $('#summaryNotesWizardModal').on('shown.bs.tab', '#wizardTabs a[href="#step5"]', function() {
+            generateSummaryNotes();
+          });
+          
+          // Initialize wizard UI after modal is shown
+          $('#summaryNotesWizardModal').on('shown.bs.modal', function() {
+            updateWizardUI();
+          });
+          
+          $('#summaryNotesWizardModal').modal('show');
+        }
+        
+        // Wizard navigation functions
+        function wizardNext() {
+          if (window.currentWizardStep < window.totalWizardSteps) {
+            window.currentWizardStep++;
+            updateWizardUI();
+          }
+        }
+        
+        function wizardPrevious() {
+          if (window.currentWizardStep > 1) {
+            window.currentWizardStep--;
+            updateWizardUI();
+          }
+        }
+        
+        function updateWizardUI() {
+          // Update tab using Bootstrap tab API
+          const targetTab = $('#wizardTabs a[href="#step' + window.currentWizardStep + '"]');
+          targetTab.tab('show');
+          
+          // Update buttons
+          $('#wizardPrevBtn').toggle(window.currentWizardStep > 1);
+          $('#wizardNextBtn').toggle(window.currentWizardStep < window.totalWizardSteps);
+          $('#wizardSaveBtn').toggle(window.currentWizardStep === window.totalWizardSteps);
+        }
+        
+        // Handle tab shown event to sync currentWizardStep
+        $(document).on('shown.bs.tab', '#wizardTabs a[data-toggle="tab"]', function(e) {
+          const target = $(e.target).attr('href');
+          const stepNum = parseInt(target.replace('#step', ''));
+          if (!isNaN(stepNum)) {
+            window.currentWizardStep = stepNum;
+            updateWizardUI();
+          }
+        });
+        
+        // Generate summary notes from all form fields
+        function generateSummaryNotes() {
+          const formData = {};
+          $('#summaryNotesWizardModal #summaryNotesWizardForm').serializeArray().forEach(function(item) {
+            if (item.value) {
+              formData[item.name] = item.value;
+            }
+          });
+          
+          let summary = '=== CONSULTA NUTRICIONAL ===\n\n';
+          
+          if (formData.motivo) {
+            summary += 'MOTIVO DE CONSULTA:\n' + formData.motivo + '\n\n';
+          }
+          
+          if (formData.pesoActual || formData.altura) {
+            summary += 'DATOS ANTROPOMÉTRICOS:\n';
+            if (formData.pesoActual) summary += 'Peso actual: ' + formData.pesoActual + ' kg\n';
+            if (formData.altura) summary += 'Altura: ' + formData.altura + ' cm\n';
+            if (formData.imc) summary += 'IMC: ' + formData.imc + '\n';
+            summary += '\n';
+          }
+          
+          if (formData.habitosAlimentarios) {
+            summary += 'HÁBITOS ALIMENTARIOS:\n' + formData.habitosAlimentarios + '\n\n';
+          }
+          
+          if (formData.actividadFisica) {
+            summary += 'ACTIVIDAD FÍSICA: ' + formData.actividadFisica + '\n\n';
+          }
+          
+          if (formData.alergias) {
+            summary += 'ALERGIAS/INTOLERANCIAS:\n' + formData.alergias + '\n\n';
+          }
+          
+          if (formData.medicamentos) {
+            summary += 'MEDICAMENTOS:\n' + formData.medicamentos + '\n\n';
+          }
+          
+          if (formData.caloriasDiarias) {
+            summary += 'PLAN DE ALIMENTACIÓN:\n';
+            summary += 'Calorías diarias: ' + formData.caloriasDiarias + ' kcal\n';
+            if (formData.proteinas || formData.carbohidratos || formData.grasas) {
+              summary += 'Distribución: ';
+              const parts = [];
+              if (formData.proteinas) parts.push('Proteínas ' + formData.proteinas + '%');
+              if (formData.carbohidratos) parts.push('Carbohidratos ' + formData.carbohidratos + '%');
+              if (formData.grasas) parts.push('Grasas ' + formData.grasas + '%');
+              summary += parts.join(', ') + '\n';
+            }
+            if (formData.recomendacionesPlan) {
+              summary += 'Recomendaciones: ' + formData.recomendacionesPlan + '\n';
+            }
+            summary += '\n';
+          }
+          
+          if (formData.recomendacionesGenerales) {
+            summary += 'RECOMENDACIONES:\n' + formData.recomendacionesGenerales + '\n\n';
+          }
+          
+          if (formData.suplementos) {
+            summary += 'SUPLEMENTOS RECOMENDADOS:\n' + formData.suplementos + '\n\n';
+          }
+          
+          if (formData.proximosPasos) {
+            summary += 'PRÓXIMOS PASOS:\n' + formData.proximosPasos + '\n';
+            if (formData.proximaConsulta) {
+              summary += 'Próxima consulta: ' + formData.proximaConsulta + '\n';
+            }
+            summary += '\n';
+          }
+          
+          if (formData.notasAdicionales) {
+            summary += 'NOTAS ADICIONALES:\n' + formData.notasAdicionales + '\n';
+          }
+          
+          $('#summaryNotesWizardModal #summaryNotesFinal').val(summary);
+        }
+        
+        // Save summary notes
+        function saveSummaryNotes(eventId) {
+          const summaryNotes = $('#summaryNotesWizardModal #summaryNotesFinal').val();
+          
+          if (!summaryNotes || summaryNotes.trim() === '') {
+            swal({
+              title: 'Atención!',
+              text: 'Por favor, complete el resumen antes de guardar.',
+              type: 'warning',
+              timer: 3000
+            });
+            return;
+          }
+          
+          $.ajax({
+            url: '/rest/calendario/events/' + eventId,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ summaryNotes: summaryNotes }),
+            success: function(response) {
+              if (response.success) {
+                calendar.refetchEvents();
+                $('#summaryNotesWizardModal').modal('hide');
+                $('#eventDetailsModal').modal('hide');
+                swal({
+                  title: 'Guardado!',
+                  text: 'Notas de resumen guardadas correctamente.',
+                  type: 'success',
+                  timer: 2000,
+                  showConfirmButton: false
+                });
+              } else {
+                swal({
+                  title: 'Error!',
+                  text: 'Error al guardar las notas: ' + (response.error || 'Error desconocido'),
+                  type: 'error',
+                  timer: 5000
+                });
+              }
+            },
+            error: function(xhr, status, error) {
+              console.error('Error saving summary notes:', error);
+              let errorMessage = 'Error al guardar las notas de resumen.';
+              if (xhr.responseJSON && xhr.responseJSON.error) {
+                errorMessage = xhr.responseJSON.error;
+              } else if (xhr.responseText) {
+                errorMessage = xhr.responseText;
+              }
+              swal({
+                title: 'Error!',
+                text: errorMessage,
+                type: 'error',
+                timer: 5000
+              });
+            }
+          });
+        }
+        
+        // Utility function to escape HTML
+        function escapeHtml(text) {
+          const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+          };
+          return text ? text.replace(/[&<>"']/g, function(m) { return map[m]; }) : '';
+        }
+
+        }); // End of document.ready
+      }
+      
+      // Start waiting for dependencies
+      waitForDependencies();
+    </script>
+</body>
+
+</html>
+

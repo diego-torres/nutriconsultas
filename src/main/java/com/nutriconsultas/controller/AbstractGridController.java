@@ -61,25 +61,30 @@ public abstract class AbstractGridController<T> {
 
 		log.debug("filtered records {}", filtered.size());
 
-		final long count = data.stream().filter(filterRows(pagingRequest)).count();
+		final long filteredCount = data.stream().filter(filterRows(pagingRequest)).count();
+		final int totalCount = data.size();
 
-		log.debug("total records {}", count);
+		log.debug("total records before filtering: {}", totalCount);
+		log.debug("total records after filtering: {}", filteredCount);
 
 		final Page<T> result = new Page<>(filtered);
-		result.setRecordsFiltered((int) count);
-		result.setRecordsTotal((int) count);
+		result.setRecordsFiltered((int) filteredCount);
+		result.setRecordsTotal(totalCount);
 		result.setDraw(pagingRequest.getDraw());
 
-		log.debug("returning data at getPage: {}", result.getRecordsTotal());
+		log.debug("returning data at getPage: recordsTotal={}, recordsFiltered={}", result.getRecordsTotal(),
+				result.getRecordsFiltered());
 		return result;
 	}
 
 	private Predicate<T> filterRows(final PagingRequest pagingRequest) {
 		log.debug("filterRows: {}", pagingRequest);
 		Predicate<T> predicate = t -> true;
-		if (pagingRequest.getSearch() != null) {
-			final String value = pagingRequest.getSearch().getValue().toLowerCase();
-			predicate = getPredicate(value);
+		if (pagingRequest.getSearch() != null && pagingRequest.getSearch().getValue() != null) {
+			final String value = pagingRequest.getSearch().getValue().trim();
+			if (!value.isEmpty()) {
+				predicate = getPredicate(value.toLowerCase());
+			}
 		}
 		log.debug("filterRows: {}", predicate);
 		return predicate;

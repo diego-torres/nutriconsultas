@@ -54,9 +54,19 @@
                   <div class="info-form p-5">
                     <form th:action="@{/admin/pacientes/{pacienteId}/consulta(pacienteId=${paciente != null ? paciente.id : 0})}" th:object="${consulta}" method="POST">
                       <div class="form-group">
-                        <label>Fecha de la Consulta<span style="color:red;">*</span></label>
-                        <input type="date" th:field="*{fechaConsulta}" class="form-control">
-                        <span th:if="${#fields.hasErrors('fechaConsulta')}" th:errors="*{fechaConsulta}"></span>
+                        <label>Fecha y Hora de la Consulta<span style="color:red;">*</span></label>
+                        <input type="datetime-local" th:field="*{eventDateTime}" class="form-control">
+                        <span th:if="${#fields.hasErrors('eventDateTime')}" th:errors="*{eventDateTime}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Título<span style="color:red;">*</span></label>
+                        <input type="text" th:field="*{title}" class="form-control" value="Consulta">
+                        <span th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Duración (minutos)<span style="color:red;">*</span></label>
+                        <input type="number" th:field="*{durationMinutes}" class="form-control" value="60">
+                        <span th:if="${#fields.hasErrors('durationMinutes')}" th:errors="*{durationMinutes}"></span>
                       </div>
                       <div class="form-group">
                         <label>Peso (Kg.)<span style="color:red;">*</span></label>
@@ -100,9 +110,15 @@
                       </div>
                       <div class="form-group">
                         <label>Notas</label>
-                        <textarea class="form-control" rows="3" th:field="*{notasInterconsulta}"></textarea>
-                        <span th:if="${#fields.hasErrors('notasInterconsulta')}"
-                          th:errors="*{notasInterconsulta}"></span>
+                        <textarea class="form-control" rows="3" th:field="*{summaryNotes}"></textarea>
+                        <span th:if="${#fields.hasErrors('summaryNotes')}"
+                          th:errors="*{summaryNotes}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Descripción</label>
+                        <textarea class="form-control" rows="3" th:field="*{description}"></textarea>
+                        <span th:if="${#fields.hasErrors('description')}"
+                          th:errors="*{description}"></span>
                       </div>
                       <button type="submit" class="btn btn-success ">Listo!</button>
                     </form>

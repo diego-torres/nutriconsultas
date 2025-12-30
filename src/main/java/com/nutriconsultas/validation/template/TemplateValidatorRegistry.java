@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.nutriconsultas.alimentos.AlimentoTemplateValidator;
+import com.nutriconsultas.calendar.CalendarTemplateValidator;
 import com.nutriconsultas.dieta.DietaTemplateValidator;
 import com.nutriconsultas.paciente.PacienteTemplateValidator;
 import com.nutriconsultas.platillos.PlatilloTemplateValidator;
@@ -22,6 +23,7 @@ public class TemplateValidatorRegistry {
 	public TemplateValidatorRegistry() {
 		// Register validators in order of specificity (most specific first)
 		register(new PacienteTemplateValidator());
+		register(new CalendarTemplateValidator());
 		register(new PlatilloTemplateValidator());
 		register(new DietaTemplateValidator());
 		register(new AlimentoTemplateValidator());

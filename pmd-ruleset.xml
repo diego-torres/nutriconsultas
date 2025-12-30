@@ -98,6 +98,8 @@
 		<exclude name="LoosePackageCoupling" />
 		<!-- Exclude CouplingBetweenObjects: Spring DI creates coupling -->
 		<exclude name="CouplingBetweenObjects" />
+		<!-- Exclude ExcessiveImports: REST controllers often need many imports -->
+		<exclude name="ExcessiveImports" />
 		<!-- Exclude UseUtilityClass: Utility classes are valid patterns -->
 		<exclude name="UseUtilityClass" />
 		<!-- Exclude CollapsibleIfStatements: Sometimes improves readability -->

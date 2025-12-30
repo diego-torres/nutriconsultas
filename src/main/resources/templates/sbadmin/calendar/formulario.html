@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <!-- Favicons -->
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
+
+  <title th:text="${event != null && event.id != null ? 'Minutriporcion - Editar Cita' : 'Minutriporcion - Nueva Cita'}">Minutriporcion - Cita</title>
+
+  <!-- Custom fonts for this template-->
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+
+</head>
+
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/sidebar :: sidebar}"></div>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800" th:text="${event != null && event.id != null ? 'Editar Cita' : 'Nueva Cita'}">Cita</h1>
+          </div>
+
+          <!-- Content Row -->
+          <div class="row">
+            <div class="col-12">
+              <div class="card shadow mb-4">
+                <div class="col-sm-10 offset-sm-1">
+
+                  <div class="info-form p-5">
+                    <form th:action="${event != null && event.id != null ? '/admin/calendario/' + event.id + '/editar' : '/admin/calendario/nuevo'}" 
+                          th:object="${event}" method="POST">
+                      <input type="hidden" th:field="*{id}" />
+                      <div class="form-group">
+                        <label>Paciente<span style="color:red;">*</span></label>
+                        <select class="form-control" name="pacienteId" required>
+                          <option value="">Seleccione un paciente</option>
+                          <option th:each="paciente : ${pacientes}" 
+                                  th:value="${paciente.id}" 
+                                  th:text="${paciente.name}"
+                                  th:selected="${event != null && event.paciente != null && event.paciente.id == paciente.id}">
+                          </option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('paciente')}" th:errors="*{paciente}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Fecha y Hora<span style="color:red;">*</span></label>
+                        <input type="datetime-local" 
+                               th:field="*{eventDateTime}"
+                               class="form-control" 
+                               required>
+                        <span th:if="${#fields.hasErrors('eventDateTime')}" th:errors="*{eventDateTime}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Título<span style="color:red;">*</span></label>
+                        <input type="text" th:field="*{title}" class="form-control" placeholder="Consulta de nutrición" required>
+                        <span th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Descripción</label>
+                        <textarea th:field="*{description}" class="form-control" rows="4" placeholder="Descripción de la cita"></textarea>
+                        <span th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Duración (minutos)<span style="color:red;">*</span></label>
+                        <input type="number" th:field="*{durationMinutes}" class="form-control" min="1" placeholder="60" required>
+                        <span th:if="${#fields.hasErrors('durationMinutes')}" th:errors="*{durationMinutes}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Estado<span style="color:red;">*</span></label>
+                        <select class="form-control" th:field="*{status}" required>
+                          <option th:each="status : ${statuses}" 
+                                  th:value="${status.name()}" 
+                                  th:selected="${event != null && event.status == status}"
+                                  th:text="${status.name() == 'SCHEDULED' ? 'Agendado' : (status.name() == 'COMPLETED' ? 'Completado' : 'Cancelado')}">
+                          </option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></span>
+                      </div>
+                      <button type="submit" class="btn btn-success">Guardar</button>
+                      <a th:href="@{/admin/calendario}" class="btn btn-secondary">Cancelar</a>
+                    </form>
+                  </div>
+                  <br>
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+
+        <div th:insert="~{sbadmin/footer :: footer}"></div>
+
+      </div>
+      <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Bootstrap core JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+    
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      document.addEventListener('DOMContentLoaded', function() {
+        // Format datetime-local input value if event exists
+        var eventDateTime = /*[[${event != null && event.eventDateTime != null ? #dates.format(event.eventDateTime, 'yyyy-MM-dd''T''HH:mm') : ''}]]*/ '';
+        if (eventDateTime) {
+          var input = document.querySelector('input[type="datetime-local"][name="eventDateTime"]');
+          if (input) {
+            input.value = eventDateTime;
+          }
+        }
+      });
+      /*]]>*/
+    </script>
+
+</body>
+
+</html>
+

@@ -43,7 +43,7 @@
           <!-- Page Heading -->
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Historial de Consultas</h1>
-            <a th:href="@{/admin/pacientes/{id}/consulta(id=${paciente != null ? paciente.id : 0})}"
+            <a th:href="@{/admin/calendario/nuevo}"
               class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
                 class="fas fa-plus fa-sm text-white-50"></i> Agregar Consulta</a>
           </div>
@@ -57,12 +57,10 @@
                   style="width: 100%;">
                   <thead>
                     <tr>
-                      <th>Fecha</th>
-                      <th>Peso</th>
-                      <th>Estatura</th>
-                      <th>I.M.C</th>
-                      <th>Presión</th>
-                      <th>Índ. Gluc.</th>
+                      <th>Fecha y Hora</th>
+                      <th>Título</th>
+                      <th>Estado</th>
+                      <th>Duración</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -156,42 +154,48 @@
         $(document).on('click', '.delete-btn', function (event) {
           const id = $(event.currentTarget).data('id');
           swal({
-            title: 'Borrar Consulta !',
-            text: 'Esta seguro que desea borrar la consulta?',
+            title: 'Eliminar Cita',
+            text: '¿Está seguro de que desea eliminar esta cita?',
             type: 'warning',
             showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
             closeOnConfirm: false,
-            showLoaderOnConfirm: true,
-            confirmButtonColor: '#5cb85c',
-            cancelButtonColor: '#d33',
-            cancelButtonText: 'No',
-            confirmButtonText: 'Si',
-          },
-            function () {
+            showLoaderOnConfirm: true
+          }, function(isConfirm) {
+            if (isConfirm) {
               $.ajax({
-                url: '/rest/consultas/' + id,
-                type: 'DELETE',
-                DataType: 'json',
-                success: function (response) {
-
+                url: '/admin/calendario/' + id + '/eliminar',
+                type: 'POST',
+                success: function() {
                   swal({
-                    title: 'Borrado!',
-                    text: 'La consulta ha sido borrada.',
+                    title: 'Eliminado!',
+                    text: 'La cita ha sido eliminada correctamente.',
                     type: 'success',
                     timer: 2000,
+                    showConfirmButton: false
                   });
                   $('#mainGrid').DataTable().ajax.reload(null, false);
                 },
-                error: function (error) {
+                error: function(xhr) {
+                  let errorMessage = 'Error al eliminar la cita.';
+                  if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                  } else if (xhr.responseText) {
+                    errorMessage = xhr.responseText;
+                  }
                   swal({
                     title: 'Error!',
-                    text: error.responseJSON.message,
+                    text: errorMessage,
                     type: 'error',
-                    timer: 5000,
-                  })
+                    timer: 5000
+                  });
                 }
               });
-            });
+            }
+          });
         });
 
       })(jQuery);

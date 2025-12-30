@@ -103,7 +103,14 @@ public class PlatilloController extends AbstractAuthorizedController {
 		String result;
 		if (file.isEmpty()) {
 			log.error("Failed to upload picture because the file is empty");
+			final Platillo platillo = service.findById(id);
+			model.addAttribute("platillo", platillo);
 			model.addAttribute("errorMessage", "The file is empty");
+			if (platillo != null && platillo.getIngestasSugeridas() != null
+					&& !platillo.getIngestasSugeridas().isEmpty()) {
+				model.addAttribute("ingestas", Arrays.asList(platillo.getIngestasSugeridas().split(",")));
+			}
+			model.addAttribute("alimentosList", alimentoService.findAll());
 			result = "sbadmin/platillos/formulario";
 		}
 		else {
@@ -128,7 +135,14 @@ public class PlatilloController extends AbstractAuthorizedController {
 			}
 			catch (final IOException e) {
 				log.error("Failed to upload picture for platillo with id {}", id, e);
+				final Platillo platillo = service.findById(id);
+				model.addAttribute("platillo", platillo);
 				model.addAttribute("errorMessage", "Failed to upload picture");
+				if (platillo != null && platillo.getIngestasSugeridas() != null
+						&& !platillo.getIngestasSugeridas().isEmpty()) {
+					model.addAttribute("ingestas", Arrays.asList(platillo.getIngestasSugeridas().split(",")));
+				}
+				model.addAttribute("alimentosList", alimentoService.findAll());
 				result = "sbadmin/platillos/formulario";
 			}
 		}
@@ -151,7 +165,14 @@ public class PlatilloController extends AbstractAuthorizedController {
 		String result;
 		if (file.isEmpty()) {
 			log.error("Failed to upload pdf because the file is empty");
+			final Platillo platillo = service.findById(id);
+			model.addAttribute("platillo", platillo);
 			model.addAttribute("errorMessage", "The file is empty");
+			if (platillo != null && platillo.getIngestasSugeridas() != null
+					&& !platillo.getIngestasSugeridas().isEmpty()) {
+				model.addAttribute("ingestas", Arrays.asList(platillo.getIngestasSugeridas().split(",")));
+			}
+			model.addAttribute("alimentosList", alimentoService.findAll());
 			result = "sbadmin/platillos/formulario";
 		}
 		else {
@@ -163,7 +184,14 @@ public class PlatilloController extends AbstractAuthorizedController {
 			}
 			catch (final IOException e) {
 				log.error("Failed to upload pdf for platillo with id {}", id, e);
+				final Platillo platillo = service.findById(id);
+				model.addAttribute("platillo", platillo);
 				model.addAttribute("errorMessage", "Failed to upload pdf");
+				if (platillo != null && platillo.getIngestasSugeridas() != null
+						&& !platillo.getIngestasSugeridas().isEmpty()) {
+					model.addAttribute("ingestas", Arrays.asList(platillo.getIngestasSugeridas().split(",")));
+				}
+				model.addAttribute("alimentosList", alimentoService.findAll());
 				result = "sbadmin/platillos/formulario";
 			}
 		}

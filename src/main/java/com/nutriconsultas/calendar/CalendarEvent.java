@@ -1,4 +1,4 @@
-package com.nutriconsultas.consulta;
+package com.nutriconsultas.calendar;
 
 import java.util.Date;
 
@@ -14,6 +14,7 @@ import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,7 +29,7 @@ import com.nutriconsultas.paciente.Paciente;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Consulta {
+public class CalendarEvent {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,26 +37,47 @@ public class Consulta {
 
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "paciente_id")
+	@NotNull(message = "El paciente es requerido")
 	private Paciente paciente;
 
-	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	@Temporal(TemporalType.DATE)
-	private Date fechaConsulta;
+	@DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+	@Temporal(TemporalType.TIMESTAMP)
+	@NotNull(message = "La fecha y hora son requeridas")
+	private Date eventDateTime;
+
+	@NotBlank(message = "El título es requerido")
+	@Column(nullable = false, length = 200)
+	private String title;
+
+	@Column(columnDefinition = "TEXT")
+	private String description;
+
+	@Column(nullable = false)
+	@NotNull(message = "La duración es requerida")
+	private Integer durationMinutes;
+
+	@Column(nullable = false)
+	@NotNull(message = "El estado es requerido")
+	private EventStatus status = EventStatus.SCHEDULED;
+
+	@Column(columnDefinition = "TEXT")
+	private String summaryNotes;
 
 	@Column(precision = 5)
-	@NotNull
 	@Min(10)
 	@Max(200)
 	private Double peso;
 
 	@Column(precision = 3)
-	@NotNull
 	@Max(3)
 	@DecimalMin(value = "0.5")
 	private Double estatura;
 
 	@Column(precision = 3)
 	private Double imc;
+
+	@Column(precision = 3)
+	private Double indiceGrasaCorporal;
 
 	private NivelPeso nivelPeso;
 
@@ -72,8 +94,5 @@ public class Consulta {
 
 	@Column(precision = 5)
 	private Double temperatura;
-
-	@Column(columnDefinition = "TEXT")
-	private String notasInterconsulta;
 
 }
