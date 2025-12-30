@@ -218,7 +218,7 @@ public class CalendarEventRestControllerTest {
 
 		// Assert
 		assertThat(result).isNotNull();
-		assertThat(result.getRecordsTotal()).isEqualTo(1);
+		assertThat(result.getRecordsTotal()).isEqualTo(3);
 		assertThat(result.getRecordsFiltered()).isEqualTo(1);
 		assertThat(result.getDraw()).isEqualTo(1);
 		assertThat(result.getData()).isNotEmpty();

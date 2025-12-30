@@ -80,9 +80,11 @@ public abstract class AbstractGridController<T> {
 	private Predicate<T> filterRows(final PagingRequest pagingRequest) {
 		log.debug("filterRows: {}", pagingRequest);
 		Predicate<T> predicate = t -> true;
-		if (pagingRequest.getSearch() != null) {
-			final String value = pagingRequest.getSearch().getValue().toLowerCase();
-			predicate = getPredicate(value);
+		if (pagingRequest.getSearch() != null && pagingRequest.getSearch().getValue() != null) {
+			final String value = pagingRequest.getSearch().getValue().trim();
+			if (!value.isEmpty()) {
+				predicate = getPredicate(value.toLowerCase());
+			}
 		}
 		log.debug("filterRows: {}", predicate);
 		return predicate;
