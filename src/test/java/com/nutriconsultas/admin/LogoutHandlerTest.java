@@ -109,7 +109,8 @@ public class LogoutHandlerTest {
 		org.mockito.Mockito.verify(httpServletResponse).sendRedirect(redirectUrlCaptor.capture());
 		String redirectUrl = redirectUrlCaptor.getValue();
 		assertThat(redirectUrl).isNotNull();
-		assertThat(redirectUrl).contains("returnTo=/nutriconsultas");
+		// URL encoding encodes / to %2F
+		assertThat(redirectUrl).contains("returnTo=%2Fnutriconsultas");
 		log.info("Finishing testLogoutWithContextPath");
 	}
 

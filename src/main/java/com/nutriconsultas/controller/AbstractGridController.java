@@ -61,16 +61,19 @@ public abstract class AbstractGridController<T> {
 
 		log.debug("filtered records {}", filtered.size());
 
-		final long count = data.stream().filter(filterRows(pagingRequest)).count();
+		final long filteredCount = data.stream().filter(filterRows(pagingRequest)).count();
+		final int totalCount = data.size();
 
-		log.debug("total records {}", count);
+		log.debug("total records before filtering: {}", totalCount);
+		log.debug("total records after filtering: {}", filteredCount);
 
 		final Page<T> result = new Page<>(filtered);
-		result.setRecordsFiltered((int) count);
-		result.setRecordsTotal((int) count);
+		result.setRecordsFiltered((int) filteredCount);
+		result.setRecordsTotal(totalCount);
 		result.setDraw(pagingRequest.getDraw());
 
-		log.debug("returning data at getPage: {}", result.getRecordsTotal());
+		log.debug("returning data at getPage: recordsTotal={}, recordsFiltered={}", result.getRecordsTotal(),
+				result.getRecordsFiltered());
 		return result;
 	}
 
