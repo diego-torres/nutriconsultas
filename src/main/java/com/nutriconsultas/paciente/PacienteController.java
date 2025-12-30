@@ -297,25 +297,13 @@ public class PacienteController extends AbstractAuthorizedController {
 			}
 		}
 
-		Date today = new Date();
-		Date eventDate = evento.getEventDateTime();
+		final LocalDate today = LocalDate.now();
+		final Date eventDate = evento.getEventDateTime();
 		if (eventDate != null) {
 			// Comparar solo la fecha (sin hora)
-			java.util.Calendar calToday = java.util.Calendar.getInstance();
-			calToday.setTime(today);
-			calToday.set(java.util.Calendar.HOUR_OF_DAY, 0);
-			calToday.set(java.util.Calendar.MINUTE, 0);
-			calToday.set(java.util.Calendar.SECOND, 0);
-			calToday.set(java.util.Calendar.MILLISECOND, 0);
+			final LocalDate eventLocalDate = eventDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-			java.util.Calendar calEvent = java.util.Calendar.getInstance();
-			calEvent.setTime(eventDate);
-			calEvent.set(java.util.Calendar.HOUR_OF_DAY, 0);
-			calEvent.set(java.util.Calendar.MINUTE, 0);
-			calEvent.set(java.util.Calendar.SECOND, 0);
-			calEvent.set(java.util.Calendar.MILLISECOND, 0);
-
-			if (calToday.getTime().compareTo(calEvent.getTime()) == 0) {
+			if (today.equals(eventLocalDate)) {
 				log.debug("Working on today's appointment, setting new patient weight vars");
 				if (evento.getPeso() != null) {
 					paciente.setPeso(evento.getPeso());
@@ -368,7 +356,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		}
 
 		// Asegurar que el evento tenga título y estado si no los tiene
-		if (evento.getTitle() == null || evento.getTitle().trim().isEmpty()) {
+		if (evento.getTitle() == null || evento.getTitle().isBlank()) {
 			evento.setTitle("Consulta");
 		}
 		if (evento.getStatus() == null) {

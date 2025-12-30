@@ -54,7 +54,6 @@ public class CalendarController extends AbstractAuthorizedController {
 	public String addEvent(final CalendarEvent event, final BindingResult result, final Model model,
 			@org.springframework.web.bind.annotation.RequestParam(required = false) final Long pacienteId) {
 		log.debug("Grabando nuevo evento: {}", event != null ? event.getTitle() : "null");
-		String resultView;
 
 		// Check if event is null before using it
 		if (event == null) {
@@ -73,7 +72,7 @@ public class CalendarController extends AbstractAuthorizedController {
 
 		// Manual validation since paciente comes from parameter, not form binding
 		boolean hasErrors = false;
-		if (event.getTitle() == null || event.getTitle().trim().isEmpty()) {
+		if (event.getTitle() == null || event.getTitle().isBlank()) {
 			result.rejectValue("title", "NotBlank", "El título es requerido");
 			hasErrors = true;
 		}
@@ -94,6 +93,7 @@ public class CalendarController extends AbstractAuthorizedController {
 			hasErrors = true;
 		}
 
+		final String resultView;
 		if (hasErrors) {
 			model.addAttribute("activeMenu", "calendario");
 			model.addAttribute("event", event);
@@ -165,7 +165,7 @@ public class CalendarController extends AbstractAuthorizedController {
 		// parameter,
 		// not from form binding, so we handle validation manually
 		boolean hasErrors = false;
-		if (event.getTitle() == null || event.getTitle().trim().isEmpty()) {
+		if (event.getTitle() == null || event.getTitle().isBlank()) {
 			result.rejectValue("title", "NotBlank", "El título es requerido");
 			hasErrors = true;
 		}

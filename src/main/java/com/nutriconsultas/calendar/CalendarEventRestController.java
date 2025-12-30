@@ -3,15 +3,16 @@ package com.nutriconsultas.calendar;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -139,10 +140,13 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		if (event.getEventDateTime() != null) {
 			eventMap.put("start", formatDateForCalendar(event.getEventDateTime()));
 			if (event.getDurationMinutes() != null && event.getDurationMinutes() > 0) {
-				final Calendar cal = Calendar.getInstance();
-				cal.setTime(event.getEventDateTime());
-				cal.add(Calendar.MINUTE, event.getDurationMinutes());
-				eventMap.put("end", formatDateForCalendar(cal.getTime()));
+				final LocalDateTime eventDateTime = event.getEventDateTime()
+					.toInstant()
+					.atZone(ZoneId.systemDefault())
+					.toLocalDateTime();
+				final LocalDateTime endDateTime = eventDateTime.plusMinutes(event.getDurationMinutes());
+				final Date endDate = Date.from(endDateTime.atZone(ZoneId.systemDefault()).toInstant());
+				eventMap.put("end", formatDateForCalendar(endDate));
 			}
 		}
 		eventMap.put("allDay", false);
@@ -235,115 +239,85 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 	@GetMapping("/next-available-time")
 	public Map<String, Object> getNextAvailableTime(@RequestParam final String date) {
 		log.debug("Finding next available time for date: {}", date);
-		Date parsedDate;
+		LocalDate parsedLocalDate;
 		try {
 			// Parse date string (format: YYYY-MM-DD)
-			final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-			parsedDate = dateFormat.parse(date);
+			parsedLocalDate = LocalDate.parse(date);
 		}
-		catch (final java.text.ParseException e) {
+		catch (final java.time.format.DateTimeParseException e) {
 			log.error("Error parsing date: {}", date, e);
 			final Map<String, Object> errorResult = new HashMap<>();
 			errorResult.put("available", false);
 			errorResult.put("error", "Invalid date format");
 			return errorResult;
 		}
-		final Calendar cal = Calendar.getInstance();
-		cal.setTime(parsedDate);
-		cal.set(Calendar.HOUR_OF_DAY, 8);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
+
+		LocalDateTime candidateTime = parsedLocalDate.atTime(8, 0);
 
 		// Check if the requested date is in the past (before today)
 		// For past dates, do not attempt to calculate available time
 		// This allows saving unplanned historical consultation records
-		final Calendar now = Calendar.getInstance();
-		now.set(Calendar.HOUR_OF_DAY, 0);
-		now.set(Calendar.MINUTE, 0);
-		now.set(Calendar.SECOND, 0);
-		now.set(Calendar.MILLISECOND, 0);
-		final Calendar requestedDate = Calendar.getInstance();
-		requestedDate.setTime(parsedDate);
-		requestedDate.set(Calendar.HOUR_OF_DAY, 0);
-		requestedDate.set(Calendar.MINUTE, 0);
-		requestedDate.set(Calendar.SECOND, 0);
-		requestedDate.set(Calendar.MILLISECOND, 0);
+		final LocalDate today = LocalDate.now();
+		final LocalDate requestedDate = parsedLocalDate;
 
 		// If the requested date is in the past, return the date with default time
 		// without calculating availability (for historical records)
 		// No availability calculation is performed for past dates
-		if (requestedDate.before(now)) {
+		if (requestedDate.isBefore(today)) {
 			log.debug("Date {} is in the past, returning default time without availability check", date);
 			final Map<String, Object> result = new HashMap<>();
 			result.put("available", true);
-			result.put("dateTime", formatDateForCalendar(cal.getTime()));
+			result.put("dateTime",
+					formatDateForCalendar(Date.from(candidateTime.atZone(ZoneId.systemDefault()).toInstant())));
 			result.put("isPastDate", true);
 			return result; // Exit early - do not attempt to calculate available time
 		}
 
-		final Calendar endOfDay = Calendar.getInstance();
-		endOfDay.setTime(parsedDate);
-		endOfDay.set(Calendar.HOUR_OF_DAY, 17);
-		endOfDay.set(Calendar.MINUTE, 0);
-		endOfDay.set(Calendar.SECOND, 0);
-		endOfDay.set(Calendar.MILLISECOND, 0);
+		final LocalDateTime endOfDay = parsedLocalDate.atTime(17, 0);
 
 		// Get all events for this date
-		final Calendar startOfDay = Calendar.getInstance();
-		startOfDay.setTime(parsedDate);
-		startOfDay.set(Calendar.HOUR_OF_DAY, 0);
-		startOfDay.set(Calendar.MINUTE, 0);
-		startOfDay.set(Calendar.SECOND, 0);
-		startOfDay.set(Calendar.MILLISECOND, 0);
+		final LocalDateTime startOfDay = parsedLocalDate.atStartOfDay();
+		final LocalDateTime nextDay = parsedLocalDate.plusDays(1).atStartOfDay();
 
-		final Calendar nextDay = Calendar.getInstance();
-		nextDay.setTime(parsedDate);
-		nextDay.add(Calendar.DAY_OF_MONTH, 1);
-		nextDay.set(Calendar.HOUR_OF_DAY, 0);
-		nextDay.set(Calendar.MINUTE, 0);
-		nextDay.set(Calendar.SECOND, 0);
-		nextDay.set(Calendar.MILLISECOND, 0);
-
-		final List<CalendarEvent> events = service.findEventsBetweenDates(Objects.requireNonNull(startOfDay.getTime()),
-				Objects.requireNonNull(nextDay.getTime()));
+		final Date startDate = Date.from(startOfDay.atZone(ZoneId.systemDefault()).toInstant());
+		final Date endDate = Date.from(nextDay.atZone(ZoneId.systemDefault()).toInstant());
+		final List<CalendarEvent> events = service.findEventsBetweenDates(startDate != null ? startDate : new Date(0),
+				endDate != null ? endDate : new Date(Long.MAX_VALUE));
 
 		// If the requested date is today, start from current time if it's after 8 AM
-		final Calendar nowWithTime = Calendar.getInstance();
-		if (requestedDate.equals(now)) {
+		final LocalDateTime nowWithTime = LocalDateTime.now();
+		if (requestedDate.equals(today)) {
 			// It's today, check if current time is after 8 AM
-			if (nowWithTime.get(Calendar.HOUR_OF_DAY) >= 8) {
+			if (nowWithTime.toLocalTime().isAfter(LocalTime.of(8, 0))) {
 				// Current time is after 8 AM, start from current time
-				cal.setTime(nowWithTime.getTime());
-				cal.set(Calendar.SECOND, 0);
-				cal.set(Calendar.MILLISECOND, 0);
+				candidateTime = nowWithTime.truncatedTo(ChronoUnit.SECONDS);
 				// Round up to next hour
-				if (cal.get(Calendar.MINUTE) > 0) {
-					cal.add(Calendar.HOUR_OF_DAY, 1);
-					cal.set(Calendar.MINUTE, 0);
+				if (candidateTime.getMinute() > 0) {
+					candidateTime = candidateTime.plusHours(1).withMinute(0).withSecond(0);
 				}
 			}
-			// Otherwise, cal is already set to 8:00 AM, which is fine
+			// Otherwise, candidateTime is already set to 8:00 AM, which is fine
 		}
 
 		// Find next available hour
-		while (cal.before(endOfDay) || cal.equals(endOfDay)) {
-			final Date candidateTime = cal.getTime();
-			final Calendar candidateEnd = Calendar.getInstance();
-			candidateEnd.setTime(candidateTime);
-			candidateEnd.add(Calendar.HOUR_OF_DAY, 1);
+		while (!candidateTime.isAfter(endOfDay)) {
+			final LocalDateTime candidateEnd = candidateTime.plusHours(1);
 
 			// Check if this hour is available (no overlapping events)
 			boolean isAvailable = true;
 			for (final CalendarEvent event : events) {
-				final Calendar eventStart = Calendar.getInstance();
-				eventStart.setTime(event.getEventDateTime());
-				final Calendar eventEnd = Calendar.getInstance();
-				eventEnd.setTime(event.getEventDateTime());
-				eventEnd.add(Calendar.MINUTE, event.getDurationMinutes() != null ? event.getDurationMinutes() : 60);
+				if (event.getEventDateTime() == null) {
+					continue;
+				}
+				final LocalDateTime eventStart = event.getEventDateTime()
+					.toInstant()
+					.atZone(ZoneId.systemDefault())
+					.toLocalDateTime();
+				final int durationMinutes = event.getDurationMinutes() != null ? event.getDurationMinutes() : 60;
+				final LocalDateTime eventEnd = eventStart.plusMinutes(durationMinutes);
 
 				// Check for overlap
-				if (candidateTime.before(eventEnd.getTime()) && candidateEnd.getTime().after(eventStart.getTime())) {
+				if (candidateTime.isBefore(eventEnd) && candidateEnd.isAfter(eventStart)) {
 					isAvailable = false;
 					break;
 				}
@@ -352,11 +326,12 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			if (isAvailable) {
 				final Map<String, Object> result = new HashMap<>();
 				result.put("available", true);
-				result.put("dateTime", formatDateForCalendar(candidateTime));
+				result.put("dateTime",
+						formatDateForCalendar(Date.from(candidateTime.atZone(ZoneId.systemDefault()).toInstant())));
 				return result;
 			}
 
-			cal.add(Calendar.HOUR_OF_DAY, 1);
+			candidateTime = candidateTime.plusHours(1);
 		}
 
 		// No available time found
@@ -523,11 +498,9 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			}
 
 			// Calculate IMC if peso and estatura are provided
-			Double imc = null;
-			NivelPeso nivelPeso = null;
 			if (peso != null && estatura != null && estatura > 0) {
-				imc = peso / Math.pow(estatura, 2);
-				nivelPeso = imc > 30.0d ? NivelPeso.SOBREPESO
+				final Double imc = peso / Math.pow(estatura, 2);
+				final NivelPeso nivelPeso = imc > 30.0d ? NivelPeso.SOBREPESO
 						: imc > 25.0d ? NivelPeso.ALTO : imc > 18.5d ? NivelPeso.NORMAL : NivelPeso.BAJO;
 				existingEvent.setImc(imc);
 				existingEvent.setNivelPeso(nivelPeso);

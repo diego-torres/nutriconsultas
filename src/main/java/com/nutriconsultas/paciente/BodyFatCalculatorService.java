@@ -65,11 +65,11 @@ public class BodyFatCalculatorService {
 		double bodyDensity;
 		if ("M".equalsIgnoreCase(gender)) {
 			// Male formula
-			bodyDensity = 1.10938 - (0.0008267 * sum) + (0.0000016 * sum * sum) - (0.0002574 * age);
+			bodyDensity = 1.109_38 - (0.000_826_7 * sum) + (0.000_001_6 * sum * sum) - (0.000_257_4 * age);
 		}
 		else {
 			// Female formula
-			bodyDensity = 1.0994921 - (0.0009929 * sum) + (0.0000023 * sum * sum) - (0.0001392 * age);
+			bodyDensity = 1.099_492_1 - (0.000_992_9 * sum) + (0.000_002_3 * sum * sum) - (0.000_139_2 * age);
 		}
 		// Convert body density to body fat percentage using Siri equation
 		final double bodyFatPercentage = ((4.95 / bodyDensity) - 4.5) * 100;
@@ -104,14 +104,14 @@ public class BodyFatCalculatorService {
 			// * log10(height)) - 450
 			final double logValue = Math.log10(waist - neck);
 			final double heightLog = Math.log10(height);
-			bodyFatPercentage = 495 / (1.0324 - 0.19077 * logValue + 0.15456 * heightLog) - 450;
+			bodyFatPercentage = 495 / (1.032_4 - 0.190_77 * logValue + 0.154_56 * heightLog) - 450;
 		}
 		else {
 			// Female formula requires hip measurement as well
 			// For now, use a simplified version
 			final double logValue = Math.log10(waist - neck);
 			final double heightLog = Math.log10(height);
-			bodyFatPercentage = 495 / (1.29579 - 0.35004 * logValue + 0.22100 * heightLog) - 450;
+			bodyFatPercentage = 495 / (1.295_79 - 0.350_04 * logValue + 0.221_00 * heightLog) - 450;
 		}
 		// Clamp to reasonable range
 		final double clamped = Math.max(5.0, Math.min(50.0, bodyFatPercentage));
