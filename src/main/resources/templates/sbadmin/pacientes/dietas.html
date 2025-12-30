@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <!-- Favicons -->
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
+
+  <title>Minutriporcion - Plan Alimentario del Paciente: [[(${paciente != null ? paciente.name : ''})]]</title>
+
+  <!-- Custom fonts for this template-->
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link th:href="@{/sbadmin/css/sb-admin-2.css}" rel="stylesheet">
+  <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
+
+</head>
+
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/pacientes/sidebar :: sidebar}"></div>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Plan Alimentario - [[(${paciente != null ? paciente.name : ''})]]</h1>
+            <a th:href="@{/admin/pacientes/{id}/dietas/asignar(id=${paciente != null ? paciente.id : 0})}" 
+               class="btn btn-primary btn-sm">
+              <i class="fas fa-plus"></i> Asignar Nuevo Plan Alimentario
+            </a>
+          </div>
+
+          <!-- Content Row -->
+          <div class="row">
+            <div class="col-xl-12 col-lg-12">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                  <h6 class="m-0 font-weight-bold text-primary">Plan Alimentario</h6>
+                </div>
+                <div class="card-body">
+                  <!-- Active Dietas -->
+                  <div th:if="${dietasActivas != null && !dietasActivas.isEmpty()}" class="mb-4">
+                    <h6 class="text-success font-weight-bold mb-3">
+                      <i class="fas fa-check-circle"></i> Planes Activos
+                    </h6>
+                    <div class="table-responsive">
+                      <table class="table table-bordered">
+                        <thead>
+                          <tr>
+                            <th>Dieta</th>
+                            <th>Macronutrientes</th>
+                            <th>Kilocalorías</th>
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
+                            <th>Estado</th>
+                            <th>Notas</th>
+                            <th>Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr th:each="dietaAsignada : ${dietasActivas}">
+                            <td>[[(${dietaAsignada.dieta.nombre})]]</td>
+                            <td>
+                              <small>
+                                <strong>P:</strong> <span th:text="${#numbers.formatDecimal(dietaAsignada.dieta.proteina, 1, 1)} + 'g'">0.0g</span>
+                                <strong>L:</strong> <span th:text="${#numbers.formatDecimal(dietaAsignada.dieta.lipidos, 1, 1)} + 'g'">0.0g</span>
+                                <strong>H:</strong> <span th:text="${#numbers.formatDecimal(dietaAsignada.dieta.hidratosDeCarbono, 1, 1)} + 'g'">0.0g</span>
+                              </small>
+                            </td>
+                            <td>
+                              <span th:text="${dietaAsignada.dieta.energia != null ? dietaAsignada.dieta.energia : 0}">0</span> kcal
+                            </td>
+                            <td>[[(${#dates.format(dietaAsignada.startDate, 'dd/MM/yyyy')})]]</td>
+                            <td>
+                              <span th:if="${dietaAsignada.endDate != null}">[[(${#dates.format(dietaAsignada.endDate, 'dd/MM/yyyy')})]]</span>
+                              <span th:if="${dietaAsignada.endDate == null}" class="text-muted">-</span>
+                            </td>
+                            <td>
+                              <span th:if="${dietaAsignada.status.name() == 'ACTIVE'}" class="badge badge-success">ACTIVA</span>
+                              <span th:if="${dietaAsignada.status.name() == 'COMPLETED'}" class="badge badge-info">COMPLETADA</span>
+                              <span th:if="${dietaAsignada.status.name() == 'CANCELLED'}" class="badge badge-secondary">CANCELADA</span>
+                            </td>
+                            <td>
+                              <span th:if="${dietaAsignada.notes != null && !dietaAsignada.notes.isEmpty()}">[[(${dietaAsignada.notes})]]</span>
+                              <span th:if="${dietaAsignada.notes == null || dietaAsignada.notes.isEmpty()}" class="text-muted">-</span>
+                            </td>
+                            <td>
+                              <a th:href="@{/admin/pacientes/{pacienteId}/dietas/{id}/editar(pacienteId=${paciente.id}, id=${dietaAsignada.id})}" 
+                                 class="btn btn-sm btn-info">
+                                <i class="fas fa-edit"></i> Editar
+                              </a>
+                              <button type="button" 
+                                      class="btn btn-sm btn-warning cancel-dieta-btn" 
+                                      th:data-paciente-id="${paciente.id}"
+                                      th:data-dieta-id="${dietaAsignada.id}">
+                                <i class="fas fa-times"></i> Cancelar
+                              </button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <!-- Historical Dietas -->
+                  <div th:if="${dietasAsignadas != null && !dietasAsignadas.isEmpty()}">
+                    <h6 class="text-secondary font-weight-bold mb-3">
+                      <i class="fas fa-history"></i> Historial de Planes Alimentarios
+                    </h6>
+                    <div class="table-responsive">
+                      <table class="table table-bordered table-sm">
+                        <thead>
+                          <tr>
+                            <th>Dieta</th>
+                            <th>Macronutrientes</th>
+                            <th>Kilocalorías</th>
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
+                            <th>Estado</th>
+                            <th>Notas</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr th:each="dietaAsignada : ${dietasAsignadas}" 
+                              th:classappend="${dietaAsignada.status.name() == 'ACTIVE'} ? 'table-success' : (${dietaAsignada.status.name() == 'COMPLETED'} ? 'table-info' : 'table-secondary')">
+                            <td>[[(${dietaAsignada.dieta.nombre})]]</td>
+                            <td>
+                              <small>
+                                <strong>P:</strong> <span th:text="${#numbers.formatDecimal(dietaAsignada.dieta.proteina, 1, 1)} + 'g'">0.0g</span>
+                                <strong>L:</strong> <span th:text="${#numbers.formatDecimal(dietaAsignada.dieta.lipidos, 1, 1)} + 'g'">0.0g</span>
+                                <strong>H:</strong> <span th:text="${#numbers.formatDecimal(dietaAsignada.dieta.hidratosDeCarbono, 1, 1)} + 'g'">0.0g</span>
+                              </small>
+                            </td>
+                            <td>
+                              <span th:text="${dietaAsignada.dieta.energia != null ? dietaAsignada.dieta.energia : 0}">0</span> kcal
+                            </td>
+                            <td>[[(${#dates.format(dietaAsignada.startDate, 'dd/MM/yyyy')})]]</td>
+                            <td>
+                              <span th:if="${dietaAsignada.endDate != null}">[[(${#dates.format(dietaAsignada.endDate, 'dd/MM/yyyy')})]]</span>
+                              <span th:if="${dietaAsignada.endDate == null}" class="text-muted">-</span>
+                            </td>
+                            <td>
+                              <span th:if="${dietaAsignada.status.name() == 'ACTIVE'}" class="badge badge-success">ACTIVA</span>
+                              <span th:if="${dietaAsignada.status.name() == 'COMPLETED'}" class="badge badge-info">COMPLETADA</span>
+                              <span th:if="${dietaAsignada.status.name() == 'CANCELLED'}" class="badge badge-secondary">CANCELADA</span>
+                            </td>
+                            <td>
+                              <span th:if="${dietaAsignada.notes != null && !dietaAsignada.notes.isEmpty()}">[[(${dietaAsignada.notes})]]</span>
+                              <span th:if="${dietaAsignada.notes == null || dietaAsignada.notes.isEmpty()}" class="text-muted">-</span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <!-- No Dietas Message -->
+                  <div th:if="${dietasAsignadas == null || dietasAsignadas.isEmpty()}" class="text-center text-muted py-4">
+                    <i class="fas fa-utensils fa-3x mb-3"></i>
+                    <p>No hay planes alimentarios asignados para este paciente.</p>
+                    <a th:href="@{/admin/pacientes/{id}/dietas/asignar(id=${paciente.id})}" class="btn btn-primary">
+                      <i class="fas fa-plus"></i> Asignar Primer Plan Alimentario
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- /.container-fluid -->
+
+      </div>
+      <!-- End of Main Content -->
+
+      <div th:insert="~{sbadmin/footer :: footer}"></div>
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+  </div>
+  <!-- End of Page Wrapper -->
+
+  <!-- Bootstrap core JavaScript-->
+  <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
+
+  <script lang="javascript">
+    'use strict';
+    
+    // Wait for jQuery and SweetAlert to be loaded
+    function waitForDependencies() {
+      if (typeof jQuery === 'undefined' || typeof swal === 'undefined') {
+        setTimeout(waitForDependencies, 50);
+        return;
+      }
+      
+      jQuery(document).ready(function($) {
+        // Handle cancel dieta button click
+        $(document).on('click', '.cancel-dieta-btn', function(event) {
+          event.preventDefault();
+          const button = $(event.currentTarget);
+          const pacienteId = button.data('paciente-id');
+          const dietaId = button.data('dieta-id');
+          
+          swal({
+            title: 'Cancelar Plan Alimentario',
+            text: '¿Está seguro de cancelar esta asignación de plan alimentario?',
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, cancelar',
+            cancelButtonText: 'No, mantener',
+            closeOnConfirm: false,
+            showLoaderOnConfirm: true
+          }, function(isConfirm) {
+            if (isConfirm) {
+              // Create and submit form
+              const form = $('<form>', {
+                'method': 'POST',
+                'action': '/admin/pacientes/' + pacienteId + '/dietas/' + dietaId + '/cancelar'
+              });
+              
+              $('body').append(form);
+              form.submit();
+            }
+          });
+        });
+      });
+    }
+    
+    waitForDependencies();
+  </script>
+
+</body>
+
+</html>
+

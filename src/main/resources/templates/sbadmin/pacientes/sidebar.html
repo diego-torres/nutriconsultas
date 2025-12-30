@@ -57,6 +57,11 @@
         <i class="fas fa-fw fa-head-side-cough"></i>
         <span>Desarrollo</span></a>
     </li>
+    <li class="nav-item" th:classappend="${activeMenu == 'plan-alimentario' ? 'active' : ''}">
+      <a class="nav-link" th:href="@{/admin/pacientes/{id}/dietas(id=${paciente != null ? paciente.id : 0})}">
+        <i class="fas fa-fw fa-utensils"></i>
+        <span>Plan Alimentario</span></a>
+    </li>
     <li class="nav-item" th:classappend="${activeMenu == 'historial' ? 'active' : ''}">
       <a class="nav-link" th:href="@{/admin/pacientes/{id}/historial(id=${paciente != null ? paciente.id : 0})}">
         <i class="fas fa-fw fa-heart"></i>
