@@ -28,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 @ExtendWith(MockitoExtension.class)
 @Slf4j
 @ActiveProfiles("test")
-@SuppressWarnings("null")
 public class IngredienteRestControllerTest {
 
 	@InjectMocks
