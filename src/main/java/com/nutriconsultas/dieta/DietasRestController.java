@@ -40,9 +40,9 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 			.collect(Collectors.toList());
 		ingestas.forEach(i -> i.setDieta(dieta));
 		dieta.setIngestas(ingestas);
-		final Dieta _dieta = dietaService.saveDieta(dieta);
+		final Dieta savedDieta = dietaService.saveDieta(dieta);
 		log.info("finish addDieta with dieta {}.", dieta);
-		return _dieta;
+		return savedDieta;
 	}
 
 	@DeleteMapping("{dietaId}/ingestas/{ingestaId}/platillos/{platilloIngestaId}")

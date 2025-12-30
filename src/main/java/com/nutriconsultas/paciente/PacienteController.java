@@ -174,18 +174,18 @@ public class PacienteController extends AbstractAuthorizedController {
 	public String cambiaAfiliacionPaciente(@PathVariable @NonNull Long id, @Valid Paciente paciente,
 			BindingResult result, Model model) {
 		log.debug("Cargando perfil de paciente {}", id);
-		Paciente _paciente = pacienteRepository.findById(id)
+		Paciente pacienteEntity = pacienteRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
 
-		_paciente.setName(paciente.getName());
-		_paciente.setDob(paciente.getDob());
-		_paciente.setEmail(paciente.getEmail());
-		_paciente.setPhone(paciente.getPhone());
-		_paciente.setGender(paciente.getGender());
-		_paciente.setResponsibleName(paciente.getResponsibleName());
-		_paciente.setParentesco(paciente.getParentesco());
+		pacienteEntity.setName(paciente.getName());
+		pacienteEntity.setDob(paciente.getDob());
+		pacienteEntity.setEmail(paciente.getEmail());
+		pacienteEntity.setPhone(paciente.getPhone());
+		pacienteEntity.setGender(paciente.getGender());
+		pacienteEntity.setResponsibleName(paciente.getResponsibleName());
+		pacienteEntity.setParentesco(paciente.getParentesco());
 
-		pacienteRepository.save(_paciente);
+		pacienteRepository.save(pacienteEntity);
 		return String.format("redirect:/admin/pacientes/%d", id);
 	}
 
@@ -204,17 +204,17 @@ public class PacienteController extends AbstractAuthorizedController {
 	public String cambiaAntecedentesPaciente(@PathVariable @NonNull Long id, @Valid Paciente paciente,
 			BindingResult result, Model model) {
 		log.debug("Cargando perfil de paciente {}", id);
-		Paciente _paciente = pacienteRepository.findById(id)
+		Paciente pacienteEntity = pacienteRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
 
-		_paciente.setTipoSanguineo(paciente.getTipoSanguineo());
-		_paciente.setAntecedentesNatales(paciente.getAntecedentesNatales());
-		_paciente.setAntecedentesPatologicosFamiliares(paciente.getAntecedentesPatologicosFamiliares());
-		_paciente.setAntecedentesPatologicosPersonales(paciente.getAntecedentesPatologicosPersonales());
-		_paciente.setAntecedentesPrenatales(paciente.getAntecedentesPrenatales());
-		_paciente.setComplicaciones(paciente.getComplicaciones());
+		pacienteEntity.setTipoSanguineo(paciente.getTipoSanguineo());
+		pacienteEntity.setAntecedentesNatales(paciente.getAntecedentesNatales());
+		pacienteEntity.setAntecedentesPatologicosFamiliares(paciente.getAntecedentesPatologicosFamiliares());
+		pacienteEntity.setAntecedentesPatologicosPersonales(paciente.getAntecedentesPatologicosPersonales());
+		pacienteEntity.setAntecedentesPrenatales(paciente.getAntecedentesPrenatales());
+		pacienteEntity.setComplicaciones(paciente.getComplicaciones());
 
-		pacienteRepository.save(_paciente);
+		pacienteRepository.save(pacienteEntity);
 		return String.format("redirect:/admin/pacientes/%d", id);
 	}
 
@@ -233,22 +233,22 @@ public class PacienteController extends AbstractAuthorizedController {
 	public String cambiaDesarrolloPaciente(@PathVariable @NonNull Long id, @Valid Paciente paciente,
 			BindingResult result, Model model) {
 		log.debug("Cargando desarrollo de paciente {}", id);
-		Paciente _paciente = pacienteRepository.findById(id)
+		Paciente pacienteEntity = pacienteRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
 
-		_paciente.setHistorialAlimenticio(paciente.getHistorialAlimenticio());
-		_paciente.setDesarrolloPsicomotor(paciente.getDesarrolloPsicomotor());
-		_paciente.setAlergias(paciente.getAlergias());
+		pacienteEntity.setHistorialAlimenticio(paciente.getHistorialAlimenticio());
+		pacienteEntity.setDesarrolloPsicomotor(paciente.getDesarrolloPsicomotor());
+		pacienteEntity.setAlergias(paciente.getAlergias());
 
-		_paciente.setHipertension(paciente.getHipertension());
-		_paciente.setDiabetes(paciente.getDiabetes());
-		_paciente.setHipotiroidismo(paciente.getHipotiroidismo());
-		_paciente.setObesidad(paciente.getObesidad());
-		_paciente.setAnemia(paciente.getAnemia());
-		_paciente.setBulimia(paciente.getBulimia());
-		_paciente.setAnorexia(paciente.getAnorexia());
+		pacienteEntity.setHipertension(paciente.getHipertension());
+		pacienteEntity.setDiabetes(paciente.getDiabetes());
+		pacienteEntity.setHipotiroidismo(paciente.getHipotiroidismo());
+		pacienteEntity.setObesidad(paciente.getObesidad());
+		pacienteEntity.setAnemia(paciente.getAnemia());
+		pacienteEntity.setBulimia(paciente.getBulimia());
+		pacienteEntity.setAnorexia(paciente.getAnorexia());
 
-		pacienteRepository.save(_paciente);
+		pacienteRepository.save(pacienteEntity);
 		return String.format("redirect:/admin/pacientes/%d", id);
 	}
 
@@ -360,7 +360,6 @@ public class PacienteController extends AbstractAuthorizedController {
 				}
 			}
 		}
-
 		final LocalDate today = LocalDate.now();
 		final Date eventDate = evento.getEventDateTime();
 		if (eventDate != null) {
@@ -500,7 +499,6 @@ public class PacienteController extends AbstractAuthorizedController {
 			model.addAttribute("dietasDisponibles", dietaService.getDietas());
 			return "sbadmin/pacientes/asignar-dieta";
 		}
-
 		final PacienteDieta saved = pacienteDietaService.assignDieta(id, dietaId, pacienteDieta);
 		log.debug("Dieta asignada exitosamente: {}", saved);
 		return String.format("redirect:/admin/pacientes/%d/dietas", id);
@@ -566,7 +564,6 @@ public class PacienteController extends AbstractAuthorizedController {
 			model.addAttribute("pacienteDieta", pacienteDieta);
 			return "sbadmin/pacientes/editar-dieta";
 		}
-
 		final PacienteDieta updated = pacienteDietaService.updateAssignment(id, pacienteDieta);
 		log.info("Asignación de dieta actualizada exitosamente: {}", updated);
 		return String.format("redirect:/admin/pacientes/%d/dietas", pacienteId);

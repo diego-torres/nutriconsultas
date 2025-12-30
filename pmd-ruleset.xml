@@ -16,6 +16,8 @@
 		<exclude name="AvoidUsingHardCodedIP" />
 		<!-- Exclude AbstractClassWithoutAbstractMethod: Valid pattern for base classes -->
 		<exclude name="AbstractClassWithoutAbstractMethod" />
+		<!-- Exclude FinalClass: Spring Boot main application classes cannot be final -->
+		<exclude name="FinalClass" />
 		<!-- Keep UnusedAssignment: Catches real bugs -->
 		<!-- Keep OneDeclarationPerLine: Improves readability -->
 		<!-- Keep other best practice rules -->

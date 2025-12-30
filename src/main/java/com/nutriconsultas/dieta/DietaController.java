@@ -50,9 +50,9 @@ public class DietaController extends AbstractAuthorizedController {
 	public String saveDieta(@RequestParam @NonNull final Long id, @RequestParam @NonNull final String nombre,
 			final Model model) {
 		LOGGER.debug("Guardar dieta with id {}, {}", id, nombre);
-		final Dieta _dieta = dietaService.getDieta(id);
-		_dieta.setNombre(nombre);
-		dietaService.saveDieta(_dieta);
+		final Dieta dieta = dietaService.getDieta(id);
+		dieta.setNombre(nombre);
+		dietaService.saveDieta(dieta);
 		return "redirect:/admin/dietas/" + id;
 	}
 

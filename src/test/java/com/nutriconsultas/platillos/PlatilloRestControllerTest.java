@@ -122,16 +122,16 @@ public class PlatilloRestControllerTest {
 		ingrediente.setCantidad("1");
 		ingrediente.setPeso(100);
 
-		Ingrediente _Ingrediente = new Ingrediente();
-		_Ingrediente.setId(1L);
-		_Ingrediente.setAlimento(alimento);
-		_Ingrediente.setCantSugerida(1d);
-		_Ingrediente.setPesoNeto(100);
+		Ingrediente ingredienteResult = new Ingrediente();
+		ingredienteResult.setId(1L);
+		ingredienteResult.setAlimento(alimento);
+		ingredienteResult.setCantSugerida(1d);
+		ingredienteResult.setPesoNeto(100);
 
 		log.debug("Ingrediente to add: {}", ingrediente);
 
 		// Mock the save method
-		when(platilloService.addIngrediente(1L, 1L, "1", 100)).thenReturn(_Ingrediente);
+		when(platilloService.addIngrediente(1L, 1L, "1", 100)).thenReturn(ingredienteResult);
 
 		// Act
 		ResponseEntity<ApiResponse<Ingrediente>> result = platilloRestController.addIngrediente(1L, ingrediente);
@@ -139,7 +139,7 @@ public class PlatilloRestControllerTest {
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
-		assertThat(result.getBody().getData()).isEqualTo(_Ingrediente);
+		assertThat(result.getBody().getData()).isEqualTo(ingredienteResult);
 	}
 
 }

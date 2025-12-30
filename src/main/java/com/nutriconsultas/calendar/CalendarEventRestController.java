@@ -272,7 +272,6 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			result.put("isPastDate", true);
 			return result; // Exit early - do not attempt to calculate available time
 		}
-
 		final LocalDateTime endOfDay = parsedLocalDate.atTime(17, 0);
 
 		// Get all events for this date

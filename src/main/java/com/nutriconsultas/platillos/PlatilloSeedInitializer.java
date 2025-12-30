@@ -52,8 +52,8 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 		// Verify alimentos exist before proceeding
 		final long alimentoCount = alimentosRepository.count();
 		if (alimentoCount == 0) {
-			log.warn(
-					"No alimentos found in database. Platillo seeding requires alimentos to exist first. Skipping platillo seed.");
+			log.warn("No alimentos found in database. Platillo seeding requires alimentos to exist first. "
+					+ "Skipping platillo seed.");
 			return;
 		}
 		log.info("Found {} alimentos in database. Proceeding with platillo seed.", alimentoCount);
@@ -115,9 +115,9 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 			}
 
 			// Read ingredients from auxiliary table
-			final List<Map<String, Object>> ingredientes = jdbc.queryForList(
-					"SELECT alimento_id, peso_neto FROM public.seed_platillo_ingrediente WHERE platillo_name = ? ORDER BY orden, id",
-					name);
+			final List<Map<String, Object>> ingredientes = jdbc
+				.queryForList("SELECT alimento_id, peso_neto FROM public.seed_platillo_ingrediente "
+						+ "WHERE platillo_name = ? ORDER BY orden, id", name);
 
 			// Diagnostic: if no ingredients found, check if any ingredients exist for
 			// similar names
@@ -131,7 +131,7 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 				if (name.length() > 50) {
 					final String namePrefix = name.substring(0, 50);
 					final Integer countSimilar = jdbc.queryForObject(
-							"SELECT COUNT(*) FROM public.seed_platillo_ingrediente WHERE platillo_name LIKE ?",
+							"SELECT COUNT(*) FROM public.seed_platillo_ingrediente " + "WHERE platillo_name LIKE ?",
 							Integer.class, namePrefix + "%");
 					log.debug("Found {} ingredients for names starting with '{}'", countSimilar, namePrefix);
 				}
@@ -140,42 +140,8 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 			log.debug("Adding {} ingredients to platillo '{}' (id: {})", ingredientes.size(), name, platilloId);
 
 			// Add ingredients using service (calculates nutrients automatically)
-			int addedCount = 0;
-			for (final Map<String, Object> ing : ingredientes) {
-				final Long alimentoId = ((Number) ing.get("alimento_id")).longValue();
-				final Integer peso = ((Number) ing.get("peso_neto")).intValue();
-
-				final Alimento alimento = alimentosRepository.findById(alimentoId).orElse(null);
-				if (alimento == null) {
-					log.warn("Alimento with id {} not found. Skipping ingredient for platillo '{}'.", alimentoId, name);
-					continue;
-				}
-
-				final String cantidad = alimento.getFractionalCantSugerida();
-				if (cantidad == null) {
-					log.warn("Alimento {} has no fractionalCantSugerida. Skipping ingredient for platillo '{}'.",
-							alimentoId, name);
-					continue;
-				}
-
-				try {
-					final Ingrediente addedIngrediente = platilloService.addIngrediente(platilloId, alimentoId,
-							cantidad, peso);
-					if (addedIngrediente == null) {
-						log.error("Failed to add ingrediente (alimentoId: {}, peso: {}) to platillo '{}' (id: {})",
-								alimentoId, peso, name, platilloId);
-					}
-					else {
-						addedCount++;
-						ingredientCount++;
-					}
-				}
-				catch (final Exception e) {
-					log.error(
-							"Exception while adding ingrediente (alimentoId: {}, peso: {}) to platillo '{}' (id: {}): {}",
-							alimentoId, peso, name, platilloId, e.getMessage(), e);
-				}
-			}
+			final int addedCount = addIngredientsToPlatillo(platilloId, name, ingredientes);
+			ingredientCount += addedCount;
 
 			// Verify ingredients were added by checking the database directly
 			Integer dbIngredientCount = jdbc.queryForObject("SELECT COUNT(*) FROM ingrediente WHERE platillo_id = ?",
@@ -204,6 +170,45 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 		log.info("Finished seeding {} platillos", platillos.size());
 	}
 
+	private int addIngredientsToPlatillo(final Long platilloId, final String platilloName,
+			final List<Map<String, Object>> ingredientes) {
+		int addedCount = 0;
+		for (final Map<String, Object> ing : ingredientes) {
+			final Long alimentoId = ((Number) ing.get("alimento_id")).longValue();
+			final Integer peso = ((Number) ing.get("peso_neto")).intValue();
+
+			final Alimento alimento = alimentosRepository.findById(alimentoId).orElse(null);
+			if (alimento == null) {
+				log.warn("Alimento with id {} not found. Skipping ingredient for platillo '{}'.", alimentoId,
+						platilloName);
+				continue;
+			}
+			final String cantidad = alimento.getFractionalCantSugerida();
+			if (cantidad == null) {
+				log.warn("Alimento {} has no fractionalCantSugerida. Skipping ingredient for platillo '{}'.",
+						alimentoId, platilloName);
+				continue;
+			}
+
+			try {
+				final Ingrediente addedIngrediente = platilloService.addIngrediente(platilloId, alimentoId, cantidad,
+						peso);
+				if (addedIngrediente == null) {
+					log.error("Failed to add ingrediente (alimentoId: {}, peso: {}) to platillo '{}' (id: {})",
+							alimentoId, peso, platilloName, platilloId);
+				}
+				else {
+					addedCount++;
+				}
+			}
+			catch (final Exception e) {
+				log.error("Exception while adding ingrediente (alimentoId: {}, peso: {}) to platillo '{}' "
+						+ "(id: {}): {}", alimentoId, peso, platilloName, platilloId, e.getMessage(), e);
+			}
+		}
+		return addedCount;
+	}
+
 	private void initializeAuxiliaryTables() {
 		try {
 			final boolean tableExists = checkTableExists("seed_platillo_ingrediente");
@@ -220,8 +225,8 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 						try {
 							final Integer platilloCount = jdbc
 								.queryForObject("SELECT COUNT(*) FROM public.seed_platillo", Integer.class);
-							final Integer ingredienteCount = jdbc
-								.queryForObject("SELECT COUNT(*) FROM public.seed_platillo_ingrediente", Integer.class);
+							final String countQuery = "SELECT COUNT(*) FROM public.seed_platillo_ingrediente";
+							final Integer ingredienteCount = jdbc.queryForObject(countQuery, Integer.class);
 							log.info("Auxiliary tables populated: {} platillos, {} ingredients",
 									platilloCount != null ? platilloCount : 0,
 									ingredienteCount != null ? ingredienteCount : 0);
@@ -269,8 +274,8 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 							// Re-check counts after script execution
 							platilloCount = jdbc.queryForObject("SELECT COUNT(*) FROM public.seed_platillo",
 									Integer.class);
-							ingredienteCount = jdbc
-								.queryForObject("SELECT COUNT(*) FROM public.seed_platillo_ingrediente", Integer.class);
+							final String countQuery = "SELECT COUNT(*) FROM public.seed_platillo_ingrediente";
+							ingredienteCount = jdbc.queryForObject(countQuery, Integer.class);
 							log.info("After population: {} platillos, {} ingredients",
 									platilloCount != null ? platilloCount : 0,
 									ingredienteCount != null ? ingredienteCount : 0);

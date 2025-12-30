@@ -467,8 +467,8 @@ public class DietaControllerTest {
 
 	@Test
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
-	public void testEditarDieta_LoadsAlimentos() throws Exception {
-		log.info("Starting testEditarDieta_LoadsAlimentos");
+	public void testEditarDietaLoadsAlimentos() throws Exception {
+		log.info("Starting testEditarDietaLoadsAlimentos");
 
 		// Setup mock for findAll platillos and alimentos
 		List<Platillo> platillos = new ArrayList<>();
@@ -492,7 +492,7 @@ public class DietaControllerTest {
 		verify(platilloService, times(1)).findAll();
 		verify(alimentoService, times(1)).findAll();
 
-		log.info("Finishing testEditarDieta_LoadsAlimentos");
+		log.info("Finishing testEditarDietaLoadsAlimentos");
 	}
 
 }

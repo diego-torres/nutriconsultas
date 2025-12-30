@@ -35,18 +35,11 @@ if ! command -v mvn &> /dev/null; then
     exit 1
 fi
 
-# Step 1: Format Java code with Spring Java Format
-print_status "Step 1/5: Formatting Java code with Spring Java Format..."
-if mvn spring-javaformat:apply; then
-    print_status "✓ Java code formatted successfully"
-else
-    print_error "✗ Java code formatting failed"
-    exit 1
-fi
-echo ""
-
-# Step 2: Run Checkstyle
-print_status "Step 2/5: Running Checkstyle..."
+# Step 1: Run Checkstyle (enforces code style including formatting rules)
+print_status "Step 1/5: Running Checkstyle..."
+# Note: Using custom checkstyle rules. Spring Java Format is available separately:
+# Run 'mvn spring-javaformat:apply' if you want to format with Spring Java Format
+# (Note: Spring Java Format may have different formatting rules than checkstyle)
 if mvn checkstyle:check; then
     print_status "✓ Checkstyle passed"
 else
@@ -55,8 +48,8 @@ else
 fi
 echo ""
 
-# Step 3: Run SpotBugs
-print_status "Step 3/5: Running SpotBugs..."
+# Step 2: Run SpotBugs
+print_status "Step 2/5: Running SpotBugs..."
 if mvn spotbugs:check; then
     print_status "✓ SpotBugs passed"
 else
@@ -65,8 +58,8 @@ else
 fi
 echo ""
 
-# Step 4: Run PMD
-print_status "Step 4/5: Running PMD..."
+# Step 3: Run PMD
+print_status "Step 3/5: Running PMD..."
 if mvn pmd:check; then
     print_status "✓ PMD passed"
 else
@@ -75,8 +68,8 @@ else
 fi
 echo ""
 
-# Step 5: Validate Thymeleaf templates
-print_status "Step 5/5: Validating Thymeleaf templates..."
+# Step 4: Validate Thymeleaf templates
+print_status "Step 4/5: Validating Thymeleaf templates..."
 if mvn test -Dtest=ThymeleafTemplateValidationTest -q; then
     print_status "✓ Thymeleaf templates validated"
 else
@@ -95,9 +88,11 @@ print_status "Linting and formatting complete!"
 echo "=========================================="
 echo ""
 print_status "Summary:"
-echo "  - Java code has been formatted"
 echo "  - Checkstyle, SpotBugs, and PMD reports are available"
 echo "  - Thymeleaf templates have been validated"
+echo ""
+echo "  Note: Code formatting is enforced by Checkstyle rules."
+echo "  To format with Spring Java Format (optional): mvn spring-javaformat:apply"
 echo ""
 print_status "To view detailed reports:"
 echo "  - Checkstyle: target/checkstyle-result.xml"

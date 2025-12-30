@@ -59,8 +59,9 @@ public class PlatilloIngesta extends AbstractNutrible {
 	private Ingesta ingesta;
 
 	public String getImageUrl() {
-		if (this.imageUrl == null || this.imageUrl.isBlank())
+		if (this.imageUrl == null || this.imageUrl.isBlank()) {
 			return "/sbadmin/img/plato-vacio.jpg";
+		}
 		return imageUrl;
 	}
 

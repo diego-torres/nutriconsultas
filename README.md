@@ -166,13 +166,35 @@ mvn checkstyle:check
 
 **Fixing Checkstyle Issues:**
 - Review the report at `target/checkstyle-result.xml`
-- Common issues:
+- Common issues and fixes:
   - **Line length**: Keep lines under 120 characters
-  - **Naming conventions**: Follow Java naming standards (PascalCase for classes, camelCase for methods/variables)
-  - **Missing braces**: Always use braces for if/for/while statements
+    - Break long lines into multiple lines
+    - Use method chaining on separate lines
+    - Extract complex expressions into variables
+  - **Naming conventions**: Follow Java naming standards
+    - Classes: PascalCase (e.g., `MyClass`)
+    - Methods/Variables: camelCase starting with lowercase (e.g., `myMethod`, `myVariable`)
+    - **NEVER use underscore prefix for variables** (e.g., `_variable` is invalid, use `variable` or `variableEntity`)
+    - Constants: UPPER_SNAKE_CASE (e.g., `MY_CONSTANT`)
+  - **Missing braces (NeedBraces)**: Always use braces for if/for/while statements
+    - ❌ Bad: `if (condition) statement;`
+    - ✅ Good: `if (condition) { statement; }`
+  - **RightCurly**: Closing braces should be on the same line as else/catch/finally
+    - ❌ Bad: `} else {` on separate lines
+    - ✅ Good: `} else {` on same line
+  - **VisibilityModifier**: Fields should be private with accessor methods
+    - ❌ Bad: `public String name;` or `static Map map;`
+    - ✅ Good: `private String name;` with getter/setter, or `private static final Map MAP;`
+  - **FinalClass**: Utility classes should be declared as `final`
+    - ❌ Bad: `public class MyComparators { }`
+    - ✅ Good: `public final class MyComparators { }`
+  - **HideUtilityClassConstructor**: Utility classes should have private constructors
+    - ❌ Bad: `public class WebContextFactory { }` (implicit public constructor)
+    - ✅ Good: `public class WebContextFactory { private WebContextFactory() { } }`
   - **Unused imports**: Remove unused imports
   - **Whitespace**: Follow consistent whitespace rules
-- Most issues can be auto-fixed by running `mvn spring-javaformat:apply`
+    - No whitespace after opening brace: `{` not `{ `
+- Most formatting issues can be auto-fixed by running `mvn spring-javaformat:apply`
 - For naming issues, manually rename variables/classes to match conventions
 
 **SpotBugs:**

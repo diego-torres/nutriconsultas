@@ -98,9 +98,8 @@ public class CalendarEventRestControllerTest {
 		event2.setId(2L);
 		event2.setTitle("Seguimiento");
 		event2.setDescription("Seguimiento mensual");
-		event2.setEventDateTime(new Date(System.currentTimeMillis() + 172800000)); // Day
-																					// after
-																					// tomorrow
+		// Day after tomorrow
+		event2.setEventDateTime(new Date(System.currentTimeMillis() + 172800000));
 		event2.setDurationMinutes(30);
 		event2.setStatus(EventStatus.SCHEDULED);
 		event2.setPaciente(paciente);
@@ -338,11 +337,10 @@ public class CalendarEventRestControllerTest {
 	public void testGetCalendarEventsWithDateRange() {
 		log.info("starting testGetCalendarEventsWithDateRange");
 		// Arrange
-		final Date startDate = new Date(System.currentTimeMillis() - 172800000); // 2 days
-																					// ago
-		final Date endDate = new Date(System.currentTimeMillis() + 259200000); // 3 days
-																				// from
-																				// now
+		// 2 days ago
+		final Date startDate = new Date(System.currentTimeMillis() - 172800000);
+		// 3 days from now
+		final Date endDate = new Date(System.currentTimeMillis() + 259200000);
 		final List<CalendarEvent> filteredEvents = new ArrayList<>();
 		filteredEvents.add(events.get(0)); // Tomorrow's event
 		filteredEvents.add(events.get(1)); // Day after tomorrow's event
@@ -933,10 +931,8 @@ public class CalendarEventRestControllerTest {
 		futureCal.add(Calendar.DAY_OF_MONTH, 7); // 7 days from now
 		final String dateStr = String.format("%04d-%02d-%02d", futureCal.get(Calendar.YEAR),
 				futureCal.get(Calendar.MONTH) + 1, futureCal.get(Calendar.DAY_OF_MONTH));
-		when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(new ArrayList<>()); // NOSONAR
-																												// -
-																												// Mockito
-																												// matcher
+		// NOSONAR - Mockito matcher
+		when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(new ArrayList<>());
 
 		// Act
 		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr);
@@ -979,10 +975,8 @@ public class CalendarEventRestControllerTest {
 		event9AM.setStatus(EventStatus.SCHEDULED);
 		existingEvents.add(event9AM);
 
-		when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(existingEvents); // NOSONAR
-																											// -
-																											// Mockito
-																											// matcher
+		// NOSONAR - Mockito matcher
+		when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(existingEvents);
 
 		// Act
 		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr);
@@ -1029,10 +1023,8 @@ public class CalendarEventRestControllerTest {
 			existingEvents.add(event);
 		}
 
-		when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(existingEvents); // NOSONAR
-																											// -
-																											// Mockito
-																											// matcher
+		// NOSONAR - Mockito matcher
+		when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(existingEvents);
 
 		// Act
 		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr);
@@ -1095,10 +1087,8 @@ public class CalendarEventRestControllerTest {
 			existingEvents.add(event);
 		}
 
-		when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(existingEvents); // NOSONAR
-																											// -
-																											// Mockito
-																											// matcher
+		// NOSONAR - Mockito matcher
+		when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(existingEvents);
 
 		// Act
 		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr);
@@ -1158,10 +1148,8 @@ public class CalendarEventRestControllerTest {
 		event2.setStatus(EventStatus.SCHEDULED);
 		existingEvents.add(event2);
 
-		when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(existingEvents); // NOSONAR
-																											// -
-																											// Mockito
-																											// matcher
+		// NOSONAR - Mockito matcher
+		when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(existingEvents);
 
 		// Act
 		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr);
@@ -1203,10 +1191,8 @@ public class CalendarEventRestControllerTest {
 		final String dateTime = (String) result.get("dateTime");
 		assertThat(dateTime).contains("08:00:00");
 		// Verify that findEventsBetweenDates was NOT called (no availability calculation)
-		verify(service, never()).findEventsBetweenDates(any(Date.class), any(Date.class)); // NOSONAR
-																							// -
-																							// Mockito
-																							// matcher
+		// NOSONAR - Mockito matcher
+		verify(service, never()).findEventsBetweenDates(any(Date.class), any(Date.class));
 		log.info("finished testGetNextAvailableTimeWithPastDate");
 	}
 
@@ -1239,10 +1225,8 @@ public class CalendarEventRestControllerTest {
 				pastCal.get(Calendar.MONTH) + 1, pastCal.get(Calendar.DAY_OF_MONTH));
 		assertThat(dateTime).startsWith(expectedDatePart);
 		// Verify that findEventsBetweenDates was NOT called (no availability calculation)
-		verify(service, never()).findEventsBetweenDates(any(Date.class), any(Date.class)); // NOSONAR
-																							// -
-																							// Mockito
-																							// matcher
+		// NOSONAR - Mockito matcher
+		verify(service, never()).findEventsBetweenDates(any(Date.class), any(Date.class));
 		log.info("finished testGetNextAvailableTimeWithPastDateMultipleDaysAgo");
 	}
 
@@ -1277,10 +1261,8 @@ public class CalendarEventRestControllerTest {
 			event.setStatus(EventStatus.SCHEDULED);
 			blockingEvents.add(event);
 		}
-		lenient().when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(blockingEvents); // NOSONAR
-																														// -
-																														// Mockito
-																														// matcher
+		// NOSONAR - Mockito matcher
+		lenient().when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(blockingEvents);
 
 		// Act
 		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr);
@@ -1295,10 +1277,8 @@ public class CalendarEventRestControllerTest {
 		assertThat(dateTime).contains("08:00:00");
 		// Verify that findEventsBetweenDates was NOT called (no availability calculation
 		// for past dates)
-		verify(service, never()).findEventsBetweenDates(any(Date.class), any(Date.class)); // NOSONAR
-																							// -
-																							// Mockito
-																							// matcher
+		// NOSONAR - Mockito matcher
+		verify(service, never()).findEventsBetweenDates(any(Date.class), any(Date.class));
 		log.info("finished testGetNextAvailableTimeWithPastDateDoesNotCheckAvailability");
 	}
 

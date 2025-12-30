@@ -92,7 +92,6 @@ public class CalendarController extends AbstractAuthorizedController {
 			result.rejectValue("paciente", "NotNull", "El paciente es requerido");
 			hasErrors = true;
 		}
-
 		final String resultView;
 		if (hasErrors) {
 			model.addAttribute("activeMenu", "calendario");

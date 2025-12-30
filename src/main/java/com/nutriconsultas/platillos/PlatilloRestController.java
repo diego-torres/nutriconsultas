@@ -42,9 +42,9 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 			result = ResponseEntity.badRequest().build();
 		}
 		else {
-			final Ingrediente _ingrediente = service.addIngrediente(id, alimentoId, cantidad, peso);
+			final Ingrediente ingredienteResult = service.addIngrediente(id, alimentoId, cantidad, peso);
 			log.info("finish addIngrediente with id {} and ingrediente {}.", id, ingrediente);
-			result = ResponseEntity.ok(new ApiResponse<Ingrediente>(_ingrediente));
+			result = ResponseEntity.ok(new ApiResponse<Ingrediente>(ingredienteResult));
 		}
 		return result;
 	}
@@ -53,14 +53,14 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 	public ResponseEntity<ApiResponse<Platillo>> addIngesta(@PathVariable @NonNull final Long id,
 			@RequestBody @NonNull final IngestaFormModel ingesta) {
 		log.info("starting addIngesta with id {} and ingesta {}.", id, ingesta);
-		final Platillo _platillo = service.findById(id);
-		String ingestas = _platillo.getIngestasSugeridas();
+		final Platillo platillo = service.findById(id);
+		String ingestas = platillo.getIngestasSugeridas();
 
 		// prevent duplicate ingestas
 		ResponseEntity<ApiResponse<Platillo>> result;
 		if (ingestas != null && ingestas.contains(ingesta.getIngesta())) {
 			log.info("finish addIngesta with id {} and ingesta {} - DUPLICATE requested.", id, ingesta);
-			result = ResponseEntity.ok(new ApiResponse<Platillo>(_platillo));
+			result = ResponseEntity.ok(new ApiResponse<Platillo>(platillo));
 		}
 		else {
 			if (ingestas == null || ingestas.isEmpty()) {
@@ -69,8 +69,8 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 			else {
 				ingestas += ", " + ingesta.getIngesta();
 			}
-			_platillo.setIngestasSugeridas(ingestas);
-			final Platillo saved = service.save(_platillo);
+			platillo.setIngestasSugeridas(ingestas);
+			final Platillo saved = service.save(platillo);
 			log.info("finish addIngesta with id {} and ingesta {}.", id, ingesta);
 			result = ResponseEntity.ok(new ApiResponse<Platillo>(saved));
 		}
@@ -81,8 +81,8 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 	public ResponseEntity<ApiResponse<Platillo>> deleteIngesta(@PathVariable @NonNull final Long id,
 			@PathVariable @NonNull final String ingesta) {
 		log.info("starting deleteIngesta with id {} and ingesta {}.", id, ingesta);
-		final Platillo _platillo = service.findById(id);
-		final String ingestas = _platillo.getIngestasSugeridas();
+		final Platillo platillo = service.findById(id);
+		final String ingestas = platillo.getIngestasSugeridas();
 		ResponseEntity<ApiResponse<Platillo>> result;
 		if (ingestas != null) {
 			String updatedIngestas = ingestas.replace(ingesta, "").replace(",,", ",").trim();
@@ -92,15 +92,15 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 			if (updatedIngestas.endsWith(",")) {
 				updatedIngestas = updatedIngestas.substring(0, updatedIngestas.length() - 1);
 			}
-			_platillo.setIngestasSugeridas(updatedIngestas);
+			platillo.setIngestasSugeridas(updatedIngestas);
 			log.debug("Ingestas after delete: [{}]", updatedIngestas);
-			final Platillo saved = service.save(_platillo);
+			final Platillo saved = service.save(platillo);
 			log.info("finish deleteIngesta with id {} and ingesta {}.", id, ingesta);
 			result = ResponseEntity.ok(new ApiResponse<Platillo>(saved));
 		}
 		else {
 			log.info("finish deleteIngesta with id {} and ingesta {}.", id, ingesta);
-			result = ResponseEntity.ok(new ApiResponse<Platillo>(_platillo));
+			result = ResponseEntity.ok(new ApiResponse<Platillo>(platillo));
 		}
 		return result;
 	}
@@ -110,9 +110,9 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 	public ResponseEntity<ApiResponse<Platillo>> addVideo(@PathVariable @NonNull final Long id,
 			@RequestBody @NonNull final VideoFormModel video) {
 		log.info("starting addVideo with id {} and video {}.", id, video);
-		final Platillo _platillo = service.findById(id);
-		_platillo.setVideoUrl(video.getVideoUrl());
-		final Platillo saved = service.save(_platillo);
+		final Platillo platillo = service.findById(id);
+		platillo.setVideoUrl(video.getVideoUrl());
+		final Platillo saved = service.save(platillo);
 		log.info("finish addVideo with id {} and video {}.", id, video);
 		return ResponseEntity.ok(new ApiResponse<Platillo>(saved));
 	}

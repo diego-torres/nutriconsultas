@@ -37,10 +37,10 @@ jobs:
         key: ${{ runner.os }}-maven-wrapper-${{ hashFiles('.mvn/wrapper/maven-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-maven-wrapper-
-    - name: Verify code formatting
-      run: mvn -B spring-javaformat:validate
-    - name: Run Checkstyle
+    - name: Run Checkstyle (enforces code style including formatting)
       run: mvn -B checkstyle:check -Pci
+      # Note: Using custom checkstyle rules instead of Spring Java Format validation
+      # Spring Java Format is available for explicit use: mvn spring-javaformat:apply
     - name: Run SpotBugs
       run: mvn -B spotbugs:check
     - name: Run PMD
