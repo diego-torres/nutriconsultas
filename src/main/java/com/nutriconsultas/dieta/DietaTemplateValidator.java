@@ -111,6 +111,25 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		variables.put("dieta", mockDieta);
 		variables.put("ingestas", mockIngestas);
 
+		// Add minId for formulario template (minimum ingesta id)
+		variables.put("minId", mockIngestas.isEmpty() ? 0L : mockIngestas.get(0).getId());
+
+		// Add platillos list for formulario template (for adding platillos to ingestas)
+		final List<com.nutriconsultas.platillos.Platillo> mockPlatillosList = new ArrayList<>();
+		final com.nutriconsultas.platillos.Platillo mockPlatilloEntity = new com.nutriconsultas.platillos.Platillo();
+		mockPlatilloEntity.setId(1L);
+		mockPlatilloEntity.setName("Platillo disponible");
+		mockPlatillosList.add(mockPlatilloEntity);
+		variables.put("platillos", mockPlatillosList);
+
+		// Add alimentos list for formulario template (for adding alimentos to ingestas)
+		final List<com.nutriconsultas.alimentos.Alimento> mockAlimentosList = new ArrayList<>();
+		final com.nutriconsultas.alimentos.Alimento mockAlimentoEntityForList = new com.nutriconsultas.alimentos.Alimento();
+		mockAlimentoEntityForList.setId(1L);
+		mockAlimentoEntityForList.setNombreAlimento("Alimento disponible");
+		mockAlimentosList.add(mockAlimentoEntityForList);
+		variables.put("alimentos", mockAlimentosList);
+
 		// Calculate distribution percentages for chart validation
 		// Using the same calculation logic as DietaController
 		final double totalProteina = calculateTotalProteina(mockDieta);

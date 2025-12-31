@@ -29,7 +29,9 @@ public class PlatilloTemplateValidator extends BaseTemplateValidator {
 		platillo.setLipidos(0.0);
 		platillo.setHidratosDeCarbono(0.0);
 		platillo.setAzucarPorEquivalente(0.0);
-		platillo.setImageUrl("");
+		// Set imageUrl to null to test default image path behavior
+		// Template will use /sbadmin/img/plato-vacio.jpg when imageUrl is null or empty
+		platillo.setImageUrl(null);
 		platillo.setPdfUrl("");
 		platillo.setVideoUrl("");
 

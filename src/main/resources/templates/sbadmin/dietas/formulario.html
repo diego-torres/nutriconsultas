@@ -256,6 +256,88 @@
           </div>
         </div>
 
+        <!-- Edit platillo modal -->
+        <div
+          class="modal fade"
+          id="editPlatilloModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="editPlatilloModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="editPlatilloModalLabel">Modificar platillo</h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form th:action="@{/admin/dietas/{id}/platillos/{platilloIngestaId}/update(id=${dieta != null ? dieta.id : 0}, platilloIngestaId=0)}" method="post" id="editPlatilloForm">
+                  <div class="form-group">
+                    <label for="editPorcionesPlatillo">Porciones</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="editPorcionesPlatillo"
+                      name="porciones"
+                      value="1"
+                      min="1"
+                      max="3"
+                      required />
+                  </div>
+                  <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit alimento modal -->
+        <div
+          class="modal fade"
+          id="editAlimentoModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="editAlimentoModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="editAlimentoModalLabel">Modificar alimento</h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form th:action="@{/admin/dietas/{id}/alimentos/{alimentoIngestaId}/update(id=${dieta != null ? dieta.id : 0}, alimentoIngestaId=0)}" method="post" id="editAlimentoForm">
+                  <div class="form-group">
+                    <label for="editPorcionesAlimento">Porciones</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="editPorcionesAlimento"
+                      name="porciones"
+                      value="1"
+                      min="1"
+                      max="3"
+                      required />
+                  </div>
+                  <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Delete alimento modal -->
         <div
           class="modal fade"
@@ -481,42 +563,75 @@
                                     <th>Prote&iacute;nas</th>
                                     <th>L&iacute;pidos</th>
                                     <th>Hidratos de Carbono</th>
-                                    <th>Acciones</th>
+                                    <th style="width: 12%;">Acciones</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   <tr th:each="platillo : ${ingesta.platillos}">
-                                    <td th:text="${platillo.name}"></td>
+                                    <td>
+                                      <a th:href="@{/admin/platillos/{id}(id=${platillo.id})}" 
+                                         th:text="${platillo.name}"
+                                         title="Ver detalles del platillo"></a>
+                                    </td>
                                     <td th:text="${platillo.portions}"></td>
                                     <td th:text="${#numbers.formatDecimal(platillo.energia, 1, 2)}"></td>
                                     <td th:text="${#numbers.formatDecimal(platillo.proteina, 1, 2)}"></td>
                                     <td th:text="${#numbers.formatDecimal(platillo.lipidos, 1, 2)}"></td>
                                     <td th:text="${#numbers.formatDecimal(platillo.hidratosDeCarbono, 1, 2)}"></td>
-                                    <td>
+                                    <td style="white-space: nowrap;">
                                       <button 
                                         type="button" 
-                                        class="btn btn-danger" 
+                                        class="btn btn-primary btn-sm" 
+                                        th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id},data-porciones=${platillo.portions}" 
+                                        data-toggle="modal" 
+                                        data-target="#editPlatilloModal"
+                                        title="Modificar">
+                                        <i class="fas fa-edit"></i>
+                                      </button>
+                                      <button 
+                                        type="button" 
+                                        class="btn btn-danger btn-sm" 
                                         th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id}" 
                                         data-toggle="modal" 
-                                        data-target="#deletePlatilloModal">
+                                        data-target="#deletePlatilloModal"
+                                        title="Eliminar"
+                                        style="margin-left:5px">
                                         <i class="fas fa-trash"></i>
                                       </button>
                                     </td>
                                   </tr>
                                   <tr th:each="alimento : ${ingesta.alimentos}">
-                                    <td th:text="${alimento.name}"></td>
+                                    <td>
+                                      <a th:if="${alimento.alimento != null && alimento.alimento.id != null}" 
+                                         th:href="@{/admin/alimentos/{id}(id=${alimento.alimento.id})}" 
+                                         th:text="${alimento.name}"
+                                         title="Ver detalles del alimento"></a>
+                                      <span th:unless="${alimento.alimento != null && alimento.alimento.id != null}" 
+                                            th:text="${alimento.name}"></span>
+                                    </td>
                                     <td th:text="${alimento.portions}"></td>
                                     <td th:text="${#numbers.formatDecimal(alimento.energia, 1, 2)}"></td>
                                     <td th:text="${#numbers.formatDecimal(alimento.proteina, 1, 2)}"></td>
                                     <td th:text="${#numbers.formatDecimal(alimento.lipidos, 1, 2)}"></td>
                                     <td th:text="${#numbers.formatDecimal(alimento.hidratosDeCarbono, 1, 2)}"></td>
-                                    <td>
+                                    <td style="white-space: nowrap;">
                                       <button 
                                         type="button" 
-                                        class="btn btn-danger" 
+                                        class="btn btn-primary btn-sm" 
+                                        th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-porciones=${alimento.portions}" 
+                                        data-toggle="modal" 
+                                        data-target="#editAlimentoModal"
+                                        title="Modificar">
+                                        <i class="fas fa-edit"></i>
+                                      </button>
+                                      <button 
+                                        type="button" 
+                                        class="btn btn-danger btn-sm" 
                                         th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id}" 
                                         data-toggle="modal" 
-                                        data-target="#deleteAlimentoModal">
+                                        data-target="#deleteAlimentoModal"
+                                        title="Eliminar"
+                                        style="margin-left:5px">
                                         <i class="fas fa-trash"></i>
                                       </button>
                                     </td>
@@ -787,6 +902,32 @@
             modal.find('#alimento').val('').trigger('change');
             modal.find('#porciones').val('1');
             modal.find('#tipoPorcion').val('gramos');
+          });
+
+          // Set up the edit platillo modal
+          $('#editPlatilloModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var dietaId = button.data('dieta');
+            var platilloId = button.data('platillo');
+            var porciones = button.data('porciones');
+            var modal = $(this);
+            var form = modal.find('#editPlatilloForm');
+            var actionUrl = '/admin/dietas/' + dietaId + '/platillos/' + platilloId + '/update';
+            form.attr('action', actionUrl);
+            modal.find('#editPorcionesPlatillo').val(porciones);
+          });
+
+          // Set up the edit alimento modal
+          $('#editAlimentoModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var dietaId = button.data('dieta');
+            var alimentoId = button.data('alimento');
+            var porciones = button.data('porciones');
+            var modal = $(this);
+            var form = modal.find('#editAlimentoForm');
+            var actionUrl = '/admin/dietas/' + dietaId + '/alimentos/' + alimentoId + '/update';
+            form.attr('action', actionUrl);
+            modal.find('#editPorcionesAlimento').val(porciones);
           });
         });
       })(jQuery);
