@@ -1,6 +1,14 @@
 # nutriconsultas
 registro de consultorio de nutrición
 
+## Project Information
+
+**Project Name:** nutriconsultas
+
+**Company:** Minutriporcion
+
+**Branding:** Minutriporcion is the product and branding name for the nutriconsultas project. The project "nutriconsultas" is developed for the company Minutriporcion.
+
 ## Contributing
 
 When creating a pull request, please use the [PR template](.github/pull_request_template.md) which includes checklists for:
