@@ -104,6 +104,12 @@
                               <span th:if="${dietaAsignada.notes == null || dietaAsignada.notes.isEmpty()}" class="text-muted">-</span>
                             </td>
                             <td>
+                              <a th:href="@{/admin/pacientes/{pacienteId}/dietas/{dietaId}/print(pacienteId=${paciente.id}, dietaId=${dietaAsignada.dieta.id})}" 
+                                 class="btn btn-sm btn-primary" 
+                                 target="_blank"
+                                 title="Imprimir PDF">
+                                <i class="fas fa-file-pdf"></i> PDF
+                              </a>
                               <a th:href="@{/admin/pacientes/{pacienteId}/dietas/{id}/editar(pacienteId=${paciente.id}, id=${dietaAsignada.id})}" 
                                  class="btn btn-sm btn-info">
                                 <i class="fas fa-edit"></i> Editar

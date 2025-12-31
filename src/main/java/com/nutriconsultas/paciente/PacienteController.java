@@ -23,8 +23,14 @@ import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventService;
 import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.controller.AbstractAuthorizedController;
+import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.DietaRepository;
 import com.nutriconsultas.dieta.DietaService;
+import com.nutriconsultas.paciente.PacienteDietaRepository;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -51,6 +57,12 @@ public class PacienteController extends AbstractAuthorizedController {
 	@Autowired
 	private DietaRepository dietaRepository;
 
+	@Autowired
+	private DietaPdfService dietaPdfService;
+
+	@Autowired
+	private PacienteDietaRepository pacienteDietaRepository;
+
 	@GetMapping(path = "/admin/pacientes/nuevo")
 	public String nuevo(final Model model) {
 		log.debug("Starting nuevo method");
@@ -73,7 +85,8 @@ public class PacienteController extends AbstractAuthorizedController {
 		String resultView;
 		if (result.hasErrors()) {
 			resultView = "sbadmin/pacientes/nuevo";
-		} else {
+		}
+		else {
 			pacienteRepository.save(paciente);
 			resultView = "redirect:/admin/pacientes";
 		}
@@ -265,17 +278,20 @@ public class PacienteController extends AbstractAuthorizedController {
 		// Load dieta with ingestas to calculate macronutrientes
 		for (final PacienteDieta pacienteDieta : dietasAsignadas) {
 			if (pacienteDieta.getDieta() != null) {
-				final com.nutriconsultas.dieta.Dieta dieta = dietaService.getDieta(pacienteDieta.getDieta().getId());
-				if (dieta != null) {
-					// Calculate and set macronutrientes
-					dieta.setProteina(getTotalProteina(dieta));
-					dieta.setLipidos(getTotalLipidos(dieta));
-					dieta.setHidratosDeCarbono(getTotalHidratosDeCarbono(dieta));
-					// Calculate and set kilocalorías
-					final Double kCal = getTotalKCal(dieta);
-					dieta.setEnergia(kCal != null ? kCal.intValue() : 0);
-					// Update the dieta in pacienteDieta
-					pacienteDieta.setDieta(dieta);
+				final Long dietaId = pacienteDieta.getDieta().getId();
+				if (dietaId != null) {
+					final com.nutriconsultas.dieta.Dieta dieta = dietaService.getDieta(dietaId);
+					if (dieta != null) {
+						// Calculate and set macronutrientes
+						dieta.setProteina(getTotalProteina(dieta));
+						dieta.setLipidos(getTotalLipidos(dieta));
+						dieta.setHidratosDeCarbono(getTotalHidratosDeCarbono(dieta));
+						// Calculate and set kilocalorías
+						final Double kCal = getTotalKCal(dieta);
+						dieta.setEnergia(kCal != null ? kCal.intValue() : 0);
+						// Update the dieta in pacienteDieta
+						pacienteDieta.setDieta(dieta);
+					}
 				}
 			}
 		}
@@ -284,17 +300,20 @@ public class PacienteController extends AbstractAuthorizedController {
 		// Calcular macronutrientes para dietas activas
 		for (final PacienteDieta pacienteDieta : dietasActivas) {
 			if (pacienteDieta.getDieta() != null) {
-				final com.nutriconsultas.dieta.Dieta dieta = dietaService.getDieta(pacienteDieta.getDieta().getId());
-				if (dieta != null) {
-					// Calculate and set macronutrientes
-					dieta.setProteina(getTotalProteina(dieta));
-					dieta.setLipidos(getTotalLipidos(dieta));
-					dieta.setHidratosDeCarbono(getTotalHidratosDeCarbono(dieta));
-					// Calculate and set kilocalorías
-					final Double kCal = getTotalKCal(dieta);
-					dieta.setEnergia(kCal != null ? kCal.intValue() : 0);
-					// Update the dieta in pacienteDieta
-					pacienteDieta.setDieta(dieta);
+				final Long dietaId = pacienteDieta.getDieta().getId();
+				if (dietaId != null) {
+					final com.nutriconsultas.dieta.Dieta dieta = dietaService.getDieta(dietaId);
+					if (dieta != null) {
+						// Calculate and set macronutrientes
+						dieta.setProteina(getTotalProteina(dieta));
+						dieta.setLipidos(getTotalLipidos(dieta));
+						dieta.setHidratosDeCarbono(getTotalHidratosDeCarbono(dieta));
+						// Calculate and set kilocalorías
+						final Double kCal = getTotalKCal(dieta);
+						dieta.setEnergia(kCal != null ? kCal.intValue() : 0);
+						// Update the dieta in pacienteDieta
+						pacienteDieta.setDieta(dieta);
+					}
 				}
 			}
 		}
@@ -358,7 +377,8 @@ public class PacienteController extends AbstractAuthorizedController {
 					evento.setIndiceGrasaCorporal(bodyFatPercentage);
 				}
 			}
-		} final LocalDate today = LocalDate.now();
+		}
+		final LocalDate today = LocalDate.now();
 		final Date eventDate = evento.getEventDateTime();
 		if (eventDate != null) {
 			// Comparar solo la fecha (sin hora)
@@ -381,7 +401,8 @@ public class PacienteController extends AbstractAuthorizedController {
 				if (paciente != null) {
 					pacienteRepository.save(paciente);
 				}
-			} else {
+			}
+			else {
 				List<CalendarEvent> eventosPrevios = calendarEventService.findByPacienteId(pacienteId);
 				Boolean laterExists = eventosPrevios.stream()
 					.filter(e -> e.getEventDateTime() != null && e.getEventDateTime().after(eventDate))
@@ -495,7 +516,8 @@ public class PacienteController extends AbstractAuthorizedController {
 			model.addAttribute("paciente", paciente);
 			model.addAttribute("dietasDisponibles", dietaService.getDietas());
 			return "sbadmin/pacientes/asignar-dieta";
-		} final PacienteDieta saved = pacienteDietaService.assignDieta(id, dietaId, pacienteDieta);
+		}
+		final PacienteDieta saved = pacienteDietaService.assignDieta(id, dietaId, pacienteDieta);
 		log.debug("Dieta asignada exitosamente: {}", saved);
 		return String.format("redirect:/admin/pacientes/%d/dietas", id);
 	}
@@ -559,7 +581,8 @@ public class PacienteController extends AbstractAuthorizedController {
 			model.addAttribute("paciente", paciente);
 			model.addAttribute("pacienteDieta", pacienteDieta);
 			return "sbadmin/pacientes/editar-dieta";
-		} final PacienteDieta updated = pacienteDietaService.updateAssignment(id, pacienteDieta);
+		}
+		final PacienteDieta updated = pacienteDietaService.updateAssignment(id, pacienteDieta);
 		log.info("Asignación de dieta actualizada exitosamente: {}", updated);
 		return String.format("redirect:/admin/pacientes/%d/dietas", pacienteId);
 	}
@@ -573,6 +596,51 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	/**
+	 * Generates and returns a PDF document for a dieta assigned to a patient.
+	 *
+	 * <p>
+	 * This endpoint generates a patient-specific PDF with patient information included.
+	 * It verifies that the dieta is assigned to the specified patient before generating
+	 * the PDF.
+	 *
+	 * <p>
+	 * The PDF includes patient information (name, DOB, gender, weight, height), assignment
+	 * dates, notes (if any), plus all dieta content.
+	 * @param pacienteId the ID of the patient
+	 * @param dietaId the ID of the dieta to generate PDF for
+	 * @return ResponseEntity with PDF document and appropriate headers
+	 */
+	@GetMapping(path = "/admin/pacientes/{pacienteId}/dietas/{dietaId}/print")
+	public ResponseEntity<byte[]> printDietaFromPatient(@PathVariable @NonNull final Long pacienteId,
+			@PathVariable @NonNull final Long dietaId) {
+		log.debug("Generating PDF for dieta {} from patient {} (with patient info)", dietaId, pacienteId);
+		// Verify patient exists
+		final Paciente paciente = pacienteRepository.findById(pacienteId).orElse(null);
+		if (paciente == null) {
+			log.error("Patient with id {} not found", pacienteId);
+			return ResponseEntity.notFound().build();
+		}
+		// Verify dieta exists and is assigned to this patient
+		final List<PacienteDieta> assignments = pacienteDietaRepository.findByPacienteId(pacienteId);
+		final PacienteDieta pacienteDieta = assignments.stream()
+			.filter(a -> a.getDieta() != null && a.getDieta().getId().equals(dietaId))
+			.findFirst()
+			.orElse(null);
+		if (pacienteDieta == null) {
+			log.error("Dieta {} is not assigned to patient {}", dietaId, pacienteId);
+			return ResponseEntity.notFound().build();
+		}
+		// Generate PDF with patient information included
+		final byte[] pdfBytes = dietaPdfService.generatePdf(dietaId, true);
+		final com.nutriconsultas.dieta.Dieta dieta = dietaService.getDieta(dietaId);
+		final String fileName = (dieta != null && dieta.getNombre() != null ? dieta.getNombre() : "dieta") + ".pdf";
+		return ResponseEntity.ok()
+			.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+			.contentType(MediaType.parseMediaType("application/pdf"))
+			.body(pdfBytes);
+	}
+
+	/**
 	 * Calculates age from date of birth.
 	 * @param dob Date of birth
 	 * @return Age in years, or null if dob is null or in the future
@@ -580,7 +648,8 @@ public class PacienteController extends AbstractAuthorizedController {
 	private Integer calculateAge(final Date dob) {
 		if (dob == null) {
 			return null;
-		} final LocalDate birthDate = dob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		}
+		final LocalDate birthDate = dob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 		final LocalDate currentDate = LocalDate.now();
 		if (birthDate.isAfter(currentDate)) {
 			log.warn("Date of birth is in the future: {}", dob);
@@ -661,7 +730,8 @@ public class PacienteController extends AbstractAuthorizedController {
 	private Double getTotalKCal(final com.nutriconsultas.dieta.Dieta dieta) {
 		if (dieta == null) {
 			return 0.0;
-		} final Double proteina = getTotalProteina(dieta);
+		}
+		final Double proteina = getTotalProteina(dieta);
 		final Double lipidos = getTotalLipidos(dieta);
 		final Double hidratosDeCarbono = getTotalHidratosDeCarbono(dieta);
 		return proteina * 4 + lipidos * 9 + hidratosDeCarbono * 4;

@@ -80,6 +80,7 @@
                     style="width: 100%;">
                     <thead>
                       <tr>
+                        <th>Acciones</th>
                         <th>Dieta</th>
                         <th>Ingestas</th>
                         <th>Distribuci&oacute;n</th>
@@ -126,6 +127,9 @@
           "processing": true,
           "serverSide": true,
           "scrollX": true,
+          "columnDefs": [
+            { "targets": 0, "orderable": false }
+          ],
           "language": {
             "emptyTable": "No hay registros",
             "lengthMenu": "Mostrar _MENU_ registros por página",

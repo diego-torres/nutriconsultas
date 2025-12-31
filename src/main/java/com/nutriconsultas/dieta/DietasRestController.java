@@ -63,7 +63,8 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 			log.info("finish deletePlatilloIngesta with dietaId {}, ingestaId {}, platilloIngestaId {}.", dietaId,
 					ingestaId, platilloIngestaId);
 			result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
-		} else {
+		}
+		else {
 			log.warn("Dieta with id {} not found when trying to delete platilloIngesta", dietaId);
 			result = ResponseEntity.notFound().build();
 		}
@@ -88,7 +89,8 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 			log.info("finish deleteAlimentoIngesta with dietaId {}, ingestaId {}, alimentoIngestaId {}.", dietaId,
 					ingestaId, alimentoIngestaId);
 			result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
-		} else {
+		}
+		else {
 			log.warn("Dieta with id {} not found when trying to delete alimentoIngesta", dietaId);
 			result = ResponseEntity.notFound().build();
 		}
@@ -97,7 +99,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 
 	@Override
 	protected List<Column> getColumns() {
-		return Stream.of("dieta", "ingestas", "dist", "kcal", "prot", "lip", "hc")
+		return Stream.of("acciones", "dieta", "ingestas", "dist", "kcal", "prot", "lip", "hc")
 			.map(Column::new)
 			.collect(Collectors.toList());
 	}
@@ -105,7 +107,9 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	@Override
 	protected List<String> toStringList(final Dieta row) {
 		log.debug("converting Dieta row {} to string list.", row);
-		return Arrays.asList("<a href='/admin/dietas/" + row.getId() + "'>" + row.getNombre() + "</a>",
+		final String printButton = "<a href='/admin/dietas/" + row.getId()
+				+ "/print' class='btn btn-sm btn-primary' target='_blank' title='Imprimir PDF'><i class='fas fa-file-pdf'></i></a>";
+		return Arrays.asList(printButton, "<a href='/admin/dietas/" + row.getId() + "'>" + row.getNombre() + "</a>",
 				getIngestas(row), getDist(row), String.format("%.1f", getKCal(row)),
 				String.format("%.1f", getTotalProteina(row)), String.format("%.1f", getTotalLipidos(row)),
 				String.format("%.1f", getTotalHidratosDeCarbono(row)));
@@ -123,7 +127,8 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		String result;
 		if (kCal == null || kCal == 0 || kCal < 0.01) {
 			result = "";
-		} else {
+		}
+		else {
 			final Double distProteina = getTotalProteina(row) * 4 / kCal;
 			final Double distLipido = getTotalLipidos(row) * 9 / kCal;
 			final Double distHidratoCarbono = getTotalHidratosDeCarbono(row) * 4 / kCal;

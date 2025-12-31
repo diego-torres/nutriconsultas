@@ -752,7 +752,7 @@ public class CalendarEventRestControllerTest {
 	public void testUpdateEventWithAllStatuses() {
 		log.info("starting testUpdateEventWithAllStatuses");
 		// Test updating to all three status values
-		final String[] statuses = { "SCHEDULED", "COMPLETED", "CANCELLED" };
+		final String[] statuses = {"SCHEDULED", "COMPLETED", "CANCELLED"};
 
 		for (final String status : statuses) {
 			// Arrange
@@ -807,7 +807,8 @@ public class CalendarEventRestControllerTest {
 			final long actualDuration = endDate.getTime() - startDate.getTime();
 			final long expectedDuration = events.get(0).getDurationMinutes() * 60 * 1000L;
 			assertThat(actualDuration).isEqualTo(expectedDuration);
-		} catch (final java.text.ParseException e) {
+		}
+		catch (final java.text.ParseException e) {
 			throw new AssertionError("Failed to parse date", e);
 		}
 		log.info("finished testCalendarEventEndTimeCalculation");
@@ -1068,7 +1069,7 @@ public class CalendarEventRestControllerTest {
 				futureCal.get(Calendar.MONTH) + 1, futureCal.get(Calendar.DAY_OF_MONTH));
 		final List<CalendarEvent> existingEvents = new ArrayList<>();
 
-		final int[] hours = { 8, 10, 12 };
+		final int[] hours = {8, 10, 12};
 		for (final int hour : hours) {
 			final Calendar cal = Calendar.getInstance();
 			cal.setTime(futureCal.getTime());
@@ -1424,8 +1425,8 @@ public class CalendarEventRestControllerTest {
 	public void testSaveEventWithDifferentDateFormats() {
 		log.info("starting testSaveEventWithDifferentDateFormats");
 		// Test various date formats that should be accepted
-		final String[] dateFormats = { "2024-12-31T10:00", "2024-12-31T10:00:00", "2024-12-31 10:00",
-				"2024-12-31 10:00:00" };
+		final String[] dateFormats = {"2024-12-31T10:00", "2024-12-31T10:00:00", "2024-12-31 10:00",
+				"2024-12-31 10:00:00"};
 
 		for (final String dateFormat : dateFormats) {
 			// Arrange
@@ -1468,7 +1469,7 @@ public class CalendarEventRestControllerTest {
 	public void testSaveEventWithAllStatuses() {
 		log.info("starting testSaveEventWithAllStatuses");
 		// Test all three status values
-		final String[] statuses = { "SCHEDULED", "COMPLETED", "CANCELLED" };
+		final String[] statuses = {"SCHEDULED", "COMPLETED", "CANCELLED"};
 
 		for (final String status : statuses) {
 			// Arrange

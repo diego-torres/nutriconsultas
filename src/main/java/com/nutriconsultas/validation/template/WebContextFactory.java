@@ -389,7 +389,7 @@ public final class WebContextFactory {
 		final jakarta.servlet.http.Cookie[] cookies = request.getCookies();
 		if (cookies != null) {
 			for (final jakarta.servlet.http.Cookie cookie : cookies) {
-				map.put(cookie.getName(), new String[] { cookie.getValue() });
+				map.put(cookie.getName(), new String[] {cookie.getValue()});
 			}
 		}
 		return map;
@@ -461,7 +461,8 @@ public final class WebContextFactory {
 				boolean result = false;
 				try {
 					result = servletContext.getResource(path) != null;
-				} catch (final java.net.MalformedURLException e) {
+				}
+				catch (final java.net.MalformedURLException e) {
 					// Return false on exception
 				}
 				return result;

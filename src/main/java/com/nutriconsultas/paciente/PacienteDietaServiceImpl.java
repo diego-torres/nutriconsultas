@@ -1,6 +1,7 @@
 package com.nutriconsultas.paciente;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -52,8 +53,9 @@ public class PacienteDietaServiceImpl implements PacienteDietaService {
 	@Override
 	public PacienteDieta updateAssignment(@NonNull final Long id, @NonNull final PacienteDieta pacienteDieta) {
 		log.info("Updating dieta assignment {}", id);
-		final PacienteDieta existing = pacienteDietaRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado asignación con id " + id));
+		final PacienteDieta existing = Objects.requireNonNull(
+				pacienteDietaRepository.findById(id)
+						.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado asignación con id " + id)));
 
 		if (pacienteDieta.getStartDate() != null) {
 			existing.setStartDate(pacienteDieta.getStartDate());
@@ -68,7 +70,7 @@ public class PacienteDietaServiceImpl implements PacienteDietaService {
 			existing.setNotes(pacienteDieta.getNotes());
 		}
 
-		return pacienteDietaRepository.save(existing);
+		return Objects.requireNonNull(pacienteDietaRepository.save(existing));
 	}
 
 	@Override

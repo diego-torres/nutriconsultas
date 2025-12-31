@@ -126,7 +126,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		final List<CalendarEvent> events;
 		if (start != null && end != null) {
 			events = service.findEventsBetweenDates(start, end);
-		} else {
+		}
+		else {
 			events = service.findAll();
 		}
 		return events.stream().map(this::toCalendarEventMap).collect(Collectors.toList());
@@ -153,7 +154,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		if (event.getStatus() != null) {
 			eventMap.put("backgroundColor", getEventColor(event.getStatus()));
 			eventMap.put("borderColor", getEventColor(event.getStatus()));
-		} final Map<String, Object> extendedProps = new HashMap<>();
+		}
+		final Map<String, Object> extendedProps = new HashMap<>();
 		if (event.getPaciente() != null) {
 			extendedProps.put("paciente", event.getPaciente().getName());
 			extendedProps.put("pacienteId", event.getPaciente().getId());
@@ -217,7 +219,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 	private String formatDateForCalendar(final Date date) {
 		if (date == null) {
 			return null;
-		} final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		}
+		final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		return dateFormat.format(date);
 	}
 
@@ -240,7 +243,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		try {
 			// Parse date string (format: YYYY-MM-DD)
 			parsedLocalDate = LocalDate.parse(date);
-		} catch (final java.time.format.DateTimeParseException e) {
+		}
+		catch (final java.time.format.DateTimeParseException e) {
 			log.error("Error parsing date: {}", date, e);
 			final Map<String, Object> errorResult = new HashMap<>();
 			errorResult.put("available", false);
@@ -267,7 +271,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 					formatDateForCalendar(Date.from(candidateTime.atZone(ZoneId.systemDefault()).toInstant())));
 			result.put("isPastDate", true);
 			return result; // Exit early - do not attempt to calculate available time
-		} final LocalDateTime endOfDay = parsedLocalDate.atTime(17, 0);
+		}
+		final LocalDateTime endOfDay = parsedLocalDate.atTime(17, 0);
 
 		// Get all events for this date
 		final LocalDateTime startOfDay = parsedLocalDate.atStartOfDay();
@@ -302,7 +307,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			for (final CalendarEvent event : events) {
 				if (event.getEventDateTime() == null) {
 					continue;
-				} final LocalDateTime eventStart = event.getEventDateTime()
+				}
+				final LocalDateTime eventStart = event.getEventDateTime()
 					.toInstant()
 					.atZone(ZoneId.systemDefault())
 					.toLocalDateTime();
@@ -344,26 +350,29 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			}
 			if (eventData.get("durationMinutes") != null) {
 				event.setDurationMinutes(Integer.parseInt(eventData.get("durationMinutes").toString()));
-			} else {
+			}
+			else {
 				event.setDurationMinutes(60);
 			}
 			if (eventData.get("status") != null) {
 				event.setStatus(EventStatus.valueOf((String) eventData.get("status")));
-			} else {
+			}
+			else {
 				event.setStatus(EventStatus.SCHEDULED);
 			}
 			if (eventData.get("eventDateTime") != null) {
 				final String dateTimeStr = (String) eventData.get("eventDateTime");
 				Date parsedDate = null;
 				// Try parsing with different formats
-				final String[] formats = { "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm", "yyyy-MM-dd HH:mm:ss",
-						"yyyy-MM-dd HH:mm" };
+				final String[] formats = {"yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm", "yyyy-MM-dd HH:mm:ss",
+						"yyyy-MM-dd HH:mm"};
 				for (final String format : formats) {
 					try {
 						final DateFormat dateFormat = new SimpleDateFormat(format);
 						parsedDate = dateFormat.parse(dateTimeStr);
 						break;
-					} catch (final java.text.ParseException e) {
+					}
+					catch (final java.text.ParseException e) {
 						// Try next format
 						continue;
 					}
@@ -416,12 +425,14 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			}
 			if (eventData.get("temperatura") != null) {
 				event.setTemperatura(Double.parseDouble(eventData.get("temperatura").toString()));
-			} final CalendarEvent savedEvent = service.save(event);
+			}
+			final CalendarEvent savedEvent = service.save(event);
 			final Map<String, Object> response = new HashMap<>();
 			response.put("success", true);
 			response.put("event", toCalendarEventMap(savedEvent));
 			return ResponseEntity.ok(response);
-		} catch (final Exception e) {
+		}
+		catch (final Exception e) {
 			log.error("Error saving calendar event", e);
 			final Map<String, Object> errorResponse = new HashMap<>();
 			errorResponse.put("success", false);
@@ -440,11 +451,13 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 				errorResponse.put("success", false);
 				errorResponse.put("error", "Event not found");
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-			} final Map<String, Object> response = new HashMap<>();
+			}
+			final Map<String, Object> response = new HashMap<>();
 			response.put("success", true);
 			response.put("event", toCalendarEventMap(event));
 			return ResponseEntity.ok(response);
-		} catch (final Exception e) {
+		}
+		catch (final Exception e) {
 			log.error("Error getting calendar event", e);
 			final Map<String, Object> errorResponse = new HashMap<>();
 			errorResponse.put("success", false);
@@ -501,7 +514,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 						existingEvent.setIndiceGrasaCorporal(bodyFatPercentage);
 					}
 				}
-			} else {
+			}
+			else {
 				// If IMC is explicitly provided, use it
 				if (eventData.get("imc") != null) {
 					existingEvent.setImc(Double.parseDouble(eventData.get("imc").toString()));
@@ -533,12 +547,14 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			}
 			if (eventData.get("temperatura") != null) {
 				existingEvent.setTemperatura(Double.parseDouble(eventData.get("temperatura").toString()));
-			} final CalendarEvent savedEvent = service.save(existingEvent);
+			}
+			final CalendarEvent savedEvent = service.save(existingEvent);
 			final Map<String, Object> response = new HashMap<>();
 			response.put("success", true);
 			response.put("event", toCalendarEventMap(savedEvent));
 			return ResponseEntity.ok(response);
-		} catch (final Exception e) {
+		}
+		catch (final Exception e) {
 			log.error("Error updating calendar event", e);
 			final Map<String, Object> errorResponse = new HashMap<>();
 			errorResponse.put("success", false);
@@ -570,7 +586,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			}
 			return currentDate.getYear() - birthDate.getYear()
 					- (currentDate.getDayOfYear() < birthDate.getDayOfYear() ? 1 : 0);
-		} catch (final Exception e) {
+		}
+		catch (final Exception e) {
 			log.warn("Error calculating age from date of birth: {}", dob, e);
 			return null;
 		}

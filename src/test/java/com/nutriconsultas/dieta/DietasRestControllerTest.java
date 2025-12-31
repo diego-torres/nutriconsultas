@@ -153,9 +153,15 @@ public class DietasRestControllerTest {
 
 		// Assert
 		assertThat(result).isNotNull();
-		assertThat(result).hasSize(7); // dieta, ingestas, dist, kcal, prot, lip, hc
-		// Index 2 is the distribution column
-		String distribution = result.get(2);
+		assertThat(result).hasSize(8); // acciones, dieta, ingestas, dist, kcal, prot,
+										// lip, hc
+		// Index 0 is the actions column (print button)
+		String actions = result.get(0);
+		assertThat(actions).isNotNull();
+		assertThat(actions).contains("/admin/dietas/1/print");
+		assertThat(actions).contains("fa-file-pdf");
+		// Index 3 is the distribution column
+		String distribution = result.get(3);
 		assertThat(distribution).isNotNull();
 		assertThat(distribution).isEmpty();
 		log.info("Finishing testToStringListEmptyDietReturnsEmptyStringForDistribution with distribution: '{}'",
@@ -176,23 +182,29 @@ public class DietasRestControllerTest {
 
 		// Assert
 		assertThat(result).isNotNull();
-		assertThat(result).hasSize(7); // dieta, ingestas, dist, kcal, prot, lip, hc
-		// Index 2 is the distribution column
-		String distribution = result.get(2);
+		assertThat(result).hasSize(8); // acciones, dieta, ingestas, dist, kcal, prot,
+										// lip, hc
+		// Index 0 is the actions column (print button)
+		String actions = result.get(0);
+		assertThat(actions).isNotNull();
+		assertThat(actions).contains("/admin/dietas/2/print");
+		assertThat(actions).contains("fa-file-pdf");
+		// Index 3 is the distribution column
+		String distribution = result.get(3);
 		assertThat(distribution).isNotNull();
 		assertThat(distribution).isNotEmpty();
 		assertThat(distribution).doesNotContain("NaN");
-		// Index 3 is kcal
-		String kcal = result.get(3);
+		// Index 4 is kcal
+		String kcal = result.get(4);
 		assertThat(kcal).isEqualTo("455.0");
-		// Index 4 is protein
-		String protein = result.get(4);
+		// Index 5 is protein
+		String protein = result.get(5);
 		assertThat(protein).isEqualTo("30.0");
-		// Index 5 is lipids
-		String lipids = result.get(5);
+		// Index 6 is lipids
+		String lipids = result.get(6);
 		assertThat(lipids).isEqualTo("15.0");
-		// Index 6 is carbohydrates
-		String carbohydrates = result.get(6);
+		// Index 7 is carbohydrates
+		String carbohydrates = result.get(7);
 		assertThat(carbohydrates).isEqualTo("50.0");
 		log.info("Finishing testToStringListDietWithPlatillosReturnsCorrectValues");
 	}
@@ -209,7 +221,8 @@ public class DietasRestControllerTest {
 		pagingRequest.setStart(0);
 		pagingRequest.setLength(10);
 		pagingRequest.setDraw(1);
-		pagingRequest.setOrder(Arrays.asList(new Order(0, Direction.asc)));
+		// Order by dieta column (index 1)
+		pagingRequest.setOrder(Arrays.asList(new Order(1, Direction.asc)));
 		pagingRequest.setSearch(new Search("", "false"));
 
 		// Act
@@ -219,7 +232,15 @@ public class DietasRestControllerTest {
 		assertThat(result).isNotNull();
 		assertThat(result.getData()).isNotEmpty();
 		List<String> firstRow = (List<String>) result.getData().get(0);
-		String distribution = firstRow.get(2);
+		assertThat(firstRow).isNotNull();
+		assertThat(firstRow.size()).isGreaterThanOrEqualTo(8);
+		// Index 0 is the actions column (print button)
+		String actions = firstRow.get(0);
+		assertThat(actions).isNotNull();
+		assertThat(actions).contains("/admin/dietas/1/print");
+		assertThat(actions).contains("fa-file-pdf");
+		// Index 3 is the distribution column
+		String distribution = firstRow.get(3);
 		assertThat(distribution).isNotNull();
 		assertThat(distribution).isEmpty();
 		assertThat(distribution).doesNotContain("NaN");
@@ -238,7 +259,8 @@ public class DietasRestControllerTest {
 		pagingRequest.setStart(0);
 		pagingRequest.setLength(10);
 		pagingRequest.setDraw(1);
-		pagingRequest.setOrder(Arrays.asList(new Order(0, Direction.asc)));
+		// Order by dieta column (index 1)
+		pagingRequest.setOrder(Arrays.asList(new Order(1, Direction.asc)));
 		pagingRequest.setSearch(new Search("", "false"));
 
 		// Act
@@ -248,7 +270,15 @@ public class DietasRestControllerTest {
 		assertThat(result).isNotNull();
 		assertThat(result.getData()).isNotEmpty();
 		List<String> firstRow = (List<String>) result.getData().get(0);
-		String distribution = firstRow.get(2);
+		assertThat(firstRow).isNotNull();
+		assertThat(firstRow.size()).isGreaterThanOrEqualTo(8);
+		// Index 0 is the actions column (print button)
+		String actions = firstRow.get(0);
+		assertThat(actions).isNotNull();
+		assertThat(actions).contains("/admin/dietas/2/print");
+		assertThat(actions).contains("fa-file-pdf");
+		// Index 3 is the distribution column
+		String distribution = firstRow.get(3);
 		assertThat(distribution).isNotNull();
 		assertThat(distribution).isNotEmpty();
 		assertThat(distribution).doesNotContain("NaN");
@@ -778,6 +808,48 @@ public class DietasRestControllerTest {
 			Double.parseDouble(part); // Should not throw exception
 		}
 		log.info("Finishing testGetDistDietWithAlimentosReturnsCorrectDistribution with result: '{}'", result);
+	}
+
+	@Test
+	public void testGetColumnsIncludesAccionesColumn() {
+		log.info("Starting testGetColumnsIncludesAccionesColumn");
+
+		// Act
+		List<com.nutriconsultas.dataTables.paging.Column> columns = dietasRestController.getColumns();
+
+		// Assert
+		assertThat(columns).isNotNull();
+		assertThat(columns).hasSize(8); // acciones, dieta, ingestas, dist, kcal, prot,
+										// lip, hc
+		assertThat(columns.get(0).getData()).isEqualTo("acciones");
+		assertThat(columns.get(1).getData()).isEqualTo("dieta");
+		log.info("Finishing testGetColumnsIncludesAccionesColumn");
+	}
+
+	@Test
+	public void testToStringListIncludesPrintButtonInActionsColumn() throws Exception {
+		log.info("Starting testToStringListIncludesPrintButtonInActionsColumn");
+
+		// Use reflection to access protected method toStringList
+		Method toStringListMethod = DietasRestController.class.getDeclaredMethod("toStringList", Dieta.class);
+		toStringListMethod.setAccessible(true);
+
+		// Act
+		@SuppressWarnings("unchecked")
+		List<String> result = (List<String>) toStringListMethod.invoke(dietasRestController, dietaConPlatillos);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result).hasSize(8);
+		// Index 0 is the actions column
+		String actions = result.get(0);
+		assertThat(actions).isNotNull();
+		assertThat(actions).contains("href='/admin/dietas/2/print'");
+		assertThat(actions).contains("class='btn btn-sm btn-primary'");
+		assertThat(actions).contains("target='_blank'");
+		assertThat(actions).contains("title='Imprimir PDF'");
+		assertThat(actions).contains("fa-file-pdf");
+		log.info("Finishing testToStringListIncludesPrintButtonInActionsColumn");
 	}
 
 }

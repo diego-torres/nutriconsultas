@@ -77,13 +77,15 @@ public class PlatilloController extends AbstractAuthorizedController {
 		if (platilloId == null) {
 			log.error("Platillo ID is null, cannot save");
 			result = "redirect:/admin/platillos";
-		} else {
+		}
+		else {
 			final Platillo dbPlatillo = service.findById(platilloId);
 			if (dbPlatillo != null) {
 				dbPlatillo.setName(platillo.getName());
 				dbPlatillo.setDescription(platillo.getDescription());
 				service.save(dbPlatillo);
-			} else {
+			}
+			else {
 				service.save(platillo);
 			}
 			log.debug("Finishing save with platillo {}", platillo);
@@ -110,7 +112,8 @@ public class PlatilloController extends AbstractAuthorizedController {
 			}
 			model.addAttribute("alimentosList", alimentoService.findAll());
 			result = "sbadmin/platillos/formulario";
-		} else {
+		}
+		else {
 			try {
 				final byte[] bytes = file.getBytes();
 				// Assuming you have a method in PlatilloService to handle picture saving
@@ -129,7 +132,8 @@ public class PlatilloController extends AbstractAuthorizedController {
 				service.savePicture(id, bytes, fileExtension);
 				log.debug("Successfully uploaded picture for platillo with id {}", id);
 				result = "redirect:/admin/platillos/" + id;
-			} catch (final IOException e) {
+			}
+			catch (final IOException e) {
 				log.error("Failed to upload picture for platillo with id {}", id, e);
 				final Platillo platillo = service.findById(id);
 				model.addAttribute("platillo", platillo);
@@ -170,13 +174,15 @@ public class PlatilloController extends AbstractAuthorizedController {
 			}
 			model.addAttribute("alimentosList", alimentoService.findAll());
 			result = "sbadmin/platillos/formulario";
-		} else {
+		}
+		else {
 			try {
 				final byte[] bytes = file.getBytes();
 				service.savePdf(id, bytes);
 				log.debug("Successfully uploaded pdf for platillo with id {}", id);
 				result = "redirect:/admin/platillos/" + id;
-			} catch (final IOException e) {
+			}
+			catch (final IOException e) {
 				log.error("Failed to upload pdf for platillo with id {}", id, e);
 				final Platillo platillo = service.findById(id);
 				model.addAttribute("platillo", platillo);
