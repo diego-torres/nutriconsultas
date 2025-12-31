@@ -53,9 +53,8 @@ public class PacienteDietaServiceImpl implements PacienteDietaService {
 	@Override
 	public PacienteDieta updateAssignment(@NonNull final Long id, @NonNull final PacienteDieta pacienteDieta) {
 		log.info("Updating dieta assignment {}", id);
-		final PacienteDieta existing = Objects.requireNonNull(
-				pacienteDietaRepository.findById(id)
-						.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado asignación con id " + id)));
+		final PacienteDieta existing = Objects.requireNonNull(pacienteDietaRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado asignación con id " + id)));
 
 		if (pacienteDieta.getStartDate() != null) {
 			existing.setStartDate(pacienteDieta.getStartDate());

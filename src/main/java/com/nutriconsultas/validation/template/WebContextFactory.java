@@ -389,7 +389,7 @@ public final class WebContextFactory {
 		final jakarta.servlet.http.Cookie[] cookies = request.getCookies();
 		if (cookies != null) {
 			for (final jakarta.servlet.http.Cookie cookie : cookies) {
-				map.put(cookie.getName(), new String[] {cookie.getValue()});
+				map.put(cookie.getName(), new String[] { cookie.getValue() });
 			}
 		}
 		return map;

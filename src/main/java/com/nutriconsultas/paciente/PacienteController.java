@@ -26,7 +26,6 @@ import com.nutriconsultas.controller.AbstractAuthorizedController;
 import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.DietaRepository;
 import com.nutriconsultas.dieta.DietaService;
-import com.nutriconsultas.paciente.PacienteDietaRepository;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -604,8 +603,8 @@ public class PacienteController extends AbstractAuthorizedController {
 	 * the PDF.
 	 *
 	 * <p>
-	 * The PDF includes patient information (name, DOB, gender, weight, height), assignment
-	 * dates, notes (if any), plus all dieta content.
+	 * The PDF includes patient information (name, DOB, gender, weight, height),
+	 * assignment dates, notes (if any), plus all dieta content.
 	 * @param pacienteId the ID of the patient
 	 * @param dietaId the ID of the dieta to generate PDF for
 	 * @return ResponseEntity with PDF document and appropriate headers

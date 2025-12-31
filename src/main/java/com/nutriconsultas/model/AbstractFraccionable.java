@@ -42,9 +42,9 @@ public abstract class AbstractFraccionable extends AbstractNutrible {
 	}
 
 	/**
-	 * Returns a rounded fractional quantity rounded to the nearest 0.25 increment.
-	 * This produces clean fractions like 1/4, 1/2, 3/4, 1, 1 1/4, etc., avoiding
-	 * awkward fractions like 6/23.
+	 * Returns a rounded fractional quantity rounded to the nearest 0.25 increment. This
+	 * produces clean fractions like 1/4, 1/2, 3/4, 1, 1 1/4, etc., avoiding awkward
+	 * fractions like 6/23.
 	 * @return formatted string with rounded fractional quantity
 	 */
 	public String getRoundedFractionalCantSugerida() {

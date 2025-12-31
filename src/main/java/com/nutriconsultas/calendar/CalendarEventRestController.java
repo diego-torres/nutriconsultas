@@ -364,8 +364,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 				final String dateTimeStr = (String) eventData.get("eventDateTime");
 				Date parsedDate = null;
 				// Try parsing with different formats
-				final String[] formats = {"yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm", "yyyy-MM-dd HH:mm:ss",
-						"yyyy-MM-dd HH:mm"};
+				final String[] formats = { "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm", "yyyy-MM-dd HH:mm:ss",
+						"yyyy-MM-dd HH:mm" };
 				for (final String format : formats) {
 					try {
 						final DateFormat dateFormat = new SimpleDateFormat(format);

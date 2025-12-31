@@ -34,8 +34,8 @@ import lombok.extern.slf4j.Slf4j;
  * assignment), the PDF will include patient information (name, DOB, gender, weight,
  * height), assignment dates, notes, plus all dieta content.</li>
  * <li><b>Generic PDF:</b> When generating a PDF from the diet list (not from a patient's
- * alimentary plan), patient information is excluded even if an assignment exists, resulting
- * in a generic diet template.</li>
+ * alimentary plan), patient information is excluded even if an assignment exists,
+ * resulting in a generic diet template.</li>
  * </ul>
  *
  * <p>
@@ -43,8 +43,8 @@ import lombok.extern.slf4j.Slf4j;
  * <ul>
  * <li>{@link #generatePdf(Long)}: Automatically includes patient information if an active
  * assignment exists (for backward compatibility).</li>
- * <li>{@link #generatePdf(Long, boolean)}: Allows explicit control over whether to include
- * patient information.</li>
+ * <li>{@link #generatePdf(Long, boolean)}: Allows explicit control over whether to
+ * include patient information.</li>
  * </ul>
  *
  * <p>
@@ -114,9 +114,9 @@ public class DietaPdfService {
 	 * <p>
 	 * This method allows controlling whether patient information is included in the PDF:
 	 * <ul>
-	 * <li>If {@code includePatientInfo} is {@code true} and the dieta has an active patient
-	 * assignment, patient information (including notes from PacienteDieta) will be included
-	 * in the PDF.</li>
+	 * <li>If {@code includePatientInfo} is {@code true} and the dieta has an active
+	 * patient assignment, patient information (including notes from PacienteDieta) will
+	 * be included in the PDF.</li>
 	 * <li>If {@code includePatientInfo} is {@code false}, only the dieta content will be
 	 * included, regardless of whether an assignment exists.</li>
 	 * </ul>
@@ -125,8 +125,8 @@ public class DietaPdfService {
 	 * The template {@code sbadmin/dietas/printable.html} uses conditional rendering to
 	 * handle both cases automatically.
 	 * @param dietaId the ID of the dieta to generate PDF for
-	 * @param includePatientInfo if {@code true}, includes patient information when an active
-	 * assignment exists; if {@code false}, generates a generic PDF without patient
+	 * @param includePatientInfo if {@code true}, includes patient information when an
+	 * active assignment exists; if {@code false}, generates a generic PDF without patient
 	 * information
 	 * @return PDF document as byte array
 	 * @throws IllegalArgumentException if dieta with the given ID is not found
@@ -154,9 +154,10 @@ public class DietaPdfService {
 		// Template will conditionally render patient info based on these variables
 		final Context context = new Context();
 		context.setVariable("dieta", dieta);
-		context.setVariable("pacienteDieta", activeAssignment); // null if unassigned or if
-																	// includePatientInfo is false
-		context.setVariable("paciente", activeAssignment != null ? activeAssignment.getPaciente() : null);
+		// null if unassigned or if includePatientInfo is false
+		context.setVariable("pacienteDieta", activeAssignment);
+		context.setVariable("paciente",
+			activeAssignment != null ? activeAssignment.getPaciente() : null);
 
 		// Sort ingestas by id
 		final List<Ingesta> sortedIngestas = dieta.getIngestas()

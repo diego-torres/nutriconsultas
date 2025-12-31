@@ -532,7 +532,7 @@ public class DietaControllerTest {
 		// Perform GET request - exception will be wrapped in ServletException
 		try {
 			mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/999/print"))
-					.andExpect(status().isInternalServerError());
+				.andExpect(status().isInternalServerError());
 		}
 		catch (Exception e) {
 			// Expected - exception is thrown during request processing
