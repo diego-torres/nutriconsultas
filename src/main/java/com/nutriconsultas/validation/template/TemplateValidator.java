@@ -40,7 +40,8 @@ public interface TemplateValidator {
 		try {
 			templateEngine.process(templateName, webContext);
 			result = true;
-		} catch (final Exception e) {
+		}
+		catch (final Exception e) {
 			// Return false on exception
 		}
 		return result;
@@ -57,7 +58,8 @@ public interface TemplateValidator {
 		if (pattern.endsWith("*")) {
 			final String prefix = pattern.substring(0, pattern.length() - 1);
 			result = templatePath.startsWith(prefix);
-		} else {
+		}
+		else {
 			result = templatePath.equals(pattern);
 		}
 		return result;

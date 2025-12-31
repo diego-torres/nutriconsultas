@@ -74,7 +74,8 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 				log.warn("Auxiliary table 'seed_platillo' does not exist. Skipping seed.");
 				return;
 			}
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			log.error("Failed to verify auxiliary table existence", e);
 			return;
 		}
@@ -152,11 +153,13 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 			if (dbIngredientCount != addedCount) {
 				log.warn("Platillo '{}' (id: {}) has {} ingredients in DB but {} were added. Expected: {}", name,
 						platilloId, dbIngredientCount, addedCount, ingredientes.size());
-			} else if (addedCount > 0) {
+			}
+			else if (addedCount > 0) {
 				log.debug("Platillo '{}' (id: {}) successfully created with {} ingredients", name, platilloId,
 						dbIngredientCount);
 				successCount++;
-			} else {
+			}
+			else {
 				log.warn("Platillo '{}' (id: {}) created but no ingredients were added", name, platilloId);
 			}
 		}
@@ -171,18 +174,34 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 			final List<Map<String, Object>> ingredientes) {
 		int addedCount = 0;
 		for (final Map<String, Object> ing : ingredientes) {
-			final Long alimentoId = ((Number) ing.get("alimento_id")).longValue();
-			final Integer peso = ((Number) ing.get("peso_neto")).intValue();
+			final Object alimentoIdObj = ing.get("alimento_id");
+			if (alimentoIdObj == null) {
+				log.warn("alimento_id is null. Skipping ingredient for platillo '{}'.", platilloName);
+				continue;
+			}
+			final Long alimentoId = ((Number) alimentoIdObj).longValue();
+			final Object pesoObj = ing.get("peso_neto");
+			if (pesoObj == null) {
+				log.warn("peso_neto is null. Skipping ingredient for platillo '{}'.", platilloName);
+				continue;
+			}
+			final Integer peso = ((Number) pesoObj).intValue();
 
 			final Alimento alimento = alimentosRepository.findById(alimentoId).orElse(null);
 			if (alimento == null) {
 				log.warn("Alimento with id {} not found. Skipping ingredient for platillo '{}'.", alimentoId,
 						platilloName);
 				continue;
-			} final String cantidad = alimento.getFractionalCantSugerida();
+			}
+			final String cantidad = alimento.getFractionalCantSugerida();
 			if (cantidad == null) {
 				log.warn("Alimento {} has no fractionalCantSugerida. Skipping ingredient for platillo '{}'.",
 						alimentoId, platilloName);
+				continue;
+			}
+
+			if (platilloId == null) {
+				log.warn("platilloId is null. Skipping ingredient for platillo '{}'.", platilloName);
 				continue;
 			}
 
@@ -192,10 +211,12 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 				if (addedIngrediente == null) {
 					log.error("Failed to add ingrediente (alimentoId: {}, peso: {}) to platillo '{}' (id: {})",
 							alimentoId, peso, platilloName, platilloId);
-				} else {
+				}
+				else {
 					addedCount++;
 				}
-			} catch (final Exception e) {
+			}
+			catch (final Exception e) {
 				log.error("Exception while adding ingrediente (alimentoId: {}, peso: {}) to platillo '{}' "
 						+ "(id: {}): {}", alimentoId, peso, platilloName, platilloId, e.getMessage(), e);
 			}
@@ -230,17 +251,21 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 							if (ingredienteCount == null || ingredienteCount == 0) {
 								log.warn("Auxiliary table seed_platillo_ingrediente is empty after initialization!");
 							}
-						} catch (final Exception e) {
+						}
+						catch (final Exception e) {
 							log.warn("Could not verify auxiliary table data: {}", e.getMessage());
 						}
-					} else {
+					}
+					else {
 						log.warn("Auxiliary tables were not created. Script may have failed.");
 					}
-				} catch (final Exception e) {
+				}
+				catch (final Exception e) {
 					log.error("Error during auxiliary table initialization: {}", e.getMessage());
 					log.debug("Full error details:", e);
 				}
-			} else {
+			}
+			else {
 				log.debug("Auxiliary tables already exist. Checking if they need to be populated...");
 				// Check if tables are empty and need to be populated
 				try {
@@ -272,16 +297,19 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 							if (ingredienteCount == null || ingredienteCount == 0) {
 								log.error("CRITICAL: Ingredients table is still empty after script execution!");
 							}
-						} catch (final Exception e) {
+						}
+						catch (final Exception e) {
 							log.error("Error populating auxiliary tables: {}", e.getMessage());
 							log.debug("Full error details:", e);
 						}
 					}
-				} catch (final Exception e) {
+				}
+				catch (final Exception e) {
 					log.debug("Could not check auxiliary table counts: {}", e.getMessage());
 				}
 			}
-		} catch (final SQLException e) {
+		}
+		catch (final SQLException e) {
 			log.error("Failed to check if auxiliary tables exist", e);
 		}
 	}
@@ -306,14 +334,16 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 			log.debug("Executing seed_platillos.sql script from: {}", resource.getDescription());
 			try {
 				ScriptUtils.executeSqlScript(connection, encodedResource);
-			} catch (final Exception e) {
+			}
+			catch (final Exception e) {
 				log.warn("Error executing seed_platillos.sql (some statements may have succeeded): {}", e.getMessage());
 				if (e.getMessage() != null && e.getMessage().contains("transaction is aborted")) {
 					try {
 						if (!connection.getAutoCommit()) {
 							connection.rollback();
 						}
-					} catch (final SQLException rollbackException) {
+					}
+					catch (final SQLException rollbackException) {
 						log.debug("Error during rollback (may be expected): {}", rollbackException.getMessage());
 					}
 				}

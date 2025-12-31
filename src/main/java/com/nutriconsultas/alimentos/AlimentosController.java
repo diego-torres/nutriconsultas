@@ -66,7 +66,8 @@ public class AlimentosController extends AbstractAuthorizedController {
 		if (result.hasErrors()) {
 			log.warn("Found {} errors on binding result", result.getErrorCount());
 			resultView = "sbadmin/alimentos/formulario";
-		} else {
+		}
+		else {
 			final Alimento savedAlimento = alimentoService.save(alimento);
 			log.info(
 					"finish agregar nuevo alimento post method, after saving with values {}, redirecting to /admin/alimentos",

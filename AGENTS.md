@@ -6,6 +6,12 @@ This document provides essential information for AI agents working on the nutric
 
 **nutriconsultas** is a Spring Boot web application for managing a nutrition consultation clinic. It provides functionality for patient management, diet planning, food tracking, and meal planning.
 
+### Project Information
+
+- **Project Name:** nutriconsultas
+- **Company:** Minutriporcion
+- **Branding:** Minutriporcion is the product and branding name for the nutriconsultas project. The project "nutriconsultas" is developed for the company Minutriporcion.
+
 ## Technology Stack
 
 ### Core Framework

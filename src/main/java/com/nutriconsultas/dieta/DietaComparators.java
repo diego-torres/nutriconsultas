@@ -42,7 +42,8 @@ public final class DietaComparators {
 	}
 
 	public static Comparator<Dieta> getComparator(final String name, final Direction dir) {
-		return MAP.get(new ComparatorKey(name, dir));
+		final Comparator<Dieta> comparator = MAP.get(new ComparatorKey(name, dir));
+		return comparator != null ? comparator : (o1, o2) -> 0;
 	}
 
 	private DietaComparators() {

@@ -55,7 +55,8 @@ public class BodyFatCalculatorService {
 				|| gender == null) {
 			log.warn("Cannot calculate body fat from skinfolds: missing required parameters");
 			return null;
-		} final double sum = chestSkinfold + abdominalSkinfold + thighSkinfold;
+		}
+		final double sum = chestSkinfold + abdominalSkinfold + thighSkinfold;
 		if (sum <= 0 || age <= 0) {
 			log.warn("Invalid parameters for skinfold body fat calculation");
 			return null;
@@ -65,7 +66,8 @@ public class BodyFatCalculatorService {
 		if ("M".equalsIgnoreCase(gender)) {
 			// Male formula
 			bodyDensity = 1.109_38 - (0.000_826_7 * sum) + (0.000_001_6 * sum * sum) - (0.000_257_4 * age);
-		} else {
+		}
+		else {
 			// Female formula
 			bodyDensity = 1.099_492_1 - (0.000_992_9 * sum) + (0.000_002_3 * sum * sum) - (0.000_139_2 * age);
 		}
@@ -103,7 +105,8 @@ public class BodyFatCalculatorService {
 			final double logValue = Math.log10(waist - neck);
 			final double heightLog = Math.log10(height);
 			bodyFatPercentage = 495 / (1.032_4 - 0.190_77 * logValue + 0.154_56 * heightLog) - 450;
-		} else {
+		}
+		else {
 			// Female formula requires hip measurement as well
 			// For now, use a simplified version
 			final double logValue = Math.log10(waist - neck);

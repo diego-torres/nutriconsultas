@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,6 +41,9 @@ public class DietaController extends AbstractAuthorizedController {
 
 	@Autowired
 	private AlimentoService alimentoService;
+
+	@Autowired
+	private DietaPdfService dietaPdfService;
 
 	@GetMapping(path = "/admin/dietas")
 	public String listado(final Model model) {
@@ -89,11 +95,40 @@ public class DietaController extends AbstractAuthorizedController {
 			model.addAttribute("distribucionLipido", distLipido);
 			model.addAttribute("distribucionHidratoCarbono", distHidratoCarbono);
 			model.addAttribute("hasDistribucion", true);
-		} else {
+		}
+		else {
 			model.addAttribute("hasDistribucion", false);
 		}
 
 		return "sbadmin/dietas/formulario";
+	}
+
+	/**
+	 * Generates and returns a PDF document for a dieta.
+	 *
+	 * <p>
+	 * This endpoint generates a generic PDF without patient information, suitable for
+	 * accessing from the diet list. Even if the dieta has an active patient assignment,
+	 * patient information is excluded to provide a generic diet template.
+	 *
+	 * <p>
+	 * The PDF includes only dieta information: name, ingestas, platillos, alimentos, and
+	 * nutritional information. The same template is used for both assigned and unassigned
+	 * dietas, with conditional rendering hiding patient-specific sections.
+	 * @param id the ID of the dieta to generate PDF for
+	 * @return ResponseEntity with PDF document and appropriate headers
+	 */
+	@GetMapping(path = "/admin/dietas/{id}/print")
+	public ResponseEntity<byte[]> printDieta(@PathVariable @NonNull final Long id) {
+		LOGGER.debug("Generating PDF for dieta with id {} (generic, no patient info)", id);
+		// Generate generic PDF without patient information when accessed from diet list
+		final byte[] pdfBytes = dietaPdfService.generatePdf(id, false);
+		final Dieta dieta = dietaService.getDieta(id);
+		final String fileName = (dieta != null && dieta.getNombre() != null ? dieta.getNombre() : "dieta") + ".pdf";
+		return ResponseEntity.ok()
+			.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+			.contentType(MediaType.parseMediaType("application/pdf"))
+			.body(pdfBytes);
 	}
 
 	@PostMapping(path = "/admin/dietas/{id}/ingestas/save")
@@ -107,13 +142,15 @@ public class DietaController extends AbstractAuthorizedController {
 			LOGGER.debug("nueva ingesta en dieta, agregar");
 			dietaService.addIngesta(id, ingesta.getIngesta());
 			result = "redirect:/admin/dietas/" + id;
-		} else {
+		}
+		else {
 			LOGGER.debug("Ingesta existente, cambiar nombre");
 			final Long ingestaId = ingesta.getIngestaId();
 			if (ingestaId == null) {
 				LOGGER.error("Ingesta ID is null, cannot rename");
 				result = "redirect:/admin/dietas/" + id;
-			} else {
+			}
+			else {
 				dietaService.renameIngesta(id, ingestaId, ingesta.getIngesta());
 				result = "redirect:/admin/dietas/" + id;
 			}
@@ -154,10 +191,10 @@ public class DietaController extends AbstractAuthorizedController {
 				// map ingredientes from platillo to ingredientes of platilloIngesta
 				if (platillo.getIngredientes() != null) {
 					for (Ingrediente ingrediente : platillo.getIngredientes()) {
-						IngredientePlatilloIngesta ingredientePlatilloIngesta = mapFromIngredienteToIngredientePlatilloIngesta(
+						IngredientePlatilloIngesta ingPlatilloIng = mapFromIngredienteToIngredientePlatilloIngesta(
 								ingrediente);
-						ingredientePlatilloIngesta.setPlatillo(platilloIngesta);
-						platilloIngesta.getIngredientes().add(ingredientePlatilloIngesta);
+						ingPlatilloIng.setPlatillo(platilloIngesta);
+						platilloIngesta.getIngredientes().add(ingPlatilloIng);
 					}
 				}
 

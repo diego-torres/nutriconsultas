@@ -91,14 +91,16 @@ public class CalendarController extends AbstractAuthorizedController {
 		if (event.getPaciente() == null) {
 			result.rejectValue("paciente", "NotNull", "El paciente es requerido");
 			hasErrors = true;
-		} final String resultView;
+		}
+		final String resultView;
 		if (hasErrors) {
 			model.addAttribute("activeMenu", "calendario");
 			model.addAttribute("event", event);
 			model.addAttribute("pacientes", pacienteRepository.findAll());
 			model.addAttribute("statuses", EventStatus.values());
 			resultView = "sbadmin/calendar/formulario";
-		} else {
+		}
+		else {
 			calendarEventService.save(event);
 			resultView = "redirect:/admin/calendario";
 		}
@@ -213,7 +215,8 @@ public class CalendarController extends AbstractAuthorizedController {
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
 						"No se ha encontrado paciente con id " + pacienteId));
 			existingEvent.setPaciente(paciente);
-		} else {
+		}
+		else {
 			log.debug("No pacienteId provided, keeping existing paciente");
 		}
 		// Preserve summaryNotes if it exists (not in form, but should be preserved)

@@ -111,7 +111,8 @@ public class PlatilloServiceImpl implements PlatilloService {
 					alimento);
 			log.debug("ingrediente calculated from cantidad change: {}", ingrediente);
 			calculatedFromCantidad = true;
-		} else {
+		}
+		else {
 			log.debug("cantidad did not changed, setting ingrediente default values.");
 			convertAlimentoToIngrediente(ingrediente, alimento);
 			log.debug("ingrediente calculated from alimento: {}", ingrediente);
@@ -161,7 +162,8 @@ public class PlatilloServiceImpl implements PlatilloService {
 				platillo.setPdfUrl(key);
 				platilloRepository.save(platillo);
 			}
-		} catch (final S3Exception e) {
+		}
+		catch (final S3Exception e) {
 			log.error("Error uploading pdf to S3", e);
 		}
 	}
@@ -174,7 +176,8 @@ public class PlatilloServiceImpl implements PlatilloService {
 		byte[] result = null;
 		try {
 			result = s3Client.getObject(builder -> builder.bucket(bucketName).key(key)).readAllBytes();
-		} catch (final S3Exception e) {
+		}
+		catch (final S3Exception e) {
 			log.error("Error getting picture from S3", e);
 		}
 		return result;
@@ -200,7 +203,8 @@ public class PlatilloServiceImpl implements PlatilloService {
 				platillo.setImageUrl(key);
 				platilloRepository.save(platillo);
 			}
-		} catch (final S3Exception e) {
+		}
+		catch (final S3Exception e) {
 			log.error("Error uploading picture to S3", e);
 		}
 	}
@@ -217,7 +221,8 @@ public class PlatilloServiceImpl implements PlatilloService {
 			final HeadObjectResponse headObjectResponse = s3Client.headObject(headObjectRequest);
 			final String contentType = headObjectResponse.contentType();
 			return contentType.length() > 0;
-		} catch (final AwsServiceException | SdkClientException e) {
+		}
+		catch (final AwsServiceException | SdkClientException e) {
 			return false;
 		}
 	}

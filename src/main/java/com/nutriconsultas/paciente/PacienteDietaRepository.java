@@ -14,4 +14,6 @@ public interface PacienteDietaRepository extends JpaRepository<PacienteDieta, Lo
 
 	List<PacienteDieta> findByPacienteIdOrderByStartDateDesc(Long pacienteId);
 
+	List<PacienteDieta> findByDietaId(Long dietaId);
+
 }

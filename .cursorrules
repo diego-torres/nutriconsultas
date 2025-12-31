@@ -3,6 +3,11 @@
 ## Project Context
 This is a Spring Boot 3.4.1 web application for managing a nutrition consultation clinic. The project uses Java 21, Thymeleaf templates, PostgreSQL database, and Spring Security with OAuth2 authentication.
 
+### Project Information
+- **Project Name:** nutriconsultas
+- **Company:** Minutriporcion
+- **Branding:** Minutriporcion is the product and branding name for the nutriconsultas project. The project "nutriconsultas" is developed for the company Minutriporcion.
+
 ## Technology Stack
 - Spring Boot 3.4.1
 - Java 21

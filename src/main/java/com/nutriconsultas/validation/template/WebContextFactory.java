@@ -461,7 +461,8 @@ public final class WebContextFactory {
 				boolean result = false;
 				try {
 					result = servletContext.getResource(path) != null;
-				} catch (final java.net.MalformedURLException e) {
+				}
+				catch (final java.net.MalformedURLException e) {
 					// Return false on exception
 				}
 				return result;

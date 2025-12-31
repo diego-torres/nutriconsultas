@@ -162,7 +162,8 @@ public abstract class BaseTemplateValidator implements TemplateValidator {
 			java.util.List<?> result;
 			if (ingestas instanceof java.util.List) {
 				result = (java.util.List<?>) ingestas;
-			} else {
+			}
+			else {
 				result = new ArrayList<>();
 			}
 			return result;
@@ -173,7 +174,8 @@ public abstract class BaseTemplateValidator implements TemplateValidator {
 			java.util.List<?> result;
 			if (platillos instanceof java.util.List) {
 				result = (java.util.List<?>) platillos;
-			} else {
+			}
+			else {
 				result = new ArrayList<>();
 			}
 			return result;
@@ -184,7 +186,8 @@ public abstract class BaseTemplateValidator implements TemplateValidator {
 			java.util.List<?> result;
 			if (alimentos instanceof java.util.List) {
 				result = (java.util.List<?>) alimentos;
-			} else {
+			}
+			else {
 				result = new ArrayList<>();
 			}
 			return result;
@@ -320,7 +323,8 @@ public abstract class BaseTemplateValidator implements TemplateValidator {
 			Integer result;
 			if (porciones != null) {
 				result = porciones instanceof Integer ? (Integer) porciones : Integer.valueOf(porciones.toString());
-			} else {
+			}
+			else {
 				// Fallback to "portions" if "porciones" not found
 				final Object portions = properties.get("portions");
 				result = portions instanceof Integer ? (Integer) portions
@@ -334,7 +338,8 @@ public abstract class BaseTemplateValidator implements TemplateValidator {
 			Integer result;
 			if (calorias != null) {
 				result = calorias instanceof Integer ? (Integer) calorias : Integer.valueOf(calorias.toString());
-			} else {
+			}
+			else {
 				// Fallback to "energia" if "calorias" not found
 				final Object energia = properties.get("energia");
 				result = energia instanceof Integer ? (Integer) energia
@@ -348,7 +353,8 @@ public abstract class BaseTemplateValidator implements TemplateValidator {
 			Double result;
 			if (proteinas != null) {
 				result = proteinas instanceof Double ? (Double) proteinas : Double.valueOf(proteinas.toString());
-			} else {
+			}
+			else {
 				// Fallback to "proteina" if "proteinas" not found
 				final Object proteina = properties.get("proteina");
 				result = proteina instanceof Double ? (Double) proteina
@@ -362,7 +368,8 @@ public abstract class BaseTemplateValidator implements TemplateValidator {
 			Double result;
 			if (hidratos != null) {
 				result = hidratos instanceof Double ? (Double) hidratos : Double.valueOf(hidratos.toString());
-			} else {
+			}
+			else {
 				// Fallback to "hidratosDeCarbono" if "hidratos" not found
 				final Object hidratosDeCarbono = properties.get("hidratosDeCarbono");
 				result = hidratosDeCarbono instanceof Double ? (Double) hidratosDeCarbono

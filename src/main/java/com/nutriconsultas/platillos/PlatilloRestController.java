@@ -40,7 +40,8 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 		if (alimentoId == null || cantidad == null || peso == null) {
 			log.error("Missing required fields: alimentoId={}, cantidad={}, peso={}", alimentoId, cantidad, peso);
 			result = ResponseEntity.badRequest().build();
-		} else {
+		}
+		else {
 			final Ingrediente ingredienteResult = service.addIngrediente(id, alimentoId, cantidad, peso);
 			log.info("finish addIngrediente with id {} and ingrediente {}.", id, ingrediente);
 			result = ResponseEntity.ok(new ApiResponse<Ingrediente>(ingredienteResult));
@@ -60,10 +61,12 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 		if (ingestas != null && ingestas.contains(ingesta.getIngesta())) {
 			log.info("finish addIngesta with id {} and ingesta {} - DUPLICATE requested.", id, ingesta);
 			result = ResponseEntity.ok(new ApiResponse<Platillo>(platillo));
-		} else {
+		}
+		else {
 			if (ingestas == null || ingestas.isEmpty()) {
 				ingestas = ingesta.getIngesta();
-			} else {
+			}
+			else {
 				ingestas += ", " + ingesta.getIngesta();
 			}
 			platillo.setIngestasSugeridas(ingestas);
@@ -94,7 +97,8 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 			final Platillo saved = service.save(platillo);
 			log.info("finish deleteIngesta with id {} and ingesta {}.", id, ingesta);
 			result = ResponseEntity.ok(new ApiResponse<Platillo>(saved));
-		} else {
+		}
+		else {
 			log.info("finish deleteIngesta with id {} and ingesta {}.", id, ingesta);
 			result = ResponseEntity.ok(new ApiResponse<Platillo>(platillo));
 		}
