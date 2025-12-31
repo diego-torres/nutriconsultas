@@ -72,14 +72,20 @@ src/
    - Automatic code formatting following Spring's coding standards
    - Runs during `validate` phase
    - Command: `mvn spring-javaformat:apply`
+   - **Note**: Not run automatically in pre-commit hook to prevent conflicts with checkstyle
 
 2. **Checkstyle** (v3.3.1)
    - Code style checking and enforcement
    - Configuration: `checkstyle.xml`
    - Runs during `validate` phase
    - Command: `mvn checkstyle:check`
-   - Max line length: 120 characters
+   - Max line length: 150 characters (configured in checkstyle.xml)
    - Includes naming conventions, import checks, size violations, whitespace rules
+   - **Important**: Checkstyle rules are configured to be compatible with Spring Java Format
+   - **Pre-commit Hook**: The pre-commit hook runs `mvn checkstyle:check` to validate code quality before commits
+   - Checkstyle rules are aligned with Spring Java Format style:
+     - `RightCurly` rule excludes `LITERAL_CATCH` tokens (catch blocks use separate lines, matching Spring Java Format)
+     - Suppressions file (`checkstyle-suppressions.xml`) handles Spring Boot application class exceptions
 
 3. **SpotBugs** (v4.7.3)
    - Static analysis for bug detection
@@ -132,14 +138,43 @@ mvn spring-javaformat:apply
 ```
 - Automatically fixes formatting issues (spacing, indentation, braces)
 - Runs automatically during `validate` phase
-- Pre-commit hook also formats code before commits
+- **Note**: Not run automatically in pre-commit hook (use manually: `mvn spring-javaformat:apply`)
 
 **Checkstyle:**
 ```bash
 mvn checkstyle:check
 ```
 - Review `target/checkstyle-result.xml` for violations
-- Common fixes: rename variables, add braces, fix line length, remove unused imports
+- **Important**: Checkstyle rules are configured to be compatible with Spring Java Format (Google Java Style Guide)
+- Common violations and fixes:
+  - **NeedBraces**: Always use braces for if/for/while statements
+    - ❌ `if (condition) statement;`
+    - ✅ `if (condition) { statement; }`
+  - **LineLength**: Keep lines under 150 characters (checkstyle.xml) or 120 characters (project standard)
+    - Break long lines, extract variables, use method chaining on separate lines
+  - **RightCurly**: Closing braces should be on same line as else/finally (catch blocks are excluded to match Spring Java Format)
+    - ❌ `} else {` on separate lines
+    - ✅ `} else {` on same line
+    - Note: Catch blocks use separate lines (compatible with Spring Java Format): 
+      ```java
+      } catch (Exception e) {
+      ```
+      This matches Spring Java Format's style, which is enforced by the pre-commit hook
+  - **LocalFinalVariableName/LocalVariableName**: Variables must start with lowercase letter
+    - ❌ `final Ingrediente _ingrediente = ...;` or `Paciente _paciente = ...;`
+    - ✅ `final Ingrediente ingrediente = ...;` or `Paciente pacienteEntity = ...;`
+  - **FinalClass**: Utility classes should be `final`
+    - ❌ `public class IngredienteComparators { }`
+    - ✅ `public final class IngredienteComparators { }`
+  - **VisibilityModifier**: Fields should be private
+    - ❌ `static Map map = ...;` or `AlimentosRepository alimentosRepository;`
+    - ✅ `private static final Map MAP = ...;` or `private AlimentosRepository alimentosRepository;`
+  - **HideUtilityClassConstructor**: Utility classes need private constructors
+    - ❌ `public class WebContextFactory { }`
+    - ✅ `public class WebContextFactory { private WebContextFactory() { } }`
+  - **NoWhitespaceAfter**: No space after opening brace
+    - ❌ `{ value }`
+    - ✅ `{value}`
 - Most formatting issues are fixed by Spring Java Format
 
 **SpotBugs:**
@@ -304,15 +339,33 @@ public Map<String, Object> createMockModelVariables() {
 
 ### Code Style Guidelines
 1. **Formatting**: Follow Spring Java Format (automatically applied)
-2. **Line Length**: Maximum 120 characters
+2. **Line Length**: Maximum 120 characters - break long lines into multiple lines
 3. **Naming**: 
-   - Classes: PascalCase
-   - Methods/Variables: camelCase
-   - Constants: UPPER_SNAKE_CASE
-4. **Imports**: Avoid star imports, remove unused imports
-5. **Method Length**: Maximum 150 lines
-6. **Parameters**: Maximum 7 parameters per method
-7. **Logging**: Use appropriate log levels (DEBUG, INFO, WARN, ERROR)
+   - Classes: PascalCase (e.g., `MyClass`)
+   - Methods/Variables: camelCase starting with lowercase (e.g., `myMethod`, `myVariable`)
+   - **CRITICAL: NEVER use underscore prefix for variables** (e.g., `_variable` is invalid)
+     - Use descriptive names: `pacienteEntity`, `savedDieta`, `ingredienteResult` instead of `_paciente`, `_dieta`, `_ingrediente`
+   - Constants: UPPER_SNAKE_CASE (e.g., `MY_CONSTANT`)
+4. **Braces**: Always use braces for if/for/while statements
+   - ❌ `if (condition) statement;`
+   - ✅ `if (condition) { statement; }`
+5. **Utility Classes**: Must be `final` with private constructor
+   - ❌ `public class MyComparators { }`
+   - ✅ `public final class MyComparators { private MyComparators() { } }`
+6. **Field Visibility**: All fields must be private
+   - ❌ `static Map map;` or `AlimentosRepository repository;`
+   - ✅ `private static final Map MAP;` or `private AlimentosRepository repository;`
+7. **Brace Placement**: 
+   - **else/finally**: Closing braces should be on same line
+     - ❌ `} else {` on separate lines
+     - ✅ `} else {` on same line
+   - **catch blocks**: Use separate lines (Spring Java Format style, enforced by pre-commit hook)
+     - ✅ `} catch (Exception e) {` (closing brace on its own line)
+     - This is configured in checkstyle.xml by excluding `LITERAL_CATCH` from RightCurly rule
+8. **Imports**: Avoid star imports, remove unused imports
+9. **Method Length**: Maximum 150 lines
+10. **Parameters**: Maximum 7 parameters per method
+11. **Logging**: Use appropriate log levels (DEBUG, INFO, WARN, ERROR)
 
 ### Database Best Practices
 1. **JPA Entities**: Use `@Entity`, proper relationships (`@OneToMany`, `@ManyToOne`, etc.)

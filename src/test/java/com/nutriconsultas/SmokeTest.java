@@ -14,7 +14,7 @@ import com.nutriconsultas.controller.WebController;
 public class SmokeTest {
 
 	@Autowired
-	WebController controller;
+	private WebController controller;
 
 	@Test
 	public void contextLoads() throws Exception {

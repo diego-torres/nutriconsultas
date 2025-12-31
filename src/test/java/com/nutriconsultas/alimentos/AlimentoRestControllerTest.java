@@ -49,8 +49,7 @@ public class AlimentoRestControllerTest {
 			List<Alimento> alimentos = new CsvToBeanBuilder<Alimento>(reader).withType(Alimento.class).build().parse();
 			log.debug("setting up alimento service with {} alimentos", alimentos.size());
 			when(alimentoService.findAll()).thenReturn(alimentos);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			log.error("error while reading alimentos from csv file", e);
 		}
 		log.info("finished setting up alimento service");

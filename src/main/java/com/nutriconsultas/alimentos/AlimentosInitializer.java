@@ -45,12 +45,10 @@ public class AlimentosInitializer implements CommandLineRunner {
 				initializeAlimentos();
 				final long newCount = alimentosRepository.count();
 				log.info("Successfully initialized alimentos table from alimentos.sql. New count: {}", newCount);
-			}
-			catch (final Exception e) {
+			} catch (final Exception e) {
 				log.error("Failed to initialize alimentos table from alimentos.sql", e);
 			}
-		}
-		else {
+		} else {
 			log.info("Alimentos table already contains {} records. Skipping initialization.", count);
 		}
 	}

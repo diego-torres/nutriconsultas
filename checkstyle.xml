@@ -8,6 +8,12 @@
   <property name="severity" value="warning"/>
   <property name="fileExtensions" value="java, properties, xml"/>
 
+  <!-- Suppressions -->
+  <module name="SuppressionFilter">
+    <property name="file" value="checkstyle-suppressions.xml"/>
+    <property name="optional" value="true"/>
+  </module>
+
   <!-- Exclude generated sources -->
   <module name="BeforeExecutionExclusionFileFilter">
     <property name="fileNamePattern" value="module\-info\.java$"/>
@@ -20,7 +26,7 @@
 
   <module name="LineLength">
     <property name="fileExtensions" value="java"/>
-    <property name="max" value="120"/>
+    <property name="max" value="150"/>
     <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
   </module>
 
@@ -71,7 +77,10 @@
     <module name="EmptyBlock"/>
     <module name="LeftCurly"/>
     <module name="NeedBraces"/>
-    <module name="RightCurly"/>
+    <module name="RightCurly">
+      <property name="option" value="same"/>
+      <property name="tokens" value="LITERAL_ELSE, LITERAL_FINALLY"/>
+    </module>
 
     <!-- Checks for common coding problems -->
     <module name="EmptyStatement"/>

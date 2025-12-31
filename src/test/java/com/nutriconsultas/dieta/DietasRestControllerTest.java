@@ -94,8 +94,8 @@ public class DietasRestControllerTest {
 	}
 
 	@Test
-	public void testGetDist_EmptyDiet_ReturnsEmptyString() throws Exception {
-		log.info("Starting testGetDist_EmptyDiet_ReturnsEmptyString");
+	public void testGetDistEmptyDietReturnsEmptyString() throws Exception {
+		log.info("Starting testGetDistEmptyDietReturnsEmptyString");
 
 		// Use reflection to access private method getDist
 		Method getDistMethod = DietasRestController.class.getDeclaredMethod("getDist", Dieta.class);
@@ -107,12 +107,12 @@ public class DietasRestControllerTest {
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result).isEmpty();
-		log.info("Finishing testGetDist_EmptyDiet_ReturnsEmptyString with result: '{}'", result);
+		log.info("Finishing testGetDistEmptyDietReturnsEmptyString with result: '{}'", result);
 	}
 
 	@Test
-	public void testGetDist_DietWithPlatillos_ReturnsCorrectDistribution() throws Exception {
-		log.info("Starting testGetDist_DietWithPlatillos_ReturnsCorrectDistribution");
+	public void testGetDistDietWithPlatillosReturnsCorrectDistribution() throws Exception {
+		log.info("Starting testGetDistDietWithPlatillosReturnsCorrectDistribution");
 
 		// Use reflection to access private method getDist
 		Method getDistMethod = DietasRestController.class.getDeclaredMethod("getDist", Dieta.class);
@@ -136,12 +136,12 @@ public class DietasRestControllerTest {
 			assertThat(part).isNotEqualTo("NaN");
 			Double.parseDouble(part); // Should not throw exception
 		}
-		log.info("Finishing testGetDist_DietWithPlatillos_ReturnsCorrectDistribution with result: '{}'", result);
+		log.info("Finishing testGetDistDietWithPlatillosReturnsCorrectDistribution with result: '{}'", result);
 	}
 
 	@Test
-	public void testToStringList_EmptyDiet_ReturnsEmptyStringForDistribution() throws Exception {
-		log.info("Starting testToStringList_EmptyDiet_ReturnsEmptyStringForDistribution");
+	public void testToStringListEmptyDietReturnsEmptyStringForDistribution() throws Exception {
+		log.info("Starting testToStringListEmptyDietReturnsEmptyStringForDistribution");
 
 		// Use reflection to access protected method toStringList
 		Method toStringListMethod = DietasRestController.class.getDeclaredMethod("toStringList", Dieta.class);
@@ -158,13 +158,13 @@ public class DietasRestControllerTest {
 		String distribution = result.get(2);
 		assertThat(distribution).isNotNull();
 		assertThat(distribution).isEmpty();
-		log.info("Finishing testToStringList_EmptyDiet_ReturnsEmptyStringForDistribution with distribution: '{}'",
+		log.info("Finishing testToStringListEmptyDietReturnsEmptyStringForDistribution with distribution: '{}'",
 				distribution);
 	}
 
 	@Test
-	public void testToStringList_DietWithPlatillos_ReturnsCorrectValues() throws Exception {
-		log.info("Starting testToStringList_DietWithPlatillos_ReturnsCorrectValues");
+	public void testToStringListDietWithPlatillosReturnsCorrectValues() throws Exception {
+		log.info("Starting testToStringListDietWithPlatillosReturnsCorrectValues");
 
 		// Use reflection to access protected method toStringList
 		Method toStringListMethod = DietasRestController.class.getDeclaredMethod("toStringList", Dieta.class);
@@ -194,12 +194,12 @@ public class DietasRestControllerTest {
 		// Index 6 is carbohydrates
 		String carbohydrates = result.get(6);
 		assertThat(carbohydrates).isEqualTo("50.0");
-		log.info("Finishing testToStringList_DietWithPlatillos_ReturnsCorrectValues");
+		log.info("Finishing testToStringListDietWithPlatillosReturnsCorrectValues");
 	}
 
 	@Test
-	public void testGetPageArray_EmptyDiet_ShowsEmptyDistribution() {
-		log.info("Starting testGetPageArray_EmptyDiet_ShowsEmptyDistribution");
+	public void testGetPageArrayEmptyDietShowsEmptyDistribution() {
+		log.info("Starting testGetPageArrayEmptyDietShowsEmptyDistribution");
 
 		// Arrange
 		List<Dieta> dietas = Arrays.asList(dietaVacia);
@@ -223,12 +223,12 @@ public class DietasRestControllerTest {
 		assertThat(distribution).isNotNull();
 		assertThat(distribution).isEmpty();
 		assertThat(distribution).doesNotContain("NaN");
-		log.info("Finishing testGetPageArray_EmptyDiet_ShowsEmptyDistribution");
+		log.info("Finishing testGetPageArrayEmptyDietShowsEmptyDistribution");
 	}
 
 	@Test
-	public void testGetPageArray_DietWithPlatillos_ShowsCorrectDistribution() {
-		log.info("Starting testGetPageArray_DietWithPlatillos_ShowsCorrectDistribution");
+	public void testGetPageArrayDietWithPlatillosShowsCorrectDistribution() {
+		log.info("Starting testGetPageArrayDietWithPlatillosShowsCorrectDistribution");
 
 		// Arrange
 		List<Dieta> dietas = Arrays.asList(dietaConPlatillos);
@@ -252,12 +252,12 @@ public class DietasRestControllerTest {
 		assertThat(distribution).isNotNull();
 		assertThat(distribution).isNotEmpty();
 		assertThat(distribution).doesNotContain("NaN");
-		log.info("Finishing testGetPageArray_DietWithPlatillos_ShowsCorrectDistribution");
+		log.info("Finishing testGetPageArrayDietWithPlatillosShowsCorrectDistribution");
 	}
 
 	@Test
-	public void testDeletePlatilloIngesta_Success_RemovesPlatilloFromIngesta() {
-		log.info("Starting testDeletePlatilloIngesta_Success_RemovesPlatilloFromIngesta");
+	public void testDeletePlatilloIngestaSuccessRemovesPlatilloFromIngesta() {
+		log.info("Starting testDeletePlatilloIngestaSuccessRemovesPlatilloFromIngesta");
 
 		// Arrange
 		Long dietaId = 2L;
@@ -319,12 +319,12 @@ public class DietasRestControllerTest {
 			.orElse(null);
 		assertThat(ingestaResult).isNotNull();
 		assertThat(ingestaResult.getPlatillos()).isEmpty();
-		log.info("Finishing testDeletePlatilloIngesta_Success_RemovesPlatilloFromIngesta");
+		log.info("Finishing testDeletePlatilloIngestaSuccessRemovesPlatilloFromIngesta");
 	}
 
 	@Test
-	public void testDeletePlatilloIngesta_DietaNotFound_ReturnsNotFound() {
-		log.info("Starting testDeletePlatilloIngesta_DietaNotFound_ReturnsNotFound");
+	public void testDeletePlatilloIngestaDietaNotFoundReturnsNotFound() {
+		log.info("Starting testDeletePlatilloIngestaDietaNotFoundReturnsNotFound");
 
 		// Arrange
 		Long dietaId = 999L;
@@ -340,12 +340,12 @@ public class DietasRestControllerTest {
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-		log.info("Finishing testDeletePlatilloIngesta_DietaNotFound_ReturnsNotFound");
+		log.info("Finishing testDeletePlatilloIngestaDietaNotFoundReturnsNotFound");
 	}
 
 	@Test
-	public void testDeletePlatilloIngesta_IngestaNotFound_StillReturnsOk() {
-		log.info("Starting testDeletePlatilloIngesta_IngestaNotFound_StillReturnsOk");
+	public void testDeletePlatilloIngestaIngestaNotFoundStillReturnsOk() {
+		log.info("Starting testDeletePlatilloIngestaIngestaNotFoundStillReturnsOk");
 
 		// Arrange
 		Long dietaId = 2L;
@@ -379,12 +379,12 @@ public class DietasRestControllerTest {
 		assertThat(result.getBody().getData()).isNotNull();
 		// The dieta should remain unchanged since the ingesta doesn't exist
 		assertThat(result.getBody().getData().getIngestas()).hasSize(1);
-		log.info("Finishing testDeletePlatilloIngesta_IngestaNotFound_StillReturnsOk");
+		log.info("Finishing testDeletePlatilloIngestaIngestaNotFoundStillReturnsOk");
 	}
 
 	@Test
-	public void testDeletePlatilloIngesta_PlatilloNotFound_StillReturnsOk() {
-		log.info("Starting testDeletePlatilloIngesta_PlatilloNotFound_StillReturnsOk");
+	public void testDeletePlatilloIngestaPlatilloNotFoundStillReturnsOk() {
+		log.info("Starting testDeletePlatilloIngestaPlatilloNotFoundStillReturnsOk");
 
 		// Arrange
 		Long dietaId = 2L;
@@ -426,12 +426,12 @@ public class DietasRestControllerTest {
 			.orElse(null);
 		assertThat(ingestaResult).isNotNull();
 		assertThat(ingestaResult.getPlatillos()).isEmpty();
-		log.info("Finishing testDeletePlatilloIngesta_PlatilloNotFound_StillReturnsOk");
+		log.info("Finishing testDeletePlatilloIngestaPlatilloNotFoundStillReturnsOk");
 	}
 
 	@Test
-	public void testDeletePlatilloIngesta_MultiplePlatillos_RemovesOnlyTargetPlatillo() {
-		log.info("Starting testDeletePlatilloIngesta_MultiplePlatillos_RemovesOnlyTargetPlatillo");
+	public void testDeletePlatilloIngestaMultiplePlatillosRemovesOnlyTargetPlatillo() {
+		log.info("Starting testDeletePlatilloIngestaMultiplePlatillosRemovesOnlyTargetPlatillo");
 
 		// Arrange
 		Long dietaId = 2L;
@@ -507,12 +507,12 @@ public class DietasRestControllerTest {
 		assertThat(ingestaResult).isNotNull();
 		assertThat(ingestaResult.getPlatillos()).hasSize(1);
 		assertThat(ingestaResult.getPlatillos().get(0).getId()).isEqualTo(platilloIngestaIdToKeep);
-		log.info("Finishing testDeletePlatilloIngesta_MultiplePlatillos_RemovesOnlyTargetPlatillo");
+		log.info("Finishing testDeletePlatilloIngestaMultiplePlatillosRemovesOnlyTargetPlatillo");
 	}
 
 	@Test
-	public void testDeleteAlimentoIngesta_Success_RemovesAlimentoFromIngesta() {
-		log.info("Starting testDeleteAlimentoIngesta_Success_RemovesAlimentoFromIngesta");
+	public void testDeleteAlimentoIngestaSuccessRemovesAlimentoFromIngesta() {
+		log.info("Starting testDeleteAlimentoIngestaSuccessRemovesAlimentoFromIngesta");
 
 		// Arrange
 		Long dietaId = 2L;
@@ -574,12 +574,12 @@ public class DietasRestControllerTest {
 			.orElse(null);
 		assertThat(ingestaResult).isNotNull();
 		assertThat(ingestaResult.getAlimentos()).isEmpty();
-		log.info("Finishing testDeleteAlimentoIngesta_Success_RemovesAlimentoFromIngesta");
+		log.info("Finishing testDeleteAlimentoIngestaSuccessRemovesAlimentoFromIngesta");
 	}
 
 	@Test
-	public void testDeleteAlimentoIngesta_DietaNotFound_ReturnsNotFound() {
-		log.info("Starting testDeleteAlimentoIngesta_DietaNotFound_ReturnsNotFound");
+	public void testDeleteAlimentoIngestaDietaNotFoundReturnsNotFound() {
+		log.info("Starting testDeleteAlimentoIngestaDietaNotFoundReturnsNotFound");
 
 		// Arrange
 		Long dietaId = 999L;
@@ -595,12 +595,12 @@ public class DietasRestControllerTest {
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-		log.info("Finishing testDeleteAlimentoIngesta_DietaNotFound_ReturnsNotFound");
+		log.info("Finishing testDeleteAlimentoIngestaDietaNotFoundReturnsNotFound");
 	}
 
 	@Test
-	public void testGetTotalProteina_DietWithAlimentos_IncludesAlimentos() throws Exception {
-		log.info("Starting testGetTotalProteina_DietWithAlimentos_IncludesAlimentos");
+	public void testGetTotalProteinaDietWithAlimentosIncludesAlimentos() throws Exception {
+		log.info("Starting testGetTotalProteinaDietWithAlimentosIncludesAlimentos");
 
 		// Arrange
 		Dieta dieta = new Dieta();
@@ -639,12 +639,12 @@ public class DietasRestControllerTest {
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result).isEqualTo(50.0); // 30 + 20
-		log.info("Finishing testGetTotalProteina_DietWithAlimentos_IncludesAlimentos with result: {}", result);
+		log.info("Finishing testGetTotalProteinaDietWithAlimentosIncludesAlimentos with result: {}", result);
 	}
 
 	@Test
-	public void testGetTotalLipidos_DietWithAlimentos_IncludesAlimentos() throws Exception {
-		log.info("Starting testGetTotalLipidos_DietWithAlimentos_IncludesAlimentos");
+	public void testGetTotalLipidosDietWithAlimentosIncludesAlimentos() throws Exception {
+		log.info("Starting testGetTotalLipidosDietWithAlimentosIncludesAlimentos");
 
 		// Arrange
 		Dieta dieta = new Dieta();
@@ -683,12 +683,12 @@ public class DietasRestControllerTest {
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result).isEqualTo(25.0); // 15 + 10
-		log.info("Finishing testGetTotalLipidos_DietWithAlimentos_IncludesAlimentos with result: {}", result);
+		log.info("Finishing testGetTotalLipidosDietWithAlimentosIncludesAlimentos with result: {}", result);
 	}
 
 	@Test
-	public void testGetTotalHidratosDeCarbono_DietWithAlimentos_IncludesAlimentos() throws Exception {
-		log.info("Starting testGetTotalHidratosDeCarbono_DietWithAlimentos_IncludesAlimentos");
+	public void testGetTotalHidratosDeCarbonoDietWithAlimentosIncludesAlimentos() throws Exception {
+		log.info("Starting testGetTotalHidratosDeCarbonoDietWithAlimentosIncludesAlimentos");
 
 		// Arrange
 		Dieta dieta = new Dieta();
@@ -728,12 +728,12 @@ public class DietasRestControllerTest {
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result).isEqualTo(80.0); // 50 + 30
-		log.info("Finishing testGetTotalHidratosDeCarbono_DietWithAlimentos_IncludesAlimentos with result: {}", result);
+		log.info("Finishing testGetTotalHidratosDeCarbonoDietWithAlimentosIncludesAlimentos with result: {}", result);
 	}
 
 	@Test
-	public void testGetDist_DietWithAlimentos_ReturnsCorrectDistribution() throws Exception {
-		log.info("Starting testGetDist_DietWithAlimentos_ReturnsCorrectDistribution");
+	public void testGetDistDietWithAlimentosReturnsCorrectDistribution() throws Exception {
+		log.info("Starting testGetDistDietWithAlimentosReturnsCorrectDistribution");
 
 		// Arrange
 		Dieta dieta = new Dieta();
@@ -777,7 +777,7 @@ public class DietasRestControllerTest {
 			assertThat(part).isNotEqualTo("NaN");
 			Double.parseDouble(part); // Should not throw exception
 		}
-		log.info("Finishing testGetDist_DietWithAlimentos_ReturnsCorrectDistribution with result: '{}'", result);
+		log.info("Finishing testGetDistDietWithAlimentosReturnsCorrectDistribution with result: '{}'", result);
 	}
 
 }

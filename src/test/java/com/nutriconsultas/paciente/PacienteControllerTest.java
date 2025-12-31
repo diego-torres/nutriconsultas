@@ -221,8 +221,8 @@ public class PacienteControllerTest {
 	public void testPerfilPacienteWithCompletedPastEvent() {
 		log.info("starting testPerfilPacienteWithCompletedPastEvent");
 		// Arrange
-		final Date pastDate = new Date(System.currentTimeMillis() - 86400000); // 1 day
-																				// ago
+		// 1 day ago
+		final Date pastDate = new Date(System.currentTimeMillis() - 86400000);
 		final CalendarEvent pastEvent = new CalendarEvent();
 		pastEvent.setId(1L);
 		pastEvent.setEventDateTime(pastDate);
@@ -249,9 +249,8 @@ public class PacienteControllerTest {
 	public void testPerfilPacienteWithScheduledFutureEvent() {
 		log.info("starting testPerfilPacienteWithScheduledFutureEvent");
 		// Arrange
-		final Date futureDate = new Date(System.currentTimeMillis() + 86400000); // 1 day
-																					// from
-																					// now
+		// 1 day from now
+		final Date futureDate = new Date(System.currentTimeMillis() + 86400000);
 		final CalendarEvent futureEvent = new CalendarEvent();
 		futureEvent.setId(2L);
 		futureEvent.setEventDateTime(futureDate);
@@ -281,11 +280,10 @@ public class PacienteControllerTest {
 	public void testPerfilPacienteWithBothEvents() {
 		log.info("starting testPerfilPacienteWithBothEvents");
 		// Arrange
-		final Date pastDate = new Date(System.currentTimeMillis() - 86400000); // 1 day
-																				// ago
-		final Date futureDate = new Date(System.currentTimeMillis() + 86400000); // 1 day
-																					// from
-																					// now
+		// 1 day ago
+		final Date pastDate = new Date(System.currentTimeMillis() - 86400000);
+		// 1 day from now
+		final Date futureDate = new Date(System.currentTimeMillis() + 86400000);
 
 		final CalendarEvent pastEvent = new CalendarEvent();
 		pastEvent.setId(1L);
@@ -325,8 +323,8 @@ public class PacienteControllerTest {
 	public void testPerfilPacienteIgnoresNonCompletedPastEvents() {
 		log.info("starting testPerfilPacienteIgnoresNonCompletedPastEvents");
 		// Arrange
-		final Date pastDate = new Date(System.currentTimeMillis() - 86400000); // 1 day
-																				// ago
+		// 1 day ago
+		final Date pastDate = new Date(System.currentTimeMillis() - 86400000);
 		final CalendarEvent cancelledEvent = new CalendarEvent();
 		cancelledEvent.setId(1L);
 		cancelledEvent.setEventDateTime(pastDate);
@@ -357,9 +355,8 @@ public class PacienteControllerTest {
 	public void testPerfilPacienteIgnoresNonScheduledFutureEvents() {
 		log.info("starting testPerfilPacienteIgnoresNonScheduledFutureEvents");
 		// Arrange
-		final Date futureDate = new Date(System.currentTimeMillis() + 86400000); // 1 day
-																					// from
-																					// now
+		// 1 day from now
+		final Date futureDate = new Date(System.currentTimeMillis() + 86400000);
 		final CalendarEvent completedFutureEvent = new CalendarEvent();
 		completedFutureEvent.setId(1L);
 		completedFutureEvent.setEventDateTime(futureDate);
@@ -391,10 +388,10 @@ public class PacienteControllerTest {
 	public void testPerfilPacienteSelectsMostRecentCompletedPastEvent() {
 		log.info("starting testPerfilPacienteSelectsMostRecentCompletedPastEvent");
 		// Arrange
-		final Date olderDate = new Date(System.currentTimeMillis() - 172800000); // 2 days
-																					// ago
-		final Date recentDate = new Date(System.currentTimeMillis() - 86400000); // 1 day
-																					// ago
+		// 2 days ago
+		final Date olderDate = new Date(System.currentTimeMillis() - 172800000);
+		// 1 day ago
+		final Date recentDate = new Date(System.currentTimeMillis() - 86400000);
 
 		final CalendarEvent olderEvent = new CalendarEvent();
 		olderEvent.setId(1L);
@@ -430,14 +427,10 @@ public class PacienteControllerTest {
 	public void testPerfilPacienteSelectsEarliestScheduledFutureEvent() {
 		log.info("starting testPerfilPacienteSelectsEarliestScheduledFutureEvent");
 		// Arrange
-		final Date nearFutureDate = new Date(System.currentTimeMillis() + 86400000); // 1
-																						// day
-																						// from
-																						// now
-		final Date farFutureDate = new Date(System.currentTimeMillis() + 172800000); // 2
-																						// days
-																						// from
-																						// now
+		// 1 day from now
+		final Date nearFutureDate = new Date(System.currentTimeMillis() + 86400000);
+		// 2 days from now
+		final Date farFutureDate = new Date(System.currentTimeMillis() + 172800000);
 
 		final CalendarEvent nearFutureEvent = new CalendarEvent();
 		nearFutureEvent.setId(1L);

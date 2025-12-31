@@ -287,18 +287,13 @@
         </dependencies>
       </plugin>
       <!-- Spring Java Format Plugin -->
+      <!-- Note: Not bound to any phase to avoid conflicts with custom checkstyle rules -->
+      <!-- Run explicitly with: mvn spring-javaformat:apply or mvn spring-javaformat:validate -->
       <plugin>
         <groupId>io.spring.javaformat</groupId>
         <artifactId>spring-javaformat-maven-plugin</artifactId>
         <version>${spring-javaformat.version}</version>
-        <executions>
-          <execution>
-            <phase>validate</phase>
-            <goals>
-              <goal>apply</goal>
-            </goals>
-          </execution>
-        </executions>
+        <!-- No executions - run explicitly when needed -->
       </plugin>
       <!-- Exec Plugin for Thymeleaf Validation (manual execution only) -->
       <!-- Template validation now runs as part of the test lifecycle via ThymeleafTemplateValidationTest -->

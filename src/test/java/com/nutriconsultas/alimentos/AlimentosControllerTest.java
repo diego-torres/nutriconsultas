@@ -49,8 +49,7 @@ public class AlimentosControllerTest {
 			log.debug("alimentos read from csv file: {}", alimentos.size());
 			when(alimentoService.findById(784L)).thenReturn(alimentos.get(0));
 			log.debug("alimentoService.findById(784L) returned: {}", alimentoService.findById(784L));
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			log.error("error while reading alimentos from csv file", e);
 		}
 	}

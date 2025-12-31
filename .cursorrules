@@ -26,8 +26,31 @@ This is a Spring Boot 3.4.1 web application for managing a nutrition consultatio
   - Runs during `validate` phase
 - **Checkstyle**: Enforces code style (checkstyle.xml)
   - Command: `mvn checkstyle:check`
-  - Common fixes: rename variables, add braces, fix line length (120 chars max), remove unused imports
   - Runs during `validate` phase
+  - **Common violations and fixes:**
+    - **NeedBraces**: Always use braces for if/for/while statements
+      - ❌ `if (condition) statement;`
+      - ✅ `if (condition) { statement; }`
+    - **LineLength**: Keep lines under 120 characters
+      - Break long lines, extract variables, use method chaining on separate lines
+    - **RightCurly**: Closing braces should be on same line as else/catch/finally
+      - ❌ `} else {` on separate lines
+      - ✅ `} else {` on same line
+    - **LocalFinalVariableName/LocalVariableName**: Variables must start with lowercase letter
+      - ❌ `final Ingrediente _ingrediente = ...;` or `Paciente _paciente = ...;`
+      - ✅ `final Ingrediente ingrediente = ...;` or `Paciente pacienteEntity = ...;`
+    - **FinalClass**: Utility classes should be `final`
+      - ❌ `public class IngredienteComparators { }`
+      - ✅ `public final class IngredienteComparators { }`
+    - **VisibilityModifier**: Fields should be private
+      - ❌ `static Map map = ...;` or `AlimentosRepository alimentosRepository;`
+      - ✅ `private static final Map MAP = ...;` or `private AlimentosRepository alimentosRepository;`
+    - **HideUtilityClassConstructor**: Utility classes need private constructors
+      - ❌ `public class WebContextFactory { }`
+      - ✅ `public class WebContextFactory { private WebContextFactory() { } }`
+    - **NoWhitespaceAfter**: No space after opening brace
+      - ❌ `{ value }`
+      - ✅ `{value}`
 - **SpotBugs**: Static analysis for bugs
   - Command: `mvn spotbugs:check`
   - Common fixes: null checks, resource leaks, inefficient operations
@@ -61,6 +84,24 @@ This is a Spring Boot 3.4.1 web application for managing a nutrition consultatio
 - Maximum parameters: 7 per method
 - Use `@Valid` for validation
 - Remove unused imports
+- **Naming Conventions:**
+  - Classes: PascalCase (e.g., `MyClass`)
+  - Methods/Variables: camelCase starting with lowercase (e.g., `myMethod`, `myVariable`)
+  - **CRITICAL: NEVER use underscore prefix for variables** (e.g., `_variable` is invalid)
+    - Use descriptive names: `pacienteEntity`, `savedDieta`, `ingredienteResult` instead of `_paciente`, `_dieta`, `_ingrediente`
+  - Constants: UPPER_SNAKE_CASE (e.g., `MY_CONSTANT`)
+- **Braces**: Always use braces for if/for/while statements
+  - ❌ `if (condition) statement;`
+  - ✅ `if (condition) { statement; }`
+- **Utility Classes**: Must be `final` with private constructor
+  - ❌ `public class MyComparators { }`
+  - ✅ `public final class MyComparators { private MyComparators() { } }`
+- **Field Visibility**: All fields must be private
+  - ❌ `static Map map;` or `AlimentosRepository repository;`
+  - ✅ `private static final Map MAP;` or `private AlimentosRepository repository;`
+- **Brace Placement**: Closing braces should be on same line as else/catch/finally
+  - ❌ `} else {` on separate lines
+  - ✅ `} else {` on same line
 
 ## Project Structure
 
@@ -306,4 +347,10 @@ The application requires these environment variables (set in `.env` file):
 - ❌ Missing validation annotations
 - ❌ Missing `@Transactional` on service methods
 - ❌ Mixing template directories (sbadmin vs eterna)
+- ❌ Variables with underscore prefix (e.g., `_variable`, `_paciente`, `_dieta`)
+- ❌ If/for/while statements without braces
+- ❌ Public fields in classes (use private with accessors)
+- ❌ Utility classes without `final` keyword and private constructor
+- ❌ Lines longer than 120 characters
+- ❌ Closing braces on separate line from else/catch/finally
 

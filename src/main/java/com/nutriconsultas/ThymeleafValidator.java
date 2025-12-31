@@ -107,8 +107,7 @@ public class ThymeleafValidator {
 				if (LOGGER.isInfoEnabled()) {
 					LOGGER.info("Validation complete: {}/{} templates valid", validFiles, totalFiles);
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				LOGGER.error("Error walking templates directory", e);
 				return false;
 			}
@@ -121,8 +120,7 @@ public class ThymeleafValidator {
 			}
 
 			result = errors.isEmpty();
-		}
-		finally {
+		} finally {
 			// Restore original Thymeleaf logger level
 			restoreThymeleafLogLevel(originalLevel);
 		}
@@ -150,15 +148,13 @@ public class ThymeleafValidator {
 			templateLogger.setLevel(Level.OFF);
 			// Return the first non-null level for restoration
 			return originalTemplateLevel != null ? originalTemplateLevel : originalThymeleafLevel;
-		}
-		catch (ClassCastException e) {
+		} catch (ClassCastException e) {
 			// Not using logback, skip suppression
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug("Not using logback, cannot suppress Thymeleaf error logs");
 			}
 			return null;
-		}
-		catch (RuntimeException e) {
+		} catch (RuntimeException e) {
 			// If logback configuration fails, continue without suppression
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug("Could not suppress Thymeleaf error logs: {}", e.getMessage());
@@ -180,8 +176,7 @@ public class ThymeleafValidator {
 					.getLogger("org.thymeleaf.TemplateEngine");
 				thymeleafLogger.setLevel(originalLevel);
 				templateLogger.setLevel(originalLevel);
-			}
-			catch (RuntimeException e) {
+			} catch (RuntimeException e) {
 				if (LOGGER.isDebugEnabled()) {
 					LOGGER.debug("Could not restore Thymeleaf log level: {}", e.getMessage());
 				}
@@ -228,8 +223,7 @@ public class ThymeleafValidator {
 				LOGGER.debug("✓ Valid: {} (using validator: {})", htmlFile, validator.getClass().getSimpleName());
 			}
 			return true;
-		}
-		catch (org.thymeleaf.exceptions.TemplateInputException e) {
+		} catch (org.thymeleaf.exceptions.TemplateInputException e) {
 			// Check if it's a syntax error (parsing error) vs runtime error (null
 			// property access)
 			// Check all levels of the exception chain, not just the root cause
@@ -293,8 +287,7 @@ public class ThymeleafValidator {
 				LOGGER.error("✗ Invalid: {} - {}", htmlFile, e.getMessage());
 			}
 			return false;
-		}
-		catch (java.lang.NullPointerException e) {
+		} catch (java.lang.NullPointerException e) {
 			// NullPointerException during validation is usually a runtime issue (missing
 			// binding context, etc.)
 			// not a syntax error. This is acceptable for template validation.
@@ -312,8 +305,7 @@ public class ThymeleafValidator {
 				LOGGER.error("✗ Invalid: {} - {}", htmlFile, e.getMessage());
 			}
 			return false;
-		}
-		catch (RuntimeException e) {
+		} catch (RuntimeException e) {
 			final String errorMsg = String.format("%s: %s", htmlFile, e.getMessage());
 			errors.add(errorMsg);
 			if (LOGGER.isErrorEnabled()) {

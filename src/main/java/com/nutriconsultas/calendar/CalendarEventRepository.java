@@ -15,10 +15,12 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
 
 	List<CalendarEvent> findByStatus(EventStatus status);
 
-	@Query("SELECT e FROM CalendarEvent e WHERE e.eventDateTime >= :startDate AND e.eventDateTime < :endDate ORDER BY e.eventDateTime ASC")
+	@Query("SELECT e FROM CalendarEvent e WHERE e.eventDateTime >= :startDate AND e.eventDateTime < :endDate "
+			+ "ORDER BY e.eventDateTime ASC")
 	List<CalendarEvent> findEventsBetweenDates(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
-	@Query("SELECT e FROM CalendarEvent e WHERE e.eventDateTime >= :startDate AND e.status = :status ORDER BY e.eventDateTime ASC")
+	@Query("SELECT e FROM CalendarEvent e WHERE e.eventDateTime >= :startDate AND e.status = :status "
+			+ "ORDER BY e.eventDateTime ASC")
 	List<CalendarEvent> findUpcomingEvents(@Param("startDate") Date startDate, @Param("status") EventStatus status);
 
 }

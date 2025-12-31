@@ -66,9 +66,8 @@ public class DashboardControllerTest {
 		CalendarEvent event2 = new CalendarEvent();
 		event2.setId(2L);
 		event2.setTitle("Seguimiento");
-		event2.setEventDateTime(new Date(System.currentTimeMillis() + 172800000)); // Day
-																					// after
-																					// tomorrow
+		// Day after tomorrow
+		event2.setEventDateTime(new Date(System.currentTimeMillis() + 172800000));
 		event2.setDurationMinutes(30);
 		event2.setStatus(EventStatus.SCHEDULED);
 		event2.setPaciente(paciente);

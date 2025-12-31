@@ -9,8 +9,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ComparatorKey {
 
-	String name;
+	@SuppressWarnings("checkstyle:VisibilityModifier")
+	private String name;
 
-	Direction dir;
+	@SuppressWarnings("checkstyle:VisibilityModifier")
+	private Direction dir;
 
 }

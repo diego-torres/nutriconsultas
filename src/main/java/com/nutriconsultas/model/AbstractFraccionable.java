@@ -16,9 +16,7 @@ public abstract class AbstractFraccionable extends AbstractNutrible {
 	public String getFractionalCantSugerida() {
 		if (cantSugerida == null) {
 			return "";
-		}
-
-		final Integer intPart = cantSugerida.intValue();
+		} final Integer intPart = cantSugerida.intValue();
 		// convert the fractional part to a fraction
 		final Double fractionalPart = cantSugerida - intPart;
 		final Double tolerance = 1.0E-6;

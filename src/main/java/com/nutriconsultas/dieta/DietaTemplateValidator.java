@@ -85,8 +85,7 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 			variables.put("distribucionLipido", distLipido);
 			variables.put("distribucionHidratoCarbono", distHidratoCarbono);
 			variables.put("hasDistribucion", true);
-		}
-		else {
+		} else {
 			variables.put("hasDistribucion", false);
 		}
 
