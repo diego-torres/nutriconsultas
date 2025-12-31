@@ -102,7 +102,7 @@ public class DietaPdfService {
 	 * @param dietaId the ID of the dieta to generate PDF for
 	 * @return PDF document as byte array
 	 * @throws IllegalArgumentException if dieta with the given ID is not found
-	 * @throws RuntimeException if PDF generation fails
+	 * @throws IllegalStateException if PDF generation fails
 	 */
 	public byte[] generatePdf(@NonNull final Long dietaId) {
 		return generatePdf(dietaId, true);
@@ -130,7 +130,7 @@ public class DietaPdfService {
 	 * information
 	 * @return PDF document as byte array
 	 * @throws IllegalArgumentException if dieta with the given ID is not found
-	 * @throws RuntimeException if PDF generation fails
+	 * @throws IllegalStateException if PDF generation fails
 	 */
 	public byte[] generatePdf(@NonNull final Long dietaId, final boolean includePatientInfo) {
 		log.info("Generating PDF for dieta with id: {} (includePatientInfo: {})", dietaId, includePatientInfo);
@@ -145,7 +145,7 @@ public class DietaPdfService {
 		if (includePatientInfo) {
 			final List<PacienteDieta> assignments = pacienteDietaRepository.findByDietaId(dietaId);
 			activeAssignment = assignments.stream()
-				.filter(a -> a.getStatus() != null && a.getStatus().name().equals("ACTIVE"))
+				.filter(a -> a.getStatus() != null && "ACTIVE".equals(a.getStatus().name()))
 				.findFirst()
 				.orElse(null);
 		}
@@ -201,7 +201,7 @@ public class DietaPdfService {
 		}
 		catch (final Exception e) {
 			log.error("Error generating PDF", e);
-			throw new RuntimeException("Error generating PDF", e);
+			throw new IllegalStateException("Error generating PDF", e);
 		}
 	}
 
