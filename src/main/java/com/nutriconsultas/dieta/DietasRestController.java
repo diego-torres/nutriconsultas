@@ -13,8 +13,10 @@ import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nutriconsultas.controller.AbstractGridController;
@@ -93,6 +95,96 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		else {
 			log.warn("Dieta with id {} not found when trying to delete alimentoIngesta", dietaId);
 			result = ResponseEntity.notFound().build();
+		}
+		return result;
+	}
+
+	@PutMapping("{dietaId}/ingestas/{ingestaId}/platillos/{platilloIngestaId}/portions")
+	public ResponseEntity<ApiResponse<Dieta>> updatePlatilloIngestaPortions(
+			@PathVariable @NonNull final Long dietaId, @PathVariable @NonNull final Long ingestaId,
+			@PathVariable @NonNull final Long platilloIngestaId, @RequestParam @NonNull final Integer portions) {
+		log.info("starting updatePlatilloIngestaPortions with dietaId {}, ingestaId {}, platilloIngestaId {}, portions {}.",
+				dietaId, ingestaId, platilloIngestaId, portions);
+		ResponseEntity<ApiResponse<Dieta>> result;
+		if (portions < 1 || portions > 10) {
+			log.warn("Invalid portions value: {}. Must be between 1 and 10.", portions);
+			result = ResponseEntity.badRequest().build();
+		}
+		else {
+			final Dieta dieta = dietaService.getDieta(dietaId);
+			if (dieta != null) {
+				final PlatilloIngesta platilloIngesta = dieta.getIngestas()
+					.stream()
+					.filter(ingesta -> ingesta.getId().equals(ingestaId))
+					.findFirst()
+					.flatMap(ingesta -> ingesta.getPlatillos()
+						.stream()
+						.filter(platillo -> platillo.getId().equals(platilloIngestaId))
+						.findFirst())
+					.orElse(null);
+				if (platilloIngesta != null) {
+					dietaService.recalculatePlatilloIngestaNutrients(platilloIngesta, portions);
+					final Dieta saved = dietaService.saveDieta(dieta);
+					log.info(
+							"finish updatePlatilloIngestaPortions with dietaId {}, ingestaId {}, platilloIngestaId {}, portions {}.",
+							dietaId, ingestaId, platilloIngestaId, portions);
+					result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
+				}
+				else {
+					log.warn("PlatilloIngesta with id {} not found in ingesta {} of dieta {}", platilloIngestaId,
+							ingestaId, dietaId);
+					result = ResponseEntity.notFound().build();
+				}
+			}
+			else {
+				log.warn("Dieta with id {} not found when trying to update platilloIngesta portions", dietaId);
+				result = ResponseEntity.notFound().build();
+			}
+		}
+		return result;
+	}
+
+	@PutMapping("{dietaId}/ingestas/{ingestaId}/alimentos/{alimentoIngestaId}/portions")
+	public ResponseEntity<ApiResponse<Dieta>> updateAlimentoIngestaPortions(
+			@PathVariable @NonNull final Long dietaId, @PathVariable @NonNull final Long ingestaId,
+			@PathVariable @NonNull final Long alimentoIngestaId, @RequestParam @NonNull final Integer portions) {
+		log.info("starting updateAlimentoIngestaPortions with dietaId {}, ingestaId {}, alimentoIngestaId {}, portions {}.",
+				dietaId, ingestaId, alimentoIngestaId, portions);
+		ResponseEntity<ApiResponse<Dieta>> result;
+		if (portions < 1 || portions > 10) {
+			log.warn("Invalid portions value: {}. Must be between 1 and 10.", portions);
+			result = ResponseEntity.badRequest().build();
+		}
+		else {
+			final Dieta dieta = dietaService.getDieta(dietaId);
+			if (dieta != null) {
+				final AlimentoIngesta alimentoIngesta = dieta.getIngestas()
+					.stream()
+					.filter(ingesta -> ingesta.getId().equals(ingestaId))
+					.findFirst()
+					.flatMap(ingesta -> ingesta.getAlimentos()
+						.stream()
+						.filter(alimento -> alimento.getId().equals(alimentoIngestaId))
+						.findFirst())
+					.orElse(null);
+				if (alimentoIngesta != null) {
+					dietaService.recalculateAlimentoIngestaNutrients(alimentoIngesta, portions);
+					final Dieta saved = dietaService.saveDieta(dieta);
+					log.info(
+							"finish updateAlimentoIngestaPortions with dietaId {}, ingestaId {}, alimentoIngestaId {}, portions {}.",
+							dietaId, ingestaId, alimentoIngestaId, portions);
+					result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
+				}
+				else {
+					log.warn("AlimentoIngesta with id {} not found in ingesta {} of dieta {}", alimentoIngestaId,
+							ingestaId, dietaId);
+					result = ResponseEntity.notFound().build();
+				}
+			}
+			else {
+				log.warn("Dieta with id {} not found when trying to update alimentoIngesta portions", dietaId);
+				result = ResponseEntity.notFound().build();
+			}
 		}
 		return result;
 	}
