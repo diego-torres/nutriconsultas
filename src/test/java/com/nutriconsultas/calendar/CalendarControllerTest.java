@@ -43,6 +43,8 @@ import lombok.extern.slf4j.Slf4j;
 @SuppressWarnings("null")
 public class CalendarControllerTest {
 
+	private static final String TEST_USER_ID = "test-user-id-123";
+
 	@Autowired
 	private MockMvc mockMvc;
 
@@ -63,6 +65,7 @@ public class CalendarControllerTest {
 		paciente.setId(1L);
 		paciente.setName("Juan Perez");
 		paciente.setEmail("juan@example.com");
+		paciente.setUserId(TEST_USER_ID);
 
 		// Create test event
 		event = new CalendarEvent();
@@ -80,9 +83,17 @@ public class CalendarControllerTest {
 
 		List<Paciente> pacientes = new ArrayList<>();
 		pacientes.add(paciente);
-		when(pacienteRepository.findAll()).thenReturn(pacientes);
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
-		when(pacienteRepository.findById(999L)).thenReturn(java.util.Optional.empty());
+		when(pacienteRepository.findByUserId(TEST_USER_ID)).thenReturn(pacientes);
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(999L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.empty());
+	}
+
+	private SecurityMockMvcRequestPostProcessors.OidcLoginRequestPostProcessor oidcLogin() {
+		return SecurityMockMvcRequestPostProcessors.oidcLogin()
+			.idToken(token -> token.subject(TEST_USER_ID).claim("name", "Test User")
+				.claim("picture", "https://example.com/picture.jpg"));
 	}
 
 	@Test
@@ -100,7 +111,7 @@ public class CalendarControllerTest {
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	public void testNuevoEvento() throws Exception {
 		log.info("Starting testNuevoEvento");
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/nuevo"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/nuevo").with(oidcLogin()))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/calendar/formulario"))
 			.andExpect(MockMvcResultMatchers.model().attribute("activeMenu", "calendario"))
@@ -120,7 +131,7 @@ public class CalendarControllerTest {
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	public void testVerEvento() throws Exception {
 		log.info("Starting testVerEvento");
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/1"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/1").with(oidcLogin()))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/calendar/ver"))
 			.andExpect(MockMvcResultMatchers.model().attribute("activeMenu", "calendario"))
@@ -145,7 +156,7 @@ public class CalendarControllerTest {
 
 		when(calendarEventService.findById(2L)).thenReturn(eventWithNotes);
 
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/2"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/2").with(oidcLogin()))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/calendar/ver"))
 			.andExpect(MockMvcResultMatchers.model().attribute("activeMenu", "calendario"))
@@ -167,7 +178,7 @@ public class CalendarControllerTest {
 
 		// Test SCHEDULED status
 		event.setStatus(EventStatus.SCHEDULED);
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/1"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/1").with(oidcLogin()))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/calendar/ver"))
 			.andExpect(MockMvcResultMatchers.model().attribute("event", event));
@@ -175,7 +186,7 @@ public class CalendarControllerTest {
 		// Test COMPLETED status
 		event.setStatus(EventStatus.COMPLETED);
 		when(calendarEventService.findById(1L)).thenReturn(event);
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/1"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/1").with(oidcLogin()))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/calendar/ver"))
 			.andExpect(MockMvcResultMatchers.model().attribute("event", event));
@@ -183,7 +194,7 @@ public class CalendarControllerTest {
 		// Test CANCELLED status
 		event.setStatus(EventStatus.CANCELLED);
 		when(calendarEventService.findById(1L)).thenReturn(event);
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/1"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/1").with(oidcLogin()))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/calendar/ver"))
 			.andExpect(MockMvcResultMatchers.model().attribute("event", event));
@@ -203,7 +214,7 @@ public class CalendarControllerTest {
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	public void testEditarEvento() throws Exception {
 		log.info("Starting testEditarEvento");
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/1/editar"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/1/editar").with(oidcLogin()))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/calendar/formulario"))
 			.andExpect(MockMvcResultMatchers.model().attribute("activeMenu", "calendario"))
@@ -229,6 +240,7 @@ public class CalendarControllerTest {
 				.param("eventDateTime", "2024-12-31T10:00")
 				.param("durationMinutes", "60")
 				.param("status", "SCHEDULED")
+				.with(oidcLogin())
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/calendario"));
@@ -250,6 +262,7 @@ public class CalendarControllerTest {
 				.param("eventDateTime", "2024-12-31T10:00")
 				.param("durationMinutes", "60")
 				.param("status", "SCHEDULED")
+				.with(oidcLogin())
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/calendar/formulario"))
@@ -300,6 +313,7 @@ public class CalendarControllerTest {
 				.param("eventDateTime", "2024-12-31T14:00")
 				.param("durationMinutes", "90")
 				.param("status", "COMPLETED")
+				.with(oidcLogin())
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/calendario"));
@@ -327,6 +341,7 @@ public class CalendarControllerTest {
 
 		mockMvc
 			.perform(MockMvcRequestBuilders.post("/admin/calendario/1/eliminar")
+				.with(oidcLogin())
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/calendario"));
@@ -348,6 +363,7 @@ public class CalendarControllerTest {
 				.param("eventDateTime", "2024-12-31T10:00")
 				.param("durationMinutes", "60")
 				.param("status", "SCHEDULED")
+				.with(oidcLogin())
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is4xxClientError());
 
@@ -368,6 +384,7 @@ public class CalendarControllerTest {
 				.param("eventDateTime", "2024-12-31T14:00")
 				.param("durationMinutes", "90")
 				.param("status", "COMPLETED")
+				.with(oidcLogin())
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/calendar/formulario"))
@@ -391,7 +408,7 @@ public class CalendarControllerTest {
 		log.info("Starting testNuevoEventoRendersWithNullId");
 		// This test validates that the template can handle event with null id
 		// which was the root cause of the TemplateInputException
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/nuevo"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/nuevo").with(oidcLogin()))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/calendar/formulario"))
 			.andExpect(result -> {
@@ -411,7 +428,7 @@ public class CalendarControllerTest {
 	public void testEditarEventoLoadsExistingData() throws Exception {
 		log.info("Starting testEditarEventoLoadsExistingData");
 
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/1/editar"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/1/editar").with(oidcLogin()))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/calendar/formulario"))
 			.andExpect(MockMvcResultMatchers.model().attribute("activeMenu", "calendario"))
@@ -459,6 +476,7 @@ public class CalendarControllerTest {
 				.param("eventDateTime", "2024-12-31T10:00")
 				.param("durationMinutes", "60")
 				.param("status", "SCHEDULED")
+				.with(oidcLogin())
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/calendario"));
@@ -495,6 +513,7 @@ public class CalendarControllerTest {
 				.param("eventDateTime", "2024-12-31T10:00")
 				.param("durationMinutes", "60")
 				.param("status", "COMPLETED")
+				.with(oidcLogin())
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/calendario"));
@@ -531,6 +550,7 @@ public class CalendarControllerTest {
 				.param("eventDateTime", "2024-12-31T10:00")
 				.param("durationMinutes", "60")
 				.param("status", "CANCELLED")
+				.with(oidcLogin())
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/calendario"));
@@ -572,6 +592,7 @@ public class CalendarControllerTest {
 				.param("eventDateTime", "2024-12-31T14:00")
 				.param("durationMinutes", "90")
 				.param("status", "COMPLETED")
+				.with(oidcLogin())
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/calendario"));
@@ -616,6 +637,7 @@ public class CalendarControllerTest {
 				.param("eventDateTime", "2024-12-31T15:30")
 				.param("durationMinutes", "120")
 				.param("status", "CANCELLED")
+				.with(oidcLogin())
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/calendario"));
@@ -665,6 +687,7 @@ public class CalendarControllerTest {
 				.param("eventDateTime", "2024-12-31T16:00")
 				.param("durationMinutes", "45")
 				.param("status", "COMPLETED")
+				.with(oidcLogin())
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/calendario"));
@@ -710,6 +733,7 @@ public class CalendarControllerTest {
 				.param("eventDateTime", "2024-12-31T10:00")
 				.param("durationMinutes", "60")
 				.param("status", "SCHEDULED")
+				.with(oidcLogin())
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/calendario"))
@@ -757,6 +781,7 @@ public class CalendarControllerTest {
 				.param("eventDateTime", "2025-01-15T14:30")
 				.param("durationMinutes", "90")
 				.param("status", "COMPLETED")
+				.with(oidcLogin())
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/calendario"));
