@@ -360,6 +360,7 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		}
 	}
 
+	@NonNull
 	private CalendarEvent createEventFromData(final Map<String, Object> eventData) {
 		final CalendarEvent event = new CalendarEvent();
 		event.setTitle((String) eventData.get("title"));

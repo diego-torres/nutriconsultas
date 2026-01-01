@@ -2,17 +2,19 @@ package com.nutriconsultas.paciente;
 
 import java.util.List;
 
+import org.springframework.lang.NonNull;
+
 public interface ClinicalExamService {
 
 	List<ClinicalExam> findAll();
 
-	ClinicalExam findById(Long id);
+	ClinicalExam findById(@NonNull Long id);
 
-	ClinicalExam save(ClinicalExam exam);
+	ClinicalExam save(@NonNull ClinicalExam exam);
 
-	void deleteById(Long id);
+	void deleteById(@NonNull Long id);
 
-	List<ClinicalExam> findByPacienteId(Long pacienteId);
+	List<ClinicalExam> findByPacienteId(@NonNull Long pacienteId);
 
 }
 
