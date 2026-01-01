@@ -106,44 +106,34 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		log.info(
 				"starting updatePlatilloIngestaPortions with dietaId {}, ingestaId {}, platilloIngestaId {}, portions {}.",
 				dietaId, ingestaId, platilloIngestaId, portions);
-		ResponseEntity<ApiResponse<Dieta>> result;
 		if (portions < 1 || portions > 10) {
 			log.warn("Invalid portions value: {}. Must be between 1 and 10.", portions);
-			result = ResponseEntity.badRequest().build();
+			return ResponseEntity.badRequest().build();
 		}
-		else {
-			final Dieta dieta = dietaService.getDieta(dietaId);
-			if (dieta != null) {
-				final PlatilloIngesta platilloIngesta = dieta.getIngestas()
-					.stream()
-					.filter(ingesta -> ingesta.getId().equals(ingestaId))
-					.findFirst()
-					.flatMap(ingesta -> ingesta.getPlatillos()
-						.stream()
-						.filter(platillo -> platillo.getId().equals(platilloIngestaId))
-						.findFirst())
-					.orElse(null);
-				if (platilloIngesta != null) {
-					dietaService.recalculatePlatilloIngestaNutrients(platilloIngesta, portions);
-					final Dieta saved = dietaService.saveDieta(dieta);
-					log.info(
-							"finish updatePlatilloIngestaPortions with dietaId {}, ingestaId {}, "
-									+ "platilloIngestaId {}, portions {}.",
-							dietaId, ingestaId, platilloIngestaId, portions);
-					result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
-				}
-				else {
-					log.warn("PlatilloIngesta with id {} not found in ingesta {} of dieta {}", platilloIngestaId,
-							ingestaId, dietaId);
-					result = ResponseEntity.notFound().build();
-				}
-			}
-			else {
-				log.warn("Dieta with id {} not found when trying to update platilloIngesta portions", dietaId);
-				result = ResponseEntity.notFound().build();
-			}
+		final Dieta dieta = dietaService.getDieta(dietaId);
+		if (dieta == null) {
+			log.warn("Dieta with id {} not found when trying to update platilloIngesta portions", dietaId);
+			return ResponseEntity.notFound().build();
 		}
-		return result;
+		final PlatilloIngesta platilloIngesta = dieta.getIngestas()
+			.stream()
+			.filter(ingesta -> ingesta.getId().equals(ingestaId))
+			.findFirst()
+			.flatMap(ingesta -> ingesta.getPlatillos()
+				.stream()
+				.filter(platillo -> platillo.getId().equals(platilloIngestaId))
+				.findFirst())
+			.orElse(null);
+		if (platilloIngesta == null) {
+			log.warn("PlatilloIngesta with id {} not found in ingesta {} of dieta {}", platilloIngestaId, ingestaId,
+					dietaId);
+			return ResponseEntity.notFound().build();
+		}
+		dietaService.recalculatePlatilloIngestaNutrients(platilloIngesta, portions);
+		final Dieta saved = dietaService.saveDieta(dieta);
+		log.info("finish updatePlatilloIngestaPortions with dietaId {}, ingestaId {}, "
+				+ "platilloIngestaId {}, portions {}.", dietaId, ingestaId, platilloIngestaId, portions);
+		return ResponseEntity.ok(new ApiResponse<Dieta>(saved));
 	}
 
 	@PutMapping("{dietaId}/ingestas/{ingestaId}/alimentos/{alimentoIngestaId}/portions")
@@ -153,44 +143,34 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		log.info(
 				"starting updateAlimentoIngestaPortions with dietaId {}, ingestaId {}, alimentoIngestaId {}, portions {}.",
 				dietaId, ingestaId, alimentoIngestaId, portions);
-		ResponseEntity<ApiResponse<Dieta>> result;
 		if (portions < 1 || portions > 10) {
 			log.warn("Invalid portions value: {}. Must be between 1 and 10.", portions);
-			result = ResponseEntity.badRequest().build();
+			return ResponseEntity.badRequest().build();
 		}
-		else {
-			final Dieta dieta = dietaService.getDieta(dietaId);
-			if (dieta != null) {
-				final AlimentoIngesta alimentoIngesta = dieta.getIngestas()
-					.stream()
-					.filter(ingesta -> ingesta.getId().equals(ingestaId))
-					.findFirst()
-					.flatMap(ingesta -> ingesta.getAlimentos()
-						.stream()
-						.filter(alimento -> alimento.getId().equals(alimentoIngestaId))
-						.findFirst())
-					.orElse(null);
-				if (alimentoIngesta != null) {
-					dietaService.recalculateAlimentoIngestaNutrients(alimentoIngesta, portions);
-					final Dieta saved = dietaService.saveDieta(dieta);
-					log.info(
-							"finish updateAlimentoIngestaPortions with dietaId {}, ingestaId {}, "
-									+ "alimentoIngestaId {}, portions {}.",
-							dietaId, ingestaId, alimentoIngestaId, portions);
-					result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
-				}
-				else {
-					log.warn("AlimentoIngesta with id {} not found in ingesta {} of dieta {}", alimentoIngestaId,
-							ingestaId, dietaId);
-					result = ResponseEntity.notFound().build();
-				}
-			}
-			else {
-				log.warn("Dieta with id {} not found when trying to update alimentoIngesta portions", dietaId);
-				result = ResponseEntity.notFound().build();
-			}
+		final Dieta dieta = dietaService.getDieta(dietaId);
+		if (dieta == null) {
+			log.warn("Dieta with id {} not found when trying to update alimentoIngesta portions", dietaId);
+			return ResponseEntity.notFound().build();
 		}
-		return result;
+		final AlimentoIngesta alimentoIngesta = dieta.getIngestas()
+			.stream()
+			.filter(ingesta -> ingesta.getId().equals(ingestaId))
+			.findFirst()
+			.flatMap(ingesta -> ingesta.getAlimentos()
+				.stream()
+				.filter(alimento -> alimento.getId().equals(alimentoIngestaId))
+				.findFirst())
+			.orElse(null);
+		if (alimentoIngesta == null) {
+			log.warn("AlimentoIngesta with id {} not found in ingesta {} of dieta {}", alimentoIngestaId, ingestaId,
+					dietaId);
+			return ResponseEntity.notFound().build();
+		}
+		dietaService.recalculateAlimentoIngestaNutrients(alimentoIngesta, portions);
+		final Dieta saved = dietaService.saveDieta(dieta);
+		log.info("finish updateAlimentoIngestaPortions with dietaId {}, ingestaId {}, "
+				+ "alimentoIngestaId {}, portions {}.", dietaId, ingestaId, alimentoIngestaId, portions);
+		return ResponseEntity.ok(new ApiResponse<Dieta>(saved));
 	}
 
 	@Override
