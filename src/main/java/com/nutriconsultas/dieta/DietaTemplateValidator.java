@@ -64,7 +64,8 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 	}
 
 	/**
-	 * Creates a list of mock ingestas with platillos and alimentos for template validation.
+	 * Creates a list of mock ingestas with platillos and alimentos for template
+	 * validation.
 	 * @return list of mock ingestas
 	 */
 	private List<Ingesta> createMockIngestas() {

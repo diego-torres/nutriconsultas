@@ -100,10 +100,11 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	}
 
 	@PutMapping("{dietaId}/ingestas/{ingestaId}/platillos/{platilloIngestaId}/portions")
-	public ResponseEntity<ApiResponse<Dieta>> updatePlatilloIngestaPortions(
-			@PathVariable @NonNull final Long dietaId, @PathVariable @NonNull final Long ingestaId,
-			@PathVariable @NonNull final Long platilloIngestaId, @RequestParam @NonNull final Integer portions) {
-		log.info("starting updatePlatilloIngestaPortions with dietaId {}, ingestaId {}, platilloIngestaId {}, portions {}.",
+	public ResponseEntity<ApiResponse<Dieta>> updatePlatilloIngestaPortions(@PathVariable @NonNull final Long dietaId,
+			@PathVariable @NonNull final Long ingestaId, @PathVariable @NonNull final Long platilloIngestaId,
+			@RequestParam @NonNull final Integer portions) {
+		log.info(
+				"starting updatePlatilloIngestaPortions with dietaId {}, ingestaId {}, platilloIngestaId {}, portions {}.",
 				dietaId, ingestaId, platilloIngestaId, portions);
 		ResponseEntity<ApiResponse<Dieta>> result;
 		if (portions < 1 || portions > 10) {
@@ -125,9 +126,10 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 				if (platilloIngesta != null) {
 					dietaService.recalculatePlatilloIngestaNutrients(platilloIngesta, portions);
 					final Dieta saved = dietaService.saveDieta(dieta);
-					log.info("finish updatePlatilloIngestaPortions with dietaId {}, ingestaId {}, "
-							+ "platilloIngestaId {}, portions {}.", dietaId, ingestaId, platilloIngestaId,
-							portions);
+					log.info(
+							"finish updatePlatilloIngestaPortions with dietaId {}, ingestaId {}, "
+									+ "platilloIngestaId {}, portions {}.",
+							dietaId, ingestaId, platilloIngestaId, portions);
 					result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
 				}
 				else {
@@ -145,10 +147,11 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	}
 
 	@PutMapping("{dietaId}/ingestas/{ingestaId}/alimentos/{alimentoIngestaId}/portions")
-	public ResponseEntity<ApiResponse<Dieta>> updateAlimentoIngestaPortions(
-			@PathVariable @NonNull final Long dietaId, @PathVariable @NonNull final Long ingestaId,
-			@PathVariable @NonNull final Long alimentoIngestaId, @RequestParam @NonNull final Integer portions) {
-		log.info("starting updateAlimentoIngestaPortions with dietaId {}, ingestaId {}, alimentoIngestaId {}, portions {}.",
+	public ResponseEntity<ApiResponse<Dieta>> updateAlimentoIngestaPortions(@PathVariable @NonNull final Long dietaId,
+			@PathVariable @NonNull final Long ingestaId, @PathVariable @NonNull final Long alimentoIngestaId,
+			@RequestParam @NonNull final Integer portions) {
+		log.info(
+				"starting updateAlimentoIngestaPortions with dietaId {}, ingestaId {}, alimentoIngestaId {}, portions {}.",
 				dietaId, ingestaId, alimentoIngestaId, portions);
 		ResponseEntity<ApiResponse<Dieta>> result;
 		if (portions < 1 || portions > 10) {
@@ -170,9 +173,10 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 				if (alimentoIngesta != null) {
 					dietaService.recalculateAlimentoIngestaNutrients(alimentoIngesta, portions);
 					final Dieta saved = dietaService.saveDieta(dieta);
-					log.info("finish updateAlimentoIngestaPortions with dietaId {}, ingestaId {}, "
-							+ "alimentoIngestaId {}, portions {}.", dietaId, ingestaId, alimentoIngestaId,
-							portions);
+					log.info(
+							"finish updateAlimentoIngestaPortions with dietaId {}, ingestaId {}, "
+									+ "alimentoIngestaId {}, portions {}.",
+							dietaId, ingestaId, alimentoIngestaId, portions);
 					result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
 				}
 				else {

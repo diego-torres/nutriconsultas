@@ -264,7 +264,8 @@ public class DietaController extends AbstractAuthorizedController {
 						platilloIngesta.setHidratosDeCarbono(platilloIngesta.getHidratosDeCarbono() * ratio);
 					}
 					if (platilloIngesta.getPesoBrutoRedondeado() != null) {
-						platilloIngesta.setPesoBrutoRedondeado((int) (platilloIngesta.getPesoBrutoRedondeado() * ratio));
+						platilloIngesta
+							.setPesoBrutoRedondeado((int) (platilloIngesta.getPesoBrutoRedondeado() * ratio));
 					}
 					if (platilloIngesta.getPesoNeto() != null) {
 						platilloIngesta.setPesoNeto((int) (platilloIngesta.getPesoNeto() * ratio));
