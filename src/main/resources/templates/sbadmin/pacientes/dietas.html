@@ -78,7 +78,11 @@
                         </thead>
                         <tbody>
                           <tr th:each="dietaAsignada : ${dietasActivas}">
-                            <td>[[(${dietaAsignada.dieta.nombre})]]</td>
+                            <td>
+                              <a th:href="@{/admin/dietas/{id}(id=${dietaAsignada.dieta.id})}" 
+                                 th:text="${dietaAsignada.dieta.nombre}"
+                                 title="Ver detalles de la dieta"></a>
+                            </td>
                             <td>
                               <small>
                                 <strong>P:</strong> <span th:text="${#numbers.formatDecimal(dietaAsignada.dieta.proteina, 1, 1)} + 'g'">0.0g</span>
@@ -147,7 +151,11 @@
                         <tbody>
                           <tr th:each="dietaAsignada : ${dietasAsignadas}" 
                               th:classappend="${dietaAsignada.status.name() == 'ACTIVE'} ? 'table-success' : (${dietaAsignada.status.name() == 'COMPLETED'} ? 'table-info' : 'table-secondary')">
-                            <td>[[(${dietaAsignada.dieta.nombre})]]</td>
+                            <td>
+                              <a th:href="@{/admin/dietas/{id}(id=${dietaAsignada.dieta.id})}" 
+                                 th:text="${dietaAsignada.dieta.nombre}"
+                                 title="Ver detalles de la dieta"></a>
+                            </td>
                             <td>
                               <small>
                                 <strong>P:</strong> <span th:text="${#numbers.formatDecimal(dietaAsignada.dieta.proteina, 1, 1)} + 'g'">0.0g</span>

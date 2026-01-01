@@ -156,8 +156,7 @@ public class DietaPdfService {
 		context.setVariable("dieta", dieta);
 		// null if unassigned or if includePatientInfo is false
 		context.setVariable("pacienteDieta", activeAssignment);
-		context.setVariable("paciente",
-			activeAssignment != null ? activeAssignment.getPaciente() : null);
+		context.setVariable("paciente", activeAssignment != null ? activeAssignment.getPaciente() : null);
 
 		// Sort ingestas by id
 		final List<Ingesta> sortedIngestas = dieta.getIngestas()

@@ -370,6 +370,20 @@
         </div>
 
         <!-- end of any modals -->
+        <!-- Toast Container -->
+        <div class="toast-container position-fixed" style="top: 20px; right: 20px; z-index: 9999;">
+          <div id="toastNotification" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+              <strong class="mr-auto toast-title">Notificación</strong>
+              <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="toast-body toast-message">
+              Mensaje
+            </div>
+          </div>
+        </div>
         <!-- Main Content -->
         <div id="content">
           <div th:insert="~{sbadmin/topbar :: topbar}"></div>
@@ -573,11 +587,40 @@
                                          th:text="${platillo.name}"
                                          title="Ver detalles del platillo"></a>
                                     </td>
-                                    <td th:text="${platillo.portions}"></td>
-                                    <td th:text="${#numbers.formatDecimal(platillo.energia, 1, 2)}"></td>
-                                    <td th:text="${#numbers.formatDecimal(platillo.proteina, 1, 2)}"></td>
-                                    <td th:text="${#numbers.formatDecimal(platillo.lipidos, 1, 2)}"></td>
-                                    <td th:text="${#numbers.formatDecimal(platillo.hidratosDeCarbono, 1, 2)}"></td>
+                                    <td>
+                                      <div class="input-group input-group-sm" style="width: 120px;">
+                                        <div class="input-group-prepend">
+                                          <button 
+                                            type="button" 
+                                            class="btn btn-outline-secondary btn-sm decrease-portion" 
+                                            th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id},data-porciones=${platillo.portions}"
+                                            title="Disminuir porciones">
+                                            <i class="fas fa-minus"></i>
+                                          </button>
+                                        </div>
+                                        <input 
+                                          type="number" 
+                                          class="form-control form-control-sm text-center portion-input" 
+                                          th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id},value=${platillo.portions}"
+                                          min="1" 
+                                          max="10" 
+                                          readonly
+                                          style="background-color: #fff;" />
+                                        <div class="input-group-append">
+                                          <button 
+                                            type="button" 
+                                            class="btn btn-outline-secondary btn-sm increase-portion" 
+                                            th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id},data-porciones=${platillo.portions}"
+                                            title="Aumentar porciones">
+                                            <i class="fas fa-plus"></i>
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td class="nutrient-value" th:attr="data-value=${platillo.energia}" th:text="${#numbers.formatDecimal(platillo.energia, 1, 2)}"></td>
+                                    <td class="nutrient-value" th:attr="data-value=${platillo.proteina}" th:text="${#numbers.formatDecimal(platillo.proteina, 1, 2)}"></td>
+                                    <td class="nutrient-value" th:attr="data-value=${platillo.lipidos}" th:text="${#numbers.formatDecimal(platillo.lipidos, 1, 2)}"></td>
+                                    <td class="nutrient-value" th:attr="data-value=${platillo.hidratosDeCarbono}" th:text="${#numbers.formatDecimal(platillo.hidratosDeCarbono, 1, 2)}"></td>
                                     <td style="white-space: nowrap;">
                                       <button 
                                         type="button" 
@@ -609,11 +652,40 @@
                                       <span th:unless="${alimento.alimento != null && alimento.alimento.id != null}" 
                                             th:text="${alimento.name}"></span>
                                     </td>
-                                    <td th:text="${alimento.portions}"></td>
-                                    <td th:text="${#numbers.formatDecimal(alimento.energia, 1, 2)}"></td>
-                                    <td th:text="${#numbers.formatDecimal(alimento.proteina, 1, 2)}"></td>
-                                    <td th:text="${#numbers.formatDecimal(alimento.lipidos, 1, 2)}"></td>
-                                    <td th:text="${#numbers.formatDecimal(alimento.hidratosDeCarbono, 1, 2)}"></td>
+                                    <td>
+                                      <div class="input-group input-group-sm" style="width: 120px;">
+                                        <div class="input-group-prepend">
+                                          <button 
+                                            type="button" 
+                                            class="btn btn-outline-secondary btn-sm decrease-portion" 
+                                            th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-porciones=${alimento.portions}"
+                                            title="Disminuir porciones">
+                                            <i class="fas fa-minus"></i>
+                                          </button>
+                                        </div>
+                                        <input 
+                                          type="number" 
+                                          class="form-control form-control-sm text-center portion-input" 
+                                          th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},value=${alimento.portions}"
+                                          min="1" 
+                                          max="10" 
+                                          readonly
+                                          style="background-color: #fff;" />
+                                        <div class="input-group-append">
+                                          <button 
+                                            type="button" 
+                                            class="btn btn-outline-secondary btn-sm increase-portion" 
+                                            th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-porciones=${alimento.portions}"
+                                            title="Aumentar porciones">
+                                            <i class="fas fa-plus"></i>
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td class="nutrient-value" th:attr="data-value=${alimento.energia}" th:text="${#numbers.formatDecimal(alimento.energia, 1, 2)}"></td>
+                                    <td class="nutrient-value" th:attr="data-value=${alimento.proteina}" th:text="${#numbers.formatDecimal(alimento.proteina, 1, 2)}"></td>
+                                    <td class="nutrient-value" th:attr="data-value=${alimento.lipidos}" th:text="${#numbers.formatDecimal(alimento.lipidos, 1, 2)}"></td>
+                                    <td class="nutrient-value" th:attr="data-value=${alimento.hidratosDeCarbono}" th:text="${#numbers.formatDecimal(alimento.hidratosDeCarbono, 1, 2)}"></td>
                                     <td style="white-space: nowrap;">
                                       <button 
                                         type="button" 
@@ -686,6 +758,42 @@
     <script lang="javascript">
       'use strict';
       (function ($) {
+        // Helper function to show toast notifications
+        function showToast(title, message, type) {
+          var toastElement = $('#toastNotification');
+          var toastTitle = toastElement.find('.toast-title');
+          var toastMessage = toastElement.find('.toast-message');
+          var toastHeader = toastElement.find('.toast-header');
+          
+          // Set title and message
+          toastTitle.text(title || 'Notificación');
+          toastMessage.text(message || '');
+          
+          // Set toast type (success, error, info, warning)
+          toastElement.removeClass('bg-success bg-danger bg-info bg-warning text-white');
+          toastHeader.removeClass('bg-success bg-danger bg-info bg-warning text-white text-dark');
+          if (type === 'success') {
+            toastElement.addClass('bg-success text-white');
+            toastHeader.addClass('bg-success text-white');
+          } else if (type === 'error') {
+            toastElement.addClass('bg-danger text-white');
+            toastHeader.addClass('bg-danger text-white');
+          } else if (type === 'info') {
+            toastElement.addClass('bg-info text-white');
+            toastHeader.addClass('bg-info text-white');
+          } else if (type === 'warning') {
+            toastElement.addClass('bg-warning text-dark');
+            toastHeader.addClass('bg-warning text-dark');
+          }
+          
+          // Show toast using Bootstrap 4 toast API
+          toastElement.toast({
+            autohide: true,
+            delay: 3000
+          });
+          toastElement.toast('show');
+        }
+        
         $(document).ready(function () {
           // initialize select2 for platillo
           $('#platillo').select2({
@@ -712,7 +820,7 @@
             
             // Only create chart if we have valid data
             if(distribucionProteina > 0 || distribucionLipido > 0 || distribucionHidratoCarbono > 0) {
-              var myPieChart = new Chart(ctx, {
+              window.myPieChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                   labels: ['Proteínas', 'Lípidos', 'Hidratos de Carbono'],
@@ -929,6 +1037,287 @@
             form.attr('action', actionUrl);
             modal.find('#editPorcionesAlimento').val(porciones);
           });
+
+          // Handle increase portion buttons for platillos
+          $(document).on('click', '.increase-portion[data-platillo]', function () {
+            var button = $(this);
+            var dietaId = button.data('dieta');
+            var ingestaId = button.data('ingesta');
+            var platilloId = button.data('platillo');
+            var currentPortions = parseInt(button.data('porciones')) || 1;
+            var newPortions = Math.min(currentPortions + 1, 10);
+            
+            if (newPortions !== currentPortions) {
+              updatePlatilloPortions(dietaId, ingestaId, platilloId, newPortions, button);
+            }
+          });
+
+          // Handle decrease portion buttons for platillos
+          $(document).on('click', '.decrease-portion[data-platillo]', function () {
+            var button = $(this);
+            var dietaId = button.data('dieta');
+            var ingestaId = button.data('ingesta');
+            var platilloId = button.data('platillo');
+            var currentPortions = parseInt(button.data('porciones')) || 1;
+            var newPortions = Math.max(currentPortions - 1, 1);
+            
+            if (newPortions !== currentPortions) {
+              updatePlatilloPortions(dietaId, ingestaId, platilloId, newPortions, button);
+            }
+          });
+
+          // Handle increase portion buttons for alimentos
+          $(document).on('click', '.increase-portion[data-alimento]', function () {
+            var button = $(this);
+            var dietaId = button.data('dieta');
+            var ingestaId = button.data('ingesta');
+            var alimentoId = button.data('alimento');
+            var currentPortions = parseInt(button.data('porciones')) || 1;
+            var newPortions = Math.min(currentPortions + 1, 10);
+            
+            if (newPortions !== currentPortions) {
+              updateAlimentoPortions(dietaId, ingestaId, alimentoId, newPortions, button);
+            }
+          });
+
+          // Handle decrease portion buttons for alimentos
+          $(document).on('click', '.decrease-portion[data-alimento]', function () {
+            var button = $(this);
+            var dietaId = button.data('dieta');
+            var ingestaId = button.data('ingesta');
+            var alimentoId = button.data('alimento');
+            var currentPortions = parseInt(button.data('porciones')) || 1;
+            var newPortions = Math.max(currentPortions - 1, 1);
+            
+            if (newPortions !== currentPortions) {
+              updateAlimentoPortions(dietaId, ingestaId, alimentoId, newPortions, button);
+            }
+          });
+
+          // Function to update platillo portions via AJAX
+          function updatePlatilloPortions(dietaId, ingestaId, platilloId, newPortions, button) {
+            var row = button.closest('tr');
+            var portionInput = row.find('.portion-input[data-platillo="' + platilloId + '"]');
+            
+            // Disable buttons during update
+            button.prop('disabled', true);
+            row.find('.decrease-portion, .increase-portion').prop('disabled', true);
+            
+            $.ajax({
+              url: '/rest/dietas/' + dietaId + '/ingestas/' + ingestaId + '/platillos/' + platilloId + '/portions',
+              type: 'PUT',
+              data: { portions: newPortions },
+              dataType: 'json',
+              success: function (response) {
+                if (response && response.data) {
+                  var dieta = response.data;
+                  // Find the updated platillo in the response
+                  var updatedPlatillo = null;
+                  if (dieta.ingestas && Array.isArray(dieta.ingestas)) {
+                    dieta.ingestas.forEach(function(ingesta) {
+                      if (ingesta.id === ingestaId && ingesta.platillos && Array.isArray(ingesta.platillos)) {
+                        ingesta.platillos.forEach(function(platillo) {
+                          if (platillo.id === platilloId) {
+                            updatedPlatillo = platillo;
+                          }
+                        });
+                      }
+                    });
+                  }
+                  
+                  if (updatedPlatillo) {
+                    // Update portion input and buttons
+                    portionInput.val(updatedPlatillo.portions);
+                    row.find('.decrease-portion, .increase-portion').data('porciones', updatedPlatillo.portions);
+                    
+                    // Update nutrient values
+                    row.find('td.nutrient-value').each(function(index) {
+                      var cell = $(this);
+                      var nutrientValue = null;
+                      switch(index) {
+                        case 0: // energia
+                          nutrientValue = updatedPlatillo.energia;
+                          break;
+                        case 1: // proteina
+                          nutrientValue = updatedPlatillo.proteina;
+                          break;
+                        case 2: // lipidos
+                          nutrientValue = updatedPlatillo.lipidos;
+                          break;
+                        case 3: // hidratosDeCarbono
+                          nutrientValue = updatedPlatillo.hidratosDeCarbono;
+                          break;
+                      }
+                      if (nutrientValue !== null) {
+                        cell.attr('data-value', nutrientValue);
+                        cell.text(parseFloat(nutrientValue).toFixed(2));
+                      }
+                    });
+                    
+                    // Update pie chart if it exists
+                    updatePieChart(dieta);
+                    // Show success toast
+                    showToast('Actualizado', 'Las porciones han sido actualizadas correctamente.', 'success');
+                  } else {
+                    // If we can't find the updated item, update portion number and show warning
+                    portionInput.val(newPortions);
+                    row.find('.decrease-portion, .increase-portion').data('porciones', newPortions);
+                    showToast('Actualizado', 'Las porciones han sido actualizadas. Algunos valores pueden necesitar recarga.', 'warning');
+                  }
+                } else {
+                  // If response structure is unexpected, update portion number and show warning
+                  portionInput.val(newPortions);
+                  row.find('.decrease-portion, .increase-portion').data('porciones', newPortions);
+                  showToast('Actualizado', 'Las porciones han sido actualizadas. Algunos valores pueden necesitar recarga.', 'warning');
+                }
+                // Re-enable buttons
+                row.find('.decrease-portion, .increase-portion').prop('disabled', false);
+              },
+              error: function (error) {
+                var errorMessage = error.responseJSON && error.responseJSON.message 
+                  ? error.responseJSON.message 
+                  : 'Error al actualizar las porciones.';
+                showToast('Error', errorMessage, 'error');
+                // Re-enable buttons
+                row.find('.decrease-portion, .increase-portion').prop('disabled', false);
+              }
+            });
+          }
+
+          // Function to update alimento portions via AJAX
+          function updateAlimentoPortions(dietaId, ingestaId, alimentoId, newPortions, button) {
+            var row = button.closest('tr');
+            var portionInput = row.find('.portion-input[data-alimento="' + alimentoId + '"]');
+            
+            // Disable buttons during update
+            button.prop('disabled', true);
+            row.find('.decrease-portion, .increase-portion').prop('disabled', true);
+            
+            $.ajax({
+              url: '/rest/dietas/' + dietaId + '/ingestas/' + ingestaId + '/alimentos/' + alimentoId + '/portions',
+              type: 'PUT',
+              data: { portions: newPortions },
+              dataType: 'json',
+              success: function (response) {
+                if (response && response.data) {
+                  var dieta = response.data;
+                  // Find the updated alimento in the response
+                  var updatedAlimento = null;
+                  if (dieta.ingestas && Array.isArray(dieta.ingestas)) {
+                    dieta.ingestas.forEach(function(ingesta) {
+                      if (ingesta.id === ingestaId && ingesta.alimentos && Array.isArray(ingesta.alimentos)) {
+                        ingesta.alimentos.forEach(function(alimento) {
+                          if (alimento.id === alimentoId) {
+                            updatedAlimento = alimento;
+                          }
+                        });
+                      }
+                    });
+                  }
+                  
+                  if (updatedAlimento) {
+                    // Update portion input and buttons
+                    portionInput.val(updatedAlimento.portions);
+                    row.find('.decrease-portion, .increase-portion').data('porciones', updatedAlimento.portions);
+                    
+                    // Update nutrient values
+                    row.find('td.nutrient-value').each(function(index) {
+                      var cell = $(this);
+                      var nutrientValue = null;
+                      switch(index) {
+                        case 0: // energia
+                          nutrientValue = updatedAlimento.energia;
+                          break;
+                        case 1: // proteina
+                          nutrientValue = updatedAlimento.proteina;
+                          break;
+                        case 2: // lipidos
+                          nutrientValue = updatedAlimento.lipidos;
+                          break;
+                        case 3: // hidratosDeCarbono
+                          nutrientValue = updatedAlimento.hidratosDeCarbono;
+                          break;
+                      }
+                      if (nutrientValue !== null) {
+                        cell.attr('data-value', nutrientValue);
+                        cell.text(parseFloat(nutrientValue).toFixed(2));
+                      }
+                    });
+                    
+                    // Update pie chart if it exists
+                    updatePieChart(dieta);
+                    // Show success toast
+                    showToast('Actualizado', 'Las porciones han sido actualizadas correctamente.', 'success');
+                  } else {
+                    // If we can't find the updated item, update portion number and show warning
+                    portionInput.val(newPortions);
+                    row.find('.decrease-portion, .increase-portion').data('porciones', newPortions);
+                    showToast('Actualizado', 'Las porciones han sido actualizadas. Algunos valores pueden necesitar recarga.', 'warning');
+                  }
+                } else {
+                  // If response structure is unexpected, update portion number and show warning
+                  portionInput.val(newPortions);
+                  row.find('.decrease-portion, .increase-portion').data('porciones', newPortions);
+                  showToast('Actualizado', 'Las porciones han sido actualizadas. Algunos valores pueden necesitar recarga.', 'warning');
+                }
+                // Re-enable buttons
+                row.find('.decrease-portion, .increase-portion').prop('disabled', false);
+              },
+              error: function (error) {
+                var errorMessage = error.responseJSON && error.responseJSON.message 
+                  ? error.responseJSON.message 
+                  : 'Error al actualizar las porciones.';
+                showToast('Error', errorMessage, 'error');
+                // Re-enable buttons
+                row.find('.decrease-portion, .increase-portion').prop('disabled', false);
+              }
+            });
+          }
+
+          // Function to update pie chart with new dieta data
+          function updatePieChart(dieta) {
+            var ctx = document.getElementById('myPieChart');
+            if (ctx && typeof Chart !== 'undefined' && window.myPieChart) {
+              // Calculate totals from dieta
+              var totalProteina = 0;
+              var totalLipidos = 0;
+              var totalHidratosDeCarbono = 0;
+              
+              if (dieta.ingestas) {
+                dieta.ingestas.forEach(function(ingesta) {
+                  if (ingesta.platillos) {
+                    ingesta.platillos.forEach(function(platillo) {
+                      if (platillo.proteina) totalProteina += platillo.proteina;
+                      if (platillo.lipidos) totalLipidos += platillo.lipidos;
+                      if (platillo.hidratosDeCarbono) totalHidratosDeCarbono += platillo.hidratosDeCarbono;
+                    });
+                  }
+                  if (ingesta.alimentos) {
+                    ingesta.alimentos.forEach(function(alimento) {
+                      if (alimento.proteina) totalProteina += alimento.proteina;
+                      if (alimento.lipidos) totalLipidos += alimento.lipidos;
+                      if (alimento.hidratosDeCarbono) totalHidratosDeCarbono += alimento.hidratosDeCarbono;
+                    });
+                  }
+                });
+              }
+              
+              var kCal = totalProteina * 4 + totalLipidos * 9 + totalHidratosDeCarbono * 4;
+              
+              if (kCal > 0.01) {
+                var distribucionProteina = (totalProteina * 4 / kCal) * 100;
+                var distribucionLipido = (totalLipidos * 9 / kCal) * 100;
+                var distribucionHidratoCarbono = (totalHidratosDeCarbono * 4 / kCal) * 100;
+                
+                window.myPieChart.data.datasets[0].data = [
+                  distribucionProteina,
+                  distribucionLipido,
+                  distribucionHidratoCarbono
+                ];
+                window.myPieChart.update();
+              }
+            }
+          }
         });
       })(jQuery);
     </script>

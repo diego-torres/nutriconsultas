@@ -18,4 +18,8 @@ public interface DietaService {
 
 	void renameIngesta(@NonNull Long id, @NonNull Long ingestaId, String nombreIngesta);
 
+	void recalculateAlimentoIngestaNutrients(@NonNull AlimentoIngesta alimentoIngesta, @NonNull Integer portions);
+
+	void recalculatePlatilloIngestaNutrients(@NonNull PlatilloIngesta platilloIngesta, @NonNull Integer portions);
+
 }
