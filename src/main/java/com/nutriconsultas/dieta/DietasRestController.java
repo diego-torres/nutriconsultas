@@ -125,9 +125,9 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 				if (platilloIngesta != null) {
 					dietaService.recalculatePlatilloIngestaNutrients(platilloIngesta, portions);
 					final Dieta saved = dietaService.saveDieta(dieta);
-					log.info(
-							"finish updatePlatilloIngestaPortions with dietaId {}, ingestaId {}, platilloIngestaId {}, portions {}.",
-							dietaId, ingestaId, platilloIngestaId, portions);
+					log.info("finish updatePlatilloIngestaPortions with dietaId {}, ingestaId {}, "
+							+ "platilloIngestaId {}, portions {}.", dietaId, ingestaId, platilloIngestaId,
+							portions);
 					result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
 				}
 				else {
@@ -170,9 +170,9 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 				if (alimentoIngesta != null) {
 					dietaService.recalculateAlimentoIngestaNutrients(alimentoIngesta, portions);
 					final Dieta saved = dietaService.saveDieta(dieta);
-					log.info(
-							"finish updateAlimentoIngestaPortions with dietaId {}, ingestaId {}, alimentoIngestaId {}, portions {}.",
-							dietaId, ingestaId, alimentoIngestaId, portions);
+					log.info("finish updateAlimentoIngestaPortions with dietaId {}, ingestaId {}, "
+							+ "alimentoIngestaId {}, portions {}.", dietaId, ingestaId, alimentoIngestaId,
+							portions);
 					result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
 				}
 				else {
