@@ -76,7 +76,7 @@ public class ClinicalExam {
 
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "other_tests_id")
-	private OtherTests otherTests;
+	private OtherTest otherTests;
 
 	// Convenience methods for backward compatibility
 	public Double getPeso() {
@@ -382,7 +382,7 @@ public class ClinicalExam {
 
 	public void setVitaminaD(final Double vitaminaD) {
 		if (otherTests == null) {
-			otherTests = new OtherTests();
+			otherTests = new OtherTest();
 		}
 		otherTests.setVitaminaD(vitaminaD);
 	}
@@ -393,7 +393,7 @@ public class ClinicalExam {
 
 	public void setVitaminaB12(final Double vitaminaB12) {
 		if (otherTests == null) {
-			otherTests = new OtherTests();
+			otherTests = new OtherTest();
 		}
 		otherTests.setVitaminaB12(vitaminaB12);
 	}
@@ -404,7 +404,7 @@ public class ClinicalExam {
 
 	public void setHierro(final Double hierro) {
 		if (otherTests == null) {
-			otherTests = new OtherTests();
+			otherTests = new OtherTest();
 		}
 		otherTests.setHierro(hierro);
 	}
@@ -415,7 +415,7 @@ public class ClinicalExam {
 
 	public void setFerritina(final Double ferritina) {
 		if (otherTests == null) {
-			otherTests = new OtherTests();
+			otherTests = new OtherTest();
 		}
 		otherTests.setFerritina(ferritina);
 	}

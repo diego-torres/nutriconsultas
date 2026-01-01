@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OtherTests {
+public class OtherTest {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
