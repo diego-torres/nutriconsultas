@@ -986,4 +986,90 @@ public class DietasRestControllerTest {
 		log.info("Finishing testToStringListDietWithBothPlatillosAndAlimentosReturnsBothLinks");
 	}
 
+	@Test
+	public void testDuplicateDietaSuccess() {
+		log.info("Starting testDuplicateDietaSuccess");
+
+		// Arrange
+		final Dieta originalDieta = new Dieta();
+		originalDieta.setId(1L);
+		originalDieta.setNombre("Dieta Original");
+		originalDieta.setEnergia(2000);
+		originalDieta.setProteina(100.0);
+		originalDieta.setLipidos(50.0);
+		originalDieta.setHidratosDeCarbono(200.0);
+		originalDieta.setIngestas(new ArrayList<>());
+
+		final Ingesta ingesta = new Ingesta();
+		ingesta.setId(1L);
+		ingesta.setNombre("Desayuno");
+		ingesta.setDieta(originalDieta);
+		ingesta.setPlatillos(new ArrayList<>());
+		ingesta.setAlimentos(new ArrayList<>());
+		originalDieta.getIngestas().add(ingesta);
+
+		final Dieta duplicatedDieta = new Dieta();
+		duplicatedDieta.setId(2L);
+		duplicatedDieta.setNombre("Copia de Dieta Original");
+		duplicatedDieta.setEnergia(2000);
+		duplicatedDieta.setProteina(100.0);
+		duplicatedDieta.setLipidos(50.0);
+		duplicatedDieta.setHidratosDeCarbono(200.0);
+
+		when(dietaService.duplicateDieta(1L)).thenReturn(duplicatedDieta);
+
+		// Act
+		final ResponseEntity<ApiResponse<Dieta>> response = dietasRestController.duplicateDieta(1L);
+
+		// Assert
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().getData()).isNotNull();
+		assertThat(response.getBody().getData().getId()).isEqualTo(2L);
+		assertThat(response.getBody().getData().getNombre()).isEqualTo("Copia de Dieta Original");
+		log.info("Finishing testDuplicateDietaSuccess");
+	}
+
+	@Test
+	public void testDuplicateDietaNotFound() {
+		log.info("Starting testDuplicateDietaNotFound");
+
+		// Arrange
+		when(dietaService.duplicateDieta(999L)).thenReturn(null);
+
+		// Act
+		final ResponseEntity<ApiResponse<Dieta>> response = dietasRestController.duplicateDieta(999L);
+
+		// Assert
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		log.info("Finishing testDuplicateDietaNotFound");
+	}
+
+	@Test
+	public void testToStringListIncludesDuplicateButtonInActionsColumn() throws Exception {
+		log.info("Starting testToStringListIncludesDuplicateButtonInActionsColumn");
+
+		// Use reflection to access protected method toStringList
+		Method toStringListMethod = DietasRestController.class.getDeclaredMethod("toStringList", Dieta.class);
+		toStringListMethod.setAccessible(true);
+
+		// Act
+		@SuppressWarnings("unchecked")
+		List<String> result = (List<String>) toStringListMethod.invoke(dietasRestController, dietaConPlatillos);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result).hasSize(8);
+		// Index 0 is the actions column
+		String actions = result.get(0);
+		assertThat(actions).isNotNull();
+		assertThat(actions).contains("duplicateDieta(2)");
+		assertThat(actions).contains("class='btn btn-sm btn-info'");
+		assertThat(actions).contains("title='Duplicar Dieta'");
+		assertThat(actions).contains("fa-copy");
+		log.info("Finishing testToStringListIncludesDuplicateButtonInActionsColumn");
+	}
+
 }

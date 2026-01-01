@@ -23,6 +23,7 @@
 
   <!-- Custom styles for this template-->
   <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+  <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
 </head>
 
 <body id="page-top">
@@ -117,62 +118,123 @@
     <script th:src="@{/sbadmin/vendor/datatables/jquery.dataTables.min.js}"></script>
     <script th:src="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.js}"></script>
 
-
     <!-- Custom scripts for all pages-->
     <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
     <script lang="javascript">
       'use strict';
-      (function ($) {
-        $('#mainGrid').DataTable({
-          "processing": true,
-          "serverSide": true,
-          "scrollX": true,
-          "columnDefs": [
-            { "targets": 0, "orderable": false }
-          ],
-          "language": {
-            "emptyTable": "No hay registros",
-            "lengthMenu": "Mostrar _MENU_ registros por página",
-            "zeroRecords": "No se encontraron registros",
-            "info": "Mostrando página _PAGE_ de _PAGES_",
-            "infoEmpty": "No hay registros disponibles",
-            "infoFiltered": "(filtrado de _MAX_ registros totales)",
-            "loadingRecords": "Buscando...",
-            "search": "Buscar:",
-            "paginate": {
-              "first": "Inicio",
-              "last": "Fin",
-              "next": "Siguiente",
-              "previous": "Anterior"
+      
+      // Wait for jQuery and SweetAlert to be loaded
+      function waitForDependencies() {
+        if (typeof jQuery === 'undefined' || typeof swal === 'undefined') {
+          setTimeout(waitForDependencies, 50);
+          return;
+        }
+        
+        jQuery(document).ready(function($) {
+          $('#mainGrid').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "scrollX": true,
+            "columnDefs": [
+              { "targets": 0, "orderable": false }
+            ],
+            "language": {
+              "emptyTable": "No hay registros",
+              "lengthMenu": "Mostrar _MENU_ registros por página",
+              "zeroRecords": "No se encontraron registros",
+              "info": "Mostrando página _PAGE_ de _PAGES_",
+              "infoEmpty": "No hay registros disponibles",
+              "infoFiltered": "(filtrado de _MAX_ registros totales)",
+              "loadingRecords": "Buscando...",
+              "search": "Buscar:",
+              "paginate": {
+                "first": "Inicio",
+                "last": "Fin",
+                "next": "Siguiente",
+                "previous": "Anterior"
+              },
             },
-          },
-          "ajax": {
-            "url": '/rest/dietas/data-table',
-            "type": "POST",
-            "dataType": "json",
-            "contentType": "application/json",
-            "data": function (d) {
-              return JSON.stringify(d);
-            }
-          },
-        });
-
-        $('#addDietaButton').click(function () {
-          var nombreDieta = $('#nombreDieta').val();
-          $.ajax({
-            url: '/rest/dietas/add',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-              nombre: nombreDieta
-            }),
-            success: function (data) {
-              window.location.href = '/admin/dietas/' + data.id;
-            }
+            "ajax": {
+              "url": '/rest/dietas/data-table',
+              "type": "POST",
+              "dataType": "json",
+              "contentType": "application/json",
+              "data": function (d) {
+                return JSON.stringify(d);
+              }
+            },
           });
-        });
 
-      })(jQuery);
+          $('#addDietaButton').click(function () {
+            var nombreDieta = $('#nombreDieta').val();
+            $.ajax({
+              url: '/rest/dietas/add',
+              type: 'POST',
+              contentType: 'application/json',
+              data: JSON.stringify({
+                nombre: nombreDieta
+              }),
+              success: function (data) {
+                window.location.href = '/admin/dietas/' + data.id;
+              }
+            });
+          });
+
+          window.duplicateDieta = function (dietaId) {
+            swal({
+              title: 'Duplicar Dieta',
+              text: '¿Está seguro que desea duplicar esta dieta?',
+              type: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Sí, duplicar',
+              cancelButtonText: 'Cancelar',
+              closeOnConfirm: false,
+              showLoaderOnConfirm: true
+            }, function (isConfirm) {
+              if (isConfirm) {
+                $.ajax({
+                  url: '/rest/dietas/' + dietaId + '/duplicate',
+                  type: 'POST',
+                  contentType: 'application/json',
+                  success: function (data) {
+                    if (data && data.data && data.data.id) {
+                      swal({
+                        title: '¡Éxito!',
+                        text: 'La dieta ha sido duplicada correctamente',
+                        type: 'success',
+                        timer: 2000,
+                        showConfirmButton: true
+                      }, function () {
+                        window.location.href = '/admin/dietas/' + data.data.id;
+                      });
+                    } else {
+                      swal({
+                        title: 'Error',
+                        text: 'Error al duplicar la dieta',
+                        type: 'error',
+                        timer: 5000
+                      });
+                    }
+                  },
+                  error: function () {
+                    swal({
+                      title: 'Error',
+                      text: 'Error al duplicar la dieta',
+                      type: 'error',
+                      timer: 5000
+                    });
+                  }
+                });
+              }
+            });
+          };
+        });
+      }
+      
+      waitForDependencies();
     </script>
 </body>
 

@@ -14,3 +14,4 @@ buildNumber.properties
 src/test/.DS_Store
 .env.test
 .DS_Store
+.issue.txt
