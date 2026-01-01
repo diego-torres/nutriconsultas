@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.nutriconsultas.calendar.CalendarEvent;
+import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.dieta.Dieta;
 import com.nutriconsultas.validation.template.BaseTemplateValidator;
 
@@ -90,6 +92,115 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		final List<Dieta> mockDietasDisponibles = new ArrayList<>();
 		mockDietasDisponibles.add(mockDieta);
 		variables.put("dietasDisponibles", mockDietasDisponibles);
+
+		// Mock consulta CalendarEvent (used in consulta.html)
+		final CalendarEvent mockConsulta = new CalendarEvent();
+		mockConsulta.setId(0L);
+		mockConsulta.setEventDateTime(new Date());
+		mockConsulta.setPaciente(paciente);
+		mockConsulta.setTitle("Consulta");
+		mockConsulta.setDurationMinutes(60);
+		mockConsulta.setStatus(EventStatus.SCHEDULED);
+		mockConsulta.setDescription("");
+		mockConsulta.setSummaryNotes("");
+		mockConsulta.setPeso(null);
+		mockConsulta.setEstatura(null);
+		mockConsulta.setImc(null);
+		mockConsulta.setSistolica(null);
+		mockConsulta.setDiastolica(null);
+		mockConsulta.setPulso(null);
+		mockConsulta.setIndiceGlucemico(null);
+		mockConsulta.setSpo2(null);
+		mockConsulta.setTemperatura(null);
+		variables.put("consulta", mockConsulta);
+
+		// Mock clinicos ClinicalExam (used in clinicos.html)
+		final ClinicalExam mockClinicos = new ClinicalExam();
+		mockClinicos.setId(0L);
+		mockClinicos.setExamDateTime(new Date());
+		mockClinicos.setPaciente(paciente);
+		mockClinicos.setTitle("Examen Clínico");
+		mockClinicos.setDescription("");
+		mockClinicos.setSummaryNotes("");
+		mockClinicos.setPeso(null);
+		mockClinicos.setEstatura(null);
+		mockClinicos.setImc(null);
+		mockClinicos.setSistolica(null);
+		mockClinicos.setDiastolica(null);
+		mockClinicos.setPulso(null);
+		mockClinicos.setIndiceGlucemico(null);
+		mockClinicos.setSpo2(null);
+		mockClinicos.setTemperatura(null);
+		// Lipid profile
+		mockClinicos.setHdl(null);
+		mockClinicos.setLdl(null);
+		mockClinicos.setTrigliceridos(null);
+		mockClinicos.setColesterolTotal(null);
+		// Blood chemistry
+		mockClinicos.setGlucosa(null);
+		mockClinicos.setHba1c(null);
+		mockClinicos.setCreatinina(null);
+		mockClinicos.setUrea(null);
+		mockClinicos.setBun(null);
+		// Liver function
+		mockClinicos.setAlt(null);
+		mockClinicos.setAst(null);
+		mockClinicos.setBilirrubina(null);
+		// Complete blood count
+		mockClinicos.setHemoglobina(null);
+		mockClinicos.setHematocrito(null);
+		mockClinicos.setLeucocitos(null);
+		mockClinicos.setPlaquetas(null);
+		// Other tests
+		mockClinicos.setVitaminaD(null);
+		mockClinicos.setVitaminaB12(null);
+		mockClinicos.setHierro(null);
+		mockClinicos.setFerritina(null);
+		variables.put("clinicos", mockClinicos);
+
+		// Mock exam ClinicalExam (used in ver-examen-clinico.html)
+		final ClinicalExam mockExam = new ClinicalExam();
+		mockExam.setId(1L);
+		mockExam.setExamDateTime(new Date());
+		mockExam.setPaciente(paciente);
+		mockExam.setTitle("Examen Clínico");
+		mockExam.setDescription("");
+		mockExam.setSummaryNotes("");
+		mockExam.setPeso(null);
+		mockExam.setEstatura(null);
+		mockExam.setImc(null);
+		mockExam.setSistolica(null);
+		mockExam.setDiastolica(null);
+		mockExam.setPulso(null);
+		mockExam.setIndiceGlucemico(null);
+		mockExam.setSpo2(null);
+		mockExam.setTemperatura(null);
+		// Lipid profile
+		mockExam.setHdl(null);
+		mockExam.setLdl(null);
+		mockExam.setTrigliceridos(null);
+		mockExam.setColesterolTotal(null);
+		// Blood chemistry
+		mockExam.setGlucosa(null);
+		mockExam.setHba1c(null);
+		mockExam.setCreatinina(null);
+		mockExam.setUrea(null);
+		mockExam.setBun(null);
+		// Liver function
+		mockExam.setAlt(null);
+		mockExam.setAst(null);
+		mockExam.setBilirrubina(null);
+		// Complete blood count
+		mockExam.setHemoglobina(null);
+		mockExam.setHematocrito(null);
+		mockExam.setLeucocitos(null);
+		mockExam.setPlaquetas(null);
+		// Other tests
+		mockExam.setVitaminaD(null);
+		mockExam.setVitaminaB12(null);
+		mockExam.setHierro(null);
+		mockExam.setFerritina(null);
+		variables.put("exam", mockExam);
 
 		return variables;
 	}

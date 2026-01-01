@@ -1,4 +1,4 @@
-package com.nutriconsultas.calendar;
+package com.nutriconsultas.paciente;
 
 import java.util.Date;
 
@@ -22,14 +22,11 @@ import lombok.NoArgsConstructor;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.nutriconsultas.paciente.NivelPeso;
-import com.nutriconsultas.paciente.Paciente;
-
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CalendarEvent {
+public class ClinicalExam {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,26 +40,19 @@ public class CalendarEvent {
 	@DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
 	@Temporal(TemporalType.TIMESTAMP)
 	@NotNull(message = "La fecha y hora son requeridas")
-	private Date eventDateTime;
+	private Date examDateTime;
 
 	@NotBlank(message = "El título es requerido")
 	@Column(nullable = false, length = 200)
-	private String title;
+	private String title = "Examen Clínico";
 
 	@Column(columnDefinition = "TEXT")
 	private String description;
 
-	@Column(nullable = false)
-	@NotNull(message = "La duración es requerida")
-	private Integer durationMinutes;
-
-	@Column(nullable = false)
-	@NotNull(message = "El estado es requerido")
-	private EventStatus status = EventStatus.SCHEDULED;
-
 	@Column(columnDefinition = "TEXT")
 	private String summaryNotes;
 
+	// VITAL SIGNS
 	@Column(precision = 5)
 	@Min(10)
 	@Max(200)
@@ -161,3 +151,4 @@ public class CalendarEvent {
 	private Double ferritina;
 
 }
+

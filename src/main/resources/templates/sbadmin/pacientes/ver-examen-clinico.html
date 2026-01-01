@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <!-- Favicons -->
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
+
+  <title>Minutriporcion - Ver Examen Clínico</title>
+
+  <!-- Custom fonts for this template-->
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+
+  <style>
+    /* Clinical indicator color coding */
+    .clinical-indicator-normal {
+      border-left: 4px solid #1cc88a;
+      padding-left: 10px;
+    }
+    .clinical-indicator-borderline {
+      border-left: 4px solid #f6c23e;
+      padding-left: 10px;
+    }
+    .clinical-indicator-abnormal {
+      border-left: 4px solid #e74a3b;
+      padding-left: 10px;
+    }
+  </style>
+
+</head>
+
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/pacientes/sidebar :: sidebar}"></div>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Ver Examen Clínico</h1>
+            <div>
+              <a th:href="@{'/admin/pacientes/' + ${paciente.id} + '/historial'}" class="btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Volver al Historial
+              </a>
+            </div>
+          </div>
+
+          <!-- Content Row -->
+          <div class="row">
+            <div class="col-12">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary" th:text="${exam.title}">Título del Examen</h6>
+                </div>
+                <div class="card-body">
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <p><strong>Paciente:</strong> 
+                        <a th:href="@{'/admin/pacientes/' + ${paciente.id}}" th:text="${paciente.name}">Nombre del Paciente</a>
+                      </p>
+                      <p><strong>Fecha y Hora:</strong> 
+                        <span th:text="${#dates.format(exam.examDateTime, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                      </p>
+                    </div>
+                    <div class="col-md-6" th:if="${exam.description != null && !exam.description.isEmpty()}">
+                      <p><strong>Descripción:</strong></p>
+                      <p th:text="${exam.description}">Descripción</p>
+                    </div>
+                  </div>
+                  
+                  <hr>
+                  
+                  <!-- Tabs Navigation -->
+                  <ul class="nav nav-tabs mb-3" id="clinicalTabs" role="tablist">
+                    <li class="nav-item">
+                      <a class="nav-link active" id="vital-signs-tab" data-toggle="tab" href="#vital-signs" role="tab" aria-controls="vital-signs" aria-selected="true">
+                        <i class="fas fa-heartbeat"></i> Signos Vitales
+                      </a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" id="lipid-profile-tab" data-toggle="tab" href="#lipid-profile" role="tab" aria-controls="lipid-profile" aria-selected="false">
+                        <i class="fas fa-tint"></i> Perfil Lipídico
+                      </a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" id="blood-chemistry-tab" data-toggle="tab" href="#blood-chemistry" role="tab" aria-controls="blood-chemistry" aria-selected="false">
+                        <i class="fas fa-flask"></i> Química Sanguínea
+                      </a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" id="liver-function-tab" data-toggle="tab" href="#liver-function" role="tab" aria-controls="liver-function" aria-selected="false">
+                        <i class="fas fa-liver"></i> Función Hepática
+                      </a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" id="blood-count-tab" data-toggle="tab" href="#blood-count" role="tab" aria-controls="blood-count" aria-selected="false">
+                        <i class="fas fa-microscope"></i> Hemograma
+                      </a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" id="other-tests-tab" data-toggle="tab" href="#other-tests" role="tab" aria-controls="other-tests" aria-selected="false">
+                        <i class="fas fa-vial"></i> Otros Exámenes
+                      </a>
+                    </li>
+                    <li class="nav-item" th:if="${exam.summaryNotes != null && !exam.summaryNotes.isEmpty()}">
+                      <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">
+                        <i class="fas fa-sticky-note"></i> Notas
+                      </a>
+                    </li>
+                  </ul>
+
+                  <!-- Tab Content -->
+                  <div class="tab-content" id="clinicalTabsContent">
+                    <!-- Vital Signs Tab -->
+                    <div class="tab-pane fade show active" id="vital-signs" role="tabpanel" aria-labelledby="vital-signs-tab">
+                      <div class="row">
+                        <div class="col-md-3" th:if="${exam.peso != null}">
+                          <p><strong>Peso:</strong> <span th:text="${#numbers.formatDecimal(exam.peso, 1, 1)} + ' kg'">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${exam.estatura != null}">
+                          <p><strong>Estatura:</strong> <span th:text="${#numbers.formatDecimal(exam.estatura, 2, 2)} + ' m'">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${exam.imc != null}">
+                          <p><strong>IMC:</strong> <span th:text="${#numbers.formatDecimal(exam.imc, 2, 2)}">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${exam.indiceGrasaCorporal != null}">
+                          <p><strong>Índice Grasa Corporal:</strong> <span th:text="${#numbers.formatDecimal(exam.indiceGrasaCorporal, 2, 2)} + '%'">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${exam.nivelPeso != null}">
+                          <p><strong>Nivel de Peso:</strong> <span th:text="${exam.nivelPeso.name()}">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${exam.sistolica != null}">
+                          <p><strong>Sistólica:</strong> <span th:text="${exam.sistolica} + ' mmHg'">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${exam.diastolica != null}">
+                          <p><strong>Diastólica:</strong> <span th:text="${exam.diastolica} + ' mmHg'">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${exam.pulso != null}">
+                          <p><strong>Pulso:</strong> <span th:text="${exam.pulso} + ' lpm'">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${exam.indiceGlucemico != null}">
+                          <p><strong>Índice Glucémico:</strong> <span th:text="${exam.indiceGlucemico} + ' mg/dL'">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${exam.spo2 != null}">
+                          <p><strong>SpO2:</strong> <span th:text="${#numbers.formatDecimal(exam.spo2, 1, 1)} + '%'">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${exam.temperatura != null}">
+                          <p><strong>Temperatura:</strong> <span th:text="${#numbers.formatDecimal(exam.temperatura, 1, 1)} + ' °C'">-</span></p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Lipid Profile Tab -->
+                    <div class="tab-pane fade" id="lipid-profile" role="tabpanel" aria-labelledby="lipid-profile-tab">
+                      <div class="row">
+                        <div class="col-md-6" th:if="${exam.hdl != null}">
+                          <p><strong>HDL:</strong> <span th:text="${#numbers.formatDecimal(exam.hdl, 2, 2)} + ' mg/dL'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.ldl != null}">
+                          <p><strong>LDL:</strong> <span th:text="${#numbers.formatDecimal(exam.ldl, 2, 2)} + ' mg/dL'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.trigliceridos != null}">
+                          <p><strong>Triglicéridos:</strong> <span th:text="${#numbers.formatDecimal(exam.trigliceridos, 2, 2)} + ' mg/dL'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.colesterolTotal != null}">
+                          <p><strong>Colesterol Total:</strong> <span th:text="${#numbers.formatDecimal(exam.colesterolTotal, 2, 2)} + ' mg/dL'">-</span></p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Blood Chemistry Tab -->
+                    <div class="tab-pane fade" id="blood-chemistry" role="tabpanel" aria-labelledby="blood-chemistry-tab">
+                      <div class="row">
+                        <div class="col-md-6" th:if="${exam.glucosa != null}">
+                          <p><strong>Glucosa:</strong> <span th:text="${#numbers.formatDecimal(exam.glucosa, 2, 2)} + ' mg/dL'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.hba1c != null}">
+                          <p><strong>HbA1c:</strong> <span th:text="${#numbers.formatDecimal(exam.hba1c, 2, 2)} + '%'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.creatinina != null}">
+                          <p><strong>Creatinina:</strong> <span th:text="${#numbers.formatDecimal(exam.creatinina, 2, 2)} + ' mg/dL'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.urea != null}">
+                          <p><strong>Urea:</strong> <span th:text="${#numbers.formatDecimal(exam.urea, 2, 2)} + ' mg/dL'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.bun != null}">
+                          <p><strong>BUN:</strong> <span th:text="${#numbers.formatDecimal(exam.bun, 2, 2)} + ' mg/dL'">-</span></p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Liver Function Tab -->
+                    <div class="tab-pane fade" id="liver-function" role="tabpanel" aria-labelledby="liver-function-tab">
+                      <div class="row">
+                        <div class="col-md-6" th:if="${exam.alt != null}">
+                          <p><strong>ALT:</strong> <span th:text="${#numbers.formatDecimal(exam.alt, 2, 2)} + ' U/L'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.ast != null}">
+                          <p><strong>AST:</strong> <span th:text="${#numbers.formatDecimal(exam.ast, 2, 2)} + ' U/L'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.bilirrubina != null}">
+                          <p><strong>Bilirrubina:</strong> <span th:text="${#numbers.formatDecimal(exam.bilirrubina, 2, 2)} + ' mg/dL'">-</span></p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Complete Blood Count Tab -->
+                    <div class="tab-pane fade" id="blood-count" role="tabpanel" aria-labelledby="blood-count-tab">
+                      <div class="row">
+                        <div class="col-md-6" th:if="${exam.hemoglobina != null}">
+                          <p><strong>Hemoglobina:</strong> <span th:text="${#numbers.formatDecimal(exam.hemoglobina, 2, 2)} + ' g/dL'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.hematocrito != null}">
+                          <p><strong>Hematocrito:</strong> <span th:text="${#numbers.formatDecimal(exam.hematocrito, 2, 2)} + '%'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.leucocitos != null}">
+                          <p><strong>Leucocitos:</strong> <span th:text="${#numbers.formatDecimal(exam.leucocitos, 2, 2)} + ' x10³/μL'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.plaquetas != null}">
+                          <p><strong>Plaquetas:</strong> <span th:text="${#numbers.formatDecimal(exam.plaquetas, 2, 2)} + ' x10³/μL'">-</span></p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Other Tests Tab -->
+                    <div class="tab-pane fade" id="other-tests" role="tabpanel" aria-labelledby="other-tests-tab">
+                      <div class="row">
+                        <div class="col-md-6" th:if="${exam.vitaminaD != null}">
+                          <p><strong>Vitamina D:</strong> <span th:text="${#numbers.formatDecimal(exam.vitaminaD, 2, 2)} + ' ng/mL'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.vitaminaB12 != null}">
+                          <p><strong>Vitamina B12:</strong> <span th:text="${#numbers.formatDecimal(exam.vitaminaB12, 2, 2)} + ' pg/mL'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.hierro != null}">
+                          <p><strong>Hierro:</strong> <span th:text="${#numbers.formatDecimal(exam.hierro, 2, 2)} + ' μg/dL'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.ferritina != null}">
+                          <p><strong>Ferritina:</strong> <span th:text="${#numbers.formatDecimal(exam.ferritina, 2, 2)} + ' ng/mL'">-</span></p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Notes Tab -->
+                    <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab" th:if="${exam.summaryNotes != null && !exam.summaryNotes.isEmpty()}">
+                      <div class="form-group">
+                        <p><strong>Notas de Resumen:</strong></p>
+                        <p class="text-muted" th:text="${exam.summaryNotes}">Notas</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="mt-3">
+                    <a th:href="@{'/admin/pacientes/' + ${paciente.id} + '/historial'}" class="btn btn-secondary">Volver al Historial</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+
+        <div th:insert="~{sbadmin/footer :: footer}"></div>
+
+      </div>
+      <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Bootstrap core JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+</body>
+
+</html>
+

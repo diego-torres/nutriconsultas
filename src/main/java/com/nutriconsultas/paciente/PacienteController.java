@@ -45,6 +45,9 @@ public class PacienteController extends AbstractAuthorizedController {
 	private CalendarEventService calendarEventService;
 
 	@Autowired
+	private ClinicalExamService clinicalExamService;
+
+	@Autowired
 	private BodyFatCalculatorService bodyFatCalculatorService;
 
 	@Autowired
@@ -375,6 +378,17 @@ public class PacienteController extends AbstractAuthorizedController {
 							paciente.getGender());
 					evento.setIndiceGrasaCorporal(bodyFatPercentage);
 				}
+				else {
+					log.debug("No se pudo calcular la edad del paciente, no se calculará el índice de grasa corporal");
+				}
+			}
+			else {
+				if (paciente.getDob() == null) {
+					log.debug("El paciente no tiene fecha de nacimiento registrada, no se calculará el índice de grasa corporal");
+				}
+				if (paciente.getGender() == null) {
+					log.debug("El paciente no tiene género registrado, no se calculará el índice de grasa corporal");
+				}
 			}
 		}
 		final LocalDate today = LocalDate.now();
@@ -449,6 +463,159 @@ public class PacienteController extends AbstractAuthorizedController {
 		log.debug("Evento lista para grabar {}", evento);
 		calendarEventService.save(evento);
 		return String.format("redirect:/admin/pacientes/%d/historial", pacienteId);
+	}
+
+	@GetMapping(path = "/admin/pacientes/{id}/clinicos")
+	public String clinicosPaciente(@PathVariable @NonNull Long id, Model model) {
+		log.debug("Cargando formulario de examen clínico para paciente {}", id);
+		Paciente paciente = pacienteRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+
+		model.addAttribute("activeMenu", "historial");
+		model.addAttribute("paciente", paciente);
+		ClinicalExam exam = new ClinicalExam();
+		exam.setExamDateTime(new Date());
+		exam.setPaciente(paciente);
+		exam.setTitle("Examen Clínico");
+		model.addAttribute("clinicos", exam);
+		return "sbadmin/pacientes/clinicos";
+	}
+
+	@PostMapping(path = "/admin/pacientes/{pacienteId}/clinicos")
+	public String agregarClinicosPaciente(@PathVariable @NonNull Long pacienteId, @Valid ClinicalExam exam,
+			BindingResult result, Model model) {
+		log.debug("Grabando examen clínico {}", exam);
+		Paciente paciente = pacienteRepository.findById(pacienteId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId));
+
+		exam.setPaciente(paciente);
+
+		Double imc = null;
+		NivelPeso np = null;
+		if (exam.getPeso() != null && exam.getEstatura() != null) {
+			imc = exam.getPeso() / Math.pow(exam.getEstatura(), 2);
+			np = imc > 30.0d ? NivelPeso.SOBREPESO
+					: imc > 25.0d ? NivelPeso.ALTO : imc > 18.5d ? NivelPeso.NORMAL : NivelPeso.BAJO;
+
+			// Calcular índice de grasa corporal si hay datos del paciente
+			if (paciente.getDob() != null && paciente.getGender() != null) {
+				Integer age = calculateAge(paciente.getDob());
+				if (age != null) {
+					Double bodyFatPercentage = bodyFatCalculatorService.calculateBodyFatPercentage(imc, age,
+							paciente.getGender());
+					exam.setIndiceGrasaCorporal(bodyFatPercentage);
+				}
+				else {
+					log.debug("No se pudo calcular la edad del paciente, no se calculará el índice de grasa corporal");
+				}
+			}
+			else {
+				if (paciente.getDob() == null) {
+					log.debug("El paciente no tiene fecha de nacimiento registrada, no se calculará el índice de grasa corporal");
+				}
+				if (paciente.getGender() == null) {
+					log.debug("El paciente no tiene género registrado, no se calculará el índice de grasa corporal");
+				}
+			}
+		}
+		final LocalDate today = LocalDate.now();
+		final Date examDate = exam.getExamDateTime();
+		if (examDate != null) {
+			// Comparar solo la fecha (sin hora)
+			final LocalDate examLocalDate;
+			if (examDate instanceof java.sql.Date) {
+				// java.sql.Date doesn't support toInstant(), convert directly
+				examLocalDate = ((java.sql.Date) examDate).toLocalDate();
+			}
+			else {
+				examLocalDate = examDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			}
+
+			if (today.equals(examLocalDate)) {
+				log.debug("Working on today's clinical exam, setting new patient weight vars");
+				if (exam.getPeso() != null) {
+					paciente.setPeso(exam.getPeso());
+				}
+				if (exam.getEstatura() != null) {
+					paciente.setEstatura(exam.getEstatura());
+				}
+				if (imc != null) {
+					paciente.setImc(imc);
+				}
+				if (np != null) {
+					paciente.setNivelPeso(np);
+				}
+				if (paciente != null) {
+					pacienteRepository.save(paciente);
+				}
+			}
+			else {
+				// Check both calendar events and clinical exams for later dates
+				List<CalendarEvent> eventosPrevios = calendarEventService.findByPacienteId(pacienteId);
+				List<ClinicalExam> examenesPrevios = clinicalExamService.findByPacienteId(pacienteId);
+				Boolean laterExists = eventosPrevios.stream()
+					.filter(e -> e.getEventDateTime() != null && e.getEventDateTime().after(examDate))
+					.findAny()
+					.isPresent()
+					|| examenesPrevios.stream()
+						.filter(e -> e.getExamDateTime() != null && e.getExamDateTime().after(examDate))
+						.findAny()
+						.isPresent();
+				if (!laterExists) {
+					log.debug("No later event exists, setting patient weight vars as latest date clinical exam");
+					if (exam.getPeso() != null) {
+						paciente.setPeso(exam.getPeso());
+					}
+					if (exam.getEstatura() != null) {
+						paciente.setEstatura(exam.getEstatura());
+					}
+					if (imc != null) {
+						paciente.setImc(imc);
+					}
+					if (np != null) {
+						paciente.setNivelPeso(np);
+					}
+					if (paciente != null) {
+						pacienteRepository.save(paciente);
+					}
+				}
+			}
+		}
+
+		if (imc != null) {
+			exam.setImc(imc);
+		}
+		if (np != null) {
+			exam.setNivelPeso(np);
+		}
+
+		// Asegurar que el examen tenga título si no lo tiene
+		if (exam.getTitle() == null || exam.getTitle().isBlank()) {
+			exam.setTitle("Examen Clínico");
+		}
+
+		log.debug("Examen clínico lista para grabar {}", exam);
+		clinicalExamService.save(exam);
+		return String.format("redirect:/admin/pacientes/%d/historial", pacienteId);
+	}
+
+	@GetMapping(path = "/admin/pacientes/{pacienteId}/examen-clinico/{examId}")
+	public String verExamenClinico(@PathVariable @NonNull final Long pacienteId,
+			@PathVariable @NonNull final Long examId, final Model model) {
+		log.debug("Cargando examen clínico {} para paciente {}", examId, pacienteId);
+		final ClinicalExam exam = clinicalExamService.findById(examId);
+		if (exam == null) {
+			throw new IllegalArgumentException("No se ha encontrado examen clínico con id " + examId);
+		}
+		if (!exam.getPaciente().getId().equals(pacienteId)) {
+			throw new IllegalArgumentException(
+					"El examen clínico no pertenece al paciente especificado");
+		}
+
+		model.addAttribute("activeMenu", "historial");
+		model.addAttribute("exam", exam);
+		model.addAttribute("paciente", exam.getPaciente());
+		return "sbadmin/pacientes/ver-examen-clinico";
 	}
 
 	@GetMapping(path = "/admin/pacientes/{id}/dietas/asignar")
@@ -648,7 +815,14 @@ public class PacienteController extends AbstractAuthorizedController {
 		if (dob == null) {
 			return null;
 		}
-		final LocalDate birthDate = dob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		LocalDate birthDate;
+		if (dob instanceof java.sql.Date) {
+			// java.sql.Date doesn't support toInstant(), convert directly
+			birthDate = ((java.sql.Date) dob).toLocalDate();
+		}
+		else {
+			birthDate = dob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		}
 		final LocalDate currentDate = LocalDate.now();
 		if (birthDate.isAfter(currentDate)) {
 			log.warn("Date of birth is in the future: {}", dob);

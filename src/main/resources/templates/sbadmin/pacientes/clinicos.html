@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <!-- Favicons -->
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
+
+  <title>Minutriporcion - Examen Clínico para Paciente</title>
+
+  <!-- Custom fonts for this template-->
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+
+  <style>
+    /* Clinical indicator color coding */
+    .clinical-indicator-normal {
+      border-color: #1cc88a !important;
+      background-color: #f0f9f5;
+    }
+    .clinical-indicator-normal:focus {
+      border-color: #1cc88a !important;
+      box-shadow: 0 0 0 0.2rem rgba(28, 200, 138, 0.25) !important;
+    }
+    .clinical-indicator-borderline {
+      border-color: #f6c23e !important;
+      background-color: #fffbf0;
+    }
+    .clinical-indicator-borderline:focus {
+      border-color: #f6c23e !important;
+      box-shadow: 0 0 0 0.2rem rgba(246, 194, 62, 0.25) !important;
+    }
+    .clinical-indicator-abnormal {
+      border-color: #e74a3b !important;
+      background-color: #fef0ef;
+    }
+    .clinical-indicator-abnormal:focus {
+      border-color: #e74a3b !important;
+      box-shadow: 0 0 0 0.2rem rgba(231, 74, 59, 0.25) !important;
+    }
+  </style>
+
+</head>
+
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/pacientes/sidebar :: sidebar}"></div>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Examen Clínico para paciente [[(${paciente != null ? paciente.name : ''})]]</h1>
+          </div>
+
+          <!-- Content Row -->
+          <div class="row">
+            <!-- CLINICAL EXAM FORM -->
+            <div class="col-12">
+              <div class="card shadow mb-4">
+                <div class="col-sm-10 offset-sm-1">
+
+                  <div class="info-form p-5">
+                    <form th:action="@{/admin/pacientes/{pacienteId}/clinicos(pacienteId=${paciente != null ? paciente.id : 0})}" th:object="${clinicos}" method="POST">
+                      <!-- General Information -->
+                      <div class="form-group">
+                        <label>Fecha y Hora del Examen<span style="color:red;">*</span></label>
+                        <input type="datetime-local" th:field="*{examDateTime}" class="form-control">
+                        <span th:if="${#fields.hasErrors('examDateTime')}" th:errors="*{examDateTime}"></span>
+                      </div>
+                      <div class="form-group">
+                        <label>Título<span style="color:red;">*</span></label>
+                        <input type="text" th:field="*{title}" class="form-control" value="Examen Clínico">
+                        <span th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
+                      </div>
+
+                      <!-- Tabs Navigation -->
+                      <ul class="nav nav-tabs mt-4 mb-3" id="clinicalTabs" role="tablist">
+                        <li class="nav-item">
+                          <a class="nav-link active" id="vital-signs-tab" data-toggle="tab" href="#vital-signs" role="tab" aria-controls="vital-signs" aria-selected="true">
+                            <i class="fas fa-heartbeat"></i> Signos Vitales
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" id="lipid-profile-tab" data-toggle="tab" href="#lipid-profile" role="tab" aria-controls="lipid-profile" aria-selected="false">
+                            <i class="fas fa-tint"></i> Perfil Lipídico
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" id="blood-chemistry-tab" data-toggle="tab" href="#blood-chemistry" role="tab" aria-controls="blood-chemistry" aria-selected="false">
+                            <i class="fas fa-flask"></i> Química Sanguínea
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" id="liver-function-tab" data-toggle="tab" href="#liver-function" role="tab" aria-controls="liver-function" aria-selected="false">
+                            <i class="fas fa-liver"></i> Función Hepática
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" id="blood-count-tab" data-toggle="tab" href="#blood-count" role="tab" aria-controls="blood-count" aria-selected="false">
+                            <i class="fas fa-microscope"></i> Hemograma
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" id="other-tests-tab" data-toggle="tab" href="#other-tests" role="tab" aria-controls="other-tests" aria-selected="false">
+                            <i class="fas fa-vial"></i> Otros Exámenes
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">
+                            <i class="fas fa-sticky-note"></i> Notas
+                          </a>
+                        </li>
+                      </ul>
+
+                      <!-- Tab Content -->
+                      <div class="tab-content" id="clinicalTabsContent">
+                        <!-- Vital Signs Tab -->
+                        <div class="tab-pane fade show active" id="vital-signs" role="tabpanel" aria-labelledby="vital-signs-tab">
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Peso (Kg.)</label>
+                                <input type="number" step="0.01" th:field="*{peso}" class="form-control" min="15" max="200">
+                                <span th:if="${#fields.hasErrors('peso')}" th:errors="*{peso}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Estatura (M.)</label>
+                                <input type="number" step="0.01" th:field="*{estatura}" class="form-control" min="0.5" max="3.8">
+                                <span th:if="${#fields.hasErrors('estatura')}" th:errors="*{estatura}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Sistólica (mmHg)</label>
+                                <input type="number" step="1" th:field="*{sistolica}" class="form-control">
+                                <span th:if="${#fields.hasErrors('sistolica')}" th:errors="*{sistolica}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Diastólica (mmHg)</label>
+                                <input type="number" step="1" th:field="*{diastolica}" class="form-control">
+                                <span th:if="${#fields.hasErrors('diastolica')}" th:errors="*{diastolica}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Pulso (lpm)</label>
+                                <input type="number" step="1" th:field="*{pulso}" class="form-control">
+                                <span th:if="${#fields.hasErrors('pulso')}" th:errors="*{pulso}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Índice Glucémico (mg/dL)</label>
+                                <input type="number" step="1" th:field="*{indiceGlucemico}" class="form-control">
+                                <span th:if="${#fields.hasErrors('indiceGlucemico')}" th:errors="*{indiceGlucemico}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>SpO2 (%)</label>
+                                <input type="number" step="0.1" th:field="*{spo2}" class="form-control">
+                                <span th:if="${#fields.hasErrors('spo2')}" th:errors="*{spo2}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Temperatura (°C)</label>
+                                <input type="number" step="0.1" th:field="*{temperatura}" class="form-control">
+                                <span th:if="${#fields.hasErrors('temperatura')}" th:errors="*{temperatura}"></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Lipid Profile Tab -->
+                        <div class="tab-pane fade" id="lipid-profile" role="tabpanel" aria-labelledby="lipid-profile-tab">
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>HDL (mg/dL)</label>
+                                <input type="number" step="0.01" th:field="*{hdl}" class="form-control">
+                                <span th:if="${#fields.hasErrors('hdl')}" th:errors="*{hdl}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>LDL (mg/dL)</label>
+                                <input type="number" step="0.01" th:field="*{ldl}" class="form-control">
+                                <span th:if="${#fields.hasErrors('ldl')}" th:errors="*{ldl}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Triglicéridos (mg/dL)</label>
+                                <input type="number" step="0.01" th:field="*{trigliceridos}" class="form-control">
+                                <span th:if="${#fields.hasErrors('trigliceridos')}" th:errors="*{trigliceridos}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Colesterol Total (mg/dL)</label>
+                                <input type="number" step="0.01" th:field="*{colesterolTotal}" class="form-control">
+                                <span th:if="${#fields.hasErrors('colesterolTotal')}" th:errors="*{colesterolTotal}"></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Blood Chemistry Tab -->
+                        <div class="tab-pane fade" id="blood-chemistry" role="tabpanel" aria-labelledby="blood-chemistry-tab">
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Glucosa (mg/dL)</label>
+                                <input type="number" step="0.01" th:field="*{glucosa}" class="form-control">
+                                <span th:if="${#fields.hasErrors('glucosa')}" th:errors="*{glucosa}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>HbA1c (%)</label>
+                                <input type="number" step="0.01" th:field="*{hba1c}" class="form-control">
+                                <span th:if="${#fields.hasErrors('hba1c')}" th:errors="*{hba1c}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Creatinina (mg/dL)</label>
+                                <input type="number" step="0.01" th:field="*{creatinina}" class="form-control">
+                                <span th:if="${#fields.hasErrors('creatinina')}" th:errors="*{creatinina}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Urea (mg/dL)</label>
+                                <input type="number" step="0.01" th:field="*{urea}" class="form-control">
+                                <span th:if="${#fields.hasErrors('urea')}" th:errors="*{urea}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>BUN (mg/dL)</label>
+                                <input type="number" step="0.01" th:field="*{bun}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bun')}" th:errors="*{bun}"></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Liver Function Tab -->
+                        <div class="tab-pane fade" id="liver-function" role="tabpanel" aria-labelledby="liver-function-tab">
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>ALT (U/L)</label>
+                                <input type="number" step="0.01" th:field="*{alt}" class="form-control">
+                                <span th:if="${#fields.hasErrors('alt')}" th:errors="*{alt}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>AST (U/L)</label>
+                                <input type="number" step="0.01" th:field="*{ast}" class="form-control">
+                                <span th:if="${#fields.hasErrors('ast')}" th:errors="*{ast}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Bilirrubina (mg/dL)</label>
+                                <input type="number" step="0.01" th:field="*{bilirrubina}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bilirrubina')}" th:errors="*{bilirrubina}"></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Complete Blood Count Tab -->
+                        <div class="tab-pane fade" id="blood-count" role="tabpanel" aria-labelledby="blood-count-tab">
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Hemoglobina (g/dL)</label>
+                                <input type="number" step="0.01" th:field="*{hemoglobina}" class="form-control">
+                                <span th:if="${#fields.hasErrors('hemoglobina')}" th:errors="*{hemoglobina}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Hematocrito (%)</label>
+                                <input type="number" step="0.01" th:field="*{hematocrito}" class="form-control">
+                                <span th:if="${#fields.hasErrors('hematocrito')}" th:errors="*{hematocrito}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Leucocitos (x10³/μL)</label>
+                                <input type="number" step="0.01" th:field="*{leucocitos}" class="form-control">
+                                <span th:if="${#fields.hasErrors('leucocitos')}" th:errors="*{leucocitos}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Plaquetas (x10³/μL)</label>
+                                <input type="number" step="0.01" th:field="*{plaquetas}" class="form-control">
+                                <span th:if="${#fields.hasErrors('plaquetas')}" th:errors="*{plaquetas}"></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Other Tests Tab -->
+                        <div class="tab-pane fade" id="other-tests" role="tabpanel" aria-labelledby="other-tests-tab">
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Vitamina D (ng/mL)</label>
+                                <input type="number" step="0.01" th:field="*{vitaminaD}" class="form-control">
+                                <span th:if="${#fields.hasErrors('vitaminaD')}" th:errors="*{vitaminaD}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Vitamina B12 (pg/mL)</label>
+                                <input type="number" step="0.01" th:field="*{vitaminaB12}" class="form-control">
+                                <span th:if="${#fields.hasErrors('vitaminaB12')}" th:errors="*{vitaminaB12}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Hierro (μg/dL)</label>
+                                <input type="number" step="0.01" th:field="*{hierro}" class="form-control">
+                                <span th:if="${#fields.hasErrors('hierro')}" th:errors="*{hierro}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Ferritina (ng/mL)</label>
+                                <input type="number" step="0.01" th:field="*{ferritina}" class="form-control">
+                                <span th:if="${#fields.hasErrors('ferritina')}" th:errors="*{ferritina}"></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Notes Tab -->
+                        <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
+                          <div class="form-group">
+                            <label>Notas</label>
+                            <textarea class="form-control" rows="5" th:field="*{summaryNotes}"></textarea>
+                            <span th:if="${#fields.hasErrors('summaryNotes')}"
+                              th:errors="*{summaryNotes}"></span>
+                          </div>
+                          <div class="form-group">
+                            <label>Descripción</label>
+                            <textarea class="form-control" rows="5" th:field="*{description}"></textarea>
+                            <span th:if="${#fields.hasErrors('description')}"
+                              th:errors="*{description}"></span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="mt-4">
+                        <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Guardar Examen Clínico</button>
+                        <a th:href="@{/admin/pacientes/{id}/historial(id=${paciente != null ? paciente.id : 0})}" class="btn btn-secondary ml-2">Cancelar</a>
+                      </div>
+                    </form>
+                  </div>
+                  <br>
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+
+        <div th:insert="~{sbadmin/footer :: footer}"></div>
+
+      </div>
+      <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Bootstrap core JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+
+    <script>
+      'use strict';
+      (function ($) {
+        // Normal ranges for clinical indicators
+        const normalRanges = {
+          // Vital Signs
+          sistolica: { min: 90, max: 120, borderlineMin: 120, borderlineMax: 140 },
+          diastolica: { min: 60, max: 80, borderlineMin: 80, borderlineMax: 90 },
+          pulso: { min: 60, max: 100, borderlineMin: 50, borderlineMax: 110 },
+          indiceGlucemico: { min: 70, max: 100, borderlineMin: 100, borderlineMax: 125 },
+          spo2: { min: 95, max: 100, borderlineMin: 90, borderlineMax: 95 },
+          temperatura: { min: 36.1, max: 37.2, borderlineMin: 35.5, borderlineMax: 38.0 },
+          
+          // Lipid Profile
+          hdl: { min: 40, max: null, borderlineMin: 35, borderlineMax: 40 }, // Higher is better
+          ldl: { min: null, max: 100, borderlineMin: 100, borderlineMax: 160 }, // Lower is better
+          trigliceridos: { min: null, max: 150, borderlineMin: 150, borderlineMax: 200 },
+          colesterolTotal: { min: null, max: 200, borderlineMin: 200, borderlineMax: 240 },
+          
+          // Blood Chemistry
+          glucosa: { min: 70, max: 100, borderlineMin: 100, borderlineMax: 125 },
+          hba1c: { min: null, max: 5.7, borderlineMin: 5.7, borderlineMax: 6.4 },
+          creatinina: { min: null, max: 1.2, borderlineMin: 1.2, borderlineMax: 1.5 },
+          urea: { min: null, max: 20, borderlineMin: 20, borderlineMax: 40 },
+          bun: { min: null, max: 20, borderlineMin: 20, borderlineMax: 25 },
+          
+          // Liver Function
+          alt: { min: null, max: 40, borderlineMin: 40, borderlineMax: 100 },
+          ast: { min: null, max: 40, borderlineMin: 40, borderlineMax: 100 },
+          bilirrubina: { min: null, max: 1.2, borderlineMin: 1.2, borderlineMax: 2.0 },
+          
+          // Complete Blood Count
+          hemoglobina: { min: 12, max: 16, borderlineMin: 10, borderlineMax: 18 },
+          hematocrito: { min: 36, max: 48, borderlineMin: 30, borderlineMax: 54 },
+          leucocitos: { min: 4.0, max: 11.0, borderlineMin: 3.0, borderlineMax: 12.0 },
+          plaquetas: { min: 150, max: 450, borderlineMin: 100, borderlineMax: 500 },
+          
+          // Other Tests
+          vitaminaD: { min: 30, max: 100, borderlineMin: 20, borderlineMax: 150 },
+          vitaminaB12: { min: 200, max: 900, borderlineMin: 150, borderlineMax: 1000 },
+          hierro: { min: 60, max: 170, borderlineMin: 40, borderlineMax: 200 },
+          ferritina: { min: 15, max: 200, borderlineMin: 10, borderlineMax: 300 }
+        };
+
+        /**
+         * Evaluates a value against normal ranges
+         * Returns: 'normal', 'borderline', 'abnormal', or null if value is empty
+         */
+        function evaluateValue(fieldName, value) {
+          if (!value || value === '') {
+            return null;
+          }
+          
+          const numValue = parseFloat(value);
+          if (isNaN(numValue)) {
+            return null;
+          }
+          
+          const range = normalRanges[fieldName];
+          if (!range) {
+            return null;
+          }
+          
+          // Check if value is in normal range
+          const inNormalRange = (range.min === null || numValue >= range.min) && 
+                                (range.max === null || numValue <= range.max);
+          
+          if (inNormalRange) {
+            return 'normal';
+          }
+          
+          // Check if value is in borderline range
+          const inBorderlineRange = (range.borderlineMin === null || numValue >= range.borderlineMin) && 
+                                    (range.borderlineMax === null || numValue <= range.borderlineMax);
+          
+          if (inBorderlineRange) {
+            return 'borderline';
+          }
+          
+          // Value is abnormal
+          return 'abnormal';
+        }
+
+        /**
+         * Applies color coding to an input field based on its value
+         */
+        function applyColorCoding(input) {
+          let fieldName = input.name || input.id || '';
+          if (!fieldName) {
+            return;
+          }
+          
+          // Extract field name from Thymeleaf field names (e.g., "clinicos.peso" -> "peso")
+          // Handle both "clinicos.peso" and just "peso" formats
+          const fieldMatch = fieldName.match(/\.([^.]+)$/);
+          const actualFieldName = fieldMatch ? fieldMatch[1] : fieldName;
+          
+          // Skip if this field doesn't have a range defined
+          if (!normalRanges.hasOwnProperty(actualFieldName)) {
+            return;
+          }
+          
+          const value = input.value;
+          const status = evaluateValue(actualFieldName, value);
+          
+          // Remove all indicator classes
+          input.classList.remove('clinical-indicator-normal', 'clinical-indicator-borderline', 'clinical-indicator-abnormal');
+          
+          // Add appropriate class
+          if (status === 'normal') {
+            input.classList.add('clinical-indicator-normal');
+          } else if (status === 'borderline') {
+            input.classList.add('clinical-indicator-borderline');
+          } else if (status === 'abnormal') {
+            input.classList.add('clinical-indicator-abnormal');
+          }
+        }
+
+        // Apply color coding on page load for existing values
+        $(document).ready(function() {
+          // Find all number inputs in the form
+          $('form input[type="number"]').each(function() {
+            applyColorCoding(this);
+          });
+          
+          // Apply color coding on input/change events
+          $('form input[type="number"]').on('input change blur', function() {
+            applyColorCoding(this);
+          });
+        });
+
+      })(jQuery);
+    </script>
+
+</body>
+
+</html>
+
