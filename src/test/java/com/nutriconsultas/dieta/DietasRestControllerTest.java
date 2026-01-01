@@ -160,6 +160,12 @@ public class DietasRestControllerTest {
 		assertThat(actions).isNotNull();
 		assertThat(actions).contains("/admin/dietas/1/print");
 		assertThat(actions).contains("fa-file-pdf");
+		// Index 2 is the ingestas column - should not contain any links
+		String ingestas = result.get(2);
+		assertThat(ingestas).isNotNull();
+		assertThat(ingestas).contains("Desayuno");
+		assertThat(ingestas).doesNotContain("/admin/platillos");
+		assertThat(ingestas).doesNotContain("/admin/alimentos");
 		// Index 3 is the distribution column
 		String distribution = result.get(3);
 		assertThat(distribution).isNotNull();
@@ -189,6 +195,12 @@ public class DietasRestControllerTest {
 		assertThat(actions).isNotNull();
 		assertThat(actions).contains("/admin/dietas/2/print");
 		assertThat(actions).contains("fa-file-pdf");
+		// Index 2 is the ingestas column - should only contain ingesta names
+		String ingestas = result.get(2);
+		assertThat(ingestas).isNotNull();
+		assertThat(ingestas).contains("Desayuno");
+		assertThat(ingestas).doesNotContain("/admin/platillos");
+		assertThat(ingestas).doesNotContain("fa-utensils");
 		// Index 3 is the distribution column
 		String distribution = result.get(3);
 		assertThat(distribution).isNotNull();
@@ -850,6 +862,128 @@ public class DietasRestControllerTest {
 		assertThat(actions).contains("title='Imprimir PDF'");
 		assertThat(actions).contains("fa-file-pdf");
 		log.info("Finishing testToStringListIncludesPrintButtonInActionsColumn");
+	}
+
+	@Test
+	public void testToStringListDietWithAlimentosReturnsCorrectLinks() throws Exception {
+		log.info("Starting testToStringListDietWithAlimentosReturnsCorrectLinks");
+
+		// Arrange - Create dieta with alimentos
+		Dieta dietaConAlimentos = new Dieta();
+		dietaConAlimentos.setId(3L);
+		dietaConAlimentos.setNombre("Dieta con Alimentos");
+		dietaConAlimentos.setIngestas(new ArrayList<>());
+
+		Ingesta ingestaConAlimentos = new Ingesta();
+		ingestaConAlimentos.setId(3L);
+		ingestaConAlimentos.setNombre("Comida");
+		ingestaConAlimentos.setDieta(dietaConAlimentos);
+		ingestaConAlimentos.setAlimentos(new ArrayList<>());
+
+		// Create alimento
+		com.nutriconsultas.alimentos.Alimento alimento = new com.nutriconsultas.alimentos.Alimento();
+		alimento.setId(100L);
+		alimento.setNombreAlimento("Manzana");
+
+		// Create AlimentoIngesta
+		AlimentoIngesta alimentoIngesta = new AlimentoIngesta();
+		alimentoIngesta.setId(1L);
+		alimentoIngesta.setName("Manzana");
+		alimentoIngesta.setAlimento(alimento);
+		alimentoIngesta.setIngesta(ingestaConAlimentos);
+		alimentoIngesta.setProteina(0.3);
+		alimentoIngesta.setLipidos(0.2);
+		alimentoIngesta.setHidratosDeCarbono(15.0);
+
+		ingestaConAlimentos.getAlimentos().add(alimentoIngesta);
+		dietaConAlimentos.getIngestas().add(ingestaConAlimentos);
+
+		// Use reflection to access protected method toStringList
+		Method toStringListMethod = DietasRestController.class.getDeclaredMethod("toStringList", Dieta.class);
+		toStringListMethod.setAccessible(true);
+
+		// Act
+		@SuppressWarnings("unchecked")
+		List<String> result = (List<String>) toStringListMethod.invoke(dietasRestController, dietaConAlimentos);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result).hasSize(8); // acciones, dieta, ingestas, dist, kcal, prot,
+										// lip, hc
+		// Index 2 is the ingestas column - should only contain ingesta names
+		String ingestas = result.get(2);
+		assertThat(ingestas).isNotNull();
+		assertThat(ingestas).contains("Comida");
+		assertThat(ingestas).doesNotContain("/admin/alimentos/100");
+		assertThat(ingestas).doesNotContain("fa-apple-alt");
+		assertThat(ingestas).doesNotContain("Ver alimento: Manzana");
+		log.info("Finishing testToStringListDietWithAlimentosReturnsCorrectLinks");
+	}
+
+	@Test
+	public void testToStringListDietWithBothPlatillosAndAlimentosReturnsBothLinks() throws Exception {
+		log.info("Starting testToStringListDietWithBothPlatillosAndAlimentosReturnsBothLinks");
+
+		// Arrange - Create dieta with both platillos and alimentos
+		Dieta dietaMixta = new Dieta();
+		dietaMixta.setId(4L);
+		dietaMixta.setNombre("Dieta Mixta");
+		dietaMixta.setIngestas(new ArrayList<>());
+
+		Ingesta ingestaMixta = new Ingesta();
+		ingestaMixta.setId(4L);
+		ingestaMixta.setNombre("Cena");
+		ingestaMixta.setDieta(dietaMixta);
+		ingestaMixta.setPlatillos(new ArrayList<>());
+		ingestaMixta.setAlimentos(new ArrayList<>());
+
+		// Add platillo
+		PlatilloIngesta platilloIngestaMixta = new PlatilloIngesta();
+		platilloIngestaMixta.setId(2L);
+		platilloIngestaMixta.setName("Platillo Mixto");
+		platilloIngestaMixta.setProteina(20.0);
+		platilloIngestaMixta.setLipidos(10.0);
+		platilloIngestaMixta.setHidratosDeCarbono(30.0);
+		platilloIngestaMixta.setIngesta(ingestaMixta);
+		ingestaMixta.getPlatillos().add(platilloIngestaMixta);
+
+		// Add alimento
+		com.nutriconsultas.alimentos.Alimento alimentoMixto = new com.nutriconsultas.alimentos.Alimento();
+		alimentoMixto.setId(200L);
+		alimentoMixto.setNombreAlimento("Pera");
+
+		AlimentoIngesta alimentoIngestaMixto = new AlimentoIngesta();
+		alimentoIngestaMixto.setId(2L);
+		alimentoIngestaMixto.setName("Pera");
+		alimentoIngestaMixto.setAlimento(alimentoMixto);
+		alimentoIngestaMixto.setIngesta(ingestaMixta);
+		alimentoIngestaMixto.setProteina(0.5);
+		alimentoIngestaMixto.setLipidos(0.3);
+		alimentoIngestaMixto.setHidratosDeCarbono(12.0);
+
+		ingestaMixta.getAlimentos().add(alimentoIngestaMixto);
+		dietaMixta.getIngestas().add(ingestaMixta);
+
+		// Use reflection to access protected method toStringList
+		Method toStringListMethod = DietasRestController.class.getDeclaredMethod("toStringList", Dieta.class);
+		toStringListMethod.setAccessible(true);
+
+		// Act
+		@SuppressWarnings("unchecked")
+		List<String> result = (List<String>) toStringListMethod.invoke(dietasRestController, dietaMixta);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result).hasSize(8);
+		// Index 2 is the ingestas column - should only contain ingesta names
+		String ingestas = result.get(2);
+		assertThat(ingestas).isNotNull();
+		assertThat(ingestas).contains("Cena");
+		assertThat(ingestas).doesNotContain("/admin/platillos");
+		assertThat(ingestas).doesNotContain("fa-utensils");
+		assertThat(ingestas).doesNotContain("/admin/alimentos/200");
+		assertThat(ingestas).doesNotContain("fa-apple-alt");
+		log.info("Finishing testToStringListDietWithBothPlatillosAndAlimentosReturnsBothLinks");
 	}
 
 }

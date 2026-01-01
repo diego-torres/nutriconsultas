@@ -545,4 +545,149 @@ public class DietaControllerTest {
 		log.info("Finishing testPrintDietaNotFound");
 	}
 
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testUpdatePlatilloIngestaSuccess() throws Exception {
+		log.info("Starting testUpdatePlatilloIngestaSuccess");
+
+		// Create platillo ingesta with initial portions
+		PlatilloIngesta platilloIngesta = new PlatilloIngesta();
+		platilloIngesta.setId(1L);
+		platilloIngesta.setName("Platillo de prueba");
+		platilloIngesta.setPortions(1);
+		platilloIngesta.setEnergia(250);
+		platilloIngesta.setProteina(15.0);
+		platilloIngesta.setLipidos(8.0);
+		platilloIngesta.setHidratosDeCarbono(30.0);
+		platilloIngesta.setIngesta(ingesta);
+
+		ingesta.getPlatillos().add(platilloIngesta);
+
+		// Perform POST request to update portions
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/platillos/1/update")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("porciones", "2")
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
+
+		// Verify that dietaService methods were called
+		verify(dietaService, times(1)).getDieta(1L);
+		verify(dietaService, times(1)).saveDieta(any(Dieta.class));
+
+		log.info("Finishing testUpdatePlatilloIngestaSuccess");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testUpdatePlatilloIngestaNotFound() throws Exception {
+		log.info("Starting testUpdatePlatilloIngestaNotFound");
+
+		// Perform POST request with non-existent platillo ingesta ID
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/platillos/999/update")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("porciones", "2")
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
+
+		// Verify that dietaService.getDieta was called but saveDieta was not
+		verify(dietaService, times(1)).getDieta(1L);
+		verify(dietaService, never()).saveDieta(any(Dieta.class));
+
+		log.info("Finishing testUpdatePlatilloIngestaNotFound");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testUpdateAlimentoIngestaSuccess() throws Exception {
+		log.info("Starting testUpdateAlimentoIngestaSuccess");
+
+		// Create alimento ingesta with initial portions
+		AlimentoIngesta alimentoIngesta = new AlimentoIngesta();
+		alimentoIngesta.setId(1L);
+		alimentoIngesta.setName("Pollo");
+		alimentoIngesta.setPortions(1);
+		alimentoIngesta.setEnergia(200);
+		alimentoIngesta.setProteina(25.0);
+		alimentoIngesta.setLipidos(10.0);
+		alimentoIngesta.setHidratosDeCarbono(0.0);
+		alimentoIngesta.setAlimento(alimento);
+		alimentoIngesta.setIngesta(ingesta);
+
+		ingesta.setAlimentos(new ArrayList<>());
+		ingesta.getAlimentos().add(alimentoIngesta);
+
+		// Perform POST request to update portions
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/alimentos/1/update")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("porciones", "2")
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
+
+		// Verify that dietaService methods were called
+		verify(dietaService, times(1)).getDieta(1L);
+		verify(dietaService, times(1)).saveDieta(any(Dieta.class));
+
+		log.info("Finishing testUpdateAlimentoIngestaSuccess");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testUpdateAlimentoIngestaNotFound() throws Exception {
+		log.info("Starting testUpdateAlimentoIngestaNotFound");
+
+		// Perform POST request with non-existent alimento ingesta ID
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/alimentos/999/update")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("porciones", "2")
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
+
+		// Verify that dietaService.getDieta was called but saveDieta was not
+		verify(dietaService, times(1)).getDieta(1L);
+		verify(dietaService, never()).saveDieta(any(Dieta.class));
+
+		log.info("Finishing testUpdateAlimentoIngestaNotFound");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testUpdateAlimentoIngestaWithoutAlimentoReference() throws Exception {
+		log.info("Starting testUpdateAlimentoIngestaWithoutAlimentoReference");
+
+		// Create alimento ingesta without alimento reference
+		AlimentoIngesta alimentoIngesta = new AlimentoIngesta();
+		alimentoIngesta.setId(2L);
+		alimentoIngesta.setName("Alimento sin referencia");
+		alimentoIngesta.setPortions(1);
+		alimentoIngesta.setIngesta(ingesta);
+		// alimentoIngesta.setAlimento(null); // No alimento reference
+
+		ingesta.setAlimentos(new ArrayList<>());
+		ingesta.getAlimentos().add(alimentoIngesta);
+
+		// Perform POST request to update portions
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/alimentos/2/update")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("porciones", "2")
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
+
+		// Verify that dietaService.getDieta was called but saveDieta was not
+		// (because alimento reference is null)
+		verify(dietaService, times(1)).getDieta(1L);
+		verify(dietaService, never()).saveDieta(any(Dieta.class));
+
+		log.info("Finishing testUpdateAlimentoIngestaWithoutAlimentoReference");
+	}
+
 }

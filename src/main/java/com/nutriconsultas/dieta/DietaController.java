@@ -231,6 +231,221 @@ public class DietaController extends AbstractAuthorizedController {
 		return "redirect:/admin/dietas/" + id;
 	}
 
+	@PostMapping(path = "/admin/dietas/{id}/platillos/{platilloIngestaId}/update")
+	public String updatePlatilloIngesta(@PathVariable @NonNull Long id, @PathVariable @NonNull Long platilloIngestaId,
+			@RequestParam @NonNull Integer porciones) {
+		LOGGER.debug("Actualizar platillo ingesta {} con {} porciones en dieta {}", platilloIngestaId, porciones, id);
+		Dieta dieta = dietaService.getDieta(id);
+		if (dieta != null) {
+			dieta.getIngestas()
+				.stream()
+				.flatMap(ingesta -> ingesta.getPlatillos().stream())
+				.filter(platillo -> platillo.getId().equals(platilloIngestaId))
+				.findFirst()
+				.ifPresent(platilloIngesta -> {
+					Integer oldPortions = platilloIngesta.getPortions() != null ? platilloIngesta.getPortions() : 1;
+					Integer newPortions = porciones != null ? porciones : 1;
+					double ratio = newPortions.doubleValue() / oldPortions.doubleValue();
+
+					// Update portions
+					platilloIngesta.setPortions(newPortions);
+
+					// Recalculate nutritional values based on portion ratio
+					if (platilloIngesta.getEnergia() != null) {
+						platilloIngesta.setEnergia((int) (platilloIngesta.getEnergia() * ratio));
+					}
+					if (platilloIngesta.getProteina() != null) {
+						platilloIngesta.setProteina(platilloIngesta.getProteina() * ratio);
+					}
+					if (platilloIngesta.getLipidos() != null) {
+						platilloIngesta.setLipidos(platilloIngesta.getLipidos() * ratio);
+					}
+					if (platilloIngesta.getHidratosDeCarbono() != null) {
+						platilloIngesta.setHidratosDeCarbono(platilloIngesta.getHidratosDeCarbono() * ratio);
+					}
+					if (platilloIngesta.getPesoBrutoRedondeado() != null) {
+						platilloIngesta.setPesoBrutoRedondeado((int) (platilloIngesta.getPesoBrutoRedondeado() * ratio));
+					}
+					if (platilloIngesta.getPesoNeto() != null) {
+						platilloIngesta.setPesoNeto((int) (platilloIngesta.getPesoNeto() * ratio));
+					}
+					// Update other nutritional values similarly
+					updatePlatilloIngestaNutritionalValues(platilloIngesta, ratio);
+
+					dietaService.saveDieta(dieta);
+				});
+		}
+		return "redirect:/admin/dietas/" + id;
+	}
+
+	@PostMapping(path = "/admin/dietas/{id}/alimentos/{alimentoIngestaId}/update")
+	public String updateAlimentoIngesta(@PathVariable @NonNull Long id, @PathVariable @NonNull Long alimentoIngestaId,
+			@RequestParam @NonNull Integer porciones) {
+		LOGGER.debug("Actualizar alimento ingesta {} con {} porciones en dieta {}", alimentoIngestaId, porciones, id);
+		Dieta dieta = dietaService.getDieta(id);
+		if (dieta != null) {
+			dieta.getIngestas()
+				.stream()
+				.flatMap(ingesta -> ingesta.getAlimentos().stream())
+				.filter(alimento -> alimento.getId().equals(alimentoIngestaId))
+				.findFirst()
+				.ifPresent(alimentoIngesta -> {
+					if (alimentoIngesta.getAlimento() != null) {
+						// Recalculate from original alimento
+						Alimento alimento = alimentoIngesta.getAlimento();
+						Integer newPortions = porciones != null ? porciones : 1;
+						alimentoIngesta.setPortions(newPortions);
+
+						// Recalculate nutritional values from original alimento
+						if (alimento.getEnergia() != null) {
+							alimentoIngesta.setEnergia((int) (alimento.getEnergia() * newPortions));
+						}
+						if (alimento.getProteina() != null) {
+							alimentoIngesta.setProteina(alimento.getProteina() * newPortions);
+						}
+						if (alimento.getLipidos() != null) {
+							alimentoIngesta.setLipidos(alimento.getLipidos() * newPortions);
+						}
+						if (alimento.getHidratosDeCarbono() != null) {
+							alimentoIngesta.setHidratosDeCarbono(alimento.getHidratosDeCarbono() * newPortions);
+						}
+						if (alimento.getPesoBrutoRedondeado() != null) {
+							alimentoIngesta.setPesoBrutoRedondeado(alimento.getPesoBrutoRedondeado() * newPortions);
+						}
+						if (alimento.getPesoNeto() != null) {
+							alimentoIngesta.setPesoNeto(alimento.getPesoNeto() * newPortions);
+						}
+						// Update other nutritional values
+						updateAlimentoIngestaNutritionalValues(alimentoIngesta, alimento, newPortions);
+
+						dietaService.saveDieta(dieta);
+					}
+				});
+		}
+		return "redirect:/admin/dietas/" + id;
+	}
+
+	private void updatePlatilloIngestaNutritionalValues(PlatilloIngesta platilloIngesta, double ratio) {
+		if (platilloIngesta.getFibra() != null) {
+			platilloIngesta.setFibra(platilloIngesta.getFibra() * ratio);
+		}
+		if (platilloIngesta.getVitA() != null) {
+			platilloIngesta.setVitA(platilloIngesta.getVitA() * ratio);
+		}
+		if (platilloIngesta.getAcidoAscorbico() != null) {
+			platilloIngesta.setAcidoAscorbico(platilloIngesta.getAcidoAscorbico() * ratio);
+		}
+		if (platilloIngesta.getHierroNoHem() != null) {
+			platilloIngesta.setHierroNoHem(platilloIngesta.getHierroNoHem() * ratio);
+		}
+		if (platilloIngesta.getPotasio() != null) {
+			platilloIngesta.setPotasio(platilloIngesta.getPotasio() * ratio);
+		}
+		if (platilloIngesta.getIndiceGlicemico() != null) {
+			platilloIngesta.setIndiceGlicemico(platilloIngesta.getIndiceGlicemico() * ratio);
+		}
+		if (platilloIngesta.getCargaGlicemica() != null) {
+			platilloIngesta.setCargaGlicemica(platilloIngesta.getCargaGlicemica() * ratio);
+		}
+		if (platilloIngesta.getAcidoFolico() != null) {
+			platilloIngesta.setAcidoFolico(platilloIngesta.getAcidoFolico() * ratio);
+		}
+		if (platilloIngesta.getCalcio() != null) {
+			platilloIngesta.setCalcio(platilloIngesta.getCalcio() * ratio);
+		}
+		if (platilloIngesta.getHierro() != null) {
+			platilloIngesta.setHierro(platilloIngesta.getHierro() * ratio);
+		}
+		if (platilloIngesta.getSodio() != null) {
+			platilloIngesta.setSodio(platilloIngesta.getSodio() * ratio);
+		}
+		if (platilloIngesta.getAzucarPorEquivalente() != null) {
+			platilloIngesta.setAzucarPorEquivalente(platilloIngesta.getAzucarPorEquivalente() * ratio);
+		}
+		if (platilloIngesta.getSelenio() != null) {
+			platilloIngesta.setSelenio(platilloIngesta.getSelenio() * ratio);
+		}
+		if (platilloIngesta.getFosforo() != null) {
+			platilloIngesta.setFosforo(platilloIngesta.getFosforo() * ratio);
+		}
+		if (platilloIngesta.getColesterol() != null) {
+			platilloIngesta.setColesterol(platilloIngesta.getColesterol() * ratio);
+		}
+		if (platilloIngesta.getAgSaturados() != null) {
+			platilloIngesta.setAgSaturados(platilloIngesta.getAgSaturados() * ratio);
+		}
+		if (platilloIngesta.getAgMonoinsaturados() != null) {
+			platilloIngesta.setAgMonoinsaturados(platilloIngesta.getAgMonoinsaturados() * ratio);
+		}
+		if (platilloIngesta.getAgPoliinsaturados() != null) {
+			platilloIngesta.setAgPoliinsaturados(platilloIngesta.getAgPoliinsaturados() * ratio);
+		}
+		if (platilloIngesta.getEtanol() != null) {
+			platilloIngesta.setEtanol(platilloIngesta.getEtanol() * ratio);
+		}
+	}
+
+	private void updateAlimentoIngestaNutritionalValues(AlimentoIngesta alimentoIngesta, Alimento alimento,
+			Integer portions) {
+		if (alimento.getFibra() != null) {
+			alimentoIngesta.setFibra(alimento.getFibra() * portions);
+		}
+		if (alimento.getVitA() != null) {
+			alimentoIngesta.setVitA(alimento.getVitA() * portions);
+		}
+		if (alimento.getAcidoAscorbico() != null) {
+			alimentoIngesta.setAcidoAscorbico(alimento.getAcidoAscorbico() * portions);
+		}
+		if (alimento.getHierroNoHem() != null) {
+			alimentoIngesta.setHierroNoHem(alimento.getHierroNoHem() * portions);
+		}
+		if (alimento.getPotasio() != null) {
+			alimentoIngesta.setPotasio(alimento.getPotasio() * portions);
+		}
+		if (alimento.getIndiceGlicemico() != null) {
+			alimentoIngesta.setIndiceGlicemico(alimento.getIndiceGlicemico() * portions);
+		}
+		if (alimento.getCargaGlicemica() != null) {
+			alimentoIngesta.setCargaGlicemica(alimento.getCargaGlicemica() * portions);
+		}
+		if (alimento.getAcidoFolico() != null) {
+			alimentoIngesta.setAcidoFolico(alimento.getAcidoFolico() * portions);
+		}
+		if (alimento.getCalcio() != null) {
+			alimentoIngesta.setCalcio(alimento.getCalcio() * portions);
+		}
+		if (alimento.getHierro() != null) {
+			alimentoIngesta.setHierro(alimento.getHierro() * portions);
+		}
+		if (alimento.getSodio() != null) {
+			alimentoIngesta.setSodio(alimento.getSodio() * portions);
+		}
+		if (alimento.getAzucarPorEquivalente() != null) {
+			alimentoIngesta.setAzucarPorEquivalente(alimento.getAzucarPorEquivalente() * portions);
+		}
+		if (alimento.getSelenio() != null) {
+			alimentoIngesta.setSelenio(alimento.getSelenio() * portions);
+		}
+		if (alimento.getFosforo() != null) {
+			alimentoIngesta.setFosforo(alimento.getFosforo() * portions);
+		}
+		if (alimento.getColesterol() != null) {
+			alimentoIngesta.setColesterol(alimento.getColesterol() * portions);
+		}
+		if (alimento.getAgSaturados() != null) {
+			alimentoIngesta.setAgSaturados(alimento.getAgSaturados() * portions);
+		}
+		if (alimento.getAgMonoinsaturados() != null) {
+			alimentoIngesta.setAgMonoinsaturados(alimento.getAgMonoinsaturados() * portions);
+		}
+		if (alimento.getAgPoliinsaturados() != null) {
+			alimentoIngesta.setAgPoliinsaturados(alimento.getAgPoliinsaturados() * portions);
+		}
+		if (alimento.getEtanol() != null) {
+			alimentoIngesta.setEtanol(alimento.getEtanol() * portions);
+		}
+	}
+
 	private AlimentoIngesta mapAlimentoIngesta(Alimento alimento, AlimentoFormModel alimentoModel) {
 		AlimentoIngesta alimentoIngesta = new AlimentoIngesta();
 		// map each field from alimento into alimento ingesta
