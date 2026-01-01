@@ -30,6 +30,8 @@ import org.springframework.validation.BindingResult;
 import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventService;
 import com.nutriconsultas.calendar.EventStatus;
+import com.nutriconsultas.clinical.exam.ClinicalExam;
+import com.nutriconsultas.clinical.exam.ClinicalExamService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,6 +61,9 @@ public class PacienteControllerTest {
 
 	@Mock
 	private com.nutriconsultas.dieta.DietaRepository dietaRepository;
+
+	@Mock
+	private ClinicalExamService clinicalExamService;
 
 	@Mock
 	private BindingResult bindingResult;
@@ -1033,6 +1038,256 @@ public class PacienteControllerTest {
 		assertThatThrownBy(() -> controller.dietasPaciente(1L, model)).isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado paciente con folio");
 		log.info("finished testDietasPacienteThrowsExceptionWhenPacienteNotFound");
+	}
+
+	@Test
+	public void testClinicosPaciente() {
+		log.info("starting testClinicosPaciente");
+		// Arrange
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.clinicosPaciente(1L, model);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/clinicos");
+		verify(model).addAttribute("activeMenu", "historial");
+		verify(model).addAttribute("paciente", paciente);
+		verify(model).addAttribute(eq("clinicos"), any(ClinicalExam.class));
+		log.info("finished testClinicosPaciente");
+	}
+
+	@Test
+	public void testClinicosPacienteThrowsExceptionWhenPacienteNotFound() {
+		log.info("starting testClinicosPacienteThrowsExceptionWhenPacienteNotFound");
+		// Arrange
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act & Assert
+		assertThatThrownBy(() -> controller.clinicosPaciente(1L, model)).isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("No se ha encontrado paciente con folio");
+		log.info("finished testClinicosPacienteThrowsExceptionWhenPacienteNotFound");
+	}
+
+	@Test
+	public void testAgregarClinicosPacienteCalculatesBodyFat() {
+		log.info("starting testAgregarClinicosPacienteCalculatesBodyFat");
+		// Arrange
+		final ClinicalExam exam = new ClinicalExam();
+		exam.setPeso(70.0);
+		exam.setEstatura(1.75);
+		exam.setExamDateTime(new Date());
+		exam.setTitle("Examen Clínico");
+
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(clinicalExamService.save(Objects.requireNonNull(exam))).thenReturn(exam);
+		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
+				any(String.class)))
+			.thenReturn(15.5);
+
+		// Act
+		final String result = controller.agregarClinicosPaciente(1L, Objects.requireNonNull(exam), bindingResult, null);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result).contains("redirect:/admin/pacientes/1/historial");
+		verify(pacienteRepository).findById(1L);
+		verify(clinicalExamService).save(any(ClinicalExam.class));
+		verify(bodyFatCalculatorService).calculateBodyFatPercentage(any(Double.class), any(Integer.class),
+				any(String.class));
+		// Verify that exam has IMC calculated
+		assertThat(exam.getImc()).isNotNull();
+		assertThat(exam.getNivelPeso()).isNotNull();
+		// Verify that body fat was calculated
+		assertThat(exam.getIndiceGrasaCorporal()).isNotNull();
+		assertThat(exam.getIndiceGrasaCorporal()).isEqualTo(15.5);
+		// Verify title is set to "Examen Clínico"
+		assertThat(exam.getTitle()).isEqualTo("Examen Clínico");
+		log.info("finished testAgregarClinicosPacienteCalculatesBodyFat");
+	}
+
+	@Test
+	public void testAgregarClinicosPacienteWithoutDob() {
+		log.info("starting testAgregarClinicosPacienteWithoutDob");
+		// Arrange
+		paciente.setDob(null);
+		final ClinicalExam exam = new ClinicalExam();
+		exam.setPeso(70.0);
+		exam.setEstatura(1.75);
+		exam.setExamDateTime(new Date());
+		exam.setTitle("Examen Clínico");
+
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(clinicalExamService.save(Objects.requireNonNull(exam))).thenReturn(exam);
+
+		// Act
+		final String result = controller.agregarClinicosPaciente(1L, Objects.requireNonNull(exam), bindingResult, null);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result).contains("redirect:/admin/pacientes/1/historial");
+		verify(pacienteRepository).findById(1L);
+		verify(clinicalExamService).save(any(ClinicalExam.class));
+		// Body fat should not be calculated if DOB is missing
+		verify(bodyFatCalculatorService, org.mockito.Mockito.never()).calculateBodyFatPercentage(any(Double.class),
+				any(Integer.class), any(String.class));
+		assertThat(exam.getIndiceGrasaCorporal()).isNull();
+		log.info("finished testAgregarClinicosPacienteWithoutDob");
+	}
+
+	@Test
+	public void testAgregarClinicosPacienteUpdatesPatientWeight() {
+		log.info("starting testAgregarClinicosPacienteUpdatesPatientWeight");
+		// Arrange
+		final ClinicalExam exam = new ClinicalExam();
+		exam.setPeso(70.0);
+		exam.setEstatura(1.75);
+		exam.setExamDateTime(new Date());
+		exam.setTitle("Examen Clínico");
+
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(clinicalExamService.save(any(ClinicalExam.class))).thenReturn(exam);
+		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
+		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
+				any(String.class)))
+			.thenReturn(15.5);
+
+		// Act
+		final String result = controller.agregarClinicosPaciente(1L, exam, bindingResult, null);
+
+		// Assert
+		assertThat(result).isNotNull();
+		verify(pacienteRepository).save(Objects.requireNonNull(paciente));
+		// Verify patient weight was updated
+		assertThat(paciente.getPeso()).isEqualTo(70.0);
+		assertThat(paciente.getEstatura()).isEqualTo(1.75);
+		assertThat(paciente.getImc()).isNotNull();
+		assertThat(paciente.getNivelPeso()).isNotNull();
+		log.info("finished testAgregarClinicosPacienteUpdatesPatientWeight");
+	}
+
+	@Test
+	public void testAgregarClinicosPacienteSetsDefaultValues() {
+		log.info("starting testAgregarClinicosPacienteSetsDefaultValues");
+		// Arrange
+		final ClinicalExam exam = new ClinicalExam();
+		exam.setPeso(70.0);
+		exam.setEstatura(1.75);
+		exam.setExamDateTime(new Date());
+		// Title is null - should be set to "Examen Clínico"
+		exam.setTitle(null);
+
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(clinicalExamService.save(any(ClinicalExam.class))).thenReturn(exam);
+		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
+		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
+				any(String.class)))
+			.thenReturn(15.5);
+
+		// Act
+		final String result = controller.agregarClinicosPaciente(1L, exam, bindingResult, null);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result).contains("redirect:/admin/pacientes/1/historial");
+		// Verify default values were set
+		assertThat(exam.getTitle()).isEqualTo("Examen Clínico");
+		log.info("finished testAgregarClinicosPacienteSetsDefaultValues");
+	}
+
+	@Test
+	public void testAgregarClinicosPacienteThrowsExceptionWhenPacienteNotFound() {
+		log.info("starting testAgregarClinicosPacienteThrowsExceptionWhenPacienteNotFound");
+		// Arrange
+		final ClinicalExam exam = new ClinicalExam();
+		exam.setPeso(70.0);
+		exam.setEstatura(1.75);
+		exam.setExamDateTime(new Date());
+		exam.setTitle("Examen Clínico");
+
+		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+
+		// Act & Assert
+		assertThatThrownBy(() -> controller.agregarClinicosPaciente(1L, exam, bindingResult, null))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("No se ha encontrado paciente con folio");
+		verify(pacienteRepository).findById(1L);
+		verify(clinicalExamService, org.mockito.Mockito.never()).save(any(ClinicalExam.class));
+		log.info("finished testAgregarClinicosPacienteThrowsExceptionWhenPacienteNotFound");
+	}
+
+	@Test
+	public void testVerExamenClinico() {
+		log.info("starting testVerExamenClinico");
+		// Arrange
+		final ClinicalExam exam = new ClinicalExam();
+		exam.setId(1L);
+		exam.setPaciente(paciente);
+		exam.setTitle("Examen Clínico");
+		exam.setExamDateTime(new Date());
+		exam.setPeso(70.0);
+		exam.setImc(22.86);
+		exam.setGlucosa(95.0);
+
+		when(clinicalExamService.findById(1L)).thenReturn(exam);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.verExamenClinico(1L, 1L, model);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/ver-examen-clinico");
+		verify(model).addAttribute("activeMenu", "historial");
+		verify(model).addAttribute("exam", exam);
+		verify(model).addAttribute("paciente", paciente);
+		verify(clinicalExamService).findById(1L);
+		log.info("finished testVerExamenClinico");
+	}
+
+	@Test
+	public void testVerExamenClinicoThrowsExceptionWhenExamNotFound() {
+		log.info("starting testVerExamenClinicoThrowsExceptionWhenExamNotFound");
+		// Arrange
+		when(clinicalExamService.findById(999L)).thenReturn(null);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act & Assert
+		assertThatThrownBy(() -> controller.verExamenClinico(1L, 999L, model))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("No se ha encontrado examen clínico con id");
+		verify(clinicalExamService).findById(999L);
+		log.info("finished testVerExamenClinicoThrowsExceptionWhenExamNotFound");
+	}
+
+	@Test
+	public void testVerExamenClinicoThrowsExceptionWhenWrongPaciente() {
+		log.info("starting testVerExamenClinicoThrowsExceptionWhenWrongPaciente");
+		// Arrange
+		final Paciente otherPaciente = new Paciente();
+		otherPaciente.setId(2L);
+		otherPaciente.setName("Other Paciente");
+
+		final ClinicalExam exam = new ClinicalExam();
+		exam.setId(1L);
+		exam.setPaciente(otherPaciente);
+		exam.setTitle("Examen Clínico");
+
+		when(clinicalExamService.findById(1L)).thenReturn(exam);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act & Assert
+		assertThatThrownBy(() -> controller.verExamenClinico(1L, 1L, model))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("El examen clínico no pertenece al paciente especificado");
+		verify(clinicalExamService).findById(1L);
+		log.info("finished testVerExamenClinicoThrowsExceptionWhenWrongPaciente");
 	}
 
 }

@@ -343,94 +343,20 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 	public ResponseEntity<Map<String, Object>> saveEvent(@RequestBody final Map<String, Object> eventData) {
 		log.debug("Saving new calendar event: {}", eventData);
 		try {
-			final CalendarEvent event = new CalendarEvent();
-			event.setTitle((String) eventData.get("title"));
-			if (eventData.get("description") != null) {
-				event.setDescription((String) eventData.get("description"));
-			}
-			if (eventData.get("durationMinutes") != null) {
-				event.setDurationMinutes(Integer.parseInt(eventData.get("durationMinutes").toString()));
-			}
-			else {
-				event.setDurationMinutes(60);
-			}
-			if (eventData.get("status") != null) {
-				event.setStatus(EventStatus.valueOf((String) eventData.get("status")));
-			}
-			else {
-				event.setStatus(EventStatus.SCHEDULED);
-			}
-			if (eventData.get("eventDateTime") != null) {
-				final String dateTimeStr = (String) eventData.get("eventDateTime");
-				Date parsedDate = null;
-				// Try parsing with different formats
-				final String[] formats = { "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm", "yyyy-MM-dd HH:mm:ss",
-						"yyyy-MM-dd HH:mm" };
-				for (final String format : formats) {
-					try {
-						final DateFormat dateFormat = new SimpleDateFormat(format);
-						parsedDate = dateFormat.parse(dateTimeStr);
-						break;
-					}
-					catch (final java.text.ParseException e) {
-						// Try next format
-						continue;
-					}
-				}
-				if (parsedDate == null) {
-					log.error("Error parsing eventDateTime: {}", dateTimeStr);
-					final Map<String, Object> errorResponse = new HashMap<>();
-					errorResponse.put("success", false);
-					errorResponse.put("error", "Invalid date format: " + dateTimeStr);
-					return ResponseEntity.badRequest().body(errorResponse);
-				}
-				event.setEventDateTime(parsedDate);
-			}
-			if (eventData.get("pacienteId") != null) {
-				final Long pacienteId = Long.parseLong(eventData.get("pacienteId").toString());
-				final Paciente paciente = pacienteRepository.findById(pacienteId)
-					.orElseThrow(
-							() -> new IllegalArgumentException("No se ha encontrado paciente con id " + pacienteId));
-				event.setPaciente(paciente);
-			}
-			if (eventData.get("peso") != null) {
-				event.setPeso(Double.parseDouble(eventData.get("peso").toString()));
-			}
-			if (eventData.get("estatura") != null) {
-				event.setEstatura(Double.parseDouble(eventData.get("estatura").toString()));
-			}
-			if (eventData.get("imc") != null) {
-				event.setImc(Double.parseDouble(eventData.get("imc").toString()));
-			}
-			if (eventData.get("indiceGrasaCorporal") != null) {
-				event.setIndiceGrasaCorporal(Double.parseDouble(eventData.get("indiceGrasaCorporal").toString()));
-			}
-			if (eventData.get("nivelPeso") != null) {
-				event.setNivelPeso(com.nutriconsultas.paciente.NivelPeso.valueOf((String) eventData.get("nivelPeso")));
-			}
-			if (eventData.get("sistolica") != null) {
-				event.setSistolica(Integer.parseInt(eventData.get("sistolica").toString()));
-			}
-			if (eventData.get("diastolica") != null) {
-				event.setDiastolica(Integer.parseInt(eventData.get("diastolica").toString()));
-			}
-			if (eventData.get("pulso") != null) {
-				event.setPulso(Integer.parseInt(eventData.get("pulso").toString()));
-			}
-			if (eventData.get("indiceGlucemico") != null) {
-				event.setIndiceGlucemico(Integer.parseInt(eventData.get("indiceGlucemico").toString()));
-			}
-			if (eventData.get("spo2") != null) {
-				event.setSpo2(Double.parseDouble(eventData.get("spo2").toString()));
-			}
-			if (eventData.get("temperatura") != null) {
-				event.setTemperatura(Double.parseDouble(eventData.get("temperatura").toString()));
-			}
+			final CalendarEvent event = createEventFromData(eventData);
+			setBiochemicalFields(event, eventData);
 			final CalendarEvent savedEvent = service.save(event);
 			final Map<String, Object> response = new HashMap<>();
 			response.put("success", true);
 			response.put("event", toCalendarEventMap(savedEvent));
 			return ResponseEntity.ok(response);
+		}
+		catch (final IllegalArgumentException e) {
+			log.error("Error saving calendar event", e);
+			final Map<String, Object> errorResponse = new HashMap<>();
+			errorResponse.put("success", false);
+			errorResponse.put("error", e.getMessage());
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
 		}
 		catch (final Exception e) {
 			log.error("Error saving calendar event", e);
@@ -438,6 +364,90 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			errorResponse.put("success", false);
 			errorResponse.put("error", e.getMessage());
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+		}
+	}
+
+	@NonNull
+	private CalendarEvent createEventFromData(final Map<String, Object> eventData) {
+		final CalendarEvent event = new CalendarEvent();
+		event.setTitle((String) eventData.get("title"));
+		if (eventData.get("description") != null) {
+			event.setDescription((String) eventData.get("description"));
+		}
+		if (eventData.get("durationMinutes") != null) {
+			event.setDurationMinutes(Integer.parseInt(eventData.get("durationMinutes").toString()));
+		}
+		else {
+			event.setDurationMinutes(60);
+		}
+		if (eventData.get("status") != null) {
+			event.setStatus(EventStatus.valueOf((String) eventData.get("status")));
+		}
+		else {
+			event.setStatus(EventStatus.SCHEDULED);
+		}
+		if (eventData.get("eventDateTime") != null) {
+			final Date parsedDate = parseEventDateTime((String) eventData.get("eventDateTime"));
+			if (parsedDate == null) {
+				throw new IllegalArgumentException("Invalid date format: " + eventData.get("eventDateTime"));
+			}
+			event.setEventDateTime(parsedDate);
+		}
+		if (eventData.get("pacienteId") != null) {
+			final Long pacienteId = Long.parseLong(eventData.get("pacienteId").toString());
+			final Paciente paciente = pacienteRepository.findById(pacienteId)
+				.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con id " + pacienteId));
+			event.setPaciente(paciente);
+		}
+		return event;
+	}
+
+	private Date parseEventDateTime(final String dateTimeStr) {
+		final String[] formats = { "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm", "yyyy-MM-dd HH:mm:ss",
+				"yyyy-MM-dd HH:mm" };
+		for (final String format : formats) {
+			try {
+				final DateFormat dateFormat = new SimpleDateFormat(format);
+				return dateFormat.parse(dateTimeStr);
+			}
+			catch (final java.text.ParseException e) {
+				// Try next format
+				continue;
+			}
+		}
+		log.error("Error parsing eventDateTime: {}", dateTimeStr);
+		return null;
+	}
+
+	private void setBiochemicalFields(final CalendarEvent event, final Map<String, Object> eventData) {
+		// Vital signs and basic measurements only (biochemical fields belong to
+		// ClinicalExam)
+		setDoubleField(eventData, "peso", event::setPeso);
+		setDoubleField(eventData, "estatura", event::setEstatura);
+		setDoubleField(eventData, "imc", event::setImc);
+		setDoubleField(eventData, "indiceGrasaCorporal", event::setIndiceGrasaCorporal);
+		setIntegerField(eventData, "sistolica", event::setSistolica);
+		setIntegerField(eventData, "diastolica", event::setDiastolica);
+		setIntegerField(eventData, "pulso", event::setPulso);
+		setIntegerField(eventData, "indiceGlucemico", event::setIndiceGlucemico);
+		setDoubleField(eventData, "spo2", event::setSpo2);
+		setDoubleField(eventData, "temperatura", event::setTemperatura);
+		if (eventData.get("nivelPeso") != null) {
+			event.setNivelPeso(NivelPeso.valueOf((String) eventData.get("nivelPeso")));
+		}
+	}
+
+	private void setDoubleField(final Map<String, Object> eventData, final String fieldName,
+			final java.util.function.Consumer<Double> setter) {
+		if (eventData.get(fieldName) != null) {
+			setter.accept(Double.parseDouble(eventData.get(fieldName).toString()));
+		}
+	}
+
+	private void setIntegerField(final Map<String, Object> eventData, final String fieldName,
+			final java.util.function.Consumer<Integer> setter) {
+		if (eventData.get(fieldName) != null) {
+			setter.accept(Integer.parseInt(eventData.get(fieldName).toString()));
 		}
 	}
 

@@ -1382,7 +1382,7 @@ public class CalendarEventRestControllerTest {
 
 		// Assert
 		assertThat(response).isNotNull();
-		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 		final Map<String, Object> responseBody = response.getBody();
 		assertThat(responseBody).isNotNull();
 		Objects.requireNonNull(responseBody);

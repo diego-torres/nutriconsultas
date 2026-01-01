@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import jakarta.validation.Valid;
@@ -22,6 +23,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventService;
 import com.nutriconsultas.calendar.EventStatus;
+import com.nutriconsultas.clinical.exam.ClinicalExam;
+import com.nutriconsultas.clinical.exam.ClinicalExamService;
 import com.nutriconsultas.controller.AbstractAuthorizedController;
 import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.DietaRepository;
@@ -43,6 +46,9 @@ public class PacienteController extends AbstractAuthorizedController {
 
 	@Autowired
 	private CalendarEventService calendarEventService;
+
+	@Autowired
+	private ClinicalExamService clinicalExamService;
 
 	@Autowired
 	private BodyFatCalculatorService bodyFatCalculatorService;
@@ -355,100 +361,76 @@ public class PacienteController extends AbstractAuthorizedController {
 	public String agregarConsultaPaciente(@PathVariable @NonNull Long pacienteId, @Valid CalendarEvent evento,
 			BindingResult result, Model model) {
 		log.debug("Grabando consulta {}", evento);
-		Paciente paciente = pacienteRepository.findById(pacienteId)
-			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId));
+		final Paciente paciente = Objects.requireNonNull(pacienteRepository.findById(pacienteId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
+				"Paciente must not be null");
 
 		evento.setPaciente(paciente);
 
-		Double imc = null;
-		NivelPeso np = null;
-		if (evento.getPeso() != null && evento.getEstatura() != null) {
-			imc = evento.getPeso() / Math.pow(evento.getEstatura(), 2);
-			np = imc > 30.0d ? NivelPeso.SOBREPESO
-					: imc > 25.0d ? NivelPeso.ALTO : imc > 18.5d ? NivelPeso.NORMAL : NivelPeso.BAJO;
-
-			// Calcular índice de grasa corporal si hay datos del paciente
-			if (paciente.getDob() != null && paciente.getGender() != null) {
-				Integer age = calculateAge(paciente.getDob());
-				if (age != null) {
-					Double bodyFatPercentage = bodyFatCalculatorService.calculateBodyFatPercentage(imc, age,
-							paciente.getGender());
-					evento.setIndiceGrasaCorporal(bodyFatPercentage);
-				}
-			}
-		}
-		final LocalDate today = LocalDate.now();
-		final Date eventDate = evento.getEventDateTime();
-		if (eventDate != null) {
-			// Comparar solo la fecha (sin hora)
-			final LocalDate eventLocalDate = eventDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-
-			if (today.equals(eventLocalDate)) {
-				log.debug("Working on today's appointment, setting new patient weight vars");
-				if (evento.getPeso() != null) {
-					paciente.setPeso(evento.getPeso());
-				}
-				if (evento.getEstatura() != null) {
-					paciente.setEstatura(evento.getEstatura());
-				}
-				if (imc != null) {
-					paciente.setImc(imc);
-				}
-				if (np != null) {
-					paciente.setNivelPeso(np);
-				}
-				if (paciente != null) {
-					pacienteRepository.save(paciente);
-				}
-			}
-			else {
-				List<CalendarEvent> eventosPrevios = calendarEventService.findByPacienteId(pacienteId);
-				Boolean laterExists = eventosPrevios.stream()
-					.filter(e -> e.getEventDateTime() != null && e.getEventDateTime().after(eventDate))
-					.findAny()
-					.isPresent();
-				if (!laterExists) {
-					log.debug("No later evento exists, setting patient weight vars as latest date appointment");
-					if (evento.getPeso() != null) {
-						paciente.setPeso(evento.getPeso());
-					}
-					if (evento.getEstatura() != null) {
-						paciente.setEstatura(evento.getEstatura());
-					}
-					if (imc != null) {
-						paciente.setImc(imc);
-					}
-					if (np != null) {
-						paciente.setNivelPeso(np);
-					}
-					if (paciente != null) {
-						pacienteRepository.save(paciente);
-					}
-				}
-			}
-		}
-
-		if (imc != null) {
-			evento.setImc(imc);
-		}
-		if (np != null) {
-			evento.setNivelPeso(np);
-		}
-
-		// Asegurar que el evento tenga título y estado si no los tiene
-		if (evento.getTitle() == null || evento.getTitle().isBlank()) {
-			evento.setTitle("Consulta");
-		}
-		if (evento.getStatus() == null) {
-			evento.setStatus(EventStatus.COMPLETED);
-		}
-		if (evento.getDurationMinutes() == null) {
-			evento.setDurationMinutes(60);
-		}
+		final BmiCalculationResult bmiResult = calculateBmiAndBodyFat(evento, paciente);
+		updatePatientWeightIfNeeded(paciente, evento, bmiResult.getImc(), bmiResult.getNivelPeso(), pacienteId,
+				evento.getEventDateTime());
+		setEventCalculatedValues(evento, bmiResult);
+		setEventDefaultValues(evento);
 
 		log.debug("Evento lista para grabar {}", evento);
 		calendarEventService.save(evento);
 		return String.format("redirect:/admin/pacientes/%d/historial", pacienteId);
+	}
+
+	@GetMapping(path = "/admin/pacientes/{id}/clinicos")
+	public String clinicosPaciente(@PathVariable @NonNull Long id, Model model) {
+		log.debug("Cargando formulario de examen clínico para paciente {}", id);
+		Paciente paciente = pacienteRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+
+		model.addAttribute("activeMenu", "historial");
+		model.addAttribute("paciente", paciente);
+		ClinicalExam exam = new ClinicalExam();
+		exam.setExamDateTime(new Date());
+		exam.setPaciente(paciente);
+		exam.setTitle("Examen Clínico");
+		model.addAttribute("clinicos", exam);
+		return "sbadmin/pacientes/clinicos";
+	}
+
+	@PostMapping(path = "/admin/pacientes/{pacienteId}/clinicos")
+	public String agregarClinicosPaciente(@PathVariable @NonNull Long pacienteId, @Valid ClinicalExam exam,
+			BindingResult result, Model model) {
+		log.debug("Grabando examen clínico {}", exam);
+		final Paciente paciente = Objects.requireNonNull(pacienteRepository.findById(pacienteId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
+				"Paciente must not be null");
+
+		exam.setPaciente(paciente);
+
+		final BmiCalculationResult bmiResult = calculateBmiAndBodyFatForExam(exam, paciente);
+		updatePatientWeightIfNeededForExam(paciente, exam, bmiResult.getImc(), bmiResult.getNivelPeso(), pacienteId,
+				exam.getExamDateTime());
+		setExamCalculatedValues(exam, bmiResult);
+		setExamDefaultValues(exam);
+
+		log.debug("Examen clínico lista para grabar {}", exam);
+		clinicalExamService.save(exam);
+		return String.format("redirect:/admin/pacientes/%d/historial", pacienteId);
+	}
+
+	@GetMapping(path = "/admin/pacientes/{pacienteId}/examen-clinico/{examId}")
+	public String verExamenClinico(@PathVariable @NonNull final Long pacienteId,
+			@PathVariable @NonNull final Long examId, final Model model) {
+		log.debug("Cargando examen clínico {} para paciente {}", examId, pacienteId);
+		final ClinicalExam exam = clinicalExamService.findById(examId);
+		if (exam == null) {
+			throw new IllegalArgumentException("No se ha encontrado examen clínico con id " + examId);
+		}
+		if (!exam.getPaciente().getId().equals(pacienteId)) {
+			throw new IllegalArgumentException("El examen clínico no pertenece al paciente especificado");
+		}
+
+		model.addAttribute("activeMenu", "historial");
+		model.addAttribute("exam", exam);
+		model.addAttribute("paciente", exam.getPaciente());
+		return "sbadmin/pacientes/ver-examen-clinico";
 	}
 
 	@GetMapping(path = "/admin/pacientes/{id}/dietas/asignar")
@@ -648,7 +630,14 @@ public class PacienteController extends AbstractAuthorizedController {
 		if (dob == null) {
 			return null;
 		}
-		final LocalDate birthDate = dob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		LocalDate birthDate;
+		if (dob instanceof java.sql.Date) {
+			// java.sql.Date doesn't support toInstant(), convert directly
+			birthDate = ((java.sql.Date) dob).toLocalDate();
+		}
+		else {
+			birthDate = dob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		}
 		final LocalDate currentDate = LocalDate.now();
 		if (birthDate.isAfter(currentDate)) {
 			log.warn("Date of birth is in the future: {}", dob);
@@ -734,6 +723,294 @@ public class PacienteController extends AbstractAuthorizedController {
 		final Double lipidos = getTotalLipidos(dieta);
 		final Double hidratosDeCarbono = getTotalHidratosDeCarbono(dieta);
 		return proteina * 4 + lipidos * 9 + hidratosDeCarbono * 4;
+	}
+
+	/**
+	 * Record to hold BMI calculation results.
+	 */
+	private static final class BmiCalculationResult {
+
+		private final Double imc;
+
+		private final NivelPeso nivelPeso;
+
+		private final Double bodyFatPercentage;
+
+		BmiCalculationResult(final Double imc, final NivelPeso nivelPeso, final Double bodyFatPercentage) {
+			this.imc = imc;
+			this.nivelPeso = nivelPeso;
+			this.bodyFatPercentage = bodyFatPercentage;
+		}
+
+		Double getImc() {
+			return imc;
+		}
+
+		NivelPeso getNivelPeso() {
+			return nivelPeso;
+		}
+
+		@SuppressWarnings("unused")
+		Double getBodyFatPercentage() {
+			return bodyFatPercentage;
+		}
+
+	}
+
+	/**
+	 * Calculates BMI, weight level, and body fat percentage for a CalendarEvent.
+	 */
+	private BmiCalculationResult calculateBmiAndBodyFat(final CalendarEvent evento, final Paciente paciente) {
+		Double imc = null;
+		NivelPeso np = null;
+		Double bodyFatPercentage = null;
+
+		if (evento.getPeso() != null && evento.getEstatura() != null) {
+			imc = evento.getPeso() / Math.pow(evento.getEstatura(), 2);
+			np = calculateNivelPeso(imc);
+			bodyFatPercentage = calculateBodyFatPercentage(imc, paciente);
+			if (bodyFatPercentage != null) {
+				evento.setIndiceGrasaCorporal(bodyFatPercentage);
+			}
+		}
+
+		return new BmiCalculationResult(imc, np, bodyFatPercentage);
+	}
+
+	/**
+	 * Calculates BMI, weight level, and body fat percentage for a ClinicalExam.
+	 */
+	private BmiCalculationResult calculateBmiAndBodyFatForExam(final ClinicalExam exam, final Paciente paciente) {
+		Double imc = null;
+		NivelPeso np = null;
+		Double bodyFatPercentage = null;
+
+		if (exam.getPeso() != null && exam.getEstatura() != null) {
+			imc = exam.getPeso() / Math.pow(exam.getEstatura(), 2);
+			np = calculateNivelPeso(imc);
+			bodyFatPercentage = calculateBodyFatPercentage(imc, paciente);
+			if (bodyFatPercentage != null) {
+				exam.setIndiceGrasaCorporal(bodyFatPercentage);
+			}
+		}
+
+		return new BmiCalculationResult(imc, np, bodyFatPercentage);
+	}
+
+	/**
+	 * Calculates weight level (NivelPeso) based on BMI.
+	 */
+	private NivelPeso calculateNivelPeso(final Double imc) {
+		if (imc == null) {
+			return null;
+		}
+		if (imc > 30.0d) {
+			return NivelPeso.SOBREPESO;
+		}
+		if (imc > 25.0d) {
+			return NivelPeso.ALTO;
+		}
+		if (imc > 18.5d) {
+			return NivelPeso.NORMAL;
+		}
+		return NivelPeso.BAJO;
+	}
+
+	/**
+	 * Calculates body fat percentage if patient has DOB and gender.
+	 */
+	private Double calculateBodyFatPercentage(final Double imc, final Paciente paciente) {
+		if (paciente.getDob() == null || paciente.getGender() == null) {
+			if (paciente.getDob() == null) {
+				log.debug(
+						"El paciente no tiene fecha de nacimiento registrada, no se calculará el índice de grasa corporal");
+			}
+			if (paciente.getGender() == null) {
+				log.debug("El paciente no tiene género registrado, no se calculará el índice de grasa corporal");
+			}
+			return null;
+		}
+
+		final Integer age = calculateAge(paciente.getDob());
+		if (age == null) {
+			log.debug("No se pudo calcular la edad del paciente, no se calculará el índice de grasa corporal");
+			return null;
+		}
+
+		return bodyFatCalculatorService.calculateBodyFatPercentage(imc, age, paciente.getGender());
+	}
+
+	/**
+	 * Updates patient weight if the event date is today or is the latest event.
+	 */
+	private void updatePatientWeightIfNeeded(@NonNull final Paciente paciente, final CalendarEvent evento,
+			final Double imc, final NivelPeso np, @NonNull final Long pacienteId, final Date eventDate) {
+		if (eventDate == null) {
+			return;
+		}
+
+		final LocalDate today = LocalDate.now();
+		final LocalDate eventLocalDate = eventDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+		if (today.equals(eventLocalDate)) {
+			log.debug("Working on today's appointment, setting new patient weight vars");
+			updatePatientWeightFromEvent(paciente, evento, imc, np);
+		}
+		else {
+			updatePatientWeightIfLatestEvent(paciente, evento, imc, np, pacienteId, eventDate);
+		}
+	}
+
+	/**
+	 * Updates patient weight if the exam date is today or is the latest event.
+	 */
+	private void updatePatientWeightIfNeededForExam(@NonNull final Paciente paciente, final ClinicalExam exam,
+			final Double imc, final NivelPeso np, @NonNull final Long pacienteId, final Date examDate) {
+		if (examDate == null) {
+			return;
+		}
+
+		final LocalDate today = LocalDate.now();
+		final LocalDate examLocalDate = convertDateToLocalDate(examDate);
+
+		if (today.equals(examLocalDate)) {
+			log.debug("Working on today's clinical exam, setting new patient weight vars");
+			updatePatientWeightFromExam(paciente, exam, imc, np);
+		}
+		else {
+			updatePatientWeightIfLatestExam(paciente, exam, imc, np, pacienteId, examDate);
+		}
+	}
+
+	/**
+	 * Converts a Date to LocalDate, handling both java.util.Date and java.sql.Date.
+	 */
+	private LocalDate convertDateToLocalDate(final Date date) {
+		if (date instanceof java.sql.Date) {
+			return ((java.sql.Date) date).toLocalDate();
+		}
+		return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+	}
+
+	/**
+	 * Updates patient weight from a CalendarEvent.
+	 */
+	private void updatePatientWeightFromEvent(@NonNull final Paciente paciente, final CalendarEvent evento,
+			final Double imc, final NivelPeso np) {
+		if (evento.getPeso() != null) {
+			paciente.setPeso(evento.getPeso());
+		}
+		if (evento.getEstatura() != null) {
+			paciente.setEstatura(evento.getEstatura());
+		}
+		if (imc != null) {
+			paciente.setImc(imc);
+		}
+		if (np != null) {
+			paciente.setNivelPeso(np);
+		}
+		pacienteRepository.save(paciente);
+	}
+
+	/**
+	 * Updates patient weight from a ClinicalExam.
+	 */
+	private void updatePatientWeightFromExam(@NonNull final Paciente paciente, final ClinicalExam exam,
+			final Double imc, final NivelPeso np) {
+		if (exam.getPeso() != null) {
+			paciente.setPeso(exam.getPeso());
+		}
+		if (exam.getEstatura() != null) {
+			paciente.setEstatura(exam.getEstatura());
+		}
+		if (imc != null) {
+			paciente.setImc(imc);
+		}
+		if (np != null) {
+			paciente.setNivelPeso(np);
+		}
+		pacienteRepository.save(paciente);
+	}
+
+	/**
+	 * Updates patient weight if this is the latest CalendarEvent (no later events exist).
+	 */
+	private void updatePatientWeightIfLatestEvent(@NonNull final Paciente paciente, final CalendarEvent evento,
+			final Double imc, final NivelPeso np, @NonNull final Long pacienteId, final Date eventDate) {
+		final List<CalendarEvent> eventosPrevios = calendarEventService.findByPacienteId(pacienteId);
+		final boolean laterExists = eventosPrevios.stream()
+			.anyMatch(e -> e.getEventDateTime() != null && e.getEventDateTime().after(eventDate));
+
+		if (!laterExists) {
+			log.debug("No later evento exists, setting patient weight vars as latest date appointment");
+			updatePatientWeightFromEvent(paciente, evento, imc, np);
+		}
+	}
+
+	/**
+	 * Updates patient weight if this is the latest ClinicalExam (no later events exist).
+	 */
+	private void updatePatientWeightIfLatestExam(@NonNull final Paciente paciente, final ClinicalExam exam,
+			final Double imc, final NivelPeso np, @NonNull final Long pacienteId, final Date examDate) {
+		final List<CalendarEvent> eventosPrevios = calendarEventService.findByPacienteId(pacienteId);
+		final List<ClinicalExam> examenesPrevios = clinicalExamService.findByPacienteId(pacienteId);
+		final boolean laterExists = eventosPrevios.stream()
+			.anyMatch(e -> e.getEventDateTime() != null && e.getEventDateTime().after(examDate))
+				|| examenesPrevios.stream()
+					.anyMatch(e -> e.getExamDateTime() != null && e.getExamDateTime().after(examDate));
+
+		if (!laterExists) {
+			log.debug("No later event exists, setting patient weight vars as latest date clinical exam");
+			updatePatientWeightFromExam(paciente, exam, imc, np);
+		}
+	}
+
+	/**
+	 * Sets calculated values (IMC, NivelPeso) on a CalendarEvent.
+	 */
+	private void setEventCalculatedValues(final CalendarEvent evento, final BmiCalculationResult bmiResult) {
+		if (bmiResult.getImc() != null) {
+			evento.setImc(bmiResult.getImc());
+		}
+		if (bmiResult.getNivelPeso() != null) {
+			evento.setNivelPeso(bmiResult.getNivelPeso());
+		}
+	}
+
+	/**
+	 * Sets calculated values (IMC, NivelPeso) on a ClinicalExam.
+	 */
+	private void setExamCalculatedValues(final ClinicalExam exam, final BmiCalculationResult bmiResult) {
+		if (bmiResult.getImc() != null) {
+			exam.setImc(bmiResult.getImc());
+		}
+		if (bmiResult.getNivelPeso() != null) {
+			exam.setNivelPeso(bmiResult.getNivelPeso());
+		}
+	}
+
+	/**
+	 * Sets default values on a CalendarEvent if not already set.
+	 */
+	private void setEventDefaultValues(final CalendarEvent evento) {
+		if (evento.getTitle() == null || evento.getTitle().isBlank()) {
+			evento.setTitle("Consulta");
+		}
+		if (evento.getStatus() == null) {
+			evento.setStatus(EventStatus.COMPLETED);
+		}
+		if (evento.getDurationMinutes() == null) {
+			evento.setDurationMinutes(60);
+		}
+	}
+
+	/**
+	 * Sets default values on a ClinicalExam if not already set.
+	 */
+	private void setExamDefaultValues(final ClinicalExam exam) {
+		if (exam.getTitle() == null || exam.getTitle().isBlank()) {
+			exam.setTitle("Examen Clínico");
+		}
 	}
 
 }
