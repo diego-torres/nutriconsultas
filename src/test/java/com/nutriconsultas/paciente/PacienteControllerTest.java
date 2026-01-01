@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -72,6 +74,10 @@ public class PacienteControllerTest {
 
 	private CalendarEvent evento;
 
+	private OidcUser principal;
+
+	private static final String TEST_USER_ID = "test-user-id-123";
+
 	@BeforeEach
 	public void setup() {
 		log.info("setting up PacienteController test");
@@ -82,6 +88,7 @@ public class PacienteControllerTest {
 		paciente.setName("Juan Perez");
 		paciente.setEmail("juan@example.com");
 		paciente.setPhone("1234567890");
+		paciente.setUserId(TEST_USER_ID);
 		// Set date of birth (30 years ago)
 		final LocalDate dob = LocalDate.now().minusYears(30);
 		paciente.setDob(Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant()));
@@ -96,27 +103,33 @@ public class PacienteControllerTest {
 		evento.setDurationMinutes(60);
 		evento.setStatus(EventStatus.COMPLETED);
 
+		// Create mock OidcUser principal
+		principal = org.mockito.Mockito.mock(OidcUser.class);
+		lenient().when(principal.getSubject()).thenReturn(TEST_USER_ID);
+
 		log.info("finished setting up PacienteController test");
 	}
+
 
 	@Test
 	public void testAgregarConsultaPacienteCalculatesBodyFat() {
 		log.info("starting testAgregarConsultaPacienteCalculatesBodyFat");
 		// Arrange
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.save(Objects.requireNonNull(evento))).thenReturn(evento);
 		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
 				any(String.class)))
 			.thenReturn(15.5);
 
 		// Act
-		final String result = controller.agregarConsultaPaciente(1L, Objects.requireNonNull(evento), bindingResult,
-				null);
+		final String result = controller.agregarConsultaPaciente(1L, Objects.requireNonNull(evento), bindingResult, null,
+				principal);
 
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result).contains("redirect:/admin/pacientes/1/historial");
-		verify(pacienteRepository).findById(1L);
+		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(calendarEventService).save(any(CalendarEvent.class));
 		verify(bodyFatCalculatorService).calculateBodyFatPercentage(any(Double.class), any(Integer.class),
 				any(String.class));
@@ -134,17 +147,18 @@ public class PacienteControllerTest {
 		log.info("starting testAgregarConsultaPacienteWithoutDob");
 		// Arrange
 		paciente.setDob(null);
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.save(Objects.requireNonNull(evento))).thenReturn(evento);
 
 		// Act
-		final String result = controller.agregarConsultaPaciente(1L, Objects.requireNonNull(evento), bindingResult,
-				null);
+		final String result = controller.agregarConsultaPaciente(1L, Objects.requireNonNull(evento), bindingResult, null,
+				principal);
 
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result).contains("redirect:/admin/pacientes/1/historial");
-		verify(pacienteRepository).findById(1L);
+		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(calendarEventService).save(any(CalendarEvent.class));
 		// Body fat should not be calculated if DOB is missing
 		verify(bodyFatCalculatorService, org.mockito.Mockito.never()).calculateBodyFatPercentage(any(Double.class),
@@ -158,17 +172,18 @@ public class PacienteControllerTest {
 		log.info("starting testAgregarConsultaPacienteWithoutGender");
 		// Arrange
 		paciente.setGender(null);
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.save(Objects.requireNonNull(evento))).thenReturn(evento);
 
 		// Act
-		final String result = controller.agregarConsultaPaciente(1L, Objects.requireNonNull(evento), bindingResult,
-				null);
+		final String result = controller.agregarConsultaPaciente(1L, Objects.requireNonNull(evento), bindingResult, null,
+				principal);
 
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result).contains("redirect:/admin/pacientes/1/historial");
-		verify(pacienteRepository).findById(1L);
+		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(calendarEventService).save(any(CalendarEvent.class));
 		// Body fat should not be calculated if gender is missing
 		verify(bodyFatCalculatorService, org.mockito.Mockito.never()).calculateBodyFatPercentage(any(Double.class),
@@ -181,7 +196,8 @@ public class PacienteControllerTest {
 	public void testAgregarConsultaPacienteUpdatesPatientWeight() {
 		log.info("starting testAgregarConsultaPacienteUpdatesPatientWeight");
 		// Arrange
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.save(any(CalendarEvent.class))).thenReturn(evento);
 		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
 		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
@@ -189,7 +205,7 @@ public class PacienteControllerTest {
 			.thenReturn(15.5);
 
 		// Act
-		final String result = controller.agregarConsultaPaciente(1L, evento, bindingResult, null);
+		final String result = controller.agregarConsultaPaciente(1L, evento, bindingResult, null, principal);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -207,13 +223,14 @@ public class PacienteControllerTest {
 		log.info("starting testAgregarConsultaPacienteWithFemaleGender");
 		// Arrange
 		paciente.setGender("F");
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.save(any(CalendarEvent.class))).thenReturn(evento);
 		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class), eq("F")))
 			.thenReturn(22.5);
 
 		// Act
-		final String result = controller.agregarConsultaPaciente(1L, evento, bindingResult, null);
+		final String result = controller.agregarConsultaPaciente(1L, evento, bindingResult, null, principal);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -234,13 +251,14 @@ public class PacienteControllerTest {
 		pastEvent.setStatus(EventStatus.COMPLETED);
 		pastEvent.setPaciente(paciente);
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(Arrays.asList(pastEvent));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.perfilPaciente(1L, model);
+		final String result = controller.perfilPaciente(1L, model, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
@@ -262,13 +280,14 @@ public class PacienteControllerTest {
 		futureEvent.setStatus(EventStatus.SCHEDULED);
 		futureEvent.setPaciente(paciente);
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(Arrays.asList(futureEvent));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.perfilPaciente(1L, model);
+		final String result = controller.perfilPaciente(1L, model, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
@@ -302,13 +321,14 @@ public class PacienteControllerTest {
 		futureEvent.setStatus(EventStatus.SCHEDULED);
 		futureEvent.setPaciente(paciente);
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(Arrays.asList(pastEvent, futureEvent));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.perfilPaciente(1L, model);
+		final String result = controller.perfilPaciente(1L, model, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
@@ -342,13 +362,14 @@ public class PacienteControllerTest {
 		scheduledPastEvent.setStatus(EventStatus.SCHEDULED);
 		scheduledPastEvent.setPaciente(paciente);
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(Arrays.asList(cancelledEvent, scheduledPastEvent));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.perfilPaciente(1L, model);
+		final String result = controller.perfilPaciente(1L, model, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
@@ -374,14 +395,15 @@ public class PacienteControllerTest {
 		cancelledFutureEvent.setStatus(EventStatus.CANCELLED);
 		cancelledFutureEvent.setPaciente(paciente);
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L))
 			.thenReturn(Arrays.asList(completedFutureEvent, cancelledFutureEvent));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.perfilPaciente(1L, model);
+		final String result = controller.perfilPaciente(1L, model, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
@@ -410,13 +432,14 @@ public class PacienteControllerTest {
 		recentEvent.setStatus(EventStatus.COMPLETED);
 		recentEvent.setPaciente(paciente);
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(Arrays.asList(olderEvent, recentEvent));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.perfilPaciente(1L, model);
+		final String result = controller.perfilPaciente(1L, model, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
@@ -449,13 +472,14 @@ public class PacienteControllerTest {
 		farFutureEvent.setStatus(EventStatus.SCHEDULED);
 		farFutureEvent.setPaciente(paciente);
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(Arrays.asList(nearFutureEvent, farFutureEvent));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.perfilPaciente(1L, model);
+		final String result = controller.perfilPaciente(1L, model, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
@@ -471,13 +495,14 @@ public class PacienteControllerTest {
 	public void testPerfilPacienteWithNoEvents() {
 		log.info("starting testPerfilPacienteWithNoEvents");
 		// Arrange
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.perfilPaciente(1L, model);
+		final String result = controller.perfilPaciente(1L, model, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
@@ -491,13 +516,14 @@ public class PacienteControllerTest {
 	public void testPerfilPaciente() {
 		log.info("starting testPerfilPaciente");
 		// Arrange
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.perfilPaciente(1L, model);
+		final String result = controller.perfilPaciente(1L, model, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
@@ -514,13 +540,14 @@ public class PacienteControllerTest {
 	public void testAsignarDieta() {
 		log.info("starting testAsignarDieta");
 		// Arrange
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.asignarDieta(1L, model);
+		final String result = controller.asignarDieta(1L, model, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/asignar-dieta");
@@ -542,21 +569,23 @@ public class PacienteControllerTest {
 		dieta.setId(1L);
 		dieta.setNombre("Dieta de Prueba");
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.of(dieta));
-		when(pacienteDietaService.assignDieta(any(Long.class), any(Long.class), any(PacienteDieta.class)))
+		when(pacienteDietaService.assignDieta(any(Long.class), any(Long.class), any(PacienteDieta.class),
+				any(String.class)))
 			.thenReturn(pacienteDieta);
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L);
+		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("redirect:/admin/pacientes/1/dietas");
-		verify(pacienteRepository).findById(1L);
+		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(dietaRepository).findById(1L);
-		verify(pacienteDietaService).assignDieta(eq(1L), eq(1L), any(PacienteDieta.class));
+		verify(pacienteDietaService).assignDieta(eq(1L), eq(1L), any(PacienteDieta.class), eq(TEST_USER_ID));
 		log.info("finished testGuardarAsignacionDieta");
 	}
 
@@ -573,7 +602,8 @@ public class PacienteControllerTest {
 		dieta.setId(1L);
 		dieta.setNombre("Dieta de Prueba");
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.of(dieta));
 		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
 		when(bindingResult.getAllErrors()).thenReturn(new ArrayList<>());
@@ -581,11 +611,11 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L);
+		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/asignar-dieta");
-		verify(pacienteRepository).findById(1L);
+		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(dietaRepository).findById(1L);
 		verify(bindingResult).rejectValue(eq("startDate"), eq("NotNull"), eq("La fecha de inicio es requerida"));
 		verify(bindingResult).rejectValue(eq("status"), eq("NotNull"), eq("El estado es requerido"));
@@ -593,7 +623,7 @@ public class PacienteControllerTest {
 		verify(model).addAttribute("paciente", paciente);
 		verify(model).addAttribute("dietasDisponibles", new ArrayList<>());
 		verify(pacienteDietaService, org.mockito.Mockito.never()).assignDieta(any(Long.class), any(Long.class),
-				any(PacienteDieta.class));
+				any(PacienteDieta.class), any(String.class));
 		log.info("finished testGuardarAsignacionDietaWithErrors");
 	}
 
@@ -609,7 +639,8 @@ public class PacienteControllerTest {
 		dieta.setId(1L);
 		dieta.setNombre("Dieta de Prueba");
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.of(dieta));
 		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
 		when(bindingResult.getAllErrors()).thenReturn(new ArrayList<>());
@@ -617,13 +648,13 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L);
+		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/asignar-dieta");
 		verify(bindingResult).rejectValue(eq("startDate"), eq("NotNull"), eq("La fecha de inicio es requerida"));
 		verify(pacienteDietaService, org.mockito.Mockito.never()).assignDieta(any(Long.class), any(Long.class),
-				any(PacienteDieta.class));
+				any(PacienteDieta.class), any(String.class));
 		log.info("finished testGuardarAsignacionDietaWithNullStartDate");
 	}
 
@@ -640,7 +671,8 @@ public class PacienteControllerTest {
 		dieta.setId(1L);
 		dieta.setNombre("Dieta de Prueba");
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.of(dieta));
 		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
 		when(bindingResult.getAllErrors()).thenReturn(new ArrayList<>());
@@ -648,13 +680,13 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L);
+		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/asignar-dieta");
 		verify(bindingResult).rejectValue(eq("status"), eq("NotNull"), eq("El estado es requerido"));
 		verify(pacienteDietaService, org.mockito.Mockito.never()).assignDieta(any(Long.class), any(Long.class),
-				any(PacienteDieta.class));
+				any(PacienteDieta.class), any(String.class));
 		log.info("finished testGuardarAsignacionDietaWithNullStatus");
 	}
 
@@ -666,17 +698,17 @@ public class PacienteControllerTest {
 		pacienteDieta.setStartDate(new Date());
 		pacienteDieta.setStatus(PacienteDietaStatus.ACTIVE);
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.empty());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(() -> controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L))
+		assertThatThrownBy(() -> controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L, principal))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado paciente con folio");
-		verify(pacienteRepository).findById(1L);
+		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(pacienteDietaService, org.mockito.Mockito.never()).assignDieta(any(Long.class), any(Long.class),
-				any(PacienteDieta.class));
+				any(PacienteDieta.class), any(String.class));
 		log.info("finished testGuardarAsignacionDietaThrowsExceptionWhenPacienteNotFound");
 	}
 
@@ -688,19 +720,20 @@ public class PacienteControllerTest {
 		pacienteDieta.setStartDate(new Date());
 		pacienteDieta.setStatus(PacienteDietaStatus.ACTIVE);
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.empty());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(() -> controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L))
+		assertThatThrownBy(() -> controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L, principal))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado dieta con id");
-		verify(pacienteRepository).findById(1L);
+		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(dietaRepository).findById(1L);
 		verify(pacienteDietaService, org.mockito.Mockito.never()).assignDieta(any(Long.class), any(Long.class),
-				any(PacienteDieta.class));
+				any(PacienteDieta.class), any(String.class));
 		log.info("finished testGuardarAsignacionDietaThrowsExceptionWhenDietaNotFound");
 	}
 
@@ -711,11 +744,11 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(() -> controller.guardarAsignacionDieta(1L, null, bindingResult, model, 1L))
+		assertThatThrownBy(() -> controller.guardarAsignacionDieta(1L, null, bindingResult, model, 1L, principal))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("PacienteDieta cannot be null");
 		verify(pacienteDietaService, org.mockito.Mockito.never()).assignDieta(any(Long.class), any(Long.class),
-				any(PacienteDieta.class));
+				any(PacienteDieta.class), any(String.class));
 		log.info("finished testGuardarAsignacionDietaThrowsExceptionWhenPacienteDietaIsNull");
 	}
 
@@ -727,13 +760,14 @@ public class PacienteControllerTest {
 		pacienteDieta.setId(1L);
 		pacienteDieta.setPaciente(paciente);
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(pacienteDietaService.findById(1L)).thenReturn(pacienteDieta);
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.editarAsignacionDieta(1L, 1L, model);
+		final String result = controller.editarAsignacionDieta(1L, 1L, model, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/editar-dieta");
@@ -772,7 +806,8 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model);
+		final String result = controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model,
+				principal);
 
 		// Assert
 		assertThat(result).isEqualTo("redirect:/admin/pacientes/1/dietas");
@@ -803,12 +838,14 @@ public class PacienteControllerTest {
 		existing.setDieta(dieta);
 
 		when(pacienteDietaService.findById(1L)).thenReturn(existing);
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model);
+		final String result = controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model,
+				principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/editar-dieta");
@@ -840,12 +877,14 @@ public class PacienteControllerTest {
 		existing.setDieta(dieta);
 
 		when(pacienteDietaService.findById(1L)).thenReturn(existing);
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model);
+		final String result = controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model,
+				principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/editar-dieta");
@@ -872,7 +911,8 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(() -> controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model))
+		assertThatThrownBy(
+				() -> controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model, principal))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado asignación de dieta con id");
 
@@ -901,7 +941,8 @@ public class PacienteControllerTest {
 	public void testDietasPaciente() {
 		log.info("starting testDietasPaciente");
 		// Arrange
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(pacienteDietaService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
 		when(pacienteDietaService.findActiveByPacienteId(1L)).thenReturn(new ArrayList<>());
 		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
@@ -909,7 +950,7 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.dietasPaciente(1L, model);
+		final String result = controller.dietasPaciente(1L, model, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/dietas");
@@ -950,7 +991,8 @@ public class PacienteControllerTest {
 		final List<PacienteDieta> dietasAsignadas = new ArrayList<>();
 		dietasAsignadas.add(pacienteDieta);
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(pacienteDietaService.findByPacienteId(1L)).thenReturn(dietasAsignadas);
 		when(pacienteDietaService.findActiveByPacienteId(1L)).thenReturn(dietasAsignadas);
 		when(dietaService.getDieta(1L)).thenReturn(dieta);
@@ -959,7 +1001,7 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.dietasPaciente(1L, model);
+		final String result = controller.dietasPaciente(1L, model, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/dietas");
@@ -997,7 +1039,8 @@ public class PacienteControllerTest {
 		final List<PacienteDieta> dietasAsignadas = new ArrayList<>();
 		dietasAsignadas.add(pacienteDieta);
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(pacienteDietaService.findByPacienteId(1L)).thenReturn(dietasAsignadas);
 		when(pacienteDietaService.findActiveByPacienteId(1L)).thenReturn(dietasAsignadas);
 		when(dietaService.getDieta(1L)).thenReturn(dieta);
@@ -1006,7 +1049,7 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.dietasPaciente(1L, model);
+		final String result = controller.dietasPaciente(1L, model, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/dietas");
@@ -1030,12 +1073,12 @@ public class PacienteControllerTest {
 	public void testDietasPacienteThrowsExceptionWhenPacienteNotFound() {
 		log.info("starting testDietasPacienteThrowsExceptionWhenPacienteNotFound");
 		// Arrange
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.empty());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(() -> controller.dietasPaciente(1L, model)).isInstanceOf(IllegalArgumentException.class)
+		assertThatThrownBy(() -> controller.dietasPaciente(1L, model, principal)).isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado paciente con folio");
 		log.info("finished testDietasPacienteThrowsExceptionWhenPacienteNotFound");
 	}
@@ -1044,12 +1087,13 @@ public class PacienteControllerTest {
 	public void testClinicosPaciente() {
 		log.info("starting testClinicosPaciente");
 		// Arrange
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.clinicosPaciente(1L, model);
+		final String result = controller.clinicosPaciente(1L, model, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/clinicos");
@@ -1063,12 +1107,12 @@ public class PacienteControllerTest {
 	public void testClinicosPacienteThrowsExceptionWhenPacienteNotFound() {
 		log.info("starting testClinicosPacienteThrowsExceptionWhenPacienteNotFound");
 		// Arrange
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.empty());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(() -> controller.clinicosPaciente(1L, model)).isInstanceOf(IllegalArgumentException.class)
+		assertThatThrownBy(() -> controller.clinicosPaciente(1L, model, principal)).isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado paciente con folio");
 		log.info("finished testClinicosPacienteThrowsExceptionWhenPacienteNotFound");
 	}
@@ -1083,19 +1127,21 @@ public class PacienteControllerTest {
 		exam.setExamDateTime(new Date());
 		exam.setTitle("Examen Clínico");
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(clinicalExamService.save(Objects.requireNonNull(exam))).thenReturn(exam);
 		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
 				any(String.class)))
 			.thenReturn(15.5);
 
 		// Act
-		final String result = controller.agregarClinicosPaciente(1L, Objects.requireNonNull(exam), bindingResult, null);
+		final String result = controller.agregarClinicosPaciente(1L, Objects.requireNonNull(exam), bindingResult, null,
+				principal);
 
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result).contains("redirect:/admin/pacientes/1/historial");
-		verify(pacienteRepository).findById(1L);
+		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(clinicalExamService).save(any(ClinicalExam.class));
 		verify(bodyFatCalculatorService).calculateBodyFatPercentage(any(Double.class), any(Integer.class),
 				any(String.class));
@@ -1121,16 +1167,18 @@ public class PacienteControllerTest {
 		exam.setExamDateTime(new Date());
 		exam.setTitle("Examen Clínico");
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(clinicalExamService.save(Objects.requireNonNull(exam))).thenReturn(exam);
 
 		// Act
-		final String result = controller.agregarClinicosPaciente(1L, Objects.requireNonNull(exam), bindingResult, null);
+		final String result = controller.agregarClinicosPaciente(1L, Objects.requireNonNull(exam), bindingResult, null,
+				principal);
 
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result).contains("redirect:/admin/pacientes/1/historial");
-		verify(pacienteRepository).findById(1L);
+		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(clinicalExamService).save(any(ClinicalExam.class));
 		// Body fat should not be calculated if DOB is missing
 		verify(bodyFatCalculatorService, org.mockito.Mockito.never()).calculateBodyFatPercentage(any(Double.class),
@@ -1149,7 +1197,8 @@ public class PacienteControllerTest {
 		exam.setExamDateTime(new Date());
 		exam.setTitle("Examen Clínico");
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(clinicalExamService.save(any(ClinicalExam.class))).thenReturn(exam);
 		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
 		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
@@ -1157,7 +1206,7 @@ public class PacienteControllerTest {
 			.thenReturn(15.5);
 
 		// Act
-		final String result = controller.agregarClinicosPaciente(1L, exam, bindingResult, null);
+		final String result = controller.agregarClinicosPaciente(1L, exam, bindingResult, null, principal);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -1181,7 +1230,8 @@ public class PacienteControllerTest {
 		// Title is null - should be set to "Examen Clínico"
 		exam.setTitle(null);
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(clinicalExamService.save(any(ClinicalExam.class))).thenReturn(exam);
 		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
 		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
@@ -1189,7 +1239,7 @@ public class PacienteControllerTest {
 			.thenReturn(15.5);
 
 		// Act
-		final String result = controller.agregarClinicosPaciente(1L, exam, bindingResult, null);
+		final String result = controller.agregarClinicosPaciente(1L, exam, bindingResult, null, principal);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -1209,13 +1259,13 @@ public class PacienteControllerTest {
 		exam.setExamDateTime(new Date());
 		exam.setTitle("Examen Clínico");
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.empty());
 
 		// Act & Assert
-		assertThatThrownBy(() -> controller.agregarClinicosPaciente(1L, exam, bindingResult, null))
+		assertThatThrownBy(() -> controller.agregarClinicosPaciente(1L, exam, bindingResult, null, principal))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado paciente con folio");
-		verify(pacienteRepository).findById(1L);
+		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(clinicalExamService, org.mockito.Mockito.never()).save(any(ClinicalExam.class));
 		log.info("finished testAgregarClinicosPacienteThrowsExceptionWhenPacienteNotFound");
 	}
@@ -1238,7 +1288,7 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.verExamenClinico(1L, 1L, model);
+		final String result = controller.verExamenClinico(1L, 1L, model, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/ver-examen-clinico");
@@ -1258,7 +1308,7 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(() -> controller.verExamenClinico(1L, 999L, model))
+		assertThatThrownBy(() -> controller.verExamenClinico(1L, 999L, model, principal))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado examen clínico con id");
 		verify(clinicalExamService).findById(999L);
@@ -1283,7 +1333,7 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(() -> controller.verExamenClinico(1L, 1L, model))
+		assertThatThrownBy(() -> controller.verExamenClinico(1L, 1L, model, principal))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("El examen clínico no pertenece al paciente especificado");
 		verify(clinicalExamService).findById(1L);

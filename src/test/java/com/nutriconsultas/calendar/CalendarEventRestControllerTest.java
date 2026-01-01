@@ -24,6 +24,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.nutriconsultas.dataTables.paging.Column;
@@ -63,14 +66,29 @@ public class CalendarEventRestControllerTest {
 
 	private List<Paciente> pacientes;
 
+	private OidcUser principal;
+
+	private static final String TEST_USER_ID = "test-user-id-123";
+
 	@BeforeEach
 	public void setup() {
 		log.info("setting up calendar event service");
+
+		// Create mock OidcUser principal
+		principal = org.mockito.Mockito.mock(OidcUser.class);
+		lenient().when(principal.getSubject()).thenReturn(TEST_USER_ID);
+		final SecurityContext securityContext = org.mockito.Mockito.mock(SecurityContext.class);
+		final org.springframework.security.core.Authentication authentication = org.mockito.Mockito
+			.mock(org.springframework.security.core.Authentication.class);
+		lenient().when(securityContext.getAuthentication()).thenReturn(authentication);
+		lenient().when(authentication.getPrincipal()).thenReturn(principal);
+		SecurityContextHolder.setContext(securityContext);
 
 		// Create test paciente
 		paciente = new Paciente();
 		paciente.setId(1L);
 		paciente.setName("Juan Perez");
+		paciente.setUserId(TEST_USER_ID);
 		// Set date of birth for age calculation tests
 		final Calendar cal = Calendar.getInstance();
 		cal.set(1990, Calendar.JANUARY, 15);
@@ -123,8 +141,9 @@ public class CalendarEventRestControllerTest {
 		final Paciente paciente2 = new Paciente();
 		paciente2.setId(2L);
 		paciente2.setName("Maria Garcia");
+		paciente2.setUserId(TEST_USER_ID);
 		pacientes.add(paciente2);
-		lenient().when(pacienteRepository.findAll()).thenReturn(pacientes);
+		lenient().when(pacienteRepository.findByUserId(TEST_USER_ID)).thenReturn(pacientes);
 
 		log.info("finished setting up calendar event service with {} events", events.size());
 	}
@@ -324,7 +343,7 @@ public class CalendarEventRestControllerTest {
 	public void testGetCalendarEventsWithoutDateRange() {
 		log.info("starting testGetCalendarEventsWithoutDateRange");
 		// Act
-		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null);
+		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null, principal);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -347,7 +366,8 @@ public class CalendarEventRestControllerTest {
 		when(service.findEventsBetweenDates(startDate, endDate)).thenReturn(filteredEvents);
 
 		// Act
-		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(startDate, endDate);
+		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(startDate, endDate,
+				principal);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -360,7 +380,7 @@ public class CalendarEventRestControllerTest {
 	public void testCalendarEventFormat() {
 		log.info("starting testCalendarEventFormat");
 		// Act
-		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null);
+		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null, principal);
 
 		// Assert
 		assertThat(result).isNotEmpty();
@@ -379,7 +399,7 @@ public class CalendarEventRestControllerTest {
 	public void testCalendarEventExtendedProps() {
 		log.info("starting testCalendarEventExtendedProps");
 		// Act
-		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null);
+		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null, principal);
 
 		// Assert
 		assertThat(result).isNotEmpty();
@@ -400,7 +420,7 @@ public class CalendarEventRestControllerTest {
 	public void testCalendarEventExtendedPropsWithSummaryNotes() {
 		log.info("starting testCalendarEventExtendedPropsWithSummaryNotes");
 		// Act
-		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null);
+		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null, principal);
 
 		// Assert - Check event3 which has summaryNotes
 		assertThat(result.size()).isGreaterThanOrEqualTo(3);
@@ -418,7 +438,7 @@ public class CalendarEventRestControllerTest {
 	public void testCalendarEventExtendedPropsWithoutSummaryNotes() {
 		log.info("starting testCalendarEventExtendedPropsWithoutSummaryNotes");
 		// Act
-		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null);
+		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null, principal);
 
 		// Assert - Check event1 which doesn't have summaryNotes
 		assertThat(result.size()).isGreaterThanOrEqualTo(1);
@@ -441,7 +461,7 @@ public class CalendarEventRestControllerTest {
 		when(service.findById(1L)).thenReturn(event);
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.getEvent(1L);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.getEvent(1L, principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -467,7 +487,7 @@ public class CalendarEventRestControllerTest {
 		when(service.findById(999L)).thenReturn(null);
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.getEvent(999L);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.getEvent(999L, principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -489,7 +509,7 @@ public class CalendarEventRestControllerTest {
 		when(service.findById(3L)).thenReturn(event);
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.getEvent(3L);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.getEvent(3L, principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -514,7 +534,7 @@ public class CalendarEventRestControllerTest {
 		when(service.findById(1L)).thenThrow(new RuntimeException("Database error"));
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.getEvent(1L);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.getEvent(1L, principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -549,7 +569,8 @@ public class CalendarEventRestControllerTest {
 		when(service.save(any(CalendarEvent.class))).thenReturn(updatedEvent);
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData,
+				principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -587,7 +608,8 @@ public class CalendarEventRestControllerTest {
 		when(service.save(any(CalendarEvent.class))).thenReturn(updatedEvent);
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData,
+				principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -630,7 +652,8 @@ public class CalendarEventRestControllerTest {
 		when(service.save(any(CalendarEvent.class))).thenReturn(updatedEvent);
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData,
+				principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -654,7 +677,8 @@ public class CalendarEventRestControllerTest {
 		when(service.findById(999L)).thenReturn(null);
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(999L, eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(999L, eventData,
+				principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -680,7 +704,8 @@ public class CalendarEventRestControllerTest {
 		when(service.findById(1L)).thenReturn(existingEvent);
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData,
+				principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -706,7 +731,8 @@ public class CalendarEventRestControllerTest {
 		when(service.save(any(CalendarEvent.class))).thenThrow(new RuntimeException("Database error"));
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData,
+				principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -734,7 +760,8 @@ public class CalendarEventRestControllerTest {
 		when(service.save(any(CalendarEvent.class))).thenReturn(existingEvent);
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData,
+				principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -774,7 +801,8 @@ public class CalendarEventRestControllerTest {
 			when(service.save(any(CalendarEvent.class))).thenReturn(updatedEvent);
 
 			// Act
-			final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData);
+			final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData,
+					principal);
 
 			// Assert
 			assertThat(response).isNotNull();
@@ -791,7 +819,7 @@ public class CalendarEventRestControllerTest {
 	public void testCalendarEventEndTimeCalculation() {
 		log.info("starting testCalendarEventEndTimeCalculation");
 		// Act
-		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null);
+		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null, principal);
 
 		// Assert
 		assertThat(result).isNotEmpty();
@@ -830,7 +858,7 @@ public class CalendarEventRestControllerTest {
 		when(service.findAll()).thenReturn(eventsWithNullDuration);
 
 		// Act
-		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null);
+		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null, principal);
 
 		// Assert
 		assertThat(result).isNotEmpty();
@@ -856,7 +884,7 @@ public class CalendarEventRestControllerTest {
 		when(service.findAll()).thenReturn(eventsWithZeroDuration);
 
 		// Act
-		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null);
+		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null, principal);
 
 		// Assert
 		assertThat(result).isNotEmpty();
@@ -873,7 +901,7 @@ public class CalendarEventRestControllerTest {
 		when(service.findAll()).thenReturn(new ArrayList<>());
 
 		// Act
-		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null);
+		final List<Map<String, Object>> result = calendarEventRestController.getCalendarEvents(null, null, principal);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -885,12 +913,12 @@ public class CalendarEventRestControllerTest {
 	public void testGetPacientes() {
 		log.info("starting testGetPacientes");
 		// Act
-		final List<Map<String, Object>> result = calendarEventRestController.getPacientes();
+		final List<Map<String, Object>> result = calendarEventRestController.getPacientes(principal);
 
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.size()).isEqualTo(2);
-		verify(pacienteRepository).findAll();
+		verify(pacienteRepository).findByUserId(TEST_USER_ID);
 
 		// Verify first paciente
 		final Map<String, Object> paciente1 = result.get(0);
@@ -911,15 +939,15 @@ public class CalendarEventRestControllerTest {
 	public void testGetPacientesEmptyList() {
 		log.info("starting testGetPacientesEmptyList");
 		// Arrange
-		when(pacienteRepository.findAll()).thenReturn(new ArrayList<>());
+		when(pacienteRepository.findByUserId(TEST_USER_ID)).thenReturn(new ArrayList<>());
 
 		// Act
-		final List<Map<String, Object>> result = calendarEventRestController.getPacientes();
+		final List<Map<String, Object>> result = calendarEventRestController.getPacientes(principal);
 
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result).isEmpty();
-		verify(pacienteRepository).findAll();
+		verify(pacienteRepository).findByUserId(TEST_USER_ID);
 		log.info("finished testGetPacientesEmptyList");
 	}
 
@@ -1306,13 +1334,14 @@ public class CalendarEventRestControllerTest {
 		cal.set(Calendar.MILLISECOND, 0);
 		savedEvent.setEventDateTime(cal.getTime());
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		Objects.requireNonNull(savedEvent);
 		Objects.requireNonNull(savedEvent);
 		when(service.save(any(CalendarEvent.class))).thenReturn(savedEvent);
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.saveEvent(eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.saveEvent(eventData, principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -1322,7 +1351,7 @@ public class CalendarEventRestControllerTest {
 		Objects.requireNonNull(responseBody);
 		assertThat(responseBody.get("success")).isEqualTo(true);
 		assertThat(responseBody).containsKey("event");
-		verify(pacienteRepository).findById(1L);
+		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(service).save(any(CalendarEvent.class));
 		log.info("finished testSaveEventSuccess");
 	}
@@ -1347,13 +1376,14 @@ public class CalendarEventRestControllerTest {
 		cal.set(Calendar.MILLISECOND, 0);
 		savedEvent.setEventDateTime(cal.getTime());
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		Objects.requireNonNull(savedEvent);
 		Objects.requireNonNull(savedEvent);
 		when(service.save(any(CalendarEvent.class))).thenReturn(savedEvent);
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.saveEvent(eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.saveEvent(eventData, principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -1375,10 +1405,10 @@ public class CalendarEventRestControllerTest {
 		eventData.put("title", "Nueva Consulta");
 		eventData.put("eventDateTime", "2024-12-31T10:00");
 
-		when(pacienteRepository.findById(999L)).thenReturn(java.util.Optional.empty());
+		when(pacienteRepository.findByIdAndUserId(999L, TEST_USER_ID)).thenReturn(java.util.Optional.empty());
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.saveEvent(eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.saveEvent(eventData, principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -1388,7 +1418,7 @@ public class CalendarEventRestControllerTest {
 		Objects.requireNonNull(responseBody);
 		assertThat(responseBody.get("success")).isEqualTo(false);
 		assertThat(responseBody).containsKey("error");
-		verify(pacienteRepository).findById(999L);
+		verify(pacienteRepository).findByIdAndUserId(999L, TEST_USER_ID);
 		verify(service, never()).save(any(CalendarEvent.class));
 		log.info("finished testSaveEventWithInvalidPacienteId");
 	}
@@ -1402,10 +1432,11 @@ public class CalendarEventRestControllerTest {
 		eventData.put("title", "Nueva Consulta");
 		eventData.put("eventDateTime", "invalid-date-format");
 
-		lenient().when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		lenient().when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.saveEvent(eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.saveEvent(eventData, principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -1446,13 +1477,15 @@ public class CalendarEventRestControllerTest {
 			cal.set(Calendar.MILLISECOND, 0);
 			savedEvent.setEventDateTime(cal.getTime());
 
-			when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+			when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 			Objects.requireNonNull(savedEvent);
 			Objects.requireNonNull(savedEvent);
 			when(service.save(any(CalendarEvent.class))).thenReturn(savedEvent);
 
 			// Act
-			final ResponseEntity<Map<String, Object>> response = calendarEventRestController.saveEvent(eventData);
+			final ResponseEntity<Map<String, Object>> response = calendarEventRestController.saveEvent(eventData,
+					principal);
 
 			// Assert
 			assertThat(response).isNotNull();
@@ -1490,13 +1523,15 @@ public class CalendarEventRestControllerTest {
 			cal.set(Calendar.MILLISECOND, 0);
 			savedEvent.setEventDateTime(cal.getTime());
 
-			when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+			when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 			Objects.requireNonNull(savedEvent);
 			Objects.requireNonNull(savedEvent);
 			when(service.save(any(CalendarEvent.class))).thenReturn(savedEvent);
 
 			// Act
-			final ResponseEntity<Map<String, Object>> response = calendarEventRestController.saveEvent(eventData);
+			final ResponseEntity<Map<String, Object>> response = calendarEventRestController.saveEvent(eventData,
+					principal);
 
 			// Assert
 			assertThat(response).isNotNull();
@@ -1534,7 +1569,7 @@ public class CalendarEventRestControllerTest {
 		when(service.save(any(CalendarEvent.class))).thenReturn(savedEvent);
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.saveEvent(eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.saveEvent(eventData, principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -1556,11 +1591,12 @@ public class CalendarEventRestControllerTest {
 		eventData.put("title", "Nueva Consulta");
 		eventData.put("eventDateTime", "2024-12-31T10:00");
 
-		when(pacienteRepository.findById(1L)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.of(paciente));
 		when(service.save(any(CalendarEvent.class))).thenThrow(new RuntimeException("Database error"));
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.saveEvent(eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.saveEvent(eventData, principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -1607,7 +1643,8 @@ public class CalendarEventRestControllerTest {
 		});
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData,
+				principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -1670,7 +1707,8 @@ public class CalendarEventRestControllerTest {
 		});
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData,
+				principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -1712,7 +1750,8 @@ public class CalendarEventRestControllerTest {
 		});
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData,
+				principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -1738,6 +1777,7 @@ public class CalendarEventRestControllerTest {
 		final Paciente pacienteSinDatos = new Paciente();
 		pacienteSinDatos.setId(2L);
 		pacienteSinDatos.setName("Paciente Sin Datos");
+		pacienteSinDatos.setUserId(TEST_USER_ID);
 		existingEvent.setPaciente(pacienteSinDatos);
 
 		final Map<String, Object> eventData = new HashMap<>();
@@ -1763,7 +1803,8 @@ public class CalendarEventRestControllerTest {
 		});
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData,
+				principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -1803,7 +1844,8 @@ public class CalendarEventRestControllerTest {
 		});
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData,
+				principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -1824,6 +1866,7 @@ public class CalendarEventRestControllerTest {
 		final Paciente pacienteConSqlDate = new Paciente();
 		pacienteConSqlDate.setId(3L);
 		pacienteConSqlDate.setName("Paciente SQL Date");
+		pacienteConSqlDate.setUserId(TEST_USER_ID);
 		// Use java.sql.Date instead of java.util.Date
 		final Calendar calSql = Calendar.getInstance();
 		calSql.set(1990, Calendar.JANUARY, 15);
@@ -1864,7 +1907,8 @@ public class CalendarEventRestControllerTest {
 		});
 
 		// Act
-		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData);
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData,
+				principal);
 
 		// Assert
 		assertThat(response).isNotNull();

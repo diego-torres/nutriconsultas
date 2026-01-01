@@ -28,8 +28,11 @@ public class Paciente {
 	private Long id;
 
 	@NotBlank(message = "El nombre es requerido")
-	@Column(nullable = false, length = 100, unique = true)
+	@Column(nullable = false, length = 100)
 	private String name;
+
+	@Column(nullable = false, length = 255)
+	private String userId;
 
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@Temporal(TemporalType.DATE)

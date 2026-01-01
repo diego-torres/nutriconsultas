@@ -6,7 +6,8 @@ import org.springframework.lang.NonNull;
 
 public interface PacienteDietaService {
 
-	PacienteDieta assignDieta(@NonNull Long pacienteId, @NonNull Long dietaId, @NonNull PacienteDieta pacienteDieta);
+	PacienteDieta assignDieta(@NonNull Long pacienteId, @NonNull Long dietaId, @NonNull PacienteDieta pacienteDieta,
+			@NonNull String userId);
 
 	PacienteDieta updateAssignment(@NonNull Long id, @NonNull PacienteDieta pacienteDieta);
 

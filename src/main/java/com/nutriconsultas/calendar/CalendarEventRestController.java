@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -121,8 +123,14 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 	@GetMapping("/events")
 	public List<Map<String, Object>> getCalendarEvents(
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final Date start,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final Date end) {
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final Date end,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Getting calendar events from {} to {}", start, end);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			log.error("Cannot get calendar events: user ID is null");
+			return List.of();
+		}
 		final List<CalendarEvent> events;
 		if (start != null && end != null) {
 			events = service.findEventsBetweenDates(start, end);
@@ -130,7 +138,11 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		else {
 			events = service.findAll();
 		}
-		return events.stream().map(this::toCalendarEventMap).collect(Collectors.toList());
+		// Filter events by patient ownership (only show events for patients belonging to this user)
+		final List<CalendarEvent> filteredEvents = events.stream()
+			.filter(e -> e.getPaciente() != null && userId.equals(e.getPaciente().getUserId()))
+			.collect(Collectors.toList());
+		return filteredEvents.stream().map(this::toCalendarEventMap).collect(Collectors.toList());
 	}
 
 	private Map<String, Object> toCalendarEventMap(final CalendarEvent event) {
@@ -224,10 +236,30 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		return dateFormat.format(date);
 	}
 
+	/**
+	 * Gets the user ID from the OAuth2 principal.
+	 * @param principal the OAuth2 principal
+	 * @return the user ID (sub claim) or null if not available
+	 */
+	private String getUserId(@AuthenticationPrincipal final OidcUser principal) {
+		if (principal == null) {
+			log.warn("OAuth2 principal is null, cannot get user ID");
+			return null;
+		}
+		final String userId = principal.getSubject();
+		log.debug("Retrieved user ID: {}", userId);
+		return userId;
+	}
+
 	@GetMapping("/pacientes")
-	public List<Map<String, Object>> getPacientes() {
+	public List<Map<String, Object>> getPacientes(@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Getting all pacientes for appointment creation");
-		final List<Paciente> pacientes = pacienteRepository.findAll();
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			log.error("Cannot get pacientes: user ID is null");
+			return List.of();
+		}
+		final List<Paciente> pacientes = pacienteRepository.findByUserId(userId);
 		return pacientes.stream().map(p -> {
 			final Map<String, Object> pacienteMap = new HashMap<>();
 			pacienteMap.put("id", p.getId());
@@ -340,10 +372,18 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 	}
 
 	@PostMapping("/events")
-	public ResponseEntity<Map<String, Object>> saveEvent(@RequestBody final Map<String, Object> eventData) {
+	public ResponseEntity<Map<String, Object>> saveEvent(@RequestBody final Map<String, Object> eventData,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Saving new calendar event: {}", eventData);
 		try {
-			final CalendarEvent event = createEventFromData(eventData);
+			final String userId = getUserId(principal);
+			if (userId == null) {
+				final Map<String, Object> errorResponse = new HashMap<>();
+				errorResponse.put("success", false);
+				errorResponse.put("error", "User not authenticated");
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+			}
+			final CalendarEvent event = createEventFromData(eventData, userId);
 			setBiochemicalFields(event, eventData);
 			final CalendarEvent savedEvent = service.save(event);
 			final Map<String, Object> response = new HashMap<>();
@@ -368,7 +408,7 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 	}
 
 	@NonNull
-	private CalendarEvent createEventFromData(final Map<String, Object> eventData) {
+	private CalendarEvent createEventFromData(final Map<String, Object> eventData, final String userId) {
 		final CalendarEvent event = new CalendarEvent();
 		event.setTitle((String) eventData.get("title"));
 		if (eventData.get("description") != null) {
@@ -395,7 +435,7 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		}
 		if (eventData.get("pacienteId") != null) {
 			final Long pacienteId = Long.parseLong(eventData.get("pacienteId").toString());
-			final Paciente paciente = pacienteRepository.findById(pacienteId)
+			final Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
 				.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con id " + pacienteId));
 			event.setPaciente(paciente);
 		}
@@ -452,11 +492,26 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 	}
 
 	@GetMapping("/events/{id}")
-	public ResponseEntity<Map<String, Object>> getEvent(@PathVariable @NonNull final Long id) {
+	public ResponseEntity<Map<String, Object>> getEvent(@PathVariable @NonNull final Long id,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Getting calendar event with id: {}", id);
 		try {
+			final String userId = getUserId(principal);
+			if (userId == null) {
+				final Map<String, Object> errorResponse = new HashMap<>();
+				errorResponse.put("success", false);
+				errorResponse.put("error", "User not authenticated");
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+			}
 			final CalendarEvent event = service.findById(id);
 			if (event == null) {
+				final Map<String, Object> errorResponse = new HashMap<>();
+				errorResponse.put("success", false);
+				errorResponse.put("error", "Event not found");
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+			}
+			// Verify patient ownership
+			if (event.getPaciente() == null || !userId.equals(event.getPaciente().getUserId())) {
 				final Map<String, Object> errorResponse = new HashMap<>();
 				errorResponse.put("success", false);
 				errorResponse.put("error", "Event not found");
@@ -478,11 +533,26 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 
 	@PostMapping("/events/{id}")
 	public ResponseEntity<Map<String, Object>> updateEvent(@PathVariable @NonNull final Long id,
-			@RequestBody final Map<String, Object> eventData) {
+			@RequestBody final Map<String, Object> eventData,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Updating calendar event {}: {}", id, eventData);
 		try {
+			final String userId = getUserId(principal);
+			if (userId == null) {
+				final Map<String, Object> errorResponse = new HashMap<>();
+				errorResponse.put("success", false);
+				errorResponse.put("error", "User not authenticated");
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+			}
 			final CalendarEvent existingEvent = service.findById(id);
 			if (existingEvent == null) {
+				final Map<String, Object> errorResponse = new HashMap<>();
+				errorResponse.put("success", false);
+				errorResponse.put("error", "Event not found");
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+			}
+			// Verify patient ownership
+			if (existingEvent.getPaciente() == null || !userId.equals(existingEvent.getPaciente().getUserId())) {
 				final Map<String, Object> errorResponse = new HashMap<>();
 				errorResponse.put("success", false);
 				errorResponse.put("error", "Event not found");
@@ -493,6 +563,13 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			}
 			if (eventData.get("summaryNotes") != null) {
 				existingEvent.setSummaryNotes((String) eventData.get("summaryNotes"));
+			}
+			// Handle pacienteId update if provided
+			if (eventData.get("pacienteId") != null) {
+				final Long pacienteId = Long.parseLong(eventData.get("pacienteId").toString());
+				final Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
+					.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con id " + pacienteId));
+				existingEvent.setPaciente(paciente);
 			}
 			// Handle peso and estatura, and calculate IMC and body fat if needed
 			Double peso = null;

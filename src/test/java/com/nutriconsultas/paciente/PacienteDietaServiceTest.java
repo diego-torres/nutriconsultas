@@ -48,6 +48,8 @@ public class PacienteDietaServiceTest {
 
 	private PacienteDieta pacienteDieta;
 
+	private static final String TEST_USER_ID = "test-user-id-123";
+
 	@BeforeEach
 	public void setup() {
 		log.info("setting up PacienteDietaService test");
@@ -56,6 +58,7 @@ public class PacienteDietaServiceTest {
 		paciente.setId(1L);
 		paciente.setName("Juan Perez");
 		paciente.setEmail("juan@example.com");
+		paciente.setUserId(TEST_USER_ID);
 
 		dieta = new Dieta();
 		dieta.setId(1L);
@@ -76,7 +79,7 @@ public class PacienteDietaServiceTest {
 	public void testAssignDieta() {
 		log.info("starting testAssignDieta");
 		// Arrange
-		when(pacienteRepository.findById(1L)).thenReturn(Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(Optional.of(dieta));
 		when(pacienteDietaRepository.save(any(PacienteDieta.class))).thenAnswer(invocation -> {
 			final PacienteDieta pd = invocation.getArgument(0);
@@ -94,7 +97,7 @@ public class PacienteDietaServiceTest {
 		newAssignment.setNotes("Nueva asignación");
 
 		// Act
-		final PacienteDieta result = service.assignDieta(1L, 1L, newAssignment);
+		final PacienteDieta result = service.assignDieta(1L, 1L, newAssignment, TEST_USER_ID);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -105,7 +108,7 @@ public class PacienteDietaServiceTest {
 		assertThat(result.getEndDate()).isEqualTo(endDate);
 		assertThat(result.getStatus()).isEqualTo(PacienteDietaStatus.ACTIVE);
 		assertThat(result.getNotes()).isEqualTo("Nueva asignación");
-		verify(pacienteRepository).findById(1L);
+		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(dietaRepository).findById(1L);
 		verify(pacienteDietaRepository).save(any(PacienteDieta.class));
 		log.info("finished testAssignDieta");
@@ -115,7 +118,7 @@ public class PacienteDietaServiceTest {
 	public void testAssignDietaWithDefaultStatus() {
 		log.info("starting testAssignDietaWithDefaultStatus");
 		// Arrange
-		when(pacienteRepository.findById(1L)).thenReturn(Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(Optional.of(dieta));
 		when(pacienteDietaRepository.save(any(PacienteDieta.class))).thenAnswer(invocation -> {
 			final PacienteDieta pd = invocation.getArgument(0);
@@ -128,7 +131,7 @@ public class PacienteDietaServiceTest {
 		newAssignment.setStatus(null); // No status set
 
 		// Act
-		final PacienteDieta result = service.assignDieta(1L, 1L, newAssignment);
+		final PacienteDieta result = service.assignDieta(1L, 1L, newAssignment, TEST_USER_ID);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -142,13 +145,13 @@ public class PacienteDietaServiceTest {
 	public void testAssignDietaThrowsExceptionWhenPacienteNotFound() {
 		log.info("starting testAssignDietaThrowsExceptionWhenPacienteNotFound");
 		// Arrange
-		when(pacienteRepository.findById(1L)).thenReturn(Optional.empty());
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(Optional.empty());
 
 		final PacienteDieta newAssignment = new PacienteDieta();
 		newAssignment.setStartDate(new Date());
 
 		// Act & Assert
-		assertThatThrownBy(() -> service.assignDieta(1L, 1L, newAssignment))
+		assertThatThrownBy(() -> service.assignDieta(1L, 1L, newAssignment, TEST_USER_ID))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado paciente");
 		log.info("finished testAssignDietaThrowsExceptionWhenPacienteNotFound");
@@ -158,14 +161,14 @@ public class PacienteDietaServiceTest {
 	public void testAssignDietaThrowsExceptionWhenDietaNotFound() {
 		log.info("starting testAssignDietaThrowsExceptionWhenDietaNotFound");
 		// Arrange
-		when(pacienteRepository.findById(1L)).thenReturn(Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(Optional.empty());
 
 		final PacienteDieta newAssignment = new PacienteDieta();
 		newAssignment.setStartDate(new Date());
 
 		// Act & Assert
-		assertThatThrownBy(() -> service.assignDieta(1L, 1L, newAssignment))
+		assertThatThrownBy(() -> service.assignDieta(1L, 1L, newAssignment, TEST_USER_ID))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado dieta");
 		log.info("finished testAssignDietaThrowsExceptionWhenDietaNotFound");
@@ -177,7 +180,7 @@ public class PacienteDietaServiceTest {
 		// Arrange - This test verifies that even if the input object has an ID (from form
 		// binding),
 		// a new object is created to avoid StaleObjectStateException
-		when(pacienteRepository.findById(1L)).thenReturn(Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(Optional.of(dieta));
 		when(pacienteDietaRepository.save(any(PacienteDieta.class))).thenAnswer(invocation -> {
 			final PacienteDieta pd = invocation.getArgument(0);
@@ -195,7 +198,7 @@ public class PacienteDietaServiceTest {
 		inputWithId.setNotes("Test notes");
 
 		// Act
-		final PacienteDieta result = service.assignDieta(1L, 1L, inputWithId);
+		final PacienteDieta result = service.assignDieta(1L, 1L, inputWithId, TEST_USER_ID);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -205,7 +208,7 @@ public class PacienteDietaServiceTest {
 		assertThat(result.getStartDate()).isEqualTo(startDate);
 		assertThat(result.getStatus()).isEqualTo(PacienteDietaStatus.ACTIVE);
 		assertThat(result.getNotes()).isEqualTo("Test notes");
-		verify(pacienteRepository).findById(1L);
+		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(dietaRepository).findById(1L);
 		verify(pacienteDietaRepository).save(any(PacienteDieta.class));
 		log.info("finished testAssignDietaCreatesNewObjectEvenWhenInputHasId");
@@ -215,7 +218,7 @@ public class PacienteDietaServiceTest {
 	public void testAssignDietaCopiesAllFieldsCorrectly() {
 		log.info("starting testAssignDietaCopiesAllFieldsCorrectly");
 		// Arrange
-		when(pacienteRepository.findById(1L)).thenReturn(Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(Optional.of(dieta));
 		when(pacienteDietaRepository.save(any(PacienteDieta.class))).thenAnswer(invocation -> {
 			final PacienteDieta pd = invocation.getArgument(0);
@@ -234,7 +237,7 @@ public class PacienteDietaServiceTest {
 		input.setNotes(notes);
 
 		// Act
-		final PacienteDieta result = service.assignDieta(1L, 1L, input);
+		final PacienteDieta result = service.assignDieta(1L, 1L, input, TEST_USER_ID);
 
 		// Assert - Verify all fields are copied correctly
 		assertThat(result).isNotNull();
