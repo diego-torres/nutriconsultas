@@ -32,4 +32,3 @@ public class LipidProfile {
 	private Double colesterolTotal;
 
 }
-

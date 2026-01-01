@@ -17,4 +17,3 @@ public interface ClinicalExamService {
 	List<ClinicalExam> findByPacienteId(@NonNull Long pacienteId);
 
 }
-

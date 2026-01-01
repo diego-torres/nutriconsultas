@@ -74,12 +74,10 @@ public class ClinicalExamRestController extends AbstractGridController<ClinicalE
 		final String imc = row.getImc() != null ? String.format("%.1f", row.getImc()) : "-";
 		final String glucosa = row.getGlucosa() != null ? String.format("%.0f mg/dL", row.getGlucosa()) : "-";
 		final String colesterolTotal = row.getColesterolTotal() != null
-				? String.format("%.0f mg/dL", row.getColesterolTotal())
-				: "-";
+				? String.format("%.0f mg/dL", row.getColesterolTotal()) : "-";
 		final String hemoglobina = row.getHemoglobina() != null ? String.format("%.1f g/dL", row.getHemoglobina())
 				: "-";
-		return Arrays.asList(
-				row.getExamDateTime() != null ? dateTimeFormat.format(row.getExamDateTime()) : "",
+		return Arrays.asList(row.getExamDateTime() != null ? dateTimeFormat.format(row.getExamDateTime()) : "",
 				"<a href='/admin/pacientes/" + row.getPaciente().getId() + "/examen-clinico/" + row.getId() + "'>"
 						+ row.getTitle() + "</a>",
 				peso, imc, glucosa, colesterolTotal, hemoglobina,
@@ -118,8 +116,7 @@ public class ClinicalExamRestController extends AbstractGridController<ClinicalE
 				break;
 			case "examDateTime":
 			case "fecha":
-				comparator = Comparator.comparing(ClinicalExam::getExamDateTime,
-						Comparator.nullsLast(Date::compareTo));
+				comparator = Comparator.comparing(ClinicalExam::getExamDateTime, Comparator.nullsLast(Date::compareTo));
 				break;
 			case "peso":
 				comparator = Comparator.comparing(ClinicalExam::getPeso, Comparator.nullsLast(Double::compareTo));
@@ -139,8 +136,7 @@ public class ClinicalExamRestController extends AbstractGridController<ClinicalE
 						Comparator.nullsLast(Double::compareTo));
 				break;
 			default:
-				comparator = Comparator.comparing(ClinicalExam::getExamDateTime,
-						Comparator.nullsLast(Date::compareTo));
+				comparator = Comparator.comparing(ClinicalExam::getExamDateTime, Comparator.nullsLast(Date::compareTo));
 		}
 		return dir == Direction.desc ? comparator.reversed() : comparator;
 	}
@@ -199,4 +195,3 @@ public class ClinicalExamRestController extends AbstractGridController<ClinicalE
 	}
 
 }
-

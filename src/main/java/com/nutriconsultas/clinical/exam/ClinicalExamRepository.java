@@ -11,4 +11,3 @@ public interface ClinicalExamRepository extends JpaRepository<ClinicalExam, Long
 	List<ClinicalExam> findByPacienteId(Long pacienteId);
 
 }
-

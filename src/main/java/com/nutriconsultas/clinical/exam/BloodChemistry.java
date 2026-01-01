@@ -35,4 +35,3 @@ public class BloodChemistry {
 	private Double bun;
 
 }
-

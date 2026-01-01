@@ -351,6 +351,13 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			response.put("event", toCalendarEventMap(savedEvent));
 			return ResponseEntity.ok(response);
 		}
+		catch (final IllegalArgumentException e) {
+			log.error("Error saving calendar event", e);
+			final Map<String, Object> errorResponse = new HashMap<>();
+			errorResponse.put("success", false);
+			errorResponse.put("error", e.getMessage());
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+		}
 		catch (final Exception e) {
 			log.error("Error saving calendar event", e);
 			final Map<String, Object> errorResponse = new HashMap<>();
@@ -389,8 +396,7 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		if (eventData.get("pacienteId") != null) {
 			final Long pacienteId = Long.parseLong(eventData.get("pacienteId").toString());
 			final Paciente paciente = pacienteRepository.findById(pacienteId)
-				.orElseThrow(
-						() -> new IllegalArgumentException("No se ha encontrado paciente con id " + pacienteId));
+				.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con id " + pacienteId));
 			event.setPaciente(paciente);
 		}
 		return event;
@@ -414,7 +420,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 	}
 
 	private void setBiochemicalFields(final CalendarEvent event, final Map<String, Object> eventData) {
-		// Vital signs and basic measurements only (biochemical fields belong to ClinicalExam)
+		// Vital signs and basic measurements only (biochemical fields belong to
+		// ClinicalExam)
 		setDoubleField(eventData, "peso", event::setPeso);
 		setDoubleField(eventData, "estatura", event::setEstatura);
 		setDoubleField(eventData, "imc", event::setImc);

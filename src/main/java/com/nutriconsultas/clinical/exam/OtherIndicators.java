@@ -32,4 +32,3 @@ public class OtherIndicators {
 	private Double ferritina;
 
 }
-

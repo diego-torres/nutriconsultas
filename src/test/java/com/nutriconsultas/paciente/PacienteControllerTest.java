@@ -1068,8 +1068,7 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(() -> controller.clinicosPaciente(1L, model))
-			.isInstanceOf(IllegalArgumentException.class)
+		assertThatThrownBy(() -> controller.clinicosPaciente(1L, model)).isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado paciente con folio");
 		log.info("finished testClinicosPacienteThrowsExceptionWhenPacienteNotFound");
 	}
@@ -1091,8 +1090,7 @@ public class PacienteControllerTest {
 			.thenReturn(15.5);
 
 		// Act
-		final String result = controller.agregarClinicosPaciente(1L, Objects.requireNonNull(exam), bindingResult,
-				null);
+		final String result = controller.agregarClinicosPaciente(1L, Objects.requireNonNull(exam), bindingResult, null);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -1127,8 +1125,7 @@ public class PacienteControllerTest {
 		when(clinicalExamService.save(Objects.requireNonNull(exam))).thenReturn(exam);
 
 		// Act
-		final String result = controller.agregarClinicosPaciente(1L, Objects.requireNonNull(exam), bindingResult,
-				null);
+		final String result = controller.agregarClinicosPaciente(1L, Objects.requireNonNull(exam), bindingResult, null);
 
 		// Assert
 		assertThat(result).isNotNull();

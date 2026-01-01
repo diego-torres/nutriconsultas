@@ -361,10 +361,9 @@ public class PacienteController extends AbstractAuthorizedController {
 	public String agregarConsultaPaciente(@PathVariable @NonNull Long pacienteId, @Valid CalendarEvent evento,
 			BindingResult result, Model model) {
 		log.debug("Grabando consulta {}", evento);
-		final Paciente paciente = Objects.requireNonNull(
-			pacienteRepository.findById(pacienteId)
-				.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
-			"Paciente must not be null");
+		final Paciente paciente = Objects.requireNonNull(pacienteRepository.findById(pacienteId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
+				"Paciente must not be null");
 
 		evento.setPaciente(paciente);
 
@@ -399,10 +398,9 @@ public class PacienteController extends AbstractAuthorizedController {
 	public String agregarClinicosPaciente(@PathVariable @NonNull Long pacienteId, @Valid ClinicalExam exam,
 			BindingResult result, Model model) {
 		log.debug("Grabando examen clínico {}", exam);
-		final Paciente paciente = Objects.requireNonNull(
-			pacienteRepository.findById(pacienteId)
-				.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
-			"Paciente must not be null");
+		final Paciente paciente = Objects.requireNonNull(pacienteRepository.findById(pacienteId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
+				"Paciente must not be null");
 
 		exam.setPaciente(paciente);
 
@@ -426,8 +424,7 @@ public class PacienteController extends AbstractAuthorizedController {
 			throw new IllegalArgumentException("No se ha encontrado examen clínico con id " + examId);
 		}
 		if (!exam.getPaciente().getId().equals(pacienteId)) {
-			throw new IllegalArgumentException(
-					"El examen clínico no pertenece al paciente especificado");
+			throw new IllegalArgumentException("El examen clínico no pertenece al paciente especificado");
 		}
 
 		model.addAttribute("activeMenu", "historial");
@@ -825,7 +822,8 @@ public class PacienteController extends AbstractAuthorizedController {
 	private Double calculateBodyFatPercentage(final Double imc, final Paciente paciente) {
 		if (paciente.getDob() == null || paciente.getGender() == null) {
 			if (paciente.getDob() == null) {
-				log.debug("El paciente no tiene fecha de nacimiento registrada, no se calculará el índice de grasa corporal");
+				log.debug(
+						"El paciente no tiene fecha de nacimiento registrada, no se calculará el índice de grasa corporal");
 			}
 			if (paciente.getGender() == null) {
 				log.debug("El paciente no tiene género registrado, no se calculará el índice de grasa corporal");
@@ -958,8 +956,8 @@ public class PacienteController extends AbstractAuthorizedController {
 		final List<ClinicalExam> examenesPrevios = clinicalExamService.findByPacienteId(pacienteId);
 		final boolean laterExists = eventosPrevios.stream()
 			.anyMatch(e -> e.getEventDateTime() != null && e.getEventDateTime().after(examDate))
-			|| examenesPrevios.stream()
-				.anyMatch(e -> e.getExamDateTime() != null && e.getExamDateTime().after(examDate));
+				|| examenesPrevios.stream()
+					.anyMatch(e -> e.getExamDateTime() != null && e.getExamDateTime().after(examDate));
 
 		if (!laterExists) {
 			log.debug("No later event exists, setting patient weight vars as latest date clinical exam");

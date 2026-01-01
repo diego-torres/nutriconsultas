@@ -29,4 +29,3 @@ public class LiverFunction {
 	private Double bilirrubina;
 
 }
-

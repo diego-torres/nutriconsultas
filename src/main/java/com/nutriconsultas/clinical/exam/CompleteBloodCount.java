@@ -32,4 +32,3 @@ public class CompleteBloodCount {
 	private Double plaquetas;
 
 }
-

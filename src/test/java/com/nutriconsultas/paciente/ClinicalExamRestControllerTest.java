@@ -156,7 +156,8 @@ public class ClinicalExamRestControllerTest {
 
 		// Assert
 		assertThat(result).isNotNull();
-		assertThat(result.size()).isEqualTo(8); // fecha, titulo, peso, imc, glucosa, colesterolTotal, hemoglobina, actions
+		assertThat(result.size()).isEqualTo(8); // fecha, titulo, peso, imc, glucosa,
+												// colesterolTotal, hemoglobina, actions
 		assertThat(result.get(0)).isNotEmpty(); // Date formatted
 		assertThat(result.get(1)).contains("Examen Clínico 1");
 		assertThat(result.get(1)).contains("/admin/pacientes/1/examen-clinico/1");
@@ -408,4 +409,3 @@ public class ClinicalExamRestControllerTest {
 	}
 
 }
-

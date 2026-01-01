@@ -57,4 +57,3 @@ public class VitalSigns {
 	private Double temperatura;
 
 }
-
