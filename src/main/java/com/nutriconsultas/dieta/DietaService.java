@@ -22,4 +22,6 @@ public interface DietaService {
 
 	void recalculatePlatilloIngestaNutrients(@NonNull PlatilloIngesta platilloIngesta, @NonNull Integer portions);
 
+	Dieta duplicateDieta(@NonNull Long id);
+
 }

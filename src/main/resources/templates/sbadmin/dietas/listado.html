@@ -172,6 +172,26 @@
           });
         });
 
+        window.duplicateDieta = function (dietaId) {
+          if (confirm('¿Está seguro que desea duplicar esta dieta?')) {
+            $.ajax({
+              url: '/rest/dietas/' + dietaId + '/duplicate',
+              type: 'POST',
+              contentType: 'application/json',
+              success: function (data) {
+                if (data && data.data && data.data.id) {
+                  window.location.href = '/admin/dietas/' + data.data.id;
+                } else {
+                  alert('Error al duplicar la dieta');
+                }
+              },
+              error: function () {
+                alert('Error al duplicar la dieta');
+              }
+            });
+          }
+        };
+
       })(jQuery);
     </script>
 </body>

@@ -173,6 +173,18 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		return ResponseEntity.ok(new ApiResponse<Dieta>(saved));
 	}
 
+	@PostMapping("{dietaId}/duplicate")
+	public ResponseEntity<ApiResponse<Dieta>> duplicateDieta(@PathVariable @NonNull final Long dietaId) {
+		log.info("starting duplicateDieta with dietaId {}.", dietaId);
+		final Dieta duplicatedDieta = dietaService.duplicateDieta(dietaId);
+		if (duplicatedDieta == null) {
+			log.warn("Dieta with id {} not found for duplication", dietaId);
+			return ResponseEntity.notFound().build();
+		}
+		log.info("finish duplicateDieta with dietaId {}, new dieta id {}.", dietaId, duplicatedDieta.getId());
+		return ResponseEntity.ok(new ApiResponse<Dieta>(duplicatedDieta));
+	}
+
 	@Override
 	protected List<Column> getColumns() {
 		return Stream.of("acciones", "dieta", "ingestas", "dist", "kcal", "prot", "lip", "hc")
@@ -185,10 +197,12 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		log.debug("converting Dieta row {} to string list.", row);
 		final String printButton = "<a href='/admin/dietas/" + row.getId()
 				+ "/print' class='btn btn-sm btn-primary' target='_blank' title='Imprimir PDF'><i class='fas fa-file-pdf'></i></a>";
-		return Arrays.asList(printButton, "<a href='/admin/dietas/" + row.getId() + "'>" + row.getNombre() + "</a>",
-				getIngestas(row), getDist(row), String.format("%.1f", getKCal(row)),
-				String.format("%.1f", getTotalProteina(row)), String.format("%.1f", getTotalLipidos(row)),
-				String.format("%.1f", getTotalHidratosDeCarbono(row)));
+		final String duplicateButton = "<button onclick='duplicateDieta(" + row.getId()
+				+ ")' class='btn btn-sm btn-info' title='Duplicar Dieta'><i class='fas fa-copy'></i></button>";
+		return Arrays.asList(printButton + " " + duplicateButton,
+				"<a href='/admin/dietas/" + row.getId() + "'>" + row.getNombre() + "</a>", getIngestas(row),
+				getDist(row), String.format("%.1f", getKCal(row)), String.format("%.1f", getTotalProteina(row)),
+				String.format("%.1f", getTotalLipidos(row)), String.format("%.1f", getTotalHidratosDeCarbono(row)));
 	}
 
 	private String getIngestas(final Dieta row) {

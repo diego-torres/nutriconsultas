@@ -1,5 +1,6 @@
 package com.nutriconsultas.dieta;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -251,6 +252,189 @@ public class DietaServiceImpl implements DietaService {
 		if (platilloIngesta.getEtanol() != null) {
 			platilloIngesta.setEtanol(platilloIngesta.getEtanol() * ratio);
 		}
+	}
+
+	@Override
+	public Dieta duplicateDieta(@NonNull final Long id) {
+		log.info("Duplicating dieta with id: {}", id);
+		final Dieta originalDieta = dietaRepository.findById(id).orElse(null);
+		if (originalDieta == null) {
+			log.warn("Dieta with id {} not found for duplication", id);
+			return null;
+		}
+
+		// Create new dieta with "Copy of [Original Name]"
+		final Dieta newDieta = new Dieta();
+		final String originalNombre = originalDieta.getNombre() != null ? originalDieta.getNombre() : "Dieta";
+		newDieta.setNombre("Copia de " + originalNombre);
+
+		// Copy nutritional values from AbstractMacroNutrible
+		newDieta.setEnergia(originalDieta.getEnergia());
+		newDieta.setProteina(originalDieta.getProteina());
+		newDieta.setLipidos(originalDieta.getLipidos());
+		newDieta.setHidratosDeCarbono(originalDieta.getHidratosDeCarbono());
+
+		// Copy all ingestas
+		final List<Ingesta> newIngestas = new ArrayList<>();
+		for (final Ingesta originalIngesta : originalDieta.getIngestas()) {
+			final Ingesta newIngesta = new Ingesta();
+			newIngesta.setNombre(originalIngesta.getNombre());
+			newIngesta.setDieta(newDieta);
+
+			// Copy nutritional values from AbstractMacroNutrible
+			newIngesta.setEnergia(originalIngesta.getEnergia());
+			newIngesta.setProteina(originalIngesta.getProteina());
+			newIngesta.setLipidos(originalIngesta.getLipidos());
+			newIngesta.setHidratosDeCarbono(originalIngesta.getHidratosDeCarbono());
+
+			// Copy platillos
+			final List<PlatilloIngesta> newPlatillos = new ArrayList<>();
+			for (final PlatilloIngesta originalPlatillo : originalIngesta.getPlatillos()) {
+				final PlatilloIngesta newPlatillo = copyPlatilloIngesta(originalPlatillo);
+				newPlatillo.setIngesta(newIngesta);
+				newPlatillos.add(newPlatillo);
+			}
+			newIngesta.setPlatillos(newPlatillos);
+
+			// Copy alimentos
+			final List<AlimentoIngesta> newAlimentos = new ArrayList<>();
+			for (final AlimentoIngesta originalAlimento : originalIngesta.getAlimentos()) {
+				final AlimentoIngesta newAlimento = copyAlimentoIngesta(originalAlimento);
+				newAlimento.setIngesta(newIngesta);
+				newAlimentos.add(newAlimento);
+			}
+			newIngesta.setAlimentos(newAlimentos);
+
+			newIngestas.add(newIngesta);
+		}
+		newDieta.setIngestas(newIngestas);
+
+		// Save and return the duplicated dieta
+		final Dieta savedDieta = dietaRepository.save(newDieta);
+		log.info("Successfully duplicated dieta with id {} to new dieta with id {}", id, savedDieta.getId());
+		return savedDieta;
+	}
+
+	private PlatilloIngesta copyPlatilloIngesta(final PlatilloIngesta original) {
+		final PlatilloIngesta copy = new PlatilloIngesta();
+		copy.setName(original.getName());
+		copy.setPortions(original.getPortions());
+		copy.setRecommendations(original.getRecommendations());
+		copy.setImageUrl(original.getImageUrl());
+		copy.setVideoUrl(original.getVideoUrl());
+		copy.setPdfUrl(original.getPdfUrl());
+
+		// Copy nutritional values from AbstractNutrible
+		copy.setEnergia(original.getEnergia());
+		copy.setProteina(original.getProteina());
+		copy.setLipidos(original.getLipidos());
+		copy.setHidratosDeCarbono(original.getHidratosDeCarbono());
+		copy.setPesoBrutoRedondeado(original.getPesoBrutoRedondeado());
+		copy.setPesoNeto(original.getPesoNeto());
+		copy.setFibra(original.getFibra());
+		copy.setVitA(original.getVitA());
+		copy.setAcidoAscorbico(original.getAcidoAscorbico());
+		copy.setHierroNoHem(original.getHierroNoHem());
+		copy.setPotasio(original.getPotasio());
+		copy.setIndiceGlicemico(original.getIndiceGlicemico());
+		copy.setCargaGlicemica(original.getCargaGlicemica());
+		copy.setAcidoFolico(original.getAcidoFolico());
+		copy.setCalcio(original.getCalcio());
+		copy.setHierro(original.getHierro());
+		copy.setSodio(original.getSodio());
+		copy.setAzucarPorEquivalente(original.getAzucarPorEquivalente());
+		copy.setSelenio(original.getSelenio());
+		copy.setFosforo(original.getFosforo());
+		copy.setColesterol(original.getColesterol());
+		copy.setAgSaturados(original.getAgSaturados());
+		copy.setAgMonoinsaturados(original.getAgMonoinsaturados());
+		copy.setAgPoliinsaturados(original.getAgPoliinsaturados());
+		copy.setEtanol(original.getEtanol());
+
+		// Copy ingredientes
+		final List<IngredientePlatilloIngesta> newIngredientes = new ArrayList<>();
+		for (final IngredientePlatilloIngesta originalIngrediente : original.getIngredientes()) {
+			final IngredientePlatilloIngesta newIngrediente = copyIngredientePlatilloIngesta(originalIngrediente);
+			newIngrediente.setPlatillo(copy);
+			newIngredientes.add(newIngrediente);
+		}
+		copy.setIngredientes(newIngredientes);
+
+		return copy;
+	}
+
+	private IngredientePlatilloIngesta copyIngredientePlatilloIngesta(final IngredientePlatilloIngesta original) {
+		final IngredientePlatilloIngesta copy = new IngredientePlatilloIngesta();
+		copy.setDescription(original.getDescription());
+		copy.setCantSugerida(original.getCantSugerida());
+		copy.setAlimento(original.getAlimento());
+		copy.setUnidad(original.getUnidad());
+
+		// Copy nutritional values from AbstractFraccionable (extends AbstractNutrible)
+		copy.setEnergia(original.getEnergia());
+		copy.setProteina(original.getProteina());
+		copy.setLipidos(original.getLipidos());
+		copy.setHidratosDeCarbono(original.getHidratosDeCarbono());
+		copy.setPesoBrutoRedondeado(original.getPesoBrutoRedondeado());
+		copy.setPesoNeto(original.getPesoNeto());
+		copy.setFibra(original.getFibra());
+		copy.setVitA(original.getVitA());
+		copy.setAcidoAscorbico(original.getAcidoAscorbico());
+		copy.setHierroNoHem(original.getHierroNoHem());
+		copy.setPotasio(original.getPotasio());
+		copy.setIndiceGlicemico(original.getIndiceGlicemico());
+		copy.setCargaGlicemica(original.getCargaGlicemica());
+		copy.setAcidoFolico(original.getAcidoFolico());
+		copy.setCalcio(original.getCalcio());
+		copy.setHierro(original.getHierro());
+		copy.setSodio(original.getSodio());
+		copy.setAzucarPorEquivalente(original.getAzucarPorEquivalente());
+		copy.setSelenio(original.getSelenio());
+		copy.setFosforo(original.getFosforo());
+		copy.setColesterol(original.getColesterol());
+		copy.setAgSaturados(original.getAgSaturados());
+		copy.setAgMonoinsaturados(original.getAgMonoinsaturados());
+		copy.setAgPoliinsaturados(original.getAgPoliinsaturados());
+		copy.setEtanol(original.getEtanol());
+
+		return copy;
+	}
+
+	private AlimentoIngesta copyAlimentoIngesta(final AlimentoIngesta original) {
+		final AlimentoIngesta copy = new AlimentoIngesta();
+		copy.setName(original.getName());
+		copy.setPortions(original.getPortions());
+		copy.setAlimento(original.getAlimento());
+		copy.setUnidad(original.getUnidad());
+
+		// Copy all nutritional values
+		copy.setPesoBrutoRedondeado(original.getPesoBrutoRedondeado());
+		copy.setPesoNeto(original.getPesoNeto());
+		copy.setEnergia(original.getEnergia());
+		copy.setProteina(original.getProteina());
+		copy.setLipidos(original.getLipidos());
+		copy.setHidratosDeCarbono(original.getHidratosDeCarbono());
+		copy.setFibra(original.getFibra());
+		copy.setVitA(original.getVitA());
+		copy.setAcidoAscorbico(original.getAcidoAscorbico());
+		copy.setHierroNoHem(original.getHierroNoHem());
+		copy.setPotasio(original.getPotasio());
+		copy.setIndiceGlicemico(original.getIndiceGlicemico());
+		copy.setCargaGlicemica(original.getCargaGlicemica());
+		copy.setAcidoFolico(original.getAcidoFolico());
+		copy.setCalcio(original.getCalcio());
+		copy.setHierro(original.getHierro());
+		copy.setSodio(original.getSodio());
+		copy.setAzucarPorEquivalente(original.getAzucarPorEquivalente());
+		copy.setSelenio(original.getSelenio());
+		copy.setFosforo(original.getFosforo());
+		copy.setColesterol(original.getColesterol());
+		copy.setAgSaturados(original.getAgSaturados());
+		copy.setAgMonoinsaturados(original.getAgMonoinsaturados());
+		copy.setAgPoliinsaturados(original.getAgPoliinsaturados());
+		copy.setEtanol(original.getEtanol());
+
+		return copy;
 	}
 
 }
