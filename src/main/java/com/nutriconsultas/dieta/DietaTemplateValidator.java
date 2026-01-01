@@ -39,6 +39,35 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		final Map<String, Object> variables = super.createMockModelVariables();
 
 		// Create mock ingestas list
+		final List<Ingesta> mockIngestas = createMockIngestas();
+
+		// Create Dieta object with ingestas
+		final Dieta mockDieta = createMockDieta(mockIngestas);
+
+		variables.put("dieta", mockDieta);
+		variables.put("ingestas", mockIngestas);
+
+		// Add minId for formulario template (minimum ingesta id)
+		variables.put("minId", mockIngestas.isEmpty() ? 0L : mockIngestas.get(0).getId());
+
+		// Add platillos and alimentos lists for formulario template
+		variables.put("platillos", createMockPlatillosList());
+		variables.put("alimentos", createMockAlimentosList());
+
+		// Calculate distribution percentages for chart validation
+		addDistributionVariables(variables, mockDieta, mockIngestas);
+
+		// Add variables for printable template
+		addPrintableTemplateVariables(variables, mockDieta);
+
+		return variables;
+	}
+
+	/**
+	 * Creates a list of mock ingestas with platillos and alimentos for template validation.
+	 * @return list of mock ingestas
+	 */
+	private List<Ingesta> createMockIngestas() {
 		final List<Ingesta> mockIngestas = new ArrayList<>();
 		final Ingesta mockIngesta = new Ingesta();
 		mockIngesta.setId(1L);
@@ -47,7 +76,17 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		mockIngesta.setProteina(0.0);
 		mockIngesta.setLipidos(0.0);
 		mockIngesta.setHidratosDeCarbono(0.0);
-		// Add mock platillo with numeric values for validation
+		mockIngesta.setPlatillos(createMockPlatillos());
+		mockIngesta.setAlimentos(createMockAlimentos());
+		mockIngestas.add(mockIngesta);
+		return mockIngestas;
+	}
+
+	/**
+	 * Creates a list of mock platillos for ingesta validation.
+	 * @return list of mock platillos
+	 */
+	private List<PlatilloIngesta> createMockPlatillos() {
 		final List<PlatilloIngesta> mockPlatillos = new ArrayList<>();
 		final PlatilloIngesta mockPlatillo = new PlatilloIngesta();
 		mockPlatillo.setId(1L);
@@ -57,7 +96,17 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		mockPlatillo.setProteina(15.75);
 		mockPlatillo.setLipidos(8.5);
 		mockPlatillo.setHidratosDeCarbono(30.25);
-		// Add mock ingredientes for template validation
+		mockPlatillo.setIngredientes(createMockIngredientes(mockPlatillo));
+		mockPlatillos.add(mockPlatillo);
+		return mockPlatillos;
+	}
+
+	/**
+	 * Creates a list of mock ingredientes for platillo validation.
+	 * @param platillo the platillo to associate with ingredientes
+	 * @return list of mock ingredientes
+	 */
+	private List<IngredientePlatilloIngesta> createMockIngredientes(final PlatilloIngesta platillo) {
 		final List<IngredientePlatilloIngesta> mockIngredientes = new ArrayList<>();
 		final IngredientePlatilloIngesta mockIngrediente = new IngredientePlatilloIngesta();
 		mockIngrediente.setId(1L);
@@ -69,13 +118,16 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		mockAlimentoIngrediente.setId(1L);
 		mockAlimentoIngrediente.setNombreAlimento("Alimento ingrediente");
 		mockIngrediente.setAlimento(mockAlimentoIngrediente);
-		mockIngrediente.setPlatillo(mockPlatillo);
+		mockIngrediente.setPlatillo(platillo);
 		mockIngredientes.add(mockIngrediente);
-		mockPlatillo.setIngredientes(mockIngredientes);
-		mockPlatillos.add(mockPlatillo);
-		mockIngesta.setPlatillos(mockPlatillos);
+		return mockIngredientes;
+	}
 
-		// Add mock alimentos for more complete validation
+	/**
+	 * Creates a list of mock alimentos for ingesta validation.
+	 * @return list of mock alimentos
+	 */
+	private List<AlimentoIngesta> createMockAlimentos() {
 		final List<AlimentoIngesta> mockAlimentos = new ArrayList<>();
 		final AlimentoIngesta mockAlimento = new AlimentoIngesta();
 		mockAlimento.setId(1L);
@@ -94,11 +146,15 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		mockAlimentoEntity.setUnidad("taza");
 		mockAlimento.setAlimento(mockAlimentoEntity);
 		mockAlimentos.add(mockAlimento);
-		mockIngesta.setAlimentos(mockAlimentos);
+		return mockAlimentos;
+	}
 
-		mockIngestas.add(mockIngesta);
-
-		// Create Dieta object with ingestas
+	/**
+	 * Creates a mock Dieta object with the provided ingestas.
+	 * @param mockIngestas the ingestas to add to the dieta
+	 * @return mock Dieta object
+	 */
+	private Dieta createMockDieta(final List<Ingesta> mockIngestas) {
 		final Dieta mockDieta = new Dieta();
 		mockDieta.setId(0L);
 		mockDieta.setNombre("");
@@ -107,47 +163,48 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		mockDieta.setLipidos(0.0);
 		mockDieta.setHidratosDeCarbono(0.0);
 		mockDieta.setIngestas(mockIngestas);
+		return mockDieta;
+	}
 
-		variables.put("dieta", mockDieta);
-		variables.put("ingestas", mockIngestas);
-
-		// Add minId for formulario template (minimum ingesta id)
-		variables.put("minId", mockIngestas.isEmpty() ? 0L : mockIngestas.get(0).getId());
-
-		// Add platillos list for formulario template (for adding platillos to ingestas)
+	/**
+	 * Creates a list of mock platillos for the formulario template dropdown.
+	 * @return list of mock platillos
+	 */
+	private List<com.nutriconsultas.platillos.Platillo> createMockPlatillosList() {
 		final List<com.nutriconsultas.platillos.Platillo> mockPlatillosList = new ArrayList<>();
 		final com.nutriconsultas.platillos.Platillo mockPlatilloEntity = new com.nutriconsultas.platillos.Platillo();
 		mockPlatilloEntity.setId(1L);
 		mockPlatilloEntity.setName("Platillo disponible");
 		mockPlatillosList.add(mockPlatilloEntity);
-		variables.put("platillos", mockPlatillosList);
+		return mockPlatillosList;
+	}
 
-		// Add alimentos list for formulario template (for adding alimentos to ingestas)
+	/**
+	 * Creates a list of mock alimentos for the formulario template dropdown.
+	 * @return list of mock alimentos
+	 */
+	private List<com.nutriconsultas.alimentos.Alimento> createMockAlimentosList() {
 		final List<com.nutriconsultas.alimentos.Alimento> mockAlimentosList = new ArrayList<>();
 		final com.nutriconsultas.alimentos.Alimento mockAlimentoEntityForList = new com.nutriconsultas.alimentos.Alimento();
 		mockAlimentoEntityForList.setId(1L);
 		mockAlimentoEntityForList.setNombreAlimento("Alimento disponible");
 		mockAlimentosList.add(mockAlimentoEntityForList);
-		variables.put("alimentos", mockAlimentosList);
+		return mockAlimentosList;
+	}
 
+	/**
+	 * Adds distribution variables for chart validation to the variables map.
+	 * @param variables the variables map to add to
+	 * @param mockDieta the mock dieta to calculate from
+	 * @param mockIngestas the mock ingestas for totals calculation
+	 */
+	private void addDistributionVariables(final Map<String, Object> variables, final Dieta mockDieta,
+			final List<Ingesta> mockIngestas) {
 		// Calculate distribution percentages for chart validation
 		// Using the same calculation logic as DietaController
 		final double totalProteina = calculateTotalProteina(mockDieta);
 		final double totalLipidos = calculateTotalLipidos(mockDieta);
 		final double totalHidratosDeCarbono = calculateTotalHidratosDeCarbono(mockDieta);
-
-		// Add variables for printable template
-		// Note: Setting these to null validates the "unassigned dieta" scenario.
-		// The template uses conditional rendering (th:if="${paciente != null}") to
-		// handle both assigned and unassigned cases. When paciente is null, the
-		// patient information section is hidden, which is the expected behavior
-		// for unassigned dietas.
-		variables.put("pacienteDieta", null); // null = unassigned dieta scenario
-		variables.put("paciente", null); // null = unassigned dieta scenario
-		variables.put("totalEnergia", calculateTotalEnergia(mockDieta));
-		variables.put("totalProteina", totalProteina);
-		variables.put("totalLipidos", totalLipidos);
-		variables.put("totalHidratosDeCarbono", totalHidratosDeCarbono);
 
 		// Add ingesta totals map for printable template
 		final java.util.Map<Long, DietaPdfService.IngestaNutritionalTotals> ingestaTotals = new java.util.HashMap<>();
@@ -160,6 +217,7 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 			ingestaTotals.put(ingesta.getId(), totals);
 		}
 		variables.put("ingestaTotals", ingestaTotals);
+
 		final double kCal = totalProteina * 4 + totalLipidos * 9 + totalHidratosDeCarbono * 4;
 
 		if (kCal > 0.01) {
@@ -174,8 +232,28 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		else {
 			variables.put("hasDistribucion", false);
 		}
+	}
 
-		return variables;
+	/**
+	 * Adds variables for printable template validation.
+	 * @param variables the variables map to add to
+	 * @param mockDieta the mock dieta to calculate from
+	 */
+	private void addPrintableTemplateVariables(final Map<String, Object> variables, final Dieta mockDieta) {
+		// Note: Setting these to null validates the "unassigned dieta" scenario.
+		// The template uses conditional rendering (th:if="${paciente != null}") to
+		// handle both assigned and unassigned cases. When paciente is null, the
+		// patient information section is hidden, which is the expected behavior
+		// for unassigned dietas.
+		variables.put("pacienteDieta", null); // null = unassigned dieta scenario
+		variables.put("paciente", null); // null = unassigned dieta scenario
+		variables.put("totalEnergia", calculateTotalEnergia(mockDieta));
+		final double totalProteina = calculateTotalProteina(mockDieta);
+		final double totalLipidos = calculateTotalLipidos(mockDieta);
+		final double totalHidratosDeCarbono = calculateTotalHidratosDeCarbono(mockDieta);
+		variables.put("totalProteina", totalProteina);
+		variables.put("totalLipidos", totalLipidos);
+		variables.put("totalHidratosDeCarbono", totalHidratosDeCarbono);
 	}
 
 	/**
