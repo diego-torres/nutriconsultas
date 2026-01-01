@@ -394,6 +394,13 @@
               <h1 th:if="${dieta == null || dieta.id == null || dieta.id ==0}" class="h3 mb-0 text-gray-800">Nueva Dieta</h1>
               <h1 th:unless="${dieta == null || dieta.id == null || dieta.id ==0}" class="h3 mb-0 text-gray-800" th:text="${dieta != null ? dieta.nombre : 'Modificar Dieta'}">Modificar Dieta</h1>
               <div th:if="${dieta != null && dieta.id != null && dieta.id != 0}">
+                <button 
+                   type="button"
+                   class="btn btn-sm btn-info shadow-sm" 
+                   th:attr="onclick='duplicateDieta(' + ${dieta.id} + ')'"
+                   style="margin-right: 10px;">
+                  <i class="fas fa-copy fa-sm text-white-50"></i> Duplicar
+                </button>
                 <a th:href="@{/admin/dietas/{id}/print(id=${dieta.id})}" 
                    class="btn btn-sm btn-primary shadow-sm" 
                    target="_blank">
@@ -1318,6 +1325,58 @@
               }
             }
           }
+
+          // Function to duplicate dieta
+          window.duplicateDieta = function (dietaId) {
+            swal({
+              title: 'Duplicar Dieta',
+              text: '¿Está seguro que desea duplicar esta dieta?',
+              type: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Sí, duplicar',
+              cancelButtonText: 'Cancelar',
+              closeOnConfirm: false,
+              showLoaderOnConfirm: true
+            }, function (isConfirm) {
+              if (isConfirm) {
+                $.ajax({
+                  url: '/rest/dietas/' + dietaId + '/duplicate',
+                  type: 'POST',
+                  contentType: 'application/json',
+                  success: function (data) {
+                    if (data && data.data && data.data.id) {
+                      swal({
+                        title: '¡Éxito!',
+                        text: 'La dieta ha sido duplicada correctamente',
+                        type: 'success',
+                        timer: 2000,
+                        showConfirmButton: true
+                      }, function () {
+                        window.location.href = '/admin/dietas/' + data.data.id;
+                      });
+                    } else {
+                      swal({
+                        title: 'Error',
+                        text: 'Error al duplicar la dieta',
+                        type: 'error',
+                        timer: 5000
+                      });
+                    }
+                  },
+                  error: function () {
+                    swal({
+                      title: 'Error',
+                      text: 'Error al duplicar la dieta',
+                      type: 'error',
+                      timer: 5000
+                    });
+                  }
+                });
+              }
+            });
+          };
         });
       })(jQuery);
     </script>
