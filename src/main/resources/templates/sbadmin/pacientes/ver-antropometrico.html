@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <!-- Favicons -->
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
+
+  <title>Minutriporcion - Ver Medición Antropométrica</title>
+
+  <!-- Custom fonts for this template-->
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+
+</head>
+
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/pacientes/sidebar :: sidebar}"></div>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Ver Medición Antropométrica</h1>
+            <div>
+              <a th:href="@{'/admin/pacientes/' + ${paciente.id} + '/historial'}" class="btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Volver al Historial
+              </a>
+            </div>
+          </div>
+
+          <!-- Content Row -->
+          <div class="row">
+            <div class="col-12">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary" th:text="${measurement.title}">Título de la Medición</h6>
+                </div>
+                <div class="card-body">
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <p><strong>Paciente:</strong> 
+                        <a th:href="@{'/admin/pacientes/' + ${paciente.id}}" th:text="${paciente.name}">Nombre del Paciente</a>
+                      </p>
+                      <p><strong>Fecha y Hora:</strong> 
+                        <span th:text="${#dates.format(measurement.measurementDateTime, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                      </p>
+                    </div>
+                    <div class="col-md-6" th:if="${measurement.description != null && !measurement.description.isEmpty()}">
+                      <p><strong>Descripción:</strong></p>
+                      <p th:text="${measurement.description}">Descripción</p>
+                    </div>
+                  </div>
+                  
+                  <hr>
+                  
+                  <!-- Basic Anthropometric Measurements -->
+                  <h5 class="mb-3">Mediciones Básicas</h5>
+                  <div class="row mb-4">
+                    <div class="col-md-4">
+                      <p><strong>Peso:</strong> 
+                        <span th:if="${measurement.peso != null}" th:text="${#numbers.formatDecimal(measurement.peso, 1, 1)} + ' kg'">-</span>
+                        <span th:if="${measurement.peso == null}">-</span>
+                      </p>
+                    </div>
+                    <div class="col-md-4">
+                      <p><strong>Estatura:</strong> 
+                        <span th:if="${measurement.estatura != null}" th:text="${#numbers.formatDecimal(measurement.estatura, 2, 2)} + ' m'">-</span>
+                        <span th:if="${measurement.estatura == null}">-</span>
+                      </p>
+                    </div>
+                    <div class="col-md-4">
+                      <p><strong>IMC:</strong> 
+                        <span th:if="${measurement.imc != null}" th:text="${#numbers.formatDecimal(measurement.imc, 1, 1)}">-</span>
+                        <span th:if="${measurement.imc == null}">-</span>
+                      </p>
+                    </div>
+                    <div class="col-md-4">
+                      <p><strong>Nivel de Peso:</strong> 
+                        <span th:if="${measurement.nivelPeso != null}" th:text="${measurement.nivelPeso}">-</span>
+                        <span th:if="${measurement.nivelPeso == null}">-</span>
+                      </p>
+                    </div>
+                    <div class="col-md-4">
+                      <p><strong>Índice de Grasa Corporal:</strong> 
+                        <span th:if="${measurement.indiceGrasaCorporal != null}" th:text="${#numbers.formatDecimal(measurement.indiceGrasaCorporal, 1, 1)}">-</span>
+                        <span th:if="${measurement.indiceGrasaCorporal == null}">-</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Body Measurements -->
+                  <h5 class="mb-3">Mediciones Corporales</h5>
+                  <div class="row mb-4">
+                    <div class="col-md-4">
+                      <p><strong>Cintura:</strong> 
+                        <span th:if="${measurement.cintura != null}" th:text="${#numbers.formatDecimal(measurement.cintura, 1, 1)} + ' cm'">-</span>
+                        <span th:if="${measurement.cintura == null}">-</span>
+                      </p>
+                    </div>
+                    <div class="col-md-4">
+                      <p><strong>Cadera:</strong> 
+                        <span th:if="${measurement.cadera != null}" th:text="${#numbers.formatDecimal(measurement.cadera, 1, 1)} + ' cm'">-</span>
+                        <span th:if="${measurement.cadera == null}">-</span>
+                      </p>
+                    </div>
+                    <div class="col-md-4">
+                      <p><strong>Cuello:</strong> 
+                        <span th:if="${measurement.cuello != null}" th:text="${#numbers.formatDecimal(measurement.cuello, 1, 1)} + ' cm'">-</span>
+                        <span th:if="${measurement.cuello == null}">-</span>
+                      </p>
+                    </div>
+                    <div class="col-md-4">
+                      <p><strong>Brazo:</strong> 
+                        <span th:if="${measurement.brazo != null}" th:text="${#numbers.formatDecimal(measurement.brazo, 1, 1)} + ' cm'">-</span>
+                        <span th:if="${measurement.brazo == null}">-</span>
+                      </p>
+                    </div>
+                    <div class="col-md-4">
+                      <p><strong>Muslo:</strong> 
+                        <span th:if="${measurement.muslo != null}" th:text="${#numbers.formatDecimal(measurement.muslo, 1, 1)} + ' cm'">-</span>
+                        <span th:if="${measurement.muslo == null}">-</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Body Composition -->
+                  <h5 class="mb-3">Composición Corporal</h5>
+                  <div class="row mb-4">
+                    <div class="col-md-4">
+                      <p><strong>Porcentaje de Grasa Corporal:</strong> 
+                        <span th:if="${measurement.porcentajeGrasaCorporal != null}" th:text="${#numbers.formatDecimal(measurement.porcentajeGrasaCorporal, 1, 1)} + '%'">-</span>
+                        <span th:if="${measurement.porcentajeGrasaCorporal == null}">-</span>
+                      </p>
+                    </div>
+                    <div class="col-md-4">
+                      <p><strong>Porcentaje de Masa Muscular:</strong> 
+                        <span th:if="${measurement.porcentajeMasaMuscular != null}" th:text="${#numbers.formatDecimal(measurement.porcentajeMasaMuscular, 1, 1)} + '%'">-</span>
+                        <span th:if="${measurement.porcentajeMasaMuscular == null}">-</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Notes -->
+                  <div class="row mb-3" th:if="${measurement.notes != null && !measurement.notes.isEmpty()}">
+                    <div class="col-12">
+                      <h5 class="mb-3">Notas</h5>
+                      <p th:text="${measurement.notes}">Notas</p>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+
+        <div th:insert="~{sbadmin/footer :: footer}"></div>
+
+      </div>
+      <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Bootstrap core JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+
+</body>
+
+</html>
+

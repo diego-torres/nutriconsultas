@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.EventStatus;
+import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.ClinicalExam;
 import com.nutriconsultas.dieta.Dieta;
 import com.nutriconsultas.validation.template.BaseTemplateValidator;
@@ -36,6 +37,8 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		addMockConsulta(variables, paciente);
 		addMockClinicos(variables, paciente);
 		addMockExam(variables, paciente);
+		addMockAntropometrico(variables, paciente);
+		addMockMeasurement(variables, paciente);
 
 		return variables;
 	}
@@ -170,6 +173,39 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		exam.setHierro(null);
 		exam.setFerritina(null);
 		return exam;
+	}
+
+	private void addMockAntropometrico(final Map<String, Object> variables, final Paciente paciente) {
+		final AnthropometricMeasurement mockAntropometrico = createMockAnthropometricMeasurement(0L, paciente);
+		variables.put("antropometrico", mockAntropometrico);
+	}
+
+	private void addMockMeasurement(final Map<String, Object> variables, final Paciente paciente) {
+		final AnthropometricMeasurement mockMeasurement = createMockAnthropometricMeasurement(1L, paciente);
+		variables.put("measurement", mockMeasurement);
+	}
+
+	private AnthropometricMeasurement createMockAnthropometricMeasurement(final Long id, final Paciente paciente) {
+		final AnthropometricMeasurement measurement = new AnthropometricMeasurement();
+		measurement.setId(id);
+		measurement.setMeasurementDateTime(new Date());
+		measurement.setPaciente(paciente);
+		measurement.setTitle("Medición Antropométrica");
+		measurement.setDescription("");
+		measurement.setNotes("");
+		measurement.setPeso(null);
+		measurement.setEstatura(null);
+		measurement.setImc(null);
+		measurement.setIndiceGrasaCorporal(null);
+		measurement.setNivelPeso(null);
+		measurement.setCintura(null);
+		measurement.setCadera(null);
+		measurement.setCuello(null);
+		measurement.setBrazo(null);
+		measurement.setMuslo(null);
+		measurement.setPorcentajeGrasaCorporal(null);
+		measurement.setPorcentajeMasaMuscular(null);
+		return measurement;
 	}
 
 }

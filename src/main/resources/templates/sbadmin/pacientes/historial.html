@@ -44,6 +44,9 @@
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Historial del Paciente</h1>
             <div>
+              <a th:href="@{/admin/pacientes/{id}/antropometricos(id=${paciente != null ? paciente.id : 0})}"
+                class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm mr-2"><i
+                  class="fas fa-ruler-combined fa-sm text-white-50"></i> Agregar Antroprométricos</a>
               <a th:href="@{/admin/pacientes/{id}/clinicos(id=${paciente != null ? paciente.id : 0})}"
                 class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm mr-2"><i
                   class="fas fa-stethoscope fa-sm text-white-50"></i> Agregar Clínicos</a>
@@ -68,6 +71,11 @@
                   <li class="nav-item">
                     <a class="nav-link" id="examenes-clinicos-tab" data-toggle="tab" href="#examenes-clinicos" role="tab" aria-controls="examenes-clinicos" aria-selected="false">
                       <i class="fas fa-stethoscope"></i> Exámenes Clínicos
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="antropometricos-tab" data-toggle="tab" href="#antropometricos" role="tab" aria-controls="antropometricos" aria-selected="false">
+                      <i class="fas fa-ruler-combined"></i> Antroprométricos
                     </a>
                   </li>
                 </ul>
@@ -106,6 +114,28 @@
                             <th>Glucosa</th>
                             <th>Colesterol Total</th>
                             <th>Hemoglobina</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- Antroprométricos Tab -->
+                  <div class="tab-pane fade" id="antropometricos" role="tabpanel" aria-labelledby="antropometricos-tab">
+                    <div class="card-body">
+                      <table id="antropometricosGrid" class="table table-striped table-bordered dt-responsive nowrap"
+                        style="width: 100%;">
+                        <thead>
+                          <tr>
+                            <th>Fecha y Hora</th>
+                            <th>Título</th>
+                            <th>Peso</th>
+                            <th>Estatura</th>
+                            <th>IMC</th>
+                            <th>Cintura</th>
+                            <th>Cadera</th>
+                            <th>% Grasa</th>
                             <th></th>
                           </tr>
                         </thead>
@@ -218,6 +248,19 @@
           },
         }));
 
+        // Antroprométricos DataTable
+        const antropometricosTable = $('#antropometricosGrid').DataTable($.extend({}, dataTableOptions, {
+          "ajax": {
+            "url": '/rest/pacientes/' + pacienteId + '/antropometricos/data-table',
+            "type": "POST",
+            "dataType": "json",
+            "contentType": "application/json",
+            "data": function (d) {
+              return JSON.stringify(d);
+            }
+          },
+        }));
+
         // Reload tables when switching tabs
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
           const target = $(e.target).attr("href");
@@ -225,6 +268,8 @@
             consultasTable.columns.adjust().draw();
           } else if (target === '#examenes-clinicos') {
             examenesTable.columns.adjust().draw();
+          } else if (target === '#antropometricos') {
+            antropometricosTable.columns.adjust().draw();
           }
         });
 
@@ -307,6 +352,54 @@
                 },
                 error: function(xhr) {
                   let errorMessage = 'Error al eliminar el examen clínico.';
+                  if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                  } else if (xhr.responseText) {
+                    errorMessage = xhr.responseText;
+                  }
+                  swal({
+                    title: 'Error!',
+                    text: errorMessage,
+                    type: 'error',
+                    timer: 5000
+                  });
+                }
+              });
+            }
+          });
+        });
+
+        // Delete anthropometric measurement handler
+        $(document).on('click', '.delete-antropometrico-btn', function (event) {
+          const id = $(event.currentTarget).data('id');
+          swal({
+            title: 'Eliminar Medición Antropométrica',
+            text: '¿Está seguro de que desea eliminar esta medición antropométrica?',
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            closeOnConfirm: false,
+            showLoaderOnConfirm: true
+          }, function(isConfirm) {
+            if (isConfirm) {
+              $.ajax({
+                url: '/rest/pacientes/' + pacienteId + '/antropometricos/' + id,
+                type: 'DELETE',
+                success: function() {
+                  swal({
+                    title: 'Eliminado!',
+                    text: 'La medición antropométrica ha sido eliminada correctamente.',
+                    type: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                  });
+                  antropometricosTable.ajax.reload(null, false);
+                },
+                error: function(xhr) {
+                  let errorMessage = 'Error al eliminar la medición antropométrica.';
                   if (xhr.responseJSON && xhr.responseJSON.message) {
                     errorMessage = xhr.responseJSON.message;
                   } else if (xhr.responseText) {
