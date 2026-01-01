@@ -30,6 +30,8 @@ import org.springframework.validation.BindingResult;
 import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventService;
 import com.nutriconsultas.calendar.EventStatus;
+import com.nutriconsultas.clinical.exam.ClinicalExam;
+import com.nutriconsultas.clinical.exam.ClinicalExamService;
 
 import lombok.extern.slf4j.Slf4j;
 

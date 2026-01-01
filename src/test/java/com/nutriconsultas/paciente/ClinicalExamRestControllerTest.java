@@ -1,5 +1,8 @@
 package com.nutriconsultas.paciente;
 
+import com.nutriconsultas.clinical.exam.ClinicalExam;
+import com.nutriconsultas.clinical.exam.ClinicalExamService;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;

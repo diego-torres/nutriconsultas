@@ -18,6 +18,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.nutriconsultas.clinical.exam.ClinicalExam;
+import com.nutriconsultas.clinical.exam.ClinicalExamRepository;
+import com.nutriconsultas.clinical.exam.ClinicalExamServiceImpl;
+
 import lombok.extern.slf4j.Slf4j;
 
 @ExtendWith(MockitoExtension.class)

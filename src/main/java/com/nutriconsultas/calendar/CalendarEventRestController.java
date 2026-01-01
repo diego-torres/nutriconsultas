@@ -414,7 +414,7 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 	}
 
 	private void setBiochemicalFields(final CalendarEvent event, final Map<String, Object> eventData) {
-		// Vital signs and basic measurements
+		// Vital signs and basic measurements only (biochemical fields belong to ClinicalExam)
 		setDoubleField(eventData, "peso", event::setPeso);
 		setDoubleField(eventData, "estatura", event::setEstatura);
 		setDoubleField(eventData, "imc", event::setImc);
@@ -428,31 +428,6 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		if (eventData.get("nivelPeso") != null) {
 			event.setNivelPeso(NivelPeso.valueOf((String) eventData.get("nivelPeso")));
 		}
-		// Lipid profile
-		setDoubleField(eventData, "hdl", event::setHdl);
-		setDoubleField(eventData, "ldl", event::setLdl);
-		setDoubleField(eventData, "trigliceridos", event::setTrigliceridos);
-		setDoubleField(eventData, "colesterolTotal", event::setColesterolTotal);
-		// Blood chemistry
-		setDoubleField(eventData, "glucosa", event::setGlucosa);
-		setDoubleField(eventData, "hba1c", event::setHba1c);
-		setDoubleField(eventData, "creatinina", event::setCreatinina);
-		setDoubleField(eventData, "urea", event::setUrea);
-		setDoubleField(eventData, "bun", event::setBun);
-		// Liver function
-		setDoubleField(eventData, "alt", event::setAlt);
-		setDoubleField(eventData, "ast", event::setAst);
-		setDoubleField(eventData, "bilirrubina", event::setBilirrubina);
-		// Complete blood count
-		setDoubleField(eventData, "hemoglobina", event::setHemoglobina);
-		setDoubleField(eventData, "hematocrito", event::setHematocrito);
-		setDoubleField(eventData, "leucocitos", event::setLeucocitos);
-		setDoubleField(eventData, "plaquetas", event::setPlaquetas);
-		// Other tests
-		setDoubleField(eventData, "vitaminaD", event::setVitaminaD);
-		setDoubleField(eventData, "vitaminaB12", event::setVitaminaB12);
-		setDoubleField(eventData, "hierro", event::setHierro);
-		setDoubleField(eventData, "ferritina", event::setFerritina);
 	}
 
 	private void setDoubleField(final Map<String, Object> eventData, final String fieldName,

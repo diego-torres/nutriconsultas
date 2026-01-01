@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nutriconsultas.clinical.exam.ClinicalExam;
+import com.nutriconsultas.clinical.exam.ClinicalExamService;
 import com.nutriconsultas.controller.AbstractGridController;
 import com.nutriconsultas.dataTables.paging.Column;
 import com.nutriconsultas.dataTables.paging.Direction;

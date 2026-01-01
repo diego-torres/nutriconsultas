@@ -1,4 +1,4 @@
-package com.nutriconsultas.paciente;
+package com.nutriconsultas.clinical.exam;
 
 import java.util.List;
 
