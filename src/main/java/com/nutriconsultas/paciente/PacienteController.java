@@ -51,6 +51,9 @@ public class PacienteController extends AbstractAuthorizedController {
 	private ClinicalExamService clinicalExamService;
 
 	@Autowired
+	private com.nutriconsultas.clinical.exam.AnthropometricMeasurementService anthropometricMeasurementService;
+
+	@Autowired
 	private BodyFatCalculatorService bodyFatCalculatorService;
 
 	@Autowired
@@ -431,6 +434,63 @@ public class PacienteController extends AbstractAuthorizedController {
 		model.addAttribute("exam", exam);
 		model.addAttribute("paciente", exam.getPaciente());
 		return "sbadmin/pacientes/ver-examen-clinico";
+	}
+
+	@GetMapping(path = "/admin/pacientes/{id}/antropometricos")
+	public String antropometricosPaciente(@PathVariable @NonNull Long id, Model model) {
+		log.debug("Cargando formulario de medición antropométrica para paciente {}", id);
+		Paciente paciente = pacienteRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+
+		model.addAttribute("activeMenu", "historial");
+		model.addAttribute("paciente", paciente);
+		com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		measurement.setMeasurementDateTime(new Date());
+		measurement.setPaciente(paciente);
+		measurement.setTitle("Medición Antropométrica");
+		model.addAttribute("antropometrico", measurement);
+		return "sbadmin/pacientes/antropometricos";
+	}
+
+	@PostMapping(path = "/admin/pacientes/{pacienteId}/antropometricos")
+	public String agregarAntropometricosPaciente(@PathVariable @NonNull Long pacienteId,
+			@Valid com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement, BindingResult result,
+			Model model) {
+		log.debug("Grabando medición antropométrica {}", measurement);
+		final Paciente paciente = Objects.requireNonNull(pacienteRepository.findById(pacienteId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
+				"Paciente must not be null");
+
+		measurement.setPaciente(paciente);
+
+		final BmiCalculationResult bmiResult = calculateBmiAndBodyFatForMeasurement(measurement, paciente);
+		updatePatientWeightIfNeededForMeasurement(paciente, measurement, bmiResult.getImc(),
+				bmiResult.getNivelPeso(), pacienteId, measurement.getMeasurementDateTime());
+		setMeasurementCalculatedValues(measurement, bmiResult);
+		setMeasurementDefaultValues(measurement);
+
+		log.debug("Medición antropométrica lista para grabar {}", measurement);
+		anthropometricMeasurementService.save(measurement);
+		return String.format("redirect:/admin/pacientes/%d/historial", pacienteId);
+	}
+
+	@GetMapping(path = "/admin/pacientes/{pacienteId}/antropometrico/{measurementId}")
+	public String verAntropometrico(@PathVariable @NonNull final Long pacienteId,
+			@PathVariable @NonNull final Long measurementId, final Model model) {
+		log.debug("Cargando medición antropométrica {} para paciente {}", measurementId, pacienteId);
+		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = anthropometricMeasurementService
+				.findById(measurementId);
+		if (measurement == null) {
+			throw new IllegalArgumentException("No se ha encontrado medición antropométrica con id " + measurementId);
+		}
+		if (!measurement.getPaciente().getId().equals(pacienteId)) {
+			throw new IllegalArgumentException("La medición antropométrica no pertenece al paciente especificado");
+		}
+
+		model.addAttribute("activeMenu", "historial");
+		model.addAttribute("measurement", measurement);
+		model.addAttribute("paciente", measurement.getPaciente());
+		return "sbadmin/pacientes/ver-antropometrico";
 	}
 
 	@GetMapping(path = "/admin/pacientes/{id}/dietas/asignar")
@@ -1010,6 +1070,121 @@ public class PacienteController extends AbstractAuthorizedController {
 	private void setExamDefaultValues(final ClinicalExam exam) {
 		if (exam.getTitle() == null || exam.getTitle().isBlank()) {
 			exam.setTitle("Examen Clínico");
+		}
+	}
+
+	/**
+	 * Calculates BMI, weight level, and body fat percentage for an
+	 * AnthropometricMeasurement.
+	 */
+	private BmiCalculationResult calculateBmiAndBodyFatForMeasurement(
+			final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement, final Paciente paciente) {
+		Double imc = null;
+		NivelPeso np = null;
+		Double bodyFatPercentage = null;
+
+		if (measurement.getPeso() != null && measurement.getEstatura() != null) {
+			imc = measurement.getPeso() / Math.pow(measurement.getEstatura(), 2);
+			np = calculateNivelPeso(imc);
+			bodyFatPercentage = calculateBodyFatPercentage(imc, paciente);
+			if (bodyFatPercentage != null) {
+				measurement.setIndiceGrasaCorporal(bodyFatPercentage);
+			}
+		}
+
+		return new BmiCalculationResult(imc, np, bodyFatPercentage);
+	}
+
+	/**
+	 * Updates patient weight if the measurement date is today or is the latest
+	 * event.
+	 */
+	private void updatePatientWeightIfNeededForMeasurement(@NonNull final Paciente paciente,
+			final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement, final Double imc,
+			final NivelPeso np, @NonNull final Long pacienteId, final Date measurementDate) {
+		if (measurementDate == null) {
+			return;
+		}
+
+		final LocalDate today = LocalDate.now();
+		final LocalDate measurementLocalDate = convertDateToLocalDate(measurementDate);
+
+		if (today.equals(measurementLocalDate)) {
+			log.debug("Working on today's anthropometric measurement, setting new patient weight vars");
+			updatePatientWeightFromMeasurement(paciente, measurement, imc, np);
+		}
+		else {
+			updatePatientWeightIfLatestMeasurement(paciente, measurement, imc, np, pacienteId, measurementDate);
+		}
+	}
+
+	/**
+	 * Updates patient weight from an AnthropometricMeasurement.
+	 */
+	private void updatePatientWeightFromMeasurement(@NonNull final Paciente paciente,
+			final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement, final Double imc,
+			final NivelPeso np) {
+		if (measurement.getPeso() != null) {
+			paciente.setPeso(measurement.getPeso());
+		}
+		if (measurement.getEstatura() != null) {
+			paciente.setEstatura(measurement.getEstatura());
+		}
+		if (imc != null) {
+			paciente.setImc(imc);
+		}
+		if (np != null) {
+			paciente.setNivelPeso(np);
+		}
+		pacienteRepository.save(paciente);
+	}
+
+	/**
+	 * Updates patient weight if this is the latest AnthropometricMeasurement (no
+	 * later events exist).
+	 */
+	private void updatePatientWeightIfLatestMeasurement(@NonNull final Paciente paciente,
+			final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement, final Double imc,
+			final NivelPeso np, @NonNull final Long pacienteId, final Date measurementDate) {
+		final List<CalendarEvent> eventosPrevios = calendarEventService.findByPacienteId(pacienteId);
+		final List<ClinicalExam> examenesPrevios = clinicalExamService.findByPacienteId(pacienteId);
+		final List<com.nutriconsultas.clinical.exam.AnthropometricMeasurement> medicionesPrevias = anthropometricMeasurementService
+				.findByPacienteId(pacienteId);
+		final boolean laterExists = eventosPrevios.stream()
+			.anyMatch(e -> e.getEventDateTime() != null && e.getEventDateTime().after(measurementDate))
+				|| examenesPrevios.stream()
+					.anyMatch(e -> e.getExamDateTime() != null && e.getExamDateTime().after(measurementDate))
+				|| medicionesPrevias.stream()
+					.anyMatch(m -> m.getMeasurementDateTime() != null
+							&& m.getMeasurementDateTime().after(measurementDate));
+
+		if (!laterExists) {
+			log.debug("No later event exists, setting patient weight vars as latest date anthropometric measurement");
+			updatePatientWeightFromMeasurement(paciente, measurement, imc, np);
+		}
+	}
+
+	/**
+	 * Sets calculated values (IMC, NivelPeso) on an AnthropometricMeasurement.
+	 */
+	private void setMeasurementCalculatedValues(
+			final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement,
+			final BmiCalculationResult bmiResult) {
+		if (bmiResult.getImc() != null) {
+			measurement.setImc(bmiResult.getImc());
+		}
+		if (bmiResult.getNivelPeso() != null) {
+			measurement.setNivelPeso(bmiResult.getNivelPeso());
+		}
+	}
+
+	/**
+	 * Sets default values on an AnthropometricMeasurement if not already set.
+	 */
+	private void setMeasurementDefaultValues(
+			final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement) {
+		if (measurement.getTitle() == null || measurement.getTitle().isBlank()) {
+			measurement.setTitle("Medición Antropométrica");
 		}
 	}
 
