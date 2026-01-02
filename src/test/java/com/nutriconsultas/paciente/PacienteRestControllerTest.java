@@ -3,6 +3,7 @@ package com.nutriconsultas.paciente;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -88,7 +89,8 @@ public class PacienteRestControllerTest {
 
 		// Setup SecurityContext
 		org.mockito.Mockito.lenient().when(principal.getSubject()).thenReturn(TEST_USER_ID);
-		org.mockito.Mockito.lenient().when(securityContext.getAuthentication())
+		org.mockito.Mockito.lenient()
+			.when(securityContext.getAuthentication())
 			.thenReturn(org.mockito.Mockito.mock(org.springframework.security.core.Authentication.class));
 		org.mockito.Mockito.lenient().when(securityContext.getAuthentication().getPrincipal()).thenReturn(principal);
 		SecurityContextHolder.setContext(securityContext);
@@ -123,7 +125,7 @@ public class PacienteRestControllerTest {
 		assertThat(result.getData()).isNotEmpty();
 		assertThat(result.getData().size()).isEqualTo(2);
 		verify(service).findAllByUserId(eq(TEST_USER_ID), any(Pageable.class));
-		verify(service).countByUserId(eq(TEST_USER_ID));
+		verify(service, times(2)).countByUserId(eq(TEST_USER_ID));
 		log.info("finished testGetPageArray");
 	}
 
@@ -207,7 +209,7 @@ public class PacienteRestControllerTest {
 		assertThat(result.getRecordsTotal()).isEqualTo(2);
 		assertThat(result.getRecordsFiltered()).isEqualTo(2);
 		assertThat(result.getData()).hasSize(1);
-		verify(service).findAllByUserId(TEST_USER_ID, any(Pageable.class));
+		verify(service).findAllByUserId(eq(TEST_USER_ID), any(Pageable.class));
 		log.info("finished testGetPageArrayWithPagination");
 	}
 
@@ -225,7 +227,8 @@ public class PacienteRestControllerTest {
 		pagingRequest.setStart(0);
 		pagingRequest.setLength(10);
 		pagingRequest.setDraw(1);
-		pagingRequest.setOrder(Arrays.asList(new Order(0, Direction.asc))); // Sort by first column (nombre)
+		// Sort by first column (nombre)
+		pagingRequest.setOrder(Arrays.asList(new Order(0, Direction.asc)));
 		pagingRequest.setSearch(new Search("", "false"));
 
 		// Act
@@ -234,7 +237,7 @@ public class PacienteRestControllerTest {
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.getRecordsTotal()).isEqualTo(2);
-		verify(service).findAllByUserId(TEST_USER_ID, any(Pageable.class));
+		verify(service).findAllByUserId(eq(TEST_USER_ID), any(Pageable.class));
 		log.info("finished testGetPageArrayWithSorting");
 	}
 
@@ -328,7 +331,7 @@ public class PacienteRestControllerTest {
 		assertThat(result.getRecordsTotal()).isEqualTo(2);
 		assertThat(result.getRecordsFiltered()).isEqualTo(2);
 		assertThat(result.getData()).hasSize(2);
-		verify(service).findAllByUserId(TEST_USER_ID, any(Pageable.class));
+		verify(service).findAllByUserId(eq(TEST_USER_ID), any(Pageable.class));
 		log.info("finished testGetRows");
 	}
 
@@ -360,10 +363,9 @@ public class PacienteRestControllerTest {
 		assertThat(result.getRecordsTotal()).isEqualTo(2);
 		assertThat(result.getRecordsFiltered()).isEqualTo(1);
 		assertThat(result.getData()).hasSize(1);
-		verify(service).findAllByUserIdAndSearchTerm(TEST_USER_ID, "juan", any(Pageable.class));
-		verify(service).countByUserIdAndSearchTerm(TEST_USER_ID, "juan");
+		verify(service).findAllByUserIdAndSearchTerm(eq(TEST_USER_ID), eq("juan"), any(Pageable.class));
+		verify(service).countByUserIdAndSearchTerm(eq(TEST_USER_ID), eq("juan"));
 		log.info("finished testGetRowsWithSearch");
 	}
 
 }
-
