@@ -35,8 +35,7 @@ public class AnthropometricMeasurementServiceImpl implements AnthropometricMeasu
 	@Override
 	@Transactional
 	public AnthropometricMeasurement save(@NonNull final AnthropometricMeasurement measurement) {
-		log.debug("Saving anthropometric measurement: {}",
-				LogRedaction.redactAnthropometricMeasurement(measurement));
+		log.debug("Saving anthropometric measurement: {}", LogRedaction.redactAnthropometricMeasurement(measurement));
 		return repository.save(measurement);
 	}
 

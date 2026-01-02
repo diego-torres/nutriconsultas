@@ -114,7 +114,7 @@ public class AnthropometricMeasurementRestController extends AbstractGridControl
 		final Comparator<AnthropometricMeasurement> comparator;
 		// Default comparator for measurementDateTime/fecha and unknown columns
 		final Comparator<AnthropometricMeasurement> defaultComparator = Comparator
-				.comparing(AnthropometricMeasurement::getMeasurementDateTime, Comparator.nullsLast(Date::compareTo));
+			.comparing(AnthropometricMeasurement::getMeasurementDateTime, Comparator.nullsLast(Date::compareTo));
 		switch (column) {
 			case "title":
 			case "titulo":

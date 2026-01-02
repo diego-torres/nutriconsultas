@@ -54,11 +54,11 @@ public class SearchServiceImpl implements SearchService {
 		// Search Pacientes (filtered by userId)
 		final List<Paciente> allPacientes = pacienteRepository.findByUserIdAndSearchTerm(userId, searchTerm);
 		final List<SearchResult> allPacienteResults = allPacientes.stream()
-			.map(p -> new SearchResult(SearchResultType.PACIENTE, p.getId(), p.getName(),
-					buildPacienteDescription(p), "/admin/pacientes/" + p.getId()))
+			.map(p -> new SearchResult(SearchResultType.PACIENTE, p.getId(), p.getName(), buildPacienteDescription(p),
+					"/admin/pacientes/" + p.getId()))
 			.collect(Collectors.toList());
-		final PaginatedSearchResults pacientes = paginateResults(allPacienteResults, pageNumber, "pacientes"
-				.equals(category));
+		final PaginatedSearchResults pacientes = paginateResults(allPacienteResults, pageNumber,
+				"pacientes".equals(category));
 
 		// Search Alimentos
 		final List<Alimento> allAlimentos = alimentosRepository.findByNombreAlimentoContainingIgnoreCase(query);
@@ -66,8 +66,8 @@ public class SearchServiceImpl implements SearchService {
 			.map(a -> new SearchResult(SearchResultType.ALIMENTO, a.getId(), a.getNombreAlimento(),
 					"Clasificación: " + a.getClasificacion(), "/admin/alimentos"))
 			.collect(Collectors.toList());
-		final PaginatedSearchResults alimentos = paginateResults(allAlimentoResults, pageNumber, "alimentos"
-				.equals(category));
+		final PaginatedSearchResults alimentos = paginateResults(allAlimentoResults, pageNumber,
+				"alimentos".equals(category));
 
 		// Search Platillos
 		final List<Platillo> allPlatillos = platilloRepository.findByNameContainingIgnoreCase(query);
@@ -75,12 +75,12 @@ public class SearchServiceImpl implements SearchService {
 			.map(p -> new SearchResult(SearchResultType.PLATILLO, p.getId(), p.getName(),
 					p.getDescription() != null ? p.getDescription() : "", "/admin/platillos"))
 			.collect(Collectors.toList());
-		final PaginatedSearchResults platillos = paginateResults(allPlatilloResults, pageNumber, "platillos"
-				.equals(category));
+		final PaginatedSearchResults platillos = paginateResults(allPlatilloResults, pageNumber,
+				"platillos".equals(category));
 
 		// Search Calendar Events (filtered by userId through paciente)
-		final List<CalendarEvent> allCalendarEvents = calendarEventRepository
-			.findByUserIdAndSearchTerm(userId, searchTerm);
+		final List<CalendarEvent> allCalendarEvents = calendarEventRepository.findByUserIdAndSearchTerm(userId,
+				searchTerm);
 		final List<SearchResult> allCalendarEventResults = allCalendarEvents.stream()
 			.map(e -> new SearchResult(SearchResultType.CALENDAR_EVENT, e.getId(), e.getTitle(),
 					buildCalendarEventDescription(e), "/admin/calendar"))
@@ -89,7 +89,8 @@ public class SearchServiceImpl implements SearchService {
 				"calendarevents".equals(category));
 
 		// Search Clinical Exams (filtered by userId through paciente)
-		final List<ClinicalExam> allClinicalExams = clinicalExamRepository.findByUserIdAndSearchTerm(userId, searchTerm);
+		final List<ClinicalExam> allClinicalExams = clinicalExamRepository.findByUserIdAndSearchTerm(userId,
+				searchTerm);
 		final List<SearchResult> allClinicalExamResults = allClinicalExams.stream()
 			.map(e -> new SearchResult(SearchResultType.CLINICAL_EXAM, e.getId(), e.getTitle(),
 					buildClinicalExamDescription(e), "/admin/pacientes/" + e.getPaciente().getId() + "/examenes"))
@@ -112,8 +113,7 @@ public class SearchServiceImpl implements SearchService {
 		final int totalPages = (int) Math.ceil((double) totalCount / PAGE_SIZE);
 		final int startIndex = (pageNumber - 1) * PAGE_SIZE;
 		final int endIndex = Math.min(startIndex + PAGE_SIZE, totalCount);
-		final List<SearchResult> paginatedResults = startIndex < totalCount
-				? allResults.subList(startIndex, endIndex)
+		final List<SearchResult> paginatedResults = startIndex < totalCount ? allResults.subList(startIndex, endIndex)
 				: new ArrayList<>();
 
 		return new PaginatedSearchResults(paginatedResults, totalCount, pageNumber, PAGE_SIZE, totalPages);
@@ -136,8 +136,7 @@ public class SearchServiceImpl implements SearchService {
 			parts.add("Paciente: " + event.getPaciente().getName());
 		}
 		if (event.getDescription() != null && !event.getDescription().isEmpty()) {
-			final String desc = event.getDescription().length() > 100
-					? event.getDescription().substring(0, 100) + "..."
+			final String desc = event.getDescription().length() > 100 ? event.getDescription().substring(0, 100) + "..."
 					: event.getDescription();
 			parts.add(desc);
 		}
@@ -151,13 +150,11 @@ public class SearchServiceImpl implements SearchService {
 		}
 		if (exam.getSummaryNotes() != null && !exam.getSummaryNotes().isEmpty()) {
 			final String notes = exam.getSummaryNotes().length() > 100
-					? exam.getSummaryNotes().substring(0, 100) + "..."
-					: exam.getSummaryNotes();
+					? exam.getSummaryNotes().substring(0, 100) + "..." : exam.getSummaryNotes();
 			parts.add(notes);
 		}
 		else if (exam.getDescription() != null && !exam.getDescription().isEmpty()) {
-			final String desc = exam.getDescription().length() > 100
-					? exam.getDescription().substring(0, 100) + "..."
+			final String desc = exam.getDescription().length() > 100 ? exam.getDescription().substring(0, 100) + "..."
 					: exam.getDescription();
 			parts.add(desc);
 		}

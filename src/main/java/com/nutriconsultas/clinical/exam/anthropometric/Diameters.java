@@ -56,4 +56,3 @@ public class Diameters {
 	private Double transverseHandDiameter;
 
 }
-
