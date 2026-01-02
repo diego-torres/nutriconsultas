@@ -30,7 +30,7 @@ public class SearchController extends AbstractAuthorizedController {
 			@AuthenticationPrincipal final OidcUser principal, final Model model) {
 		log.info("Search request with query: {}, category: {}, page: {}", q, category, page);
 
-		if (q == null || q.trim().isEmpty()) {
+		if (q == null || q.isBlank()) {
 			model.addAttribute("query", "");
 			model.addAttribute("category", category);
 			model.addAttribute("searchResponse", createEmptySearchResponse(""));

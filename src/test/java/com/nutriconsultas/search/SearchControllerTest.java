@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -42,7 +44,7 @@ public class SearchControllerTest {
 	@BeforeEach
 	public void setup() {
 		log.info("setting up SearchController test");
-		when(principal.getSubject()).thenReturn(TEST_USER_ID);
+		lenient().when(principal.getSubject()).thenReturn(TEST_USER_ID);
 		log.info("finished setting up SearchController test");
 	}
 
@@ -84,7 +86,7 @@ public class SearchControllerTest {
 		assertThat(result).isEqualTo("sbadmin/search/results");
 		verify(model).addAttribute("query", "");
 		verify(model).addAttribute("category", "pacientes");
-		verify(model).addAttribute("searchResponse", any(SearchResponse.class));
+		verify(model).addAttribute(eq("searchResponse"), any(SearchResponse.class));
 		verify(model).addAttribute("activeMenu", "search");
 		log.info("finished testSearchWithEmptyQuery");
 	}
@@ -99,7 +101,7 @@ public class SearchControllerTest {
 		assertThat(result).isEqualTo("sbadmin/search/results");
 		verify(model).addAttribute("query", "");
 		verify(model).addAttribute("category", "pacientes");
-		verify(model).addAttribute("searchResponse", any(SearchResponse.class));
+		verify(model).addAttribute(eq("searchResponse"), any(SearchResponse.class));
 		verify(model).addAttribute("activeMenu", "search");
 		log.info("finished testSearchWithNullQuery");
 	}
@@ -117,7 +119,7 @@ public class SearchControllerTest {
 		assertThat(result).isEqualTo("sbadmin/search/results");
 		verify(model).addAttribute("query", query);
 		verify(model).addAttribute("category", "pacientes");
-		verify(model).addAttribute("searchResponse", any(SearchResponse.class));
+		verify(model).addAttribute(eq("searchResponse"), any(SearchResponse.class));
 		verify(model).addAttribute("activeMenu", "search");
 		log.info("finished testSearchWithNullPrincipal");
 	}
