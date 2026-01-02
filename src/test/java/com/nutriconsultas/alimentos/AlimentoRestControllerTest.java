@@ -360,8 +360,7 @@ public class AlimentoRestControllerTest {
 		// Arrange
 		final Pageable pageable = PageRequest.of(0, 10);
 		final Page<Alimento> springPage = new PageImpl<>(new ArrayList<>(), pageable, 0);
-		when(alimentoService.findBySearchTerm(eq("not a valid record"), any(Pageable.class)))
-			.thenReturn(springPage);
+		when(alimentoService.findBySearchTerm(eq("not a valid record"), any(Pageable.class))).thenReturn(springPage);
 		when(alimentoService.countBySearchTerm(eq("not a valid record"))).thenReturn(0L);
 		when(alimentoService.count()).thenReturn((long) allAlimentos.size());
 
