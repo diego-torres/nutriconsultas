@@ -193,6 +193,14 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		measurement.setTitle("Medición Antropométrica");
 		measurement.setDescription("");
 		measurement.setNotes("");
+		// Initialize category objects for template validation
+		measurement.setBodyMass(new com.nutriconsultas.clinical.exam.anthropometric.BodyMass());
+		measurement.setBioimpedance(new com.nutriconsultas.clinical.exam.anthropometric.Bioimpedance());
+		measurement.setSkinfolds(new com.nutriconsultas.clinical.exam.anthropometric.Skinfolds());
+		measurement.setCircumferences(new com.nutriconsultas.clinical.exam.anthropometric.Circumferences());
+		measurement.setDiameters(new com.nutriconsultas.clinical.exam.anthropometric.Diameters());
+		measurement.setBodyComposition(new com.nutriconsultas.clinical.exam.anthropometric.BodyComposition());
+		// Set convenience method values (which delegate to category objects)
 		measurement.setPeso(null);
 		measurement.setEstatura(null);
 		measurement.setImc(null);

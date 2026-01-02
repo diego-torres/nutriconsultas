@@ -7,6 +7,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.nutriconsultas.util.LogRedaction;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -33,7 +35,7 @@ public class ClinicalExamServiceImpl implements ClinicalExamService {
 	@Override
 	@Transactional
 	public ClinicalExam save(@NonNull final ClinicalExam exam) {
-		log.debug("Saving clinical exam: {}", exam);
+		log.debug("Saving clinical exam: {}", LogRedaction.redactClinicalExam(exam));
 		return repository.save(exam);
 	}
 

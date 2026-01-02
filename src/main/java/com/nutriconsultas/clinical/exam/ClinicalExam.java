@@ -78,6 +78,10 @@ public class ClinicalExam {
 	@JoinColumn(name = "other_tests_id")
 	private OtherIndicators otherTests;
 
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "body_composition_id")
+	private com.nutriconsultas.clinical.exam.anthropometric.BodyComposition bodyComposition;
+
 	// Convenience methods for backward compatibility
 	public Double getPeso() {
 		return vitalSigns != null ? vitalSigns.getPeso() : null;
@@ -113,14 +117,14 @@ public class ClinicalExam {
 	}
 
 	public Double getIndiceGrasaCorporal() {
-		return vitalSigns != null ? vitalSigns.getIndiceGrasaCorporal() : null;
+		return bodyComposition != null ? bodyComposition.getIndiceGrasaCorporal() : null;
 	}
 
 	public void setIndiceGrasaCorporal(final Double indiceGrasaCorporal) {
-		if (vitalSigns == null) {
-			vitalSigns = new VitalSigns();
+		if (bodyComposition == null) {
+			bodyComposition = new com.nutriconsultas.clinical.exam.anthropometric.BodyComposition();
 		}
-		vitalSigns.setIndiceGrasaCorporal(indiceGrasaCorporal);
+		bodyComposition.setIndiceGrasaCorporal(indiceGrasaCorporal);
 	}
 
 	public NivelPeso getNivelPeso() {

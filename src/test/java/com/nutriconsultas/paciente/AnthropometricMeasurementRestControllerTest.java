@@ -60,6 +60,7 @@ public class AnthropometricMeasurementRestControllerTest {
 		measurement1.setTitle("Medición Antropométrica 1");
 		measurement1.setMeasurementDateTime(new Date(System.currentTimeMillis() - 86400000)); // Yesterday
 		measurement1.setPaciente(paciente);
+		// Use convenience methods which will create category objects
 		measurement1.setPeso(70.0);
 		measurement1.setEstatura(1.75);
 		measurement1.setImc(22.86);

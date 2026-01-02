@@ -28,6 +28,7 @@ import com.nutriconsultas.clinical.exam.AnthropometricMeasurementService;
 import com.nutriconsultas.controller.AbstractGridController;
 import com.nutriconsultas.dataTables.paging.Column;
 import com.nutriconsultas.dataTables.paging.Direction;
+import com.nutriconsultas.util.LogRedaction;
 import com.nutriconsultas.dataTables.paging.Page;
 import com.nutriconsultas.dataTables.paging.PageArray;
 import com.nutriconsultas.dataTables.paging.PagingRequest;
@@ -68,7 +69,8 @@ public class AnthropometricMeasurementRestController extends AbstractGridControl
 
 	@Override
 	protected List<String> toStringList(final AnthropometricMeasurement row) {
-		log.debug("converting AnthropometricMeasurement row {} to string list.", row);
+		log.debug("converting AnthropometricMeasurement row {} to string list.",
+				LogRedaction.redactAnthropometricMeasurement(row));
 		final DateFormat dateTimeFormat = new SimpleDateFormat("dd MMM yyyy HH:mm");
 		final String peso = row.getPeso() != null ? String.format("%.1f kg", row.getPeso()) : "-";
 		final String estatura = row.getEstatura() != null ? String.format("%.2f m", row.getEstatura()) : "-";

@@ -55,17 +55,36 @@ public class AnthropometricMeasurementServiceTest {
 		measurement.setTitle("Medición Antropométrica");
 		measurement.setDescription("Medición de rutina");
 		measurement.setNotes("Notas de la medición");
-		measurement.setPeso(70.0);
-		measurement.setEstatura(1.75);
-		measurement.setImc(22.86);
-		measurement.setNivelPeso(NivelPeso.NORMAL);
-		measurement.setCintura(80.0);
-		measurement.setCadera(95.0);
-		measurement.setCuello(35.0);
-		measurement.setBrazo(30.0);
-		measurement.setMuslo(55.0);
-		measurement.setPorcentajeGrasaCorporal(15.5);
-		measurement.setPorcentajeMasaMuscular(45.0);
+		// Set up category objects
+		final com.nutriconsultas.clinical.exam.anthropometric.BodyMass bodyMass =
+			new com.nutriconsultas.clinical.exam.anthropometric.BodyMass();
+		bodyMass.setWeight(70.0);
+		bodyMass.setHeight(1.75);
+		bodyMass.setImc(22.86);
+		bodyMass.setNivelPeso(NivelPeso.NORMAL);
+		measurement.setBodyMass(bodyMass);
+
+		final com.nutriconsultas.clinical.exam.anthropometric.Circumferences circumferences =
+			new com.nutriconsultas.clinical.exam.anthropometric.Circumferences();
+		circumferences.setWaistCircumference(80.0);
+		circumferences.setHipCircumference(95.0);
+		circumferences.setNeckCircumference(35.0);
+		circumferences.setMidUpperArmCircumferenceRelaxed(30.0);
+		circumferences.setThighCircumference(55.0);
+		measurement.setCircumferences(circumferences);
+
+		final com.nutriconsultas.clinical.exam.anthropometric.BodyComposition bodyComposition =
+			new com.nutriconsultas.clinical.exam.anthropometric.BodyComposition();
+		bodyComposition.setPorcentajeGrasaCorporal(15.5);
+		bodyComposition.setIndiceGrasaCorporal(15.5);
+		bodyComposition.setPorcentajeMasaMuscular(45.0);
+		measurement.setBodyComposition(bodyComposition);
+
+		// Also test convenience methods work
+		assertThat(measurement.getPeso()).isEqualTo(70.0);
+		assertThat(measurement.getEstatura()).isEqualTo(1.75);
+		assertThat(measurement.getCintura()).isEqualTo(80.0);
+		assertThat(measurement.getCadera()).isEqualTo(95.0);
 
 		log.info("finished setting up AnthropometricMeasurementService test");
 	}
@@ -146,6 +165,7 @@ public class AnthropometricMeasurementServiceTest {
 		newMeasurement.setPaciente(paciente);
 		newMeasurement.setMeasurementDateTime(new Date());
 		newMeasurement.setTitle("Nueva Medición Antropométrica");
+		// Test convenience methods
 		newMeasurement.setPeso(75.0);
 		newMeasurement.setEstatura(1.80);
 
@@ -165,8 +185,105 @@ public class AnthropometricMeasurementServiceTest {
 		assertThat(result.getTitle()).isEqualTo("Nueva Medición Antropométrica");
 		assertThat(result.getPeso()).isEqualTo(75.0);
 		assertThat(result.getEstatura()).isEqualTo(1.80);
+		// Verify category objects were created by convenience methods
+		assertThat(result.getBodyMass()).isNotNull();
+		assertThat(result.getBodyMass().getWeight()).isEqualTo(75.0);
+		assertThat(result.getBodyMass().getHeight()).isEqualTo(1.80);
 		verify(repository).save(any(AnthropometricMeasurement.class));
 		log.info("finished testSave");
+	}
+
+	@Test
+	public void testSaveWithCategoryObjects() {
+		log.info("starting testSaveWithCategoryObjects");
+		// Arrange
+		final AnthropometricMeasurement newMeasurement = new AnthropometricMeasurement();
+		newMeasurement.setPaciente(paciente);
+		newMeasurement.setMeasurementDateTime(new Date());
+		newMeasurement.setTitle("Nueva Medición Antropométrica");
+
+		// Set up category objects directly
+		final com.nutriconsultas.clinical.exam.anthropometric.BodyMass bodyMass =
+			new com.nutriconsultas.clinical.exam.anthropometric.BodyMass();
+		bodyMass.setWeight(75.0);
+		bodyMass.setHeight(1.80);
+		newMeasurement.setBodyMass(bodyMass);
+
+		final com.nutriconsultas.clinical.exam.anthropometric.Bioimpedance bioimpedance =
+			new com.nutriconsultas.clinical.exam.anthropometric.Bioimpedance();
+		bioimpedance.setBioimpedanceValue(500.0);
+		newMeasurement.setBioimpedance(bioimpedance);
+
+		final com.nutriconsultas.clinical.exam.anthropometric.Skinfolds skinfolds =
+			new com.nutriconsultas.clinical.exam.anthropometric.Skinfolds();
+		skinfolds.setTricepsSkinfold(12.5);
+		skinfolds.setSubscapularSkinfold(15.0);
+		newMeasurement.setSkinfolds(skinfolds);
+
+		when(repository.save(any(AnthropometricMeasurement.class))).thenAnswer(invocation -> {
+			final AnthropometricMeasurement savedMeasurement = invocation.getArgument(0);
+			savedMeasurement.setId(2L);
+			return savedMeasurement;
+		});
+
+		// Act
+		final AnthropometricMeasurement result = service.save(newMeasurement);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result.getId()).isEqualTo(2L);
+		assertThat(result.getBodyMass()).isNotNull();
+		assertThat(result.getBodyMass().getWeight()).isEqualTo(75.0);
+		assertThat(result.getBodyMass().getHeight()).isEqualTo(1.80);
+		assertThat(result.getBioimpedance()).isNotNull();
+		assertThat(result.getBioimpedance().getBioimpedanceValue()).isEqualTo(500.0);
+		assertThat(result.getSkinfolds()).isNotNull();
+		assertThat(result.getSkinfolds().getTricepsSkinfold()).isEqualTo(12.5);
+		assertThat(result.getSkinfolds().getSubscapularSkinfold()).isEqualTo(15.0);
+		verify(repository).save(any(AnthropometricMeasurement.class));
+		log.info("finished testSaveWithCategoryObjects");
+	}
+
+	@Test
+	public void testConvenienceMethods() {
+		log.info("starting testConvenienceMethods");
+		// Arrange
+		final AnthropometricMeasurement measurement = new AnthropometricMeasurement();
+
+		// Act - Test convenience setters
+		measurement.setPeso(70.0);
+		measurement.setEstatura(1.75);
+		measurement.setCintura(80.0);
+		measurement.setCadera(95.0);
+		measurement.setCuello(35.0);
+		measurement.setBrazo(30.0);
+		measurement.setMuslo(55.0);
+		measurement.setPorcentajeGrasaCorporal(15.5);
+		measurement.setPorcentajeMasaMuscular(45.0);
+
+		// Assert - Verify convenience getters work and category objects were created
+		assertThat(measurement.getPeso()).isEqualTo(70.0);
+		assertThat(measurement.getEstatura()).isEqualTo(1.75);
+		assertThat(measurement.getCintura()).isEqualTo(80.0);
+		assertThat(measurement.getCadera()).isEqualTo(95.0);
+		assertThat(measurement.getCuello()).isEqualTo(35.0);
+		assertThat(measurement.getBrazo()).isEqualTo(30.0);
+		assertThat(measurement.getMuslo()).isEqualTo(55.0);
+		assertThat(measurement.getPorcentajeGrasaCorporal()).isEqualTo(15.5);
+		assertThat(measurement.getPorcentajeMasaMuscular()).isEqualTo(45.0);
+
+		// Verify category objects exist
+		assertThat(measurement.getBodyMass()).isNotNull();
+		assertThat(measurement.getBodyMass().getWeight()).isEqualTo(70.0);
+		assertThat(measurement.getBodyMass().getHeight()).isEqualTo(1.75);
+		assertThat(measurement.getCircumferences()).isNotNull();
+		assertThat(measurement.getCircumferences().getWaistCircumference()).isEqualTo(80.0);
+		assertThat(measurement.getCircumferences().getHipCircumference()).isEqualTo(95.0);
+		assertThat(measurement.getCircumferences().getNeckCircumference()).isEqualTo(35.0);
+		assertThat(measurement.getBodyComposition()).isNotNull();
+		assertThat(measurement.getBodyComposition().getPorcentajeGrasaCorporal()).isEqualTo(15.5);
+		assertThat(measurement.getBodyComposition().getPorcentajeMasaMuscular()).isEqualTo(45.0);
+		log.info("finished testConvenienceMethods");
 	}
 
 	@Test

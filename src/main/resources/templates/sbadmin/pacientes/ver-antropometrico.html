@@ -74,101 +74,288 @@
                   
                   <hr>
                   
-                  <!-- Basic Anthropometric Measurements -->
-                  <h5 class="mb-3">Mediciones Básicas</h5>
-                  <div class="row mb-4">
-                    <div class="col-md-4">
-                      <p><strong>Peso:</strong> 
-                        <span th:if="${measurement.peso != null}" th:text="${#numbers.formatDecimal(measurement.peso, 1, 1)} + ' kg'">-</span>
-                        <span th:if="${measurement.peso == null}">-</span>
-                      </p>
+                  <!-- Tabs Navigation -->
+                  <ul class="nav nav-tabs mb-3" id="anthropometricTabs" role="tablist">
+                    <li class="nav-item">
+                      <a class="nav-link active" id="body-mass-tab" data-toggle="tab" href="#body-mass" role="tab" aria-controls="body-mass" aria-selected="true">
+                        <i class="fas fa-weight"></i> Peso/Altura
+                      </a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" id="bioimpedance-tab" data-toggle="tab" href="#bioimpedance" role="tab" aria-controls="bioimpedance" aria-selected="false">
+                        <i class="fas fa-wave-square"></i> Bioimpedancia
+                      </a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" id="skinfolds-tab" data-toggle="tab" href="#skinfolds" role="tab" aria-controls="skinfolds" aria-selected="false">
+                        <i class="fas fa-ruler"></i> Pliegues
+                      </a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" id="circumferences-tab" data-toggle="tab" href="#circumferences" role="tab" aria-controls="circumferences" aria-selected="false">
+                        <i class="fas fa-circle"></i> Perímetros
+                      </a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" id="diameters-tab" data-toggle="tab" href="#diameters" role="tab" aria-controls="diameters" aria-selected="false">
+                        <i class="fas fa-arrows-alt-h"></i> Diámetros
+                      </a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" id="body-composition-tab" data-toggle="tab" href="#body-composition" role="tab" aria-controls="body-composition" aria-selected="false">
+                        <i class="fas fa-percentage"></i> Composición Corporal
+                      </a>
+                    </li>
+                    <li class="nav-item" th:if="${measurement.notes != null && !measurement.notes.isEmpty()}">
+                      <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">
+                        <i class="fas fa-sticky-note"></i> Notas
+                      </a>
+                    </li>
+                  </ul>
+
+                  <!-- Tab Content -->
+                  <div class="tab-content" id="anthropometricTabsContent">
+                    <!-- Body Mass Tab -->
+                    <div class="tab-pane fade show active" id="body-mass" role="tabpanel" aria-labelledby="body-mass-tab">
+                      <div class="row">
+                        <div class="col-md-3" th:if="${measurement.bodyMass != null && measurement.bodyMass.weight != null}">
+                          <p><strong>Peso:</strong> <span th:text="${#numbers.formatDecimal(measurement.bodyMass.weight, 1, 1)} + ' kg'">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${measurement.bodyMass != null && measurement.bodyMass.height != null}">
+                          <p><strong>Estatura:</strong> <span th:text="${#numbers.formatDecimal(measurement.bodyMass.height, 2, 2)} + ' m'">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${measurement.bodyMass != null && measurement.bodyMass.bodyMassValue != null}">
+                          <p><strong>Masa Corporal:</strong> <span th:text="${#numbers.formatDecimal(measurement.bodyMass.bodyMassValue, 1, 1)}">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${measurement.bodyMass != null && measurement.bodyMass.imc != null}">
+                          <p><strong>IMC:</strong> <span th:text="${#numbers.formatDecimal(measurement.bodyMass.imc, 1, 1)}">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${measurement.bodyComposition != null && measurement.bodyComposition.indiceGrasaCorporal != null}">
+                          <p><strong>Índice de Grasa Corporal:</strong> <span th:text="${#numbers.formatDecimal(measurement.bodyComposition.indiceGrasaCorporal, 1, 1)}">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${measurement.bodyMass != null && measurement.bodyMass.nivelPeso != null}">
+                          <p><strong>Nivel de Peso:</strong> <span th:text="${measurement.bodyMass.nivelPeso}">-</span></p>
+                        </div>
+                      </div>
                     </div>
-                    <div class="col-md-4">
-                      <p><strong>Estatura:</strong> 
-                        <span th:if="${measurement.estatura != null}" th:text="${#numbers.formatDecimal(measurement.estatura, 2, 2)} + ' m'">-</span>
-                        <span th:if="${measurement.estatura == null}">-</span>
-                      </p>
+
+                    <!-- Bioimpedance Tab -->
+                    <div class="tab-pane fade" id="bioimpedance" role="tabpanel" aria-labelledby="bioimpedance-tab">
+                      <h5 class="mb-3">Mediciones de Bioimpedancia</h5>
+                      <div class="row">
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.bioimpedanceValue != null}">
+                          <p><strong>Bioimpedancia (Ω):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.bioimpedanceValue, 1, 1)}">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.impedance != null}">
+                          <p><strong>Impedancia (Ω):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.impedance, 1, 1)}">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.resistance != null}">
+                          <p><strong>Resistencia (R, Ω):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.resistance, 1, 1)}">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.reactance != null}">
+                          <p><strong>Reactancia (Xc, Ω):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.reactance, 1, 1)}">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.phaseAngle != null}">
+                          <p><strong>Ángulo de fase (°):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.phaseAngle, 1, 1)}">-</span></p>
+                        </div>
+                      </div>
+                      <hr class="my-4" th:if="${measurement.bioimpedance != null && (measurement.bioimpedance.bodyFatPercentage != null || measurement.bioimpedance.fatMass != null || measurement.bioimpedance.fatFreeMass != null || measurement.bioimpedance.skeletalMuscleMass != null)}">
+                      <h5 class="mb-3" th:if="${measurement.bioimpedance != null && (measurement.bioimpedance.bodyFatPercentage != null || measurement.bioimpedance.fatMass != null || measurement.bioimpedance.fatFreeMass != null || measurement.bioimpedance.skeletalMuscleMass != null)}">Composición Corporal</h5>
+                      <div class="row">
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.bodyFatPercentage != null}">
+                          <p><strong>% Grasa Corporal:</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.bodyFatPercentage, 1, 1)} + '%'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.fatMass != null}">
+                          <p><strong>Masa Grasa (kg):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.fatMass, 1, 1)}">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.fatFreeMass != null}">
+                          <p><strong>Masa Libre de Grasa (kg):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.fatFreeMass, 1, 1)}">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.skeletalMuscleMass != null}">
+                          <p><strong>Masa Muscular Esquelética (kg):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.skeletalMuscleMass, 1, 1)}">-</span></p>
+                        </div>
+                      </div>
+                      <hr class="my-4" th:if="${measurement.bioimpedance != null && (measurement.bioimpedance.totalBodyWaterLiters != null || measurement.bioimpedance.totalBodyWaterPercentage != null || measurement.bioimpedance.intracellularWater != null || measurement.bioimpedance.extracellularWater != null || measurement.bioimpedance.ecwIcwRatio != null)}">
+                      <h5 class="mb-3" th:if="${measurement.bioimpedance != null && (measurement.bioimpedance.totalBodyWaterLiters != null || measurement.bioimpedance.totalBodyWaterPercentage != null || measurement.bioimpedance.intracellularWater != null || measurement.bioimpedance.extracellularWater != null || measurement.bioimpedance.ecwIcwRatio != null)}">Agua Corporal</h5>
+                      <div class="row">
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.totalBodyWaterLiters != null}">
+                          <p><strong>Agua Corporal Total (L):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.totalBodyWaterLiters, 1, 1)}">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.totalBodyWaterPercentage != null}">
+                          <p><strong>Agua Corporal Total (%):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.totalBodyWaterPercentage, 1, 1)} + '%'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.intracellularWater != null}">
+                          <p><strong>Agua Intracelular (L):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.intracellularWater, 1, 1)}">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.extracellularWater != null}">
+                          <p><strong>Agua Extracelular (L):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.extracellularWater, 1, 1)}">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.ecwIcwRatio != null}">
+                          <p><strong>Relación ECW/ICW:</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.ecwIcwRatio, 2, 2)}">-</span></p>
+                        </div>
+                      </div>
+                      <hr class="my-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.estimatedBasalMetabolism != null}">
+                      <h5 class="mb-3" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.estimatedBasalMetabolism != null}">Metabolismo</h5>
+                      <div class="row">
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.estimatedBasalMetabolism != null}">
+                          <p><strong>Metabolismo Basal Estimado (kcal):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.estimatedBasalMetabolism, 1, 1)}">-</span></p>
+                        </div>
+                      </div>
                     </div>
-                    <div class="col-md-4">
-                      <p><strong>IMC:</strong> 
-                        <span th:if="${measurement.imc != null}" th:text="${#numbers.formatDecimal(measurement.imc, 1, 1)}">-</span>
-                        <span th:if="${measurement.imc == null}">-</span>
-                      </p>
+
+                    <!-- Skinfolds Tab -->
+                    <div class="tab-pane fade" id="skinfolds" role="tabpanel" aria-labelledby="skinfolds-tab">
+                      <div class="row">
+                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.subscapularSkinfold != null}">
+                          <p><strong>Subescapular:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.subscapularSkinfold, 1, 1)} + ' mm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.tricepsSkinfold != null}">
+                          <p><strong>Tríceps:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.tricepsSkinfold, 1, 1)} + ' mm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.bicepsSkinfold != null}">
+                          <p><strong>Bíceps:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.bicepsSkinfold, 1, 1)} + ' mm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.iliacCrestSkinfold != null}">
+                          <p><strong>Cresta iliaca:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.iliacCrestSkinfold, 1, 1)} + ' mm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.supraespinalSkinfold != null}">
+                          <p><strong>Supraespinal:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.supraespinalSkinfold, 1, 1)} + ' mm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.abdominalSkinfold != null}">
+                          <p><strong>Abdominal:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.abdominalSkinfold, 1, 1)} + ' mm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.frontalThighSkinfold != null}">
+                          <p><strong>Muslo frontal:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.frontalThighSkinfold, 1, 1)} + ' mm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.medialCalfSkinfold != null}">
+                          <p><strong>Pantorrilla medial:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.medialCalfSkinfold, 1, 1)} + ' mm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.medialAxillarySkinfold != null}">
+                          <p><strong>Axilar medial:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.medialAxillarySkinfold, 1, 1)} + ' mm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.pectoralSkinfold != null}">
+                          <p><strong>Pectoral:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.pectoralSkinfold, 1, 1)} + ' mm'">-</span></p>
+                        </div>
+                      </div>
                     </div>
-                    <div class="col-md-4">
-                      <p><strong>Nivel de Peso:</strong> 
-                        <span th:if="${measurement.nivelPeso != null}" th:text="${measurement.nivelPeso}">-</span>
-                        <span th:if="${measurement.nivelPeso == null}">-</span>
-                      </p>
+
+                    <!-- Circumferences Tab -->
+                    <div class="tab-pane fade" id="circumferences" role="tabpanel" aria-labelledby="circumferences-tab">
+                      <div class="row">
+                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.cephalicCircumference != null}">
+                          <p><strong>Cefálico:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.cephalicCircumference, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.neckCircumference != null}">
+                          <p><strong>Cuello:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.neckCircumference, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.midUpperArmCircumferenceRelaxed != null}">
+                          <p><strong>Mitad del brazo relajado:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.midUpperArmCircumferenceRelaxed, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.midUpperArmCircumferenceContracted != null}">
+                          <p><strong>Mitad del brazo contraído:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.midUpperArmCircumferenceContracted, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.forearmCircumference != null}">
+                          <p><strong>Antebrazo:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.forearmCircumference, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.wristCircumference != null}">
+                          <p><strong>Muñeca:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.wristCircumference, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.mesosternalCircumference != null}">
+                          <p><strong>Mesoesternal:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.mesosternalCircumference, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.umbilicalCircumference != null}">
+                          <p><strong>Umbilical:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.umbilicalCircumference, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.waistCircumference != null}">
+                          <p><strong>Cintura:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.waistCircumference, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.hipCircumference != null}">
+                          <p><strong>Cadera:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.hipCircumference, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.thighCircumference != null}">
+                          <p><strong>Muslo:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.thighCircumference, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.midThighCircumference != null}">
+                          <p><strong>Muslo medio:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.midThighCircumference, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.calfCircumference != null}">
+                          <p><strong>Pantorrilla:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.calfCircumference, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.ankleCircumference != null}">
+                          <p><strong>Tobillo:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.ankleCircumference, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                      </div>
                     </div>
-                    <div class="col-md-4">
-                      <p><strong>Índice de Grasa Corporal:</strong> 
-                        <span th:if="${measurement.indiceGrasaCorporal != null}" th:text="${#numbers.formatDecimal(measurement.indiceGrasaCorporal, 1, 1)}">-</span>
-                        <span th:if="${measurement.indiceGrasaCorporal == null}">-</span>
-                      </p>
+
+                    <!-- Diameters Tab -->
+                    <div class="tab-pane fade" id="diameters" role="tabpanel" aria-labelledby="diameters-tab">
+                      <div class="row">
+                        <div class="col-md-4" th:if="${measurement.diameters != null && measurement.diameters.biacromialDiameter != null}">
+                          <p><strong>Biacromial:</strong> <span th:text="${#numbers.formatDecimal(measurement.diameters.biacromialDiameter, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.diameters != null && measurement.diameters.biiliocrestalDiameter != null}">
+                          <p><strong>Biileocrestal:</strong> <span th:text="${#numbers.formatDecimal(measurement.diameters.biiliocrestalDiameter, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.diameters != null && measurement.diameters.footLength != null}">
+                          <p><strong>Longitud del pie:</strong> <span th:text="${#numbers.formatDecimal(measurement.diameters.footLength, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.diameters != null && measurement.diameters.transverseThoraxDiameter != null}">
+                          <p><strong>Transverso del tórax:</strong> <span th:text="${#numbers.formatDecimal(measurement.diameters.transverseThoraxDiameter, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.diameters != null && measurement.diameters.anteroposteriorThoraxDiameter != null}">
+                          <p><strong>Anteroposterior del tórax:</strong> <span th:text="${#numbers.formatDecimal(measurement.diameters.anteroposteriorThoraxDiameter, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.diameters != null && measurement.diameters.humerusDiameter != null}">
+                          <p><strong>Húmero:</strong> <span th:text="${#numbers.formatDecimal(measurement.diameters.humerusDiameter, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.diameters != null && measurement.diameters.biestiloidWristDiameter != null}">
+                          <p><strong>Biestiloideo de la muñeca:</strong> <span th:text="${#numbers.formatDecimal(measurement.diameters.biestiloidWristDiameter, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.diameters != null && measurement.diameters.femurDiameter != null}">
+                          <p><strong>Fémur:</strong> <span th:text="${#numbers.formatDecimal(measurement.diameters.femurDiameter, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.diameters != null && measurement.diameters.bimaleolarDiameter != null}">
+                          <p><strong>Bimaleolar:</strong> <span th:text="${#numbers.formatDecimal(measurement.diameters.bimaleolarDiameter, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.diameters != null && measurement.diameters.transverseFootDiameter != null}">
+                          <p><strong>Transverso del pie:</strong> <span th:text="${#numbers.formatDecimal(measurement.diameters.transverseFootDiameter, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.diameters != null && measurement.diameters.handLength != null}">
+                          <p><strong>Longitud mano:</strong> <span th:text="${#numbers.formatDecimal(measurement.diameters.handLength, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.diameters != null && measurement.diameters.transverseHandDiameter != null}">
+                          <p><strong>Transverso de la mano:</strong> <span th:text="${#numbers.formatDecimal(measurement.diameters.transverseHandDiameter, 1, 1)} + ' cm'">-</span></p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Body Composition Tab -->
+                    <div class="tab-pane fade" id="body-composition" role="tabpanel" aria-labelledby="body-composition-tab">
+                      <div class="row">
+                        <div class="col-md-6" th:if="${measurement.bodyComposition != null && measurement.bodyComposition.porcentajeGrasaCorporal != null}">
+                          <p><strong>Porcentaje de Grasa Corporal:</strong> <span th:text="${#numbers.formatDecimal(measurement.bodyComposition.porcentajeGrasaCorporal, 1, 1)} + '%'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${measurement.bodyComposition != null && measurement.bodyComposition.indiceGrasaCorporal != null}">
+                          <p><strong>Índice de Grasa Corporal:</strong> <span th:text="${#numbers.formatDecimal(measurement.bodyComposition.indiceGrasaCorporal, 1, 1)}">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${measurement.bodyComposition != null && measurement.bodyComposition.porcentajeMasaMuscular != null}">
+                          <p><strong>Porcentaje de Masa Muscular:</strong> <span th:text="${#numbers.formatDecimal(measurement.bodyComposition.porcentajeMasaMuscular, 1, 1)} + '%'">-</span></p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Notes Tab -->
+                    <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab" th:if="${measurement.notes != null && !measurement.notes.isEmpty()}">
+                      <div class="form-group">
+                        <p><strong>Notas:</strong></p>
+                        <p class="text-muted" th:text="${measurement.notes}">Notas</p>
+                      </div>
                     </div>
                   </div>
-
-                  <!-- Body Measurements -->
-                  <h5 class="mb-3">Mediciones Corporales</h5>
-                  <div class="row mb-4">
-                    <div class="col-md-4">
-                      <p><strong>Cintura:</strong> 
-                        <span th:if="${measurement.cintura != null}" th:text="${#numbers.formatDecimal(measurement.cintura, 1, 1)} + ' cm'">-</span>
-                        <span th:if="${measurement.cintura == null}">-</span>
-                      </p>
-                    </div>
-                    <div class="col-md-4">
-                      <p><strong>Cadera:</strong> 
-                        <span th:if="${measurement.cadera != null}" th:text="${#numbers.formatDecimal(measurement.cadera, 1, 1)} + ' cm'">-</span>
-                        <span th:if="${measurement.cadera == null}">-</span>
-                      </p>
-                    </div>
-                    <div class="col-md-4">
-                      <p><strong>Cuello:</strong> 
-                        <span th:if="${measurement.cuello != null}" th:text="${#numbers.formatDecimal(measurement.cuello, 1, 1)} + ' cm'">-</span>
-                        <span th:if="${measurement.cuello == null}">-</span>
-                      </p>
-                    </div>
-                    <div class="col-md-4">
-                      <p><strong>Brazo:</strong> 
-                        <span th:if="${measurement.brazo != null}" th:text="${#numbers.formatDecimal(measurement.brazo, 1, 1)} + ' cm'">-</span>
-                        <span th:if="${measurement.brazo == null}">-</span>
-                      </p>
-                    </div>
-                    <div class="col-md-4">
-                      <p><strong>Muslo:</strong> 
-                        <span th:if="${measurement.muslo != null}" th:text="${#numbers.formatDecimal(measurement.muslo, 1, 1)} + ' cm'">-</span>
-                        <span th:if="${measurement.muslo == null}">-</span>
-                      </p>
-                    </div>
+                  
+                  <div class="mt-3">
+                    <a th:href="@{'/admin/pacientes/' + ${paciente.id} + '/historial'}" class="btn btn-secondary">Volver al Historial</a>
                   </div>
-
-                  <!-- Body Composition -->
-                  <h5 class="mb-3">Composición Corporal</h5>
-                  <div class="row mb-4">
-                    <div class="col-md-4">
-                      <p><strong>Porcentaje de Grasa Corporal:</strong> 
-                        <span th:if="${measurement.porcentajeGrasaCorporal != null}" th:text="${#numbers.formatDecimal(measurement.porcentajeGrasaCorporal, 1, 1)} + '%'">-</span>
-                        <span th:if="${measurement.porcentajeGrasaCorporal == null}">-</span>
-                      </p>
-                    </div>
-                    <div class="col-md-4">
-                      <p><strong>Porcentaje de Masa Muscular:</strong> 
-                        <span th:if="${measurement.porcentajeMasaMuscular != null}" th:text="${#numbers.formatDecimal(measurement.porcentajeMasaMuscular, 1, 1)} + '%'">-</span>
-                        <span th:if="${measurement.porcentajeMasaMuscular == null}">-</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <!-- Notes -->
-                  <div class="row mb-3" th:if="${measurement.notes != null && !measurement.notes.isEmpty()}">
-                    <div class="col-12">
-                      <h5 class="mb-3">Notas</h5>
-                      <p th:text="${measurement.notes}">Notas</p>
-                    </div>
-                  </div>
-
                 </div>
               </div>
             </div>
@@ -199,4 +386,3 @@
 </body>
 
 </html>
-
