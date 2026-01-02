@@ -452,6 +452,15 @@ Entities that reference `Paciente` (like `CalendarEvent`, `ClinicalExam`, `Anthr
 9. **Method Length**: Maximum 150 lines
 10. **Parameters**: Maximum 7 parameters per method
 11. **Logging**: Use appropriate log levels (DEBUG, INFO, WARN, ERROR)
+12. **Logging Sensitive Information**: **CRITICAL - Never log patient-identifiable data**
+    - ❌ **NEVER log**: Patient names, emails, phone numbers, medical records, or any personal information
+    - ❌ **NEVER log**: Entire patient objects (e.g., `log.info("Patient: {}", paciente)`)
+    - ✅ **DO log**: Only non-sensitive identifiers like IDs, timestamps, and system information
+    - ✅ **Use LogRedaction utility**: When logging entities that contain patient data, use `LogRedaction` utility class
+      - Example: `log.info("Paciente found: {}", LogRedaction.redactPaciente(paciente))`
+      - Available methods: `redactPaciente()`, `redactCalendarEvent()`, `redactClinicalExam()`, `redactPacienteDieta()`, `redactAnthropometricMeasurement()`
+    - **Location**: `com.nutriconsultas.util.LogRedaction`
+    - **Purpose**: Prevents personal information from being exposed in log files for privacy compliance
 
 ### Database Best Practices
 1. **JPA Entities**: Use `@Entity`, proper relationships (`@OneToMany`, `@ManyToOne`, etc.)

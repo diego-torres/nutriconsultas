@@ -85,6 +85,15 @@ This is a Spring Boot 3.4.1 web application for managing a nutrition consultatio
 - Follow Spring Boot best practices
 - Use constructor injection (preferred over field injection)
 - Use Lombok `@Slf4j` for logging
+- **Logging Sensitive Information**: **CRITICAL - Never log patient-identifiable data**
+  - ❌ **NEVER log**: Patient names, emails, phone numbers, medical records, or any personal information
+  - ❌ **NEVER log**: Entire patient objects (e.g., `log.info("Patient: {}", paciente)`)
+  - ✅ **DO log**: Only non-sensitive identifiers like IDs, timestamps, and system information
+  - ✅ **Use LogRedaction utility**: When logging entities that contain patient data, use `LogRedaction` utility class
+    - Example: `log.info("Paciente found: {}", LogRedaction.redactPaciente(paciente))`
+    - Available methods: `redactPaciente()`, `redactCalendarEvent()`, `redactClinicalExam()`, `redactPacienteDieta()`, `redactAnthropometricMeasurement()`
+  - **Location**: `com.nutriconsultas.util.LogRedaction`
+  - **Purpose**: Prevents personal information from being exposed in log files for privacy compliance
 - Maximum method length: 150 lines
 - Maximum parameters: 7 per method
 - Use `@Valid` for validation
@@ -438,4 +447,6 @@ The application requires these environment variables (set in `.env` file):
 - ❌ Utility classes without `final` keyword and private constructor
 - ❌ Lines longer than 120 characters
 - ❌ Closing braces on separate line from else/catch/finally
+- ❌ Logging patient-identifiable data (names, emails, phone numbers, medical records)
+- ❌ Logging entire patient objects or entities containing patient data without redaction
 

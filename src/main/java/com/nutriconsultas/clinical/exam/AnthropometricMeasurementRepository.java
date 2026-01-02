@@ -11,4 +11,3 @@ public interface AnthropometricMeasurementRepository extends JpaRepository<Anthr
 	List<AnthropometricMeasurement> findByPacienteId(Long pacienteId);
 
 }
-

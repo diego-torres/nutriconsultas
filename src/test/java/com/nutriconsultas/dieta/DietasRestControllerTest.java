@@ -1199,8 +1199,7 @@ public class DietasRestControllerTest {
 		org.mockito.Mockito.when(principal.getSubject()).thenReturn(TEST_USER_ID);
 
 		// Act
-		ResponseEntity<ApiResponse<Dieta>> response = dietasRestController.deletePlatilloIngesta(1L, 1L, 1L,
-				principal);
+		ResponseEntity<ApiResponse<Dieta>> response = dietasRestController.deletePlatilloIngesta(1L, 1L, 1L, principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -1222,8 +1221,7 @@ public class DietasRestControllerTest {
 		org.mockito.Mockito.when(principal.getSubject()).thenReturn(OTHER_USER_ID);
 
 		// Act
-		ResponseEntity<ApiResponse<Dieta>> response = dietasRestController.deletePlatilloIngesta(1L, 1L, 1L,
-				principal);
+		ResponseEntity<ApiResponse<Dieta>> response = dietasRestController.deletePlatilloIngesta(1L, 1L, 1L, principal);
 
 		// Assert
 		assertThat(response).isNotNull();

@@ -73,8 +73,7 @@ public class DietaController extends AbstractAuthorizedController {
 			throw new IllegalArgumentException("Dieta no encontrada");
 		}
 		if (dieta.getUserId() == null || !dieta.getUserId().equals(userId)) {
-			LOGGER.warn("User {} attempted to modify diet {} owned by {}", userId, dieta.getId(),
-					dieta.getUserId());
+			LOGGER.warn("User {} attempted to modify diet {} owned by {}", userId, dieta.getId(), dieta.getUserId());
 			throw new IllegalArgumentException("No tiene permiso para modificar esta dieta");
 		}
 	}

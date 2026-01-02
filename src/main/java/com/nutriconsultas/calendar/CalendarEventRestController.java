@@ -138,7 +138,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		else {
 			events = service.findAll();
 		}
-		// Filter events by patient ownership (only show events for patients belonging to this user)
+		// Filter events by patient ownership (only show events for patients belonging to
+		// this user)
 		final List<CalendarEvent> filteredEvents = events.stream()
 			.filter(e -> e.getPaciente() != null && userId.equals(e.getPaciente().getUserId()))
 			.collect(Collectors.toList());
@@ -533,8 +534,7 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 
 	@PostMapping("/events/{id}")
 	public ResponseEntity<Map<String, Object>> updateEvent(@PathVariable @NonNull final Long id,
-			@RequestBody final Map<String, Object> eventData,
-			@AuthenticationPrincipal final OidcUser principal) {
+			@RequestBody final Map<String, Object> eventData, @AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Updating calendar event {}: {}", id, eventData);
 		try {
 			final String userId = getUserId(principal);
@@ -568,7 +568,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			if (eventData.get("pacienteId") != null) {
 				final Long pacienteId = Long.parseLong(eventData.get("pacienteId").toString());
 				final Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
-					.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con id " + pacienteId));
+					.orElseThrow(
+							() -> new IllegalArgumentException("No se ha encontrado paciente con id " + pacienteId));
 				existingEvent.setPaciente(paciente);
 			}
 			// Handle peso and estatura, and calculate IMC and body fat if needed

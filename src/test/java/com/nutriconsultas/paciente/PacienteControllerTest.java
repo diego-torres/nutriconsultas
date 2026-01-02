@@ -110,21 +110,19 @@ public class PacienteControllerTest {
 		log.info("finished setting up PacienteController test");
 	}
 
-
 	@Test
 	public void testAgregarConsultaPacienteCalculatesBodyFat() {
 		log.info("starting testAgregarConsultaPacienteCalculatesBodyFat");
 		// Arrange
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.save(Objects.requireNonNull(evento))).thenReturn(evento);
 		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
 				any(String.class)))
 			.thenReturn(15.5);
 
 		// Act
-		final String result = controller.agregarConsultaPaciente(1L, Objects.requireNonNull(evento), bindingResult, null,
-				principal);
+		final String result = controller.agregarConsultaPaciente(1L, Objects.requireNonNull(evento), bindingResult,
+				null, principal);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -147,13 +145,12 @@ public class PacienteControllerTest {
 		log.info("starting testAgregarConsultaPacienteWithoutDob");
 		// Arrange
 		paciente.setDob(null);
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.save(Objects.requireNonNull(evento))).thenReturn(evento);
 
 		// Act
-		final String result = controller.agregarConsultaPaciente(1L, Objects.requireNonNull(evento), bindingResult, null,
-				principal);
+		final String result = controller.agregarConsultaPaciente(1L, Objects.requireNonNull(evento), bindingResult,
+				null, principal);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -172,13 +169,12 @@ public class PacienteControllerTest {
 		log.info("starting testAgregarConsultaPacienteWithoutGender");
 		// Arrange
 		paciente.setGender(null);
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.save(Objects.requireNonNull(evento))).thenReturn(evento);
 
 		// Act
-		final String result = controller.agregarConsultaPaciente(1L, Objects.requireNonNull(evento), bindingResult, null,
-				principal);
+		final String result = controller.agregarConsultaPaciente(1L, Objects.requireNonNull(evento), bindingResult,
+				null, principal);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -196,8 +192,7 @@ public class PacienteControllerTest {
 	public void testAgregarConsultaPacienteUpdatesPatientWeight() {
 		log.info("starting testAgregarConsultaPacienteUpdatesPatientWeight");
 		// Arrange
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.save(any(CalendarEvent.class))).thenReturn(evento);
 		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
 		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
@@ -223,8 +218,7 @@ public class PacienteControllerTest {
 		log.info("starting testAgregarConsultaPacienteWithFemaleGender");
 		// Arrange
 		paciente.setGender("F");
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.save(any(CalendarEvent.class))).thenReturn(evento);
 		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class), eq("F")))
 			.thenReturn(22.5);
@@ -251,8 +245,7 @@ public class PacienteControllerTest {
 		pastEvent.setStatus(EventStatus.COMPLETED);
 		pastEvent.setPaciente(paciente);
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(Arrays.asList(pastEvent));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
@@ -280,8 +273,7 @@ public class PacienteControllerTest {
 		futureEvent.setStatus(EventStatus.SCHEDULED);
 		futureEvent.setPaciente(paciente);
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(Arrays.asList(futureEvent));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
@@ -321,8 +313,7 @@ public class PacienteControllerTest {
 		futureEvent.setStatus(EventStatus.SCHEDULED);
 		futureEvent.setPaciente(paciente);
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(Arrays.asList(pastEvent, futureEvent));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
@@ -362,8 +353,7 @@ public class PacienteControllerTest {
 		scheduledPastEvent.setStatus(EventStatus.SCHEDULED);
 		scheduledPastEvent.setPaciente(paciente);
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(Arrays.asList(cancelledEvent, scheduledPastEvent));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
@@ -395,8 +385,7 @@ public class PacienteControllerTest {
 		cancelledFutureEvent.setStatus(EventStatus.CANCELLED);
 		cancelledFutureEvent.setPaciente(paciente);
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L))
 			.thenReturn(Arrays.asList(completedFutureEvent, cancelledFutureEvent));
 
@@ -432,8 +421,7 @@ public class PacienteControllerTest {
 		recentEvent.setStatus(EventStatus.COMPLETED);
 		recentEvent.setPaciente(paciente);
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(Arrays.asList(olderEvent, recentEvent));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
@@ -472,8 +460,7 @@ public class PacienteControllerTest {
 		farFutureEvent.setStatus(EventStatus.SCHEDULED);
 		farFutureEvent.setPaciente(paciente);
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(Arrays.asList(nearFutureEvent, farFutureEvent));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
@@ -495,8 +482,7 @@ public class PacienteControllerTest {
 	public void testPerfilPacienteWithNoEvents() {
 		log.info("starting testPerfilPacienteWithNoEvents");
 		// Arrange
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
@@ -516,8 +502,7 @@ public class PacienteControllerTest {
 	public void testPerfilPaciente() {
 		log.info("starting testPerfilPaciente");
 		// Arrange
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
@@ -540,8 +525,7 @@ public class PacienteControllerTest {
 	public void testAsignarDieta() {
 		log.info("starting testAsignarDieta");
 		// Arrange
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
@@ -569,8 +553,7 @@ public class PacienteControllerTest {
 		dieta.setId(1L);
 		dieta.setNombre("Dieta de Prueba");
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.of(dieta));
 		when(pacienteDietaService.assignDieta(any(Long.class), any(Long.class), any(PacienteDieta.class),
 				any(String.class)))
@@ -602,8 +585,7 @@ public class PacienteControllerTest {
 		dieta.setId(1L);
 		dieta.setNombre("Dieta de Prueba");
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.of(dieta));
 		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
 		when(bindingResult.getAllErrors()).thenReturn(new ArrayList<>());
@@ -639,8 +621,7 @@ public class PacienteControllerTest {
 		dieta.setId(1L);
 		dieta.setNombre("Dieta de Prueba");
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.of(dieta));
 		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
 		when(bindingResult.getAllErrors()).thenReturn(new ArrayList<>());
@@ -671,8 +652,7 @@ public class PacienteControllerTest {
 		dieta.setId(1L);
 		dieta.setNombre("Dieta de Prueba");
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.of(dieta));
 		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
 		when(bindingResult.getAllErrors()).thenReturn(new ArrayList<>());
@@ -703,7 +683,8 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(() -> controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L, principal))
+		assertThatThrownBy(
+				() -> controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L, principal))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado paciente con folio");
 		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
@@ -720,14 +701,14 @@ public class PacienteControllerTest {
 		pacienteDieta.setStartDate(new Date());
 		pacienteDieta.setStatus(PacienteDietaStatus.ACTIVE);
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.empty());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(() -> controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L, principal))
+		assertThatThrownBy(
+				() -> controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L, principal))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado dieta con id");
 		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
@@ -760,8 +741,7 @@ public class PacienteControllerTest {
 		pacienteDieta.setId(1L);
 		pacienteDieta.setPaciente(paciente);
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(pacienteDietaService.findById(1L)).thenReturn(pacienteDieta);
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
@@ -838,8 +818,7 @@ public class PacienteControllerTest {
 		existing.setDieta(dieta);
 
 		when(pacienteDietaService.findById(1L)).thenReturn(existing);
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
@@ -877,8 +856,7 @@ public class PacienteControllerTest {
 		existing.setDieta(dieta);
 
 		when(pacienteDietaService.findById(1L)).thenReturn(existing);
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
@@ -941,8 +919,7 @@ public class PacienteControllerTest {
 	public void testDietasPaciente() {
 		log.info("starting testDietasPaciente");
 		// Arrange
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(pacienteDietaService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
 		when(pacienteDietaService.findActiveByPacienteId(1L)).thenReturn(new ArrayList<>());
 		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
@@ -991,8 +968,7 @@ public class PacienteControllerTest {
 		final List<PacienteDieta> dietasAsignadas = new ArrayList<>();
 		dietasAsignadas.add(pacienteDieta);
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(pacienteDietaService.findByPacienteId(1L)).thenReturn(dietasAsignadas);
 		when(pacienteDietaService.findActiveByPacienteId(1L)).thenReturn(dietasAsignadas);
 		when(dietaService.getDieta(1L)).thenReturn(dieta);
@@ -1039,8 +1015,7 @@ public class PacienteControllerTest {
 		final List<PacienteDieta> dietasAsignadas = new ArrayList<>();
 		dietasAsignadas.add(pacienteDieta);
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(pacienteDietaService.findByPacienteId(1L)).thenReturn(dietasAsignadas);
 		when(pacienteDietaService.findActiveByPacienteId(1L)).thenReturn(dietasAsignadas);
 		when(dietaService.getDieta(1L)).thenReturn(dieta);
@@ -1078,7 +1053,8 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(() -> controller.dietasPaciente(1L, model, principal)).isInstanceOf(IllegalArgumentException.class)
+		assertThatThrownBy(() -> controller.dietasPaciente(1L, model, principal))
+			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado paciente con folio");
 		log.info("finished testDietasPacienteThrowsExceptionWhenPacienteNotFound");
 	}
@@ -1087,8 +1063,7 @@ public class PacienteControllerTest {
 	public void testClinicosPaciente() {
 		log.info("starting testClinicosPaciente");
 		// Arrange
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
@@ -1112,7 +1087,8 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(() -> controller.clinicosPaciente(1L, model, principal)).isInstanceOf(IllegalArgumentException.class)
+		assertThatThrownBy(() -> controller.clinicosPaciente(1L, model, principal))
+			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado paciente con folio");
 		log.info("finished testClinicosPacienteThrowsExceptionWhenPacienteNotFound");
 	}
@@ -1127,8 +1103,7 @@ public class PacienteControllerTest {
 		exam.setExamDateTime(new Date());
 		exam.setTitle("Examen Clínico");
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(clinicalExamService.save(Objects.requireNonNull(exam))).thenReturn(exam);
 		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
 				any(String.class)))
@@ -1167,8 +1142,7 @@ public class PacienteControllerTest {
 		exam.setExamDateTime(new Date());
 		exam.setTitle("Examen Clínico");
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(clinicalExamService.save(Objects.requireNonNull(exam))).thenReturn(exam);
 
 		// Act
@@ -1197,8 +1171,7 @@ public class PacienteControllerTest {
 		exam.setExamDateTime(new Date());
 		exam.setTitle("Examen Clínico");
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(clinicalExamService.save(any(ClinicalExam.class))).thenReturn(exam);
 		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
 		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
@@ -1230,8 +1203,7 @@ public class PacienteControllerTest {
 		// Title is null - should be set to "Examen Clínico"
 		exam.setTitle(null);
 
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(clinicalExamService.save(any(ClinicalExam.class))).thenReturn(exam);
 		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
 		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),

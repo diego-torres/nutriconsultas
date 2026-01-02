@@ -144,7 +144,8 @@ public class DietaControllerTest {
 	 */
 	private SecurityMockMvcRequestPostProcessors.OidcLoginRequestPostProcessor oidcLogin(final String userId) {
 		return SecurityMockMvcRequestPostProcessors.oidcLogin()
-			.idToken(token -> token.subject(userId).claim("name", "Test User")
+			.idToken(token -> token.subject(userId)
+				.claim("name", "Test User")
 				.claim("picture", "https://example.com/picture.jpg"));
 	}
 

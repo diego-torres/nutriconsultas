@@ -17,4 +17,3 @@ public interface AnthropometricMeasurementService {
 	List<AnthropometricMeasurement> findByPacienteId(@NonNull Long pacienteId);
 
 }
-

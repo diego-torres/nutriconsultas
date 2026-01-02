@@ -87,7 +87,7 @@ public class AnthropometricMeasurementRestControllerTest {
 		log.info("Starting testGetPageArray");
 		// Arrange
 		when(anthropometricMeasurementService.findByPacienteId(1L))
-				.thenReturn(Arrays.asList(measurement1, measurement2));
+			.thenReturn(Arrays.asList(measurement1, measurement2));
 
 		PagingRequest pagingRequest = new PagingRequest();
 		pagingRequest.setStart(0);
@@ -113,7 +113,7 @@ public class AnthropometricMeasurementRestControllerTest {
 		log.info("Starting testGetPageArrayWithSearch");
 		// Arrange
 		when(anthropometricMeasurementService.findByPacienteId(1L))
-				.thenReturn(Arrays.asList(measurement1, measurement2));
+			.thenReturn(Arrays.asList(measurement1, measurement2));
 
 		PagingRequest pagingRequest = new PagingRequest();
 		pagingRequest.setStart(0);
@@ -190,4 +190,3 @@ public class AnthropometricMeasurementRestControllerTest {
 	}
 
 }
-

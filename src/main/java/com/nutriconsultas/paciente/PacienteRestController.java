@@ -24,6 +24,7 @@ import com.nutriconsultas.dataTables.paging.Direction;
 import com.nutriconsultas.dataTables.paging.Page;
 import com.nutriconsultas.dataTables.paging.PageArray;
 import com.nutriconsultas.dataTables.paging.PagingRequest;
+import com.nutriconsultas.util.LogRedaction;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,8 +52,8 @@ public class PacienteRestController extends AbstractGridController<Paciente> {
 	}
 
 	/**
-	 * Overrides base class method to add user filtering.
-	 * Gets the authenticated user from SecurityContext and filters patients by userId.
+	 * Overrides base class method to add user filtering. Gets the authenticated user from
+	 * SecurityContext and filters patients by userId.
 	 * @param pagingRequest the paging request
 	 * @return paginated patient data filtered by the authenticated user
 	 */
@@ -60,9 +61,7 @@ public class PacienteRestController extends AbstractGridController<Paciente> {
 	@PostMapping("data-table")
 	public PageArray getPageArray(@RequestBody final PagingRequest pagingRequest) {
 		log.info("starting getPageArray with pagingRequest: {}", pagingRequest);
-		final OidcUser principal = (OidcUser) SecurityContextHolder.getContext()
-			.getAuthentication()
-			.getPrincipal();
+		final OidcUser principal = (OidcUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		final String userId = getUserId(principal);
 		if (userId == null) {
 			log.error("Cannot get patient data: user ID is null");
@@ -100,7 +99,7 @@ public class PacienteRestController extends AbstractGridController<Paciente> {
 
 	@Override
 	protected List<String> toStringList(final Paciente row) {
-		log.debug("converting Paciente row {} to string list.", row);
+		log.debug("converting Paciente row {} to string list.", LogRedaction.redactPaciente(row));
 		final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		return Arrays.asList("<a href='/admin/pacientes/" + row.getId() + "'>" + row.getName() + "</a>",
 				row.getDob() != null ? dateFormat.format(row.getDob()) : "", //

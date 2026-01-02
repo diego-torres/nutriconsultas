@@ -52,4 +52,3 @@ public class AnthropometricMeasurementServiceImpl implements AnthropometricMeasu
 	}
 
 }
-
