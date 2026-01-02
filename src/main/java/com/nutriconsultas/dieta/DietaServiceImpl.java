@@ -76,7 +76,7 @@ public class DietaServiceImpl implements DietaService {
 		if (dieta != null) {
 			log.debug("dieta: {}", dieta);
 			dieta.getIngestas().forEach(ingesta -> {
-				if (ingesta.getId() == ingestaId) {
+				if (ingesta.getId() != null && ingesta.getId().equals(ingestaId)) {
 					log.debug("Renaming ingesta with id: {}", id);
 					ingesta.setNombre(nombreIngesta);
 				}

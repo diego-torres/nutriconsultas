@@ -84,15 +84,14 @@ public class CalendarControllerTest {
 		List<Paciente> pacientes = new ArrayList<>();
 		pacientes.add(paciente);
 		when(pacienteRepository.findByUserId(TEST_USER_ID)).thenReturn(pacientes);
-		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.of(paciente));
-		when(pacienteRepository.findByIdAndUserId(999L, TEST_USER_ID))
-			.thenReturn(java.util.Optional.empty());
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.findByIdAndUserId(999L, TEST_USER_ID)).thenReturn(java.util.Optional.empty());
 	}
 
 	private SecurityMockMvcRequestPostProcessors.OidcLoginRequestPostProcessor oidcLogin() {
 		return SecurityMockMvcRequestPostProcessors.oidcLogin()
-			.idToken(token -> token.subject(TEST_USER_ID).claim("name", "Test User")
+			.idToken(token -> token.subject(TEST_USER_ID)
+				.claim("name", "Test User")
 				.claim("picture", "https://example.com/picture.jpg"));
 	}
 

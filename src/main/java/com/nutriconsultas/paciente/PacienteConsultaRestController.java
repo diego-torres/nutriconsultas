@@ -96,16 +96,14 @@ public class PacienteConsultaRestController extends AbstractGridController<Calen
 	protected Comparator<CalendarEvent> getComparator(final String column, final Direction dir) {
 		log.debug("getting CalendarEvent comparator with column {} and direction {}.", column, dir);
 		final Comparator<CalendarEvent> comparator;
+		// Default comparator for eventDateTime/fecha and unknown columns
+		final Comparator<CalendarEvent> defaultComparator = Comparator.comparing(CalendarEvent::getEventDateTime,
+				Comparator.nullsLast(Date::compareTo));
 		switch (column) {
 			case "title":
 			case "titulo":
 				comparator = Comparator.comparing(CalendarEvent::getTitle,
 						Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
-				break;
-			case "eventDateTime":
-			case "fecha":
-				comparator = Comparator.comparing(CalendarEvent::getEventDateTime,
-						Comparator.nullsLast(Date::compareTo));
 				break;
 			case "duration":
 			case "duracion":
@@ -116,9 +114,11 @@ public class PacienteConsultaRestController extends AbstractGridController<Calen
 			case "estado":
 				comparator = Comparator.comparing(CalendarEvent::getStatus, Comparator.nullsLast(Enum::compareTo));
 				break;
+			case "eventDateTime":
+			case "fecha":
 			default:
-				comparator = Comparator.comparing(CalendarEvent::getEventDateTime,
-						Comparator.nullsLast(Date::compareTo));
+				comparator = defaultComparator;
+				break;
 		}
 		return dir == Direction.desc ? comparator.reversed() : comparator;
 	}

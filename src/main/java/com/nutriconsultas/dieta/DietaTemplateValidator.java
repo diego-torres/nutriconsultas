@@ -48,7 +48,8 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		variables.put("ingestas", mockIngestas);
 
 		// Add minId for formulario template (minimum ingesta id)
-		variables.put("minId", mockIngestas.isEmpty() ? 0L : mockIngestas.get(0).getId());
+		final Long minId = mockIngestas.isEmpty() ? Long.valueOf(0L) : mockIngestas.get(0).getId();
+		variables.put("minId", minId);
 
 		// Add platillos and alimentos lists for formulario template
 		variables.put("platillos", createMockPlatillosList());

@@ -61,7 +61,8 @@ public class AnthropometricMeasurementRestController extends AbstractGridControl
 	@Override
 	@PostMapping("not-implemented")
 	public PageArray getPageArray(@RequestBody final PagingRequest pagingRequest) {
-		log.warn("getPageArray() called on AnthropometricMeasurementRestController without id. This should not be called.");
+		log.warn(
+				"getPageArray() called on AnthropometricMeasurementRestController without id. This should not be called.");
 		return null;
 	}
 
@@ -76,11 +77,13 @@ public class AnthropometricMeasurementRestController extends AbstractGridControl
 		final String cadera = row.getCadera() != null ? String.format("%.1f cm", row.getCadera()) : "-";
 		final String porcentajeGrasa = row.getPorcentajeGrasaCorporal() != null
 				? String.format("%.1f%%", row.getPorcentajeGrasaCorporal()) : "-";
-		return Arrays.asList(row.getMeasurementDateTime() != null ? dateTimeFormat.format(row.getMeasurementDateTime())
-				: "", "<a href='/admin/pacientes/" + row.getPaciente().getId() + "/antropometrico/" + row.getId() + "'>"
-						+ row.getTitle() + "</a>", peso, estatura, imc, cintura, cadera, porcentajeGrasa,
-				"<a href='#' class='btn action-btn btn-danger btn-sm delete-antropometrico-btn' data-id='"
-						+ row.getId() + "'><i class='fas fa-trash fa-sm fa-fw'></i> </a>");
+		return Arrays.asList(
+				row.getMeasurementDateTime() != null ? dateTimeFormat.format(row.getMeasurementDateTime()) : "",
+				"<a href='/admin/pacientes/" + row.getPaciente().getId() + "/antropometrico/" + row.getId() + "'>"
+						+ row.getTitle() + "</a>",
+				peso, estatura, imc, cintura, cadera, porcentajeGrasa,
+				"<a href='#' class='btn action-btn btn-danger btn-sm delete-antropometrico-btn' data-id='" + row.getId()
+						+ "'><i class='fas fa-trash fa-sm fa-fw'></i> </a>");
 	}
 
 	@Override
@@ -93,7 +96,7 @@ public class AnthropometricMeasurementRestController extends AbstractGridControl
 			@NonNull final Long pacienteId) {
 		log.debug("getting AnthropometricMeasurement rows filtered by pacienteId: {}", pacienteId);
 		final List<AnthropometricMeasurement> measurements = anthropometricMeasurementService
-				.findByPacienteId(pacienteId);
+			.findByPacienteId(pacienteId);
 		return getPage(pagingRequest, measurements);
 	}
 
@@ -107,16 +110,14 @@ public class AnthropometricMeasurementRestController extends AbstractGridControl
 	protected Comparator<AnthropometricMeasurement> getComparator(final String column, final Direction dir) {
 		log.debug("getting AnthropometricMeasurement comparator with column {} and direction {}.", column, dir);
 		final Comparator<AnthropometricMeasurement> comparator;
+		// Default comparator for measurementDateTime/fecha and unknown columns
+		final Comparator<AnthropometricMeasurement> defaultComparator = Comparator
+				.comparing(AnthropometricMeasurement::getMeasurementDateTime, Comparator.nullsLast(Date::compareTo));
 		switch (column) {
 			case "title":
 			case "titulo":
 				comparator = Comparator.comparing(AnthropometricMeasurement::getTitle,
 						Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
-				break;
-			case "measurementDateTime":
-			case "fecha":
-				comparator = Comparator.comparing(AnthropometricMeasurement::getMeasurementDateTime,
-						Comparator.nullsLast(Date::compareTo));
 				break;
 			case "peso":
 				comparator = Comparator.comparing(AnthropometricMeasurement::getPeso,
@@ -142,9 +143,11 @@ public class AnthropometricMeasurementRestController extends AbstractGridControl
 				comparator = Comparator.comparing(AnthropometricMeasurement::getPorcentajeGrasaCorporal,
 						Comparator.nullsLast(Double::compareTo));
 				break;
+			case "measurementDateTime":
+			case "fecha":
 			default:
-				comparator = Comparator.comparing(AnthropometricMeasurement::getMeasurementDateTime,
-						Comparator.nullsLast(Date::compareTo));
+				comparator = defaultComparator;
+				break;
 		}
 		return dir == Direction.desc ? comparator.reversed() : comparator;
 	}
@@ -152,7 +155,8 @@ public class AnthropometricMeasurementRestController extends AbstractGridControl
 	@Override
 	protected List<Column> getColumns() {
 		log.debug("getting AnthropometricMeasurement columns.");
-		return Stream.of("fecha", "titulo", "peso", "estatura", "imc", "cintura", "cadera", "porcentajeGrasa", "actions")
+		return Stream
+			.of("fecha", "titulo", "peso", "estatura", "imc", "cintura", "cadera", "porcentajeGrasa", "actions")
 			.map(Column::new)
 			.collect(Collectors.toList());
 	}
@@ -203,4 +207,3 @@ public class AnthropometricMeasurementRestController extends AbstractGridControl
 	}
 
 }
-

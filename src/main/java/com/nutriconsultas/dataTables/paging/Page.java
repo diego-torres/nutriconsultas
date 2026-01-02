@@ -1,5 +1,6 @@
 package com.nutriconsultas.dataTables.paging;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -20,7 +21,7 @@ public class Page<T> {
 	private int draw;
 
 	public Page(List<T> data) {
-		this.data = data;
+		this.data = data != null ? new ArrayList<>(data) : new ArrayList<>();
 	}
 
 }

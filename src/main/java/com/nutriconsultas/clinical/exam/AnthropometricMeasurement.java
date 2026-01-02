@@ -97,4 +97,3 @@ public class AnthropometricMeasurement {
 	private Double porcentajeMasaMuscular;
 
 }
-

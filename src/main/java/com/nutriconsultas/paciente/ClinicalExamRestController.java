@@ -108,15 +108,14 @@ public class ClinicalExamRestController extends AbstractGridController<ClinicalE
 	protected Comparator<ClinicalExam> getComparator(final String column, final Direction dir) {
 		log.debug("getting ClinicalExam comparator with column {} and direction {}.", column, dir);
 		final Comparator<ClinicalExam> comparator;
+		// Default comparator for examDateTime/fecha and unknown columns
+		final Comparator<ClinicalExam> defaultComparator = Comparator.comparing(ClinicalExam::getExamDateTime,
+				Comparator.nullsLast(Date::compareTo));
 		switch (column) {
 			case "title":
 			case "titulo":
 				comparator = Comparator.comparing(ClinicalExam::getTitle,
 						Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
-				break;
-			case "examDateTime":
-			case "fecha":
-				comparator = Comparator.comparing(ClinicalExam::getExamDateTime, Comparator.nullsLast(Date::compareTo));
 				break;
 			case "peso":
 				comparator = Comparator.comparing(ClinicalExam::getPeso, Comparator.nullsLast(Double::compareTo));
@@ -135,8 +134,11 @@ public class ClinicalExamRestController extends AbstractGridController<ClinicalE
 				comparator = Comparator.comparing(ClinicalExam::getHemoglobina,
 						Comparator.nullsLast(Double::compareTo));
 				break;
+			case "examDateTime":
+			case "fecha":
 			default:
-				comparator = Comparator.comparing(ClinicalExam::getExamDateTime, Comparator.nullsLast(Date::compareTo));
+				comparator = defaultComparator;
+				break;
 		}
 		return dir == Direction.desc ? comparator.reversed() : comparator;
 	}

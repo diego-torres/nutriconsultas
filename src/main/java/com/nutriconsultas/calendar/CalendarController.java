@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.controller.AbstractAuthorizedController;
 import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.util.LogRedaction;
 
 @Controller
 @Slf4j
@@ -91,7 +92,8 @@ public class CalendarController extends AbstractAuthorizedController {
 		// This is necessary because paciente is validated as @NotNull but comes from
 		// pacienteId parameter
 		if (pacienteId != null) {
-			final com.nutriconsultas.paciente.Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
+			final com.nutriconsultas.paciente.Paciente paciente = pacienteRepository
+				.findByIdAndUserId(pacienteId, userId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
 						"No se ha encontrado paciente con id " + pacienteId));
 			event.setPaciente(paciente);
@@ -212,11 +214,12 @@ public class CalendarController extends AbstractAuthorizedController {
 		// This is necessary because paciente is validated as @NotNull but comes from
 		// pacienteId parameter
 		if (pacienteId != null) {
-			final com.nutriconsultas.paciente.Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
+			final com.nutriconsultas.paciente.Paciente paciente = pacienteRepository
+				.findByIdAndUserId(pacienteId, userId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
 						"No se ha encontrado paciente con id " + pacienteId));
 			event.setPaciente(paciente);
-			log.debug("Set paciente on event: {}", paciente);
+			log.debug("Set paciente on event: {}", LogRedaction.redactPaciente(paciente));
 		}
 
 		// Check for validation errors after setting paciente
@@ -256,7 +259,7 @@ public class CalendarController extends AbstractAuthorizedController {
 			return "sbadmin/calendar/formulario";
 		}
 		log.debug("No validation errors, proceeding with update");
-		log.debug("Found existing event: {}", existingEvent);
+		log.debug("Found existing event: {}", LogRedaction.redactCalendarEvent(existingEvent));
 		// Update all fields from the form
 		existingEvent.setTitle(event.getTitle());
 		existingEvent.setDescription(event.getDescription());
@@ -266,7 +269,8 @@ public class CalendarController extends AbstractAuthorizedController {
 		// Update paciente if provided, otherwise keep existing
 		if (pacienteId != null) {
 			log.debug("Updating paciente to id: {}", pacienteId);
-			final com.nutriconsultas.paciente.Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
+			final com.nutriconsultas.paciente.Paciente paciente = pacienteRepository
+				.findByIdAndUserId(pacienteId, userId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
 						"No se ha encontrado paciente con id " + pacienteId));
 			existingEvent.setPaciente(paciente);
@@ -276,15 +280,14 @@ public class CalendarController extends AbstractAuthorizedController {
 		}
 		// Preserve summaryNotes if it exists (not in form, but should be preserved)
 		// summaryNotes is not part of the form, so it will remain unchanged
-		log.debug("Saving event: {}", existingEvent);
+		log.debug("Saving event: {}", LogRedaction.redactCalendarEvent(existingEvent));
 		calendarEventService.save(existingEvent);
 		log.debug("Event saved successfully, redirecting to calendar");
 		return "redirect:/admin/calendario";
 	}
 
 	@PostMapping(path = "/admin/calendario/{id}/eliminar")
-	public String deleteEvent(@PathVariable @NonNull final Long id,
-			@AuthenticationPrincipal final OidcUser principal) {
+	public String deleteEvent(@PathVariable @NonNull final Long id, @AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Eliminando evento {}", id);
 		final String userId = getUserId(principal);
 		if (userId == null) {

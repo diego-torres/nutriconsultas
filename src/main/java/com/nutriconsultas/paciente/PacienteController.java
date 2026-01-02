@@ -32,6 +32,7 @@ import com.nutriconsultas.controller.AbstractAuthorizedController;
 import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.DietaRepository;
 import com.nutriconsultas.dieta.DietaService;
+import com.nutriconsultas.util.LogRedaction;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -125,7 +126,7 @@ public class PacienteController extends AbstractAuthorizedController {
 	@PostMapping(path = "/admin/pacientes/nuevo")
 	public String addPaciente(@Valid final Paciente paciente, final BindingResult result, final Model model,
 			@AuthenticationPrincipal final OidcUser principal) {
-		log.debug("Grabando nuevo paciente: " + paciente.getName());
+		log.debug("Grabando nuevo paciente: {}", LogRedaction.redactPaciente(paciente));
 		final String userId = getUserId(principal);
 		if (userId == null) {
 			log.error("Cannot create patient: user ID is null");
@@ -463,14 +464,13 @@ public class PacienteController extends AbstractAuthorizedController {
 	@PostMapping(path = "/admin/pacientes/{pacienteId}/consulta")
 	public String agregarConsultaPaciente(@PathVariable @NonNull Long pacienteId, @Valid CalendarEvent evento,
 			BindingResult result, Model model, @AuthenticationPrincipal final OidcUser principal) {
-		log.debug("Grabando consulta {}", evento);
+		log.debug("Grabando consulta {}", LogRedaction.redactCalendarEvent(evento));
 		final String userId = getUserId(principal);
 		if (userId == null) {
 			throw new IllegalArgumentException("No se pudo identificar al usuario");
 		}
-		final Paciente paciente = Objects.requireNonNull(
-				pacienteRepository.findByIdAndUserId(pacienteId, userId)
-					.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
+		final Paciente paciente = Objects.requireNonNull(pacienteRepository.findByIdAndUserId(pacienteId, userId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
 				"Paciente must not be null");
 		verifyPatientOwnership(paciente, userId);
 
@@ -482,7 +482,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		setEventCalculatedValues(evento, bmiResult);
 		setEventDefaultValues(evento);
 
-		log.debug("Evento lista para grabar {}", evento);
+		log.debug("Evento lista para grabar {}", LogRedaction.redactCalendarEvent(evento));
 		calendarEventService.save(evento);
 		return String.format("redirect:/admin/pacientes/%d/historial", pacienteId);
 	}
@@ -512,14 +512,13 @@ public class PacienteController extends AbstractAuthorizedController {
 	@PostMapping(path = "/admin/pacientes/{pacienteId}/clinicos")
 	public String agregarClinicosPaciente(@PathVariable @NonNull Long pacienteId, @Valid ClinicalExam exam,
 			BindingResult result, Model model, @AuthenticationPrincipal final OidcUser principal) {
-		log.debug("Grabando examen clínico {}", exam);
+		log.debug("Grabando examen clínico {}", LogRedaction.redactClinicalExam(exam));
 		final String userId = getUserId(principal);
 		if (userId == null) {
 			throw new IllegalArgumentException("No se pudo identificar al usuario");
 		}
-		final Paciente paciente = Objects.requireNonNull(
-				pacienteRepository.findByIdAndUserId(pacienteId, userId)
-					.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
+		final Paciente paciente = Objects.requireNonNull(pacienteRepository.findByIdAndUserId(pacienteId, userId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
 				"Paciente must not be null");
 		verifyPatientOwnership(paciente, userId);
 
@@ -531,7 +530,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		setExamCalculatedValues(exam, bmiResult);
 		setExamDefaultValues(exam);
 
-		log.debug("Examen clínico lista para grabar {}", exam);
+		log.debug("Examen clínico lista para grabar {}", LogRedaction.redactClinicalExam(exam));
 		clinicalExamService.save(exam);
 		return String.format("redirect:/admin/pacientes/%d/historial", pacienteId);
 	}
@@ -586,26 +585,26 @@ public class PacienteController extends AbstractAuthorizedController {
 	public String agregarAntropometricosPaciente(@PathVariable @NonNull Long pacienteId,
 			@Valid com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement, BindingResult result,
 			Model model, @AuthenticationPrincipal final OidcUser principal) {
-		log.debug("Grabando medición antropométrica {}", measurement);
+		log.debug("Grabando medición antropométrica {}", LogRedaction.redactAnthropometricMeasurement(measurement));
 		final String userId = getUserId(principal);
 		if (userId == null) {
 			throw new IllegalArgumentException("No se pudo identificar al usuario");
 		}
-		final Paciente paciente = Objects.requireNonNull(
-				pacienteRepository.findByIdAndUserId(pacienteId, userId)
-					.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
+		final Paciente paciente = Objects.requireNonNull(pacienteRepository.findByIdAndUserId(pacienteId, userId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
 				"Paciente must not be null");
 		verifyPatientOwnership(paciente, userId);
 
 		measurement.setPaciente(paciente);
 
 		final BmiCalculationResult bmiResult = calculateBmiAndBodyFatForMeasurement(measurement, paciente);
-		updatePatientWeightIfNeededForMeasurement(paciente, measurement, bmiResult.getImc(),
-				bmiResult.getNivelPeso(), pacienteId, measurement.getMeasurementDateTime());
+		updatePatientWeightIfNeededForMeasurement(paciente, measurement, bmiResult.getImc(), bmiResult.getNivelPeso(),
+				pacienteId, measurement.getMeasurementDateTime());
 		setMeasurementCalculatedValues(measurement, bmiResult);
 		setMeasurementDefaultValues(measurement);
 
-		log.debug("Medición antropométrica lista para grabar {}", measurement);
+		log.debug("Medición antropométrica lista para grabar {}",
+				LogRedaction.redactAnthropometricMeasurement(measurement));
 		anthropometricMeasurementService.save(measurement);
 		return String.format("redirect:/admin/pacientes/%d/historial", pacienteId);
 	}
@@ -620,7 +619,7 @@ public class PacienteController extends AbstractAuthorizedController {
 			throw new IllegalArgumentException("No se pudo identificar al usuario");
 		}
 		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = anthropometricMeasurementService
-				.findById(measurementId);
+			.findById(measurementId);
 		if (measurement == null) {
 			throw new IllegalArgumentException("No se ha encontrado medición antropométrica con id " + measurementId);
 		}
@@ -713,7 +712,7 @@ public class PacienteController extends AbstractAuthorizedController {
 			return "sbadmin/pacientes/asignar-dieta";
 		}
 		final PacienteDieta saved = pacienteDietaService.assignDieta(id, dietaId, pacienteDieta, userId);
-		log.debug("Dieta asignada exitosamente: {}", saved);
+		log.debug("Dieta asignada exitosamente: {}", LogRedaction.redactPacienteDieta(saved));
 		return String.format("redirect:/admin/pacientes/%d/dietas", id);
 	}
 
@@ -789,7 +788,7 @@ public class PacienteController extends AbstractAuthorizedController {
 			return "sbadmin/pacientes/editar-dieta";
 		}
 		final PacienteDieta updated = pacienteDietaService.updateAssignment(id, pacienteDieta);
-		log.info("Asignación de dieta actualizada exitosamente: {}", updated);
+		log.info("Asignación de dieta actualizada exitosamente: {}", LogRedaction.redactPacienteDieta(updated));
 		return String.format("redirect:/admin/pacientes/%d/dietas", pacienteId);
 	}
 
@@ -1266,8 +1265,7 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	/**
-	 * Updates patient weight if the measurement date is today or is the latest
-	 * event.
+	 * Updates patient weight if the measurement date is today or is the latest event.
 	 */
 	private void updatePatientWeightIfNeededForMeasurement(@NonNull final Paciente paciente,
 			final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement, final Double imc,
@@ -1310,8 +1308,8 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	/**
-	 * Updates patient weight if this is the latest AnthropometricMeasurement (no
-	 * later events exist).
+	 * Updates patient weight if this is the latest AnthropometricMeasurement (no later
+	 * events exist).
 	 */
 	private void updatePatientWeightIfLatestMeasurement(@NonNull final Paciente paciente,
 			final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement, final Double imc,
@@ -1319,7 +1317,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		final List<CalendarEvent> eventosPrevios = calendarEventService.findByPacienteId(pacienteId);
 		final List<ClinicalExam> examenesPrevios = clinicalExamService.findByPacienteId(pacienteId);
 		final List<com.nutriconsultas.clinical.exam.AnthropometricMeasurement> medicionesPrevias = anthropometricMeasurementService
-				.findByPacienteId(pacienteId);
+			.findByPacienteId(pacienteId);
 		final boolean laterExists = eventosPrevios.stream()
 			.anyMatch(e -> e.getEventDateTime() != null && e.getEventDateTime().after(measurementDate))
 				|| examenesPrevios.stream()

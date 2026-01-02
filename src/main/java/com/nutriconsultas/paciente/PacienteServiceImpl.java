@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
+import com.nutriconsultas.util.LogRedaction;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -26,15 +28,15 @@ public class PacienteServiceImpl implements PacienteService {
 	public Paciente findById(@NonNull final Long id) {
 		log.info("finding Paciente with id {}.", id);
 		final Paciente paciente = repo.findById(id).orElse(null);
-		log.info("Paciente found {}.", paciente);
+		log.info("Paciente found {}.", LogRedaction.redactPaciente(paciente));
 		return paciente;
 	}
 
 	@Override
 	public Paciente save(@NonNull final Paciente paciente) {
-		log.info("saving Paciente {}.", paciente);
+		log.info("saving Paciente {}.", LogRedaction.redactPaciente(paciente));
 		final Paciente saved = repo.save(paciente);
-		log.info("Paciente saved {}.", saved);
+		log.info("Paciente saved {}.", LogRedaction.redactPaciente(saved));
 		return saved;
 	}
 
@@ -48,7 +50,7 @@ public class PacienteServiceImpl implements PacienteService {
 	public Paciente findByIdAndUserId(@NonNull final Long id, @NonNull final String userId) {
 		log.info("finding Paciente with id {} and userId {}.", id, userId);
 		final Paciente paciente = repo.findByIdAndUserId(id, userId).orElse(null);
-		log.info("Paciente found {}.", paciente);
+		log.info("Paciente found {}.", LogRedaction.redactPaciente(paciente));
 		return paciente;
 	}
 
