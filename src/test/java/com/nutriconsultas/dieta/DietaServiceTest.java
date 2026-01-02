@@ -2,6 +2,7 @@ package com.nutriconsultas.dieta;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -42,6 +43,10 @@ public class DietaServiceTest {
 
 	private IngredientePlatilloIngesta ingredientePlatilloIngesta;
 
+	private static final String TEST_USER_ID = "test-user-id-123";
+
+	private static final String OTHER_USER_ID = "other-user-id-456";
+
 	@BeforeEach
 	public void setup() {
 		log.info("Setting up DietaService test");
@@ -54,6 +59,7 @@ public class DietaServiceTest {
 		originalDieta.setProteina(100.0);
 		originalDieta.setLipidos(50.0);
 		originalDieta.setHidratosDeCarbono(200.0);
+		originalDieta.setUserId(TEST_USER_ID);
 		originalDieta.setIngestas(new ArrayList<>());
 
 		// Create ingesta
@@ -199,12 +205,13 @@ public class DietaServiceTest {
 		});
 
 		// Act
-		Dieta duplicated = dietaService.duplicateDieta(1L);
+		Dieta duplicated = dietaService.duplicateDieta(1L, TEST_USER_ID);
 
 		// Assert
 		assertThat(duplicated).isNotNull();
 		assertThat(duplicated.getId()).isEqualTo(2L);
 		assertThat(duplicated.getNombre()).isEqualTo("Copia de Dieta Original");
+		assertThat(duplicated.getUserId()).isEqualTo(TEST_USER_ID);
 		assertThat(duplicated.getEnergia()).isEqualTo(originalDieta.getEnergia());
 		assertThat(duplicated.getProteina()).isEqualTo(originalDieta.getProteina());
 		assertThat(duplicated.getLipidos()).isEqualTo(originalDieta.getLipidos());
@@ -269,7 +276,7 @@ public class DietaServiceTest {
 		when(dietaRepository.findById(999L)).thenReturn(Optional.empty());
 
 		// Act
-		Dieta duplicated = dietaService.duplicateDieta(999L);
+		Dieta duplicated = dietaService.duplicateDieta(999L, TEST_USER_ID);
 
 		// Assert
 		assertThat(duplicated).isNull();
@@ -290,12 +297,111 @@ public class DietaServiceTest {
 		});
 
 		// Act
-		Dieta duplicated = dietaService.duplicateDieta(1L);
+		Dieta duplicated = dietaService.duplicateDieta(1L, TEST_USER_ID);
 
 		// Assert
 		assertThat(duplicated).isNotNull();
 		assertThat(duplicated.getNombre()).isEqualTo("Copia de Dieta");
+		assertThat(duplicated.getUserId()).isEqualTo(TEST_USER_ID);
 		log.info("Finishing testDuplicateDietaWithNullName");
+	}
+
+	@Test
+	public void testGetDietaByIdAndUserIdSuccess() {
+		log.info("Starting testGetDietaByIdAndUserIdSuccess");
+
+		// Arrange
+		when(dietaRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(Optional.of(originalDieta));
+
+		// Act
+		Dieta result = dietaService.getDietaByIdAndUserId(1L, TEST_USER_ID);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result.getId()).isEqualTo(1L);
+		assertThat(result.getUserId()).isEqualTo(TEST_USER_ID);
+		verify(dietaRepository).findByIdAndUserId(1L, TEST_USER_ID);
+		log.info("Finishing testGetDietaByIdAndUserIdSuccess");
+	}
+
+	@Test
+	public void testGetDietaByIdAndUserIdNotFound() {
+		log.info("Starting testGetDietaByIdAndUserIdNotFound");
+
+		// Arrange
+		when(dietaRepository.findByIdAndUserId(999L, TEST_USER_ID)).thenReturn(Optional.empty());
+
+		// Act
+		Dieta result = dietaService.getDietaByIdAndUserId(999L, TEST_USER_ID);
+
+		// Assert
+		assertThat(result).isNull();
+		verify(dietaRepository).findByIdAndUserId(999L, TEST_USER_ID);
+		log.info("Finishing testGetDietaByIdAndUserIdNotFound");
+	}
+
+	@Test
+	public void testGetDietaByIdAndUserIdWrongUser() {
+		log.info("Starting testGetDietaByIdAndUserIdWrongUser");
+
+		// Arrange - dieta exists but belongs to different user
+		when(dietaRepository.findByIdAndUserId(1L, OTHER_USER_ID)).thenReturn(Optional.empty());
+
+		// Act
+		Dieta result = dietaService.getDietaByIdAndUserId(1L, OTHER_USER_ID);
+
+		// Assert
+		assertThat(result).isNull();
+		verify(dietaRepository).findByIdAndUserId(1L, OTHER_USER_ID);
+		log.info("Finishing testGetDietaByIdAndUserIdWrongUser");
+	}
+
+	@Test
+	public void testDeleteDietaByIdAndUserIdSuccess() {
+		log.info("Starting testDeleteDietaByIdAndUserIdSuccess");
+
+		// Arrange
+		when(dietaRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(Optional.of(originalDieta));
+
+		// Act
+		dietaService.deleteDietaByIdAndUserId(1L, TEST_USER_ID);
+
+		// Assert
+		verify(dietaRepository).findByIdAndUserId(1L, TEST_USER_ID);
+		verify(dietaRepository).delete(originalDieta);
+		log.info("Finishing testDeleteDietaByIdAndUserIdSuccess");
+	}
+
+	@Test
+	public void testDeleteDietaByIdAndUserIdNotFound() {
+		log.info("Starting testDeleteDietaByIdAndUserIdNotFound");
+
+		// Arrange
+		when(dietaRepository.findByIdAndUserId(999L, TEST_USER_ID)).thenReturn(Optional.empty());
+
+		// Act
+		dietaService.deleteDietaByIdAndUserId(999L, TEST_USER_ID);
+
+		// Assert
+		verify(dietaRepository).findByIdAndUserId(999L, TEST_USER_ID);
+		verify(dietaRepository, never()).delete(any(Dieta.class));
+		log.info("Finishing testDeleteDietaByIdAndUserIdNotFound");
+	}
+
+	@Test
+	public void testDeleteDietaByIdAndUserIdWrongUser() {
+		log.info("Starting testDeleteDietaByIdAndUserIdWrongUser");
+
+		// Arrange - dieta exists but belongs to different user
+		when(dietaRepository.findByIdAndUserId(1L, OTHER_USER_ID)).thenReturn(Optional.empty());
+
+		// Act
+		dietaService.deleteDietaByIdAndUserId(1L, OTHER_USER_ID);
+
+		// Assert
+		verify(dietaRepository).findByIdAndUserId(1L, OTHER_USER_ID);
+		verify(dietaRepository, never()).delete(any(Dieta.class));
+		log.info("Finishing testDeleteDietaByIdAndUserIdWrongUser");
 	}
 
 }

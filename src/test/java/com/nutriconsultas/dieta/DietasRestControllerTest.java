@@ -1,6 +1,9 @@
 package com.nutriconsultas.dieta;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
@@ -11,11 +14,13 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.nutriconsultas.dataTables.paging.Direction;
@@ -48,6 +53,21 @@ public class DietasRestControllerTest {
 	private Ingesta ingestaConPlatillos;
 
 	private PlatilloIngesta platilloIngesta;
+
+	private static final String TEST_USER_ID = "test-user-id-123";
+
+	private static final String OTHER_USER_ID = "other-user-id-456";
+
+	/**
+	 * Creates a mock OidcUser for testing.
+	 * @param userId the user ID (subject)
+	 * @return a mock OidcUser
+	 */
+	private OidcUser createMockOidcUser(final String userId) {
+		OidcUser oidcUser = org.mockito.Mockito.mock(OidcUser.class);
+		org.mockito.Mockito.when(oidcUser.getSubject()).thenReturn(userId);
+		return oidcUser;
+	}
 
 	@BeforeEach
 	public void setup() {
@@ -338,12 +358,13 @@ public class DietasRestControllerTest {
 		ingestaAfterDelete.setPlatillos(new ArrayList<>());
 		dietaAfterDelete.getIngestas().add(ingestaAfterDelete);
 
-		when(dietaService.getDieta(dietaId)).thenReturn(dietaBeforeDelete);
+		dietaBeforeDelete.setUserId(TEST_USER_ID);
+		when(dietaService.getDietaByIdAndUserId(dietaId, TEST_USER_ID)).thenReturn(dietaBeforeDelete);
 		when(dietaService.saveDieta(dietaBeforeDelete)).thenReturn(dietaAfterDelete);
 
 		// Act
 		ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.deletePlatilloIngesta(dietaId, ingestaId,
-				platilloIngestaId);
+				platilloIngestaId, createMockOidcUser(TEST_USER_ID));
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -373,11 +394,11 @@ public class DietasRestControllerTest {
 		Long ingestaId = 2L;
 		Long platilloIngestaId = 1L;
 
-		when(dietaService.getDieta(dietaId)).thenReturn(null);
+		when(dietaService.getDietaByIdAndUserId(dietaId, TEST_USER_ID)).thenReturn(null);
 
 		// Act
 		ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.deletePlatilloIngesta(dietaId, ingestaId,
-				platilloIngestaId);
+				platilloIngestaId, createMockOidcUser(TEST_USER_ID));
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -407,12 +428,13 @@ public class DietasRestControllerTest {
 		otherIngesta.setPlatillos(new ArrayList<>());
 		dieta.getIngestas().add(otherIngesta);
 
-		when(dietaService.getDieta(dietaId)).thenReturn(dieta);
+		dieta.setUserId(TEST_USER_ID);
+		when(dietaService.getDietaByIdAndUserId(dietaId, TEST_USER_ID)).thenReturn(dieta);
 		when(dietaService.saveDieta(dieta)).thenReturn(dieta);
 
 		// Act
 		ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.deletePlatilloIngesta(dietaId, ingestaId,
-				platilloIngestaId);
+				platilloIngestaId, createMockOidcUser(TEST_USER_ID));
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -446,12 +468,13 @@ public class DietasRestControllerTest {
 		ingesta.setPlatillos(new ArrayList<>());
 		dieta.getIngestas().add(ingesta);
 
-		when(dietaService.getDieta(dietaId)).thenReturn(dieta);
+		dieta.setUserId(TEST_USER_ID);
+		when(dietaService.getDietaByIdAndUserId(dietaId, TEST_USER_ID)).thenReturn(dieta);
 		when(dietaService.saveDieta(dieta)).thenReturn(dieta);
 
 		// Act
 		ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.deletePlatilloIngesta(dietaId, ingestaId,
-				platilloIngestaId);
+				platilloIngestaId, createMockOidcUser(TEST_USER_ID));
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -526,12 +549,13 @@ public class DietasRestControllerTest {
 		ingestaAfterDelete.getPlatillos().add(remainingPlatillo);
 		dietaAfterDelete.getIngestas().add(ingestaAfterDelete);
 
-		when(dietaService.getDieta(dietaId)).thenReturn(dietaBeforeDelete);
+		dietaBeforeDelete.setUserId(TEST_USER_ID);
+		when(dietaService.getDietaByIdAndUserId(dietaId, TEST_USER_ID)).thenReturn(dietaBeforeDelete);
 		when(dietaService.saveDieta(dietaBeforeDelete)).thenReturn(dietaAfterDelete);
 
 		// Act
 		ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.deletePlatilloIngesta(dietaId, ingestaId,
-				platilloIngestaIdToDelete);
+				platilloIngestaIdToDelete, createMockOidcUser(TEST_USER_ID));
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -593,12 +617,13 @@ public class DietasRestControllerTest {
 		ingestaAfterDelete.setAlimentos(new ArrayList<>());
 		dietaAfterDelete.getIngestas().add(ingestaAfterDelete);
 
-		when(dietaService.getDieta(dietaId)).thenReturn(dietaBeforeDelete);
+		dietaBeforeDelete.setUserId(TEST_USER_ID);
+		when(dietaService.getDietaByIdAndUserId(dietaId, TEST_USER_ID)).thenReturn(dietaBeforeDelete);
 		when(dietaService.saveDieta(dietaBeforeDelete)).thenReturn(dietaAfterDelete);
 
 		// Act
 		ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.deleteAlimentoIngesta(dietaId, ingestaId,
-				alimentoIngestaId);
+				alimentoIngestaId, createMockOidcUser(TEST_USER_ID));
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -628,11 +653,11 @@ public class DietasRestControllerTest {
 		Long ingestaId = 2L;
 		Long alimentoIngestaId = 1L;
 
-		when(dietaService.getDieta(dietaId)).thenReturn(null);
+		when(dietaService.getDietaByIdAndUserId(dietaId, TEST_USER_ID)).thenReturn(null);
 
 		// Act
 		ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.deleteAlimentoIngesta(dietaId, ingestaId,
-				alimentoIngestaId);
+				alimentoIngestaId, createMockOidcUser(TEST_USER_ID));
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -1016,10 +1041,16 @@ public class DietasRestControllerTest {
 		duplicatedDieta.setLipidos(50.0);
 		duplicatedDieta.setHidratosDeCarbono(200.0);
 
-		when(dietaService.duplicateDieta(1L)).thenReturn(duplicatedDieta);
+		when(dietaService.getDieta(1L)).thenReturn(originalDieta);
+		duplicatedDieta.setUserId(TEST_USER_ID);
+		when(dietaService.duplicateDieta(1L, TEST_USER_ID)).thenReturn(duplicatedDieta);
+
+		// Create mock OidcUser
+		OidcUser principal = org.mockito.Mockito.mock(OidcUser.class);
+		org.mockito.Mockito.when(principal.getSubject()).thenReturn(TEST_USER_ID);
 
 		// Act
-		final ResponseEntity<ApiResponse<Dieta>> response = dietasRestController.duplicateDieta(1L);
+		final ResponseEntity<ApiResponse<Dieta>> response = dietasRestController.duplicateDieta(1L, principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -1028,6 +1059,9 @@ public class DietasRestControllerTest {
 		assertThat(response.getBody().getData()).isNotNull();
 		assertThat(response.getBody().getData().getId()).isEqualTo(2L);
 		assertThat(response.getBody().getData().getNombre()).isEqualTo("Copia de Dieta Original");
+		assertThat(response.getBody().getData().getUserId()).isEqualTo(TEST_USER_ID);
+		verify(dietaService).duplicateDieta(1L, TEST_USER_ID);
+		verify(dietaService, never()).saveDieta(any(Dieta.class));
 		log.info("Finishing testDuplicateDietaSuccess");
 	}
 
@@ -1036,10 +1070,14 @@ public class DietasRestControllerTest {
 		log.info("Starting testDuplicateDietaNotFound");
 
 		// Arrange
-		when(dietaService.duplicateDieta(999L)).thenReturn(null);
+		when(dietaService.getDieta(999L)).thenReturn(null);
+
+		// Create mock OidcUser
+		OidcUser principal = org.mockito.Mockito.mock(OidcUser.class);
+		org.mockito.Mockito.when(principal.getSubject()).thenReturn(TEST_USER_ID);
 
 		// Act
-		final ResponseEntity<ApiResponse<Dieta>> response = dietasRestController.duplicateDieta(999L);
+		final ResponseEntity<ApiResponse<Dieta>> response = dietasRestController.duplicateDieta(999L, principal);
 
 		// Assert
 		assertThat(response).isNotNull();
@@ -1070,6 +1108,166 @@ public class DietasRestControllerTest {
 		assertThat(actions).contains("title='Duplicar Dieta'");
 		assertThat(actions).contains("fa-copy");
 		log.info("Finishing testToStringListIncludesDuplicateButtonInActionsColumn");
+	}
+
+	@Test
+	public void testAddDietaSetsUserId() {
+		log.info("Starting testAddDietaSetsUserId");
+
+		// Arrange
+		Dieta newDieta = new Dieta();
+		newDieta.setNombre("Nueva Dieta");
+		newDieta.setIngestas(new ArrayList<>());
+
+		Dieta savedDieta = new Dieta();
+		savedDieta.setId(1L);
+		savedDieta.setNombre("Nueva Dieta");
+		savedDieta.setUserId(TEST_USER_ID);
+		savedDieta.setIngestas(new ArrayList<>());
+
+		when(dietaService.saveDieta(any(Dieta.class))).thenAnswer(invocation -> {
+			Dieta dieta = invocation.getArgument(0);
+			dieta.setId(1L);
+			return dieta;
+		});
+
+		// Create mock OidcUser
+		OidcUser principal = org.mockito.Mockito.mock(OidcUser.class);
+		org.mockito.Mockito.when(principal.getSubject()).thenReturn(TEST_USER_ID);
+
+		// Act
+		Dieta result = dietasRestController.addDieta(newDieta, principal);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result.getId()).isEqualTo(1L);
+		ArgumentCaptor<Dieta> dietaCaptor = ArgumentCaptor.forClass(Dieta.class);
+		verify(dietaService).saveDieta(dietaCaptor.capture());
+		assertThat(dietaCaptor.getValue().getUserId()).isEqualTo(TEST_USER_ID);
+		log.info("Finishing testAddDietaSetsUserId");
+	}
+
+	@Test
+	public void testAddDietaRejectsNullPrincipal() {
+		log.info("Starting testAddDietaRejectsNullPrincipal");
+
+		// Arrange
+		Dieta newDieta = new Dieta();
+		newDieta.setNombre("Nueva Dieta");
+
+		// Act & Assert
+		try {
+			dietasRestController.addDieta(newDieta, null);
+			org.junit.jupiter.api.Assertions.fail("Should have thrown IllegalArgumentException");
+		}
+		catch (IllegalArgumentException e) {
+			assertThat(e.getMessage()).contains("No se pudo identificar al usuario");
+		}
+
+		verify(dietaService, never()).saveDieta(any(Dieta.class));
+		log.info("Finishing testAddDietaRejectsNullPrincipal");
+	}
+
+	@Test
+	public void testDeletePlatilloIngestaChecksOwnership() {
+		log.info("Starting testDeletePlatilloIngestaChecksOwnership");
+
+		// Arrange
+		Dieta dieta = new Dieta();
+		dieta.setId(1L);
+		dieta.setUserId(TEST_USER_ID);
+		dieta.setIngestas(new ArrayList<>());
+
+		Ingesta ingesta = new Ingesta();
+		ingesta.setId(1L);
+		ingesta.setNombre("Desayuno");
+		ingesta.setDieta(dieta);
+		ingesta.setPlatillos(new ArrayList<>());
+
+		PlatilloIngesta platilloIngesta = new PlatilloIngesta();
+		platilloIngesta.setId(1L);
+		platilloIngesta.setName("Platillo");
+		platilloIngesta.setIngesta(ingesta);
+		ingesta.getPlatillos().add(platilloIngesta);
+		dieta.getIngestas().add(ingesta);
+
+		when(dietaService.getDietaByIdAndUserId(1L, TEST_USER_ID)).thenReturn(dieta);
+		when(dietaService.saveDieta(any(Dieta.class))).thenReturn(dieta);
+
+		// Create mock OidcUser
+		OidcUser principal = org.mockito.Mockito.mock(OidcUser.class);
+		org.mockito.Mockito.when(principal.getSubject()).thenReturn(TEST_USER_ID);
+
+		// Act
+		ResponseEntity<ApiResponse<Dieta>> response = dietasRestController.deletePlatilloIngesta(1L, 1L, 1L,
+				principal);
+
+		// Assert
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		verify(dietaService).getDietaByIdAndUserId(1L, TEST_USER_ID);
+		verify(dietaService).saveDieta(any(Dieta.class));
+		log.info("Finishing testDeletePlatilloIngestaChecksOwnership");
+	}
+
+	@Test
+	public void testDeletePlatilloIngestaRejectsOtherUserDiet() {
+		log.info("Starting testDeletePlatilloIngestaRejectsOtherUserDiet");
+
+		// Arrange - diet belongs to other user
+		when(dietaService.getDietaByIdAndUserId(1L, OTHER_USER_ID)).thenReturn(null);
+
+		// Create mock OidcUser
+		OidcUser principal = org.mockito.Mockito.mock(OidcUser.class);
+		org.mockito.Mockito.when(principal.getSubject()).thenReturn(OTHER_USER_ID);
+
+		// Act
+		ResponseEntity<ApiResponse<Dieta>> response = dietasRestController.deletePlatilloIngesta(1L, 1L, 1L,
+				principal);
+
+		// Assert
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		verify(dietaService).getDietaByIdAndUserId(1L, OTHER_USER_ID);
+		verify(dietaService, never()).saveDieta(any(Dieta.class));
+		log.info("Finishing testDeletePlatilloIngestaRejectsOtherUserDiet");
+	}
+
+	@Test
+	public void testDuplicateDietaSetsUserIdToCopyingUser() {
+		log.info("Starting testDuplicateDietaSetsUserIdToCopyingUser");
+
+		// Arrange
+		Dieta originalDieta = new Dieta();
+		originalDieta.setId(1L);
+		originalDieta.setNombre("Dieta Original");
+		originalDieta.setUserId(OTHER_USER_ID); // Owned by other user
+		originalDieta.setIngestas(new ArrayList<>());
+
+		Dieta duplicatedDieta = new Dieta();
+		duplicatedDieta.setId(2L);
+		duplicatedDieta.setNombre("Copia de Dieta Original");
+		duplicatedDieta.setIngestas(new ArrayList<>());
+
+		when(dietaService.getDieta(1L)).thenReturn(originalDieta);
+		duplicatedDieta.setUserId(TEST_USER_ID);
+		when(dietaService.duplicateDieta(1L, TEST_USER_ID)).thenReturn(duplicatedDieta);
+
+		// Create mock OidcUser - copying user is different from owner
+		OidcUser principal = org.mockito.Mockito.mock(OidcUser.class);
+		org.mockito.Mockito.when(principal.getSubject()).thenReturn(TEST_USER_ID);
+
+		// Act
+		ResponseEntity<ApiResponse<Dieta>> response = dietasRestController.duplicateDieta(1L, principal);
+
+		// Assert
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody().getData().getUserId()).isEqualTo(TEST_USER_ID);
+		assertThat(response.getBody().getData().getUserId()).isNotEqualTo(OTHER_USER_ID);
+		verify(dietaService).duplicateDieta(1L, TEST_USER_ID);
+		verify(dietaService, never()).saveDieta(any(Dieta.class));
+		log.info("Finishing testDuplicateDietaSetsUserIdToCopyingUser");
 	}
 
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.nutriconsultas.model.AbstractMacroNutrible;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,6 +30,9 @@ public class Dieta extends AbstractMacroNutrible {
 	private Long id;
 
 	private String nombre;
+
+	@Column(nullable = false, length = 255)
+	private String userId;
 
 	@OneToMany(mappedBy = "dieta", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true,
 			targetEntity = Ingesta.class, fetch = jakarta.persistence.FetchType.LAZY)

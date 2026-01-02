@@ -261,6 +261,7 @@
         <configuration>
           <targetJdk>21</targetJdk>
           <failOnViolation>false</failOnViolation>
+          <linkXRef>false</linkXRef>
           <rulesets>
             <ruleset>pmd-ruleset.xml</ruleset>
           </rulesets>

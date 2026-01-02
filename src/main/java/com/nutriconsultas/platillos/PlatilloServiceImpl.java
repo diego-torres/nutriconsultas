@@ -119,7 +119,7 @@ public class PlatilloServiceImpl implements PlatilloService {
 		}
 
 		// if peso is different than pesoNeto, then calculate the new values
-		if (peso != ingrediente.getAlimento().getPesoNeto() && !calculatedFromCantidad) {
+		if (!Objects.equals(peso, ingrediente.getAlimento().getPesoNeto()) && !calculatedFromCantidad) {
 			log.debug("calculating ingrediente from peso change.");
 			calculateIngredienteFromPesoChange(peso, alimento.getPesoNeto(), ingrediente, alimento);
 			log.debug("ingrediente calculated from peso change: {}", ingrediente);

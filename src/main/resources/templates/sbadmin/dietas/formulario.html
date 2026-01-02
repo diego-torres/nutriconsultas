@@ -408,6 +408,12 @@
                 </a>
               </div>
             </div>
+            <!-- Ownership indicator -->
+            <div th:if="${dieta != null && dieta.id != null && dieta.id != 0 && isOwner != null && !isOwner}" 
+                 class="alert alert-info mb-4" role="alert">
+              <i class="fas fa-info-circle"></i> 
+              <strong>Dieta de otro usuario:</strong> Puedes ver y copiar esta dieta, pero no puedes modificarla.
+            </div>
             <!-- Content Row -->
             <div class="row">
               <!-- Pie chart column -->
@@ -466,6 +472,8 @@
                             class="form-control"
                             th:field="*{nombre}"
                             placeholder="Nombre de la dieta"
+                            th:readonly="${isOwner != null && !isOwner}"
+                            th:disabled="${isOwner != null && !isOwner}"
                           />
                       </div>
                     </div>
@@ -479,13 +487,15 @@
                           type="button"
                           class="btn btn-success"
                           data-toggle="modal"
-                          data-target="#ingestaModal">
+                          data-target="#ingestaModal"
+                          th:disabled="${isOwner != null && !isOwner}">
                           <i class="fas fa-plus"></i> Agregar ingesta
                         </button>
                         <button
                           type="submit"
                           class="btn btn-primary"
                           th:text="${dieta == null || dieta.id == null || dieta.id == 0 ? 'Guardar' : 'Cambiar Nombre'}"
+                          th:disabled="${isOwner != null && !isOwner && dieta != null && dieta.id != null && dieta.id != 0}"
                         >
                           Guardar
                         </button>
@@ -532,7 +542,8 @@
                                 class="btn btn-success" 
                                 data-toggle="modal" 
                                 data-target="#platilloModal"
-                                th:attr="data-ingesta=${ingesta.id}">
+                                th:attr="data-ingesta=${ingesta.id}"
+                                th:disabled="${isOwner != null && !isOwner}">
                                 <i class="fas fa-plus"></i> Agregar platillo</button>
                               
                               <!-- add alimento button -->
@@ -542,6 +553,7 @@
                                 data-toggle="modal" 
                                 data-target="#alimentoModal"
                                 th:attr="data-ingesta=${ingesta.id}"
+                                th:disabled="${isOwner != null && !isOwner}"
                                 style="margin-left:15px">
                                 <i class="fas fa-plus"></i> Agregar alimento</button>
                               
@@ -551,7 +563,9 @@
                                 class="btn btn-primary" 
                                 th:attr="data-ingesta=${ingesta.id},data-nombre=${ingesta.nombre}"
                                 data-toggle="modal" 
-                                data-target="#ingestaModal" style="margin-left:15px">
+                                data-target="#ingestaModal" 
+                                th:disabled="${isOwner != null && !isOwner}"
+                                style="margin-left:15px">
                                 <i class="fas fa-edit"></i> Cambiar nombre</button>
 
                               <!-- remove ingesta button -->
@@ -560,7 +574,9 @@
                                 class="btn btn-danger" 
                                 th:attr="data-ingesta=${ingesta.id}"
                                 data-toggle="modal" 
-                                data-target="#deleteIngestaModal" style="margin-left:15px">
+                                data-target="#deleteIngestaModal" 
+                                th:disabled="${isOwner != null && !isOwner}"
+                                style="margin-left:15px">
                                 <i class="fas fa-trash"></i> Eliminar ingesta</button>
                             </div>
                             <!-- remove ingesta button -->
@@ -601,6 +617,7 @@
                                             type="button" 
                                             class="btn btn-outline-secondary btn-sm decrease-portion" 
                                             th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id},data-porciones=${platillo.portions}"
+                                            th:disabled="${isOwner != null && !isOwner}"
                                             title="Disminuir porciones">
                                             <i class="fas fa-minus"></i>
                                           </button>
@@ -618,6 +635,7 @@
                                             type="button" 
                                             class="btn btn-outline-secondary btn-sm increase-portion" 
                                             th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id},data-porciones=${platillo.portions}"
+                                            th:disabled="${isOwner != null && !isOwner}"
                                             title="Aumentar porciones">
                                             <i class="fas fa-plus"></i>
                                           </button>
@@ -635,6 +653,7 @@
                                         th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id},data-porciones=${platillo.portions}" 
                                         data-toggle="modal" 
                                         data-target="#editPlatilloModal"
+                                        th:disabled="${isOwner != null && !isOwner}"
                                         title="Modificar">
                                         <i class="fas fa-edit"></i>
                                       </button>
@@ -644,6 +663,7 @@
                                         th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id}" 
                                         data-toggle="modal" 
                                         data-target="#deletePlatilloModal"
+                                        th:disabled="${isOwner != null && !isOwner}"
                                         title="Eliminar"
                                         style="margin-left:5px">
                                         <i class="fas fa-trash"></i>
@@ -666,6 +686,7 @@
                                             type="button" 
                                             class="btn btn-outline-secondary btn-sm decrease-portion" 
                                             th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-porciones=${alimento.portions}"
+                                            th:disabled="${isOwner != null && !isOwner}"
                                             title="Disminuir porciones">
                                             <i class="fas fa-minus"></i>
                                           </button>
@@ -683,6 +704,7 @@
                                             type="button" 
                                             class="btn btn-outline-secondary btn-sm increase-portion" 
                                             th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-porciones=${alimento.portions}"
+                                            th:disabled="${isOwner != null && !isOwner}"
                                             title="Aumentar porciones">
                                             <i class="fas fa-plus"></i>
                                           </button>
@@ -700,6 +722,7 @@
                                         th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-porciones=${alimento.portions}" 
                                         data-toggle="modal" 
                                         data-target="#editAlimentoModal"
+                                        th:disabled="${isOwner != null && !isOwner}"
                                         title="Modificar">
                                         <i class="fas fa-edit"></i>
                                       </button>
@@ -709,6 +732,7 @@
                                         th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id}" 
                                         data-toggle="modal" 
                                         data-target="#deleteAlimentoModal"
+                                        th:disabled="${isOwner != null && !isOwner}"
                                         title="Eliminar"
                                         style="margin-left:5px">
                                         <i class="fas fa-trash"></i>
