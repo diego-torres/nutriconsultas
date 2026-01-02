@@ -133,8 +133,8 @@
                             <div class="col-md-6">
                               <div class="form-group">
                                 <label>Masa Corporal</label>
-                                <input type="number" step="0.01" th:field="*{bodyMass.bodyMass}" class="form-control">
-                                <span th:if="${#fields.hasErrors('bodyMass.bodyMass')}" th:errors="*{bodyMass.bodyMass}"></span>
+                                <input type="number" step="0.01" th:field="*{bodyMass.bodyMassValue}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bodyMass.bodyMassValue')}" th:errors="*{bodyMass.bodyMassValue}"></span>
                               </div>
                             </div>
                             <div class="col-md-6">
@@ -175,8 +175,8 @@
                             <div class="col-md-4">
                               <div class="form-group">
                                 <label>Bioimpedancia (Ω)</label>
-                                <input type="number" step="0.01" th:field="*{bioimpedance.bioimpedance}" class="form-control">
-                                <span th:if="${#fields.hasErrors('bioimpedance.bioimpedance')}" th:errors="*{bioimpedance.bioimpedance}"></span>
+                                <input type="number" step="0.01" th:field="*{bioimpedance.bioimpedanceValue}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bioimpedance.bioimpedanceValue')}" th:errors="*{bioimpedance.bioimpedanceValue}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">

@@ -124,8 +124,8 @@
                         <div class="col-md-3" th:if="${measurement.bodyMass != null && measurement.bodyMass.height != null}">
                           <p><strong>Estatura:</strong> <span th:text="${#numbers.formatDecimal(measurement.bodyMass.height, 2, 2)} + ' m'">-</span></p>
                         </div>
-                        <div class="col-md-3" th:if="${measurement.bodyMass != null && measurement.bodyMass.bodyMass != null}">
-                          <p><strong>Masa Corporal:</strong> <span th:text="${#numbers.formatDecimal(measurement.bodyMass.bodyMass, 1, 1)}">-</span></p>
+                        <div class="col-md-3" th:if="${measurement.bodyMass != null && measurement.bodyMass.bodyMassValue != null}">
+                          <p><strong>Masa Corporal:</strong> <span th:text="${#numbers.formatDecimal(measurement.bodyMass.bodyMassValue, 1, 1)}">-</span></p>
                         </div>
                         <div class="col-md-3" th:if="${measurement.bodyMass != null && measurement.bodyMass.imc != null}">
                           <p><strong>IMC:</strong> <span th:text="${#numbers.formatDecimal(measurement.bodyMass.imc, 1, 1)}">-</span></p>
@@ -143,8 +143,8 @@
                     <div class="tab-pane fade" id="bioimpedance" role="tabpanel" aria-labelledby="bioimpedance-tab">
                       <h5 class="mb-3">Mediciones de Bioimpedancia</h5>
                       <div class="row">
-                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.bioimpedance != null}">
-                          <p><strong>Bioimpedancia (Ω):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.bioimpedance, 1, 1)}">-</span></p>
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.bioimpedanceValue != null}">
+                          <p><strong>Bioimpedancia (Ω):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.bioimpedanceValue, 1, 1)}">-</span></p>
                         </div>
                         <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.impedance != null}">
                           <p><strong>Impedancia (Ω):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.impedance, 1, 1)}">-</span></p>

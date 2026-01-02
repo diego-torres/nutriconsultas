@@ -20,7 +20,7 @@ public class Bioimpedance {
 	private Long id;
 
 	@Column(precision = 5)
-	private Double bioimpedance;
+	private Double bioimpedanceValue;
 
 	// Bioimpedance measurements
 	@Column(precision = 5)

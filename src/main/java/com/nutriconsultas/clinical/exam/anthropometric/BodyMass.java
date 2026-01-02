@@ -35,7 +35,7 @@ public class BodyMass {
 	private Double height;
 
 	@Column(precision = 3)
-	private Double bodyMass;
+	private Double bodyMassValue;
 
 	@Column(precision = 3)
 	private Double imc;

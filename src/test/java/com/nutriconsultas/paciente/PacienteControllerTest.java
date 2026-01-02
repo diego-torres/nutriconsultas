@@ -1355,7 +1355,8 @@ public class PacienteControllerTest {
 	public void testAgregarAntropometricosPaciente() {
 		log.info("starting testAgregarAntropometricosPaciente");
 		// Arrange
-		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement =
+			new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
 		measurement.setMeasurementDateTime(new Date());
 		measurement.setTitle("Medición Antropométrica");
 		// Use convenience methods
@@ -1388,17 +1389,20 @@ public class PacienteControllerTest {
 	public void testAgregarAntropometricosPacienteWithCategoryObjects() {
 		log.info("starting testAgregarAntropometricosPacienteWithCategoryObjects");
 		// Arrange
-		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement =
+			new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
 		measurement.setMeasurementDateTime(new Date());
 		measurement.setTitle("Medición Antropométrica");
 
 		// Set up category objects directly
-		final com.nutriconsultas.clinical.exam.anthropometric.BodyMass bodyMass = new com.nutriconsultas.clinical.exam.anthropometric.BodyMass();
+		final com.nutriconsultas.clinical.exam.anthropometric.BodyMass bodyMass =
+			new com.nutriconsultas.clinical.exam.anthropometric.BodyMass();
 		bodyMass.setWeight(70.0);
 		bodyMass.setHeight(1.75);
 		measurement.setBodyMass(bodyMass);
 
-		final com.nutriconsultas.clinical.exam.anthropometric.Circumferences circumferences = new com.nutriconsultas.clinical.exam.anthropometric.Circumferences();
+		final com.nutriconsultas.clinical.exam.anthropometric.Circumferences circumferences =
+			new com.nutriconsultas.clinical.exam.anthropometric.Circumferences();
 		circumferences.setWaistCircumference(80.0);
 		circumferences.setHipCircumference(95.0);
 		measurement.setCircumferences(circumferences);
@@ -1434,11 +1438,13 @@ public class PacienteControllerTest {
 	public void testAgregarAntropometricosPacienteThrowsExceptionWhenPacienteNotFound() {
 		log.info("starting testAgregarAntropometricosPacienteThrowsExceptionWhenPacienteNotFound");
 		// Arrange
-		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement =
+			new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
 		measurement.setMeasurementDateTime(new Date());
 		measurement.setTitle("Medición Antropométrica");
 
-		when(pacienteRepository.findByIdAndUserId(999L, TEST_USER_ID)).thenReturn(java.util.Optional.empty());
+		when(pacienteRepository.findByIdAndUserId(999L, TEST_USER_ID))
+			.thenReturn(java.util.Optional.empty());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
@@ -1457,7 +1463,8 @@ public class PacienteControllerTest {
 	public void testVerAntropometrico() {
 		log.info("starting testVerAntropometrico");
 		// Arrange
-		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement =
+			new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
 		measurement.setId(1L);
 		measurement.setPaciente(paciente);
 		measurement.setTitle("Medición Antropométrica");
@@ -1505,7 +1512,8 @@ public class PacienteControllerTest {
 		otherPaciente.setId(2L);
 		otherPaciente.setName("Other Paciente");
 
-		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement =
+			new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
 		measurement.setId(1L);
 		measurement.setPaciente(otherPaciente);
 		measurement.setTitle("Medición Antropométrica");

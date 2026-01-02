@@ -56,14 +56,16 @@ public class AnthropometricMeasurementServiceTest {
 		measurement.setDescription("Medición de rutina");
 		measurement.setNotes("Notas de la medición");
 		// Set up category objects
-		final com.nutriconsultas.clinical.exam.anthropometric.BodyMass bodyMass = new com.nutriconsultas.clinical.exam.anthropometric.BodyMass();
+		final com.nutriconsultas.clinical.exam.anthropometric.BodyMass bodyMass =
+			new com.nutriconsultas.clinical.exam.anthropometric.BodyMass();
 		bodyMass.setWeight(70.0);
 		bodyMass.setHeight(1.75);
 		bodyMass.setImc(22.86);
 		bodyMass.setNivelPeso(NivelPeso.NORMAL);
 		measurement.setBodyMass(bodyMass);
 
-		final com.nutriconsultas.clinical.exam.anthropometric.Circumferences circumferences = new com.nutriconsultas.clinical.exam.anthropometric.Circumferences();
+		final com.nutriconsultas.clinical.exam.anthropometric.Circumferences circumferences =
+			new com.nutriconsultas.clinical.exam.anthropometric.Circumferences();
 		circumferences.setWaistCircumference(80.0);
 		circumferences.setHipCircumference(95.0);
 		circumferences.setNeckCircumference(35.0);
@@ -71,7 +73,8 @@ public class AnthropometricMeasurementServiceTest {
 		circumferences.setThighCircumference(55.0);
 		measurement.setCircumferences(circumferences);
 
-		final com.nutriconsultas.clinical.exam.anthropometric.BodyComposition bodyComposition = new com.nutriconsultas.clinical.exam.anthropometric.BodyComposition();
+		final com.nutriconsultas.clinical.exam.anthropometric.BodyComposition bodyComposition =
+			new com.nutriconsultas.clinical.exam.anthropometric.BodyComposition();
 		bodyComposition.setPorcentajeGrasaCorporal(15.5);
 		bodyComposition.setIndiceGrasaCorporal(15.5);
 		bodyComposition.setPorcentajeMasaMuscular(45.0);
@@ -200,16 +203,19 @@ public class AnthropometricMeasurementServiceTest {
 		newMeasurement.setTitle("Nueva Medición Antropométrica");
 
 		// Set up category objects directly
-		final com.nutriconsultas.clinical.exam.anthropometric.BodyMass bodyMass = new com.nutriconsultas.clinical.exam.anthropometric.BodyMass();
+		final com.nutriconsultas.clinical.exam.anthropometric.BodyMass bodyMass =
+			new com.nutriconsultas.clinical.exam.anthropometric.BodyMass();
 		bodyMass.setWeight(75.0);
 		bodyMass.setHeight(1.80);
 		newMeasurement.setBodyMass(bodyMass);
 
-		final com.nutriconsultas.clinical.exam.anthropometric.Bioimpedance bioimpedance = new com.nutriconsultas.clinical.exam.anthropometric.Bioimpedance();
-		bioimpedance.setBioimpedance(500.0);
+		final com.nutriconsultas.clinical.exam.anthropometric.Bioimpedance bioimpedance =
+			new com.nutriconsultas.clinical.exam.anthropometric.Bioimpedance();
+		bioimpedance.setBioimpedanceValue(500.0);
 		newMeasurement.setBioimpedance(bioimpedance);
 
-		final com.nutriconsultas.clinical.exam.anthropometric.Skinfolds skinfolds = new com.nutriconsultas.clinical.exam.anthropometric.Skinfolds();
+		final com.nutriconsultas.clinical.exam.anthropometric.Skinfolds skinfolds =
+			new com.nutriconsultas.clinical.exam.anthropometric.Skinfolds();
 		skinfolds.setTricepsSkinfold(12.5);
 		skinfolds.setSubscapularSkinfold(15.0);
 		newMeasurement.setSkinfolds(skinfolds);
@@ -230,7 +236,7 @@ public class AnthropometricMeasurementServiceTest {
 		assertThat(result.getBodyMass().getWeight()).isEqualTo(75.0);
 		assertThat(result.getBodyMass().getHeight()).isEqualTo(1.80);
 		assertThat(result.getBioimpedance()).isNotNull();
-		assertThat(result.getBioimpedance().getBioimpedance()).isEqualTo(500.0);
+		assertThat(result.getBioimpedance().getBioimpedanceValue()).isEqualTo(500.0);
 		assertThat(result.getSkinfolds()).isNotNull();
 		assertThat(result.getSkinfolds().getTricepsSkinfold()).isEqualTo(12.5);
 		assertThat(result.getSkinfolds().getSubscapularSkinfold()).isEqualTo(15.0);
