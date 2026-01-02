@@ -47,6 +47,8 @@ jobs:
       run: mvn -B pmd:check -Pci
     - name: Validate Thymeleaf templates
       run: mvn -B test -Dtest=ThymeleafTemplateValidationTest
+    - name: Check Logging Security
+      run: bash scripts/audit-logging.sh
     - name: Upload Checkstyle results
       uses: actions/upload-artifact@v6
       if: always()

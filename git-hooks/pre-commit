@@ -58,6 +58,21 @@ if [ $CHECKSTYLE_EXIT -ne 0 ]; then
 fi
 
 rm -f /tmp/checkstyle-output.txt
+
+# Run logging security check
+echo -e "${YELLOW}Running logging security check...${NC}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [ -f "$SCRIPT_DIR/scripts/check-logging-security.sh" ]; then
+    if ! bash "$SCRIPT_DIR/scripts/check-logging-security.sh"; then
+        echo -e "${RED}✗ Logging security check failed${NC}"
+        echo -e "${YELLOW}Please fix unsafe logging patterns before committing.${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✓ Logging security check passed${NC}"
+else
+    echo -e "${YELLOW}⚠ Logging security check script not found, skipping...${NC}"
+fi
+
 echo -e "${GREEN}✓ Code quality checks passed${NC}"
 exit 0
 
