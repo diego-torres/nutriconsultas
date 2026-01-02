@@ -17,9 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import java.security.Principal;
-
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
@@ -140,6 +137,17 @@ public class DietaControllerTest {
 		when(alimentoService.findById(1L)).thenReturn(alimento);
 	}
 
+	/**
+	 * Creates an OidcLoginRequestPostProcessor for testing with a specific user ID.
+	 * @param userId the user ID (subject)
+	 * @return an OidcLoginRequestPostProcessor configured with the user ID
+	 */
+	private SecurityMockMvcRequestPostProcessors.OidcLoginRequestPostProcessor oidcLogin(final String userId) {
+		return SecurityMockMvcRequestPostProcessors.oidcLogin()
+			.idToken(token -> token.subject(userId).claim("name", "Test User")
+				.claim("picture", "https://example.com/picture.jpg"));
+	}
+
 	@Test
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	public void testSavePlatilloSuccess() throws Exception {
@@ -155,12 +163,13 @@ public class DietaControllerTest {
 				.param("ingestaPlatillo", "1")
 				.param("platillo", "1")
 				.param("porciones", "2")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
 		// Verify that dietaService methods were called
-		verify(dietaService, times(1)).getDieta(1L);
+		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
 		verify(platilloService, times(1)).findById(1L);
 		verify(dietaService, times(1)).saveDieta(any(Dieta.class));
 
@@ -181,12 +190,13 @@ public class DietaControllerTest {
 				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.param("ingestaPlatillo", "1")
 				.param("platillo", "1")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
 		// Verify that dietaService methods were called
-		verify(dietaService, times(1)).getDieta(1L);
+		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
 		verify(platilloService, times(1)).findById(1L);
 		verify(dietaService, times(1)).saveDieta(any(Dieta.class));
 
@@ -205,12 +215,13 @@ public class DietaControllerTest {
 				.param("ingestaPlatillo", "999")
 				.param("platillo", "1")
 				.param("porciones", "1")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
-		// Verify that dietaService.getDieta was called but saveDieta was not
-		verify(dietaService, times(1)).getDieta(1L);
+		// Verify that dietaService.getDietaByIdAndUserId was called but saveDieta was not
+		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
 		verify(platilloService, never()).findById(any(Long.class));
 		verify(dietaService, never()).saveDieta(any(Dieta.class));
 
@@ -232,12 +243,13 @@ public class DietaControllerTest {
 				.param("ingestaPlatillo", "1")
 				.param("platillo", "999")
 				.param("porciones", "1")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
 		// Verify that platilloService.findById was called but saveDieta was not
-		verify(dietaService, times(1)).getDieta(1L);
+		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
 		verify(platilloService, times(1)).findById(999L);
 		verify(dietaService, never()).saveDieta(any(Dieta.class));
 
@@ -255,12 +267,13 @@ public class DietaControllerTest {
 				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.param("ingestaPlatillo", "1")
 				.param("porciones", "1")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
 		// Verify that platilloService.findById was never called
-		verify(dietaService, times(1)).getDieta(1L);
+		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
 		verify(platilloService, never()).findById(any(Long.class));
 		verify(dietaService, never()).saveDieta(any(Dieta.class));
 
@@ -283,6 +296,7 @@ public class DietaControllerTest {
 				.param("ingestaPlatillo", "1")
 				.param("platillo", "1")
 				.param("porciones", "1")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
@@ -314,6 +328,7 @@ public class DietaControllerTest {
 				.param("ingestaPlatillo", "1")
 				.param("platillo", "2")
 				.param("porciones", "1")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
@@ -364,12 +379,13 @@ public class DietaControllerTest {
 				.param("alimento", "1")
 				.param("porciones", "2")
 				.param("tipoPorcion", "porcion")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
 		// Verify that dietaService methods were called
-		verify(dietaService, times(1)).getDieta(1L);
+		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
 		verify(alimentoService, times(1)).findById(1L);
 		verify(dietaService, times(1)).saveDieta(any(Dieta.class));
 
@@ -388,12 +404,13 @@ public class DietaControllerTest {
 				.param("ingestaAlimento", "1")
 				.param("alimento", "1")
 				.param("tipoPorcion", "gramos")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
 		// Verify that dietaService methods were called
-		verify(dietaService, times(1)).getDieta(1L);
+		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
 		verify(alimentoService, times(1)).findById(1L);
 		verify(dietaService, times(1)).saveDieta(any(Dieta.class));
 
@@ -413,12 +430,13 @@ public class DietaControllerTest {
 				.param("alimento", "1")
 				.param("porciones", "1")
 				.param("tipoPorcion", "porcion")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
-		// Verify that dietaService.getDieta was called but saveDieta was not
-		verify(dietaService, times(1)).getDieta(1L);
+		// Verify that dietaService.getDietaByIdAndUserId was called but saveDieta was not
+		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
 		verify(alimentoService, never()).findById(any(Long.class));
 		verify(dietaService, never()).saveDieta(any(Dieta.class));
 
@@ -441,12 +459,13 @@ public class DietaControllerTest {
 				.param("alimento", "999")
 				.param("porciones", "1")
 				.param("tipoPorcion", "porcion")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
 		// Verify that alimentoService.findById was called but saveDieta was not
-		verify(dietaService, times(1)).getDieta(1L);
+		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
 		verify(alimentoService, times(1)).findById(999L);
 		verify(dietaService, never()).saveDieta(any(Dieta.class));
 
@@ -465,12 +484,13 @@ public class DietaControllerTest {
 				.param("ingestaAlimento", "1")
 				.param("porciones", "1")
 				.param("tipoPorcion", "porcion")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
 		// Verify that alimentoService.findById was never called
-		verify(dietaService, times(1)).getDieta(1L);
+		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
 		verify(alimentoService, never()).findById(any(Long.class));
 		verify(dietaService, never()).saveDieta(any(Dieta.class));
 
@@ -577,12 +597,13 @@ public class DietaControllerTest {
 			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/platillos/1/update")
 				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.param("porciones", "2")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
 		// Verify that dietaService methods were called
-		verify(dietaService, times(1)).getDieta(1L);
+		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
 		verify(dietaService, times(1)).saveDieta(any(Dieta.class));
 
 		log.info("Finishing testUpdatePlatilloIngestaSuccess");
@@ -598,12 +619,13 @@ public class DietaControllerTest {
 			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/platillos/999/update")
 				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.param("porciones", "2")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
-		// Verify that dietaService.getDieta was called but saveDieta was not
-		verify(dietaService, times(1)).getDieta(1L);
+		// Verify that dietaService.getDietaByIdAndUserId was called but saveDieta was not
+		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
 		verify(dietaService, never()).saveDieta(any(Dieta.class));
 
 		log.info("Finishing testUpdatePlatilloIngestaNotFound");
@@ -634,12 +656,13 @@ public class DietaControllerTest {
 			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/alimentos/1/update")
 				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.param("porciones", "2")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
 		// Verify that dietaService methods were called
-		verify(dietaService, times(1)).getDieta(1L);
+		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
 		verify(dietaService, times(1)).saveDieta(any(Dieta.class));
 
 		log.info("Finishing testUpdateAlimentoIngestaSuccess");
@@ -655,12 +678,13 @@ public class DietaControllerTest {
 			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/alimentos/999/update")
 				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.param("porciones", "2")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
-		// Verify that dietaService.getDieta was called but saveDieta was not
-		verify(dietaService, times(1)).getDieta(1L);
+		// Verify that dietaService.getDietaByIdAndUserId was called but saveDieta was not
+		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
 		verify(dietaService, never()).saveDieta(any(Dieta.class));
 
 		log.info("Finishing testUpdateAlimentoIngestaNotFound");
@@ -687,13 +711,14 @@ public class DietaControllerTest {
 			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/alimentos/2/update")
 				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.param("porciones", "2")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
-		// Verify that dietaService.getDieta was called but saveDieta was not
+		// Verify that dietaService.getDietaByIdAndUserId was called but saveDieta was not
 		// (because alimento reference is null)
-		verify(dietaService, times(1)).getDieta(1L);
+		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
 		verify(dietaService, never()).saveDieta(any(Dieta.class));
 
 		log.info("Finishing testUpdateAlimentoIngestaWithoutAlimentoReference");
@@ -710,8 +735,7 @@ public class DietaControllerTest {
 		when(platilloService.findAll()).thenReturn(platillos);
 
 		// Perform GET request
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/1")
-				.principal((Principal) createMockOidcUser(TEST_USER_ID)))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/1").with(oidcLogin(TEST_USER_ID)))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/dietas/formulario"))
 			.andExpect(MockMvcResultMatchers.model().attribute("activeMenu", "dietas"))
@@ -745,8 +769,7 @@ public class DietaControllerTest {
 		when(platilloService.findAll()).thenReturn(platillos);
 
 		// Perform GET request with different user
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/2")
-				.principal((Principal) createMockOidcUser(TEST_USER_ID)))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/2").with(oidcLogin(TEST_USER_ID)))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/dietas/formulario"))
 			.andExpect(MockMvcResultMatchers.model().attribute("activeMenu", "dietas"))
@@ -771,7 +794,7 @@ public class DietaControllerTest {
 				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.param("id", "1")
 				.param("nombre", "Dieta Modificada")
-				.principal((Principal) createMockOidcUser(TEST_USER_ID))
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
@@ -798,13 +821,13 @@ public class DietaControllerTest {
 					.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 					.param("id", "1")
 					.param("nombre", "Dieta Modificada")
-					.principal((Principal) createMockOidcUser(OTHER_USER_ID))
+					.with(oidcLogin(OTHER_USER_ID))
 					.with(SecurityMockMvcRequestPostProcessors.csrf()))
 				.andExpect(status().is5xxServerError());
 		}
 		catch (Exception e) {
 			// Expected - IllegalArgumentException is thrown
-			assertThat(e.getCause()).isInstanceOf(IllegalArgumentException.class);
+			assertThat(e).hasRootCauseInstanceOf(IllegalArgumentException.class);
 		}
 
 		// Verify that ownership check was performed
@@ -826,7 +849,7 @@ public class DietaControllerTest {
 				.param("ingestaPlatillo", "1")
 				.param("platillo", "1")
 				.param("porciones", "2")
-				.principal((Principal) createMockOidcUser(TEST_USER_ID))
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
@@ -854,13 +877,13 @@ public class DietaControllerTest {
 					.param("ingestaPlatillo", "1")
 					.param("platillo", "1")
 					.param("porciones", "2")
-					.principal((Principal) createMockOidcUser(OTHER_USER_ID))
+					.with(oidcLogin(OTHER_USER_ID))
 					.with(SecurityMockMvcRequestPostProcessors.csrf()))
 				.andExpect(status().is5xxServerError());
 		}
 		catch (Exception e) {
 			// Expected - IllegalArgumentException is thrown
-			assertThat(e.getCause()).isInstanceOf(IllegalArgumentException.class);
+			assertThat(e).hasRootCauseInstanceOf(IllegalArgumentException.class);
 		}
 
 		// Verify that ownership check was performed
@@ -868,17 +891,6 @@ public class DietaControllerTest {
 		verify(dietaService, never()).saveDieta(any(Dieta.class));
 
 		log.info("Finishing testSavePlatilloRejectsOtherUserDiet");
-	}
-
-	/**
-	 * Creates a mock OidcUser for testing.
-	 * @param userId the user ID (subject)
-	 * @return a mock OidcUser
-	 */
-	private OidcUser createMockOidcUser(final String userId) {
-		OidcUser oidcUser = org.mockito.Mockito.mock(OidcUser.class);
-		org.mockito.Mockito.when(oidcUser.getSubject()).thenReturn(userId);
-		return oidcUser;
 	}
 
 }
