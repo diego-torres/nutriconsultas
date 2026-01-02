@@ -110,16 +110,14 @@ public class AnthropometricMeasurementRestController extends AbstractGridControl
 	protected Comparator<AnthropometricMeasurement> getComparator(final String column, final Direction dir) {
 		log.debug("getting AnthropometricMeasurement comparator with column {} and direction {}.", column, dir);
 		final Comparator<AnthropometricMeasurement> comparator;
+		// Default comparator for measurementDateTime/fecha and unknown columns
+		final Comparator<AnthropometricMeasurement> defaultComparator = Comparator
+				.comparing(AnthropometricMeasurement::getMeasurementDateTime, Comparator.nullsLast(Date::compareTo));
 		switch (column) {
 			case "title":
 			case "titulo":
 				comparator = Comparator.comparing(AnthropometricMeasurement::getTitle,
 						Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
-				break;
-			case "measurementDateTime":
-			case "fecha":
-				comparator = Comparator.comparing(AnthropometricMeasurement::getMeasurementDateTime,
-						Comparator.nullsLast(Date::compareTo));
 				break;
 			case "peso":
 				comparator = Comparator.comparing(AnthropometricMeasurement::getPeso,
@@ -145,9 +143,11 @@ public class AnthropometricMeasurementRestController extends AbstractGridControl
 				comparator = Comparator.comparing(AnthropometricMeasurement::getPorcentajeGrasaCorporal,
 						Comparator.nullsLast(Double::compareTo));
 				break;
+			case "measurementDateTime":
+			case "fecha":
 			default:
-				comparator = Comparator.comparing(AnthropometricMeasurement::getMeasurementDateTime,
-						Comparator.nullsLast(Date::compareTo));
+				comparator = defaultComparator;
+				break;
 		}
 		return dir == Direction.desc ? comparator.reversed() : comparator;
 	}

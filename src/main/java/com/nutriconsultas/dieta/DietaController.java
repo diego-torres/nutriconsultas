@@ -129,7 +129,8 @@ public class DietaController extends AbstractAuthorizedController {
 		model.addAttribute("ingestas", sortedIngestas);
 
 		// calculate the minimun id in ingestas
-		model.addAttribute("minId", sortedIngestas.isEmpty() ? 0 : sortedIngestas.get(0).getId());
+		final Long minId = sortedIngestas.isEmpty() ? Long.valueOf(0L) : sortedIngestas.get(0).getId();
+		model.addAttribute("minId", minId);
 
 		model.addAttribute("platillos", platilloService.findAll());
 

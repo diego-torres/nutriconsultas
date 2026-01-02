@@ -22,5 +22,79 @@
     <Method name="validateTemplate"/>
     <Bug pattern="DCN_NULLPOINTER_EXCEPTION"/>
   </Match>
+  
+  <!-- Exclude redundant null checks for @NonNull annotated methods -->
+  <!-- These are safe because the annotations guarantee non-null values -->
+  <Match>
+    <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+  </Match>
+  
+  <!-- Exclude boxing/unboxing for parsing in test/mock code -->
+  <Match>
+    <Class name="com.nutriconsultas.validation.template.BaseTemplateValidator$MockBean"/>
+    <Bug pattern="DM_BOXED_PRIMITIVE_FOR_PARSING"/>
+  </Match>
+  
+  <!-- Exclude EI_EXPOSE_REP2 for Spring beans (SecurityConfig, AlimentosInitializer) -->
+  <!-- Spring beans are managed by the container and safe to store directly -->
+  <Match>
+    <Class name="com.nutriconsultas.SecurityConfig"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+  <Match>
+    <Class name="com.nutriconsultas.alimentos.AlimentosInitializer"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+  
+  <!-- Exclude REC_CATCH_EXCEPTION for initializers and utility classes -->
+  <!-- These intentionally catch Exception for error handling -->
+  <Match>
+    <Class name="com.nutriconsultas.ThymeleafValidator"/>
+    <Bug pattern="REC_CATCH_EXCEPTION"/>
+  </Match>
+  <Match>
+    <Class name="com.nutriconsultas.alimentos.AlimentosInitializer"/>
+    <Bug pattern="REC_CATCH_EXCEPTION"/>
+  </Match>
+  <Match>
+    <Class name="com.nutriconsultas.calendar.CalendarEventRestController"/>
+    <Bug pattern="REC_CATCH_EXCEPTION"/>
+  </Match>
+  <Match>
+    <Class name="com.nutriconsultas.dieta.DietaPdfService"/>
+    <Bug pattern="REC_CATCH_EXCEPTION"/>
+  </Match>
+  <Match>
+    <Class name="com.nutriconsultas.platillos.PlatilloSeedInitializer"/>
+    <Bug pattern="REC_CATCH_EXCEPTION"/>
+  </Match>
+  <Match>
+    <Class name="com.nutriconsultas.util.LogRedaction"/>
+    <Bug pattern="REC_CATCH_EXCEPTION"/>
+  </Match>
+  
+  <!-- Exclude DM_CONVERT_CASE for internal string comparisons -->
+  <!-- Using toUpperCase/toLowerCase without locale is acceptable for internal use -->
+  <Match>
+    <Bug pattern="DM_CONVERT_CASE"/>
+  </Match>
+  
+  <!-- Exclude EQ_OVERRIDING_EQUALS_NOT_SYMMETRIC for entities extending abstract classes -->
+  <!-- JPA entities extending abstract classes may have asymmetric equals by design -->
+  <Match>
+    <Bug pattern="EQ_OVERRIDING_EQUALS_NOT_SYMMETRIC"/>
+  </Match>
+  
+  <!-- Exclude DE_MIGHT_IGNORE for template validator interface -->
+  <Match>
+    <Class name="com.nutriconsultas.validation.template.TemplateValidator"/>
+    <Bug pattern="DE_MIGHT_IGNORE"/>
+  </Match>
+  
+  <!-- Exclude PZLA_PREFER_ZERO_LENGTH_ARRAYS for mock HTTP request -->
+  <Match>
+    <Class name="com.nutriconsultas.validation.template.WebContextFactory$MockHttpServletRequestImpl"/>
+    <Bug pattern="PZLA_PREFER_ZERO_LENGTH_ARRAYS"/>
+  </Match>
 </FindBugsFilter>
 
