@@ -8,6 +8,7 @@ import com.nutriconsultas.calendar.CalendarTemplateValidator;
 import com.nutriconsultas.dieta.DietaTemplateValidator;
 import com.nutriconsultas.paciente.PacienteTemplateValidator;
 import com.nutriconsultas.platillos.PlatilloTemplateValidator;
+import com.nutriconsultas.search.SearchTemplateValidator;
 
 /**
  * Registry for template validators. Manages all available validators and provides a way
@@ -27,6 +28,7 @@ public class TemplateValidatorRegistry {
 		register(new PlatilloTemplateValidator());
 		register(new DietaTemplateValidator());
 		register(new AlimentoTemplateValidator());
+		register(new SearchTemplateValidator());
 		register(new EternaTemplateValidator());
 		// Default validator should be last (handles "*")
 		register(new DefaultTemplateValidator());

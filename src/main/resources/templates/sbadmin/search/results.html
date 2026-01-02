@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <!-- Favicons -->
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
+
+  <title>Minutriporcion - Resultados de Búsqueda</title>
+
+  <!-- Custom fonts for this template-->
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+</head>
+
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/sidebar :: sidebar}"></div>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Resultados de Búsqueda</h1>
+          </div>
+
+          <!-- Search Form -->
+          <div class="card shadow mb-4">
+            <div class="card-body">
+              <form th:action="@{/admin/search}" method="get">
+                <input type="hidden" name="category" th:value="${category != null ? category : 'pacientes'}">
+                <div class="input-group">
+                  <input type="text" name="q" class="form-control" th:value="${query}" placeholder="Buscar..."
+                    aria-label="Search" aria-describedby="basic-addon2">
+                  <div class="input-group-append">
+                    <button class="btn btn-primary" type="submit">
+                      <i class="fas fa-search fa-sm"></i> Buscar
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Search Results -->
+          <div th:if="${searchResponse != null}">
+            <!-- Total Results -->
+            <div class="mb-3" th:if="${searchResponse.totalResults > 0}">
+              <p class="text-gray-600">
+                Se encontraron <strong th:text="${searchResponse.totalResults}">0</strong> resultado(s) para
+                "<strong th:text="${query}"></strong>"
+              </p>
+            </div>
+
+            <!-- No Results -->
+            <div class="card shadow mb-4"
+              th:if="${searchResponse.totalResults == 0 and query != null and !query.isEmpty()}">
+              <div class="card-body text-center">
+                <i class="fas fa-search fa-3x text-gray-300 mb-3"></i>
+                <p class="text-gray-600">No se encontraron resultados para "<strong th:text="${query}"></strong>"</p>
+                <p class="text-gray-500 small">Intenta con otros términos de búsqueda</p>
+              </div>
+            </div>
+
+            <!-- Results Tabs -->
+            <div class="card shadow mb-4" th:if="${searchResponse.totalResults > 0}">
+              <!-- Tab Navigation -->
+              <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                  <a class="nav-link" th:classappend="${category == 'pacientes' ? 'active' : ''}"
+                    th:href="@{/admin/search(q=${query}, category='pacientes', page=1)}">
+                    <i class="fas fa-user fa-sm"></i> Pacientes
+                    <span class="badge badge-primary" th:if="${searchResponse.pacientes != null}"
+                      th:text="${searchResponse.pacientes.totalCount}">0</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" th:classappend="${category == 'alimentos' ? 'active' : ''}"
+                    th:href="@{/admin/search(q=${query}, category='alimentos', page=1)}">
+                    <i class="fas fa-apple-alt fa-sm"></i> Alimentos
+                    <span class="badge badge-success" th:if="${searchResponse.alimentos != null}"
+                      th:text="${searchResponse.alimentos.totalCount}">0</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" th:classappend="${category == 'platillos' ? 'active' : ''}"
+                    th:href="@{/admin/search(q=${query}, category='platillos', page=1)}">
+                    <i class="fas fa-utensils fa-sm"></i> Platillos
+                    <span class="badge badge-info" th:if="${searchResponse.platillos != null}"
+                      th:text="${searchResponse.platillos.totalCount}">0</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" th:classappend="${category == 'calendarevents' ? 'active' : ''}"
+                    th:href="@{/admin/search(q=${query}, category='calendarevents', page=1)}">
+                    <i class="fas fa-calendar fa-sm"></i> Eventos
+                    <span class="badge badge-warning" th:if="${searchResponse.calendarEvents != null}"
+                      th:text="${searchResponse.calendarEvents.totalCount}">0</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" th:classappend="${category == 'clinicalexams' ? 'active' : ''}"
+                    th:href="@{/admin/search(q=${query}, category='clinicalexams', page=1)}">
+                    <i class="fas fa-stethoscope fa-sm"></i> Consultas
+                    <span class="badge badge-danger" th:if="${searchResponse.clinicalExams != null}"
+                      th:text="${searchResponse.clinicalExams.totalCount}">0</span>
+                  </a>
+                </li>
+              </ul>
+
+              <!-- Tab Content -->
+              <div class="card-body">
+                <!-- Pacientes Tab -->
+                <div th:if="${category == 'pacientes' and searchResponse.pacientes != null}">
+                  <div class="list-group mb-3">
+                    <a th:each="result : ${searchResponse.pacientes.results}" th:href="@{${result.link}}"
+                      class="list-group-item list-group-item-action">
+                      <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1" th:text="${result.title}">Título</h6>
+                      </div>
+                      <p class="mb-1 text-gray-600 small" th:text="${result.description}">Descripción</p>
+                      <small class="text-muted" th:text="${result.type.displayName}">Tipo</small>
+                    </a>
+                  </div>
+                  <!-- Pagination for Pacientes -->
+                  <nav th:if="${searchResponse.pacientes.totalPages > 1}">
+                    <ul class="pagination justify-content-center">
+                      <li class="page-item" th:classappend="${searchResponse.pacientes.currentPage == 1 ? 'disabled' : ''}">
+                        <a class="page-link"
+                          th:href="@{/admin/search(q=${query}, category='pacientes', page=${searchResponse.pacientes.currentPage - 1})}">Anterior</a>
+                      </li>
+                      <li class="page-item" th:each="i : ${#numbers.sequence(1, searchResponse.pacientes.totalPages)}"
+                        th:classappend="${i == searchResponse.pacientes.currentPage ? 'active' : ''}">
+                        <a class="page-link" th:href="@{/admin/search(q=${query}, category='pacientes', page=${i})}"
+                          th:text="${i}">1</a>
+                      </li>
+                      <li class="page-item"
+                        th:classappend="${searchResponse.pacientes.currentPage == searchResponse.pacientes.totalPages ? 'disabled' : ''}">
+                        <a class="page-link"
+                          th:href="@{/admin/search(q=${query}, category='pacientes', page=${searchResponse.pacientes.currentPage + 1})}">Siguiente</a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+
+                <!-- Alimentos Tab -->
+                <div th:if="${category == 'alimentos' and searchResponse.alimentos != null}">
+                  <div class="list-group mb-3">
+                    <a th:each="result : ${searchResponse.alimentos.results}" th:href="@{${result.link}}"
+                      class="list-group-item list-group-item-action">
+                      <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1" th:text="${result.title}">Título</h6>
+                      </div>
+                      <p class="mb-1 text-gray-600 small" th:text="${result.description}">Descripción</p>
+                      <small class="text-muted" th:text="${result.type.displayName}">Tipo</small>
+                    </a>
+                  </div>
+                  <!-- Pagination for Alimentos -->
+                  <nav th:if="${searchResponse.alimentos.totalPages > 1}">
+                    <ul class="pagination justify-content-center">
+                      <li class="page-item" th:classappend="${searchResponse.alimentos.currentPage == 1 ? 'disabled' : ''}">
+                        <a class="page-link"
+                          th:href="@{/admin/search(q=${query}, category='alimentos', page=${searchResponse.alimentos.currentPage - 1})}">Anterior</a>
+                      </li>
+                      <li class="page-item" th:each="i : ${#numbers.sequence(1, searchResponse.alimentos.totalPages)}"
+                        th:classappend="${i == searchResponse.alimentos.currentPage ? 'active' : ''}">
+                        <a class="page-link" th:href="@{/admin/search(q=${query}, category='alimentos', page=${i})}"
+                          th:text="${i}">1</a>
+                      </li>
+                      <li class="page-item"
+                        th:classappend="${searchResponse.alimentos.currentPage == searchResponse.alimentos.totalPages ? 'disabled' : ''}">
+                        <a class="page-link"
+                          th:href="@{/admin/search(q=${query}, category='alimentos', page=${searchResponse.alimentos.currentPage + 1})}">Siguiente</a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+
+                <!-- Platillos Tab -->
+                <div th:if="${category == 'platillos' and searchResponse.platillos != null}">
+                  <div class="list-group mb-3">
+                    <a th:each="result : ${searchResponse.platillos.results}" th:href="@{${result.link}}"
+                      class="list-group-item list-group-item-action">
+                      <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1" th:text="${result.title}">Título</h6>
+                      </div>
+                      <p class="mb-1 text-gray-600 small" th:text="${result.description}">Descripción</p>
+                      <small class="text-muted" th:text="${result.type.displayName}">Tipo</small>
+                    </a>
+                  </div>
+                  <!-- Pagination for Platillos -->
+                  <nav th:if="${searchResponse.platillos.totalPages > 1}">
+                    <ul class="pagination justify-content-center">
+                      <li class="page-item" th:classappend="${searchResponse.platillos.currentPage == 1 ? 'disabled' : ''}">
+                        <a class="page-link"
+                          th:href="@{/admin/search(q=${query}, category='platillos', page=${searchResponse.platillos.currentPage - 1})}">Anterior</a>
+                      </li>
+                      <li class="page-item" th:each="i : ${#numbers.sequence(1, searchResponse.platillos.totalPages)}"
+                        th:classappend="${i == searchResponse.platillos.currentPage ? 'active' : ''}">
+                        <a class="page-link" th:href="@{/admin/search(q=${query}, category='platillos', page=${i})}"
+                          th:text="${i}">1</a>
+                      </li>
+                      <li class="page-item"
+                        th:classappend="${searchResponse.platillos.currentPage == searchResponse.platillos.totalPages ? 'disabled' : ''}">
+                        <a class="page-link"
+                          th:href="@{/admin/search(q=${query}, category='platillos', page=${searchResponse.platillos.currentPage + 1})}">Siguiente</a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+
+                <!-- Calendar Events Tab -->
+                <div th:if="${category == 'calendarevents' and searchResponse.calendarEvents != null}">
+                  <div class="list-group mb-3">
+                    <a th:each="result : ${searchResponse.calendarEvents.results}" th:href="@{${result.link}}"
+                      class="list-group-item list-group-item-action">
+                      <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1" th:text="${result.title}">Título</h6>
+                      </div>
+                      <p class="mb-1 text-gray-600 small" th:text="${result.description}">Descripción</p>
+                      <small class="text-muted" th:text="${result.type.displayName}">Tipo</small>
+                    </a>
+                  </div>
+                  <!-- Pagination for Calendar Events -->
+                  <nav th:if="${searchResponse.calendarEvents.totalPages > 1}">
+                    <ul class="pagination justify-content-center">
+                      <li class="page-item"
+                        th:classappend="${searchResponse.calendarEvents.currentPage == 1 ? 'disabled' : ''}">
+                        <a class="page-link"
+                          th:href="@{/admin/search(q=${query}, category='calendarevents', page=${searchResponse.calendarEvents.currentPage - 1})}">Anterior</a>
+                      </li>
+                      <li class="page-item"
+                        th:each="i : ${#numbers.sequence(1, searchResponse.calendarEvents.totalPages)}"
+                        th:classappend="${i == searchResponse.calendarEvents.currentPage ? 'active' : ''}">
+                        <a class="page-link"
+                          th:href="@{/admin/search(q=${query}, category='calendarevents', page=${i})}" th:text="${i}">1</a>
+                      </li>
+                      <li class="page-item"
+                        th:classappend="${searchResponse.calendarEvents.currentPage == searchResponse.calendarEvents.totalPages ? 'disabled' : ''}">
+                        <a class="page-link"
+                          th:href="@{/admin/search(q=${query}, category='calendarevents', page=${searchResponse.calendarEvents.currentPage + 1})}">Siguiente</a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+
+                <!-- Clinical Exams Tab -->
+                <div th:if="${category == 'clinicalexams' and searchResponse.clinicalExams != null}">
+                  <div class="list-group mb-3">
+                    <a th:each="result : ${searchResponse.clinicalExams.results}" th:href="@{${result.link}}"
+                      class="list-group-item list-group-item-action">
+                      <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1" th:text="${result.title}">Título</h6>
+                      </div>
+                      <p class="mb-1 text-gray-600 small" th:text="${result.description}">Descripción</p>
+                      <small class="text-muted" th:text="${result.type.displayName}">Tipo</small>
+                    </a>
+                  </div>
+                  <!-- Pagination for Clinical Exams -->
+                  <nav th:if="${searchResponse.clinicalExams.totalPages > 1}">
+                    <ul class="pagination justify-content-center">
+                      <li class="page-item"
+                        th:classappend="${searchResponse.clinicalExams.currentPage == 1 ? 'disabled' : ''}">
+                        <a class="page-link"
+                          th:href="@{/admin/search(q=${query}, category='clinicalexams', page=${searchResponse.clinicalExams.currentPage - 1})}">Anterior</a>
+                      </li>
+                      <li class="page-item"
+                        th:each="i : ${#numbers.sequence(1, searchResponse.clinicalExams.totalPages)}"
+                        th:classappend="${i == searchResponse.clinicalExams.currentPage ? 'active' : ''}">
+                        <a class="page-link"
+                          th:href="@{/admin/search(q=${query}, category='clinicalexams', page=${i})}" th:text="${i}">1</a>
+                      </li>
+                      <li class="page-item"
+                        th:classappend="${searchResponse.clinicalExams.currentPage == searchResponse.clinicalExams.totalPages ? 'disabled' : ''}">
+                        <a class="page-link"
+                          th:href="@{/admin/search(q=${query}, category='clinicalexams', page=${searchResponse.clinicalExams.currentPage + 1})}">Siguiente</a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- /.container-fluid -->
+
+      </div>
+      <!-- End of Main Content -->
+
+      <div th:insert="~{sbadmin/footer :: footer}"></div>
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+  </div>
+  <!-- End of Page Wrapper -->
+
+  <!-- Bootstrap core JavaScript-->
+  <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+
+</body>
+
+</html>
