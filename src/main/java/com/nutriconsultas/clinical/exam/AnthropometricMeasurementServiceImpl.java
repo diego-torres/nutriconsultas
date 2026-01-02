@@ -7,6 +7,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.nutriconsultas.util.LogRedaction;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -33,7 +35,8 @@ public class AnthropometricMeasurementServiceImpl implements AnthropometricMeasu
 	@Override
 	@Transactional
 	public AnthropometricMeasurement save(@NonNull final AnthropometricMeasurement measurement) {
-		log.debug("Saving anthropometric measurement: {}", measurement);
+		log.debug("Saving anthropometric measurement: {}",
+				LogRedaction.redactAnthropometricMeasurement(measurement));
 		return repository.save(measurement);
 	}
 

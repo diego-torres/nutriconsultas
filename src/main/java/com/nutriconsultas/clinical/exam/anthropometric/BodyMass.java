@@ -1,4 +1,4 @@
-package com.nutriconsultas.clinical.exam;
+package com.nutriconsultas.clinical.exam.anthropometric;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +18,7 @@ import com.nutriconsultas.paciente.NivelPeso;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class VitalSigns {
+public class BodyMass {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,30 +27,20 @@ public class VitalSigns {
 	@Column(precision = 5)
 	@Min(10)
 	@Max(200)
-	private Double peso;
+	private Double weight;
 
 	@Column(precision = 3)
 	@Max(3)
 	@DecimalMin(value = "0.5")
-	private Double estatura;
+	private Double height;
+
+	@Column(precision = 3)
+	private Double bodyMass;
 
 	@Column(precision = 3)
 	private Double imc;
 
 	private NivelPeso nivelPeso;
 
-	private Integer sistolica;
-
-	private Integer diastolica;
-
-	private Integer pulso;
-
-	private Integer indiceGlucemico;
-
-	@Column(precision = 5)
-	private Double spo2;
-
-	@Column(precision = 5)
-	private Double temperatura;
-
 }
+

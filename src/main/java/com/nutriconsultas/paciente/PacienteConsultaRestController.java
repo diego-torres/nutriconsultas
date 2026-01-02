@@ -27,6 +27,7 @@ import com.nutriconsultas.dataTables.paging.Direction;
 import com.nutriconsultas.dataTables.paging.Page;
 import com.nutriconsultas.dataTables.paging.PageArray;
 import com.nutriconsultas.dataTables.paging.PagingRequest;
+import com.nutriconsultas.util.LogRedaction;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -63,7 +64,7 @@ public class PacienteConsultaRestController extends AbstractGridController<Calen
 
 	@Override
 	protected List<String> toStringList(final CalendarEvent row) {
-		log.debug("converting CalendarEvent row {} to string list.", row);
+		log.debug("converting CalendarEvent row {} to string list.", LogRedaction.redactCalendarEvent(row));
 		final DateFormat dateTimeFormat = new SimpleDateFormat("dd MMM yyyy HH:mm");
 		final String statusText = translateStatus(row.getStatus());
 		return Arrays.asList(row.getEventDateTime() != null ? dateTimeFormat.format(row.getEventDateTime()) : "",

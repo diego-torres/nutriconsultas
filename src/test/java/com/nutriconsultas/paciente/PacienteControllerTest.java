@@ -68,6 +68,9 @@ public class PacienteControllerTest {
 	private ClinicalExamService clinicalExamService;
 
 	@Mock
+	private com.nutriconsultas.clinical.exam.AnthropometricMeasurementService anthropometricMeasurementService;
+
+	@Mock
 	private BindingResult bindingResult;
 
 	private Paciente paciente;
@@ -1310,6 +1313,213 @@ public class PacienteControllerTest {
 			.hasMessageContaining("El examen clínico no pertenece al paciente especificado");
 		verify(clinicalExamService).findById(1L);
 		log.info("finished testVerExamenClinicoThrowsExceptionWhenWrongPaciente");
+	}
+
+	@Test
+	public void testAntropometricosPaciente() {
+		log.info("starting testAntropometricosPaciente");
+		// Arrange
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.antropometricosPaciente(1L, model, principal);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/antropometricos");
+		verify(model).addAttribute("activeMenu", "historial");
+		verify(model).addAttribute("paciente", paciente);
+		verify(model).addAttribute(eq("antropometrico"), any(com.nutriconsultas.clinical.exam.AnthropometricMeasurement.class));
+		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
+		log.info("finished testAntropometricosPaciente");
+	}
+
+	@Test
+	public void testAntropometricosPacienteThrowsExceptionWhenPacienteNotFound() {
+		log.info("starting testAntropometricosPacienteThrowsExceptionWhenPacienteNotFound");
+		// Arrange
+		when(pacienteRepository.findByIdAndUserId(999L, TEST_USER_ID)).thenReturn(java.util.Optional.empty());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act & Assert
+		assertThatThrownBy(() -> controller.antropometricosPaciente(999L, model, principal))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("No se ha encontrado paciente con folio");
+		verify(pacienteRepository).findByIdAndUserId(999L, TEST_USER_ID);
+		log.info("finished testAntropometricosPacienteThrowsExceptionWhenPacienteNotFound");
+	}
+
+	@Test
+	public void testAgregarAntropometricosPaciente() {
+		log.info("starting testAgregarAntropometricosPaciente");
+		// Arrange
+		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		measurement.setMeasurementDateTime(new Date());
+		measurement.setTitle("Medición Antropométrica");
+		// Use convenience methods
+		measurement.setPeso(70.0);
+		measurement.setEstatura(1.75);
+
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(anthropometricMeasurementService.save(any(com.nutriconsultas.clinical.exam.AnthropometricMeasurement.class)))
+			.thenReturn(measurement);
+		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
+		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
+				any(String.class)))
+			.thenReturn(15.5);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.agregarAntropometricosPaciente(1L, measurement, bindingResult, model, principal);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result).contains("redirect:/admin/pacientes/1/historial");
+		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
+		verify(anthropometricMeasurementService)
+			.save(any(com.nutriconsultas.clinical.exam.AnthropometricMeasurement.class));
+		log.info("finished testAgregarAntropometricosPaciente");
+	}
+
+	@Test
+	public void testAgregarAntropometricosPacienteWithCategoryObjects() {
+		log.info("starting testAgregarAntropometricosPacienteWithCategoryObjects");
+		// Arrange
+		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		measurement.setMeasurementDateTime(new Date());
+		measurement.setTitle("Medición Antropométrica");
+
+		// Set up category objects directly
+		final com.nutriconsultas.clinical.exam.anthropometric.BodyMass bodyMass = new com.nutriconsultas.clinical.exam.anthropometric.BodyMass();
+		bodyMass.setWeight(70.0);
+		bodyMass.setHeight(1.75);
+		measurement.setBodyMass(bodyMass);
+
+		final com.nutriconsultas.clinical.exam.anthropometric.Circumferences circumferences = new com.nutriconsultas.clinical.exam.anthropometric.Circumferences();
+		circumferences.setWaistCircumference(80.0);
+		circumferences.setHipCircumference(95.0);
+		measurement.setCircumferences(circumferences);
+
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(anthropometricMeasurementService.save(any(com.nutriconsultas.clinical.exam.AnthropometricMeasurement.class)))
+			.thenReturn(measurement);
+		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
+		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
+				any(String.class)))
+			.thenReturn(15.5);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.agregarAntropometricosPaciente(1L, measurement, bindingResult, model, principal);
+
+		// Assert
+		assertThat(result).isNotNull();
+		assertThat(result).contains("redirect:/admin/pacientes/1/historial");
+		// Verify category objects are preserved
+		assertThat(measurement.getBodyMass()).isNotNull();
+		assertThat(measurement.getBodyMass().getWeight()).isEqualTo(70.0);
+		assertThat(measurement.getCircumferences()).isNotNull();
+		assertThat(measurement.getCircumferences().getWaistCircumference()).isEqualTo(80.0);
+		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
+		verify(anthropometricMeasurementService)
+			.save(any(com.nutriconsultas.clinical.exam.AnthropometricMeasurement.class));
+		log.info("finished testAgregarAntropometricosPacienteWithCategoryObjects");
+	}
+
+	@Test
+	public void testAgregarAntropometricosPacienteThrowsExceptionWhenPacienteNotFound() {
+		log.info("starting testAgregarAntropometricosPacienteThrowsExceptionWhenPacienteNotFound");
+		// Arrange
+		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		measurement.setMeasurementDateTime(new Date());
+		measurement.setTitle("Medición Antropométrica");
+
+		when(pacienteRepository.findByIdAndUserId(999L, TEST_USER_ID)).thenReturn(java.util.Optional.empty());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act & Assert
+		assertThatThrownBy(() -> controller.agregarAntropometricosPaciente(999L, measurement, bindingResult, model,
+				principal))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("No se ha encontrado paciente con folio");
+		verify(pacienteRepository).findByIdAndUserId(999L, TEST_USER_ID);
+		verify(anthropometricMeasurementService, org.mockito.Mockito.never())
+			.save(any(com.nutriconsultas.clinical.exam.AnthropometricMeasurement.class));
+		log.info("finished testAgregarAntropometricosPacienteThrowsExceptionWhenPacienteNotFound");
+	}
+
+	@Test
+	public void testVerAntropometrico() {
+		log.info("starting testVerAntropometrico");
+		// Arrange
+		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		measurement.setId(1L);
+		measurement.setPaciente(paciente);
+		measurement.setTitle("Medición Antropométrica");
+		measurement.setMeasurementDateTime(new Date());
+		measurement.setPeso(70.0);
+		measurement.setImc(22.86);
+
+		when(anthropometricMeasurementService.findById(1L)).thenReturn(measurement);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.verAntropometrico(1L, 1L, model, principal);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/ver-antropometrico");
+		verify(model).addAttribute("activeMenu", "historial");
+		verify(model).addAttribute("measurement", measurement);
+		verify(model).addAttribute("paciente", paciente);
+		verify(anthropometricMeasurementService).findById(1L);
+		log.info("finished testVerAntropometrico");
+	}
+
+	@Test
+	public void testVerAntropometricoThrowsExceptionWhenMeasurementNotFound() {
+		log.info("starting testVerAntropometricoThrowsExceptionWhenMeasurementNotFound");
+		// Arrange
+		when(anthropometricMeasurementService.findById(999L)).thenReturn(null);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act & Assert
+		assertThatThrownBy(() -> controller.verAntropometrico(1L, 999L, model, principal))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("No se ha encontrado medición antropométrica con id");
+		verify(anthropometricMeasurementService).findById(999L);
+		log.info("finished testVerAntropometricoThrowsExceptionWhenMeasurementNotFound");
+	}
+
+	@Test
+	public void testVerAntropometricoThrowsExceptionWhenWrongPaciente() {
+		log.info("starting testVerAntropometricoThrowsExceptionWhenWrongPaciente");
+		// Arrange
+		final Paciente otherPaciente = new Paciente();
+		otherPaciente.setId(2L);
+		otherPaciente.setName("Other Paciente");
+
+		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		measurement.setId(1L);
+		measurement.setPaciente(otherPaciente);
+		measurement.setTitle("Medición Antropométrica");
+
+		when(anthropometricMeasurementService.findById(1L)).thenReturn(measurement);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act & Assert
+		assertThatThrownBy(() -> controller.verAntropometrico(1L, 1L, model, principal))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("La medición antropométrica no pertenece al paciente especificado");
+		verify(anthropometricMeasurementService).findById(1L);
+		log.info("finished testVerAntropometricoThrowsExceptionWhenWrongPaciente");
 	}
 
 }

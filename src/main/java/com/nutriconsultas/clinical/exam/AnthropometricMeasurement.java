@@ -2,6 +2,7 @@ package com.nutriconsultas.clinical.exam;
 
 import java.util.Date;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,11 +10,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -22,6 +21,12 @@ import lombok.NoArgsConstructor;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.nutriconsultas.clinical.exam.anthropometric.BodyComposition;
+import com.nutriconsultas.clinical.exam.anthropometric.BodyMass;
+import com.nutriconsultas.clinical.exam.anthropometric.Bioimpedance;
+import com.nutriconsultas.clinical.exam.anthropometric.Circumferences;
+import com.nutriconsultas.clinical.exam.anthropometric.Diameters;
+import com.nutriconsultas.clinical.exam.anthropometric.Skinfolds;
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
 
@@ -55,45 +60,161 @@ public class AnthropometricMeasurement {
 	@Column(columnDefinition = "TEXT")
 	private String notes;
 
-	// Anthropometric measurements
-	@Column(precision = 5)
-	@Min(10)
-	@Max(200)
-	private Double peso;
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "body_mass_id")
+	private BodyMass bodyMass;
 
-	@Column(precision = 3)
-	@Max(3)
-	@DecimalMin(value = "0.5")
-	private Double estatura;
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "bioimpedance_id")
+	private Bioimpedance bioimpedance;
 
-	@Column(precision = 3)
-	private Double imc;
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "skinfolds_id")
+	private Skinfolds skinfolds;
 
-	@Column(precision = 3)
-	private Double indiceGrasaCorporal;
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "circumferences_id")
+	private Circumferences circumferences;
 
-	private NivelPeso nivelPeso;
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "diameters_id")
+	private Diameters diameters;
 
-	// Additional body measurements
-	@Column(precision = 5)
-	private Double cintura;
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "body_composition_id")
+	private BodyComposition bodyComposition;
 
-	@Column(precision = 5)
-	private Double cadera;
+	// Convenience methods for backward compatibility
+	public Double getPeso() {
+		return bodyMass != null ? bodyMass.getWeight() : null;
+	}
 
-	@Column(precision = 5)
-	private Double cuello;
+	public void setPeso(final Double peso) {
+		if (bodyMass == null) {
+			bodyMass = new BodyMass();
+		}
+		bodyMass.setWeight(peso);
+	}
 
-	@Column(precision = 5)
-	private Double brazo;
+	public Double getEstatura() {
+		return bodyMass != null ? bodyMass.getHeight() : null;
+	}
 
-	@Column(precision = 5)
-	private Double muslo;
+	public void setEstatura(final Double estatura) {
+		if (bodyMass == null) {
+			bodyMass = new BodyMass();
+		}
+		bodyMass.setHeight(estatura);
+	}
 
-	@Column(precision = 3)
-	private Double porcentajeGrasaCorporal;
+	public Double getImc() {
+		return bodyMass != null ? bodyMass.getImc() : null;
+	}
 
-	@Column(precision = 3)
-	private Double porcentajeMasaMuscular;
+	public void setImc(final Double imc) {
+		if (bodyMass == null) {
+			bodyMass = new BodyMass();
+		}
+		bodyMass.setImc(imc);
+	}
+
+	public Double getIndiceGrasaCorporal() {
+		return bodyComposition != null ? bodyComposition.getIndiceGrasaCorporal() : null;
+	}
+
+	public void setIndiceGrasaCorporal(final Double indiceGrasaCorporal) {
+		if (bodyComposition == null) {
+			bodyComposition = new BodyComposition();
+		}
+		bodyComposition.setIndiceGrasaCorporal(indiceGrasaCorporal);
+	}
+
+	public NivelPeso getNivelPeso() {
+		return bodyMass != null ? bodyMass.getNivelPeso() : null;
+	}
+
+	public void setNivelPeso(final NivelPeso nivelPeso) {
+		if (bodyMass == null) {
+			bodyMass = new BodyMass();
+		}
+		bodyMass.setNivelPeso(nivelPeso);
+	}
+
+	public Double getCintura() {
+		return circumferences != null ? circumferences.getWaistCircumference() : null;
+	}
+
+	public void setCintura(final Double cintura) {
+		if (circumferences == null) {
+			circumferences = new Circumferences();
+		}
+		circumferences.setWaistCircumference(cintura);
+	}
+
+	public Double getCadera() {
+		return circumferences != null ? circumferences.getHipCircumference() : null;
+	}
+
+	public void setCadera(final Double cadera) {
+		if (circumferences == null) {
+			circumferences = new Circumferences();
+		}
+		circumferences.setHipCircumference(cadera);
+	}
+
+	public Double getCuello() {
+		return circumferences != null ? circumferences.getNeckCircumference() : null;
+	}
+
+	public void setCuello(final Double cuello) {
+		if (circumferences == null) {
+			circumferences = new Circumferences();
+		}
+		circumferences.setNeckCircumference(cuello);
+	}
+
+	public Double getBrazo() {
+		return circumferences != null ? circumferences.getMidUpperArmCircumferenceRelaxed() : null;
+	}
+
+	public void setBrazo(final Double brazo) {
+		if (circumferences == null) {
+			circumferences = new Circumferences();
+		}
+		circumferences.setMidUpperArmCircumferenceRelaxed(brazo);
+	}
+
+	public Double getMuslo() {
+		return circumferences != null ? circumferences.getThighCircumference() : null;
+	}
+
+	public void setMuslo(final Double muslo) {
+		if (circumferences == null) {
+			circumferences = new Circumferences();
+		}
+		circumferences.setThighCircumference(muslo);
+	}
+
+	public Double getPorcentajeGrasaCorporal() {
+		return bodyComposition != null ? bodyComposition.getPorcentajeGrasaCorporal() : null;
+	}
+
+	public void setPorcentajeGrasaCorporal(final Double porcentajeGrasaCorporal) {
+		if (bodyComposition == null) {
+			bodyComposition = new BodyComposition();
+		}
+		bodyComposition.setPorcentajeGrasaCorporal(porcentajeGrasaCorporal);
+	}
+
+	public Double getPorcentajeMasaMuscular() {
+		return bodyComposition != null ? bodyComposition.getPorcentajeMasaMuscular() : null;
+	}
+
+	public void setPorcentajeMasaMuscular(final Double porcentajeMasaMuscular) {
+		if (bodyComposition == null) {
+			bodyComposition = new BodyComposition();
+		}
+		bodyComposition.setPorcentajeMasaMuscular(porcentajeMasaMuscular);
+	}
 
 }

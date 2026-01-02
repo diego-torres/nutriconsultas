@@ -70,106 +70,573 @@
                         <span th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></span>
                       </div>
 
-                      <!-- Basic Anthropometric Measurements -->
-                      <h5 class="mt-4 mb-3">Mediciones Básicas</h5>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="form-group">
-                            <label>Peso (Kg.)</label>
-                            <input type="number" step="0.01" th:field="*{peso}" class="form-control" min="10" max="200">
-                            <span th:if="${#fields.hasErrors('peso')}" th:errors="*{peso}"></span>
+                      <!-- Tabs Navigation -->
+                      <ul class="nav nav-tabs mt-4 mb-3" id="anthropometricTabs" role="tablist">
+                        <li class="nav-item">
+                          <a class="nav-link active" id="body-mass-tab" data-toggle="tab" href="#body-mass" role="tab" aria-controls="body-mass" aria-selected="true">
+                            <i class="fas fa-weight"></i> Peso/Altura
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" id="bioimpedance-tab" data-toggle="tab" href="#bioimpedance" role="tab" aria-controls="bioimpedance" aria-selected="false">
+                            <i class="fas fa-wave-square"></i> Bioimpedancia
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" id="skinfolds-tab" data-toggle="tab" href="#skinfolds" role="tab" aria-controls="skinfolds" aria-selected="false">
+                            <i class="fas fa-ruler"></i> Pliegues
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" id="circumferences-tab" data-toggle="tab" href="#circumferences" role="tab" aria-controls="circumferences" aria-selected="false">
+                            <i class="fas fa-circle"></i> Perímetros
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" id="diameters-tab" data-toggle="tab" href="#diameters" role="tab" aria-controls="diameters" aria-selected="false">
+                            <i class="fas fa-arrows-alt-h"></i> Diámetros
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" id="body-composition-tab" data-toggle="tab" href="#body-composition" role="tab" aria-controls="body-composition" aria-selected="false">
+                            <i class="fas fa-percentage"></i> Composición Corporal
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">
+                            <i class="fas fa-sticky-note"></i> Notas
+                          </a>
+                        </li>
+                      </ul>
+
+                      <!-- Tab Content -->
+                      <div class="tab-content" id="anthropometricTabsContent">
+                        <!-- Body Mass Tab -->
+                        <div class="tab-pane fade show active" id="body-mass" role="tabpanel" aria-labelledby="body-mass-tab">
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Peso (Kg.)</label>
+                                <input type="number" step="0.01" th:field="*{bodyMass.weight}" class="form-control" min="10" max="200">
+                                <span th:if="${#fields.hasErrors('bodyMass.weight')}" th:errors="*{bodyMass.weight}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Estatura (M.)</label>
+                                <input type="number" step="0.01" th:field="*{bodyMass.height}" class="form-control" min="0.5" max="3">
+                                <span th:if="${#fields.hasErrors('bodyMass.height')}" th:errors="*{bodyMass.height}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Masa Corporal</label>
+                                <input type="number" step="0.01" th:field="*{bodyMass.bodyMass}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bodyMass.bodyMass')}" th:errors="*{bodyMass.bodyMass}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>IMC</label>
+                                <input type="number" step="0.01" th:field="*{bodyMass.imc}" class="form-control" readonly>
+                                <span th:if="${#fields.hasErrors('bodyMass.imc')}" th:errors="*{bodyMass.imc}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Índice de Grasa Corporal</label>
+                                <input type="number" step="0.01" th:field="*{bodyComposition.indiceGrasaCorporal}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bodyComposition.indiceGrasaCorporal')}" th:errors="*{bodyComposition.indiceGrasaCorporal}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Nivel de Peso</label>
+                                <select th:field="*{bodyMass.nivelPeso}" class="form-control">
+                                  <option value="">Seleccione...</option>
+                                  <option th:each="nivel : ${T(com.nutriconsultas.paciente.NivelPeso).values()}" 
+                                          th:value="${nivel}" 
+                                          th:text="${nivel}"></option>
+                                </select>
+                                <span th:if="${#fields.hasErrors('bodyMass.nivelPeso')}" th:errors="*{bodyMass.nivelPeso}"></span>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        <div class="col-md-6">
+
+                        <!-- Bioimpedance Tab -->
+                        <div class="tab-pane fade" id="bioimpedance" role="tabpanel" aria-labelledby="bioimpedance-tab">
+                          <h5 class="mb-3">Mediciones de Bioimpedancia</h5>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Bioimpedancia (Ω)</label>
+                                <input type="number" step="0.01" th:field="*{bioimpedance.bioimpedance}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bioimpedance.bioimpedance')}" th:errors="*{bioimpedance.bioimpedance}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Impedancia (Ω)</label>
+                                <input type="number" step="0.01" th:field="*{bioimpedance.impedance}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bioimpedance.impedance')}" th:errors="*{bioimpedance.impedance}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Resistencia (R, Ω)</label>
+                                <input type="number" step="0.01" th:field="*{bioimpedance.resistance}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bioimpedance.resistance')}" th:errors="*{bioimpedance.resistance}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Reactancia (Xc, Ω)</label>
+                                <input type="number" step="0.01" th:field="*{bioimpedance.reactance}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bioimpedance.reactance')}" th:errors="*{bioimpedance.reactance}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Ángulo de fase (°)</label>
+                                <input type="number" step="0.01" th:field="*{bioimpedance.phaseAngle}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bioimpedance.phaseAngle')}" th:errors="*{bioimpedance.phaseAngle}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <hr class="my-4">
+                          <h5 class="mb-3">Composición Corporal</h5>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>% Grasa Corporal</label>
+                                <input type="number" step="0.1" th:field="*{bioimpedance.bodyFatPercentage}" class="form-control" min="0" max="100">
+                                <span th:if="${#fields.hasErrors('bioimpedance.bodyFatPercentage')}" th:errors="*{bioimpedance.bodyFatPercentage}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Masa Grasa (kg)</label>
+                                <input type="number" step="0.01" th:field="*{bioimpedance.fatMass}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bioimpedance.fatMass')}" th:errors="*{bioimpedance.fatMass}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Masa Libre de Grasa (kg)</label>
+                                <input type="number" step="0.01" th:field="*{bioimpedance.fatFreeMass}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bioimpedance.fatFreeMass')}" th:errors="*{bioimpedance.fatFreeMass}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Masa Muscular Esquelética (kg)</label>
+                                <input type="number" step="0.01" th:field="*{bioimpedance.skeletalMuscleMass}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bioimpedance.skeletalMuscleMass')}" th:errors="*{bioimpedance.skeletalMuscleMass}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <hr class="my-4">
+                          <h5 class="mb-3">Agua Corporal</h5>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Agua Corporal Total (L)</label>
+                                <input type="number" step="0.01" th:field="*{bioimpedance.totalBodyWaterLiters}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bioimpedance.totalBodyWaterLiters')}" th:errors="*{bioimpedance.totalBodyWaterLiters}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Agua Corporal Total (%)</label>
+                                <input type="number" step="0.1" th:field="*{bioimpedance.totalBodyWaterPercentage}" class="form-control" min="0" max="100">
+                                <span th:if="${#fields.hasErrors('bioimpedance.totalBodyWaterPercentage')}" th:errors="*{bioimpedance.totalBodyWaterPercentage}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Agua Intracelular (L)</label>
+                                <input type="number" step="0.01" th:field="*{bioimpedance.intracellularWater}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bioimpedance.intracellularWater')}" th:errors="*{bioimpedance.intracellularWater}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Agua Extracelular (L)</label>
+                                <input type="number" step="0.01" th:field="*{bioimpedance.extracellularWater}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bioimpedance.extracellularWater')}" th:errors="*{bioimpedance.extracellularWater}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Relación ECW/ICW</label>
+                                <input type="number" step="0.01" th:field="*{bioimpedance.ecwIcwRatio}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bioimpedance.ecwIcwRatio')}" th:errors="*{bioimpedance.ecwIcwRatio}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <hr class="my-4">
+                          <h5 class="mb-3">Metabolismo</h5>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Metabolismo Basal Estimado (kcal)</label>
+                                <input type="number" step="0.01" th:field="*{bioimpedance.estimatedBasalMetabolism}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bioimpedance.estimatedBasalMetabolism')}" th:errors="*{bioimpedance.estimatedBasalMetabolism}"></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Skinfolds Tab -->
+                        <div class="tab-pane fade" id="skinfolds" role="tabpanel" aria-labelledby="skinfolds-tab">
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Subescapular</label>
+                                <input type="number" step="0.01" th:field="*{skinfolds.subscapularSkinfold}" class="form-control">
+                                <span th:if="${#fields.hasErrors('skinfolds.subscapularSkinfold')}" th:errors="*{skinfolds.subscapularSkinfold}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Tríceps</label>
+                                <input type="number" step="0.01" th:field="*{skinfolds.tricepsSkinfold}" class="form-control">
+                                <span th:if="${#fields.hasErrors('skinfolds.tricepsSkinfold')}" th:errors="*{skinfolds.tricepsSkinfold}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Bíceps</label>
+                                <input type="number" step="0.01" th:field="*{skinfolds.bicepsSkinfold}" class="form-control">
+                                <span th:if="${#fields.hasErrors('skinfolds.bicepsSkinfold')}" th:errors="*{skinfolds.bicepsSkinfold}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Cresta iliaca</label>
+                                <input type="number" step="0.01" th:field="*{skinfolds.iliacCrestSkinfold}" class="form-control">
+                                <span th:if="${#fields.hasErrors('skinfolds.iliacCrestSkinfold')}" th:errors="*{skinfolds.iliacCrestSkinfold}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Supraespinal</label>
+                                <input type="number" step="0.01" th:field="*{skinfolds.supraespinalSkinfold}" class="form-control">
+                                <span th:if="${#fields.hasErrors('skinfolds.supraespinalSkinfold')}" th:errors="*{skinfolds.supraespinalSkinfold}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Abdominal</label>
+                                <input type="number" step="0.01" th:field="*{skinfolds.abdominalSkinfold}" class="form-control">
+                                <span th:if="${#fields.hasErrors('skinfolds.abdominalSkinfold')}" th:errors="*{skinfolds.abdominalSkinfold}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Muslo frontal</label>
+                                <input type="number" step="0.01" th:field="*{skinfolds.frontalThighSkinfold}" class="form-control">
+                                <span th:if="${#fields.hasErrors('skinfolds.frontalThighSkinfold')}" th:errors="*{skinfolds.frontalThighSkinfold}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Pantorrilla medial</label>
+                                <input type="number" step="0.01" th:field="*{skinfolds.medialCalfSkinfold}" class="form-control">
+                                <span th:if="${#fields.hasErrors('skinfolds.medialCalfSkinfold')}" th:errors="*{skinfolds.medialCalfSkinfold}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Axilar medial</label>
+                                <input type="number" step="0.01" th:field="*{skinfolds.medialAxillarySkinfold}" class="form-control">
+                                <span th:if="${#fields.hasErrors('skinfolds.medialAxillarySkinfold')}" th:errors="*{skinfolds.medialAxillarySkinfold}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Pectoral</label>
+                                <input type="number" step="0.01" th:field="*{skinfolds.pectoralSkinfold}" class="form-control">
+                                <span th:if="${#fields.hasErrors('skinfolds.pectoralSkinfold')}" th:errors="*{skinfolds.pectoralSkinfold}"></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Circumferences Tab -->
+                        <div class="tab-pane fade" id="circumferences" role="tabpanel" aria-labelledby="circumferences-tab">
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Cefálico (cm)</label>
+                                <input type="number" step="0.01" th:field="*{circumferences.cephalicCircumference}" class="form-control">
+                                <span th:if="${#fields.hasErrors('circumferences.cephalicCircumference')}" th:errors="*{circumferences.cephalicCircumference}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Cuello (cm)</label>
+                                <input type="number" step="0.01" th:field="*{circumferences.neckCircumference}" class="form-control">
+                                <span th:if="${#fields.hasErrors('circumferences.neckCircumference')}" th:errors="*{circumferences.neckCircumference}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Mitad del brazo relajado (cm)</label>
+                                <input type="number" step="0.01" th:field="*{circumferences.midUpperArmCircumferenceRelaxed}" class="form-control">
+                                <span th:if="${#fields.hasErrors('circumferences.midUpperArmCircumferenceRelaxed')}" th:errors="*{circumferences.midUpperArmCircumferenceRelaxed}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Mitad del brazo contraído (cm)</label>
+                                <input type="number" step="0.01" th:field="*{circumferences.midUpperArmCircumferenceContracted}" class="form-control">
+                                <span th:if="${#fields.hasErrors('circumferences.midUpperArmCircumferenceContracted')}" th:errors="*{circumferences.midUpperArmCircumferenceContracted}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Antebrazo (cm)</label>
+                                <input type="number" step="0.01" th:field="*{circumferences.forearmCircumference}" class="form-control">
+                                <span th:if="${#fields.hasErrors('circumferences.forearmCircumference')}" th:errors="*{circumferences.forearmCircumference}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Muñeca (cm)</label>
+                                <input type="number" step="0.01" th:field="*{circumferences.wristCircumference}" class="form-control">
+                                <span th:if="${#fields.hasErrors('circumferences.wristCircumference')}" th:errors="*{circumferences.wristCircumference}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Mesoesternal (cm)</label>
+                                <input type="number" step="0.01" th:field="*{circumferences.mesosternalCircumference}" class="form-control">
+                                <span th:if="${#fields.hasErrors('circumferences.mesosternalCircumference')}" th:errors="*{circumferences.mesosternalCircumference}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Umbilical (cm)</label>
+                                <input type="number" step="0.01" th:field="*{circumferences.umbilicalCircumference}" class="form-control">
+                                <span th:if="${#fields.hasErrors('circumferences.umbilicalCircumference')}" th:errors="*{circumferences.umbilicalCircumference}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Cintura (cm)</label>
+                                <input type="number" step="0.01" th:field="*{circumferences.waistCircumference}" class="form-control">
+                                <span th:if="${#fields.hasErrors('circumferences.waistCircumference')}" th:errors="*{circumferences.waistCircumference}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Cadera (cm)</label>
+                                <input type="number" step="0.01" th:field="*{circumferences.hipCircumference}" class="form-control">
+                                <span th:if="${#fields.hasErrors('circumferences.hipCircumference')}" th:errors="*{circumferences.hipCircumference}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Muslo (cm)</label>
+                                <input type="number" step="0.01" th:field="*{circumferences.thighCircumference}" class="form-control">
+                                <span th:if="${#fields.hasErrors('circumferences.thighCircumference')}" th:errors="*{circumferences.thighCircumference}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Muslo medio (cm)</label>
+                                <input type="number" step="0.01" th:field="*{circumferences.midThighCircumference}" class="form-control">
+                                <span th:if="${#fields.hasErrors('circumferences.midThighCircumference')}" th:errors="*{circumferences.midThighCircumference}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Pantorrilla (cm)</label>
+                                <input type="number" step="0.01" th:field="*{circumferences.calfCircumference}" class="form-control">
+                                <span th:if="${#fields.hasErrors('circumferences.calfCircumference')}" th:errors="*{circumferences.calfCircumference}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Tobillo (cm)</label>
+                                <input type="number" step="0.01" th:field="*{circumferences.ankleCircumference}" class="form-control">
+                                <span th:if="${#fields.hasErrors('circumferences.ankleCircumference')}" th:errors="*{circumferences.ankleCircumference}"></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Diameters Tab -->
+                        <div class="tab-pane fade" id="diameters" role="tabpanel" aria-labelledby="diameters-tab">
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Biacromial (cm)</label>
+                                <input type="number" step="0.01" th:field="*{diameters.biacromialDiameter}" class="form-control">
+                                <span th:if="${#fields.hasErrors('diameters.biacromialDiameter')}" th:errors="*{diameters.biacromialDiameter}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Biileocrestal (cm)</label>
+                                <input type="number" step="0.01" th:field="*{diameters.biiliocrestalDiameter}" class="form-control">
+                                <span th:if="${#fields.hasErrors('diameters.biiliocrestalDiameter')}" th:errors="*{diameters.biiliocrestalDiameter}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Longitud del pie (cm)</label>
+                                <input type="number" step="0.01" th:field="*{diameters.footLength}" class="form-control">
+                                <span th:if="${#fields.hasErrors('diameters.footLength')}" th:errors="*{diameters.footLength}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Transverso del tórax (cm)</label>
+                                <input type="number" step="0.01" th:field="*{diameters.transverseThoraxDiameter}" class="form-control">
+                                <span th:if="${#fields.hasErrors('diameters.transverseThoraxDiameter')}" th:errors="*{diameters.transverseThoraxDiameter}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Anteroposterior del tórax (cm)</label>
+                                <input type="number" step="0.01" th:field="*{diameters.anteroposteriorThoraxDiameter}" class="form-control">
+                                <span th:if="${#fields.hasErrors('diameters.anteroposteriorThoraxDiameter')}" th:errors="*{diameters.anteroposteriorThoraxDiameter}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Húmero (cm)</label>
+                                <input type="number" step="0.01" th:field="*{diameters.humerusDiameter}" class="form-control">
+                                <span th:if="${#fields.hasErrors('diameters.humerusDiameter')}" th:errors="*{diameters.humerusDiameter}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Biestiloideo de la muñeca (cm)</label>
+                                <input type="number" step="0.01" th:field="*{diameters.biestiloidWristDiameter}" class="form-control">
+                                <span th:if="${#fields.hasErrors('diameters.biestiloidWristDiameter')}" th:errors="*{diameters.biestiloidWristDiameter}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Fémur (cm)</label>
+                                <input type="number" step="0.01" th:field="*{diameters.femurDiameter}" class="form-control">
+                                <span th:if="${#fields.hasErrors('diameters.femurDiameter')}" th:errors="*{diameters.femurDiameter}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Bimaleolar (cm)</label>
+                                <input type="number" step="0.01" th:field="*{diameters.bimaleolarDiameter}" class="form-control">
+                                <span th:if="${#fields.hasErrors('diameters.bimaleolarDiameter')}" th:errors="*{diameters.bimaleolarDiameter}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Transverso del pie (cm)</label>
+                                <input type="number" step="0.01" th:field="*{diameters.transverseFootDiameter}" class="form-control">
+                                <span th:if="${#fields.hasErrors('diameters.transverseFootDiameter')}" th:errors="*{diameters.transverseFootDiameter}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Longitud mano (cm)</label>
+                                <input type="number" step="0.01" th:field="*{diameters.handLength}" class="form-control">
+                                <span th:if="${#fields.hasErrors('diameters.handLength')}" th:errors="*{diameters.handLength}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Transverso de la mano (cm)</label>
+                                <input type="number" step="0.01" th:field="*{diameters.transverseHandDiameter}" class="form-control">
+                                <span th:if="${#fields.hasErrors('diameters.transverseHandDiameter')}" th:errors="*{diameters.transverseHandDiameter}"></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Body Composition Tab -->
+                        <div class="tab-pane fade" id="body-composition" role="tabpanel" aria-labelledby="body-composition-tab">
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Porcentaje de Grasa Corporal (%)</label>
+                                <input type="number" step="0.1" th:field="*{bodyComposition.porcentajeGrasaCorporal}" class="form-control" min="0" max="100">
+                                <span th:if="${#fields.hasErrors('bodyComposition.porcentajeGrasaCorporal')}" th:errors="*{bodyComposition.porcentajeGrasaCorporal}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Índice de Grasa Corporal</label>
+                                <input type="number" step="0.01" th:field="*{bodyComposition.indiceGrasaCorporal}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bodyComposition.indiceGrasaCorporal')}" th:errors="*{bodyComposition.indiceGrasaCorporal}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Porcentaje de Masa Muscular (%)</label>
+                                <input type="number" step="0.1" th:field="*{bodyComposition.porcentajeMasaMuscular}" class="form-control" min="0" max="100">
+                                <span th:if="${#fields.hasErrors('bodyComposition.porcentajeMasaMuscular')}" th:errors="*{bodyComposition.porcentajeMasaMuscular}"></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Notes Tab -->
+                        <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
                           <div class="form-group">
-                            <label>Estatura (M.)</label>
-                            <input type="number" step="0.01" th:field="*{estatura}" class="form-control" min="0.5" max="3">
-                            <span th:if="${#fields.hasErrors('estatura')}" th:errors="*{estatura}"></span>
+                            <label>Notas</label>
+                            <textarea class="form-control" rows="5" th:field="*{notes}"></textarea>
+                            <span th:if="${#fields.hasErrors('notes')}" th:errors="*{notes}"></span>
                           </div>
                         </div>
                       </div>
 
-                      <!-- Body Measurements -->
-                      <h5 class="mt-4 mb-3">Mediciones Corporales</h5>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="form-group">
-                            <label>Cintura (cm)</label>
-                            <input type="number" step="0.1" th:field="*{cintura}" class="form-control">
-                            <span th:if="${#fields.hasErrors('cintura')}" th:errors="*{cintura}"></span>
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="form-group">
-                            <label>Cadera (cm)</label>
-                            <input type="number" step="0.1" th:field="*{cadera}" class="form-control">
-                            <span th:if="${#fields.hasErrors('cadera')}" th:errors="*{cadera}"></span>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="form-group">
-                            <label>Cuello (cm)</label>
-                            <input type="number" step="0.1" th:field="*{cuello}" class="form-control">
-                            <span th:if="${#fields.hasErrors('cuello')}" th:errors="*{cuello}"></span>
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="form-group">
-                            <label>Brazo (cm)</label>
-                            <input type="number" step="0.1" th:field="*{brazo}" class="form-control">
-                            <span th:if="${#fields.hasErrors('brazo')}" th:errors="*{brazo}"></span>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="form-group">
-                            <label>Muslo (cm)</label>
-                            <input type="number" step="0.1" th:field="*{muslo}" class="form-control">
-                            <span th:if="${#fields.hasErrors('muslo')}" th:errors="*{muslo}"></span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Body Composition -->
-                      <h5 class="mt-4 mb-3">Composición Corporal</h5>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="form-group">
-                            <label>Porcentaje de Grasa Corporal (%)</label>
-                            <input type="number" step="0.1" th:field="*{porcentajeGrasaCorporal}" class="form-control" min="0" max="100">
-                            <span th:if="${#fields.hasErrors('porcentajeGrasaCorporal')}" th:errors="*{porcentajeGrasaCorporal}"></span>
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="form-group">
-                            <label>Porcentaje de Masa Muscular (%)</label>
-                            <input type="number" step="0.1" th:field="*{porcentajeMasaMuscular}" class="form-control" min="0" max="100">
-                            <span th:if="${#fields.hasErrors('porcentajeMasaMuscular')}" th:errors="*{porcentajeMasaMuscular}"></span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Notes -->
-                      <div class="form-group mt-4">
-                        <label>Notas</label>
-                        <textarea th:field="*{notes}" class="form-control" rows="4"></textarea>
-                        <span th:if="${#fields.hasErrors('notes')}" th:errors="*{notes}"></span>
-                      </div>
-
-                      <!-- Submit Button -->
-                      <div class="form-group mt-4">
-                        <button type="submit" class="btn btn-primary">Guardar Medición Antropométrica</button>
+                      <div class="mt-4">
+                        <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Guardar Medición Antropométrica</button>
                         <a th:href="@{/admin/pacientes/{id}/historial(id=${paciente != null ? paciente.id : 0})}" class="btn btn-secondary ml-2">Cancelar</a>
                       </div>
                     </form>
                   </div>
+                  <br>
 
                 </div>
               </div>
             </div>
+
           </div>
           <!-- /.container-fluid -->
 
@@ -197,4 +664,3 @@
 </body>
 
 </html>
-

@@ -577,6 +577,13 @@ public class PacienteController extends AbstractAuthorizedController {
 		measurement.setMeasurementDateTime(new Date());
 		measurement.setPaciente(paciente);
 		measurement.setTitle("Medición Antropométrica");
+		// Initialize category objects so form can bind to nested properties
+		measurement.setBodyMass(new com.nutriconsultas.clinical.exam.anthropometric.BodyMass());
+		measurement.setBioimpedance(new com.nutriconsultas.clinical.exam.anthropometric.Bioimpedance());
+		measurement.setSkinfolds(new com.nutriconsultas.clinical.exam.anthropometric.Skinfolds());
+		measurement.setCircumferences(new com.nutriconsultas.clinical.exam.anthropometric.Circumferences());
+		measurement.setDiameters(new com.nutriconsultas.clinical.exam.anthropometric.Diameters());
+		measurement.setBodyComposition(new com.nutriconsultas.clinical.exam.anthropometric.BodyComposition());
 		model.addAttribute("antropometrico", measurement);
 		return "sbadmin/pacientes/antropometricos";
 	}
