@@ -62,4 +62,3 @@ public class Circumferences {
 	private Double ankleCircumference;
 
 }
-

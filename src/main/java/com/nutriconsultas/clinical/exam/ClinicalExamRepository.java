@@ -15,6 +15,7 @@ public interface ClinicalExamRepository extends JpaRepository<ClinicalExam, Long
 	@Query("SELECT e FROM ClinicalExam e WHERE e.paciente.userId = :userId AND "
 			+ "(LOWER(e.title) LIKE LOWER(:searchTerm) OR LOWER(e.description) LIKE LOWER(:searchTerm) OR "
 			+ "LOWER(e.summaryNotes) LIKE LOWER(:searchTerm) OR LOWER(e.paciente.name) LIKE LOWER(:searchTerm))")
-	List<ClinicalExam> findByUserIdAndSearchTerm(@Param("userId") String userId, @Param("searchTerm") String searchTerm);
+	List<ClinicalExam> findByUserIdAndSearchTerm(@Param("userId") String userId,
+			@Param("searchTerm") String searchTerm);
 
 }

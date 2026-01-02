@@ -23,10 +23,10 @@ public class BodyComposition {
 	private Double porcentajeGrasaCorporal; // % grasa corporal
 
 	@Column(precision = 3)
-	private Double indiceGrasaCorporal; // Índice de grasa corporal (centralized from BodyMass and VitalSigns)
+	private Double indiceGrasaCorporal; // Índice de grasa corporal (centralized from
+										// BodyMass and VitalSigns)
 
 	@Column(precision = 3)
 	private Double porcentajeMasaMuscular;
 
 }
-

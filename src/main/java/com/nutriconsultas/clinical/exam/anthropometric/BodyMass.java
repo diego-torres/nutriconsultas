@@ -43,4 +43,3 @@ public class BodyMass {
 	private NivelPeso nivelPeso;
 
 }
-

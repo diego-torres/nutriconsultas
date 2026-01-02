@@ -51,7 +51,8 @@ public class SearchController extends AbstractAuthorizedController {
 		final String trimmedQuery = q.trim();
 		final String nonNullUserId = Objects.requireNonNull(userId, "User ID must not be null");
 		final String normalizedCategory = normalizeCategory(category);
-		final SearchResponse searchResponse = searchService.search(trimmedQuery, nonNullUserId, normalizedCategory, page);
+		final SearchResponse searchResponse = searchService.search(trimmedQuery, nonNullUserId, normalizedCategory,
+				page);
 		model.addAttribute("query", q);
 		model.addAttribute("category", normalizedCategory);
 		model.addAttribute("page", page);

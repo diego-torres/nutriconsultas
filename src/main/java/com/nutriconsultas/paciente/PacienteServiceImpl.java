@@ -3,8 +3,11 @@ package com.nutriconsultas.paciente;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.nutriconsultas.util.LogRedaction;
 
@@ -55,9 +58,42 @@ public class PacienteServiceImpl implements PacienteService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Paciente> findAllByUserId(@NonNull final String userId) {
 		log.info("getting all Paciente records for userId {}.", userId);
 		return repo.findByUserId(userId);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Page<Paciente> findAllByUserId(@NonNull final String userId, final Pageable pageable) {
+		log.info("getting paginated Paciente records for userId {} with pageable {}.", userId, pageable);
+		return repo.findByUserId(userId, pageable);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Page<Paciente> findAllByUserIdAndSearchTerm(@NonNull final String userId, @NonNull final String searchTerm,
+			final Pageable pageable) {
+		log.info("searching Paciente records for userId {} with search term '{}' and pageable {}.", userId, searchTerm,
+				pageable);
+		final String searchPattern = "%" + searchTerm.toLowerCase() + "%";
+		return repo.findByUserIdAndSearchTerm(userId, searchPattern, pageable);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public long countByUserId(@NonNull final String userId) {
+		log.info("counting Paciente records for userId {}.", userId);
+		return repo.countByUserId(userId);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public long countByUserIdAndSearchTerm(@NonNull final String userId, @NonNull final String searchTerm) {
+		log.info("counting Paciente records for userId {} with search term '{}'.", userId, searchTerm);
+		final String searchPattern = "%" + searchTerm.toLowerCase() + "%";
+		return repo.countByUserIdAndSearchTerm(userId, searchPattern);
 	}
 
 	@Override

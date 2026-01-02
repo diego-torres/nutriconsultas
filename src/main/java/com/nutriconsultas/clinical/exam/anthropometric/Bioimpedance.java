@@ -67,4 +67,3 @@ public class Bioimpedance {
 	private Double estimatedBasalMetabolism; // Metabolismo basal estimado (kcal)
 
 }
-

@@ -183,8 +183,7 @@ public class SearchServiceTest {
 		final String query = "Manzana";
 		when(pacienteRepository.findByUserIdAndSearchTerm(eq(TEST_USER_ID), any(String.class)))
 			.thenReturn(new ArrayList<>());
-		when(alimentosRepository.findByNombreAlimentoContainingIgnoreCase(query))
-			.thenReturn(Arrays.asList(alimento));
+		when(alimentosRepository.findByNombreAlimentoContainingIgnoreCase(query)).thenReturn(Arrays.asList(alimento));
 		when(platilloRepository.findByNameContainingIgnoreCase(query)).thenReturn(new ArrayList<>());
 		when(calendarEventRepository.findByUserIdAndSearchTerm(eq(TEST_USER_ID), any(String.class)))
 			.thenReturn(new ArrayList<>());
