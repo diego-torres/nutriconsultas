@@ -15,5 +15,12 @@
     <Source name="~.*Test\.java"/>
     <Bug pattern="EI_EXPOSE_REP"/>
   </Match>
+  
+  <!-- ThymeleafValidator intentionally catches NullPointerException for template validation -->
+  <Match>
+    <Class name="com.nutriconsultas.ThymeleafValidator"/>
+    <Method name="validateTemplate"/>
+    <Bug pattern="DCN_NULLPOINTER_EXCEPTION"/>
+  </Match>
 </FindBugsFilter>
 

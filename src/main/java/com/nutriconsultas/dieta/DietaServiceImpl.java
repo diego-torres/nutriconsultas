@@ -27,6 +27,12 @@ public class DietaServiceImpl implements DietaService {
 	}
 
 	@Override
+	public Dieta getDietaByIdAndUserId(@NonNull final Long id, @NonNull final String userId) {
+		log.info("Getting dieta with id: {} and userId: {}", id, userId);
+		return dietaRepository.findByIdAndUserId(id, userId).orElse(null);
+	}
+
+	@Override
 	public Dieta saveDieta(@NonNull final Dieta dieta) {
 		log.info("Saving dieta with id: " + dieta.getId());
 		return dietaRepository.save(dieta);
@@ -36,6 +42,12 @@ public class DietaServiceImpl implements DietaService {
 	public void deleteDieta(@NonNull final Long id) {
 		log.info("Deleting dieta with id: " + id);
 		dietaRepository.deleteById(id);
+	}
+
+	@Override
+	public void deleteDietaByIdAndUserId(@NonNull final Long id, @NonNull final String userId) {
+		log.info("Deleting dieta with id: {} and userId: {}", id, userId);
+		dietaRepository.findByIdAndUserId(id, userId).ifPresent(dietaRepository::delete);
 	}
 
 	@Override
@@ -255,8 +267,8 @@ public class DietaServiceImpl implements DietaService {
 	}
 
 	@Override
-	public Dieta duplicateDieta(@NonNull final Long id) {
-		log.info("Duplicating dieta with id: {}", id);
+	public Dieta duplicateDieta(@NonNull final Long id, @NonNull final String userId) {
+		log.info("Duplicating dieta with id: {} for user: {}", id, userId);
 		final Dieta originalDieta = dietaRepository.findById(id).orElse(null);
 		if (originalDieta == null) {
 			log.warn("Dieta with id {} not found for duplication", id);
@@ -267,6 +279,7 @@ public class DietaServiceImpl implements DietaService {
 		final Dieta newDieta = new Dieta();
 		final String originalNombre = originalDieta.getNombre() != null ? originalDieta.getNombre() : "Dieta";
 		newDieta.setNombre("Copia de " + originalNombre);
+		newDieta.setUserId(userId);
 
 		// Copy nutritional values from AbstractMacroNutrible
 		newDieta.setEnergia(originalDieta.getEnergia());

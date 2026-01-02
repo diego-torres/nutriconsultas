@@ -10,6 +10,8 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,8 +37,13 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	private DietaService dietaService;
 
 	@PostMapping("add")
-	public Dieta addDieta(@RequestBody final Dieta dieta) {
+	public Dieta addDieta(@RequestBody final Dieta dieta, @AuthenticationPrincipal final OidcUser principal) {
 		log.info("starting addDieta with dieta {}.", dieta);
+		if (principal == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		final String userId = principal.getSubject();
+		dieta.setUserId(userId);
 		final List<Ingesta> ingestas = Stream.of("Desayuno", "Comida", "Cena")
 			.map(Ingesta::new)
 			.collect(Collectors.toList());
@@ -49,10 +56,18 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 
 	@DeleteMapping("{dietaId}/ingestas/{ingestaId}/platillos/{platilloIngestaId}")
 	public ResponseEntity<ApiResponse<Dieta>> deletePlatilloIngesta(@PathVariable @NonNull final Long dietaId,
-			@PathVariable @NonNull final Long ingestaId, @PathVariable @NonNull final Long platilloIngestaId) {
+			@PathVariable @NonNull final Long ingestaId, @PathVariable @NonNull final Long platilloIngestaId,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.info("starting deletePlatilloIngesta with dietaId {}, ingestaId {}, platilloIngestaId {}.", dietaId,
 				ingestaId, platilloIngestaId);
-		final Dieta dieta = dietaService.getDieta(dietaId);
+		if (principal == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		final String userId = principal.getSubject();
+		if (userId == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		final Dieta dieta = dietaService.getDietaByIdAndUserId(dietaId, userId);
 		ResponseEntity<ApiResponse<Dieta>> result;
 		if (dieta != null) {
 			dieta.getIngestas()
@@ -67,7 +82,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 			result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
 		}
 		else {
-			log.warn("Dieta with id {} not found when trying to delete platilloIngesta", dietaId);
+			log.warn("Dieta with id {} not found or user {} does not have permission", dietaId, userId);
 			result = ResponseEntity.notFound().build();
 		}
 		return result;
@@ -75,10 +90,18 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 
 	@DeleteMapping("{dietaId}/ingestas/{ingestaId}/alimentos/{alimentoIngestaId}")
 	public ResponseEntity<ApiResponse<Dieta>> deleteAlimentoIngesta(@PathVariable @NonNull final Long dietaId,
-			@PathVariable @NonNull final Long ingestaId, @PathVariable @NonNull final Long alimentoIngestaId) {
+			@PathVariable @NonNull final Long ingestaId, @PathVariable @NonNull final Long alimentoIngestaId,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.info("starting deleteAlimentoIngesta with dietaId {}, ingestaId {}, alimentoIngestaId {}.", dietaId,
 				ingestaId, alimentoIngestaId);
-		final Dieta dieta = dietaService.getDieta(dietaId);
+		if (principal == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		final String userId = principal.getSubject();
+		if (userId == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		final Dieta dieta = dietaService.getDietaByIdAndUserId(dietaId, userId);
 		ResponseEntity<ApiResponse<Dieta>> result;
 		if (dieta != null) {
 			dieta.getIngestas()
@@ -93,7 +116,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 			result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
 		}
 		else {
-			log.warn("Dieta with id {} not found when trying to delete alimentoIngesta", dietaId);
+			log.warn("Dieta with id {} not found or user {} does not have permission", dietaId, userId);
 			result = ResponseEntity.notFound().build();
 		}
 		return result;
@@ -102,7 +125,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	@PutMapping("{dietaId}/ingestas/{ingestaId}/platillos/{platilloIngestaId}/portions")
 	public ResponseEntity<ApiResponse<Dieta>> updatePlatilloIngestaPortions(@PathVariable @NonNull final Long dietaId,
 			@PathVariable @NonNull final Long ingestaId, @PathVariable @NonNull final Long platilloIngestaId,
-			@RequestParam @NonNull final Integer portions) {
+			@RequestParam @NonNull final Integer portions, @AuthenticationPrincipal final OidcUser principal) {
 		log.info(
 				"starting updatePlatilloIngestaPortions with dietaId {}, ingestaId {}, platilloIngestaId {}, portions {}.",
 				dietaId, ingestaId, platilloIngestaId, portions);
@@ -110,7 +133,14 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 			log.warn("Invalid portions value: {}. Must be between 1 and 10.", portions);
 			return ResponseEntity.badRequest().build();
 		}
-		final Dieta dieta = dietaService.getDieta(dietaId);
+		if (principal == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		final String userId = principal.getSubject();
+		if (userId == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		final Dieta dieta = dietaService.getDietaByIdAndUserId(dietaId, userId);
 		if (dieta == null) {
 			log.warn("Dieta with id {} not found when trying to update platilloIngesta portions", dietaId);
 			return ResponseEntity.notFound().build();
@@ -139,7 +169,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	@PutMapping("{dietaId}/ingestas/{ingestaId}/alimentos/{alimentoIngestaId}/portions")
 	public ResponseEntity<ApiResponse<Dieta>> updateAlimentoIngestaPortions(@PathVariable @NonNull final Long dietaId,
 			@PathVariable @NonNull final Long ingestaId, @PathVariable @NonNull final Long alimentoIngestaId,
-			@RequestParam @NonNull final Integer portions) {
+			@RequestParam @NonNull final Integer portions, @AuthenticationPrincipal final OidcUser principal) {
 		log.info(
 				"starting updateAlimentoIngestaPortions with dietaId {}, ingestaId {}, alimentoIngestaId {}, portions {}.",
 				dietaId, ingestaId, alimentoIngestaId, portions);
@@ -147,7 +177,14 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 			log.warn("Invalid portions value: {}. Must be between 1 and 10.", portions);
 			return ResponseEntity.badRequest().build();
 		}
-		final Dieta dieta = dietaService.getDieta(dietaId);
+		if (principal == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		final String userId = principal.getSubject();
+		if (userId == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		final Dieta dieta = dietaService.getDietaByIdAndUserId(dietaId, userId);
 		if (dieta == null) {
 			log.warn("Dieta with id {} not found when trying to update alimentoIngesta portions", dietaId);
 			return ResponseEntity.notFound().build();
@@ -174,14 +211,29 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	}
 
 	@PostMapping("{dietaId}/duplicate")
-	public ResponseEntity<ApiResponse<Dieta>> duplicateDieta(@PathVariable @NonNull final Long dietaId) {
+	public ResponseEntity<ApiResponse<Dieta>> duplicateDieta(@PathVariable @NonNull final Long dietaId,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.info("starting duplicateDieta with dietaId {}.", dietaId);
-		final Dieta duplicatedDieta = dietaService.duplicateDieta(dietaId);
-		if (duplicatedDieta == null) {
+		if (principal == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		final String userId = principal.getSubject();
+		if (userId == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		// Allow duplicating any diet (read access)
+		final Dieta originalDieta = dietaService.getDieta(dietaId);
+		if (originalDieta == null) {
 			log.warn("Dieta with id {} not found for duplication", dietaId);
 			return ResponseEntity.notFound().build();
 		}
-		log.info("finish duplicateDieta with dietaId {}, new dieta id {}.", dietaId, duplicatedDieta.getId());
+		final Dieta duplicatedDieta = dietaService.duplicateDieta(dietaId, userId);
+		if (duplicatedDieta == null) {
+			log.warn("Failed to duplicate dieta with id {}", dietaId);
+			return ResponseEntity.notFound().build();
+		}
+		log.info("finish duplicateDieta with dietaId {}, new dieta id {} owned by user {}.", dietaId,
+				duplicatedDieta.getId(), userId);
 		return ResponseEntity.ok(new ApiResponse<Dieta>(duplicatedDieta));
 	}
 
@@ -199,6 +251,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 				+ "/print' class='btn btn-sm btn-primary' target='_blank' title='Imprimir PDF'><i class='fas fa-file-pdf'></i></a>";
 		final String duplicateButton = "<button onclick='duplicateDieta(" + row.getId()
 				+ ")' class='btn btn-sm btn-info' title='Duplicar Dieta'><i class='fas fa-copy'></i></button>";
+		// Note: Ownership indicator will be added in the template if needed
 		return Arrays.asList(printButton + " " + duplicateButton,
 				"<a href='/admin/dietas/" + row.getId() + "'>" + row.getNombre() + "</a>", getIngestas(row),
 				getDist(row), String.format("%.1f", getKCal(row)), String.format("%.1f", getTotalProteina(row)),

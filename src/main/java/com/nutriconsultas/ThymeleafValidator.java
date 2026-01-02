@@ -235,11 +235,11 @@ public class ThymeleafValidator {
 			// Check all levels of the exception chain, not just the root cause
 			Throwable current = e;
 			boolean isRuntimeError = false;
-			String fullMessage = "";
+			StringBuilder fullMessageBuilder = new StringBuilder();
 			while (current != null) {
 				String message = current.getMessage();
 				if (message != null) {
-					fullMessage += message + " ";
+					fullMessageBuilder.append(message).append(' ');
 				}
 				String className = current.getClass().getName();
 				// Check for various OGNL-related exceptions that indicate missing model
@@ -270,6 +270,7 @@ public class ThymeleafValidator {
 				current = current.getCause();
 			}
 			// Also check the full message string for #fields references
+			String fullMessage = fullMessageBuilder.toString();
 			if (!isRuntimeError && fullMessage.contains("#fields")) {
 				isRuntimeError = true;
 			}

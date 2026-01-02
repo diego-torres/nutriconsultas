@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventService;
 import com.nutriconsultas.calendar.EventStatus;
+import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.ClinicalExam;
 import com.nutriconsultas.clinical.exam.ClinicalExamService;
 import com.nutriconsultas.controller.AbstractAuthorizedController;
@@ -573,7 +574,7 @@ public class PacienteController extends AbstractAuthorizedController {
 
 		model.addAttribute("activeMenu", "historial");
 		model.addAttribute("paciente", paciente);
-		com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		AnthropometricMeasurement measurement = new AnthropometricMeasurement();
 		measurement.setMeasurementDateTime(new Date());
 		measurement.setPaciente(paciente);
 		measurement.setTitle("Medición Antropométrica");

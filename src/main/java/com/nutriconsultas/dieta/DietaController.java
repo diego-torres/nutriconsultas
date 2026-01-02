@@ -14,6 +14,8 @@ import org.springframework.ui.Model;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,6 +47,38 @@ public class DietaController extends AbstractAuthorizedController {
 	@Autowired
 	private DietaPdfService dietaPdfService;
 
+	/**
+	 * Gets the user ID from the OAuth2 principal.
+	 * @param principal the OAuth2 principal
+	 * @return the user ID (sub claim) or null if not available
+	 */
+	private String getUserId(@AuthenticationPrincipal final OidcUser principal) {
+		if (principal == null) {
+			LOGGER.warn("OAuth2 principal is null, cannot get user ID");
+			return null;
+		}
+		final String userId = principal.getSubject();
+		LOGGER.debug("Retrieved user ID: {}", userId);
+		return userId;
+	}
+
+	/**
+	 * Verifies that a diet belongs to the current user.
+	 * @param dieta the diet to verify
+	 * @param userId the current user's ID
+	 * @throws IllegalArgumentException if the diet does not belong to the user
+	 */
+	private void verifyDietOwnership(final Dieta dieta, final String userId) {
+		if (dieta == null) {
+			throw new IllegalArgumentException("Dieta no encontrada");
+		}
+		if (dieta.getUserId() == null || !dieta.getUserId().equals(userId)) {
+			LOGGER.warn("User {} attempted to modify diet {} owned by {}", userId, dieta.getId(),
+					dieta.getUserId());
+			throw new IllegalArgumentException("No tiene permiso para modificar esta dieta");
+		}
+	}
+
 	@GetMapping(path = "/admin/dietas")
 	public String listado(final Model model) {
 		LOGGER.debug("Lista de dietas");
@@ -54,22 +88,39 @@ public class DietaController extends AbstractAuthorizedController {
 
 	@PostMapping(path = "/admin/dietas/save")
 	public String saveDieta(@RequestParam @NonNull final Long id, @RequestParam @NonNull final String nombre,
-			final Model model) {
+			final Model model, @AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Guardar dieta with id {}, {}", id, nombre);
-		final Dieta dieta = dietaService.getDieta(id);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		final Dieta dieta = dietaService.getDietaByIdAndUserId(id, userId);
+		if (dieta == null) {
+			throw new IllegalArgumentException("Dieta no encontrada o no tiene permiso para modificarla");
+		}
+		verifyDietOwnership(dieta, userId);
 		dieta.setNombre(nombre);
 		dietaService.saveDieta(dieta);
 		return "redirect:/admin/dietas/" + id;
 	}
 
 	@GetMapping(path = "/admin/dietas/{id}")
-	public String editar(@PathVariable @NonNull final Long id, final Model model) {
+	public String editar(@PathVariable @NonNull final Long id, final Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Editar dieta con id {}", id);
 		model.addAttribute("activeMenu", "dietas");
 
 		final Dieta dieta = dietaService.getDieta(id);
+		if (dieta == null) {
+			throw new IllegalArgumentException("Dieta no encontrada");
+		}
 		LOGGER.debug("Dieta encontrada: {}", dieta);
 		model.addAttribute("dieta", dieta);
+
+		// Check ownership and pass to model
+		final String userId = getUserId(principal);
+		final boolean isOwner = Objects.equals(userId, dieta.getUserId());
+		model.addAttribute("isOwner", isOwner);
 
 		// Sort the ingestas list by id
 		final List<Ingesta> sortedIngestas = dieta.getIngestas()
@@ -133,9 +184,19 @@ public class DietaController extends AbstractAuthorizedController {
 
 	@PostMapping(path = "/admin/dietas/{id}/ingestas/save")
 	public String saveIngesta(@PathVariable @NonNull final Long id, @ModelAttribute final IngestaFormModel ingesta,
-			final Model model) {
+			final Model model, @AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Agregar ingesta {} a dieta con id {}", ingesta, id);
 		model.addAttribute("activeMenu", "dietas");
+
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		final Dieta dieta = dietaService.getDietaByIdAndUserId(id, userId);
+		if (dieta == null) {
+			throw new IllegalArgumentException("Dieta no encontrada o no tiene permiso para modificarla");
+		}
+		verifyDietOwnership(dieta, userId);
 
 		String result;
 		if (ingesta.getIngestaId() == 0) {
@@ -160,9 +221,18 @@ public class DietaController extends AbstractAuthorizedController {
 
 	@PostMapping(path = "/admin/dietas/{id}/ingestas/delete")
 	public String deleteIngesta(@PathVariable @NonNull final Long id,
-			@ModelAttribute final IngestaFormModel ingestaModel, final Model model) {
+			@ModelAttribute final IngestaFormModel ingestaModel, final Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Eliminar ingesta con id {} de dieta con id {}", ingestaModel, id);
-		final Dieta dieta = dietaService.getDieta(id);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		final Dieta dieta = dietaService.getDietaByIdAndUserId(id, userId);
+		if (dieta == null) {
+			throw new IllegalArgumentException("Dieta no encontrada o no tiene permiso para modificarla");
+		}
+		verifyDietOwnership(dieta, userId);
 		dieta.getIngestas().removeIf(ingesta -> ingesta.getId().equals(ingestaModel.getIngestaId()));
 		dietaService.saveDieta(dieta);
 		return "redirect:/admin/dietas/" + id;
@@ -170,9 +240,17 @@ public class DietaController extends AbstractAuthorizedController {
 
 	@PostMapping(path = "/admin/dietas/{id}/platillos/save")
 	public String savePlatillo(@PathVariable @NonNull Long id, @ModelAttribute PlatilloFormModel platilloModel,
-			Model model) {
+			Model model, @AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Agregar platillo {} a ingesta con id {}", platilloModel, id);
-		Dieta dieta = dietaService.getDieta(id);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		Dieta dieta = dietaService.getDietaByIdAndUserId(id, userId);
+		if (dieta == null) {
+			throw new IllegalArgumentException("Dieta no encontrada o no tiene permiso para modificarla");
+		}
+		verifyDietOwnership(dieta, userId);
 		Ingesta ingesta = dieta.getIngestas()
 			.stream()
 			.filter(i -> i.getId().equals(platilloModel.getIngestaPlatillo()))
@@ -207,9 +285,17 @@ public class DietaController extends AbstractAuthorizedController {
 
 	@PostMapping(path = "/admin/dietas/{id}/alimentos/save")
 	public String saveAlimento(@PathVariable @NonNull Long id, @ModelAttribute AlimentoFormModel alimentoModel,
-			Model model) {
+			Model model, @AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Agregar alimento {} a ingesta con id {}", alimentoModel, id);
-		Dieta dieta = dietaService.getDieta(id);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		Dieta dieta = dietaService.getDietaByIdAndUserId(id, userId);
+		if (dieta == null) {
+			throw new IllegalArgumentException("Dieta no encontrada o no tiene permiso para modificarla");
+		}
+		verifyDietOwnership(dieta, userId);
 		Ingesta ingesta = dieta.getIngestas()
 			.stream()
 			.filter(i -> i.getId().equals(alimentoModel.getIngestaAlimento()))
@@ -233,9 +319,17 @@ public class DietaController extends AbstractAuthorizedController {
 
 	@PostMapping(path = "/admin/dietas/{id}/platillos/{platilloIngestaId}/update")
 	public String updatePlatilloIngesta(@PathVariable @NonNull Long id, @PathVariable @NonNull Long platilloIngestaId,
-			@RequestParam @NonNull Integer porciones) {
+			@RequestParam @NonNull Integer porciones, @AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Actualizar platillo ingesta {} con {} porciones en dieta {}", platilloIngestaId, porciones, id);
-		Dieta dieta = dietaService.getDieta(id);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		Dieta dieta = dietaService.getDietaByIdAndUserId(id, userId);
+		if (dieta == null) {
+			throw new IllegalArgumentException("Dieta no encontrada o no tiene permiso para modificarla");
+		}
+		verifyDietOwnership(dieta, userId);
 		if (dieta != null) {
 			dieta.getIngestas()
 				.stream()
@@ -281,9 +375,17 @@ public class DietaController extends AbstractAuthorizedController {
 
 	@PostMapping(path = "/admin/dietas/{id}/alimentos/{alimentoIngestaId}/update")
 	public String updateAlimentoIngesta(@PathVariable @NonNull Long id, @PathVariable @NonNull Long alimentoIngestaId,
-			@RequestParam @NonNull Integer porciones) {
+			@RequestParam @NonNull Integer porciones, @AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Actualizar alimento ingesta {} con {} porciones en dieta {}", alimentoIngestaId, porciones, id);
-		Dieta dieta = dietaService.getDieta(id);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		Dieta dieta = dietaService.getDietaByIdAndUserId(id, userId);
+		if (dieta == null) {
+			throw new IllegalArgumentException("Dieta no encontrada o no tiene permiso para modificarla");
+		}
+		verifyDietOwnership(dieta, userId);
 		if (dieta != null) {
 			dieta.getIngestas()
 				.stream()

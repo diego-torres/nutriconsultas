@@ -8,9 +8,13 @@ public interface DietaService {
 
 	Dieta getDieta(@NonNull Long id);
 
+	Dieta getDietaByIdAndUserId(@NonNull Long id, @NonNull String userId);
+
 	Dieta saveDieta(@NonNull Dieta dieta);
 
 	void deleteDieta(@NonNull Long id);
+
+	void deleteDietaByIdAndUserId(@NonNull Long id, @NonNull String userId);
 
 	List<Dieta> getDietas();
 
@@ -22,6 +26,6 @@ public interface DietaService {
 
 	void recalculatePlatilloIngestaNutrients(@NonNull PlatilloIngesta platilloIngesta, @NonNull Integer portions);
 
-	Dieta duplicateDieta(@NonNull Long id);
+	Dieta duplicateDieta(@NonNull Long id, @NonNull String userId);
 
 }
