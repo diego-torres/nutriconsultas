@@ -20,6 +20,11 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.clinical.exam.anthropometric.BodyMass;
+import com.nutriconsultas.clinical.exam.anthropometric.Circumferences;
+import com.nutriconsultas.clinical.exam.anthropometric.BodyComposition;
+import com.nutriconsultas.clinical.exam.anthropometric.Bioimpedance;
+import com.nutriconsultas.clinical.exam.anthropometric.Skinfolds;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,14 +61,14 @@ public class AnthropometricMeasurementServiceTest {
 		measurement.setDescription("Medición de rutina");
 		measurement.setNotes("Notas de la medición");
 		// Set up category objects
-		final com.nutriconsultas.clinical.exam.anthropometric.BodyMass bodyMass = new com.nutriconsultas.clinical.exam.anthropometric.BodyMass();
+		final BodyMass bodyMass = new BodyMass();
 		bodyMass.setWeight(70.0);
 		bodyMass.setHeight(1.75);
 		bodyMass.setImc(22.86);
 		bodyMass.setNivelPeso(NivelPeso.NORMAL);
 		measurement.setBodyMass(bodyMass);
 
-		final com.nutriconsultas.clinical.exam.anthropometric.Circumferences circumferences = new com.nutriconsultas.clinical.exam.anthropometric.Circumferences();
+		final Circumferences circumferences = new Circumferences();
 		circumferences.setWaistCircumference(80.0);
 		circumferences.setHipCircumference(95.0);
 		circumferences.setNeckCircumference(35.0);
@@ -71,7 +76,7 @@ public class AnthropometricMeasurementServiceTest {
 		circumferences.setThighCircumference(55.0);
 		measurement.setCircumferences(circumferences);
 
-		final com.nutriconsultas.clinical.exam.anthropometric.BodyComposition bodyComposition = new com.nutriconsultas.clinical.exam.anthropometric.BodyComposition();
+		final BodyComposition bodyComposition = new BodyComposition();
 		bodyComposition.setPorcentajeGrasaCorporal(15.5);
 		bodyComposition.setIndiceGrasaCorporal(15.5);
 		bodyComposition.setPorcentajeMasaMuscular(45.0);
@@ -200,16 +205,16 @@ public class AnthropometricMeasurementServiceTest {
 		newMeasurement.setTitle("Nueva Medición Antropométrica");
 
 		// Set up category objects directly
-		final com.nutriconsultas.clinical.exam.anthropometric.BodyMass bodyMass = new com.nutriconsultas.clinical.exam.anthropometric.BodyMass();
+		final BodyMass bodyMass = new BodyMass();
 		bodyMass.setWeight(75.0);
 		bodyMass.setHeight(1.80);
 		newMeasurement.setBodyMass(bodyMass);
 
-		final com.nutriconsultas.clinical.exam.anthropometric.Bioimpedance bioimpedance = new com.nutriconsultas.clinical.exam.anthropometric.Bioimpedance();
+		final Bioimpedance bioimpedance = new Bioimpedance();
 		bioimpedance.setBioimpedanceValue(500.0);
 		newMeasurement.setBioimpedance(bioimpedance);
 
-		final com.nutriconsultas.clinical.exam.anthropometric.Skinfolds skinfolds = new com.nutriconsultas.clinical.exam.anthropometric.Skinfolds();
+		final Skinfolds skinfolds = new Skinfolds();
 		skinfolds.setTricepsSkinfold(12.5);
 		skinfolds.setSubscapularSkinfold(15.0);
 		newMeasurement.setSkinfolds(skinfolds);

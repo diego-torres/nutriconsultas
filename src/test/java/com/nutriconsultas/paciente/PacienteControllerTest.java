@@ -34,6 +34,9 @@ import com.nutriconsultas.calendar.CalendarEventService;
 import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.clinical.exam.ClinicalExam;
 import com.nutriconsultas.clinical.exam.ClinicalExamService;
+import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
+import com.nutriconsultas.clinical.exam.anthropometric.BodyMass;
+import com.nutriconsultas.clinical.exam.anthropometric.Circumferences;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -1356,7 +1359,7 @@ public class PacienteControllerTest {
 	public void testAgregarAntropometricosPaciente() {
 		log.info("starting testAgregarAntropometricosPaciente");
 		// Arrange
-		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		final AnthropometricMeasurement measurement = new AnthropometricMeasurement();
 		measurement.setMeasurementDateTime(new Date());
 		measurement.setTitle("Medición Antropométrica");
 		// Use convenience methods
@@ -1364,8 +1367,8 @@ public class PacienteControllerTest {
 		measurement.setEstatura(1.75);
 
 		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
-		when(anthropometricMeasurementService
-			.save(any(com.nutriconsultas.clinical.exam.AnthropometricMeasurement.class))).thenReturn(measurement);
+		when(anthropometricMeasurementService.save(any(AnthropometricMeasurement.class)))
+			.thenReturn(measurement);
 		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
 		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
 				any(String.class)))
@@ -1381,8 +1384,7 @@ public class PacienteControllerTest {
 		assertThat(result).isNotNull();
 		assertThat(result).contains("redirect:/admin/pacientes/1/historial");
 		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
-		verify(anthropometricMeasurementService)
-			.save(any(com.nutriconsultas.clinical.exam.AnthropometricMeasurement.class));
+		verify(anthropometricMeasurementService).save(any(AnthropometricMeasurement.class));
 		log.info("finished testAgregarAntropometricosPaciente");
 	}
 
@@ -1390,24 +1392,24 @@ public class PacienteControllerTest {
 	public void testAgregarAntropometricosPacienteWithCategoryObjects() {
 		log.info("starting testAgregarAntropometricosPacienteWithCategoryObjects");
 		// Arrange
-		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		final AnthropometricMeasurement measurement = new AnthropometricMeasurement();
 		measurement.setMeasurementDateTime(new Date());
 		measurement.setTitle("Medición Antropométrica");
 
 		// Set up category objects directly
-		final com.nutriconsultas.clinical.exam.anthropometric.BodyMass bodyMass = new com.nutriconsultas.clinical.exam.anthropometric.BodyMass();
+		final BodyMass bodyMass = new BodyMass();
 		bodyMass.setWeight(70.0);
 		bodyMass.setHeight(1.75);
 		measurement.setBodyMass(bodyMass);
 
-		final com.nutriconsultas.clinical.exam.anthropometric.Circumferences circumferences = new com.nutriconsultas.clinical.exam.anthropometric.Circumferences();
+		final Circumferences circumferences = new Circumferences();
 		circumferences.setWaistCircumference(80.0);
 		circumferences.setHipCircumference(95.0);
 		measurement.setCircumferences(circumferences);
 
 		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
-		when(anthropometricMeasurementService
-			.save(any(com.nutriconsultas.clinical.exam.AnthropometricMeasurement.class))).thenReturn(measurement);
+		when(anthropometricMeasurementService.save(any(AnthropometricMeasurement.class)))
+			.thenReturn(measurement);
 		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
 		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
 				any(String.class)))
@@ -1428,8 +1430,7 @@ public class PacienteControllerTest {
 		assertThat(measurement.getCircumferences()).isNotNull();
 		assertThat(measurement.getCircumferences().getWaistCircumference()).isEqualTo(80.0);
 		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
-		verify(anthropometricMeasurementService)
-			.save(any(com.nutriconsultas.clinical.exam.AnthropometricMeasurement.class));
+		verify(anthropometricMeasurementService).save(any(AnthropometricMeasurement.class));
 		log.info("finished testAgregarAntropometricosPacienteWithCategoryObjects");
 	}
 
@@ -1437,7 +1438,7 @@ public class PacienteControllerTest {
 	public void testAgregarAntropometricosPacienteThrowsExceptionWhenPacienteNotFound() {
 		log.info("starting testAgregarAntropometricosPacienteThrowsExceptionWhenPacienteNotFound");
 		// Arrange
-		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		final AnthropometricMeasurement measurement = new AnthropometricMeasurement();
 		measurement.setMeasurementDateTime(new Date());
 		measurement.setTitle("Medición Antropométrica");
 
@@ -1452,7 +1453,7 @@ public class PacienteControllerTest {
 			.hasMessageContaining("No se ha encontrado paciente con folio");
 		verify(pacienteRepository).findByIdAndUserId(999L, TEST_USER_ID);
 		verify(anthropometricMeasurementService, org.mockito.Mockito.never())
-			.save(any(com.nutriconsultas.clinical.exam.AnthropometricMeasurement.class));
+			.save(any(AnthropometricMeasurement.class));
 		log.info("finished testAgregarAntropometricosPacienteThrowsExceptionWhenPacienteNotFound");
 	}
 
@@ -1460,7 +1461,7 @@ public class PacienteControllerTest {
 	public void testVerAntropometrico() {
 		log.info("starting testVerAntropometrico");
 		// Arrange
-		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		final AnthropometricMeasurement measurement = new AnthropometricMeasurement();
 		measurement.setId(1L);
 		measurement.setPaciente(paciente);
 		measurement.setTitle("Medición Antropométrica");
@@ -1508,7 +1509,7 @@ public class PacienteControllerTest {
 		otherPaciente.setId(2L);
 		otherPaciente.setName("Other Paciente");
 
-		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = new com.nutriconsultas.clinical.exam.AnthropometricMeasurement();
+		final AnthropometricMeasurement measurement = new AnthropometricMeasurement();
 		measurement.setId(1L);
 		measurement.setPaciente(otherPaciente);
 		measurement.setTitle("Medición Antropométrica");
