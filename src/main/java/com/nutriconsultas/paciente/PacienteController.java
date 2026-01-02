@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -71,6 +73,38 @@ public class PacienteController extends AbstractAuthorizedController {
 	@Autowired
 	private PacienteDietaRepository pacienteDietaRepository;
 
+	/**
+	 * Gets the user ID from the OAuth2 principal.
+	 * @param principal the OAuth2 principal
+	 * @return the user ID (sub claim) or null if not available
+	 */
+	private String getUserId(@AuthenticationPrincipal final OidcUser principal) {
+		if (principal == null) {
+			log.warn("OAuth2 principal is null, cannot get user ID");
+			return null;
+		}
+		final String userId = principal.getSubject();
+		log.debug("Retrieved user ID: {}", userId);
+		return userId;
+	}
+
+	/**
+	 * Verifies that a patient belongs to the current user.
+	 * @param paciente the patient to verify
+	 * @param userId the current user's ID
+	 * @throws IllegalArgumentException if the patient does not belong to the user
+	 */
+	private void verifyPatientOwnership(final Paciente paciente, final String userId) {
+		if (paciente == null) {
+			throw new IllegalArgumentException("Paciente no encontrado");
+		}
+		if (paciente.getUserId() == null || !paciente.getUserId().equals(userId)) {
+			log.warn("User {} attempted to access patient {} owned by {}", userId, paciente.getId(),
+					paciente.getUserId());
+			throw new IllegalArgumentException("No tiene permiso para acceder a este paciente");
+		}
+	}
+
 	@GetMapping(path = "/admin/pacientes/nuevo")
 	public String nuevo(final Model model) {
 		log.debug("Starting nuevo method");
@@ -88,13 +122,21 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	@PostMapping(path = "/admin/pacientes/nuevo")
-	public String addPaciente(@Valid final Paciente paciente, final BindingResult result, final Model model) {
+	public String addPaciente(@Valid final Paciente paciente, final BindingResult result, final Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Grabando nuevo paciente: " + paciente.getName());
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			log.error("Cannot create patient: user ID is null");
+			model.addAttribute("error", "No se pudo identificar al usuario");
+			return "sbadmin/pacientes/nuevo";
+		}
 		String resultView;
 		if (result.hasErrors()) {
 			resultView = "sbadmin/pacientes/nuevo";
 		}
 		else {
+			paciente.setUserId(userId);
 			pacienteRepository.save(paciente);
 			resultView = "redirect:/admin/pacientes";
 		}
@@ -102,10 +144,16 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/pacientes/{id}")
-	public String perfilPaciente(@PathVariable @NonNull final Long id, final Model model) {
+	public String perfilPaciente(@PathVariable @NonNull final Long id, final Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando perfil de paciente {}", id);
-		final Paciente paciente = pacienteRepository.findById(id)
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		final Paciente paciente = pacienteRepository.findByIdAndUserId(id, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+		verifyPatientOwnership(paciente, userId);
 
 		model.addAttribute("activeMenu", "perfil");
 		model.addAttribute("paciente", paciente);
@@ -180,10 +228,16 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/pacientes/{id}/afiliacion")
-	public String afiliacionPaciente(@PathVariable @NonNull Long id, Model model) {
+	public String afiliacionPaciente(@PathVariable @NonNull Long id, Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando perfil de paciente {}", id);
-		Paciente paciente = pacienteRepository.findById(id)
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		Paciente paciente = pacienteRepository.findByIdAndUserId(id, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+		verifyPatientOwnership(paciente, userId);
 
 		model.addAttribute("activeMenu", "afiliacion");
 		model.addAttribute("paciente", paciente);
@@ -192,10 +246,15 @@ public class PacienteController extends AbstractAuthorizedController {
 
 	@PostMapping(path = "/admin/pacientes/{id}/afiliacion")
 	public String cambiaAfiliacionPaciente(@PathVariable @NonNull Long id, @Valid Paciente paciente,
-			BindingResult result, Model model) {
+			BindingResult result, Model model, @AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando perfil de paciente {}", id);
-		Paciente pacienteEntity = pacienteRepository.findById(id)
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		Paciente pacienteEntity = pacienteRepository.findByIdAndUserId(id, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+		verifyPatientOwnership(pacienteEntity, userId);
 
 		pacienteEntity.setName(paciente.getName());
 		pacienteEntity.setDob(paciente.getDob());
@@ -210,10 +269,16 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/pacientes/{id}/antecedentes")
-	public String antecedentesPaciente(@PathVariable @NonNull Long id, Model model) {
+	public String antecedentesPaciente(@PathVariable @NonNull Long id, Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando antecedentes de paciente {}", id);
-		Paciente paciente = pacienteRepository.findById(id)
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		Paciente paciente = pacienteRepository.findByIdAndUserId(id, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+		verifyPatientOwnership(paciente, userId);
 
 		model.addAttribute("activeMenu", "antecedentes");
 		model.addAttribute("paciente", paciente);
@@ -222,10 +287,15 @@ public class PacienteController extends AbstractAuthorizedController {
 
 	@PostMapping(path = "/admin/pacientes/{id}/antecedentes")
 	public String cambiaAntecedentesPaciente(@PathVariable @NonNull Long id, @Valid Paciente paciente,
-			BindingResult result, Model model) {
+			BindingResult result, Model model, @AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando perfil de paciente {}", id);
-		Paciente pacienteEntity = pacienteRepository.findById(id)
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		Paciente pacienteEntity = pacienteRepository.findByIdAndUserId(id, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+		verifyPatientOwnership(pacienteEntity, userId);
 
 		pacienteEntity.setTipoSanguineo(paciente.getTipoSanguineo());
 		pacienteEntity.setAntecedentesNatales(paciente.getAntecedentesNatales());
@@ -239,10 +309,16 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/pacientes/{id}/desarrollo")
-	public String desarrolloPaciente(@PathVariable @NonNull Long id, Model model) {
+	public String desarrolloPaciente(@PathVariable @NonNull Long id, Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando datos de desarrollo de paciente {}", id);
-		Paciente paciente = pacienteRepository.findById(id)
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		Paciente paciente = pacienteRepository.findByIdAndUserId(id, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+		verifyPatientOwnership(paciente, userId);
 
 		model.addAttribute("activeMenu", "desarrollo");
 		model.addAttribute("paciente", paciente);
@@ -251,10 +327,15 @@ public class PacienteController extends AbstractAuthorizedController {
 
 	@PostMapping(path = "/admin/pacientes/{id}/desarrollo")
 	public String cambiaDesarrolloPaciente(@PathVariable @NonNull Long id, @Valid Paciente paciente,
-			BindingResult result, Model model) {
+			BindingResult result, Model model, @AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando desarrollo de paciente {}", id);
-		Paciente pacienteEntity = pacienteRepository.findById(id)
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		Paciente pacienteEntity = pacienteRepository.findByIdAndUserId(id, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+		verifyPatientOwnership(pacienteEntity, userId);
 
 		pacienteEntity.setHistorialAlimenticio(paciente.getHistorialAlimenticio());
 		pacienteEntity.setDesarrolloPsicomotor(paciente.getDesarrolloPsicomotor());
@@ -273,10 +354,16 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/pacientes/{id}/dietas")
-	public String dietasPaciente(@PathVariable @NonNull final Long id, final Model model) {
+	public String dietasPaciente(@PathVariable @NonNull final Long id, final Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando dietas asignadas de paciente {}", id);
-		final Paciente paciente = pacienteRepository.findById(id)
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		final Paciente paciente = pacienteRepository.findByIdAndUserId(id, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+		verifyPatientOwnership(paciente, userId);
 
 		model.addAttribute("activeMenu", "plan-alimentario");
 		model.addAttribute("paciente", paciente);
@@ -332,10 +419,16 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/pacientes/{id}/historial")
-	public String historialPaciente(@PathVariable @NonNull Long id, Model model) {
+	public String historialPaciente(@PathVariable @NonNull Long id, Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando datos de consultas de paciente {}", id);
-		Paciente paciente = pacienteRepository.findById(id)
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		Paciente paciente = pacienteRepository.findByIdAndUserId(id, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+		verifyPatientOwnership(paciente, userId);
 
 		model.addAttribute("activeMenu", "historial");
 		model.addAttribute("paciente", paciente);
@@ -343,10 +436,16 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/pacientes/{id}/consulta")
-	public String consultaPaciente(@PathVariable @NonNull Long id, Model model) {
+	public String consultaPaciente(@PathVariable @NonNull Long id, Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando datos de consultas de paciente {}", id);
-		Paciente paciente = pacienteRepository.findById(id)
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		Paciente paciente = pacienteRepository.findByIdAndUserId(id, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+		verifyPatientOwnership(paciente, userId);
 
 		model.addAttribute("activeMenu", "historial");
 		model.addAttribute("paciente", paciente);
@@ -362,11 +461,17 @@ public class PacienteController extends AbstractAuthorizedController {
 
 	@PostMapping(path = "/admin/pacientes/{pacienteId}/consulta")
 	public String agregarConsultaPaciente(@PathVariable @NonNull Long pacienteId, @Valid CalendarEvent evento,
-			BindingResult result, Model model) {
+			BindingResult result, Model model, @AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Grabando consulta {}", evento);
-		final Paciente paciente = Objects.requireNonNull(pacienteRepository.findById(pacienteId)
-			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		final Paciente paciente = Objects.requireNonNull(
+				pacienteRepository.findByIdAndUserId(pacienteId, userId)
+					.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
 				"Paciente must not be null");
+		verifyPatientOwnership(paciente, userId);
 
 		evento.setPaciente(paciente);
 
@@ -382,10 +487,16 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/pacientes/{id}/clinicos")
-	public String clinicosPaciente(@PathVariable @NonNull Long id, Model model) {
+	public String clinicosPaciente(@PathVariable @NonNull Long id, Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando formulario de examen clínico para paciente {}", id);
-		Paciente paciente = pacienteRepository.findById(id)
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		Paciente paciente = pacienteRepository.findByIdAndUserId(id, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+		verifyPatientOwnership(paciente, userId);
 
 		model.addAttribute("activeMenu", "historial");
 		model.addAttribute("paciente", paciente);
@@ -399,11 +510,17 @@ public class PacienteController extends AbstractAuthorizedController {
 
 	@PostMapping(path = "/admin/pacientes/{pacienteId}/clinicos")
 	public String agregarClinicosPaciente(@PathVariable @NonNull Long pacienteId, @Valid ClinicalExam exam,
-			BindingResult result, Model model) {
+			BindingResult result, Model model, @AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Grabando examen clínico {}", exam);
-		final Paciente paciente = Objects.requireNonNull(pacienteRepository.findById(pacienteId)
-			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		final Paciente paciente = Objects.requireNonNull(
+				pacienteRepository.findByIdAndUserId(pacienteId, userId)
+					.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
 				"Paciente must not be null");
+		verifyPatientOwnership(paciente, userId);
 
 		exam.setPaciente(paciente);
 
@@ -420,8 +537,13 @@ public class PacienteController extends AbstractAuthorizedController {
 
 	@GetMapping(path = "/admin/pacientes/{pacienteId}/examen-clinico/{examId}")
 	public String verExamenClinico(@PathVariable @NonNull final Long pacienteId,
-			@PathVariable @NonNull final Long examId, final Model model) {
+			@PathVariable @NonNull final Long examId, final Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando examen clínico {} para paciente {}", examId, pacienteId);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
 		final ClinicalExam exam = clinicalExamService.findById(examId);
 		if (exam == null) {
 			throw new IllegalArgumentException("No se ha encontrado examen clínico con id " + examId);
@@ -429,6 +551,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		if (!exam.getPaciente().getId().equals(pacienteId)) {
 			throw new IllegalArgumentException("El examen clínico no pertenece al paciente especificado");
 		}
+		verifyPatientOwnership(exam.getPaciente(), userId);
 
 		model.addAttribute("activeMenu", "historial");
 		model.addAttribute("exam", exam);
@@ -437,10 +560,16 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/pacientes/{id}/antropometricos")
-	public String antropometricosPaciente(@PathVariable @NonNull Long id, Model model) {
+	public String antropometricosPaciente(@PathVariable @NonNull Long id, Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando formulario de medición antropométrica para paciente {}", id);
-		Paciente paciente = pacienteRepository.findById(id)
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		Paciente paciente = pacienteRepository.findByIdAndUserId(id, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+		verifyPatientOwnership(paciente, userId);
 
 		model.addAttribute("activeMenu", "historial");
 		model.addAttribute("paciente", paciente);
@@ -455,11 +584,17 @@ public class PacienteController extends AbstractAuthorizedController {
 	@PostMapping(path = "/admin/pacientes/{pacienteId}/antropometricos")
 	public String agregarAntropometricosPaciente(@PathVariable @NonNull Long pacienteId,
 			@Valid com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement, BindingResult result,
-			Model model) {
+			Model model, @AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Grabando medición antropométrica {}", measurement);
-		final Paciente paciente = Objects.requireNonNull(pacienteRepository.findById(pacienteId)
-			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		final Paciente paciente = Objects.requireNonNull(
+				pacienteRepository.findByIdAndUserId(pacienteId, userId)
+					.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId)),
 				"Paciente must not be null");
+		verifyPatientOwnership(paciente, userId);
 
 		measurement.setPaciente(paciente);
 
@@ -476,8 +611,13 @@ public class PacienteController extends AbstractAuthorizedController {
 
 	@GetMapping(path = "/admin/pacientes/{pacienteId}/antropometrico/{measurementId}")
 	public String verAntropometrico(@PathVariable @NonNull final Long pacienteId,
-			@PathVariable @NonNull final Long measurementId, final Model model) {
+			@PathVariable @NonNull final Long measurementId, final Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando medición antropométrica {} para paciente {}", measurementId, pacienteId);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
 		final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement = anthropometricMeasurementService
 				.findById(measurementId);
 		if (measurement == null) {
@@ -486,6 +626,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		if (!measurement.getPaciente().getId().equals(pacienteId)) {
 			throw new IllegalArgumentException("La medición antropométrica no pertenece al paciente especificado");
 		}
+		verifyPatientOwnership(measurement.getPaciente(), userId);
 
 		model.addAttribute("activeMenu", "historial");
 		model.addAttribute("measurement", measurement);
@@ -494,10 +635,16 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/pacientes/{id}/dietas/asignar")
-	public String asignarDieta(@PathVariable @NonNull final Long id, final Model model) {
+	public String asignarDieta(@PathVariable @NonNull final Long id, final Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando formulario para asignar dieta a paciente {}", id);
-		final Paciente paciente = pacienteRepository.findById(id)
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		final Paciente paciente = pacienteRepository.findByIdAndUserId(id, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+		verifyPatientOwnership(paciente, userId);
 
 		model.addAttribute("activeMenu", "perfil");
 		model.addAttribute("paciente", paciente);
@@ -509,8 +656,13 @@ public class PacienteController extends AbstractAuthorizedController {
 	@PostMapping(path = "/admin/pacientes/{id}/dietas/asignar")
 	public String guardarAsignacionDieta(@PathVariable @NonNull final Long id, final PacienteDieta pacienteDieta,
 			final BindingResult result, final Model model,
-			@org.springframework.web.bind.annotation.RequestParam(required = true) @NonNull final Long dietaId) {
+			@org.springframework.web.bind.annotation.RequestParam(required = true) @NonNull final Long dietaId,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Guardando asignación de dieta {} para paciente {}", dietaId, id);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
 
 		// Check if pacienteDieta is null before using it
 		if (pacienteDieta == null) {
@@ -521,8 +673,9 @@ public class PacienteController extends AbstractAuthorizedController {
 		// This is necessary because paciente and dieta are validated as @NotNull but come
 		// from
 		// path variable and request parameter, not from form binding
-		final Paciente paciente = pacienteRepository.findById(id)
+		final Paciente paciente = pacienteRepository.findByIdAndUserId(id, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+		verifyPatientOwnership(paciente, userId);
 		final com.nutriconsultas.dieta.Dieta dieta = dietaRepository.findById(dietaId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado dieta con id " + dietaId));
 
@@ -558,17 +711,23 @@ public class PacienteController extends AbstractAuthorizedController {
 			model.addAttribute("dietasDisponibles", dietaService.getDietas());
 			return "sbadmin/pacientes/asignar-dieta";
 		}
-		final PacienteDieta saved = pacienteDietaService.assignDieta(id, dietaId, pacienteDieta);
+		final PacienteDieta saved = pacienteDietaService.assignDieta(id, dietaId, pacienteDieta, userId);
 		log.debug("Dieta asignada exitosamente: {}", saved);
 		return String.format("redirect:/admin/pacientes/%d/dietas", id);
 	}
 
 	@GetMapping(path = "/admin/pacientes/{pacienteId}/dietas/{id}/editar")
 	public String editarAsignacionDieta(@PathVariable @NonNull final Long pacienteId,
-			@PathVariable @NonNull final Long id, final Model model) {
+			@PathVariable @NonNull final Long id, final Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando formulario para editar asignación de dieta {}", id);
-		final Paciente paciente = pacienteRepository.findById(pacienteId)
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		final Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId));
+		verifyPatientOwnership(paciente, userId);
 		final PacienteDieta pacienteDieta = pacienteDietaService.findById(id);
 		if (pacienteDieta == null) {
 			throw new IllegalArgumentException("No se ha encontrado asignación de dieta con id " + id);
@@ -583,8 +742,12 @@ public class PacienteController extends AbstractAuthorizedController {
 	@PostMapping(path = "/admin/pacientes/{pacienteId}/dietas/{id}/editar")
 	public String actualizarAsignacionDieta(@PathVariable @NonNull final Long pacienteId,
 			@PathVariable @NonNull final Long id, final PacienteDieta pacienteDieta, final BindingResult result,
-			final Model model) {
+			final Model model, @AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Actualizando asignación de dieta {}", id);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
 
 		// Load existing assignment to preserve paciente and dieta relationships
 		// These are not in the form, so they need to be set from the existing entity
@@ -615,9 +778,10 @@ public class PacienteController extends AbstractAuthorizedController {
 			log.error("Validation errors found: {}", result.getAllErrors());
 			result.getAllErrors()
 				.forEach(error -> log.error("Error: {} - {}", error.getObjectName(), error.getDefaultMessage()));
-			final Paciente paciente = pacienteRepository.findById(pacienteId)
+			final Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
 				.orElseThrow(
 						() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId));
+			verifyPatientOwnership(paciente, userId);
 			model.addAttribute("activeMenu", "perfil");
 			model.addAttribute("paciente", paciente);
 			model.addAttribute("pacienteDieta", pacienteDieta);
@@ -653,14 +817,19 @@ public class PacienteController extends AbstractAuthorizedController {
 	 */
 	@GetMapping(path = "/admin/pacientes/{pacienteId}/dietas/{dietaId}/print")
 	public ResponseEntity<byte[]> printDietaFromPatient(@PathVariable @NonNull final Long pacienteId,
-			@PathVariable @NonNull final Long dietaId) {
+			@PathVariable @NonNull final Long dietaId, @AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Generating PDF for dieta {} from patient {} (with patient info)", dietaId, pacienteId);
-		// Verify patient exists
-		final Paciente paciente = pacienteRepository.findById(pacienteId).orElse(null);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		// Verify patient exists and belongs to user
+		final Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId).orElse(null);
 		if (paciente == null) {
-			log.error("Patient with id {} not found", pacienteId);
+			log.error("Patient with id {} not found for user {}", pacienteId, userId);
 			return ResponseEntity.notFound().build();
 		}
+		verifyPatientOwnership(paciente, userId);
 		// Verify dieta exists and is assigned to this patient
 		final List<PacienteDieta> assignments = pacienteDietaRepository.findByPacienteId(pacienteId);
 		final PacienteDieta pacienteDieta = assignments.stream()

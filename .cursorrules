@@ -150,6 +150,86 @@ This is a Spring Boot 3.4.1 web application for managing a nutrition consultatio
 - Use `AbstractAuthorizedController` for authenticated pages
 - Security configuration in `SecurityConfig.java`
 
+### Multi-Tenant Access Control
+
+**CRITICAL: All patient data is isolated by user (nutritionist).**
+
+The application implements multi-tenant access control where:
+- **Patients belong to specific users**: Each `Paciente` entity has a `userId` field that stores the OAuth2 user identifier (the `sub` claim)
+- **User isolation is enforced**: Users can only view and manage their own patients
+- **No cross-user visibility**: Patient data is completely isolated per user
+
+#### Implementation Details
+
+1. **Entity Level**:
+   - `Paciente` entity includes a `userId` field (String, nullable = false)
+   - The `userId` stores the OAuth2 `sub` claim (unique user identifier from Auth0)
+
+2. **Repository Level**:
+   - `PacienteRepository` provides methods:
+     - `findByUserId(String userId)` - Find all patients for a user
+     - `findByIdAndUserId(Long id, String userId)` - Find a specific patient by ID and userId (for security)
+
+3. **Service Level**:
+   - `PacienteService` provides userId-filtered methods:
+     - `findByIdAndUserId(Long id, String userId)` - Secure patient lookup
+     - `findAllByUserId(String userId)` - Get all patients for a user
+     - `deleteByIdAndUserId(Long id, String userId)` - Secure patient deletion
+
+4. **Controller Level**:
+   - All `PacienteController` methods that access patients:
+     - Accept `@AuthenticationPrincipal OidcUser principal` parameter
+     - Extract userId using `principal.getSubject()`
+     - Use `findByIdAndUserId()` instead of `findById()` for security
+     - Call `verifyPatientOwnership()` to ensure patient belongs to user
+   - New patients automatically get `userId` set from the authenticated user
+
+5. **REST API Level**:
+   - `PacienteRestController` filters all patient data by userId
+   - Overrides `getPageArray()` to accept `@AuthenticationPrincipal OidcUser principal`
+   - Uses `findAllByUserId()` to return only the current user's patients
+
+#### Security Best Practices
+
+When working with patient data:
+
+1. **Always use userId-filtered methods**: Never use `findById()` or `findAll()` directly
+   - ✅ Use: `findByIdAndUserId(id, userId)`
+   - ✅ Use: `findAllByUserId(userId)`
+   - ❌ Avoid: `findById(id)` (no user filtering)
+   - ❌ Avoid: `findAll()` (returns all patients)
+
+2. **Always verify ownership**: Before accessing patient data, verify it belongs to the current user
+   ```java
+   final String userId = getUserId(principal);
+   final Paciente paciente = repository.findByIdAndUserId(id, userId)
+       .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+   verifyPatientOwnership(paciente, userId);
+   ```
+
+3. **Set userId on creation**: When creating new patients, always set the userId
+   ```java
+   paciente.setUserId(getUserId(principal));
+   ```
+
+4. **Test multi-tenant scenarios**: All tests should verify:
+   - Users can only see their own patients
+   - Users cannot access other users' patients
+   - Patient creation assigns correct userId
+
+#### Related Entities
+
+Entities that reference `Paciente` (like `CalendarEvent`, `ClinicalExam`, `AnthropometricMeasurement`) inherit patient ownership through the relationship. When verifying access to these entities:
+1. Load the related entity
+2. Access the `paciente` relationship
+3. Verify the `paciente.userId` matches the current user's ID
+
+#### Migration Notes
+
+- Existing patients in the database may have `null` userId values
+- A migration script may be needed to assign userId to existing patients
+- New patients created after this implementation will automatically have userId set
+
 ## Best Practices
 
 ### Spring Boot

@@ -10,6 +10,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,16 +37,35 @@ public class CalendarController extends AbstractAuthorizedController {
 		return "sbadmin/calendar/listado";
 	}
 
+	/**
+	 * Gets the user ID from the OAuth2 principal.
+	 * @param principal the OAuth2 principal
+	 * @return the user ID (sub claim) or null if not available
+	 */
+	private String getUserId(@AuthenticationPrincipal final OidcUser principal) {
+		if (principal == null) {
+			log.warn("OAuth2 principal is null, cannot get user ID");
+			return null;
+		}
+		final String userId = principal.getSubject();
+		log.debug("Retrieved user ID: {}", userId);
+		return userId;
+	}
+
 	@GetMapping(path = "/admin/calendario/nuevo")
-	public String nuevo(final Model model) {
+	public String nuevo(final Model model, @AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Starting nuevo method");
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No se pudo identificar al usuario");
+		}
 		model.addAttribute("activeMenu", "calendario");
 		final CalendarEvent event = new CalendarEvent();
 		event.setEventDateTime(new Date());
 		event.setDurationMinutes(60);
 		event.setStatus(EventStatus.SCHEDULED);
 		model.addAttribute("event", event);
-		model.addAttribute("pacientes", pacienteRepository.findAll());
+		model.addAttribute("pacientes", pacienteRepository.findByUserId(userId));
 		model.addAttribute("statuses", EventStatus.values());
 		log.debug("Finished nuevo method with model {}", model);
 		return "sbadmin/calendar/formulario";
@@ -52,7 +73,8 @@ public class CalendarController extends AbstractAuthorizedController {
 
 	@PostMapping(path = "/admin/calendario/nuevo")
 	public String addEvent(final CalendarEvent event, final BindingResult result, final Model model,
-			@org.springframework.web.bind.annotation.RequestParam(required = false) final Long pacienteId) {
+			@org.springframework.web.bind.annotation.RequestParam(required = false) final Long pacienteId,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Grabando nuevo evento: {}", event != null ? event.getTitle() : "null");
 
 		// Check if event is null before using it
@@ -60,11 +82,16 @@ public class CalendarController extends AbstractAuthorizedController {
 			throw new IllegalArgumentException("Event cannot be null");
 		}
 
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No se pudo identificar al usuario");
+		}
+
 		// Set paciente from pacienteId parameter before validation
 		// This is necessary because paciente is validated as @NotNull but comes from
 		// pacienteId parameter
 		if (pacienteId != null) {
-			final com.nutriconsultas.paciente.Paciente paciente = pacienteRepository.findById(pacienteId)
+			final com.nutriconsultas.paciente.Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
 						"No se ha encontrado paciente con id " + pacienteId));
 			event.setPaciente(paciente);
@@ -96,7 +123,7 @@ public class CalendarController extends AbstractAuthorizedController {
 		if (hasErrors) {
 			model.addAttribute("activeMenu", "calendario");
 			model.addAttribute("event", event);
-			model.addAttribute("pacientes", pacienteRepository.findAll());
+			model.addAttribute("pacientes", pacienteRepository.findByUserId(userId));
 			model.addAttribute("statuses", EventStatus.values());
 			resultView = "sbadmin/calendar/formulario";
 		}
@@ -108,11 +135,20 @@ public class CalendarController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/calendario/{id}")
-	public String verEvento(@PathVariable @NonNull final Long id, final Model model) {
+	public String verEvento(@PathVariable @NonNull final Long id, final Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando evento {}", id);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No se pudo identificar al usuario");
+		}
 		final CalendarEvent event = calendarEventService.findById(id);
 		if (event == null) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado evento con id " + id);
+		}
+		// Verify patient ownership
+		if (event.getPaciente() == null || !userId.equals(event.getPaciente().getUserId())) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene permiso para acceder a este evento");
 		}
 
 		model.addAttribute("activeMenu", "calendario");
@@ -121,16 +157,25 @@ public class CalendarController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/calendario/{id}/editar")
-	public String editarEvento(@PathVariable @NonNull final Long id, final Model model) {
+	public String editarEvento(@PathVariable @NonNull final Long id, final Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Cargando evento para editar {}", id);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No se pudo identificar al usuario");
+		}
 		final CalendarEvent event = calendarEventService.findById(id);
 		if (event == null) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado evento con id " + id);
 		}
+		// Verify patient ownership
+		if (event.getPaciente() == null || !userId.equals(event.getPaciente().getUserId())) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene permiso para acceder a este evento");
+		}
 
 		model.addAttribute("activeMenu", "calendario");
 		model.addAttribute("event", event);
-		model.addAttribute("pacientes", pacienteRepository.findAll());
+		model.addAttribute("pacientes", pacienteRepository.findByUserId(userId));
 		model.addAttribute("statuses", EventStatus.values());
 		return "sbadmin/calendar/formulario";
 	}
@@ -138,7 +183,8 @@ public class CalendarController extends AbstractAuthorizedController {
 	@PostMapping(path = "/admin/calendario/{id}/editar")
 	public String updateEvent(@PathVariable @NonNull final Long id, final CalendarEvent event,
 			final BindingResult result, final Model model,
-			@org.springframework.web.bind.annotation.RequestParam(required = false) final Long pacienteId) {
+			@org.springframework.web.bind.annotation.RequestParam(required = false) final Long pacienteId,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Actualizando evento {}", id);
 		log.debug("Event object: {}", event);
 		log.debug("PacienteId parameter: {}", pacienteId);
@@ -148,11 +194,25 @@ public class CalendarController extends AbstractAuthorizedController {
 			throw new IllegalArgumentException("Event cannot be null");
 		}
 
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No se pudo identificar al usuario");
+		}
+
+		// Verify existing event belongs to user
+		final CalendarEvent existingEvent = calendarEventService.findById(id);
+		if (existingEvent == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado evento con id " + id);
+		}
+		if (existingEvent.getPaciente() == null || !userId.equals(existingEvent.getPaciente().getUserId())) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene permiso para acceder a este evento");
+		}
+
 		// Set paciente from pacienteId parameter before checking validation errors
 		// This is necessary because paciente is validated as @NotNull but comes from
 		// pacienteId parameter
 		if (pacienteId != null) {
-			final com.nutriconsultas.paciente.Paciente paciente = pacienteRepository.findById(pacienteId)
+			final com.nutriconsultas.paciente.Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
 						"No se ha encontrado paciente con id " + pacienteId));
 			event.setPaciente(paciente);
@@ -191,16 +251,11 @@ public class CalendarController extends AbstractAuthorizedController {
 				.forEach(error -> log.error("Error: {} - {}", error.getObjectName(), error.getDefaultMessage()));
 			model.addAttribute("activeMenu", "calendario");
 			model.addAttribute("event", event);
-			model.addAttribute("pacientes", pacienteRepository.findAll());
+			model.addAttribute("pacientes", pacienteRepository.findByUserId(userId));
 			model.addAttribute("statuses", EventStatus.values());
 			return "sbadmin/calendar/formulario";
 		}
 		log.debug("No validation errors, proceeding with update");
-		final CalendarEvent existingEvent = calendarEventService.findById(id);
-		if (existingEvent == null) {
-			log.error("Event not found with id: {}", id);
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado evento con id " + id);
-		}
 		log.debug("Found existing event: {}", existingEvent);
 		// Update all fields from the form
 		existingEvent.setTitle(event.getTitle());
@@ -211,7 +266,7 @@ public class CalendarController extends AbstractAuthorizedController {
 		// Update paciente if provided, otherwise keep existing
 		if (pacienteId != null) {
 			log.debug("Updating paciente to id: {}", pacienteId);
-			final com.nutriconsultas.paciente.Paciente paciente = pacienteRepository.findById(pacienteId)
+			final com.nutriconsultas.paciente.Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
 						"No se ha encontrado paciente con id " + pacienteId));
 			existingEvent.setPaciente(paciente);
@@ -228,8 +283,21 @@ public class CalendarController extends AbstractAuthorizedController {
 	}
 
 	@PostMapping(path = "/admin/calendario/{id}/eliminar")
-	public String deleteEvent(@PathVariable @NonNull final Long id) {
+	public String deleteEvent(@PathVariable @NonNull final Long id,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Eliminando evento {}", id);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No se pudo identificar al usuario");
+		}
+		final CalendarEvent event = calendarEventService.findById(id);
+		if (event == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado evento con id " + id);
+		}
+		// Verify patient ownership
+		if (event.getPaciente() == null || !userId.equals(event.getPaciente().getUserId())) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene permiso para acceder a este evento");
+		}
 		calendarEventService.delete(id);
 		return "redirect:/admin/calendario";
 	}

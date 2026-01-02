@@ -29,9 +29,9 @@ public class PacienteDietaServiceImpl implements PacienteDietaService {
 
 	@Override
 	public PacienteDieta assignDieta(@NonNull final Long pacienteId, @NonNull final Long dietaId,
-			@NonNull final PacienteDieta pacienteDieta) {
-		log.info("Assigning dieta {} to paciente {}", dietaId, pacienteId);
-		final Paciente paciente = pacienteRepository.findById(pacienteId)
+			@NonNull final PacienteDieta pacienteDieta, @NonNull final String userId) {
+		log.info("Assigning dieta {} to paciente {} for user {}", dietaId, pacienteId, userId);
+		final Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con id " + pacienteId));
 		final Dieta dieta = dietaRepository.findById(dietaId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado dieta con id " + dietaId));
