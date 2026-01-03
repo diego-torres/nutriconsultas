@@ -72,6 +72,11 @@ public class ReportTemplateValidator extends BaseTemplateValidator {
 		final NutritionAnalysisResult mockAnalysis = createMockNutritionAnalysis();
 		variables.put("analysis", mockAnalysis);
 
+		// Create mock clinic statistics for estadisticas and clinic-statistics-pdf
+		// templates
+		final ClinicStatistics mockStatistics = createMockClinicStatistics();
+		variables.put("statistics", mockStatistics);
+
 		return variables;
 	}
 
@@ -237,6 +242,111 @@ public class ReportTemplateValidator extends BaseTemplateValidator {
 		analysis.setRecommendations(recommendations);
 
 		return analysis;
+	}
+
+	private ClinicStatistics createMockClinicStatistics() {
+		final ClinicStatistics statistics = new ClinicStatistics();
+
+		// Summary metrics
+		statistics.setTotalPatients(10L);
+		statistics.setTotalConsultations(45L);
+		statistics.setTotalDietaryPlans(8L);
+		statistics.setTotalClinicalExams(20L);
+		statistics.setTotalAnthropometricMeasurements(15L);
+		statistics.setActiveDietaryPlans(5L);
+		statistics.setCompletedConsultations(40L);
+		statistics.setNewPatientsInPeriod(3L);
+
+		// Demographics
+		final Map<String, Long> genderDistribution = new java.util.HashMap<>();
+		genderDistribution.put("M", 5L);
+		genderDistribution.put("F", 4L);
+		genderDistribution.put("Otro", 1L);
+		genderDistribution.put("No especificado", 0L);
+		statistics.setGenderDistribution(genderDistribution);
+
+		final Map<String, Long> ageGroupDistribution = new java.util.HashMap<>();
+		ageGroupDistribution.put("0-5", 1L);
+		ageGroupDistribution.put("6-12", 2L);
+		ageGroupDistribution.put("13-18", 1L);
+		ageGroupDistribution.put("19-30", 3L);
+		ageGroupDistribution.put("31-50", 2L);
+		ageGroupDistribution.put("51-65", 1L);
+		ageGroupDistribution.put("65+", 0L);
+		ageGroupDistribution.put("No especificado", 0L);
+		statistics.setAgeGroupDistribution(ageGroupDistribution);
+
+		final Map<String, Long> weightLevelDistribution = new java.util.HashMap<>();
+		weightLevelDistribution.put("BAJO", 1L);
+		weightLevelDistribution.put("NORMAL", 5L);
+		weightLevelDistribution.put("ALTO", 2L);
+		weightLevelDistribution.put("SOBREPESO", 2L);
+		weightLevelDistribution.put("No especificado", 0L);
+		statistics.setWeightLevelDistribution(weightLevelDistribution);
+
+		// Consultation trends
+		final Map<String, Long> consultationsByMonth = new java.util.HashMap<>();
+		consultationsByMonth.put("2024-01", 10L);
+		consultationsByMonth.put("2024-02", 12L);
+		consultationsByMonth.put("2024-03", 15L);
+		consultationsByMonth.put("2024-04", 8L);
+		statistics.setConsultationsByMonth(consultationsByMonth);
+
+		final Map<String, Long> consultationsByStatus = new java.util.HashMap<>();
+		consultationsByStatus.put("COMPLETED", 40L);
+		consultationsByStatus.put("SCHEDULED", 3L);
+		consultationsByStatus.put("CANCELLED", 2L);
+		statistics.setConsultationsByStatus(consultationsByStatus);
+
+		statistics.setAverageConsultationsPerPatient(4.5);
+
+		// Condition frequency
+		final Map<String, Long> conditionFrequency = new java.util.HashMap<>();
+		conditionFrequency.put("Hipertensión", 3L);
+		conditionFrequency.put("Diabetes", 2L);
+		conditionFrequency.put("Obesidad", 2L);
+		conditionFrequency.put("Anemia", 1L);
+		statistics.setConditionFrequency(conditionFrequency);
+
+		// Weight/BMI metrics
+		statistics.setAverageWeight(68.5);
+		statistics.setAverageBMI(23.2);
+		statistics.setAverageWeightChange(-2.5);
+		statistics.setAverageBMIChange(-0.8);
+
+		// Monthly trends
+		final List<ClinicStatistics.MonthlyTrend> monthlyTrends = new ArrayList<>();
+		final ClinicStatistics.MonthlyTrend trend1 = new ClinicStatistics.MonthlyTrend();
+		trend1.setMonth("Ene 2024");
+		trend1.setConsultations(10L);
+		trend1.setNewPatients(2L);
+		trend1.setActivePlans(3L);
+		monthlyTrends.add(trend1);
+
+		final ClinicStatistics.MonthlyTrend trend2 = new ClinicStatistics.MonthlyTrend();
+		trend2.setMonth("Feb 2024");
+		trend2.setConsultations(12L);
+		trend2.setNewPatients(1L);
+		trend2.setActivePlans(4L);
+		monthlyTrends.add(trend2);
+
+		final ClinicStatistics.MonthlyTrend trend3 = new ClinicStatistics.MonthlyTrend();
+		trend3.setMonth("Mar 2024");
+		trend3.setConsultations(15L);
+		trend3.setNewPatients(0L);
+		trend3.setActivePlans(5L);
+		monthlyTrends.add(trend3);
+
+		statistics.setMonthlyTrends(monthlyTrends);
+
+		// Date range
+		final Date now = new Date();
+		final long thirtyDaysAgo = now.getTime() - 30L * 24 * 60 * 60 * 1000;
+		statistics.setStartDate(new Date(thirtyDaysAgo));
+		statistics.setEndDate(now);
+		statistics.setReportDate(now);
+
+		return statistics;
 	}
 
 }

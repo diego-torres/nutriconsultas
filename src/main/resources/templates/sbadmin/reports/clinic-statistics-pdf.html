@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<!--
+	TEMPLATE: sbadmin/reports/clinic-statistics-pdf.html
+	
+	PURPOSE:
+	This template generates a comprehensive clinic statistics report in PDF format.
+	It includes:
+	- Summary metrics (total patients, consultations, dietary plans, etc.)
+	- Patient demographics breakdown
+	- Consultation trends
+	- Most common conditions
+	- Weight/BMI metrics
+	- Monthly trends
+	
+	REQUIRED MODEL VARIABLES:
+	- statistics: ClinicStatistics object (required)
+	- startDate: Date (optional, for date range filtering)
+	- endDate: Date (optional, for date range filtering)
+	- reportDate: Date (required, report generation date)
+	
+	USAGE:
+	This template is processed by PatientReportService.generateClinicStatisticsReport() which
+	collects all aggregated statistics and prepares them for rendering.
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+	<meta charset="UTF-8" />
+	<title>Estadísticas de la Clínica</title>
+	<style>
+		@page {
+			size: A4;
+			margin: 2cm;
+		}
+		body {
+			font-family: Arial, sans-serif;
+			font-size: 10pt;
+			line-height: 1.4;
+			color: #333;
+		}
+		.header {
+			border-bottom: 3px solid #4e73df;
+			padding-bottom: 15px;
+			margin-bottom: 20px;
+		}
+		.header h1 {
+			color: #4e73df;
+			margin: 0;
+			font-size: 22pt;
+		}
+		.header p {
+			margin: 5px 0;
+			color: #666;
+			font-size: 9pt;
+		}
+		.section {
+			margin-bottom: 25px;
+			page-break-inside: avoid;
+		}
+		.section h2 {
+			color: #4e73df;
+			font-size: 16pt;
+			margin-bottom: 10px;
+			border-bottom: 2px solid #e3e6f0;
+			padding-bottom: 5px;
+		}
+		.summary-grid {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 15px;
+			margin-bottom: 20px;
+		}
+		.summary-card {
+			border: 1px solid #e3e6f0;
+			border-radius: 5px;
+			padding: 15px;
+			background-color: #f8f9fc;
+		}
+		.summary-card h3 {
+			margin: 0 0 10px 0;
+			font-size: 12pt;
+			color: #4e73df;
+		}
+		.summary-card .value {
+			font-size: 24pt;
+			font-weight: bold;
+			color: #333;
+		}
+		.info-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-bottom: 15px;
+		}
+		.info-table td {
+			padding: 6px 10px;
+			border-bottom: 1px solid #e3e6f0;
+		}
+		.info-table td:first-child {
+			font-weight: bold;
+			width: 35%;
+			background-color: #f8f9fc;
+		}
+		.data-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-bottom: 15px;
+			font-size: 9pt;
+		}
+		.data-table th {
+			background-color: #4e73df;
+			color: white;
+			padding: 8px;
+			text-align: left;
+			font-weight: bold;
+		}
+		.data-table td {
+			padding: 6px 8px;
+			border-bottom: 1px solid #e3e6f0;
+		}
+		.data-table tr:nth-child(even) {
+			background-color: #f8f9fc;
+		}
+		.footer {
+			margin-top: 30px;
+			padding-top: 15px;
+			border-top: 1px solid #e3e6f0;
+			font-size: 8pt;
+			color: #666;
+			text-align: center;
+		}
+	</style>
+</head>
+<body>
+	<div class="header">
+		<h1>Estadísticas de la Clínica</h1>
+		<p>Minutriporcion - Reporte de Estadísticas Generales</p>
+		<p th:if="${startDate != null || endDate != null}">
+			Período: 
+			<span th:if="${startDate != null}" th:text="${#dates.format(startDate, 'dd/MM/yyyy')}"></span>
+			<span th:if="${startDate != null && endDate != null}"> - </span>
+			<span th:if="${endDate != null}" th:text="${#dates.format(endDate, 'dd/MM/yyyy')}"></span>
+		</p>
+		<p th:if="${startDate == null && endDate == null}">Período: Todos los datos disponibles</p>
+		<p>Fecha de Generación: <span th:text="${#dates.format(reportDate, 'dd/MM/yyyy HH:mm')}"></span></p>
+	</div>
+
+	<div th:if="${statistics != null}">
+		<!-- Summary Metrics -->
+		<div class="section">
+			<h2>Resumen General</h2>
+			<div class="summary-grid">
+				<div class="summary-card">
+					<h3>Total Pacientes</h3>
+					<div class="value" th:text="${statistics.totalPatients}">0</div>
+				</div>
+				<div class="summary-card">
+					<h3>Total Consultas</h3>
+					<div class="value" th:text="${statistics.totalConsultations}">0</div>
+				</div>
+				<div class="summary-card">
+					<h3>Planes Dietéticos</h3>
+					<div class="value" th:text="${statistics.totalDietaryPlans}">0</div>
+				</div>
+				<div class="summary-card">
+					<h3>Exámenes Clínicos</h3>
+					<div class="value" th:text="${statistics.totalClinicalExams}">0</div>
+				</div>
+				<div class="summary-card">
+					<h3>Mediciones Antropométricas</h3>
+					<div class="value" th:text="${statistics.totalAnthropometricMeasurements}">0</div>
+				</div>
+				<div class="summary-card">
+					<h3>Planes Activos</h3>
+					<div class="value" th:text="${statistics.activeDietaryPlans}">0</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Demographics -->
+		<div class="section">
+			<h2>Demografía de Pacientes</h2>
+			
+			<h3>Distribución por Género</h3>
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Género</th>
+						<th>Cantidad</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="entry : ${statistics.genderDistribution}">
+						<td th:text="${entry.key}"></td>
+						<td th:text="${entry.value}"></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<h3>Distribución por Grupo de Edad</h3>
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Grupo de Edad</th>
+						<th>Cantidad</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="entry : ${statistics.ageGroupDistribution}">
+						<td th:text="${entry.key}"></td>
+						<td th:text="${entry.value}"></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<h3>Distribución por Nivel de Peso</h3>
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Nivel de Peso</th>
+						<th>Cantidad</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="entry : ${statistics.weightLevelDistribution}">
+						<td th:text="${entry.key}"></td>
+						<td th:text="${entry.value}"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<!-- Consultation Trends -->
+		<div class="section">
+			<h2>Tendencias de Consultas</h2>
+			
+			<table class="info-table">
+				<tr>
+					<td>Promedio de Consultas por Paciente</td>
+					<td th:text="${statistics.averageConsultationsPerPatient != null ? #numbers.formatDecimal(statistics.averageConsultationsPerPatient, 1, 2) : 'N/A'}"></td>
+				</tr>
+				<tr>
+					<td>Consultas Completadas</td>
+					<td th:text="${statistics.completedConsultations}"></td>
+				</tr>
+			</table>
+
+			<h3>Consultas por Estado</h3>
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Estado</th>
+						<th>Cantidad</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="entry : ${statistics.consultationsByStatus}">
+						<td th:text="${entry.key}"></td>
+						<td th:text="${entry.value}"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<!-- Conditions -->
+		<div class="section" th:if="${statistics.conditionFrequency != null && !statistics.conditionFrequency.isEmpty()}">
+			<h2>Condiciones Más Comunes</h2>
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Condición</th>
+						<th>Frecuencia</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="entry : ${statistics.conditionFrequency}">
+						<td th:text="${entry.key}"></td>
+						<td th:text="${entry.value}"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<!-- Weight/BMI Metrics -->
+		<div class="section">
+			<h2>Métricas de Peso e IMC</h2>
+			<table class="info-table">
+				<tr>
+					<td>Peso Promedio (kg)</td>
+					<td th:text="${statistics.averageWeight != null ? #numbers.formatDecimal(statistics.averageWeight, 1, 2) : 'N/A'}"></td>
+				</tr>
+				<tr>
+					<td>IMC Promedio</td>
+					<td th:text="${statistics.averageBMI != null ? #numbers.formatDecimal(statistics.averageBMI, 1, 2) : 'N/A'}"></td>
+				</tr>
+				<tr>
+					<td>Cambio Promedio de Peso (kg)</td>
+					<td th:text="${statistics.averageWeightChange != null ? #numbers.formatDecimal(statistics.averageWeightChange, 1, 2) : 'N/A'}"></td>
+				</tr>
+				<tr>
+					<td>Cambio Promedio de IMC</td>
+					<td th:text="${statistics.averageBMIChange != null ? #numbers.formatDecimal(statistics.averageBMIChange, 1, 2) : 'N/A'}"></td>
+				</tr>
+			</table>
+		</div>
+
+		<!-- Monthly Trends -->
+		<div class="section" th:if="${statistics.monthlyTrends != null && !statistics.monthlyTrends.isEmpty()}">
+			<h2>Tendencias Mensuales</h2>
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Mes</th>
+						<th>Consultas</th>
+						<th>Nuevos Pacientes</th>
+						<th>Planes Activos</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="trend : ${statistics.monthlyTrends}">
+						<td th:text="${trend.month}"></td>
+						<td th:text="${trend.consultations}"></td>
+						<td th:text="${trend.newPatients}"></td>
+						<td th:text="${trend.activePlans}"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<!-- Additional Metrics -->
+		<div class="section" th:if="${statistics.newPatientsInPeriod != null}">
+			<h2>Métricas Adicionales</h2>
+			<table class="info-table">
+				<tr>
+					<td>Nuevos Pacientes en el Período</td>
+					<td th:text="${statistics.newPatientsInPeriod}"></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+
+	<div class="footer">
+		<p>Este reporte fue generado automáticamente por el sistema Minutriporcion.</p>
+		<p>Para más información, contacte al administrador del sistema.</p>
+	</div>
+</body>
+</html>
+
