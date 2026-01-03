@@ -1367,8 +1367,7 @@ public class PacienteControllerTest {
 		measurement.setEstatura(1.75);
 
 		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
-		when(anthropometricMeasurementService.save(any(AnthropometricMeasurement.class)))
-			.thenReturn(measurement);
+		when(anthropometricMeasurementService.save(any(AnthropometricMeasurement.class))).thenReturn(measurement);
 		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
 		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
 				any(String.class)))
@@ -1408,8 +1407,7 @@ public class PacienteControllerTest {
 		measurement.setCircumferences(circumferences);
 
 		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
-		when(anthropometricMeasurementService.save(any(AnthropometricMeasurement.class)))
-			.thenReturn(measurement);
+		when(anthropometricMeasurementService.save(any(AnthropometricMeasurement.class))).thenReturn(measurement);
 		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
 		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
 				any(String.class)))

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -63,6 +65,32 @@ public class PlatilloServiceImpl implements PlatilloService {
 	public List<Platillo> findAll() {
 		log.info("Retrieving all platillos from database.");
 		return platilloRepository.findAll();
+	}
+
+	@Override
+	public Page<Platillo> findAll(@NonNull final Pageable pageable) {
+		log.info("Retrieving platillos with pagination: {}", pageable);
+		return platilloRepository.findAll(pageable);
+	}
+
+	@Override
+	public Page<Platillo> findBySearchTerm(@NonNull final String searchTerm, @NonNull final Pageable pageable) {
+		log.info("Searching platillos with term: {} and pagination: {}", searchTerm, pageable);
+		final String searchPattern = "%" + searchTerm + "%";
+		return platilloRepository.findBySearchTerm(searchPattern, pageable);
+	}
+
+	@Override
+	public long count() {
+		log.info("Counting all platillos.");
+		return platilloRepository.count();
+	}
+
+	@Override
+	public long countBySearchTerm(@NonNull final String searchTerm) {
+		log.info("Counting platillos with search term: {}", searchTerm);
+		final String searchPattern = "%" + searchTerm + "%";
+		return platilloRepository.countBySearchTerm(searchPattern);
 	}
 
 	@Override

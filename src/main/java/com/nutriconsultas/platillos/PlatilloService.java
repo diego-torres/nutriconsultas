@@ -3,11 +3,21 @@ package com.nutriconsultas.platillos;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 
 public interface PlatilloService {
 
 	List<Platillo> findAll();
+
+	Page<Platillo> findAll(@NonNull Pageable pageable);
+
+	Page<Platillo> findBySearchTerm(@NonNull String searchTerm, @NonNull Pageable pageable);
+
+	long count();
+
+	long countBySearchTerm(@NonNull String searchTerm);
 
 	Platillo findById(@NonNull Long id);
 

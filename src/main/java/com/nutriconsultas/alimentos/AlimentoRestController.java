@@ -59,6 +59,7 @@ public class AlimentoRestController extends AbstractGridController<Alimento> {
 	 * @param pagingRequest the paging request
 	 * @return Spring Data Pageable
 	 */
+	@NonNull
 	private Pageable toPageable(final PagingRequest pagingRequest) {
 		final int length = pagingRequest.getLength() > 0 ? pagingRequest.getLength() : 10;
 		final int page = pagingRequest.getStart() / length;
