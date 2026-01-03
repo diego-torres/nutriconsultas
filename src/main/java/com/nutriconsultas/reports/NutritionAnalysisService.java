@@ -319,9 +319,10 @@ public class NutritionAnalysisService {
 		// Iron
 		if (totals.getHierro() != null && totals.getHierro() < NutritionRDV.IRON_MILLIGRAMS) {
 			final double percentage = (totals.getHierro() / NutritionRDV.IRON_MILLIGRAMS) * 100.0;
+			final String recommendation = "Incluya carnes magras, legumbres, espinacas y cereales fortificados. "
+					+ "Combine con vitamina C para mejor absorción.";
 			deficiencies.add(new NutritionAnalysisResult.NutrientDeficiency("Hierro", totals.getHierro(),
-					NutritionRDV.IRON_MILLIGRAMS, "mg", percentage,
-					"Incluya carnes magras, legumbres, espinacas y cereales fortificados. Combine con vitamina C para mejor absorción."));
+					NutritionRDV.IRON_MILLIGRAMS, "mg", percentage, recommendation));
 		}
 
 		// Potassium
@@ -369,17 +370,19 @@ public class NutritionAnalysisService {
 		// Cholesterol
 		if (totals.getColesterol() != null && totals.getColesterol() > NutritionRDV.CHOLESTEROL_UL_MILLIGRAMS) {
 			final double percentage = (totals.getColesterol() / NutritionRDV.CHOLESTEROL_UL_MILLIGRAMS) * 100.0;
+			final String recommendation = "Reduzca el consumo de carnes rojas, yemas de huevo y productos lácteos "
+					+ "altos en grasa. Prefiera proteínas magras.";
 			excesses.add(new NutritionAnalysisResult.NutrientExcess("Colesterol", totals.getColesterol(),
-					NutritionRDV.CHOLESTEROL_UL_MILLIGRAMS, "mg", percentage,
-					"Reduzca el consumo de carnes rojas, yemas de huevo y productos lácteos altos en grasa. Prefiera proteínas magras."));
+					NutritionRDV.CHOLESTEROL_UL_MILLIGRAMS, "mg", percentage, recommendation));
 		}
 
 		// Saturated Fats
 		if (totals.getAgSaturados() != null && totals.getAgSaturados() > NutritionRDV.SATURATED_FAT_UL_GRAMS) {
 			final double percentage = (totals.getAgSaturados() / NutritionRDV.SATURATED_FAT_UL_GRAMS) * 100.0;
+			final String recommendation = "Reduzca el consumo de carnes grasas, mantequilla y productos lácteos "
+					+ "enteros. Prefiera grasas insaturadas.";
 			excesses.add(new NutritionAnalysisResult.NutrientExcess("Grasas Saturadas", totals.getAgSaturados(),
-					NutritionRDV.SATURATED_FAT_UL_GRAMS, "g", percentage,
-					"Reduzca el consumo de carnes grasas, mantequilla y productos lácteos enteros. Prefiera grasas insaturadas."));
+					NutritionRDV.SATURATED_FAT_UL_GRAMS, "g", percentage, recommendation));
 		}
 
 		// Sugar
@@ -432,50 +435,52 @@ public class NutritionAnalysisService {
 		// General recommendations based on deficiencies
 		if (!result.getDeficiencies().isEmpty()) {
 			recommendations.add("Se identificaron " + result.getDeficiencies().size()
-					+ " nutrientes por debajo de los valores recomendados. Revise las deficiencias específicas y ajuste su plan alimentario.");
+					+ " nutrientes por debajo de los valores recomendados. "
+					+ "Revise las deficiencias específicas y ajuste su plan alimentario.");
 		}
 
 		// Recommendations based on excesses
 		if (!result.getExcesses().isEmpty()) {
 			recommendations.add("Se identificaron " + result.getExcesses().size()
-					+ " nutrientes que exceden los valores recomendados. Considere reducir estos nutrientes para mantener una dieta equilibrada.");
+					+ " nutrientes que exceden los valores recomendados. "
+					+ "Considere reducir estos nutrientes para mantener una dieta equilibrada.");
 		}
 
 		// Macro distribution recommendations
 		final NutritionAnalysisResult.NutrientDistribution dist = result.getDistribution();
 		if (dist != null) {
 			if (dist.getProteinPercentage() != null && dist.getProteinPercentage() < 10.0) {
-				recommendations.add(
-						"El porcentaje de calorías provenientes de proteínas es bajo (<10%). Considere aumentar la ingesta de proteínas.");
+				recommendations.add("El porcentaje de calorías provenientes de proteínas es bajo (<10%). "
+						+ "Considere aumentar la ingesta de proteínas.");
 			}
 			if (dist.getProteinPercentage() != null && dist.getProteinPercentage() > 35.0) {
-				recommendations.add(
-						"El porcentaje de calorías provenientes de proteínas es alto (>35%). Considere balancear con más carbohidratos y grasas saludables.");
+				recommendations.add("El porcentaje de calorías provenientes de proteínas es alto (>35%). "
+						+ "Considere balancear con más carbohidratos y grasas saludables.");
 			}
 
 			if (dist.getLipidsPercentage() != null && dist.getLipidsPercentage() < 20.0) {
-				recommendations.add(
-						"El porcentaje de calorías provenientes de grasas es bajo (<20%). Incluya más grasas saludables en su dieta.");
+				recommendations.add("El porcentaje de calorías provenientes de grasas es bajo (<20%). "
+						+ "Incluya más grasas saludables en su dieta.");
 			}
 			if (dist.getLipidsPercentage() != null && dist.getLipidsPercentage() > 35.0) {
-				recommendations.add(
-						"El porcentaje de calorías provenientes de grasas es alto (>35%). Considere reducir las grasas saturadas y aumentar carbohidratos complejos.");
+				recommendations.add("El porcentaje de calorías provenientes de grasas es alto (>35%). "
+						+ "Considere reducir las grasas saturadas y aumentar carbohidratos complejos.");
 			}
 
 			if (dist.getCarbohydratesPercentage() != null && dist.getCarbohydratesPercentage() < 45.0) {
-				recommendations.add(
-						"El porcentaje de calorías provenientes de carbohidratos es bajo (<45%). Aumente el consumo de carbohidratos complejos.");
+				recommendations.add("El porcentaje de calorías provenientes de carbohidratos es bajo (<45%). "
+						+ "Aumente el consumo de carbohidratos complejos.");
 			}
 			if (dist.getCarbohydratesPercentage() != null && dist.getCarbohydratesPercentage() > 65.0) {
-				recommendations.add(
-						"El porcentaje de calorías provenientes de carbohidratos es alto (>65%). Considere balancear con más proteínas y grasas saludables.");
+				recommendations.add("El porcentaje de calorías provenientes de carbohidratos es alto (>65%). "
+						+ "Considere balancear con más proteínas y grasas saludables.");
 			}
 		}
 
 		// Overall balance recommendation
 		if (result.getDeficiencies().isEmpty() && result.getExcesses().isEmpty()) {
-			recommendations.add(
-					"¡Excelente! Su plan alimentario cumple con los valores recomendados de nutrientes. Mantenga este equilibrio.");
+			recommendations.add("¡Excelente! Su plan alimentario cumple con los valores recomendados de nutrientes. "
+					+ "Mantenga este equilibrio.");
 		}
 
 		result.setRecommendations(recommendations);

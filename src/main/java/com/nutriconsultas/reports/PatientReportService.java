@@ -1,11 +1,14 @@
 package com.nutriconsultas.reports;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.lowagie.text.DocumentException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -259,7 +262,7 @@ public class PatientReportService {
 			renderer.createPDF(outputStream);
 			return outputStream.toByteArray();
 		}
-		catch (final Exception e) {
+		catch (final IOException | DocumentException e) {
 			log.error("Error generating PDF", e);
 			throw new IllegalStateException("Error generating PDF", e);
 		}

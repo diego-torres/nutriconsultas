@@ -156,8 +156,8 @@ public class NutritionAnalysisServiceTest {
 
 		assertThat(result).isNotNull();
 		assertThat(result.getExcesses()).isNotEmpty();
-		assertThat(result.getExcesses().size()).isGreaterThanOrEqualTo(4); // At least 4
-																			// excesses
+		// At least 4 excesses
+		assertThat(result.getExcesses().size()).isGreaterThanOrEqualTo(4);
 	}
 
 	@Test
