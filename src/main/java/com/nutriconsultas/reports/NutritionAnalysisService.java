@@ -108,68 +108,54 @@ public class NutritionAnalysisService {
 	}
 
 	/**
+	 * Adds an Integer value to the current total, handling null values.
+	 * @param current the current total value (may be null)
+	 * @param toAdd the value to add (may be null)
+	 * @return the sum of current and toAdd, or null if both are null
+	 */
+	private Integer addIntegerValue(final Integer current, final Integer toAdd) {
+		if (toAdd == null) {
+			return current;
+		}
+		return (current != null ? current : 0) + toAdd;
+	}
+
+	/**
+	 * Adds a Double value to the current total, handling null values.
+	 * @param current the current total value (may be null)
+	 * @param toAdd the value to add (may be null)
+	 * @return the sum of current and toAdd, or null if both are null
+	 */
+	private Double addDoubleValue(final Double current, final Double toAdd) {
+		if (toAdd == null) {
+			return current;
+		}
+		return (current != null ? current : 0.0) + toAdd;
+	}
+
+	/**
 	 * Adds nutrients from a platillo to the totals.
 	 */
 	private void addNutrientsFromPlatillo(final PlatilloIngesta platillo,
 			final NutritionAnalysisResult.NutrientTotals totals) {
-		if (platillo.getEnergia() != null) {
-			totals.setEnergia((totals.getEnergia() != null ? totals.getEnergia() : 0) + platillo.getEnergia());
-		}
-		if (platillo.getProteina() != null) {
-			totals.setProteina((totals.getProteina() != null ? totals.getProteina() : 0.0) + platillo.getProteina());
-		}
-		if (platillo.getLipidos() != null) {
-			totals.setLipidos((totals.getLipidos() != null ? totals.getLipidos() : 0.0) + platillo.getLipidos());
-		}
-		if (platillo.getHidratosDeCarbono() != null) {
-			totals.setHidratosDeCarbono((totals.getHidratosDeCarbono() != null ? totals.getHidratosDeCarbono() : 0.0)
-					+ platillo.getHidratosDeCarbono());
-		}
-		if (platillo.getFibra() != null) {
-			totals.setFibra((totals.getFibra() != null ? totals.getFibra() : 0.0) + platillo.getFibra());
-		}
-		if (platillo.getVitA() != null) {
-			totals.setVitA((totals.getVitA() != null ? totals.getVitA() : 0.0) + platillo.getVitA());
-		}
-		if (platillo.getAcidoAscorbico() != null) {
-			totals.setAcidoAscorbico((totals.getAcidoAscorbico() != null ? totals.getAcidoAscorbico() : 0.0)
-					+ platillo.getAcidoAscorbico());
-		}
-		if (platillo.getAcidoFolico() != null) {
-			totals.setAcidoFolico(
-					(totals.getAcidoFolico() != null ? totals.getAcidoFolico() : 0.0) + platillo.getAcidoFolico());
-		}
-		if (platillo.getCalcio() != null) {
-			totals.setCalcio((totals.getCalcio() != null ? totals.getCalcio() : 0.0) + platillo.getCalcio());
-		}
-		if (platillo.getHierro() != null) {
-			totals.setHierro((totals.getHierro() != null ? totals.getHierro() : 0.0) + platillo.getHierro());
-		}
-		if (platillo.getSodio() != null) {
-			totals.setSodio((totals.getSodio() != null ? totals.getSodio() : 0.0) + platillo.getSodio());
-		}
-		if (platillo.getPotasio() != null) {
-			totals.setPotasio((totals.getPotasio() != null ? totals.getPotasio() : 0.0) + platillo.getPotasio());
-		}
-		if (platillo.getFosforo() != null) {
-			totals.setFosforo((totals.getFosforo() != null ? totals.getFosforo() : 0.0) + platillo.getFosforo());
-		}
-		if (platillo.getSelenio() != null) {
-			totals.setSelenio((totals.getSelenio() != null ? totals.getSelenio() : 0.0) + platillo.getSelenio());
-		}
-		if (platillo.getColesterol() != null) {
-			totals.setColesterol(
-					(totals.getColesterol() != null ? totals.getColesterol() : 0.0) + platillo.getColesterol());
-		}
-		if (platillo.getAgSaturados() != null) {
-			totals.setAgSaturados(
-					(totals.getAgSaturados() != null ? totals.getAgSaturados() : 0.0) + platillo.getAgSaturados());
-		}
-		if (platillo.getAzucarPorEquivalente() != null) {
-			totals.setAzucarPorEquivalente(
-					(totals.getAzucarPorEquivalente() != null ? totals.getAzucarPorEquivalente() : 0.0)
-							+ platillo.getAzucarPorEquivalente());
-		}
+		totals.setEnergia(addIntegerValue(totals.getEnergia(), platillo.getEnergia()));
+		totals.setProteina(addDoubleValue(totals.getProteina(), platillo.getProteina()));
+		totals.setLipidos(addDoubleValue(totals.getLipidos(), platillo.getLipidos()));
+		totals.setHidratosDeCarbono(addDoubleValue(totals.getHidratosDeCarbono(), platillo.getHidratosDeCarbono()));
+		totals.setFibra(addDoubleValue(totals.getFibra(), platillo.getFibra()));
+		totals.setVitA(addDoubleValue(totals.getVitA(), platillo.getVitA()));
+		totals.setAcidoAscorbico(addDoubleValue(totals.getAcidoAscorbico(), platillo.getAcidoAscorbico()));
+		totals.setAcidoFolico(addDoubleValue(totals.getAcidoFolico(), platillo.getAcidoFolico()));
+		totals.setCalcio(addDoubleValue(totals.getCalcio(), platillo.getCalcio()));
+		totals.setHierro(addDoubleValue(totals.getHierro(), platillo.getHierro()));
+		totals.setSodio(addDoubleValue(totals.getSodio(), platillo.getSodio()));
+		totals.setPotasio(addDoubleValue(totals.getPotasio(), platillo.getPotasio()));
+		totals.setFosforo(addDoubleValue(totals.getFosforo(), platillo.getFosforo()));
+		totals.setSelenio(addDoubleValue(totals.getSelenio(), platillo.getSelenio()));
+		totals.setColesterol(addDoubleValue(totals.getColesterol(), platillo.getColesterol()));
+		totals.setAgSaturados(addDoubleValue(totals.getAgSaturados(), platillo.getAgSaturados()));
+		totals.setAzucarPorEquivalente(
+				addDoubleValue(totals.getAzucarPorEquivalente(), platillo.getAzucarPorEquivalente()));
 	}
 
 	/**
@@ -177,64 +163,24 @@ public class NutritionAnalysisService {
 	 */
 	private void addNutrientsFromAlimento(final AlimentoIngesta alimento,
 			final NutritionAnalysisResult.NutrientTotals totals) {
-		if (alimento.getEnergia() != null) {
-			totals.setEnergia((totals.getEnergia() != null ? totals.getEnergia() : 0) + alimento.getEnergia());
-		}
-		if (alimento.getProteina() != null) {
-			totals.setProteina((totals.getProteina() != null ? totals.getProteina() : 0.0) + alimento.getProteina());
-		}
-		if (alimento.getLipidos() != null) {
-			totals.setLipidos((totals.getLipidos() != null ? totals.getLipidos() : 0.0) + alimento.getLipidos());
-		}
-		if (alimento.getHidratosDeCarbono() != null) {
-			totals.setHidratosDeCarbono((totals.getHidratosDeCarbono() != null ? totals.getHidratosDeCarbono() : 0.0)
-					+ alimento.getHidratosDeCarbono());
-		}
-		if (alimento.getFibra() != null) {
-			totals.setFibra((totals.getFibra() != null ? totals.getFibra() : 0.0) + alimento.getFibra());
-		}
-		if (alimento.getVitA() != null) {
-			totals.setVitA((totals.getVitA() != null ? totals.getVitA() : 0.0) + alimento.getVitA());
-		}
-		if (alimento.getAcidoAscorbico() != null) {
-			totals.setAcidoAscorbico((totals.getAcidoAscorbico() != null ? totals.getAcidoAscorbico() : 0.0)
-					+ alimento.getAcidoAscorbico());
-		}
-		if (alimento.getAcidoFolico() != null) {
-			totals.setAcidoFolico(
-					(totals.getAcidoFolico() != null ? totals.getAcidoFolico() : 0.0) + alimento.getAcidoFolico());
-		}
-		if (alimento.getCalcio() != null) {
-			totals.setCalcio((totals.getCalcio() != null ? totals.getCalcio() : 0.0) + alimento.getCalcio());
-		}
-		if (alimento.getHierro() != null) {
-			totals.setHierro((totals.getHierro() != null ? totals.getHierro() : 0.0) + alimento.getHierro());
-		}
-		if (alimento.getSodio() != null) {
-			totals.setSodio((totals.getSodio() != null ? totals.getSodio() : 0.0) + alimento.getSodio());
-		}
-		if (alimento.getPotasio() != null) {
-			totals.setPotasio((totals.getPotasio() != null ? totals.getPotasio() : 0.0) + alimento.getPotasio());
-		}
-		if (alimento.getFosforo() != null) {
-			totals.setFosforo((totals.getFosforo() != null ? totals.getFosforo() : 0.0) + alimento.getFosforo());
-		}
-		if (alimento.getSelenio() != null) {
-			totals.setSelenio((totals.getSelenio() != null ? totals.getSelenio() : 0.0) + alimento.getSelenio());
-		}
-		if (alimento.getColesterol() != null) {
-			totals.setColesterol(
-					(totals.getColesterol() != null ? totals.getColesterol() : 0.0) + alimento.getColesterol());
-		}
-		if (alimento.getAgSaturados() != null) {
-			totals.setAgSaturados(
-					(totals.getAgSaturados() != null ? totals.getAgSaturados() : 0.0) + alimento.getAgSaturados());
-		}
-		if (alimento.getAzucarPorEquivalente() != null) {
-			totals.setAzucarPorEquivalente(
-					(totals.getAzucarPorEquivalente() != null ? totals.getAzucarPorEquivalente() : 0.0)
-							+ alimento.getAzucarPorEquivalente());
-		}
+		totals.setEnergia(addIntegerValue(totals.getEnergia(), alimento.getEnergia()));
+		totals.setProteina(addDoubleValue(totals.getProteina(), alimento.getProteina()));
+		totals.setLipidos(addDoubleValue(totals.getLipidos(), alimento.getLipidos()));
+		totals.setHidratosDeCarbono(addDoubleValue(totals.getHidratosDeCarbono(), alimento.getHidratosDeCarbono()));
+		totals.setFibra(addDoubleValue(totals.getFibra(), alimento.getFibra()));
+		totals.setVitA(addDoubleValue(totals.getVitA(), alimento.getVitA()));
+		totals.setAcidoAscorbico(addDoubleValue(totals.getAcidoAscorbico(), alimento.getAcidoAscorbico()));
+		totals.setAcidoFolico(addDoubleValue(totals.getAcidoFolico(), alimento.getAcidoFolico()));
+		totals.setCalcio(addDoubleValue(totals.getCalcio(), alimento.getCalcio()));
+		totals.setHierro(addDoubleValue(totals.getHierro(), alimento.getHierro()));
+		totals.setSodio(addDoubleValue(totals.getSodio(), alimento.getSodio()));
+		totals.setPotasio(addDoubleValue(totals.getPotasio(), alimento.getPotasio()));
+		totals.setFosforo(addDoubleValue(totals.getFosforo(), alimento.getFosforo()));
+		totals.setSelenio(addDoubleValue(totals.getSelenio(), alimento.getSelenio()));
+		totals.setColesterol(addDoubleValue(totals.getColesterol(), alimento.getColesterol()));
+		totals.setAgSaturados(addDoubleValue(totals.getAgSaturados(), alimento.getAgSaturados()));
+		totals.setAzucarPorEquivalente(
+				addDoubleValue(totals.getAzucarPorEquivalente(), alimento.getAzucarPorEquivalente()));
 	}
 
 	/**
