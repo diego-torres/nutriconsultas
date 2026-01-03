@@ -1,7 +1,10 @@
 package com.nutriconsultas.reports;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -232,19 +235,15 @@ public class ClinicStatisticsService {
 		distribution.put("65+", 0L);
 		distribution.put("No especificado", 0L);
 
-		final Calendar now = Calendar.getInstance();
+		final LocalDate now = LocalDate.now();
 		for (final Paciente paciente : pacientes) {
 			if (paciente.getDob() == null) {
 				distribution.put("No especificado", distribution.get("No especificado") + 1);
 				continue;
 			}
 
-			final Calendar dob = Calendar.getInstance();
-			dob.setTime(paciente.getDob());
-			int age = now.get(Calendar.YEAR) - dob.get(Calendar.YEAR);
-			if (now.get(Calendar.DAY_OF_YEAR) < dob.get(Calendar.DAY_OF_YEAR)) {
-				age--;
-			}
+			final LocalDate dob = paciente.getDob().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			final int age = (int) java.time.temporal.ChronoUnit.YEARS.between(dob, now);
 
 			if (age < 0) {
 				distribution.put("No especificado", distribution.get("No especificado") + 1);
@@ -483,47 +482,57 @@ public class ClinicStatisticsService {
 		final List<ClinicStatistics.MonthlyTrend> trends = new ArrayList<>();
 
 		// Determine date range
-		Date rangeStart = startDate;
-		Date rangeEnd = endDate;
+		LocalDate rangeStart;
+		LocalDate rangeEnd;
 
-		if (rangeStart == null || rangeEnd == null) {
+		if (startDate == null || endDate == null) {
 			// Use last 12 months if no range specified
-			final Calendar cal = Calendar.getInstance();
-			rangeEnd = cal.getTime();
-			cal.add(Calendar.MONTH, -12);
-			rangeStart = cal.getTime();
+			rangeEnd = LocalDate.now();
+			rangeStart = rangeEnd.minusMonths(12);
+		}
+		else {
+			rangeStart = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			rangeEnd = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 		}
 
 		// Generate monthly data points
-		final Calendar cal = Calendar.getInstance();
-		cal.setTime(rangeStart);
-		final java.text.SimpleDateFormat displayFormat = new java.text.SimpleDateFormat("MMM yyyy");
+		final DateTimeFormatter displayFormat = DateTimeFormatter.ofPattern("MMM yyyy");
+		YearMonth currentMonth = YearMonth.from(rangeStart);
 
-		while (!cal.getTime().after(rangeEnd)) {
-			final Date monthStart = cal.getTime();
-			cal.add(Calendar.MONTH, 1);
-			cal.add(Calendar.DAY_OF_MONTH, -1);
-			final Date monthEnd = cal.getTime();
-			cal.add(Calendar.DAY_OF_MONTH, 1);
+		while (!currentMonth.atEndOfMonth().isAfter(rangeEnd)) {
+			final LocalDate monthStart = currentMonth.atDay(1);
+			final LocalDate monthEnd = currentMonth.atEndOfMonth();
+			final Date monthStartDate = Date.from(monthStart.atStartOfDay(ZoneId.systemDefault()).toInstant());
+			final Date monthEndDate = Date.from(monthEnd.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
-			final long consultations = calendarEventRepository.countByUserIdAndDateRange(userId, monthStart, monthEnd);
+			final long consultations = calendarEventRepository.countByUserIdAndDateRange(userId, monthStartDate,
+					monthEndDate);
 			final long newPatients = pacienteRepository.findByUserId(userId)
 				.stream()
-				.filter(p -> p.getRegistro() != null && !p.getRegistro().before(monthStart)
-						&& !p.getRegistro().after(monthEnd))
+				.filter(p -> {
+					if (p.getRegistro() == null) {
+						return false;
+					}
+					final LocalDate registro = p.getRegistro().toInstant().atZone(ZoneId.systemDefault())
+						.toLocalDate();
+					return !registro.isBefore(monthStart) && !registro.isAfter(monthEnd);
+				})
 				.count();
-			final long activePlans = pacienteDietaRepository.findByUserIdAndDateRange(userId, monthStart, monthEnd)
+			final long activePlans = pacienteDietaRepository.findByUserIdAndDateRange(userId, monthStartDate,
+					monthEndDate)
 				.stream()
 				.filter(pd -> pd.getStatus() == PacienteDietaStatus.ACTIVE)
 				.count();
 
 			final ClinicStatistics.MonthlyTrend trend = new ClinicStatistics.MonthlyTrend();
-			trend.setMonth(displayFormat.format(monthStart));
+			trend.setMonth(monthStart.format(displayFormat));
 			trend.setConsultations(consultations);
 			trend.setNewPatients(newPatients);
 			trend.setActivePlans(activePlans);
 
 			trends.add(trend);
+
+			currentMonth = currentMonth.plusMonths(1);
 		}
 
 		return trends;
