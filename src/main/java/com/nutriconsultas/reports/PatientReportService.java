@@ -94,6 +94,9 @@ public class PatientReportService {
 	@Autowired
 	private NutritionAnalysisService nutritionAnalysisService;
 
+	@Autowired
+	private ClinicStatisticsService clinicStatisticsService;
+
 	/**
 	 * Generates a PDF progress report for a patient.
 	 * @param pacienteId the ID of the patient
@@ -249,6 +252,35 @@ public class PatientReportService {
 
 		// Render Thymeleaf template to HTML
 		final String html = templateEngine.process("sbadmin/reports/nutrition-analysis", context);
+
+		// Convert HTML to PDF using Flying Saucer
+		return htmlToPdf(html);
+	}
+
+	/**
+	 * Generates a PDF clinic statistics report.
+	 * @param userId the user ID to generate statistics for
+	 * @param startDate optional start date for filtering data (null for all data)
+	 * @param endDate optional end date for filtering data (null for all data)
+	 * @return PDF document as byte array
+	 * @throws IllegalStateException if PDF generation fails
+	 */
+	public byte[] generateClinicStatisticsReport(@NonNull final String userId, final Date startDate,
+			final Date endDate) {
+		log.info("Generating clinic statistics report for user: {} (date range: {} to {})", userId, startDate, endDate);
+
+		// Generate statistics
+		final ClinicStatistics statistics = clinicStatisticsService.generateStatistics(userId, startDate, endDate);
+
+		// Prepare context for Thymeleaf template
+		final Context context = new Context();
+		context.setVariable("statistics", statistics);
+		context.setVariable("startDate", startDate);
+		context.setVariable("endDate", endDate);
+		context.setVariable("reportDate", new Date());
+
+		// Render Thymeleaf template to HTML
+		final String html = templateEngine.process("sbadmin/reports/clinic-statistics-pdf", context);
 
 		// Convert HTML to PDF using Flying Saucer
 		return htmlToPdf(html);

@@ -42,6 +42,9 @@ public class PatientReportRestController {
 	@Autowired
 	private PacienteService pacienteService;
 
+	@Autowired
+	private ClinicStatisticsService clinicStatisticsService;
+
 	/**
 	 * Gets the user ID from the OAuth2 principal.
 	 * @param principal the OAuth2 principal
@@ -204,6 +207,105 @@ public class PatientReportRestController {
 		}
 		catch (final Exception e) {
 			log.error("Error generating nutrition report for dieta id: {}", dietaId, e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	/**
+	 * Gets clinic statistics as JSON.
+	 *
+	 * <p>
+	 * Returns aggregated statistics across all patients for the authenticated user,
+	 * including demographics, consultation trends, conditions, and performance metrics.
+	 *
+	 * <p>
+	 * Date range filtering is optional. If not provided, all available data is included.
+	 * @param startDate optional start date for filtering (format: yyyy-MM-dd)
+	 * @param endDate optional end date for filtering (format: yyyy-MM-dd)
+	 * @param principal the authenticated OAuth2 user
+	 * @return ClinicStatistics object as JSON
+	 */
+	@GetMapping(value = "/clinic-statistics", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ClinicStatistics> getClinicStatistics(
+			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") final Date startDate,
+			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") final Date endDate,
+			@AuthenticationPrincipal final OidcUser principal) {
+		log.info("Getting clinic statistics (date range: {} to {})", startDate, endDate);
+
+		final OidcUser userPrincipal = principal != null ? principal
+				: (OidcUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		final String userId = getUserId(userPrincipal);
+
+		if (userId == null) {
+			log.error("Cannot get clinic statistics: user ID is null");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+
+		try {
+			final ClinicStatistics statistics = clinicStatisticsService.generateStatistics(userId, startDate, endDate);
+			log.info("Successfully generated clinic statistics for user: {}", userId);
+			return ResponseEntity.ok(statistics);
+		}
+		catch (final Exception e) {
+			log.error("Error generating clinic statistics for user: {}", userId, e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	/**
+	 * Generates a PDF clinic statistics report.
+	 *
+	 * <p>
+	 * The report includes:
+	 * <ul>
+	 * <li>Total patients, consultations, dietary plans, and clinical exams</li>
+	 * <li>Patient demographics breakdown (gender, age groups, weight levels)</li>
+	 * <li>Consultation frequency trends</li>
+	 * <li>Most common nutritional conditions</li>
+	 * <li>Average weight/BMI changes</li>
+	 * <li>Monthly activity trends</li>
+	 * </ul>
+	 *
+	 * <p>
+	 * Date range filtering is optional. If not provided, all available data is included.
+	 * @param startDate optional start date for filtering (format: yyyy-MM-dd)
+	 * @param endDate optional end date for filtering (format: yyyy-MM-dd)
+	 * @param principal the authenticated OAuth2 user
+	 * @return PDF document as ResponseEntity with appropriate headers
+	 * @throws IllegalStateException if PDF generation fails
+	 */
+	@GetMapping(value = "/clinic-statistics/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+	public ResponseEntity<byte[]> generateClinicStatisticsPdf(
+			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") final Date startDate,
+			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") final Date endDate,
+			@AuthenticationPrincipal final OidcUser principal) {
+		log.info("Generating clinic statistics PDF (date range: {} to {})", startDate, endDate);
+
+		final OidcUser userPrincipal = principal != null ? principal
+				: (OidcUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		final String userId = getUserId(userPrincipal);
+
+		if (userId == null) {
+			log.error("Cannot generate clinic statistics PDF: user ID is null");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+
+		try {
+			final byte[] pdfBytes = reportService.generateClinicStatisticsReport(userId, startDate, endDate);
+
+			final String filename = "estadisticas-clinica.pdf";
+
+			@SuppressWarnings("PMD.LooseCoupling")
+			final HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_PDF);
+			headers.setContentDispositionFormData("attachment", filename);
+			headers.setContentLength(pdfBytes.length);
+
+			log.info("Successfully generated clinic statistics PDF for user: {}", userId);
+			return ResponseEntity.ok().headers(headers).body(pdfBytes);
+		}
+		catch (final Exception e) {
+			log.error("Error generating clinic statistics PDF for user: {}", userId, e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}

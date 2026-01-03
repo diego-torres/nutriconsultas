@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <!-- Favicons -->
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
+
+  <title>Minutriporcion - Estadísticas de la Clínica</title>
+
+  <!-- Custom fonts for this template-->
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+</head>
+
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/sidebar :: sidebar}"></div>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Estadísticas de la Clínica</h1>
+            <div>
+              <a th:href="@{/admin/reportes}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> Volver a Reportes
+              </a>
+              <button type="button" class="btn btn-primary btn-sm" onclick="generatePdfReport()">
+                <i class="fas fa-file-pdf"></i> Exportar PDF
+              </button>
+            </div>
+          </div>
+
+          <!-- Date Range Filter -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="card shadow">
+                <div class="card-body">
+                  <form method="get" action="/admin/reportes/estadisticas" class="form-inline">
+                    <div class="form-group mr-3">
+                      <label for="startDate">Fecha Inicio:</label>
+                      <input type="date" class="form-control ml-2" id="startDate" name="startDate"
+                        th:value="${startDate != null ? #dates.format(startDate, 'yyyy-MM-dd') : ''}">
+                    </div>
+                    <div class="form-group mr-3">
+                      <label for="endDate">Fecha Fin:</label>
+                      <input type="date" class="form-control ml-2" id="endDate" name="endDate"
+                        th:value="${endDate != null ? #dates.format(endDate, 'yyyy-MM-dd') : ''}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                      <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                    <a th:href="@{/admin/reportes/estadisticas}" class="btn btn-secondary ml-2">
+                      <i class="fas fa-times"></i> Limpiar
+                    </a>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error Message -->
+          <div class="row" th:if="${error != null}">
+            <div class="col-12">
+              <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Statistics Content -->
+          <div th:if="${statistics != null}">
+
+            <!-- Summary Cards -->
+            <div class="row">
+              <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                  <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                      <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Pacientes</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${statistics.totalPatients}">0
+                        </div>
+                      </div>
+                      <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2">
+                  <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                      <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Consultas</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${statistics.totalConsultations}">
+                          0</div>
+                      </div>
+                      <div class="col-auto">
+                        <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2">
+                  <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                      <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Planes Dietéticos</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${statistics.totalDietaryPlans}">
+                          0</div>
+                      </div>
+                      <div class="col-auto">
+                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                  <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                      <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Exámenes Clínicos</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${statistics.totalClinicalExams}">
+                          0</div>
+                      </div>
+                      <div class="col-auto">
+                        <i class="fas fa-stethoscope fa-2x text-gray-300"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row">
+              <!-- Gender Distribution Chart -->
+              <div class="col-xl-6 col-lg-6">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Distribución por Género</h6>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="genderChart"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Age Group Distribution Chart -->
+              <div class="col-xl-6 col-lg-6">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Distribución por Grupo de Edad</h6>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="ageGroupChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <!-- Weight Level Distribution Chart -->
+              <div class="col-xl-6 col-lg-6">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Distribución por Nivel de Peso</h6>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="weightLevelChart"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Consultations by Status Chart -->
+              <div class="col-xl-6 col-lg-6">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Consultas por Estado</h6>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="consultationsByStatusChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Monthly Trends Chart -->
+            <div class="row">
+              <div class="col-xl-12 col-lg-12">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Tendencias Mensuales</h6>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="monthlyTrendsChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Condition Frequency Chart -->
+            <div class="row">
+              <div class="col-xl-12 col-lg-12">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Condiciones Más Comunes</h6>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="conditionFrequencyChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Additional Metrics -->
+            <div class="row">
+              <div class="col-xl-12">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Métricas Adicionales</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="table-responsive">
+                      <table class="table table-bordered">
+                        <thead>
+                          <tr>
+                            <th>Métrica</th>
+                            <th>Valor</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Promedio de Consultas por Paciente</td>
+                            <td th:text="${statistics.averageConsultationsPerPatient != null ? #numbers.formatDecimal(statistics.averageConsultationsPerPatient, 1, 2) : 'N/A'}">
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Peso Promedio (kg)</td>
+                            <td th:text="${statistics.averageWeight != null ? #numbers.formatDecimal(statistics.averageWeight, 1, 2) : 'N/A'}">
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>IMC Promedio</td>
+                            <td th:text="${statistics.averageBMI != null ? #numbers.formatDecimal(statistics.averageBMI, 1, 2) : 'N/A'}">
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Cambio Promedio de Peso (kg)</td>
+                            <td th:text="${statistics.averageWeightChange != null ? #numbers.formatDecimal(statistics.averageWeightChange, 1, 2) : 'N/A'}">
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Cambio Promedio de IMC</td>
+                            <td th:text="${statistics.averageBMIChange != null ? #numbers.formatDecimal(statistics.averageBMIChange, 1, 2) : 'N/A'}">
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Planes Dietéticos Activos</td>
+                            <td th:text="${statistics.activeDietaryPlans}"></td>
+                          </tr>
+                          <tr>
+                            <td>Consultas Completadas</td>
+                            <td th:text="${statistics.completedConsultations}"></td>
+                          </tr>
+                          <tr th:if="${statistics.newPatientsInPeriod != null}">
+                            <td>Nuevos Pacientes en el Período</td>
+                            <td th:text="${statistics.newPatientsInPeriod}"></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+
+        <div th:insert="~{sbadmin/footer :: footer}"></div>
+
+      </div>
+      <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Bootstrap core JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+    <script lang="javascript" th:inline="javascript">
+      /*<![CDATA[*/
+      'use strict';
+
+      // Statistics data from server
+      const statistics = /*[[${statistics}]]*/ null;
+
+      function generatePdfReport() {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        let url = '/rest/reports/clinic-statistics/pdf';
+        const params = [];
+        if (startDate) {
+          params.push('startDate=' + encodeURIComponent(startDate));
+        }
+        if (endDate) {
+          params.push('endDate=' + encodeURIComponent(endDate));
+        }
+        if (params.length > 0) {
+          url += '?' + params.join('&');
+        }
+        window.open(url, '_blank');
+      }
+
+      if (statistics) {
+        // Gender Distribution Chart
+        const genderData = statistics.genderDistribution || {};
+        const genderCtx = document.getElementById('genderChart').getContext('2d');
+        new Chart(genderCtx, {
+          type: 'doughnut',
+          data: {
+            labels: Object.keys(genderData),
+            datasets: [{
+              data: Object.values(genderData),
+              backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false
+          }
+        });
+
+        // Age Group Distribution Chart
+        const ageGroupData = statistics.ageGroupDistribution || {};
+        const ageGroupCtx = document.getElementById('ageGroupChart').getContext('2d');
+        new Chart(ageGroupCtx, {
+          type: 'bar',
+          data: {
+            labels: Object.keys(ageGroupData),
+            datasets: [{
+              label: 'Pacientes',
+              data: Object.values(ageGroupData),
+              backgroundColor: '#4e73df'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+
+        // Weight Level Distribution Chart
+        const weightLevelData = statistics.weightLevelDistribution || {};
+        const weightLevelCtx = document.getElementById('weightLevelChart').getContext('2d');
+        new Chart(weightLevelCtx, {
+          type: 'pie',
+          data: {
+            labels: Object.keys(weightLevelData),
+            datasets: [{
+              data: Object.values(weightLevelData),
+              backgroundColor: ['#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false
+          }
+        });
+
+        // Consultations by Status Chart
+        const consultationsByStatusData = statistics.consultationsByStatus || {};
+        const consultationsByStatusCtx = document.getElementById('consultationsByStatusChart').getContext('2d');
+        new Chart(consultationsByStatusCtx, {
+          type: 'bar',
+          data: {
+            labels: Object.keys(consultationsByStatusData),
+            datasets: [{
+              label: 'Consultas',
+              data: Object.values(consultationsByStatusData),
+              backgroundColor: '#1cc88a'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+
+        // Monthly Trends Chart
+        const monthlyTrends = statistics.monthlyTrends || [];
+        const monthlyTrendsCtx = document.getElementById('monthlyTrendsChart').getContext('2d');
+        new Chart(monthlyTrendsCtx, {
+          type: 'line',
+          data: {
+            labels: monthlyTrends.map(t => t.month),
+            datasets: [{
+              label: 'Consultas',
+              data: monthlyTrends.map(t => t.consultations),
+              borderColor: '#4e73df',
+              backgroundColor: 'rgba(78, 115, 223, 0.1)',
+              tension: 0.1
+            }, {
+              label: 'Nuevos Pacientes',
+              data: monthlyTrends.map(t => t.newPatients),
+              borderColor: '#1cc88a',
+              backgroundColor: 'rgba(28, 200, 138, 0.1)',
+              tension: 0.1
+            }, {
+              label: 'Planes Activos',
+              data: monthlyTrends.map(t => t.activePlans),
+              borderColor: '#f6c23e',
+              backgroundColor: 'rgba(246, 194, 62, 0.1)',
+              tension: 0.1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+
+        // Condition Frequency Chart
+        const conditionFrequencyData = statistics.conditionFrequency || {};
+        const sortedConditions = Object.entries(conditionFrequencyData)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10); // Top 10 conditions
+        const conditionFrequencyCtx = document.getElementById('conditionFrequencyChart').getContext('2d');
+        new Chart(conditionFrequencyCtx, {
+          type: 'horizontalBar',
+          data: {
+            labels: sortedConditions.map(c => c[0]),
+            datasets: [{
+              label: 'Frecuencia',
+              data: sortedConditions.map(c => c[1]),
+              backgroundColor: '#e74a3b'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: {
+              x: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      }
+      /*]]>*/
+    </script>
+</body>
+
+</html>
+

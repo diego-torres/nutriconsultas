@@ -29,4 +29,20 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
 	List<CalendarEvent> findByUserIdAndSearchTerm(@Param("userId") String userId,
 			@Param("searchTerm") String searchTerm);
 
+	@Query("SELECT COUNT(e) FROM CalendarEvent e WHERE e.paciente.userId = :userId")
+	long countByUserId(@Param("userId") String userId);
+
+	@Query("SELECT COUNT(e) FROM CalendarEvent e WHERE e.paciente.userId = :userId "
+			+ "AND e.eventDateTime >= :startDate AND e.eventDateTime <= :endDate")
+	long countByUserIdAndDateRange(@Param("userId") String userId, @Param("startDate") Date startDate,
+			@Param("endDate") Date endDate);
+
+	@Query("SELECT e FROM CalendarEvent e WHERE e.paciente.userId = :userId "
+			+ "AND e.eventDateTime >= :startDate AND e.eventDateTime <= :endDate")
+	List<CalendarEvent> findByUserIdAndDateRange(@Param("userId") String userId, @Param("startDate") Date startDate,
+			@Param("endDate") Date endDate);
+
+	@Query("SELECT COUNT(e) FROM CalendarEvent e WHERE e.paciente.userId = :userId AND e.status = :status")
+	long countByUserIdAndStatus(@Param("userId") String userId, @Param("status") EventStatus status);
+
 }
