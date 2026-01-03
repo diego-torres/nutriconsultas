@@ -507,19 +507,15 @@ public class ClinicStatisticsService {
 
 			final long consultations = calendarEventRepository.countByUserIdAndDateRange(userId, monthStartDate,
 					monthEndDate);
-			final long newPatients = pacienteRepository.findByUserId(userId)
-				.stream()
-				.filter(p -> {
-					if (p.getRegistro() == null) {
-						return false;
-					}
-					final LocalDate registro = p.getRegistro().toInstant().atZone(ZoneId.systemDefault())
-						.toLocalDate();
-					return !registro.isBefore(monthStart) && !registro.isAfter(monthEnd);
-				})
-				.count();
-			final long activePlans = pacienteDietaRepository.findByUserIdAndDateRange(userId, monthStartDate,
-					monthEndDate)
+			final long newPatients = pacienteRepository.findByUserId(userId).stream().filter(p -> {
+				if (p.getRegistro() == null) {
+					return false;
+				}
+				final LocalDate registro = p.getRegistro().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+				return !registro.isBefore(monthStart) && !registro.isAfter(monthEnd);
+			}).count();
+			final long activePlans = pacienteDietaRepository
+				.findByUserIdAndDateRange(userId, monthStartDate, monthEndDate)
 				.stream()
 				.filter(pd -> pd.getStatus() == PacienteDietaStatus.ACTIVE)
 				.count();
