@@ -63,6 +63,11 @@ public class ReportTemplateValidator extends BaseTemplateValidator {
 		variables.put("endDate", now);
 		variables.put("reportDate", now);
 
+		// Create mock pacientes list for listado template
+		final List<Paciente> mockPacientes = new ArrayList<>();
+		mockPacientes.add(mockPaciente);
+		variables.put("pacientes", mockPacientes);
+
 		return variables;
 	}
 

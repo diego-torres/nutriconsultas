@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.PacienteService;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
@@ -36,6 +39,9 @@ public class PatientReportRestController {
 	@Autowired
 	private PatientReportService reportService;
 
+	@Autowired
+	private PacienteService pacienteService;
+
 	/**
 	 * Gets the user ID from the OAuth2 principal.
 	 * @param principal the OAuth2 principal
@@ -49,6 +55,25 @@ public class PatientReportRestController {
 		final String userId = principal.getSubject();
 		log.debug("Retrieved user ID: {}", userId);
 		return userId;
+	}
+
+	/**
+	 * Sanitizes a string for use in a filename by removing or replacing invalid
+	 * characters.
+	 * @param name the name to sanitize
+	 * @return sanitized filename-safe string
+	 */
+	private String sanitizeFilename(final String name) {
+		if (name == null || name.isEmpty()) {
+			return "paciente";
+		}
+		// Replace spaces with hyphens, remove special characters, convert to lowercase
+		return name.trim()
+			.toLowerCase()
+			.replaceAll("[^a-z0-9\\s-]", "")
+			.replaceAll("\\s+", "-")
+			.replaceAll("-+", "-")
+			.replaceAll("^-|-$", "");
 	}
 
 	/**
@@ -92,11 +117,22 @@ public class PatientReportRestController {
 		}
 
 		try {
+			// Get patient to use name in filename
+			final Paciente paciente = pacienteService.findByIdAndUserId(pacienteId, userId);
+			if (paciente == null) {
+				log.warn("Patient with id {} not found or access denied for user {}", pacienteId, userId);
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			}
+
 			final byte[] pdfBytes = reportService.generateReport(pacienteId, userId, startDate, endDate);
+
+			// Sanitize patient name for filename
+			final String sanitizedName = sanitizeFilename(paciente.getName());
+			final String filename = "reporte-progreso-" + sanitizedName + ".pdf";
 
 			final HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_PDF);
-			headers.setContentDispositionFormData("attachment", "reporte-progreso-paciente-" + pacienteId + ".pdf");
+			headers.setContentDispositionFormData("attachment", filename);
 			headers.setContentLength(pdfBytes.length);
 
 			log.info("Successfully generated patient report for id: {}", pacienteId);

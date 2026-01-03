@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <!-- Favicons -->
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
+
+  <title>Minutriporcion - Reportes de Progreso</title>
+
+  <!-- Custom fonts for this template-->
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link th:href="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+</head>
+
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/sidebar :: sidebar}"></div>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Reportes de Progreso</h1>
+          </div>
+
+          <!-- Content Row -->
+          <div class="row">
+            <div class="col-12">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary">Generar Reporte de Progreso del Paciente</h6>
+                </div>
+                <div class="card-body">
+                  <form id="reportForm" onsubmit="generateReport(event); return false;">
+                    <div class="form-group">
+                      <label for="pacienteSelect">Seleccionar Paciente</label>
+                      <select class="form-control" id="pacienteSelect" name="pacienteId" required>
+                        <option value="">-- Seleccione un paciente --</option>
+                        <option th:each="paciente : ${pacientes}" th:value="${paciente.id}" th:text="${paciente.name}">
+                        </option>
+                      </select>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group col-md-6">
+                        <label for="startDate">Fecha de Inicio (Opcional)</label>
+                        <input type="date" class="form-control" id="startDate" name="startDate">
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label for="endDate">Fecha de Fin (Opcional)</label>
+                        <input type="date" class="form-control" id="endDate" name="endDate">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-file-pdf"></i> Generar Reporte PDF
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Patient List -->
+          <div class="row" th:if="${pacientes != null && !pacientes.isEmpty()}">
+            <div class="col-12">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary">Pacientes Disponibles</h6>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-bordered" id="pacientesTable" width="100%" cellspacing="0">
+                      <thead>
+                        <tr>
+                          <th>Nombre</th>
+                          <th>Fecha de Nacimiento</th>
+                          <th>Email</th>
+                          <th>Teléfono</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr th:each="paciente : ${pacientes}">
+                          <td th:text="${paciente.name}"></td>
+                          <td th:text="${paciente.dob != null ? #dates.format(paciente.dob, 'dd/MM/yyyy') : 'N/A'}">
+                          </td>
+                          <td th:text="${paciente.email != null ? paciente.email : 'N/A'}"></td>
+                          <td th:text="${paciente.phone != null ? paciente.phone : 'N/A'}"></td>
+                          <td>
+                            <button type="button" class="btn btn-sm btn-primary select-paciente-btn"
+                              th:data-paciente-id="${paciente.id}" th:data-paciente-name="${paciente.name}">
+                              <i class="fas fa-file-pdf"></i> Generar Reporte
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row" th:if="${pacientes == null || pacientes.isEmpty()}">
+            <div class="col-12">
+              <div class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle"></i> No hay pacientes disponibles para generar reportes.
+              </div>
+            </div>
+          </div>
+
+          <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+
+        <div th:insert="~{sbadmin/footer :: footer}"></div>
+
+      </div>
+      <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Bootstrap core JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/datatables/jquery.dataTables.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.js}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+    <script lang="javascript" th:inline="none">
+      'use strict';
+      (function ($) {
+        // Initialize DataTable if table exists
+        if ($('#pacientesTable').length) {
+          $('#pacientesTable').DataTable({
+            "language": {
+              "emptyTable": "No hay registros",
+              "lengthMenu": "Mostrar _MENU_ registros por página",
+              "zeroRecords": "No se encontraron registros",
+              "info": "Mostrando página _PAGE_ de _PAGES_",
+              "infoEmpty": "No hay registros disponibles",
+              "infoFiltered": "(filtrado de _MAX_ registros totales)",
+              "loadingRecords": "Buscando...",
+              "search": "Buscar:",
+              "paginate": {
+                "first": "Inicio",
+                "last": "Fin",
+                "next": "Siguiente",
+                "previous": "Anterior"
+              },
+            },
+            "order": [[0, "asc"]]
+          });
+        }
+
+        // Function to select a patient from the table
+        window.selectPaciente = function (pacienteId, pacienteName) {
+          $('#pacienteSelect').val(pacienteId);
+          // Scroll to form
+          $('html, body').animate({
+            scrollTop: $('#reportForm').offset().top - 100
+          }, 500);
+        };
+
+        // Handle click events on patient selection buttons
+        $(document).on('click', '.select-paciente-btn', function () {
+          const pacienteId = $(this).data('paciente-id');
+          const pacienteName = $(this).data('paciente-name');
+          selectPaciente(pacienteId, pacienteName);
+        });
+
+        // Function to generate report
+        window.generateReport = function (event) {
+          event.preventDefault();
+          const pacienteId = $('#pacienteSelect').val();
+          if (!pacienteId) {
+            alert('Por favor seleccione un paciente');
+            return;
+          }
+
+          const startDate = $('#startDate').val();
+          const endDate = $('#endDate').val();
+
+          // Build URL with query parameters
+          let url = '/rest/reports/patient/' + pacienteId;
+          const params = [];
+          if (startDate) {
+            params.push('startDate=' + encodeURIComponent(startDate));
+          }
+          if (endDate) {
+            params.push('endDate=' + encodeURIComponent(endDate));
+          }
+          if (params.length > 0) {
+            url += '?' + params.join('&');
+          }
+
+          // Open PDF in new window
+          window.open(url, '_blank');
+        };
+
+      })(jQuery);
+    </script>
+</body>
+
+</html>
+
