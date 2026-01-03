@@ -1,7 +1,9 @@
 package com.nutriconsultas.admin;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -57,10 +59,9 @@ public class DashboardServiceImpl implements DashboardService {
 
 		// Upcoming appointments (next 7 days)
 		final Date now = new Date();
-		final Calendar calendar = Calendar.getInstance();
-		calendar.setTime(now);
-		calendar.add(Calendar.DAY_OF_MONTH, 7);
-		final Date sevenDaysFromNow = calendar.getTime();
+		final LocalDateTime nowLocal = LocalDateTime.ofInstant(now.toInstant(), ZoneId.systemDefault());
+		final LocalDateTime sevenDaysFromNowLocal = nowLocal.plusDays(7);
+		final Date sevenDaysFromNow = Date.from(sevenDaysFromNowLocal.atZone(ZoneId.systemDefault()).toInstant());
 
 		final List<CalendarEvent> upcomingEvents = calendarEventRepository
 			.findByUserIdAndDateRange(userId, now, sevenDaysFromNow)
@@ -73,32 +74,21 @@ public class DashboardServiceImpl implements DashboardService {
 		stats.setUpcomingAppointmentsList(upcomingEvents.stream().limit(5).collect(Collectors.toList()));
 
 		// Consultations this week
-		calendar.setTime(now);
-		calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
-		calendar.set(Calendar.HOUR_OF_DAY, 0);
-		calendar.set(Calendar.MINUTE, 0);
-		calendar.set(Calendar.SECOND, 0);
-		calendar.set(Calendar.MILLISECOND, 0);
-		final Date startOfWeek = calendar.getTime();
-
-		calendar.add(Calendar.DAY_OF_WEEK, 6);
-		calendar.set(Calendar.HOUR_OF_DAY, 23);
-		calendar.set(Calendar.MINUTE, 59);
-		calendar.set(Calendar.SECOND, 59);
-		final Date endOfWeek = calendar.getTime();
+		final LocalDate today = LocalDate.now();
+		final LocalDate startOfWeekLocal = today.with(java.time.DayOfWeek.MONDAY);
+		final LocalDate endOfWeekLocal = startOfWeekLocal.plusDays(6);
+		final Date startOfWeek = Date
+			.from(startOfWeekLocal.atStartOfDay(ZoneId.systemDefault()).toInstant());
+		final Date endOfWeek = Date
+			.from(endOfWeekLocal.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
 
 		final long consultationsThisWeek = calendarEventRepository.countByUserIdAndDateRange(userId, startOfWeek,
 				endOfWeek);
 		stats.setConsultationsThisWeek(consultationsThisWeek);
 
 		// New patients this month
-		calendar.setTime(now);
-		calendar.set(Calendar.DAY_OF_MONTH, 1);
-		calendar.set(Calendar.HOUR_OF_DAY, 0);
-		calendar.set(Calendar.MINUTE, 0);
-		calendar.set(Calendar.SECOND, 0);
-		calendar.set(Calendar.MILLISECOND, 0);
-		final Date startOfMonth = calendar.getTime();
+		final LocalDate startOfMonthLocal = LocalDate.now().withDayOfMonth(1);
+		final Date startOfMonth = Date.from(startOfMonthLocal.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
 		final List<Paciente> allPatients = pacienteRepository.findByUserId(userId);
 		final long newPatientsThisMonth = allPatients.stream()
@@ -115,9 +105,8 @@ public class DashboardServiceImpl implements DashboardService {
 		stats.setRecentPatients(recentPatients);
 
 		// Patients needing follow-up (patients with no appointments in the last 30 days)
-		calendar.setTime(now);
-		calendar.add(Calendar.DAY_OF_MONTH, -30);
-		final Date thirtyDaysAgo = calendar.getTime();
+		final LocalDateTime thirtyDaysAgoLocal = nowLocal.minusDays(30);
+		final Date thirtyDaysAgo = Date.from(thirtyDaysAgoLocal.atZone(ZoneId.systemDefault()).toInstant());
 
 		final List<Paciente> patientsNeedingFollowUp = new ArrayList<>();
 		for (final Paciente paciente : allPatients) {
@@ -144,23 +133,14 @@ public class DashboardServiceImpl implements DashboardService {
 		log.info("Getting patient growth trend for userId: {} for {} months", userId, months);
 
 		final List<Map<String, Object>> trend = new ArrayList<>();
-		final Calendar calendar = Calendar.getInstance();
-		final Date now = new Date();
-		calendar.setTime(now);
+		final LocalDate now = LocalDate.now();
 
 		for (int i = months - 1; i >= 0; i--) {
-			calendar.setTime(now);
-			calendar.add(Calendar.MONTH, -i);
-			calendar.set(Calendar.DAY_OF_MONTH, 1);
-			calendar.set(Calendar.HOUR_OF_DAY, 0);
-			calendar.set(Calendar.MINUTE, 0);
-			calendar.set(Calendar.SECOND, 0);
-			calendar.set(Calendar.MILLISECOND, 0);
-			final Date monthStart = calendar.getTime();
-
-			calendar.add(Calendar.MONTH, 1);
-			calendar.add(Calendar.MILLISECOND, -1);
-			final Date monthEnd = calendar.getTime();
+			final LocalDate monthStartLocal = now.minusMonths(i).withDayOfMonth(1);
+			final LocalDate monthEndLocal = monthStartLocal.plusMonths(1).minusDays(1);
+			final Date monthStart = Date.from(monthStartLocal.atStartOfDay(ZoneId.systemDefault()).toInstant());
+			final Date monthEnd = Date
+				.from(monthEndLocal.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
 
 			final List<Paciente> patients = pacienteRepository.findByUserId(userId);
 			final long count = patients.stream()
@@ -169,8 +149,7 @@ public class DashboardServiceImpl implements DashboardService {
 				.count();
 
 			final Map<String, Object> dataPoint = new HashMap<>();
-			dataPoint.put("month",
-					String.format("%02d/%d", calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR)));
+			dataPoint.put("month", String.format("%02d/%d", monthStartLocal.getMonthValue(), monthStartLocal.getYear()));
 			dataPoint.put("count", count);
 			trend.add(dataPoint);
 		}
@@ -184,29 +163,19 @@ public class DashboardServiceImpl implements DashboardService {
 		log.info("Getting consultation frequency for userId: {} for {} months", userId, months);
 
 		final List<Map<String, Object>> frequency = new ArrayList<>();
-		final Calendar calendar = Calendar.getInstance();
-		final Date now = new Date();
-		calendar.setTime(now);
+		final LocalDate now = LocalDate.now();
 
 		for (int i = months - 1; i >= 0; i--) {
-			calendar.setTime(now);
-			calendar.add(Calendar.MONTH, -i);
-			calendar.set(Calendar.DAY_OF_MONTH, 1);
-			calendar.set(Calendar.HOUR_OF_DAY, 0);
-			calendar.set(Calendar.MINUTE, 0);
-			calendar.set(Calendar.SECOND, 0);
-			calendar.set(Calendar.MILLISECOND, 0);
-			final Date monthStart = calendar.getTime();
-
-			calendar.add(Calendar.MONTH, 1);
-			calendar.add(Calendar.MILLISECOND, -1);
-			final Date monthEnd = calendar.getTime();
+			final LocalDate monthStartLocal = now.minusMonths(i).withDayOfMonth(1);
+			final LocalDate monthEndLocal = monthStartLocal.plusMonths(1).minusDays(1);
+			final Date monthStart = Date.from(monthStartLocal.atStartOfDay(ZoneId.systemDefault()).toInstant());
+			final Date monthEnd = Date
+				.from(monthEndLocal.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
 
 			final long count = calendarEventRepository.countByUserIdAndDateRange(userId, monthStart, monthEnd);
 
 			final Map<String, Object> dataPoint = new HashMap<>();
-			dataPoint.put("month",
-					String.format("%02d/%d", calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR)));
+			dataPoint.put("month", String.format("%02d/%d", monthStartLocal.getMonthValue(), monthStartLocal.getYear()));
 			dataPoint.put("count", count);
 			frequency.add(dataPoint);
 		}
