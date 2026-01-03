@@ -1,11 +1,14 @@
 package com.nutriconsultas.reports;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.lowagie.text.DocumentException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -87,6 +90,9 @@ public class PatientReportService {
 
 	@Autowired
 	private PacienteDietaRepository pacienteDietaRepository;
+
+	@Autowired
+	private NutritionAnalysisService nutritionAnalysisService;
 
 	/**
 	 * Generates a PDF progress report for a patient.
@@ -221,6 +227,33 @@ public class PatientReportService {
 		return trend;
 	}
 
+	/**
+	 * Generates a PDF nutrition analysis report for a dietary plan.
+	 * @param dietaId the ID of the diet to analyze
+	 * @param userId the user ID to verify diet ownership
+	 * @return PDF document as byte array
+	 * @throws IllegalArgumentException if diet with the given ID is not found or doesn't
+	 * belong to the user
+	 * @throws IllegalStateException if PDF generation fails
+	 */
+	public byte[] generateNutritionReport(@NonNull final Long dietaId, @NonNull final String userId) {
+		log.info("Generating nutrition analysis report for dieta id: {} (user: {})", dietaId, userId);
+
+		// Perform nutrition analysis
+		final NutritionAnalysisResult analysis = nutritionAnalysisService.analyzeDiet(dietaId, userId);
+
+		// Prepare context for Thymeleaf template
+		final Context context = new Context();
+		context.setVariable("analysis", analysis);
+		context.setVariable("reportDate", new Date());
+
+		// Render Thymeleaf template to HTML
+		final String html = templateEngine.process("sbadmin/reports/nutrition-analysis", context);
+
+		// Convert HTML to PDF using Flying Saucer
+		return htmlToPdf(html);
+	}
+
 	private byte[] htmlToPdf(final String html) {
 		try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 			final ITextRenderer renderer = new ITextRenderer();
@@ -229,7 +262,7 @@ public class PatientReportService {
 			renderer.createPDF(outputStream);
 			return outputStream.toByteArray();
 		}
-		catch (final Exception e) {
+		catch (final IOException | DocumentException e) {
 			log.error("Error generating PDF", e);
 			throw new IllegalStateException("Error generating PDF", e);
 		}

@@ -41,7 +41,7 @@
 
           <!-- Page Heading -->
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Reportes de Progreso</h1>
+            <h1 class="h3 mb-0 text-gray-800">Reportes</h1>
           </div>
 
           <!-- Content Row -->
@@ -82,6 +82,34 @@
             </div>
           </div>
 
+          <!-- Nutrition Analysis Report -->
+          <div class="row">
+            <div class="col-12">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary">Generar Análisis Nutricional</h6>
+                </div>
+                <div class="card-body">
+                  <form id="nutritionReportForm" onsubmit="generateNutritionReport(event); return false;">
+                    <div class="form-group">
+                      <label for="dietaSelect">Seleccionar Dieta</label>
+                      <select class="form-control" id="dietaSelect" name="dietaId" required>
+                        <option value="">-- Seleccione una dieta --</option>
+                        <option th:each="dieta : ${dietas}" th:value="${dieta.id}" th:text="${dieta.nombre}">
+                        </option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <button type="submit" class="btn btn-success">
+                        <i class="fas fa-file-pdf"></i> Generar Análisis Nutricional PDF
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Patient List -->
           <div class="row" th:if="${pacientes != null && !pacientes.isEmpty()}">
             <div class="col-12">
@@ -109,7 +137,7 @@
                           <td th:text="${paciente.email != null ? paciente.email : 'N/A'}"></td>
                           <td th:text="${paciente.phone != null ? paciente.phone : 'N/A'}"></td>
                           <td>
-                            <button type="button" class="btn btn-sm btn-primary select-paciente-btn"
+                            <button type="button" class="btn btn-sm btn-primary generate-patient-report-btn"
                               th:data-paciente-id="${paciente.id}" th:data-paciente-name="${paciente.name}">
                               <i class="fas fa-file-pdf"></i> Generar Reporte
                             </button>
@@ -190,11 +218,24 @@
           }, 500);
         };
 
-        // Handle click events on patient selection buttons
-        $(document).on('click', '.select-paciente-btn', function () {
+        // Function to generate patient report directly from table button
+        window.generatePatientReportFromTable = function (pacienteId) {
+          if (!pacienteId) {
+            alert('Error: ID de paciente no válido');
+            return;
+          }
+
+          // Build URL
+          const url = '/rest/reports/patient/' + pacienteId;
+
+          // Open PDF in new window
+          window.open(url, '_blank');
+        };
+
+        // Handle click events on patient report generation buttons
+        $(document).on('click', '.generate-patient-report-btn', function () {
           const pacienteId = $(this).data('paciente-id');
-          const pacienteName = $(this).data('paciente-name');
-          selectPaciente(pacienteId, pacienteName);
+          generatePatientReportFromTable(pacienteId);
         });
 
         // Function to generate report
@@ -221,6 +262,22 @@
           if (params.length > 0) {
             url += '?' + params.join('&');
           }
+
+          // Open PDF in new window
+          window.open(url, '_blank');
+        };
+
+        // Function to generate nutrition analysis report
+        window.generateNutritionReport = function (event) {
+          event.preventDefault();
+          const dietaId = $('#dietaSelect').val();
+          if (!dietaId) {
+            alert('Por favor seleccione una dieta');
+            return;
+          }
+
+          // Build URL
+          const url = '/rest/reports/nutrition/' + dietaId;
 
           // Open PDF in new window
           window.open(url, '_blank');

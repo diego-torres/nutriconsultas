@@ -68,6 +68,10 @@ public class ReportTemplateValidator extends BaseTemplateValidator {
 		mockPacientes.add(mockPaciente);
 		variables.put("pacientes", mockPacientes);
 
+		// Create mock nutrition analysis result for nutrition-analysis template
+		final NutritionAnalysisResult mockAnalysis = createMockNutritionAnalysis();
+		variables.put("analysis", mockAnalysis);
+
 		return variables;
 	}
 
@@ -163,6 +167,76 @@ public class ReportTemplateValidator extends BaseTemplateValidator {
 		point.setSource("Consulta");
 		trend.add(point);
 		return trend;
+	}
+
+	private NutritionAnalysisResult createMockNutritionAnalysis() {
+		final NutritionAnalysisResult analysis = new NutritionAnalysisResult();
+
+		// Create dieta summary
+		final NutritionAnalysisResult.DietaSummary dietaSummary = new NutritionAnalysisResult.DietaSummary();
+		dietaSummary.setId(1L);
+		dietaSummary.setNombre("Dieta de Prueba");
+		analysis.setDieta(dietaSummary);
+
+		// Create nutrient totals
+		final NutritionAnalysisResult.NutrientTotals totals = new NutritionAnalysisResult.NutrientTotals();
+		totals.setEnergia(2000);
+		totals.setProteina(60.0);
+		totals.setLipidos(70.0);
+		totals.setHidratosDeCarbono(320.0);
+		totals.setFibra(30.0);
+		totals.setVitA(1000.0);
+		totals.setAcidoAscorbico(100.0);
+		totals.setAcidoFolico(450.0);
+		totals.setCalcio(1100.0);
+		totals.setHierro(20.0);
+		totals.setSodio(2000.0);
+		totals.setPotasio(3600.0);
+		totals.setFosforo(750.0);
+		totals.setSelenio(60.0);
+		totals.setColesterol(250.0);
+		totals.setAgSaturados(15.0);
+		totals.setAzucarPorEquivalente(40.0);
+		analysis.setTotals(totals);
+
+		// Create distribution
+		final NutritionAnalysisResult.NutrientDistribution distribution = new NutritionAnalysisResult.NutrientDistribution();
+		distribution.setProteinPercentage(23.0);
+		distribution.setLipidsPercentage(31.0);
+		distribution.setCarbohydratesPercentage(46.0);
+		analysis.setDistribution(distribution);
+
+		// Create some deficiencies
+		final List<NutritionAnalysisResult.NutrientDeficiency> deficiencies = new ArrayList<>();
+		final NutritionAnalysisResult.NutrientDeficiency deficiency = new NutritionAnalysisResult.NutrientDeficiency();
+		deficiency.setNutrientName("Hierro");
+		deficiency.setActualValue(10.0);
+		deficiency.setRecommendedValue(18.0);
+		deficiency.setUnit("mg");
+		deficiency.setPercentageOfRDV(55.6);
+		deficiency.setRecommendation("Incluya carnes magras, legumbres y espinacas en su dieta.");
+		deficiencies.add(deficiency);
+		analysis.setDeficiencies(deficiencies);
+
+		// Create some excesses
+		final List<NutritionAnalysisResult.NutrientExcess> excesses = new ArrayList<>();
+		final NutritionAnalysisResult.NutrientExcess excess = new NutritionAnalysisResult.NutrientExcess();
+		excess.setNutrientName("Sodio");
+		excess.setActualValue(2500.0);
+		excess.setRecommendedValue(2300.0);
+		excess.setUnit("mg");
+		excess.setPercentageOfRDV(108.7);
+		excess.setRecommendation("Reduzca el consumo de alimentos procesados y sal.");
+		excesses.add(excess);
+		analysis.setExcesses(excesses);
+
+		// Create recommendations
+		final List<String> recommendations = new ArrayList<>();
+		recommendations.add("Se identificaron 1 nutrientes por debajo de los valores recomendados.");
+		recommendations.add("Se identificaron 1 nutrientes que exceden los valores recomendados.");
+		analysis.setRecommendations(recommendations);
+
+		return analysis;
 	}
 
 }

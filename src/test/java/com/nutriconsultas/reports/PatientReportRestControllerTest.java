@@ -57,8 +57,7 @@ public class PatientReportRestControllerTest {
 		final String userId = "user123";
 		when(principal.getSubject()).thenReturn(userId);
 		when(pacienteService.findByIdAndUserId(1L, userId)).thenReturn(paciente);
-		when(reportService.generateReport(eq(1L), eq(userId), any(), any()))
-			.thenReturn(new byte[] { 1, 2, 3, 4, 5 });
+		when(reportService.generateReport(eq(1L), eq(userId), any(), any())).thenReturn(new byte[] { 1, 2, 3, 4, 5 });
 
 		final ResponseEntity<byte[]> response = restController.generatePatientReport(1L, null, null, principal);
 
@@ -81,8 +80,7 @@ public class PatientReportRestControllerTest {
 
 		when(principal.getSubject()).thenReturn(userId);
 		when(pacienteService.findByIdAndUserId(1L, userId)).thenReturn(paciente);
-		when(reportService.generateReport(eq(1L), eq(userId), any(), any()))
-			.thenReturn(new byte[] { 1, 2, 3, 4, 5 });
+		when(reportService.generateReport(eq(1L), eq(userId), any(), any())).thenReturn(new byte[] { 1, 2, 3, 4, 5 });
 
 		final ResponseEntity<byte[]> response = restController.generatePatientReport(1L, startDate, endDate, principal);
 
@@ -126,6 +124,66 @@ public class PatientReportRestControllerTest {
 		assertThat(response).isNotNull();
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
 		verify(reportService).generateReport(1L, userId, null, null);
+	}
+
+	@Test
+	public void testGenerateNutritionReportSuccess() {
+		final String userId = "user123";
+		final Long dietaId = 1L;
+		when(principal.getSubject()).thenReturn(userId);
+		when(reportService.generateNutritionReport(eq(dietaId), eq(userId))).thenReturn(new byte[] { 1, 2, 3, 4, 5 });
+
+		final ResponseEntity<byte[]> response = restController.generateNutritionReport(dietaId, principal);
+
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		final byte[] body = response.getBody();
+		assertThat(body).isNotNull();
+		assertThat(body.length).isGreaterThan(0);
+		final var contentType = response.getHeaders().getContentType();
+		assertThat(contentType).isNotNull();
+		assertThat(contentType.toString()).contains("application/pdf");
+		verify(reportService).generateNutritionReport(dietaId, userId);
+	}
+
+	@Test
+	public void testGenerateNutritionReportUnauthorized() {
+		when(principal.getSubject()).thenReturn(null);
+
+		final ResponseEntity<byte[]> response = restController.generateNutritionReport(1L, principal);
+
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+	}
+
+	@Test
+	public void testGenerateNutritionReportDietNotFound() {
+		final String userId = "user123";
+		final Long dietaId = 999L;
+		when(principal.getSubject()).thenReturn(userId);
+		when(reportService.generateNutritionReport(eq(dietaId), eq(userId)))
+			.thenThrow(new IllegalArgumentException("Diet with id " + dietaId + " not found or access denied"));
+
+		final ResponseEntity<byte[]> response = restController.generateNutritionReport(dietaId, principal);
+
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		verify(reportService).generateNutritionReport(dietaId, userId);
+	}
+
+	@Test
+	public void testGenerateNutritionReportInternalError() {
+		final String userId = "user123";
+		final Long dietaId = 1L;
+		when(principal.getSubject()).thenReturn(userId);
+		when(reportService.generateNutritionReport(eq(dietaId), eq(userId)))
+			.thenThrow(new IllegalStateException("Error generating PDF"));
+
+		final ResponseEntity<byte[]> response = restController.generateNutritionReport(dietaId, principal);
+
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+		verify(reportService).generateNutritionReport(dietaId, userId);
 	}
 
 }
