@@ -88,6 +88,9 @@ public class PatientReportService {
 	@Autowired
 	private PacienteDietaRepository pacienteDietaRepository;
 
+	@Autowired
+	private NutritionAnalysisService nutritionAnalysisService;
+
 	/**
 	 * Generates a PDF progress report for a patient.
 	 * @param pacienteId the ID of the patient
@@ -219,6 +222,33 @@ public class PatientReportService {
 		trend.sort(Comparator.comparing(WeightBmiDataPoint::getDate));
 
 		return trend;
+	}
+
+	/**
+	 * Generates a PDF nutrition analysis report for a dietary plan.
+	 * @param dietaId the ID of the diet to analyze
+	 * @param userId the user ID to verify diet ownership
+	 * @return PDF document as byte array
+	 * @throws IllegalArgumentException if diet with the given ID is not found or doesn't
+	 * belong to the user
+	 * @throws IllegalStateException if PDF generation fails
+	 */
+	public byte[] generateNutritionReport(@NonNull final Long dietaId, @NonNull final String userId) {
+		log.info("Generating nutrition analysis report for dieta id: {} (user: {})", dietaId, userId);
+
+		// Perform nutrition analysis
+		final NutritionAnalysisResult analysis = nutritionAnalysisService.analyzeDiet(dietaId, userId);
+
+		// Prepare context for Thymeleaf template
+		final Context context = new Context();
+		context.setVariable("analysis", analysis);
+		context.setVariable("reportDate", new Date());
+
+		// Render Thymeleaf template to HTML
+		final String html = templateEngine.process("sbadmin/reports/nutrition-analysis", context);
+
+		// Convert HTML to PDF using Flying Saucer
+		return htmlToPdf(html);
 	}
 
 	private byte[] htmlToPdf(final String html) {

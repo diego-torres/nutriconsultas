@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<!--
+	TEMPLATE: sbadmin/reports/nutrition-analysis.html
+	
+	PURPOSE:
+	This template generates a comprehensive nutrition analysis report in PDF format.
+	It includes:
+	- Diet summary information
+	- Total nutrient values
+	- Comparison against recommended daily values (RDV)
+	- Identified nutritional deficiencies
+	- Identified nutritional excesses
+	- Macro and micronutrient distribution
+	- Recommendations for improvement
+	
+	REQUIRED MODEL VARIABLES:
+	- analysis: NutritionAnalysisResult (required)
+	- reportDate: Date (required, report generation date)
+	
+	USAGE:
+	This template is processed by PatientReportService.generateNutritionReport() which
+	performs nutrition analysis and prepares it for rendering.
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+	<meta charset="UTF-8" />
+	<title>Análisis Nutricional - <span th:text="${analysis != null && analysis.dieta != null ? analysis.dieta.nombre : 'Dieta'}"></span></title>
+	<style>
+		@page {
+			size: A4;
+			margin: 2cm;
+		}
+		body {
+			font-family: Arial, sans-serif;
+			font-size: 10pt;
+			line-height: 1.4;
+			color: #333;
+		}
+		.header {
+			border-bottom: 3px solid #4e73df;
+			padding-bottom: 15px;
+			margin-bottom: 20px;
+		}
+		.header h1 {
+			color: #4e73df;
+			margin: 0;
+			font-size: 22pt;
+		}
+		.header p {
+			margin: 5px 0;
+			color: #666;
+			font-size: 9pt;
+		}
+		.section {
+			margin-bottom: 25px;
+			page-break-inside: avoid;
+		}
+		.section h2 {
+			color: #4e73df;
+			font-size: 16pt;
+			margin-bottom: 10px;
+			border-bottom: 2px solid #e3e6f0;
+			padding-bottom: 5px;
+		}
+		.info-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-bottom: 15px;
+		}
+		.info-table td {
+			padding: 6px 10px;
+			border-bottom: 1px solid #e3e6f0;
+		}
+		.info-table td:first-child {
+			font-weight: bold;
+			width: 35%;
+			background-color: #f8f9fc;
+		}
+		.data-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-bottom: 15px;
+			font-size: 9pt;
+		}
+		.data-table th {
+			background-color: #4e73df;
+			color: white;
+			padding: 8px;
+			text-align: left;
+			font-weight: bold;
+		}
+		.data-table td {
+			padding: 6px 8px;
+			border-bottom: 1px solid #e3e6f0;
+		}
+		.data-table tr:nth-child(even) {
+			background-color: #f8f9fc;
+		}
+		.deficiency {
+			background-color: #fff3cd;
+			padding: 10px;
+			border-left: 4px solid #ffc107;
+			margin-bottom: 10px;
+		}
+		.excess {
+			background-color: #f8d7da;
+			padding: 10px;
+			border-left: 4px solid #dc3545;
+			margin-bottom: 10px;
+		}
+		.recommendation {
+			background-color: #d1ecf1;
+			padding: 10px;
+			border-left: 4px solid #17a2b8;
+			margin-bottom: 10px;
+		}
+		.distribution-bar {
+			background-color: #e3e6f0;
+			height: 20px;
+			border-radius: 10px;
+			margin: 5px 0;
+			position: relative;
+			overflow: hidden;
+		}
+		.distribution-fill {
+			height: 100%;
+			display: inline-block;
+			text-align: center;
+			line-height: 20px;
+			color: white;
+			font-weight: bold;
+			font-size: 9pt;
+		}
+		.protein-fill {
+			background-color: #4e73df;
+		}
+		.lipids-fill {
+			background-color: #1cc88a;
+		}
+		.carbs-fill {
+			background-color: #f6c23e;
+		}
+		.no-data {
+			color: #999;
+			font-style: italic;
+		}
+	</style>
+</head>
+<body>
+	<div class="header">
+		<h1>Análisis Nutricional</h1>
+		<p th:if="${analysis != null && analysis.dieta != null}">
+			<strong>Dieta:</strong> <span th:text="${analysis.dieta.nombre}"></span>
+		</p>
+		<p th:if="${reportDate != null}">
+			<strong>Fecha del Reporte:</strong> <span th:text="${#dates.format(reportDate, 'dd/MM/yyyy HH:mm')}"></span>
+		</p>
+	</div>
+
+	<div class="section" th:if="${analysis != null && analysis.dieta != null}">
+		<h2>Información de la Dieta</h2>
+		<table class="info-table">
+			<tr>
+				<td>ID de la Dieta</td>
+				<td th:text="${analysis.dieta.id}"></td>
+			</tr>
+			<tr>
+				<td>Nombre</td>
+				<td th:text="${analysis.dieta.nombre}"></td>
+			</tr>
+		</table>
+	</div>
+
+	<div class="section" th:if="${analysis != null && analysis.totals != null}">
+		<h2>Valores Totales de Nutrientes</h2>
+		<table class="data-table">
+			<thead>
+				<tr>
+					<th>Nutriente</th>
+					<th>Valor</th>
+					<th>Unidad</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:if="${analysis.totals.energia != null}">
+					<td>Energía</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.energia, 0, 0)}"></td>
+					<td>kcal</td>
+				</tr>
+				<tr th:if="${analysis.totals.proteina != null}">
+					<td>Proteína</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.proteina, 1, 1)}"></td>
+					<td>g</td>
+				</tr>
+				<tr th:if="${analysis.totals.lipidos != null}">
+					<td>Lípidos</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.lipidos, 1, 1)}"></td>
+					<td>g</td>
+				</tr>
+				<tr th:if="${analysis.totals.hidratosDeCarbono != null}">
+					<td>Hidratos de Carbono</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.hidratosDeCarbono, 1, 1)}"></td>
+					<td>g</td>
+				</tr>
+				<tr th:if="${analysis.totals.fibra != null}">
+					<td>Fibra</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.fibra, 1, 1)}"></td>
+					<td>g</td>
+				</tr>
+				<tr th:if="${analysis.totals.vitA != null}">
+					<td>Vitamina A</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.vitA, 1, 1)}"></td>
+					<td>μg</td>
+				</tr>
+				<tr th:if="${analysis.totals.acidoAscorbico != null}">
+					<td>Vitamina C (Ácido Ascórbico)</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.acidoAscorbico, 1, 1)}"></td>
+					<td>mg</td>
+				</tr>
+				<tr th:if="${analysis.totals.acidoFolico != null}">
+					<td>Ácido Fólico</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.acidoFolico, 1, 1)}"></td>
+					<td>μg</td>
+				</tr>
+				<tr th:if="${analysis.totals.calcio != null}">
+					<td>Calcio</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.calcio, 1, 1)}"></td>
+					<td>mg</td>
+				</tr>
+				<tr th:if="${analysis.totals.hierro != null}">
+					<td>Hierro</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.hierro, 1, 1)}"></td>
+					<td>mg</td>
+				</tr>
+				<tr th:if="${analysis.totals.sodio != null}">
+					<td>Sodio</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.sodio, 1, 1)}"></td>
+					<td>mg</td>
+				</tr>
+				<tr th:if="${analysis.totals.potasio != null}">
+					<td>Potasio</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.potasio, 1, 1)}"></td>
+					<td>mg</td>
+				</tr>
+				<tr th:if="${analysis.totals.fosforo != null}">
+					<td>Fósforo</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.fosforo, 1, 1)}"></td>
+					<td>mg</td>
+				</tr>
+				<tr th:if="${analysis.totals.selenio != null}">
+					<td>Selenio</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.selenio, 1, 1)}"></td>
+					<td>μg</td>
+				</tr>
+				<tr th:if="${analysis.totals.colesterol != null}">
+					<td>Colesterol</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.colesterol, 1, 1)}"></td>
+					<td>mg</td>
+				</tr>
+				<tr th:if="${analysis.totals.agSaturados != null}">
+					<td>Grasas Saturadas</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.agSaturados, 1, 1)}"></td>
+					<td>g</td>
+				</tr>
+				<tr th:if="${analysis.totals.azucarPorEquivalente != null}">
+					<td>Azúcar</td>
+					<td th:text="${#numbers.formatDecimal(analysis.totals.azucarPorEquivalente, 1, 1)}"></td>
+					<td>g</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<div class="section" th:if="${analysis != null && analysis.distribution != null}">
+		<h2>Distribución de Macronutrientes</h2>
+		<table class="info-table">
+			<tr>
+				<td>Proteína</td>
+				<td>
+					<span th:text="${#numbers.formatDecimal(analysis.distribution.proteinPercentage, 1, 1)}"></span>%
+					<span th:text="'(' + ${analysis.distribution.recommendedProteinRange} + ' recomendado)'"></span>
+				</td>
+			</tr>
+			<tr>
+				<td>Lípidos</td>
+				<td>
+					<span th:text="${#numbers.formatDecimal(analysis.distribution.lipidsPercentage, 1, 1)}"></span>%
+					<span th:text="'(' + ${analysis.distribution.recommendedLipidsRange} + ' recomendado)'"></span>
+				</td>
+			</tr>
+			<tr>
+				<td>Carbohidratos</td>
+				<td>
+					<span th:text="${#numbers.formatDecimal(analysis.distribution.carbohydratesPercentage, 1, 1)}"></span>%
+					<span th:text="'(' + ${analysis.distribution.recommendedCarbohydratesRange} + ' recomendado)'"></span>
+				</td>
+			</tr>
+		</table>
+		<div class="distribution-bar" th:if="${analysis.distribution.proteinPercentage != null}">
+			<div class="distribution-fill protein-fill" 
+				th:style="'width: ' + ${analysis.distribution.proteinPercentage} + '%;'"
+				th:text="${#numbers.formatDecimal(analysis.distribution.proteinPercentage, 1, 1)} + '%'"></div>
+		</div>
+		<div class="distribution-bar" th:if="${analysis.distribution.lipidsPercentage != null}">
+			<div class="distribution-fill lipids-fill" 
+				th:style="'width: ' + ${analysis.distribution.lipidsPercentage} + '%;'"
+				th:text="${#numbers.formatDecimal(analysis.distribution.lipidsPercentage, 1, 1)} + '%'"></div>
+		</div>
+		<div class="distribution-bar" th:if="${analysis.distribution.carbohydratesPercentage != null}">
+			<div class="distribution-fill carbs-fill" 
+				th:style="'width: ' + ${analysis.distribution.carbohydratesPercentage} + '%;'"
+				th:text="${#numbers.formatDecimal(analysis.distribution.carbohydratesPercentage, 1, 1)} + '%'"></div>
+		</div>
+	</div>
+
+	<div class="section" th:if="${analysis != null && analysis.deficiencies != null && !analysis.deficiencies.isEmpty()}">
+		<h2>Deficiencias Nutricionales</h2>
+		<p>Se identificaron <strong th:text="${#lists.size(analysis.deficiencies)}"></strong> nutrientes por debajo de los valores recomendados:</p>
+		<div th:each="deficiency : ${analysis.deficiencies}" class="deficiency">
+			<h3 th:text="${deficiency.nutrientName}"></h3>
+			<p>
+				<strong>Valor Actual:</strong> <span th:text="${#numbers.formatDecimal(deficiency.actualValue, 1, 1)}"></span> <span th:text="${deficiency.unit}"></span>
+			</p>
+			<p>
+				<strong>Valor Recomendado:</strong> <span th:text="${#numbers.formatDecimal(deficiency.recommendedValue, 1, 1)}"></span> <span th:text="${deficiency.unit}"></span>
+			</p>
+			<p>
+				<strong>Porcentaje del VDR:</strong> <span th:text="${#numbers.formatDecimal(deficiency.percentageOfRDV, 1, 1)}"></span>%
+			</p>
+			<p>
+				<strong>Recomendación:</strong> <span th:text="${deficiency.recommendation}"></span>
+			</p>
+		</div>
+	</div>
+
+	<div class="section" th:if="${analysis != null && analysis.excesses != null && !analysis.excesses.isEmpty()}">
+		<h2>Excesos Nutricionales</h2>
+		<p>Se identificaron <strong th:text="${#lists.size(analysis.excesses)}"></strong> nutrientes que exceden los valores recomendados:</p>
+		<div th:each="excess : ${analysis.excesses}" class="excess">
+			<h3 th:text="${excess.nutrientName}"></h3>
+			<p>
+				<strong>Valor Actual:</strong> <span th:text="${#numbers.formatDecimal(excess.actualValue, 1, 1)}"></span> <span th:text="${excess.unit}"></span>
+			</p>
+			<p>
+				<strong>Valor Máximo Recomendado:</strong> <span th:text="${#numbers.formatDecimal(excess.recommendedValue, 1, 1)}"></span> <span th:text="${excess.unit}"></span>
+			</p>
+			<p>
+				<strong>Porcentaje del VDR:</strong> <span th:text="${#numbers.formatDecimal(excess.percentageOfRDV, 1, 1)}"></span>%
+			</p>
+			<p>
+				<strong>Recomendación:</strong> <span th:text="${excess.recommendation}"></span>
+			</p>
+		</div>
+	</div>
+
+	<div class="section" th:if="${analysis != null && analysis.recommendations != null && !analysis.recommendations.isEmpty()}">
+		<h2>Recomendaciones Generales</h2>
+		<div th:each="recommendation : ${analysis.recommendations}" class="recommendation">
+			<p th:text="${recommendation}"></p>
+		</div>
+	</div>
+
+	<div class="section" th:if="${analysis != null && (analysis.deficiencies == null || analysis.deficiencies.isEmpty()) && (analysis.excesses == null || analysis.excesses.isEmpty())}">
+		<h2>Estado Nutricional</h2>
+		<p class="recommendation">
+			<strong>¡Excelente!</strong> Su plan alimentario cumple con los valores recomendados de nutrientes. 
+			Mantenga este equilibrio para una nutrición óptima.
+		</p>
+	</div>
+
+</body>
+</html>
+

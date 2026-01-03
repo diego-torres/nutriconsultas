@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import com.nutriconsultas.controller.AbstractAuthorizedController;
+import com.nutriconsultas.dieta.DietaRepository;
 import com.nutriconsultas.paciente.PacienteService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,9 @@ public class ReportController extends AbstractAuthorizedController {
 
 	@Autowired
 	private PacienteService pacienteService;
+
+	@Autowired
+	private DietaRepository dietaRepository;
 
 	/**
 	 * Gets the user ID from the OAuth2 principal.
@@ -65,6 +69,9 @@ public class ReportController extends AbstractAuthorizedController {
 
 		// Get all patients for the current user
 		model.addAttribute("pacientes", pacienteService.findAllByUserId(userId));
+
+		// Get all diets for the current user
+		model.addAttribute("dietas", dietaRepository.findByUserId(userId));
 
 		return "sbadmin/reports/listado";
 	}

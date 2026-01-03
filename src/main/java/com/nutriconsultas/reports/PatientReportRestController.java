@@ -149,4 +149,63 @@ public class PatientReportRestController {
 		}
 	}
 
+	/**
+	 * Generates a PDF nutrition analysis report for a dietary plan.
+	 *
+	 * <p>
+	 * The report includes:
+	 * <ul>
+	 * <li>Total nutrient values calculated from the diet</li>
+	 * <li>Comparison against recommended daily values (RDV)</li>
+	 * <li>Identified nutritional deficiencies</li>
+	 * <li>Identified nutritional excesses</li>
+	 * <li>Macro and micronutrient distribution analysis</li>
+	 * <li>Recommendations for dietary improvements</li>
+	 * </ul>
+	 * @param dietaId the ID of the diet to analyze
+	 * @param principal the authenticated OAuth2 user
+	 * @return PDF document as ResponseEntity with appropriate headers
+	 * @throws IllegalArgumentException if diet not found or access denied
+	 * @throws IllegalStateException if PDF generation fails
+	 */
+	@GetMapping(value = "/nutrition/{dietaId}", produces = MediaType.APPLICATION_PDF_VALUE)
+	public ResponseEntity<byte[]> generateNutritionReport(
+			@PathVariable("dietaId") @org.springframework.lang.NonNull final Long dietaId,
+			@AuthenticationPrincipal final OidcUser principal) {
+		log.info("Generating nutrition analysis report for dieta id: {}", dietaId);
+
+		final OidcUser userPrincipal = principal != null ? principal
+				: (OidcUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		final String userId = getUserId(userPrincipal);
+
+		if (userId == null) {
+			log.error("Cannot generate report: user ID is null");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+
+		try {
+			final byte[] pdfBytes = reportService.generateNutritionReport(dietaId, userId);
+
+			// Sanitize dieta name for filename
+			final String filename = "analisis-nutricional-" + dietaId + ".pdf";
+
+			@SuppressWarnings("PMD.LooseCoupling")
+			final HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_PDF);
+			headers.setContentDispositionFormData("attachment", filename);
+			headers.setContentLength(pdfBytes.length);
+
+			log.info("Successfully generated nutrition report for dieta id: {}", dietaId);
+			return ResponseEntity.ok().headers(headers).body(pdfBytes);
+		}
+		catch (final IllegalArgumentException e) {
+			log.warn("Failed to generate nutrition report for dieta id: {} - {}", dietaId, e.getMessage());
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
+		catch (final Exception e) {
+			log.error("Error generating nutrition report for dieta id: {}", dietaId, e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
 }
