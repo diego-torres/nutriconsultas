@@ -20,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.PacienteService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,6 +34,9 @@ public class PatientReportRestControllerTest {
 
 	@Mock
 	private PatientReportService reportService;
+
+	@Mock
+	private PacienteService pacienteService;
 
 	@Mock
 	private OidcUser principal;
@@ -50,6 +54,7 @@ public class PatientReportRestControllerTest {
 	@Test
 	public void testGeneratePatientReportSuccess() {
 		when(principal.getSubject()).thenReturn("user123");
+		when(pacienteService.findByIdAndUserId(1L, "user123")).thenReturn(paciente);
 		when(reportService.generateReport(eq(1L), eq("user123"), any(), any()))
 			.thenReturn(new byte[] { 1, 2, 3, 4, 5 });
 
@@ -70,6 +75,7 @@ public class PatientReportRestControllerTest {
 		final Date endDate = new Date();
 
 		when(principal.getSubject()).thenReturn("user123");
+		when(pacienteService.findByIdAndUserId(1L, "user123")).thenReturn(paciente);
 		when(reportService.generateReport(eq(1L), eq("user123"), any(), any()))
 			.thenReturn(new byte[] { 1, 2, 3, 4, 5 });
 
@@ -84,14 +90,12 @@ public class PatientReportRestControllerTest {
 	@Test
 	public void testGeneratePatientReportPatientNotFound() {
 		when(principal.getSubject()).thenReturn("user123");
-		when(reportService.generateReport(eq(1L), eq("user123"), any(), any()))
-			.thenThrow(new IllegalArgumentException("Patient with id 1 not found or access denied"));
+		when(pacienteService.findByIdAndUserId(1L, "user123")).thenReturn(null);
 
 		final ResponseEntity<byte[]> response = restController.generatePatientReport(1L, null, null, principal);
 
 		assertThat(response).isNotNull();
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-		verify(reportService).generateReport(1L, "user123", null, null);
 	}
 
 	@Test
@@ -107,6 +111,7 @@ public class PatientReportRestControllerTest {
 	@Test
 	public void testGeneratePatientReportInternalError() {
 		when(principal.getSubject()).thenReturn("user123");
+		when(pacienteService.findByIdAndUserId(1L, "user123")).thenReturn(paciente);
 		when(reportService.generateReport(eq(1L), eq("user123"), any(), any()))
 			.thenThrow(new IllegalStateException("Error generating PDF"));
 
