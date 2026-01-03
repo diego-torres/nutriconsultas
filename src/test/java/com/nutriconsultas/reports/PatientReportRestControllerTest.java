@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @ExtendWith(MockitoExtension.class)
 @Slf4j
 @ActiveProfiles("test")
+@SuppressWarnings("null")
 public class PatientReportRestControllerTest {
 
 	@InjectMocks
@@ -53,30 +54,34 @@ public class PatientReportRestControllerTest {
 
 	@Test
 	public void testGeneratePatientReportSuccess() {
-		when(principal.getSubject()).thenReturn("user123");
-		when(pacienteService.findByIdAndUserId(1L, "user123")).thenReturn(paciente);
-		when(reportService.generateReport(eq(1L), eq("user123"), any(), any()))
+		final String userId = "user123";
+		when(principal.getSubject()).thenReturn(userId);
+		when(pacienteService.findByIdAndUserId(1L, userId)).thenReturn(paciente);
+		when(reportService.generateReport(eq(1L), eq(userId), any(), any()))
 			.thenReturn(new byte[] { 1, 2, 3, 4, 5 });
 
 		final ResponseEntity<byte[]> response = restController.generatePatientReport(1L, null, null, principal);
 
 		assertThat(response).isNotNull();
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-		assertThat(response.getBody()).isNotNull();
-		assertThat(response.getBody().length).isGreaterThan(0);
-		assertThat(response.getHeaders().getContentType()).isNotNull();
-		assertThat(response.getHeaders().getContentType().toString()).contains("application/pdf");
-		verify(reportService).generateReport(1L, "user123", null, null);
+		final byte[] body = response.getBody();
+		assertThat(body).isNotNull();
+		assertThat(body.length).isGreaterThan(0);
+		final var contentType = response.getHeaders().getContentType();
+		assertThat(contentType).isNotNull();
+		assertThat(contentType.toString()).contains("application/pdf");
+		verify(reportService).generateReport(1L, userId, null, null);
 	}
 
 	@Test
 	public void testGeneratePatientReportWithDateRange() {
+		final String userId = "user123";
 		final Date startDate = new Date(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000);
 		final Date endDate = new Date();
 
-		when(principal.getSubject()).thenReturn("user123");
-		when(pacienteService.findByIdAndUserId(1L, "user123")).thenReturn(paciente);
-		when(reportService.generateReport(eq(1L), eq("user123"), any(), any()))
+		when(principal.getSubject()).thenReturn(userId);
+		when(pacienteService.findByIdAndUserId(1L, userId)).thenReturn(paciente);
+		when(reportService.generateReport(eq(1L), eq(userId), any(), any()))
 			.thenReturn(new byte[] { 1, 2, 3, 4, 5 });
 
 		final ResponseEntity<byte[]> response = restController.generatePatientReport(1L, startDate, endDate, principal);
@@ -84,7 +89,7 @@ public class PatientReportRestControllerTest {
 		assertThat(response).isNotNull();
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getBody()).isNotNull();
-		verify(reportService).generateReport(1L, "user123", startDate, endDate);
+		verify(reportService).generateReport(1L, userId, startDate, endDate);
 	}
 
 	@Test
@@ -110,16 +115,17 @@ public class PatientReportRestControllerTest {
 
 	@Test
 	public void testGeneratePatientReportInternalError() {
-		when(principal.getSubject()).thenReturn("user123");
-		when(pacienteService.findByIdAndUserId(1L, "user123")).thenReturn(paciente);
-		when(reportService.generateReport(eq(1L), eq("user123"), any(), any()))
+		final String userId = "user123";
+		when(principal.getSubject()).thenReturn(userId);
+		when(pacienteService.findByIdAndUserId(1L, userId)).thenReturn(paciente);
+		when(reportService.generateReport(eq(1L), eq(userId), any(), any()))
 			.thenThrow(new IllegalStateException("Error generating PDF"));
 
 		final ResponseEntity<byte[]> response = restController.generatePatientReport(1L, null, null, principal);
 
 		assertThat(response).isNotNull();
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-		verify(reportService).generateReport(1L, "user123", null, null);
+		verify(reportService).generateReport(1L, userId, null, null);
 	}
 
 }
