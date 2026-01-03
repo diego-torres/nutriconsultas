@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<!--
+	TEMPLATE: sbadmin/reports/patient-progress.html
+	
+	PURPOSE:
+	This template generates a comprehensive patient progress report in PDF format.
+	It includes:
+	- Patient demographics and medical history
+	- Weight/BMI trend data over time
+	- Consultation history with key metrics
+	- Current dietary plan summary
+	- Progress notes and recommendations
+	
+	REQUIRED MODEL VARIABLES:
+	- paciente: Paciente entity (required)
+	- consultations: List<CalendarEvent> (required)
+	- measurements: List<AnthropometricMeasurement> (required)
+	- exams: List<ClinicalExam> (required)
+	- dietaryPlans: List<PacienteDieta> (required)
+	- weightBmiTrend: List<WeightBmiDataPoint> (required)
+	- startDate: Date (optional, for date range filtering)
+	- endDate: Date (optional, for date range filtering)
+	- reportDate: Date (required, report generation date)
+	
+	USAGE:
+	This template is processed by PatientReportService.generateReport() which collects
+	all patient data and prepares it for rendering.
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+	<meta charset="UTF-8" />
+	<title>Reporte de Progreso - <span th:text="${paciente != null ? paciente.name : 'Paciente'}"></span></title>
+	<style>
+		@page {
+			size: A4;
+			margin: 2cm;
+		}
+		body {
+			font-family: Arial, sans-serif;
+			font-size: 10pt;
+			line-height: 1.4;
+			color: #333;
+		}
+		.header {
+			border-bottom: 3px solid #4e73df;
+			padding-bottom: 15px;
+			margin-bottom: 20px;
+		}
+		.header h1 {
+			color: #4e73df;
+			margin: 0;
+			font-size: 22pt;
+		}
+		.header p {
+			margin: 5px 0;
+			color: #666;
+			font-size: 9pt;
+		}
+		.section {
+			margin-bottom: 25px;
+			page-break-inside: avoid;
+		}
+		.section h2 {
+			color: #4e73df;
+			font-size: 16pt;
+			margin-bottom: 10px;
+			border-bottom: 2px solid #e3e6f0;
+			padding-bottom: 5px;
+		}
+		.info-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-bottom: 15px;
+		}
+		.info-table td {
+			padding: 6px 10px;
+			border-bottom: 1px solid #e3e6f0;
+		}
+		.info-table td:first-child {
+			font-weight: bold;
+			width: 35%;
+			background-color: #f8f9fc;
+		}
+		.data-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-bottom: 15px;
+			font-size: 9pt;
+		}
+		.data-table th {
+			background-color: #4e73df;
+			color: white;
+			padding: 8px;
+			text-align: left;
+			font-weight: bold;
+		}
+		.data-table td {
+			padding: 6px 8px;
+			border-bottom: 1px solid #e3e6f0;
+		}
+		.data-table tr:nth-child(even) {
+			background-color: #f8f9fc;
+		}
+		.trend-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-bottom: 15px;
+			font-size: 9pt;
+		}
+		.trend-table th {
+			background-color: #4e73df;
+			color: white;
+			padding: 8px;
+			text-align: left;
+			font-weight: bold;
+		}
+		.trend-table td {
+			padding: 6px 8px;
+			border-bottom: 1px solid #e3e6f0;
+		}
+		.trend-table tr:nth-child(even) {
+			background-color: #f8f9fc;
+		}
+		.medical-history {
+			background-color: #f8f9fc;
+			padding: 10px;
+			border-radius: 5px;
+			margin-bottom: 10px;
+		}
+		.medical-history p {
+			margin: 5px 0;
+		}
+		.medical-history strong {
+			color: #4e73df;
+		}
+		.dietary-plan-item {
+			background-color: #f8f9fc;
+			padding: 10px;
+			border-radius: 5px;
+			margin-bottom: 10px;
+			border-left: 4px solid #4e73df;
+		}
+		.dietary-plan-item h3 {
+			margin: 0 0 5px 0;
+			color: #4e73df;
+			font-size: 12pt;
+		}
+		.dietary-plan-item p {
+			margin: 3px 0;
+			font-size: 9pt;
+		}
+		.status-active {
+			color: #1cc88a;
+			font-weight: bold;
+		}
+		.status-inactive {
+			color: #858796;
+		}
+		.footer {
+			margin-top: 30px;
+			padding-top: 15px;
+			border-top: 2px solid #e3e6f0;
+			text-align: center;
+			color: #666;
+			font-size: 8pt;
+		}
+		.date-range {
+			font-style: italic;
+			color: #666;
+			margin-bottom: 10px;
+		}
+		.no-data {
+			color: #858796;
+			font-style: italic;
+			padding: 10px;
+		}
+	</style>
+</head>
+<body>
+	<div class="header">
+		<h1>Reporte de Progreso del Paciente</h1>
+		<p>Minutriporcion - Consulta Nutricional</p>
+		<p th:if="${startDate != null || endDate != null}" class="date-range">
+			Período: 
+			<span th:if="${startDate != null}" th:text="${#dates.format(startDate, 'dd/MM/yyyy')}"></span>
+			<span th:if="${startDate == null}">Inicio</span>
+			<span> - </span>
+			<span th:if="${endDate != null}" th:text="${#dates.format(endDate, 'dd/MM/yyyy')}"></span>
+			<span th:if="${endDate == null}">Hoy</span>
+		</p>
+	</div>
+
+	<!-- Patient Demographics -->
+	<div class="section">
+		<h2>Información del Paciente</h2>
+		<table class="info-table">
+			<tr>
+				<td>Nombre:</td>
+				<td th:text="${paciente.name}"></td>
+			</tr>
+			<tr th:if="${paciente.dob != null}">
+				<td>Fecha de Nacimiento:</td>
+				<td th:text="${#dates.format(paciente.dob, 'dd/MM/yyyy')}"></td>
+			</tr>
+			<tr th:if="${paciente.gender != null}">
+				<td>Género:</td>
+				<td th:text="${paciente.gender == 'M' ? 'Masculino' : (paciente.gender == 'F' ? 'Femenino' : paciente.gender)}"></td>
+			</tr>
+			<tr th:if="${paciente.email != null && !paciente.email.isEmpty()}">
+				<td>Email:</td>
+				<td th:text="${paciente.email}"></td>
+			</tr>
+			<tr th:if="${paciente.phone != null && !paciente.phone.isEmpty()}">
+				<td>Teléfono:</td>
+				<td th:text="${paciente.phone}"></td>
+			</tr>
+			<tr th:if="${paciente.peso != null}">
+				<td>Peso Actual:</td>
+				<td th:text="${paciente.peso + ' kg'}"></td>
+			</tr>
+			<tr th:if="${paciente.estatura != null}">
+				<td>Estatura:</td>
+				<td th:text="${paciente.estatura + ' m'}"></td>
+			</tr>
+			<tr th:if="${paciente.imc != null}">
+				<td>IMC Actual:</td>
+				<td th:text="${#numbers.formatDecimal(paciente.imc, 1, 2)}"></td>
+			</tr>
+			<tr th:if="${paciente.nivelPeso != null}">
+				<td>Nivel de Peso:</td>
+				<td th:text="${paciente.nivelPeso}"></td>
+			</tr>
+			<tr th:if="${paciente.responsibleName != null && !paciente.responsibleName.isEmpty()}">
+				<td>Responsable:</td>
+				<td th:text="${paciente.responsibleName + (paciente.parentesco != null && !paciente.parentesco.isEmpty() ? ' (' + paciente.parentesco + ')' : '')}"></td>
+			</tr>
+		</table>
+	</div>
+
+	<!-- Medical History -->
+	<div class="section" th:if="${paciente.antecedentesPatologicosPersonales != null || paciente.antecedentesPatologicosFamiliares != null || paciente.alergias != null || paciente.hipertension != null || paciente.diabetes != null || paciente.hipotiroidismo != null || paciente.obesidad != null || paciente.anemia != null || paciente.bulimia != null || paciente.anorexia != null || paciente.enfermedadesHepaticas != null}">
+		<h2>Antecedentes Médicos</h2>
+		<div class="medical-history">
+			<p th:if="${paciente.antecedentesPatologicosPersonales != null && !paciente.antecedentesPatologicosPersonales.isEmpty()}">
+				<strong>Antecedentes Patológicos Personales:</strong><br/>
+				<span th:text="${paciente.antecedentesPatologicosPersonales}"></span>
+			</p>
+			<p th:if="${paciente.antecedentesPatologicosFamiliares != null && !paciente.antecedentesPatologicosFamiliares.isEmpty()}">
+				<strong>Antecedentes Patológicos Familiares:</strong><br/>
+				<span th:text="${paciente.antecedentesPatologicosFamiliares}"></span>
+			</p>
+			<p th:if="${paciente.alergias != null && !paciente.alergias.isEmpty()}">
+				<strong>Alergias:</strong><br/>
+				<span th:text="${paciente.alergias}"></span>
+			</p>
+			<div th:if="${paciente.hipertension != null || paciente.diabetes != null || paciente.hipotiroidismo != null || paciente.obesidad != null || paciente.anemia != null || paciente.bulimia != null || paciente.anorexia != null || paciente.enfermedadesHepaticas != null}">
+				<strong>Condiciones:</strong>
+				<ul style="margin: 5px 0; padding-left: 20px;">
+					<li th:if="${paciente.hipertension != null && paciente.hipertension}">Hipertensión</li>
+					<li th:if="${paciente.diabetes != null && paciente.diabetes}">Diabetes</li>
+					<li th:if="${paciente.hipotiroidismo != null && paciente.hipotiroidismo}">Hipotiroidismo</li>
+					<li th:if="${paciente.obesidad != null && paciente.obesidad}">Obesidad</li>
+					<li th:if="${paciente.anemia != null && paciente.anemia}">Anemia</li>
+					<li th:if="${paciente.bulimia != null && paciente.bulimia}">Bulimia</li>
+					<li th:if="${paciente.anorexia != null && paciente.anorexia}">Anorexia</li>
+					<li th:if="${paciente.enfermedadesHepaticas != null && paciente.enfermedadesHepaticas}">Enfermedades Hepáticas</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<!-- Weight/BMI Trend -->
+	<div class="section">
+		<h2>Tendencia de Peso e IMC</h2>
+		<div th:if="${weightBmiTrend != null && !weightBmiTrend.isEmpty()}">
+			<table class="trend-table">
+				<thead>
+					<tr>
+						<th>Fecha</th>
+						<th>Peso (kg)</th>
+						<th>IMC</th>
+						<th>Fuente</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="point : ${weightBmiTrend}">
+						<td th:text="${#dates.format(point.date, 'dd/MM/yyyy')}"></td>
+						<td th:text="${point.weight != null ? (#numbers.formatDecimal(point.weight, 1, 2) + ' kg') : 'N/A'}"></td>
+						<td th:text="${point.bmi != null ? #numbers.formatDecimal(point.bmi, 1, 2) : 'N/A'}"></td>
+						<td th:text="${point.source}"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div th:if="${weightBmiTrend == null || weightBmiTrend.isEmpty()}" class="no-data">
+			No hay datos de peso/IMC disponibles para el período seleccionado.
+		</div>
+	</div>
+
+	<!-- Consultation History -->
+	<div class="section">
+		<h2>Historial de Consultas</h2>
+		<div th:if="${consultations != null && !consultations.isEmpty()}">
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Fecha</th>
+						<th>Título</th>
+						<th>Duración (min)</th>
+						<th>Estado</th>
+						<th>Peso (kg)</th>
+						<th>IMC</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="consultation : ${consultations}">
+						<td th:text="${consultation.eventDateTime != null ? #dates.format(consultation.eventDateTime, 'dd/MM/yyyy HH:mm') : 'N/A'}"></td>
+						<td th:text="${consultation.title}"></td>
+						<td th:text="${consultation.durationMinutes}"></td>
+						<td th:text="${consultation.status}"></td>
+						<td th:text="${consultation.peso != null ? (#numbers.formatDecimal(consultation.peso, 1, 2) + ' kg') : 'N/A'}"></td>
+						<td th:text="${consultation.imc != null ? #numbers.formatDecimal(consultation.imc, 1, 2) : 'N/A'}"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div th:if="${consultations == null || consultations.isEmpty()}" class="no-data">
+			No hay consultas registradas para el período seleccionado.
+		</div>
+	</div>
+
+	<!-- Anthropometric Measurements -->
+	<div class="section" th:if="${measurements != null && !measurements.isEmpty()}">
+		<h2>Mediciones Antropométricas</h2>
+		<table class="data-table">
+			<thead>
+				<tr>
+					<th>Fecha</th>
+					<th>Título</th>
+					<th>Peso (kg)</th>
+					<th>Estatura (m)</th>
+					<th>IMC</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="measurement : ${measurements}">
+					<td th:text="${measurement.measurementDateTime != null ? #dates.format(measurement.measurementDateTime, 'dd/MM/yyyy HH:mm') : 'N/A'}"></td>
+					<td th:text="${measurement.title}"></td>
+					<td th:text="${measurement.peso != null ? (#numbers.formatDecimal(measurement.peso, 1, 2) + ' kg') : 'N/A'}"></td>
+					<td th:text="${measurement.estatura != null ? (#numbers.formatDecimal(measurement.estatura, 2, 2) + ' m') : 'N/A'}"></td>
+					<td th:text="${measurement.bodyMass != null && measurement.bodyMass.imc != null ? #numbers.formatDecimal(measurement.bodyMass.imc, 1, 2) : 'N/A'}"></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<!-- Clinical Exams -->
+	<div class="section" th:if="${exams != null && !exams.isEmpty()}">
+		<h2>Exámenes Clínicos</h2>
+		<table class="data-table">
+			<thead>
+				<tr>
+					<th>Fecha</th>
+					<th>Título</th>
+					<th>Peso (kg)</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="exam : ${exams}">
+					<td th:text="${exam.examDateTime != null ? #dates.format(exam.examDateTime, 'dd/MM/yyyy HH:mm') : 'N/A'}"></td>
+					<td th:text="${exam.title}"></td>
+					<td th:text="${exam.peso != null ? (#numbers.formatDecimal(exam.peso, 1, 2) + ' kg') : 'N/A'}"></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<!-- Dietary Plans -->
+	<div class="section">
+		<h2>Planes Dietéticos</h2>
+		<div th:if="${dietaryPlans != null && !dietaryPlans.isEmpty()}">
+			<div th:each="plan : ${dietaryPlans}" class="dietary-plan-item">
+				<h3 th:text="${plan.dieta != null ? plan.dieta.nombre : 'Plan Dietético'}"></h3>
+				<p>
+					<strong>Fecha de Inicio:</strong> 
+					<span th:text="${plan.startDate != null ? #dates.format(plan.startDate, 'dd/MM/yyyy') : 'N/A'}"></span>
+				</p>
+				<p th:if="${plan.endDate != null}">
+					<strong>Fecha de Fin:</strong> 
+					<span th:text="${#dates.format(plan.endDate, 'dd/MM/yyyy')}"></span>
+				</p>
+				<p>
+					<strong>Estado:</strong> 
+					<span th:classappend="${plan.status != null && plan.status.name() == 'ACTIVE' ? 'status-active' : 'status-inactive'}" 
+						  th:text="${plan.status != null ? plan.status : 'N/A'}"></span>
+				</p>
+				<p th:if="${plan.notes != null && !plan.notes.isEmpty()}">
+					<strong>Notas:</strong> 
+					<span th:text="${plan.notes}"></span>
+				</p>
+			</div>
+		</div>
+		<div th:if="${dietaryPlans == null || dietaryPlans.isEmpty()}" class="no-data">
+			No hay planes dietéticos asignados.
+		</div>
+	</div>
+
+	<div class="footer">
+		<p>Este reporte fue generado el <span th:text="${reportDate != null ? #dates.format(reportDate, 'dd/MM/yyyy HH:mm') : 'N/A'}"></span></p>
+		<p>Minutriporcion - Consulta Nutricional Profesional</p>
+	</div>
+</body>
+</html>
+
