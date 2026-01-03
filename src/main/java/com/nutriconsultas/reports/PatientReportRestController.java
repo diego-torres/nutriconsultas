@@ -130,6 +130,7 @@ public class PatientReportRestController {
 			final String sanitizedName = sanitizeFilename(paciente.getName());
 			final String filename = "reporte-progreso-" + sanitizedName + ".pdf";
 
+			@SuppressWarnings("PMD.LooseCoupling")
 			final HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_PDF);
 			headers.setContentDispositionFormData("attachment", filename);

@@ -168,16 +168,8 @@ public class PatientReportService {
 		}
 		return items.stream().filter(item -> {
 			final Date itemDate = dateExtractor.apply(item);
-			if (itemDate == null) {
-				return false;
-			}
-			if (startDate != null && itemDate.before(startDate)) {
-				return false;
-			}
-			if (endDate != null && itemDate.after(endDate)) {
-				return false;
-			}
-			return true;
+			return itemDate != null && (startDate == null || !itemDate.before(startDate))
+					&& (endDate == null || !itemDate.after(endDate));
 		}).collect(Collectors.toList());
 	}
 
