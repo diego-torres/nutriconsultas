@@ -158,8 +158,7 @@ public class DashboardControllerTest {
 
 		mockMvc.perform(MockMvcRequestBuilders.get("/admin").with(oidcLogin()))
 			.andExpect(MockMvcResultMatchers.status().isOk())
-			.andExpect(MockMvcResultMatchers.model().attribute("upcomingAppointments",
-					org.hamcrest.Matchers.empty()));
+			.andExpect(MockMvcResultMatchers.model().attribute("upcomingAppointments", org.hamcrest.Matchers.empty()));
 		log.info("Finishing testDashboardWithNoAppointments");
 	}
 
