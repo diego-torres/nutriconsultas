@@ -1,11 +1,13 @@
 package com.nutriconsultas.controller;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -38,6 +40,50 @@ public class WebControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("eterna/index"));
 		log.info("Finishing testIndexWithTrailingSlash");
+	}
+
+	@Test
+	public void testContactFormMissingFields() throws Exception {
+		log.info("Starting testContactFormMissingFields");
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/contact")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("name", "")
+				.param("email", "")
+				.param("subject", "")
+				.param("message", ""))
+			.andExpect(status().isBadRequest());
+		log.info("Finishing testContactFormMissingFields");
+	}
+
+	@Test
+	public void testContactFormMissingRecaptcha() throws Exception {
+		log.info("Starting testContactFormMissingRecaptcha");
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/contact")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("name", "Test User")
+				.param("email", "test@example.com")
+				.param("subject", "Test Subject")
+				.param("message", "Test message"))
+			.andExpect(status().isBadRequest())
+			.andExpect(content().string("Por favor, completa la verificación reCAPTCHA."));
+		log.info("Finishing testContactFormMissingRecaptcha");
+	}
+
+	@Test
+	public void testContactFormInvalidEmail() throws Exception {
+		log.info("Starting testContactFormInvalidEmail");
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/contact")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("name", "Test User")
+				.param("email", "invalid-email")
+				.param("subject", "Test Subject")
+				.param("message", "Test message")
+				.param("recaptcha-response", "test-token"))
+			.andExpect(status().isBadRequest());
+		log.info("Finishing testContactFormInvalidEmail");
 	}
 
 }

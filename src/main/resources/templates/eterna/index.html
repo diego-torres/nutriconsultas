@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Minutriporcion - Inicio</title>
-  <meta content="" name="description">
-  <meta content="" name="keywords">
+  <title>Minutriporcion - Sistema de Gestión para Consultorios de Nutriólogos</title>
+  <meta content="Sistema de gestión integral para consultorios de nutriólogos. Digitaliza tu consultorio con gestión de pacientes, dietas, seguimiento nutricional y más." name="description">
+  <meta content="nutriólogo, nutricionista, consultorio nutricional, gestión pacientes, dietas, software nutricional" name="keywords">
 
   <!-- Favicons -->
-  <!-- th:href="@{/styles.css}" -->
   <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
   <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
 
@@ -28,24 +27,23 @@
   <!-- Template Main CSS File -->
   <link th:href="@{/eterna/assets/css/style.css}" rel="stylesheet">
 
-  <!-- =======================================================
-  * Template Name: Eterna - v4.8.1
-  * Template URL: https://bootstrapmade.com/eterna-free-multipurpose-bootstrap-template/
-  * Author: BootstrapMade.com
-  * License: https://bootstrapmade.com/license/
-  ======================================================== -->
+  <!-- Google reCAPTCHA -->
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
   <style th:inline="text">
-		.carousel-pic1 {
-			background-image: url('[(@{/eterna/assets/img/slide/slide-1.jpg})]');
-		}
+    .carousel-pic1 {
+      background-image: url('[(@{/eterna/assets/img/slide/slide-1.jpg})]');
+    }
     .carousel-pic2 {
-			background-image: url('[(@{/eterna/assets/img/slide/slide-2.jpg})]');
-		}
+      background-image: url('[(@{/eterna/assets/img/slide/slide-2.jpg})]');
+    }
     .carousel-pic3 {
-			background-image: url('[(@{/eterna/assets/img/slide/slide-3.jpg})]');
-		}
-	</style>
+      background-image: url('[(@{/eterna/assets/img/slide/slide-3.jpg})]');
+    }
+    #main {
+      padding-top: 150px;
+    }
+  </style>
 </head>
 
 <body>
@@ -54,14 +52,11 @@
   <section id="topbar" class="d-flex align-items-center">
     <div class="container d-flex justify-content-center justify-content-md-between">
       <div class="contact-info d-flex align-items-center">
-        <i class="bi bi-envelope d-flex align-items-center"><a href="mailto:contact@example.com">contact@example.com</a></i>
-        <i class="bi bi-phone d-flex align-items-center ms-4"><span>+1 5589 55488 55</span></i>
+        <i class="bi bi-envelope d-flex align-items-center"><a href="mailto:contacto@minutriporcion.com">contacto@minutriporcion.com</a></i>
       </div>
       <div class="social-links d-none d-md-flex align-items-center">
-        <a href="#" class="twitter"><i class="bi bi-twitter"></i></a>
-        <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
-        <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
-        <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></i></a>
+        <a href="https://www.facebook.com/minutriporcion" target="_blank" rel="noopener noreferrer" class="facebook"><i class="bi bi-facebook"></i></a>
+        <a href="https://www.instagram.com/minutriporcion" target="_blank" rel="noopener noreferrer" class="instagram"><i class="bi bi-instagram"></i></a>
       </div>
     </div>
   </section>
@@ -71,38 +66,16 @@
     <div class="container d-flex justify-content-between align-items-center">
 
       <div class="logo">
-        <h1><a href="index.html">Minutriporcion</a></h1>
-        <!-- Uncomment below if you prefer to use an image logo -->
-        <!-- <a href="index.html"><img th:src="@{/eterna/assets/img/logo.png}" alt="" class="img-fluid"></a>-->
+        <h1><a th:href="@{/}">Minutriporcion</a></h1>
       </div>
 
       <nav id="navbar" class="navbar">
         <ul>
-          <li><a class="active" href="index.html">Home</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a href="services.html">Services</a></li>
-          <li><a href="portfolio.html">Portfolio</a></li>
-          <li><a href="team.html">Team</a></li>
-          <li><a href="pricing.html">Pricing</a></li>
-          <li><a href="blog.html">Blog</a></li>
-          <li class="dropdown"><a href="#"><span>Drop Down</span> <i class="bi bi-chevron-down"></i></a>
-            <ul>
-              <li><a href="#">Drop Down 1</a></li>
-              <li class="dropdown"><a href="#"><span>Deep Drop Down</span> <i class="bi bi-chevron-right"></i></a>
-                <ul>
-                  <li><a href="#">Deep Drop Down 1</a></li>
-                  <li><a href="#">Deep Drop Down 2</a></li>
-                  <li><a href="#">Deep Drop Down 3</a></li>
-                  <li><a href="#">Deep Drop Down 4</a></li>
-                  <li><a href="#">Deep Drop Down 5</a></li>
-                </ul>
-              </li>
-              <li><a href="#">Drop Down 2</a></li>
-              <li><a href="#">Drop Down 3</a></li>
-              <li><a href="#">Drop Down 4</a></li>
-            </ul>
-          </li>
-          <li><a href="contact.html">Contacto</a></li>
+          <li><a class="active" th:href="@{/}">Inicio</a></li>
+          <li><a href="#about">Acerca de</a></li>
+          <li><a href="#services">Servicios</a></li>
+          <li><a href="#pricing">Planes</a></li>
+          <li><a href="#contact">Contacto</a></li>
           <li><a th:href="@{/admin}">Ingresar</a></li>
         </ul>
         <i class="bi bi-list mobile-nav-toggle"></i>
@@ -124,9 +97,9 @@
           <div class="carousel-item active carousel-pic1">
             <div class="carousel-container">
               <div class="carousel-content">
-                <h2 class="animate__animated animate__fadeInDown">Welcome to <span>Eterna</span></h2>
-                <p class="animate__animated animate__fadeInUp">Ut velit est quam dolor ad a aliquid qui aliquid. Sequi ea ut et est quaerat sequi nihil ut aliquam. Occaecati alias dolorem mollitia ut. Similique ea voluptatem. Esse doloremque accusamus repellendus deleniti vel. Minus et tempore modi architecto.</p>
-                <a href="" class="btn-get-started animate__animated animate__fadeInUp">Read More</a>
+                <h2 class="animate__animated animate__fadeInDown">Bienvenido a <span>Minutriporcion</span></h2>
+                <p class="animate__animated animate__fadeInUp">Sistema de gestión integral diseñado exclusivamente para consultorios de nutriólogos. Digitaliza tu práctica profesional y optimiza la atención a tus pacientes.</p>
+                <a href="#pricing" class="btn-get-started animate__animated animate__fadeInUp">Comenzar Ahora</a>
               </div>
             </div>
           </div>
@@ -135,9 +108,9 @@
           <div class="carousel-item carousel-pic2">
             <div class="carousel-container">
               <div class="carousel-content">
-                <h2 class="animate__animated fanimate__adeInDown">Lorem <span>Ipsum Dolor</span></h2>
-                <p class="animate__animated animate__fadeInUp">Ut velit est quam dolor ad a aliquid qui aliquid. Sequi ea ut et est quaerat sequi nihil ut aliquam. Occaecati alias dolorem mollitia ut. Similique ea voluptatem. Esse doloremque accusamus repellendus deleniti vel. Minus et tempore modi architecto.</p>
-                <a href="" class="btn-get-started animate__animated animate__fadeInUp">Read More</a>
+                <h2 class="animate__animated animate__fadeInDown">Gestión <span>Profesional</span></h2>
+                <p class="animate__animated animate__fadeInUp">Administra pacientes, crea dietas personalizadas, realiza seguimiento nutricional y genera reportes profesionales. Todo en un solo lugar.</p>
+                <a href="#services" class="btn-get-started animate__animated animate__fadeInUp">Conocer Más</a>
               </div>
             </div>
           </div>
@@ -146,9 +119,9 @@
           <div class="carousel-item carousel-pic3">
             <div class="carousel-container">
               <div class="carousel-content">
-                <h2 class="animate__animated animate__fadeInDown">Sequi ea <span>Dime Lara</span></h2>
-                <p class="animate__animated animate__fadeInUp">Ut velit est quam dolor ad a aliquid qui aliquid. Sequi ea ut et est quaerat sequi nihil ut aliquam. Occaecati alias dolorem mollitia ut. Similique ea voluptatem. Esse doloremque accusamus repellendus deleniti vel. Minus et tempore modi architecto.</p>
-                <a href="" class="btn-get-started animate__animated animate__fadeInUp">Read More</a>
+                <h2 class="animate__animated animate__fadeInDown">Para <span>Nutriólogos Certificados</span></h2>
+                <p class="animate__animated animate__fadeInUp">Plataforma exclusiva para profesionales de la nutrición. Accede con tu credencial profesional y comienza a transformar tu consultorio.</p>
+                <a href="#contact" class="btn-get-started animate__animated animate__fadeInUp">Solicitar Acceso</a>
               </div>
             </div>
           </div>
@@ -169,60 +142,28 @@
 
   <main id="main">
 
-    <!-- ======= Featured Section ======= -->
-    <section id="featured" class="featured">
-      <div class="container">
-
-        <div class="row">
-          <div class="col-lg-4">
-            <div class="icon-box">
-              <i class="bi bi-card-checklist"></i>
-              <h3><a href="">Lorem Ipsum</a></h3>
-              <p>Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident</p>
-            </div>
-          </div>
-          <div class="col-lg-4 mt-4 mt-lg-0">
-            <div class="icon-box">
-              <i class="bi bi-bar-chart"></i>
-              <h3><a href="">Dolor Sitema</a></h3>
-              <p>Minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat tarad limino ata</p>
-            </div>
-          </div>
-          <div class="col-lg-4 mt-4 mt-lg-0">
-            <div class="icon-box">
-              <i class="bi bi-binoculars"></i>
-              <h3><a href="">Sed ut perspiciatis</a></h3>
-              <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur</p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section><!-- End Featured Section -->
-
     <!-- ======= About Section ======= -->
     <section id="about" class="about">
       <div class="container">
 
         <div class="row">
           <div class="col-lg-6">
-            <img th:src="@{/eterna/assets/img/about.jpg}" class="img-fluid" alt="">
+            <img th:src="@{/eterna/assets/img/about.jpg}" class="img-fluid" alt="Sistema Minutriporcion">
           </div>
           <div class="col-lg-6 pt-4 pt-lg-0 content">
-            <h3>Voluptatem dignissimos provident quasi corporis voluptates sit assumenda.</h3>
+            <h3>Minutriporcion: Tu Consultorio Digital</h3>
             <p class="fst-italic">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-              magna aliqua.
+              Minutriporcion es una plataforma de gestión integral diseñada exclusivamente para consultorios de nutriólogos y nutricionistas profesionales.
             </p>
             <ul>
-              <li><i class="bi bi-check-circle"></i> Ullamco laboris nisi ut aliquip ex ea commodo consequat.</li>
-              <li><i class="bi bi-check-circle"></i> Duis aute irure dolor in reprehenderit in voluptate velit.</li>
-              <li><i class="bi bi-check-circle"></i> Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate trideta storacalaperda mastiro dolore eu fugiat nulla pariatur.</li>
+              <li><i class="bi bi-check-circle"></i> <strong>Gestión de Pacientes:</strong> Administra toda la información de tus pacientes de forma segura y organizada.</li>
+              <li><i class="bi bi-check-circle"></i> <strong>Planes de Alimentación:</strong> Crea dietas personalizadas con alimentos y platillos predefinidos.</li>
+              <li><i class="bi bi-check-circle"></i> <strong>Seguimiento Nutricional:</strong> Realiza mediciones antropométricas, exámenes clínicos y seguimiento del progreso de tus pacientes.</li>
+              <li><i class="bi bi-check-circle"></i> <strong>Reportes Profesionales:</strong> Genera reportes detallados y exporta información en formato PDF.</li>
+              <li><i class="bi bi-check-circle"></i> <strong>Calendario de Citas:</strong> Organiza y gestiona tus citas de manera eficiente.</li>
             </ul>
             <p>
-              Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-              velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-              culpa qui officia deserunt mollit anim id est laborum
+              Nuestra plataforma está diseñada para profesionales certificados. Para obtener acceso, debes presentar documentación que acredite tu título profesional como nutriólogo o nutricionista.
             </p>
           </div>
         </div>
@@ -234,52 +175,57 @@
     <section id="services" class="services">
       <div class="container">
 
+        <div class="section-title">
+          <h2>Servicios Digitalizados</h2>
+          <p>Minutriporcion digitaliza y facilita los servicios comunes ofrecidos en un consultorio de nutriólogo:</p>
+        </div>
+
         <div class="row">
           <div class="col-lg-4 col-md-6 d-flex align-items-stretch">
             <div class="icon-box">
-              <div class="icon"><i class="bx bxl-dribbble"></i></div>
-              <h4><a href="">Lorem Ipsum</a></h4>
-              <p>Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi</p>
+              <div class="icon"><i class="bx bx-user"></i></div>
+              <h4><a href="">Gestión de Pacientes</a></h4>
+              <p>Registra y administra la información completa de tus pacientes: datos personales, historial médico, antecedentes patológicos, alergias y más. Todo en un sistema seguro y organizado.</p>
             </div>
           </div>
 
           <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4 mt-md-0">
             <div class="icon-box">
-              <div class="icon"><i class="bx bx-file"></i></div>
-              <h4><a href="">Sed ut perspiciatis</a></h4>
-              <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore</p>
+              <div class="icon"><i class="bx bx-food-menu"></i></div>
+              <h4><a href="">Planes de Alimentación</a></h4>
+              <p>Crea dietas personalizadas utilizando nuestra base de datos de alimentos y platillos. Calcula automáticamente valores nutricionales y genera planes de alimentación completos para tus pacientes.</p>
             </div>
           </div>
 
           <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4 mt-lg-0">
             <div class="icon-box">
-              <div class="icon"><i class="bx bx-tachometer"></i></div>
-              <h4><a href="">Magni Dolores</a></h4>
-              <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia</p>
+              <div class="icon"><i class="bx bx-line-chart"></i></div>
+              <h4><a href="">Seguimiento Nutricional</a></h4>
+              <p>Realiza mediciones antropométricas, registra exámenes clínicos y lleva un seguimiento detallado del progreso de tus pacientes. Visualiza gráficos y tendencias de manera clara.</p>
             </div>
           </div>
 
           <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4">
             <div class="icon-box">
-              <div class="icon"><i class="bx bx-world"></i></div>
-              <h4><a href="">Nemo Enim</a></h4>
-              <p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis</p>
+              <div class="icon"><i class="bx bx-calendar"></i></div>
+              <h4><a href="">Calendario de Citas</a></h4>
+              <p>Organiza y gestiona tus citas de manera eficiente. Programa consultas, establece recordatorios y mantén un control completo de tu agenda profesional.</p>
             </div>
           </div>
 
           <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4">
             <div class="icon-box">
-              <div class="icon"><i class="bx bx-slideshow"></i></div>
-              <h4><a href="">Dele cardo</a></h4>
-              <p>Quis consequatur saepe eligendi voluptatem consequatur dolor consequuntur</p>
+              <div class="icon"><i class="bx bx-file-blank"></i></div>
+              <h4><a href="">Reportes y Documentos</a></h4>
+              <p>Genera reportes profesionales en PDF con la información de tus pacientes, planes de alimentación y seguimiento nutricional. Exporta y comparte documentos de forma segura.</p>
             </div>
           </div>
 
           <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4">
             <div class="icon-box">
-              <div class="icon"><i class="bx bx-arch"></i></div>
-              <h4><a href="">Divera don</a></h4>
-              <p>Modi nostrum vel laborum. Porro fugit error sit minus sapiente sit aspernatur</p>
+              <div class="icon"><i class="bx bx-shield"></i></div>
+              <h4><a href="">Seguridad y Privacidad</a></h4>
+              <p>Tu información y la de tus pacientes está protegida con los más altos estándares de seguridad. Cumplimos con normativas de protección de datos de salud.</p>
             </div>
           </div>
 
@@ -288,100 +234,226 @@
       </div>
     </section><!-- End Services Section -->
 
-    <!-- ======= Clients Section ======= -->
-    <section id="clients" class="clients">
+    <!-- ======= Pricing Section ======= -->
+    <section id="pricing" class="pricing">
       <div class="container">
 
         <div class="section-title">
-          <h2>Clients</h2>
-          <p>Magnam dolores commodi suscipit. Necessitatibus eius consequatur ex aliquid fuga eum quidem. Sit sint consectetur velit. Quisquam quos quisquam cupiditate. Et nemo qui impedit suscipit alias ea. Quia fugiat sit in iste officiis commodi quidem hic quas.</p>
+          <h2>Planes de Suscripción</h2>
+          <p>Elige el plan que mejor se adapte a las necesidades de tu consultorio. Todos los planes requieren acreditación profesional como nutriólogo.</p>
+          <p class="text-warning"><strong>Importante:</strong> Todos los planes se facturan por 10 meses al año (no se cobra en julio y diciembre).</p>
         </div>
 
-        <div class="clients-slider swiper">
-          <div class="swiper-wrapper align-items-center">
-            <div class="swiper-slide"><img th:src="@{/eterna/assets/img/clients/client-1.png}" class="img-fluid" alt=""></div>
-            <div class="swiper-slide"><img th:src="@{/eterna/assets/img/clients/client-2.png}" class="img-fluid" alt=""></div>
-            <div class="swiper-slide"><img th:src="@{/eterna/assets/img/clients/client-3.png}" class="img-fluid" alt=""></div>
-            <div class="swiper-slide"><img th:src="@{/eterna/assets/img/clients/client-4.png}" class="img-fluid" alt=""></div>
-            <div class="swiper-slide"><img th:src="@{/eterna/assets/img/clients/client-5.png}" class="img-fluid" alt=""></div>
-            <div class="swiper-slide"><img th:src="@{/eterna/assets/img/clients/client-6.png}" class="img-fluid" alt=""></div>
-            <div class="swiper-slide"><img th:src="@{/eterna/assets/img/clients/client-7.png}" class="img-fluid" alt=""></div>
-            <div class="swiper-slide"><img th:src="@{/eterna/assets/img/clients/client-8.png}" class="img-fluid" alt=""></div>
+        <div class="row no-gutters">
+
+          <div class="col-lg-3 box">
+            <h3>Básico</h3>
+            <h4>$5<span>/mes</span></h4>
+            <p class="text-muted small">10 meses al año</p>
+            <ul>
+              <li><i class="bx bx-check"></i> Hasta 10 pacientes</li>
+              <li><i class="bx bx-check"></i> Gestión de pacientes</li>
+              <li><i class="bx bx-check"></i> Planes de alimentación</li>
+              <li><i class="bx bx-check"></i> Seguimiento nutricional</li>
+              <li><i class="bx bx-check"></i> Calendario de citas</li>
+              <li><i class="bx bx-check"></i> Reportes básicos</li>
+              <li class="na"><i class="bx bx-x"></i> <span>Reportes avanzados</span></li>
+            </ul>
+            <a href="#contact" class="buy-btn">Solicitar Acceso</a>
           </div>
-          <div class="swiper-pagination"></div>
+
+          <div class="col-lg-3 box">
+            <h3>Profesional</h3>
+            <h4>$10<span>/mes</span></h4>
+            <p class="text-muted small">10 meses al año</p>
+            <ul>
+              <li><i class="bx bx-check"></i> Hasta 50 pacientes</li>
+              <li><i class="bx bx-check"></i> Gestión de pacientes</li>
+              <li><i class="bx bx-check"></i> Planes de alimentación</li>
+              <li><i class="bx bx-check"></i> Seguimiento nutricional</li>
+              <li><i class="bx bx-check"></i> Calendario de citas</li>
+              <li><i class="bx bx-check"></i> Reportes completos</li>
+              <li><i class="bx bx-check"></i> Exportación PDF</li>
+            </ul>
+            <a href="#contact" class="buy-btn">Solicitar Acceso</a>
+          </div>
+
+          <div class="col-lg-3 box featured">
+            <span class="featured-badge">Popular</span>
+            <h3>Plus</h3>
+            <h4>$20<span>/mes</span></h4>
+            <p class="text-muted small">10 meses al año</p>
+            <ul>
+              <li><i class="bx bx-check"></i> Pacientes ilimitados</li>
+              <li><i class="bx bx-check"></i> Gestión de pacientes</li>
+              <li><i class="bx bx-check"></i> Planes de alimentación</li>
+              <li><i class="bx bx-check"></i> Seguimiento nutricional</li>
+              <li><i class="bx bx-check"></i> Calendario de citas</li>
+              <li><i class="bx bx-check"></i> Reportes completos</li>
+              <li><i class="bx bx-check"></i> Exportación PDF</li>
+              <li><i class="bx bx-check"></i> Soporte prioritario</li>
+            </ul>
+            <a href="#contact" class="buy-btn">Solicitar Acceso</a>
+          </div>
+
+          <div class="col-lg-3 box">
+            <h3>Consultorio</h3>
+            <h4>$45<span>/mes</span></h4>
+            <p class="text-muted small">10 meses al año</p>
+            <ul>
+              <li><i class="bx bx-check"></i> Pacientes ilimitados</li>
+              <li><i class="bx bx-check"></i> Hasta 20 nutriólogos</li>
+              <li><i class="bx bx-check"></i> Gestión de pacientes</li>
+              <li><i class="bx bx-check"></i> Planes de alimentación</li>
+              <li><i class="bx bx-check"></i> Seguimiento nutricional</li>
+              <li><i class="bx bx-check"></i> Calendario de citas</li>
+              <li><i class="bx bx-check"></i> Reportes completos</li>
+              <li><i class="bx bx-check"></i> Exportación PDF</li>
+              <li><i class="bx bx-check"></i> Soporte prioritario</li>
+              <li><i class="bx bx-check"></i> Administración de usuarios</li>
+            </ul>
+            <a href="#contact" class="buy-btn">Solicitar Acceso</a>
+          </div>
+
+        </div>
+
+        <div class="row mt-4">
+          <div class="col-lg-12">
+            <div class="alert alert-info">
+              <h5><i class="bi bi-info-circle"></i> Proceso de Suscripción</h5>
+              <ol class="mb-0">
+                <li>Completa el formulario de contacto solicitando acceso</li>
+                <li>Presenta documentación que acredite tu título profesional como nutriólogo o nutricionista</li>
+                <li>Nuestro equipo revisará tu solicitud y te contactará para activar tu cuenta</li>
+                <li>Una vez aprobado, recibirás acceso a la plataforma según el plan seleccionado</li>
+              </ol>
+            </div>
+          </div>
         </div>
 
       </div>
-    </section><!-- End Clients Section -->
+    </section><!-- End Pricing Section -->
+
+    <!-- ======= CTA Section ======= -->
+    <section id="cta" class="cta">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-9 text-center text-lg-start">
+            <h3>¿Listo para Transformar tu Consultorio?</h3>
+            <p>Únete a los nutriólogos profesionales que ya están digitalizando su práctica con Minutriporcion.</p>
+          </div>
+          <div class="col-lg-3 cta-btn-container text-center">
+            <a class="cta-btn align-middle" href="#contact">Solicitar Consulta</a>
+          </div>
+        </div>
+      </div>
+    </section><!-- End CTA Section -->
+
+    <!-- ======= Contact Section ======= -->
+    <section id="contact" class="contact">
+      <div class="container">
+
+        <div class="section-title">
+          <h2>Contacto</h2>
+          <p>Completa el formulario para solicitar acceso a Minutriporcion o para más información sobre nuestros servicios.</p>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-6">
+            <div class="info-box mb-4">
+              <i class="bx bx-envelope"></i>
+              <h3>Email</h3>
+              <p>contacto@minutriporcion.com</p>
+            </div>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="info-box mb-4">
+              <i class="bx bx-share-alt"></i>
+              <h3>Redes Sociales</h3>
+              <div class="social-links">
+                <a href="https://www.facebook.com/minutriporcion" target="_blank" rel="noopener noreferrer" class="facebook"><i class="bx bxl-facebook"></i></a>
+                <a href="https://www.instagram.com/minutriporcion" target="_blank" rel="noopener noreferrer" class="instagram"><i class="bx bxl-instagram"></i></a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="row">
+          <div class="col-lg-12">
+            <form th:action="@{/contact}" method="post" role="form" class="php-email-form" data-recaptcha-site-key="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI">
+              <div class="row">
+                <div class="col-md-6 form-group">
+                  <input type="text" name="name" class="form-control" id="name" placeholder="Tu Nombre" required>
+                </div>
+                <div class="col-md-6 form-group mt-3 mt-md-0">
+                  <input type="email" class="form-control" name="email" id="email" placeholder="Tu Email" required>
+                </div>
+              </div>
+              <div class="form-group mt-3">
+                <input type="text" class="form-control" name="subject" id="subject" placeholder="Asunto" required>
+              </div>
+              <div class="form-group mt-3">
+                <textarea class="form-control" name="message" rows="5" placeholder="Mensaje" required></textarea>
+              </div>
+              <div class="my-3">
+                <div class="loading">Enviando...</div>
+                <div class="error-message"></div>
+                <div class="sent-message">Tu mensaje ha sido enviado. ¡Gracias!</div>
+              </div>
+              <div class="text-center"><button type="submit">Enviar Mensaje</button></div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </section><!-- End Contact Section -->
 
   </main><!-- End #main -->
 
   <!-- ======= Footer ======= -->
   <footer id="footer">
 
-    <div class="footer-newsletter">
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-6">
-            <h4>Our Newsletter</h4>
-            <p>Tamen quem nulla quae legam multos aute sint culpa legam noster magna</p>
-          </div>
-          <div class="col-lg-6">
-            <form action="" method="post">
-              <input type="email" name="email"><input type="submit" value="Subscribe">
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="footer-top">
       <div class="container">
         <div class="row">
 
           <div class="col-lg-3 col-md-6 footer-links">
-            <h4>Useful Links</h4>
+            <h4>Enlaces Útiles</h4>
             <ul>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Home</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">About us</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Services</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Terms of service</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Privacy policy</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/}">Inicio</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="#about">Acerca de</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="#services">Servicios</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="#pricing">Planes</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="#contact">Contacto</a></li>
             </ul>
           </div>
 
           <div class="col-lg-3 col-md-6 footer-links">
-            <h4>Our Services</h4>
+            <h4>Nuestros Servicios</h4>
             <ul>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Web Design</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Web Development</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Product Management</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Marketing</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Graphic Design</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="#services">Gestión de Pacientes</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="#services">Planes de Alimentación</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="#services">Seguimiento Nutricional</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="#services">Calendario de Citas</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="#services">Reportes Profesionales</a></li>
             </ul>
           </div>
 
           <div class="col-lg-3 col-md-6 footer-contact">
-            <h4>Contact Us</h4>
+            <h4>Contacto</h4>
             <p>
-              A108 Adam Street <br>
-              New York, NY 535022<br>
-              United States <br><br>
-              <strong>Phone:</strong> +1 5589 55488 55<br>
-              <strong>Email:</strong> info@example.com<br>
+              <strong>Email:</strong> contacto@minutriporcion.com<br>
             </p>
-
           </div>
 
           <div class="col-lg-3 col-md-6 footer-info">
-            <h3>About Eterna</h3>
-            <p>Cras fermentum odio eu feugiat lide par naso tierra. Justo eget nada terra videa magna derita valies darta donna mare fermentum iaculis eu non diam phasellus.</p>
+            <h3>Minutriporcion</h3>
+            <p>Sistema de gestión integral para consultorios de nutriólogos. Digitaliza tu práctica profesional y optimiza la atención a tus pacientes.</p>
             <div class="social-links mt-3">
-              <a href="#" class="twitter"><i class="bx bxl-twitter"></i></a>
-              <a href="#" class="facebook"><i class="bx bxl-facebook"></i></a>
-              <a href="#" class="instagram"><i class="bx bxl-instagram"></i></a>
-              <a href="#" class="google-plus"><i class="bx bxl-skype"></i></a>
-              <a href="#" class="linkedin"><i class="bx bxl-linkedin"></i></a>
+              <a href="https://www.facebook.com/minutriporcion" target="_blank" rel="noopener noreferrer" class="facebook"><i class="bx bxl-facebook"></i></a>
+              <a href="https://www.instagram.com/minutriporcion" target="_blank" rel="noopener noreferrer" class="instagram"><i class="bx bxl-instagram"></i></a>
             </div>
           </div>
 
@@ -391,14 +463,10 @@
 
     <div class="container">
       <div class="copyright">
-        &copy; Copyright <strong><span>Eterna</span></strong>. All Rights Reserved
+        &copy; Copyright <strong><span>Minutriporcion</span></strong>. Todos los derechos reservados
       </div>
       <div class="credits">
-        <!-- All the links in the footer should remain intact. -->
-        <!-- You can delete the links only if you purchased the pro version. -->
-        <!-- Licensing information: https://bootstrapmade.com/license/ -->
-        <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/eterna-free-multipurpose-bootstrap-template/ -->
-        Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
+        Diseñado con <a href="https://bootstrapmade.com/">BootstrapMade</a>
       </div>
     </div>
   </footer><!-- End Footer -->
@@ -406,7 +474,6 @@
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
   <!-- Vendor JS Files -->
-  <!-- 	<script th:src="@{/scripts.js}"></script> -->
   <script th:src="@{/eterna/assets/vendor/purecounter/purecounter_vanilla.js}"></script>
   <script th:src="@{/eterna/assets/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
   <script th:src="@{/eterna/assets/vendor/glightbox/js/glightbox.min.js}"></script>

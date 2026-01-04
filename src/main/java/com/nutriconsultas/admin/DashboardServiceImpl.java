@@ -77,10 +77,8 @@ public class DashboardServiceImpl implements DashboardService {
 		final LocalDate today = LocalDate.now();
 		final LocalDate startOfWeekLocal = today.with(java.time.DayOfWeek.MONDAY);
 		final LocalDate endOfWeekLocal = startOfWeekLocal.plusDays(6);
-		final Date startOfWeek = Date
-			.from(startOfWeekLocal.atStartOfDay(ZoneId.systemDefault()).toInstant());
-		final Date endOfWeek = Date
-			.from(endOfWeekLocal.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+		final Date startOfWeek = Date.from(startOfWeekLocal.atStartOfDay(ZoneId.systemDefault()).toInstant());
+		final Date endOfWeek = Date.from(endOfWeekLocal.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
 
 		final long consultationsThisWeek = calendarEventRepository.countByUserIdAndDateRange(userId, startOfWeek,
 				endOfWeek);
@@ -149,7 +147,8 @@ public class DashboardServiceImpl implements DashboardService {
 				.count();
 
 			final Map<String, Object> dataPoint = new HashMap<>();
-			dataPoint.put("month", String.format("%02d/%d", monthStartLocal.getMonthValue(), monthStartLocal.getYear()));
+			dataPoint.put("month",
+					String.format("%02d/%d", monthStartLocal.getMonthValue(), monthStartLocal.getYear()));
 			dataPoint.put("count", count);
 			trend.add(dataPoint);
 		}
@@ -175,7 +174,8 @@ public class DashboardServiceImpl implements DashboardService {
 			final long count = calendarEventRepository.countByUserIdAndDateRange(userId, monthStart, monthEnd);
 
 			final Map<String, Object> dataPoint = new HashMap<>();
-			dataPoint.put("month", String.format("%02d/%d", monthStartLocal.getMonthValue(), monthStartLocal.getYear()));
+			dataPoint.put("month",
+					String.format("%02d/%d", monthStartLocal.getMonthValue(), monthStartLocal.getYear()));
 			dataPoint.put("count", count);
 			frequency.add(dataPoint);
 		}
