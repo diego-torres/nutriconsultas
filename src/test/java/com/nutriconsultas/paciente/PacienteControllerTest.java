@@ -542,9 +542,8 @@ public class PacienteControllerTest {
 		// Create mock measurements
 		final AnthropometricMeasurement measurement1 = new AnthropometricMeasurement();
 		measurement1.setId(1L);
-		measurement1.setMeasurementDateTime(new Date(System.currentTimeMillis() - 86400000)); // 1
-																								// day
-																								// ago
+		// 1 day ago
+		measurement1.setMeasurementDateTime(new Date(System.currentTimeMillis() - 86400000));
 		measurement1.setPaciente(pediatricPaciente);
 		final BodyMass bodyMass1 = new BodyMass();
 		bodyMass1.setWeight(30.0);
@@ -554,9 +553,8 @@ public class PacienteControllerTest {
 
 		final AnthropometricMeasurement measurement2 = new AnthropometricMeasurement();
 		measurement2.setId(2L);
-		measurement2.setMeasurementDateTime(new Date(System.currentTimeMillis() - 172800000)); // 2
-																								// days
-																								// ago
+		// 2 days ago
+		measurement2.setMeasurementDateTime(new Date(System.currentTimeMillis() - 172800000));
 		measurement2.setPaciente(pediatricPaciente);
 		final BodyMass bodyMass2 = new BodyMass();
 		bodyMass2.setWeight(29.5);
