@@ -113,14 +113,14 @@ jobs:
         path: target/surefire-reports
         retention-days: 7
     - name: Upload JaCoCo coverage report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: always()
       with:
         name: jacoco-coverage-report
         path: target/site/jacoco
         retention-days: 7
     - name: Upload JaCoCo execution data
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: always()
       with:
         name: jacoco-exec-data
