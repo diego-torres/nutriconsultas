@@ -528,6 +528,136 @@ public class PacienteControllerTest {
 	}
 
 	@Test
+	public void testPerfilPacienteUnder18WithMeasurements() {
+		log.info("starting testPerfilPacienteUnder18WithMeasurements");
+		// Arrange - Create a patient under 18
+		final Paciente pediatricPaciente = new Paciente();
+		pediatricPaciente.setId(2L);
+		pediatricPaciente.setName("Pediatric Patient");
+		pediatricPaciente.setUserId(TEST_USER_ID);
+		// Set date of birth to 10 years ago (under 18)
+		final LocalDate dob = LocalDate.now().minusYears(10);
+		pediatricPaciente.setDob(Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+
+		// Create mock measurements
+		final AnthropometricMeasurement measurement1 = new AnthropometricMeasurement();
+		measurement1.setId(1L);
+		measurement1.setMeasurementDateTime(new Date(System.currentTimeMillis() - 86400000)); // 1 day ago
+		measurement1.setPaciente(pediatricPaciente);
+		final BodyMass bodyMass1 = new BodyMass();
+		bodyMass1.setWeight(30.0);
+		bodyMass1.setHeight(1.2);
+		bodyMass1.setImc(20.83);
+		measurement1.setBodyMass(bodyMass1);
+
+		final AnthropometricMeasurement measurement2 = new AnthropometricMeasurement();
+		measurement2.setId(2L);
+		measurement2.setMeasurementDateTime(new Date(System.currentTimeMillis() - 172800000)); // 2 days ago
+		measurement2.setPaciente(pediatricPaciente);
+		final BodyMass bodyMass2 = new BodyMass();
+		bodyMass2.setWeight(29.5);
+		bodyMass2.setHeight(1.19);
+		bodyMass2.setImc(20.81);
+		measurement2.setBodyMass(bodyMass2);
+
+		when(pacienteRepository.findByIdAndUserId(2L, TEST_USER_ID))
+				.thenReturn(java.util.Optional.of(pediatricPaciente));
+		when(calendarEventService.findByPacienteId(2L)).thenReturn(new ArrayList<>());
+		when(anthropometricMeasurementService.findByPacienteId(2L))
+				.thenReturn(Arrays.asList(measurement1, measurement2));
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.perfilPaciente(2L, model, principal);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
+		verify(model).addAttribute("isUnder18", true);
+		verify(model).addAttribute(eq("growthMeasurements"), any(List.class));
+		log.info("finished testPerfilPacienteUnder18WithMeasurements");
+	}
+
+	@Test
+	public void testPerfilPacienteUnder18WithoutMeasurements() {
+		log.info("starting testPerfilPacienteUnder18WithoutMeasurements");
+		// Arrange - Create a patient under 18
+		final Paciente pediatricPaciente = new Paciente();
+		pediatricPaciente.setId(3L);
+		pediatricPaciente.setName("Pediatric Patient No Data");
+		pediatricPaciente.setUserId(TEST_USER_ID);
+		// Set date of birth to 5 years ago (under 18)
+		final LocalDate dob = LocalDate.now().minusYears(5);
+		pediatricPaciente.setDob(Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+
+		when(pacienteRepository.findByIdAndUserId(3L, TEST_USER_ID))
+				.thenReturn(java.util.Optional.of(pediatricPaciente));
+		when(calendarEventService.findByPacienteId(3L)).thenReturn(new ArrayList<>());
+		when(anthropometricMeasurementService.findByPacienteId(3L)).thenReturn(new ArrayList<>());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.perfilPaciente(3L, model, principal);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
+		verify(model).addAttribute("isUnder18", true);
+		verify(model).addAttribute(eq("growthMeasurements"), any(List.class));
+		log.info("finished testPerfilPacienteUnder18WithoutMeasurements");
+	}
+
+	@Test
+	public void testPerfilPaciente18OrOlder() {
+		log.info("starting testPerfilPaciente18OrOlder");
+		// Arrange - Use existing paciente (30 years old)
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(calendarEventService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.perfilPaciente(1L, model, principal);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
+		verify(model).addAttribute("isUnder18", false);
+		// Should not fetch measurements for patients 18 or older
+		verify(anthropometricMeasurementService, org.mockito.Mockito.never()).findByPacienteId(any());
+		log.info("finished testPerfilPaciente18OrOlder");
+	}
+
+	@Test
+	public void testPerfilPacienteBoundaryCaseExactly18() {
+		log.info("starting testPerfilPacienteBoundaryCaseExactly18");
+		// Arrange - Create a patient exactly 18 years old
+		final Paciente exactly18Paciente = new Paciente();
+		exactly18Paciente.setId(4L);
+		exactly18Paciente.setName("Exactly 18 Patient");
+		exactly18Paciente.setUserId(TEST_USER_ID);
+		// Set date of birth to exactly 18 years ago
+		final LocalDate dob = LocalDate.now().minusYears(18);
+		exactly18Paciente.setDob(Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+
+		when(pacienteRepository.findByIdAndUserId(4L, TEST_USER_ID))
+				.thenReturn(java.util.Optional.of(exactly18Paciente));
+		when(calendarEventService.findByPacienteId(4L)).thenReturn(new ArrayList<>());
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.perfilPaciente(4L, model, principal);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
+		// Patient exactly 18 should not show growth table (age < 18, not <= 18)
+		verify(model).addAttribute("isUnder18", false);
+		// Should not fetch measurements for patients 18 or older
+		verify(anthropometricMeasurementService, org.mockito.Mockito.never()).findByPacienteId(any());
+		log.info("finished testPerfilPacienteBoundaryCaseExactly18");
+	}
+
+	@Test
 	public void testAsignarDieta() {
 		log.info("starting testAsignarDieta");
 		// Arrange
