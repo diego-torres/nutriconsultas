@@ -32,13 +32,13 @@
 
   <style th:inline="text">
     .carousel-pic1 {
-      background-image: url('[(@{/eterna/assets/img/slide/slide-1.jpg})]');
+      background-image: url('[(@{/eterna/assets/img/carousel/bienvenido.png})]');
     }
     .carousel-pic2 {
-      background-image: url('[(@{/eterna/assets/img/slide/slide-2.jpg})]');
+      background-image: url('[(@{/eterna/assets/img/carousel/gestion_profesional.jpeg})]');
     }
     .carousel-pic3 {
-      background-image: url('[(@{/eterna/assets/img/slide/slide-3.jpg})]');
+      background-image: url('[(@{/eterna/assets/img/carousel/personas-ejercitandose.jpeg})]');
     }
     #main {
       padding-top: 150px;
@@ -66,7 +66,10 @@
     <div class="container d-flex justify-content-between align-items-center">
 
       <div class="logo">
-        <h1><a th:href="@{/}">Minutriporcion</a></h1>
+        <a th:href="@{/}" class="d-flex align-items-center">
+          <img th:src="@{/eterna/assets/img/favicon.png}" alt="Minutriporcion" style="height: 40px; margin-right: 10px;">
+          <h1 class="mb-0">Minutriporcion</h1>
+        </a>
       </div>
 
       <nav id="navbar" class="navbar">
@@ -148,7 +151,7 @@
 
         <div class="row">
           <div class="col-lg-6">
-            <img th:src="@{/eterna/assets/img/about.jpg}" class="img-fluid" alt="Sistema Minutriporcion">
+            <img th:src="@{/eterna/assets/img/about.jpeg}" class="img-fluid" alt="Sistema Minutriporcion">
           </div>
           <div class="col-lg-6 pt-4 pt-lg-0 content">
             <h3>Minutriporcion: Tu Consultorio Digital</h3>
@@ -376,7 +379,7 @@
               <i class="bx bx-share-alt"></i>
               <h3>Redes Sociales</h3>
               <div class="social-links">
-                <a href="https://www.facebook.com/minutriporcion" target="_blank" rel="noopener noreferrer" class="facebook"><i class="bx bxl-facebook"></i></a>
+                <a href="https://www.facebook.com/105148102464740" target="_blank" rel="noopener noreferrer" class="facebook"><i class="bx bxl-facebook"></i></a>
                 <a href="https://www.instagram.com/minutriporcion" target="_blank" rel="noopener noreferrer" class="instagram"><i class="bx bxl-instagram"></i></a>
               </div>
             </div>
