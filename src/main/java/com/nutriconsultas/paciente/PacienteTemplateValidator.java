@@ -38,6 +38,9 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		variables.put("isEligibleForPregnancy", false);
 		variables.put("isUnder18", false);
 		variables.put("growthMeasurements", new ArrayList<AnthropometricMeasurement>());
+		// Calculation tab variables
+		variables.put("patientAge", 30);
+		variables.put("patientIsMale", true);
 
 		addMockDietas(variables, paciente);
 		addMockConsulta(variables, paciente);

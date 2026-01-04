@@ -1,0 +1,188 @@
+<div th:fragment="calculationScript(enableSync)">
+  <!-- Calculation Tab JavaScript -->
+  <script>
+    // Get patient data from Thymeleaf
+    const patientAge = [[${patientAge != null ? patientAge : 'null'}]];
+    const patientIsMale = [[${patientIsMale != null ? patientIsMale : 'false'}]];
+
+    // BMI Calculation Functions
+    function calculateClassicBmi(weight, height) {
+      if (!weight || !height || weight <= 0 || height <= 0) {
+        return null;
+      }
+      return weight / (height * height);
+    }
+
+    function calculateTrefethenBmi(weight, height) {
+      if (!weight || !height || weight <= 0 || height <= 0) {
+        return null;
+      }
+      return 1.3 * weight / Math.pow(height, 2.5);
+    }
+
+    // BMR Calculation Functions
+    function calculateMifflinStJeorBmr(weight, height, age, isMale) {
+      if (!weight || !height || !age || weight <= 0 || height <= 0 || age <= 0) {
+        return null;
+      }
+      const heightCm = height * 100;
+      return 10 * weight + 6.25 * heightCm - 5 * age + (isMale ? 5 : -161);
+    }
+
+    function calculateHarrisBenedictBmr(weight, height, age, isMale) {
+      if (!weight || !height || !age || weight <= 0 || height <= 0 || age <= 0) {
+        return null;
+      }
+      const heightCm = height * 100;
+      if (isMale) {
+        return 13.397 * weight + 4.799 * heightCm - 5.677 * age + 88.362;
+      } else {
+        return 9.247 * weight + 3.098 * heightCm - 4.330 * age + 447.593;
+      }
+    }
+
+    function calculateKatchMcArdleBmr(leanBodyMass) {
+      if (!leanBodyMass || leanBodyMass <= 0) {
+        return null;
+      }
+      return 370 + (21.6 * leanBodyMass);
+    }
+
+    function calculateCunninghamBmr(leanBodyMass) {
+      if (!leanBodyMass || leanBodyMass <= 0) {
+        return null;
+      }
+      return 500 + (22 * leanBodyMass);
+    }
+
+    // Format number to 2 decimal places
+    function formatNumber(value) {
+      if (value === null || value === undefined || isNaN(value)) {
+        return '-';
+      }
+      return value.toFixed(2);
+    }
+
+    // Update BMI calculations
+    function updateBmiCalculations() {
+      // Classic BMI
+      const weight1 = parseFloat(document.getElementById('calc-weight').value);
+      const height1 = parseFloat(document.getElementById('calc-height').value);
+      const classicBmi = calculateClassicBmi(weight1, height1);
+      document.getElementById('classic-bmi-result').textContent = formatNumber(classicBmi);
+
+      // Trefethen BMI
+      const weight2 = parseFloat(document.getElementById('calc-weight-trefethen').value);
+      const height2 = parseFloat(document.getElementById('calc-height-trefethen').value);
+      const trefethenBmi = calculateTrefethenBmi(weight2, height2);
+      document.getElementById('trefethen-bmi-result').textContent = formatNumber(trefethenBmi);
+    }
+
+    // Update BMR calculations
+    function updateBmrCalculations() {
+      // Mifflin-St Jeor
+      const weightMsj = parseFloat(document.getElementById('bmr-weight-msj').value);
+      const heightMsj = parseFloat(document.getElementById('bmr-height-msj').value);
+      const ageMsj = parseInt(document.getElementById('bmr-age-msj').value) || patientAge;
+      const msjBmr = calculateMifflinStJeorBmr(weightMsj, heightMsj, ageMsj, patientIsMale);
+      document.getElementById('msj-bmr-result').textContent = formatNumber(msjBmr);
+
+      // Harris-Benedict
+      const weightHb = parseFloat(document.getElementById('bmr-weight-hb').value);
+      const heightHb = parseFloat(document.getElementById('bmr-height-hb').value);
+      const ageHb = parseInt(document.getElementById('bmr-age-hb').value) || patientAge;
+      const hbBmr = calculateHarrisBenedictBmr(weightHb, heightHb, ageHb, patientIsMale);
+      document.getElementById('hb-bmr-result').textContent = formatNumber(hbBmr);
+
+      // Katch-McArdle
+      const leanMassKm = parseFloat(document.getElementById('lean-mass-km').value);
+      const kmBmr = calculateKatchMcArdleBmr(leanMassKm);
+      document.getElementById('km-bmr-result').textContent = formatNumber(kmBmr);
+
+      // Cunningham
+      const leanMassCun = parseFloat(document.getElementById('lean-mass-cun').value);
+      const cunBmr = calculateCunninghamBmr(leanMassCun);
+      document.getElementById('cun-bmr-result').textContent = formatNumber(cunBmr);
+    }
+
+    // Sync weight/height from Body Mass tab to Calculation tab (only for form templates)
+    function syncFromBodyMassTab() {
+      const bodyMassWeight = document.querySelector('input[name*="bodyMass.weight"]');
+      const bodyMassHeight = document.querySelector('input[name*="bodyMass.height"]');
+      
+      if (bodyMassWeight && bodyMassWeight.value) {
+        document.getElementById('calc-weight').value = bodyMassWeight.value;
+        document.getElementById('calc-weight-trefethen').value = bodyMassWeight.value;
+        document.getElementById('bmr-weight-msj').value = bodyMassWeight.value;
+        document.getElementById('bmr-weight-hb').value = bodyMassWeight.value;
+      }
+      
+      if (bodyMassHeight && bodyMassHeight.value) {
+        document.getElementById('calc-height').value = bodyMassHeight.value;
+        document.getElementById('calc-height-trefethen').value = bodyMassHeight.value;
+        document.getElementById('bmr-height-msj').value = bodyMassHeight.value;
+        document.getElementById('bmr-height-hb').value = bodyMassHeight.value;
+      }
+      
+      updateBmiCalculations();
+      updateBmrCalculations();
+    }
+
+    // Event listeners for BMI inputs
+    document.addEventListener('DOMContentLoaded', function() {
+      // BMI inputs
+      document.getElementById('calc-weight').addEventListener('input', updateBmiCalculations);
+      document.getElementById('calc-height').addEventListener('input', updateBmiCalculations);
+      document.getElementById('calc-weight-trefethen').addEventListener('input', updateBmiCalculations);
+      document.getElementById('calc-height-trefethen').addEventListener('input', updateBmiCalculations);
+
+      // BMR inputs
+      document.getElementById('bmr-weight-msj').addEventListener('input', updateBmrCalculations);
+      document.getElementById('bmr-height-msj').addEventListener('input', updateBmrCalculations);
+      document.getElementById('bmr-age-msj').addEventListener('input', updateBmrCalculations);
+      document.getElementById('bmr-weight-hb').addEventListener('input', updateBmrCalculations);
+      document.getElementById('bmr-height-hb').addEventListener('input', updateBmrCalculations);
+      document.getElementById('bmr-age-hb').addEventListener('input', updateBmrCalculations);
+      document.getElementById('lean-mass-km').addEventListener('input', updateBmrCalculations);
+      document.getElementById('lean-mass-cun').addEventListener('input', updateBmrCalculations);
+
+      // Calculate on tab show
+      $('#calculation-tab').on('shown.bs.tab', function() {
+        const enableSync = [[${enableSync}]];
+        if (enableSync) {
+          syncFromBodyMassTab();
+        } else {
+          updateBmiCalculations();
+          updateBmrCalculations();
+        }
+      });
+
+      // Sync functionality (only enabled for form templates)
+      const enableSync = [[${enableSync}]];
+      if (enableSync) {
+        // Also sync when Body Mass inputs change
+        const bodyMassWeight = document.querySelector('input[name*="bodyMass.weight"]');
+        const bodyMassHeight = document.querySelector('input[name*="bodyMass.height"]');
+        if (bodyMassWeight) {
+          bodyMassWeight.addEventListener('input', function() {
+            if ($('#calculation-tab').hasClass('active')) {
+              syncFromBodyMassTab();
+            }
+          });
+        }
+        if (bodyMassHeight) {
+          bodyMassHeight.addEventListener('input', function() {
+            if ($('#calculation-tab').hasClass('active')) {
+              syncFromBodyMassTab();
+            }
+          });
+        }
+      }
+
+      // Initial calculation if values are already present
+      updateBmiCalculations();
+      updateBmrCalculations();
+    });
+  </script>
+</div>
+
