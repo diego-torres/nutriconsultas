@@ -127,6 +127,15 @@
                       <p class="text-muted mb-0">[[(${paciente.parentesco})]]</p>
                     </div>
                   </div>
+                  <hr th:if="${paciente.pregnancy != null && paciente.pregnancy}">
+                  <div class="row" th:if="${paciente.pregnancy != null && paciente.pregnancy}">
+                    <div class="col-sm-3">
+                      <p class="mb-0">Estado de Embarazo</p>
+                    </div>
+                    <div class="col-sm-9">
+                      <p class="text-muted mb-0"><span class="badge badge-info">Embarazada</span></p>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="row">

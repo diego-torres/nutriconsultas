@@ -324,6 +324,7 @@ public class PacienteController extends AbstractAuthorizedController {
 
 		model.addAttribute("activeMenu", "desarrollo");
 		model.addAttribute("paciente", paciente);
+		model.addAttribute("isEligibleForPregnancy", isEligibleForPregnancy(paciente));
 		return "sbadmin/pacientes/desarrollo";
 	}
 
@@ -350,6 +351,18 @@ public class PacienteController extends AbstractAuthorizedController {
 		pacienteEntity.setAnemia(paciente.getAnemia());
 		pacienteEntity.setBulimia(paciente.getBulimia());
 		pacienteEntity.setAnorexia(paciente.getAnorexia());
+
+		// Validate and set pregnancy state
+		if (paciente.getPregnancy() != null && paciente.getPregnancy()) {
+			if (!isEligibleForPregnancy(pacienteEntity)) {
+				result.rejectValue("pregnancy", "ValidPregnancy",
+						"El estado de embarazo solo puede ser asignado a pacientes femeninas entre 12 y 50 años");
+				model.addAttribute("activeMenu", "desarrollo");
+				model.addAttribute("paciente", pacienteEntity);
+				return "sbadmin/pacientes/desarrollo";
+			}
+		}
+		pacienteEntity.setPregnancy(paciente.getPregnancy() != null ? paciente.getPregnancy() : false);
 
 		pacienteRepository.save(pacienteEntity);
 		return String.format("redirect:/admin/pacientes/%d", id);
@@ -881,6 +894,41 @@ public class PacienteController extends AbstractAuthorizedController {
 		}
 		return currentDate.getYear() - birthDate.getYear()
 				- (currentDate.getDayOfYear() < birthDate.getDayOfYear() ? 1 : 0);
+	}
+
+	/**
+	 * Validates if a patient is eligible for pregnancy state (female, age 12-50).
+	 * @param paciente the patient to validate
+	 * @return true if eligible, false otherwise
+	 */
+	private boolean isEligibleForPregnancy(final Paciente paciente) {
+		if (paciente == null) {
+			return false;
+		}
+
+		// Check gender - must be female
+		if (paciente.getGender() == null || !"F".equals(paciente.getGender())) {
+			log.debug("Patient is not female, cannot set pregnancy");
+			return false;
+		}
+
+		// Check age - must be between 12 and 50
+		if (paciente.getDob() == null) {
+			log.debug("Patient has no date of birth, cannot validate pregnancy eligibility");
+			return false;
+		}
+
+		final Integer age = calculateAge(paciente.getDob());
+		if (age == null) {
+			log.debug("Could not calculate age for patient, cannot validate pregnancy eligibility");
+			return false;
+		}
+
+		final boolean eligible = age >= 12 && age <= 50;
+		if (!eligible) {
+			log.debug("Patient age {} is not between 12 and 50, cannot set pregnancy", age);
+		}
+		return eligible;
 	}
 
 	/**

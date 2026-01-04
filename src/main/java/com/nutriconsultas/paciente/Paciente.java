@@ -10,12 +10,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
+
+import com.nutriconsultas.paciente.validation.ValidPregnancy;
 
 @Entity
 @Data
@@ -36,6 +39,8 @@ public class Paciente {
 
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@Temporal(TemporalType.DATE)
+	@NotNull(message = "La fecha de nacimiento es requerida")
+	@Column(nullable = false)
 	private Date dob;
 
 	@DateTimeFormat(iso = ISO.DATE_TIME)
@@ -48,7 +53,8 @@ public class Paciente {
 	@Column(length = 25)
 	private String phone;
 
-	@Column(length = 1)
+	@NotBlank(message = "El género es requerido")
+	@Column(nullable = false, length = 1)
 	private String gender;
 
 	@Column(length = 100)
@@ -112,5 +118,9 @@ public class Paciente {
 	private Boolean anorexia = false;
 
 	private Boolean enfermedadesHepaticas = false;
+
+	// ESTADO DE EMBARAZO (solo para mujeres entre 12-50 años)
+	@ValidPregnancy
+	private Boolean pregnancy = false;
 
 }
