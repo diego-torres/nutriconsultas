@@ -169,6 +169,51 @@
                   </div>
                 </div>
               </div>
+              <!-- Growth Table Section (only for patients under 18) -->
+              <div class="row" th:if="${isUnder18}">
+                <div class="col-lg-12">
+                  <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                      <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-line"></i> Tabla de Crecimiento
+                      </h6>
+                    </div>
+                    <div class="card-body">
+                      <div th:if="${growthMeasurements != null && !growthMeasurements.isEmpty()}">
+                        <div class="table-responsive">
+                          <table class="table table-bordered" id="growthTable" width="100%" cellspacing="0">
+                            <thead>
+                              <tr>
+                                <th>Fecha</th>
+                                <th>Peso (kg)</th>
+                                <th>Estatura (m)</th>
+                                <th>IMC</th>
+                                <th>Perímetro Cefálico (cm)</th>
+                                <th>Notas</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr th:each="measurement : ${growthMeasurements}">
+                                <td th:text="${#dates.format(measurement.measurementDateTime, 'dd/MM/yyyy')}"></td>
+                                <td th:text="${measurement.peso != null ? #numbers.formatDecimal(measurement.peso, 1, 'COMMA', 2, 'POINT') : 'N/A'}"></td>
+                                <td th:text="${measurement.estatura != null ? #numbers.formatDecimal(measurement.estatura, 1, 'COMMA', 2, 'POINT') : 'N/A'}"></td>
+                                <td th:text="${measurement.imc != null ? #numbers.formatDecimal(measurement.imc, 1, 'COMMA', 2, 'POINT') : 'N/A'}"></td>
+                                <td th:text="${measurement.circumferences != null && measurement.circumferences.cephalicCircumference != null ? #numbers.formatDecimal(measurement.circumferences.cephalicCircumference, 1, 'COMMA', 2, 'POINT') : 'N/A'}"></td>
+                                <td th:text="${measurement.notes != null && !measurement.notes.isEmpty() ? measurement.notes : '-'}"></td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                      <div th:if="${growthMeasurements == null || growthMeasurements.isEmpty()}" class="text-center py-5">
+                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No hay mediciones antropométricas registradas aún.</p>
+                        <p class="text-muted small">Las mediciones aparecerán aquí una vez que se registren.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

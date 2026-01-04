@@ -176,6 +176,20 @@ public class PacienteController extends AbstractAuthorizedController {
 			model.addAttribute("ultimaEstatura", ultimoRegistro.getEstatura());
 			model.addAttribute("ultimoImc", ultimoRegistro.getImc());
 		}
+		// Calculate age and check if patient is under 18 for growth table display
+		final Integer age = calculateAge(paciente.getDob());
+		final boolean isUnder18 = age != null && age < 18;
+		model.addAttribute("isUnder18", isUnder18);
+		// Fetch anthropometric measurements for growth table (only if under 18)
+		if (isUnder18) {
+			final List<AnthropometricMeasurement> measurements = anthropometricMeasurementService
+					.findByPacienteId(id);
+			// Sort by measurement date descending (most recent first)
+			final List<AnthropometricMeasurement> sortedMeasurements = measurements.stream()
+					.sorted(Comparator.comparing(AnthropometricMeasurement::getMeasurementDateTime).reversed())
+					.collect(Collectors.toList());
+			model.addAttribute("growthMeasurements", sortedMeasurements);
+		}
 		return "sbadmin/pacientes/perfil";
 	}
 
