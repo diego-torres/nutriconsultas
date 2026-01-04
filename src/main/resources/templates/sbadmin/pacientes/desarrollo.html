@@ -108,6 +108,14 @@
                         <input class="form-check-input" type="checkbox" th:field="*{anorexia}">
                         <label class="form-check-label" for="anorexia">Anorexia</label>
                       </div>
+                      <div th:if="${isEligibleForPregnancy}" style="height: 30px;"></div>
+                      <div th:if="${isEligibleForPregnancy}" class="form-group">
+                        <label>Estado de Embarazo</label>
+                      </div>
+                      <div th:if="${isEligibleForPregnancy}" class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" th:field="*{pregnancy}">
+                        <label class="form-check-label" for="pregnancy">Embarazada</label>
+                      </div>
                       <div style="height: 30px;"></div>
                       <button type="submit" class="btn btn-success ">Listo!</button>
                     </form>

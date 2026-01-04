@@ -32,6 +32,7 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 
 		variables.put("citaAnterior", "");
 		variables.put("citaSiguiente", "");
+		variables.put("isEligibleForPregnancy", false);
 
 		addMockDietas(variables, paciente);
 		addMockConsulta(variables, paciente);
@@ -72,6 +73,7 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		paciente.setAnemia(false);
 		paciente.setBulimia(false);
 		paciente.setAnorexia(false);
+		paciente.setPregnancy(false);
 		return paciente;
 	}
 

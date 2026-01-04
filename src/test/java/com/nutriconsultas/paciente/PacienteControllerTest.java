@@ -1524,4 +1524,273 @@ public class PacienteControllerTest {
 		log.info("finished testVerAntropometricoThrowsExceptionWhenWrongPaciente");
 	}
 
+	@Test
+	public void testDesarrolloPacienteShowsPregnancyForEligibleFemale() {
+		log.info("starting testDesarrolloPacienteShowsPregnancyForEligibleFemale");
+		// Arrange - Female patient, age 25 (eligible)
+		final Paciente femalePaciente = new Paciente();
+		femalePaciente.setId(2L);
+		femalePaciente.setName("Maria Garcia");
+		femalePaciente.setUserId(TEST_USER_ID);
+		final LocalDate dob = LocalDate.now().minusYears(25);
+		femalePaciente.setDob(Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+		femalePaciente.setGender("F");
+
+		when(pacienteRepository.findByIdAndUserId(2L, TEST_USER_ID)).thenReturn(java.util.Optional.of(femalePaciente));
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.desarrolloPaciente(2L, model, principal);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/desarrollo");
+		verify(model).addAttribute("activeMenu", "desarrollo");
+		verify(model).addAttribute("paciente", femalePaciente);
+		verify(model).addAttribute("isEligibleForPregnancy", true);
+		log.info("finished testDesarrolloPacienteShowsPregnancyForEligibleFemale");
+	}
+
+	@Test
+	public void testDesarrolloPacienteHidesPregnancyForMale() {
+		log.info("starting testDesarrolloPacienteHidesPregnancyForMale");
+		// Arrange - Male patient (not eligible)
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.desarrolloPaciente(1L, model, principal);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/desarrollo");
+		verify(model).addAttribute("isEligibleForPregnancy", false);
+		log.info("finished testDesarrolloPacienteHidesPregnancyForMale");
+	}
+
+	@Test
+	public void testDesarrolloPacienteHidesPregnancyForFemaleTooYoung() {
+		log.info("starting testDesarrolloPacienteHidesPregnancyForFemaleTooYoung");
+		// Arrange - Female patient, age 10 (too young)
+		final Paciente youngFemale = new Paciente();
+		youngFemale.setId(3L);
+		youngFemale.setName("Ana Lopez");
+		youngFemale.setUserId(TEST_USER_ID);
+		final LocalDate dob = LocalDate.now().minusYears(10);
+		youngFemale.setDob(Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+		youngFemale.setGender("F");
+
+		when(pacienteRepository.findByIdAndUserId(3L, TEST_USER_ID)).thenReturn(java.util.Optional.of(youngFemale));
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.desarrolloPaciente(3L, model, principal);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/desarrollo");
+		verify(model).addAttribute("isEligibleForPregnancy", false);
+		log.info("finished testDesarrolloPacienteHidesPregnancyForFemaleTooYoung");
+	}
+
+	@Test
+	public void testDesarrolloPacienteHidesPregnancyForFemaleTooOld() {
+		log.info("starting testDesarrolloPacienteHidesPregnancyForFemaleTooOld");
+		// Arrange - Female patient, age 55 (too old)
+		final Paciente oldFemale = new Paciente();
+		oldFemale.setId(4L);
+		oldFemale.setName("Rosa Martinez");
+		oldFemale.setUserId(TEST_USER_ID);
+		final LocalDate dob = LocalDate.now().minusYears(55);
+		oldFemale.setDob(Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+		oldFemale.setGender("F");
+
+		when(pacienteRepository.findByIdAndUserId(4L, TEST_USER_ID)).thenReturn(java.util.Optional.of(oldFemale));
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.desarrolloPaciente(4L, model, principal);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/desarrollo");
+		verify(model).addAttribute("isEligibleForPregnancy", false);
+		log.info("finished testDesarrolloPacienteHidesPregnancyForFemaleTooOld");
+	}
+
+	@Test
+	public void testCambiaDesarrolloPacienteAcceptsPregnancyForEligibleFemale() {
+		log.info("starting testCambiaDesarrolloPacienteAcceptsPregnancyForEligibleFemale");
+		// Arrange - Female patient, age 25 (eligible)
+		final Paciente femalePaciente = new Paciente();
+		femalePaciente.setId(2L);
+		femalePaciente.setName("Maria Garcia");
+		femalePaciente.setUserId(TEST_USER_ID);
+		final LocalDate dob = LocalDate.now().minusYears(25);
+		femalePaciente.setDob(Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+		femalePaciente.setGender("F");
+
+		final Paciente updatedPaciente = new Paciente();
+		updatedPaciente.setPregnancy(true);
+
+		when(pacienteRepository.findByIdAndUserId(2L, TEST_USER_ID)).thenReturn(java.util.Optional.of(femalePaciente));
+		when(pacienteRepository.save(any(Paciente.class))).thenReturn(femalePaciente);
+		lenient().when(bindingResult.hasErrors()).thenReturn(false);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.cambiaDesarrolloPaciente(2L, updatedPaciente, bindingResult, model, principal);
+
+		// Assert
+		assertThat(result).isEqualTo("redirect:/admin/pacientes/2");
+		verify(pacienteRepository).save(any(Paciente.class));
+		log.info("finished testCambiaDesarrolloPacienteAcceptsPregnancyForEligibleFemale");
+	}
+
+	@Test
+	public void testCambiaDesarrolloPacienteRejectsPregnancyForMale() {
+		log.info("starting testCambiaDesarrolloPacienteRejectsPregnancyForMale");
+		// Arrange - Male patient tries to set pregnancy
+		final Paciente updatedPaciente = new Paciente();
+		updatedPaciente.setPregnancy(true);
+
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		lenient().when(bindingResult.hasErrors()).thenReturn(false);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.cambiaDesarrolloPaciente(1L, updatedPaciente, bindingResult, model, principal);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/desarrollo");
+		verify(bindingResult).rejectValue("pregnancy", "ValidPregnancy",
+				"El estado de embarazo solo puede ser asignado a pacientes femeninas entre 12 y 50 años");
+		verify(pacienteRepository, org.mockito.Mockito.never()).save(any(Paciente.class));
+		log.info("finished testCambiaDesarrolloPacienteRejectsPregnancyForMale");
+	}
+
+	@Test
+	public void testCambiaDesarrolloPacienteRejectsPregnancyForFemaleTooYoung() {
+		log.info("starting testCambiaDesarrolloPacienteRejectsPregnancyForFemaleTooYoung");
+		// Arrange - Female patient, age 10 (too young)
+		final Paciente youngFemale = new Paciente();
+		youngFemale.setId(3L);
+		youngFemale.setName("Ana Lopez");
+		youngFemale.setUserId(TEST_USER_ID);
+		final LocalDate dob = LocalDate.now().minusYears(10);
+		youngFemale.setDob(Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+		youngFemale.setGender("F");
+
+		final Paciente updatedPaciente = new Paciente();
+		updatedPaciente.setPregnancy(true);
+
+		when(pacienteRepository.findByIdAndUserId(3L, TEST_USER_ID)).thenReturn(java.util.Optional.of(youngFemale));
+		lenient().when(bindingResult.hasErrors()).thenReturn(false);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.cambiaDesarrolloPaciente(3L, updatedPaciente, bindingResult, model, principal);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/desarrollo");
+		verify(bindingResult).rejectValue("pregnancy", "ValidPregnancy",
+				"El estado de embarazo solo puede ser asignado a pacientes femeninas entre 12 y 50 años");
+		verify(pacienteRepository, org.mockito.Mockito.never()).save(any(Paciente.class));
+		log.info("finished testCambiaDesarrolloPacienteRejectsPregnancyForFemaleTooYoung");
+	}
+
+	@Test
+	public void testCambiaDesarrolloPacienteRejectsPregnancyForFemaleTooOld() {
+		log.info("starting testCambiaDesarrolloPacienteRejectsPregnancyForFemaleTooOld");
+		// Arrange - Female patient, age 55 (too old)
+		final Paciente oldFemale = new Paciente();
+		oldFemale.setId(4L);
+		oldFemale.setName("Rosa Martinez");
+		oldFemale.setUserId(TEST_USER_ID);
+		final LocalDate dob = LocalDate.now().minusYears(55);
+		oldFemale.setDob(Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+		oldFemale.setGender("F");
+
+		final Paciente updatedPaciente = new Paciente();
+		updatedPaciente.setPregnancy(true);
+
+		when(pacienteRepository.findByIdAndUserId(4L, TEST_USER_ID)).thenReturn(java.util.Optional.of(oldFemale));
+		lenient().when(bindingResult.hasErrors()).thenReturn(false);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.cambiaDesarrolloPaciente(4L, updatedPaciente, bindingResult, model, principal);
+
+		// Assert
+		assertThat(result).isEqualTo("sbadmin/pacientes/desarrollo");
+		verify(bindingResult).rejectValue("pregnancy", "ValidPregnancy",
+				"El estado de embarazo solo puede ser asignado a pacientes femeninas entre 12 y 50 años");
+		verify(pacienteRepository, org.mockito.Mockito.never()).save(any(Paciente.class));
+		log.info("finished testCambiaDesarrolloPacienteRejectsPregnancyForFemaleTooOld");
+	}
+
+	@Test
+	public void testCambiaDesarrolloPacienteAcceptsPregnancyForFemaleAge12() {
+		log.info("starting testCambiaDesarrolloPacienteAcceptsPregnancyForFemaleAge12");
+		// Arrange - Female patient, age 12 (minimum eligible age)
+		final Paciente femalePaciente = new Paciente();
+		femalePaciente.setId(5L);
+		femalePaciente.setName("Sofia Rodriguez");
+		femalePaciente.setUserId(TEST_USER_ID);
+		final LocalDate dob = LocalDate.now().minusYears(12);
+		femalePaciente.setDob(Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+		femalePaciente.setGender("F");
+
+		final Paciente updatedPaciente = new Paciente();
+		updatedPaciente.setPregnancy(true);
+
+		when(pacienteRepository.findByIdAndUserId(5L, TEST_USER_ID)).thenReturn(java.util.Optional.of(femalePaciente));
+		when(pacienteRepository.save(any(Paciente.class))).thenReturn(femalePaciente);
+		lenient().when(bindingResult.hasErrors()).thenReturn(false);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.cambiaDesarrolloPaciente(5L, updatedPaciente, bindingResult, model, principal);
+
+		// Assert
+		assertThat(result).isEqualTo("redirect:/admin/pacientes/5");
+		verify(pacienteRepository).save(any(Paciente.class));
+		log.info("finished testCambiaDesarrolloPacienteAcceptsPregnancyForFemaleAge12");
+	}
+
+	@Test
+	public void testCambiaDesarrolloPacienteAcceptsPregnancyForFemaleAge50() {
+		log.info("starting testCambiaDesarrolloPacienteAcceptsPregnancyForFemaleAge50");
+		// Arrange - Female patient, age 50 (maximum eligible age)
+		final Paciente femalePaciente = new Paciente();
+		femalePaciente.setId(6L);
+		femalePaciente.setName("Carmen Sanchez");
+		femalePaciente.setUserId(TEST_USER_ID);
+		final LocalDate dob = LocalDate.now().minusYears(50);
+		femalePaciente.setDob(Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+		femalePaciente.setGender("F");
+
+		final Paciente updatedPaciente = new Paciente();
+		updatedPaciente.setPregnancy(true);
+
+		when(pacienteRepository.findByIdAndUserId(6L, TEST_USER_ID)).thenReturn(java.util.Optional.of(femalePaciente));
+		when(pacienteRepository.save(any(Paciente.class))).thenReturn(femalePaciente);
+		lenient().when(bindingResult.hasErrors()).thenReturn(false);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		// Act
+		final String result = controller.cambiaDesarrolloPaciente(6L, updatedPaciente, bindingResult, model, principal);
+
+		// Assert
+		assertThat(result).isEqualTo("redirect:/admin/pacientes/6");
+		verify(pacienteRepository).save(any(Paciente.class));
+		log.info("finished testCambiaDesarrolloPacienteAcceptsPregnancyForFemaleAge50");
+	}
+
 }
