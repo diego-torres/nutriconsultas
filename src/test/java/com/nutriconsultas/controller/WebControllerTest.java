@@ -3,6 +3,8 @@ package com.nutriconsultas.controller;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Objects;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -47,7 +49,7 @@ public class WebControllerTest {
 		log.info("Starting testContactFormMissingFields");
 		mockMvc
 			.perform(MockMvcRequestBuilders.post("/contact")
-				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.contentType(Objects.requireNonNull(MediaType.APPLICATION_FORM_URLENCODED))
 				.param("name", "")
 				.param("email", "")
 				.param("subject", "")
@@ -61,7 +63,7 @@ public class WebControllerTest {
 		log.info("Starting testContactFormMissingRecaptcha");
 		mockMvc
 			.perform(MockMvcRequestBuilders.post("/contact")
-				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.contentType(Objects.requireNonNull(MediaType.APPLICATION_FORM_URLENCODED))
 				.param("name", "Test User")
 				.param("email", "test@example.com")
 				.param("subject", "Test Subject")
@@ -76,7 +78,7 @@ public class WebControllerTest {
 		log.info("Starting testContactFormInvalidEmail");
 		mockMvc
 			.perform(MockMvcRequestBuilders.post("/contact")
-				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.contentType(Objects.requireNonNull(MediaType.APPLICATION_FORM_URLENCODED))
 				.param("name", "Test User")
 				.param("email", "invalid-email")
 				.param("subject", "Test Subject")
