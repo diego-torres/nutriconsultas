@@ -182,12 +182,11 @@ public class PacienteController extends AbstractAuthorizedController {
 		model.addAttribute("isUnder18", isUnder18);
 		// Fetch anthropometric measurements for growth table (only if under 18)
 		if (isUnder18) {
-			final List<AnthropometricMeasurement> measurements = anthropometricMeasurementService
-					.findByPacienteId(id);
+			final List<AnthropometricMeasurement> measurements = anthropometricMeasurementService.findByPacienteId(id);
 			// Sort by measurement date descending (most recent first)
 			final List<AnthropometricMeasurement> sortedMeasurements = measurements.stream()
-					.sorted(Comparator.comparing(AnthropometricMeasurement::getMeasurementDateTime).reversed())
-					.collect(Collectors.toList());
+				.sorted(Comparator.comparing(AnthropometricMeasurement::getMeasurementDateTime).reversed())
+				.collect(Collectors.toList());
 			model.addAttribute("growthMeasurements", sortedMeasurements);
 		}
 		return "sbadmin/pacientes/perfil";
@@ -600,6 +599,12 @@ public class PacienteController extends AbstractAuthorizedController {
 
 		model.addAttribute("activeMenu", "historial");
 		model.addAttribute("paciente", paciente);
+		// Calculate age for BMR calculations
+		final Integer age = calculateAge(paciente.getDob());
+		model.addAttribute("patientAge", age);
+		// Determine if patient is male for BMR calculations
+		final Boolean isMale = paciente.getGender() != null && "M".equals(paciente.getGender());
+		model.addAttribute("patientIsMale", isMale);
 		AnthropometricMeasurement measurement = new AnthropometricMeasurement();
 		measurement.setMeasurementDateTime(new Date());
 		measurement.setPaciente(paciente);
@@ -665,6 +670,13 @@ public class PacienteController extends AbstractAuthorizedController {
 		model.addAttribute("activeMenu", "historial");
 		model.addAttribute("measurement", measurement);
 		model.addAttribute("paciente", measurement.getPaciente());
+		// Calculate age for BMR calculations
+		final Integer age = calculateAge(measurement.getPaciente().getDob());
+		model.addAttribute("patientAge", age);
+		// Determine if patient is male for BMR calculations
+		final Boolean isMale = measurement.getPaciente().getGender() != null
+				&& "M".equals(measurement.getPaciente().getGender());
+		model.addAttribute("patientIsMale", isMale);
 		return "sbadmin/pacientes/ver-antropometrico";
 	}
 
