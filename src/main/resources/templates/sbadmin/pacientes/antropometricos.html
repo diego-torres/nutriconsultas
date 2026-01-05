@@ -78,11 +78,6 @@
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link" id="calculation-tab" data-toggle="tab" href="#calculation" role="tab" aria-controls="calculation" aria-selected="false">
-                            <i class="fas fa-calculator"></i> Cálculos
-                          </a>
-                        </li>
-                        <li class="nav-item">
                           <a class="nav-link" id="bioimpedance-tab" data-toggle="tab" href="#bioimpedance" role="tab" aria-controls="bioimpedance" aria-selected="false">
                             <i class="fas fa-wave-square"></i> Bioimpedancia
                           </a>
@@ -103,13 +98,8 @@
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link" id="body-composition-tab" data-toggle="tab" href="#body-composition" role="tab" aria-controls="body-composition" aria-selected="false">
-                            <i class="fas fa-percentage"></i> Composición Corporal
-                          </a>
-                        </li>
-                        <li class="nav-item">
-                          <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">
-                            <i class="fas fa-sticky-note"></i> Notas
+                          <a class="nav-link" id="calculation-tab" data-toggle="tab" href="#calculation" role="tab" aria-controls="calculation" aria-selected="false">
+                            <i class="fas fa-calculator"></i> Cálculos
                           </a>
                         </li>
                       </ul>
@@ -135,198 +125,19 @@
                             </div>
                           </div>
                           <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                               <div class="form-group">
-                                <label>Masa Corporal</label>
-                                <input type="number" step="0.01" th:field="*{bodyMass.bodyMassValue}" class="form-control">
-                                <span th:if="${#fields.hasErrors('bodyMass.bodyMassValue')}" th:errors="*{bodyMass.bodyMassValue}"></span>
-                              </div>
-                            </div>
-                            <div class="col-md-6">
-                              <div class="form-group">
-                                <label>IMC</label>
-                                <input type="number" step="0.01" th:field="*{bodyMass.imc}" class="form-control" readonly>
-                                <span th:if="${#fields.hasErrors('bodyMass.imc')}" th:errors="*{bodyMass.imc}"></span>
+                                <label>Notas</label>
+                                <textarea class="form-control" rows="5" th:field="*{notes}"></textarea>
+                                <span th:if="${#fields.hasErrors('notes')}" th:errors="*{notes}"></span>
                               </div>
                             </div>
                           </div>
-                          <div class="row">
-                            <div class="col-md-6">
-                              <div class="form-group">
-                                <label>Índice de Grasa Corporal</label>
-                                <input type="number" step="0.01" th:field="*{bodyComposition.indiceGrasaCorporal}" class="form-control">
-                                <span th:if="${#fields.hasErrors('bodyComposition.indiceGrasaCorporal')}" th:errors="*{bodyComposition.indiceGrasaCorporal}"></span>
-                              </div>
-                            </div>
-                            <div class="col-md-6">
-                              <div class="form-group">
-                                <label>Nivel de Peso</label>
-                                <select th:field="*{bodyMass.nivelPeso}" class="form-control">
-                                  <option value="">Seleccione...</option>
-                                  <option th:each="nivel : ${T(com.nutriconsultas.paciente.NivelPeso).values()}" 
-                                          th:value="${nivel}" 
-                                          th:text="${nivel}"></option>
-                                </select>
-                                <span th:if="${#fields.hasErrors('bodyMass.nivelPeso')}" th:errors="*{bodyMass.nivelPeso}"></span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- Calculation Tab -->
-                        <div class="tab-pane fade" id="calculation" role="tabpanel" aria-labelledby="calculation-tab">
-                          <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> Los cálculos se actualizan automáticamente cuando se ingresan peso y estatura en la pestaña "Peso/Altura".
-                          </div>
-                          
-                          <!-- BMI Section -->
-                          <h5 class="mb-3"><i class="fas fa-weight"></i> Índice de Masa Corporal (BMI)</h5>
-                          <div class="row mb-4">
-                            <div class="col-md-6">
-                              <div class="card">
-                                <div class="card-body">
-                                  <h6 class="card-title">BMI Clásico (Quetelet)</h6>
-                                  <p class="text-muted small mb-2">Fórmula: peso (kg) / estatura² (m)</p>
-                                  <div class="form-group mb-2">
-                                    <label class="small">Peso (kg):</label>
-                                    <input type="number" step="0.01" id="calc-weight" class="form-control form-control-sm" min="10" max="200" placeholder="Ingrese peso">
-                                  </div>
-                                  <div class="form-group mb-2">
-                                    <label class="small">Estatura (m):</label>
-                                    <input type="number" step="0.01" id="calc-height" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
-                                  </div>
-                                  <div class="alert alert-light mb-0">
-                                    <strong>Resultado:</strong> <span id="classic-bmi-result" class="text-primary">-</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="col-md-6">
-                              <div class="card">
-                                <div class="card-body">
-                                  <h6 class="card-title">BMI Trefethen (Corregido)</h6>
-                                  <p class="text-muted small mb-2">Fórmula: 1.3 × peso (kg) / estatura².⁵ (m)</p>
-                                  <div class="form-group mb-2">
-                                    <label class="small">Peso (kg):</label>
-                                    <input type="number" step="0.01" id="calc-weight-trefethen" class="form-control form-control-sm" min="10" max="200" placeholder="Ingrese peso">
-                                  </div>
-                                  <div class="form-group mb-2">
-                                    <label class="small">Estatura (m):</label>
-                                    <input type="number" step="0.01" id="calc-height-trefethen" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
-                                  </div>
-                                  <div class="alert alert-light mb-0">
-                                    <strong>Resultado:</strong> <span id="trefethen-bmi-result" class="text-primary">-</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <!-- BMR Section -->
-                          <h5 class="mb-3"><i class="fas fa-fire"></i> Metabolismo Basal (BMR)</h5>
-                          <div class="row mb-4">
-                            <div class="col-md-6">
-                              <div class="card">
-                                <div class="card-body">
-                                  <h6 class="card-title">Mifflin-St Jeor</h6>
-                                  <p class="text-muted small mb-2">
-                                    <span th:if="${patientIsMale}">Hombres:</span>
-                                    <span th:unless="${patientIsMale}">Mujeres:</span>
-                                    BMR = 10 × peso + 6.25 × estatura(cm) - 5 × edad 
-                                    <span th:if="${patientIsMale}">+ 5</span>
-                                    <span th:unless="${patientIsMale}">- 161</span>
-                                  </p>
-                                  <div class="form-group mb-2">
-                                    <label class="small">Peso (kg):</label>
-                                    <input type="number" step="0.01" id="bmr-weight-msj" class="form-control form-control-sm" min="10" max="200" placeholder="Ingrese peso">
-                                  </div>
-                                  <div class="form-group mb-2">
-                                    <label class="small">Estatura (m):</label>
-                                    <input type="number" step="0.01" id="bmr-height-msj" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
-                                  </div>
-                                  <div class="form-group mb-2">
-                                    <label class="small">Edad (años):</label>
-                                    <input type="number" id="bmr-age-msj" class="form-control form-control-sm" min="1" max="150" 
-                                           th:value="${patientAge}" 
-                                           th:disabled="${patientAge == null}"
-                                           placeholder="Ingrese edad">
-                                    <small class="text-muted" th:if="${patientAge == null}">Edad no disponible</small>
-                                  </div>
-                                  <div class="alert alert-light mb-0">
-                                    <strong>Resultado:</strong> <span id="msj-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="col-md-6">
-                              <div class="card">
-                                <div class="card-body">
-                                  <h6 class="card-title">Harris-Benedict (Revisado 1990)</h6>
-                                  <p class="text-muted small mb-2">
-                                    <span th:if="${patientIsMale}">Hombres:</span>
-                                    <span th:unless="${patientIsMale}">Mujeres:</span>
-                                    <span th:if="${patientIsMale}">BMR = 13.397 × peso + 4.799 × estatura(cm) - 5.677 × edad + 88.362</span>
-                                    <span th:unless="${patientIsMale}">BMR = 9.247 × peso + 3.098 × estatura(cm) - 4.330 × edad + 447.593</span>
-                                  </p>
-                                  <div class="form-group mb-2">
-                                    <label class="small">Peso (kg):</label>
-                                    <input type="number" step="0.01" id="bmr-weight-hb" class="form-control form-control-sm" min="10" max="200" placeholder="Ingrese peso">
-                                  </div>
-                                  <div class="form-group mb-2">
-                                    <label class="small">Estatura (m):</label>
-                                    <input type="number" step="0.01" id="bmr-height-hb" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
-                                  </div>
-                                  <div class="form-group mb-2">
-                                    <label class="small">Edad (años):</label>
-                                    <input type="number" id="bmr-age-hb" class="form-control form-control-sm" min="1" max="150" 
-                                           th:value="${patientAge}" 
-                                           th:disabled="${patientAge == null}"
-                                           placeholder="Ingrese edad">
-                                    <small class="text-muted" th:if="${patientAge == null}">Edad no disponible</small>
-                                  </div>
-                                  <div class="alert alert-light mb-0">
-                                    <strong>Resultado:</strong> <span id="hb-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <!-- Optional BMR formulas (if lean body mass is available) -->
-                          <div class="row mb-4">
-                            <div class="col-md-6">
-                              <div class="card">
-                                <div class="card-body">
-                                  <h6 class="card-title">Katch-McArdle</h6>
-                                  <p class="text-muted small mb-2">Fórmula: 370 + (21.6 × masa magra (kg))</p>
-                                  <p class="text-muted small mb-2"><em>Requiere masa magra (masa libre de grasa)</em></p>
-                                  <div class="form-group mb-2">
-                                    <label class="small">Masa Magra (kg):</label>
-                                    <input type="number" step="0.01" id="lean-mass-km" class="form-control form-control-sm" min="0" placeholder="Ingrese masa magra">
-                                  </div>
-                                  <div class="alert alert-light mb-0">
-                                    <strong>Resultado:</strong> <span id="km-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="col-md-6">
-                              <div class="card">
-                                <div class="card-body">
-                                  <h6 class="card-title">Cunningham</h6>
-                                  <p class="text-muted small mb-2">Fórmula: 500 + (22 × masa magra (kg))</p>
-                                  <p class="text-muted small mb-2"><em>Requiere masa magra (masa libre de grasa)</em></p>
-                                  <div class="form-group mb-2">
-                                    <label class="small">Masa Magra (kg):</label>
-                                    <input type="number" step="0.01" id="lean-mass-cun" class="form-control form-control-sm" min="0" placeholder="Ingrese masa magra">
-                                  </div>
-                                  <div class="alert alert-light mb-0">
-                                    <strong>Resultado:</strong> <span id="cun-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+                          <!-- Hidden fields for calculated values -->
+                          <input type="hidden" th:field="*{bodyMass.bodyMassValue}">
+                          <input type="hidden" th:field="*{bodyMass.imc}">
+                          <input type="hidden" th:field="*{bodyMass.nivelPeso}">
+                          <input type="hidden" th:field="*{bodyComposition.indiceGrasaCorporal}">
                         </div>
 
                         <!-- Bioimpedance Tab -->
@@ -749,39 +560,559 @@
                           </div>
                         </div>
 
-                        <!-- Body Composition Tab -->
-                        <div class="tab-pane fade" id="body-composition" role="tabpanel" aria-labelledby="body-composition-tab">
-                          <div class="row">
+                        <!-- Calculation Tab -->
+                        <div class="tab-pane fade" id="calculation" role="tabpanel" aria-labelledby="calculation-tab">
+                          <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Los cálculos se actualizan automáticamente cuando se ingresan peso y estatura en la pestaña "Peso/Altura".
+                          </div>
+
+                          <!-- Ideal Weight (Peso Teórico) Section -->
+                          <h5 class="mb-3"><i class="fas fa-weight"></i> Peso Teórico</h5>
+                          <div class="row mb-4">
                             <div class="col-md-6">
-                              <div class="form-group">
-                                <label>Porcentaje de Grasa Corporal (%)</label>
-                                <input type="number" step="0.1" th:field="*{bodyComposition.porcentajeGrasaCorporal}" class="form-control" min="0" max="100">
-                                <span th:if="${#fields.hasErrors('bodyComposition.porcentajeGrasaCorporal')}" th:errors="*{bodyComposition.porcentajeGrasaCorporal}"></span>
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Robinson (1983)</h6>
+                                  <p class="text-muted small mb-2">
+                                    <span th:if="${patientIsMale}">Hombres:</span>
+                                    <span th:unless="${patientIsMale}">Mujeres:</span>
+                                    <span th:if="${patientIsMale}">Peso Ideal = 52 + 1.9 × (estatura(pulg) - 60)</span>
+                                    <span th:unless="${patientIsMale}">Peso Ideal = 49 + 1.7 × (estatura(pulg) - 60)</span>
+                                  </p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Estatura (m):</label>
+                                    <input type="number" step="0.01" id="ideal-weight-height-rob" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="rob-ideal-weight-result" class="text-primary">-</span> <small>kg</small>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div class="col-md-6">
-                              <div class="form-group">
-                                <label>Índice de Grasa Corporal</label>
-                                <input type="number" step="0.01" th:field="*{bodyComposition.indiceGrasaCorporal}" class="form-control">
-                                <span th:if="${#fields.hasErrors('bodyComposition.indiceGrasaCorporal')}" th:errors="*{bodyComposition.indiceGrasaCorporal}"></span>
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Metropolitan (Devine 1974)</h6>
+                                  <p class="text-muted small mb-2">
+                                    <span th:if="${patientIsMale}">Hombres:</span>
+                                    <span th:unless="${patientIsMale}">Mujeres:</span>
+                                    <span th:if="${patientIsMale}">Peso Ideal = 50.0 + 2.3 × (estatura(pulg) - 60)</span>
+                                    <span th:unless="${patientIsMale}">Peso Ideal = 45.5 + 2.3 × (estatura(pulg) - 60)</span>
+                                  </p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Estatura (m):</label>
+                                    <input type="number" step="0.01" id="ideal-weight-height-met" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
+                              </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="met-ideal-weight-result" class="text-primary">-</span> <small>kg</small>
+                            </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row mb-4">
+                            <div class="col-md-6">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Hamwi (1964)</h6>
+                                  <p class="text-muted small mb-2">
+                                    <span th:if="${patientIsMale}">Hombres:</span>
+                                    <span th:unless="${patientIsMale}">Mujeres:</span>
+                                    <span th:if="${patientIsMale}">Peso Ideal = 48.0 + 2.7 × (estatura(pulg) - 60)</span>
+                                    <span th:unless="${patientIsMale}">Peso Ideal = 45.5 + 2.2 × (estatura(pulg) - 60)</span>
+                                  </p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Estatura (m):</label>
+                                    <input type="number" step="0.01" id="ideal-weight-height-ham" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="ham-ideal-weight-result" class="text-primary">-</span> <small>kg</small>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div class="col-md-6">
-                              <div class="form-group">
-                                <label>Porcentaje de Masa Muscular (%)</label>
-                                <input type="number" step="0.1" th:field="*{bodyComposition.porcentajeMasaMuscular}" class="form-control" min="0" max="100">
-                                <span th:if="${#fields.hasErrors('bodyComposition.porcentajeMasaMuscular')}" th:errors="*{bodyComposition.porcentajeMasaMuscular}"></span>
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Lorentz (1929)</h6>
+                                  <p class="text-muted small mb-2">
+                                    <span th:if="${patientIsMale}">Hombres:</span>
+                                    <span th:unless="${patientIsMale}">Mujeres:</span>
+                                    <span th:if="${patientIsMale}">Peso Ideal = (estatura(cm) - 100) - ((estatura(cm) - 150) / 4)</span>
+                                    <span th:unless="${patientIsMale}">Peso Ideal = (estatura(cm) - 100) - ((estatura(cm) - 150) / 2)</span>
+                                  </p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Estatura (m):</label>
+                                    <input type="number" step="0.01" id="ideal-weight-height-lor" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="lor-ideal-weight-result" class="text-primary">-</span> <small>kg</small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row mb-4">
+                            <div class="col-md-6">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Tradicional (Broca 1871)</h6>
+                                  <p class="text-muted small mb-2">Peso Ideal = Estatura (cm) - 100</p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Estatura (m):</label>
+                                    <input type="number" step="0.01" id="ideal-weight-height-trad" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="trad-ideal-weight-result" class="text-primary">-</span> <small>kg</small>
+                                  </div>
                               </div>
                             </div>
                           </div>
                         </div>
 
-                        <!-- Notes Tab -->
-                        <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
-                          <div class="form-group">
-                            <label>Notas</label>
-                            <textarea class="form-control" rows="5" th:field="*{notes}"></textarea>
-                            <span th:if="${#fields.hasErrors('notes')}" th:errors="*{notes}"></span>
+                          <!-- BMI Section -->
+                          <h5 class="mb-3"><i class="fas fa-weight"></i> Índice de Masa Corporal (BMI)</h5>
+                          <div class="row mb-4">
+                            <div class="col-md-6">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">BMI Clásico (Quetelet)</h6>
+                                  <p class="text-muted small mb-2">Fórmula: peso (kg) / estatura² (m)</p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Peso (kg):</label>
+                                    <input type="number" step="0.01" id="calc-weight" class="form-control form-control-sm" min="10" max="200" placeholder="Ingrese peso">
+                                  </div>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Estatura (m):</label>
+                                    <input type="number" step="0.01" id="calc-height" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="classic-bmi-result" class="text-primary">-</span>
+                                  </div>
+                                  <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="copyBmiToForm()">
+                                      <i class="fas fa-copy"></i> Copiar IMC a Formulario
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">BMI Trefethen (Corregido)</h6>
+                                  <p class="text-muted small mb-2">Fórmula: 1.3 × peso (kg) / estatura².⁵ (m)</p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Peso (kg):</label>
+                                    <input type="number" step="0.01" id="calc-weight-trefethen" class="form-control form-control-sm" min="10" max="200" placeholder="Ingrese peso">
+                                  </div>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Estatura (m):</label>
+                                    <input type="number" step="0.01" id="calc-height-trefethen" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="trefethen-bmi-result" class="text-primary">-</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Additional Body Mass Calculations -->
+                          <div class="row mb-4">
+                            <div class="col-md-4">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Masa Corporal</h6>
+                                  <p class="text-muted small mb-2">Mismo valor que el peso</p>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="body-mass-value-result" class="text-primary">-</span> <small>kg</small>
+                                  </div>
+                                  <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="copyBodyMassToForm()">
+                                      <i class="fas fa-copy"></i> Copiar a Formulario
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Nivel de Peso</h6>
+                                  <p class="text-muted small mb-2">Calculado según BMI: BAJO (&lt;18.5), NORMAL (18.5-25), ALTO (25-30), SOBREPESO (&gt;30)</p>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="nivel-peso-result" class="text-primary">-</span>
+                                  </div>
+                                  <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="copyNivelPesoToForm()">
+                                      <i class="fas fa-copy"></i> Copiar a Formulario
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Índice de Grasa Corporal</h6>
+                                  <p class="text-muted small mb-2">Mismo valor que el Porcentaje de Grasa Corporal</p>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="indice-grasa-corporal-result" class="text-primary">-</span>
+                                  </div>
+                                  <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="copyIndiceGrasaToForm()">
+                                      <i class="fas fa-copy"></i> Copiar a Formulario
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- BMR Section -->
+                          <h5 class="mb-3"><i class="fas fa-fire"></i> Metabolismo Basal (BMR)</h5>
+                          <div class="row mb-4">
+                            <div class="col-md-6">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Mifflin-St Jeor</h6>
+                                  <p class="text-muted small mb-2">
+                                    <span th:if="${patientIsMale}">Hombres:</span>
+                                    <span th:unless="${patientIsMale}">Mujeres:</span>
+                                    BMR = 10 × peso + 6.25 × estatura(cm) - 5 × edad 
+                                    <span th:if="${patientIsMale}">+ 5</span>
+                                    <span th:unless="${patientIsMale}">- 161</span>
+                                  </p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Peso (kg):</label>
+                                    <input type="number" step="0.01" id="bmr-weight-msj" class="form-control form-control-sm" min="10" max="200" placeholder="Ingrese peso">
+                                  </div>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Estatura (m):</label>
+                                    <input type="number" step="0.01" id="bmr-height-msj" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
+                                  </div>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Edad (años):</label>
+                                    <input type="number" id="bmr-age-msj" class="form-control form-control-sm" min="1" max="150" 
+                                           th:value="${patientAge}" 
+                                           th:disabled="${patientAge == null}"
+                                           placeholder="Ingrese edad">
+                                    <small class="text-muted" th:if="${patientAge == null}">Edad no disponible</small>
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="msj-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Harris-Benedict (Revisado 1990)</h6>
+                                  <p class="text-muted small mb-2">
+                                    <span th:if="${patientIsMale}">Hombres:</span>
+                                    <span th:unless="${patientIsMale}">Mujeres:</span>
+                                    <span th:if="${patientIsMale}">BMR = 13.397 × peso + 4.799 × estatura(cm) - 5.677 × edad + 88.362</span>
+                                    <span th:unless="${patientIsMale}">BMR = 9.247 × peso + 3.098 × estatura(cm) - 4.330 × edad + 447.593</span>
+                                  </p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Peso (kg):</label>
+                                    <input type="number" step="0.01" id="bmr-weight-hb" class="form-control form-control-sm" min="10" max="200" placeholder="Ingrese peso">
+                                  </div>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Estatura (m):</label>
+                                    <input type="number" step="0.01" id="bmr-height-hb" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
+                                  </div>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Edad (años):</label>
+                                    <input type="number" id="bmr-age-hb" class="form-control form-control-sm" min="1" max="150" 
+                                           th:value="${patientAge}" 
+                                           th:disabled="${patientAge == null}"
+                                           placeholder="Ingrese edad">
+                                    <small class="text-muted" th:if="${patientAge == null}">Edad no disponible</small>
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="hb-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Additional BMR formulas -->
+                          <div class="row mb-4">
+                            <div class="col-md-6">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">FAO/WHO/ONU</h6>
+                                  <p class="text-muted small mb-2">
+                                    <span th:if="${patientIsMale}">Hombres:</span>
+                                    <span th:unless="${patientIsMale}">Mujeres:</span>
+                                    <span th:if="${patientIsMale}">
+                                      <span th:if="${patientAge != null && patientAge >= 18 && patientAge < 30}">18-30 años: BMR = 15.3 × peso + 679</span>
+                                      <span th:if="${patientAge != null && patientAge >= 30 && patientAge < 60}">30-60 años: BMR = 11.6 × peso + 879</span>
+                                      <span th:if="${patientAge != null && patientAge >= 60}">60+ años: BMR = 13.5 × peso + 487</span>
+                                      <span th:if="${patientAge == null}">BMR = coeficiente × peso + constante (según edad)</span>
+                                    </span>
+                                    <span th:unless="${patientIsMale}">
+                                      <span th:if="${patientAge != null && patientAge >= 18 && patientAge < 30}">18-30 años: BMR = 14.7 × peso + 496</span>
+                                      <span th:if="${patientAge != null && patientAge >= 30 && patientAge < 60}">30-60 años: BMR = 8.7 × peso + 829</span>
+                                      <span th:if="${patientAge != null && patientAge >= 60}">60+ años: BMR = 10.5 × peso + 596</span>
+                                      <span th:if="${patientAge == null}">BMR = coeficiente × peso + constante (según edad)</span>
+                                    </span>
+                                  </p>
+                                  <p class="text-muted small mb-2"><em>Requiere peso y edad (mínimo 18 años)</em></p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Peso (kg):</label>
+                                    <input type="number" step="0.01" id="bmr-weight-fao" class="form-control form-control-sm" min="10" max="200" placeholder="Ingrese peso">
+                                  </div>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Edad (años):</label>
+                                    <input type="number" id="bmr-age-fao" class="form-control form-control-sm" min="18" max="150" 
+                                           th:value="${patientAge}" 
+                                           th:disabled="${patientAge == null}"
+                                           placeholder="Ingrese edad">
+                                    <small class="text-muted" th:if="${patientAge == null}">Edad no disponible</small>
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="fao-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Valencia</h6>
+                                  <p class="text-muted small mb-2">
+                                    <span th:if="${patientIsMale}">Hombres:</span>
+                                    <span th:unless="${patientIsMale}">Mujeres:</span>
+                                    <span th:if="${patientIsMale}">BMR = 11.0 × peso + 16.0 × estatura(cm) - 2.7 × edad + 545</span>
+                                    <span th:unless="${patientIsMale}">BMR = 8.0 × peso + 12.0 × estatura(cm) - 2.5 × edad + 447</span>
+                                  </p>
+                                  <p class="text-muted small mb-2"><em>Desarrollada para poblaciones latinoamericanas</em></p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Peso (kg):</label>
+                                    <input type="number" step="0.01" id="bmr-weight-val" class="form-control form-control-sm" min="10" max="200" placeholder="Ingrese peso">
+                                  </div>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Estatura (m):</label>
+                                    <input type="number" step="0.01" id="bmr-height-val" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
+                                  </div>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Edad (años):</label>
+                                    <input type="number" id="bmr-age-val" class="form-control form-control-sm" min="1" max="150" 
+                                           th:value="${patientAge}" 
+                                           th:disabled="${patientAge == null}"
+                                           placeholder="Ingrese edad">
+                                    <small class="text-muted" th:if="${patientAge == null}">Edad no disponible</small>
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="val-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Promedio BMR formula -->
+                          <div class="row mb-4">
+                            <div class="col-md-6">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Promedio</h6>
+                                  <p class="text-muted small mb-2">Promedio de múltiples fórmulas: Mifflin-St Jeor, Harris-Benedict, FAO/WHO/ONU y Valencia</p>
+                                  <p class="text-muted small mb-2"><em>Proporciona una estimación más equilibrada combinando diferentes métodos</em></p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Peso (kg):</label>
+                                    <input type="number" step="0.01" id="bmr-weight-prom" class="form-control form-control-sm" min="10" max="200" placeholder="Ingrese peso">
+                                  </div>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Estatura (m):</label>
+                                    <input type="number" step="0.01" id="bmr-height-prom" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
+                                  </div>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Edad (años):</label>
+                                    <input type="number" id="bmr-age-prom" class="form-control form-control-sm" min="18" max="150" 
+                                           th:value="${patientAge}" 
+                                           th:disabled="${patientAge == null}"
+                                           placeholder="Ingrese edad">
+                                    <small class="text-muted" th:if="${patientAge == null}">Edad no disponible</small>
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="prom-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Total Body Water (Agua Corporal Total) Section -->
+                          <h5 class="mb-3"><i class="fas fa-tint"></i> Agua Corporal Total</h5>
+                          <div class="row mb-4">
+                            <div class="col-md-6">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Watson</h6>
+                                  <p class="text-muted small mb-2">
+                                    <span th:if="${patientIsMale}">Hombres:</span>
+                                    <span th:unless="${patientIsMale}">Mujeres:</span>
+                                    <span th:if="${patientIsMale}">TBW = 2.447 - (0.09156 × edad) + (0.1074 × estatura(cm)) + (0.3362 × peso)</span>
+                                    <span th:unless="${patientIsMale}">TBW = -2.097 + (0.1069 × estatura(cm)) + (0.2466 × peso)</span>
+                                  </p>
+                                  <p class="text-muted small mb-2" th:if="${patientIsMale}"><em>Requiere peso, estatura y edad</em></p>
+                                  <p class="text-muted small mb-2" th:unless="${patientIsMale}"><em>Requiere peso y estatura</em></p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Peso (kg):</label>
+                                    <input type="number" step="0.01" id="tbw-weight-wat" class="form-control form-control-sm" min="10" max="200" placeholder="Ingrese peso">
+                                  </div>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Estatura (m):</label>
+                                    <input type="number" step="0.01" id="tbw-height-wat" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
+                                  </div>
+                                  <div class="form-group mb-2" th:if="${patientIsMale}">
+                                    <label class="small">Edad (años):</label>
+                                    <input type="number" id="tbw-age-wat" class="form-control form-control-sm" min="1" max="150" 
+                                           th:value="${patientAge}" 
+                                           th:disabled="${patientAge == null}"
+                                           placeholder="Ingrese edad">
+                                    <small class="text-muted" th:if="${patientAge == null}">Edad no disponible</small>
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="wat-tbw-result" class="text-primary">-</span> <small>L</small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Hume-Meyers</h6>
+                                  <p class="text-muted small mb-2">
+                                    <span th:if="${patientIsMale}">Hombres:</span>
+                                    <span th:unless="${patientIsMale}">Mujeres:</span>
+                                    <span th:if="${patientIsMale}">TBW = (0.194786 × estatura(cm)) + (0.296785 × peso) - 14.012934</span>
+                                    <span th:unless="${patientIsMale}">TBW = (0.344547 × estatura(cm)) + (0.183809 × peso) - 35.270121</span>
+                                  </p>
+                                  <p class="text-muted small mb-2"><em>Requiere peso y estatura</em></p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Peso (kg):</label>
+                                    <input type="number" step="0.01" id="tbw-weight-hm" class="form-control form-control-sm" min="10" max="200" placeholder="Ingrese peso">
+                                  </div>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Estatura (m):</label>
+                                    <input type="number" step="0.01" id="tbw-height-hm" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="hm-tbw-result" class="text-primary">-</span> <small>L</small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Optional BMR formulas (if lean body mass is available) -->
+                          <div class="row mb-4">
+                            <div class="col-md-6">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Katch-McArdle</h6>
+                                  <p class="text-muted small mb-2">Fórmula: 370 + (21.6 × masa magra (kg))</p>
+                                  <p class="text-muted small mb-2"><em>Requiere masa magra (masa libre de grasa)</em></p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Masa Magra (kg):</label>
+                                    <input type="number" step="0.01" id="lean-mass-km" class="form-control form-control-sm" min="0" placeholder="Ingrese masa magra">
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="km-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Cunningham</h6>
+                                  <p class="text-muted small mb-2">Fórmula: 500 + (22 × masa magra (kg))</p>
+                                  <p class="text-muted small mb-2"><em>Requiere masa magra (masa libre de grasa)</em></p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Masa Magra (kg):</label>
+                                    <input type="number" step="0.01" id="lean-mass-cun" class="form-control form-control-sm" min="0" placeholder="Ingrese masa magra">
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="cun-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Body Composition Section -->
+                          <h5 class="mb-3"><i class="fas fa-percentage"></i> Composición Corporal</h5>
+                          <div class="row mb-4">
+                            <div class="col-md-4">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Porcentaje de Grasa Corporal</h6>
+                                  <p class="text-muted small mb-2">Fórmula Deurenberg: BF% = (1.20 × BMI) + (0.23 × edad) - (10.8 × género) - 5.4</p>
+                                  <p class="text-muted small mb-2"><em>Requiere BMI, edad y género</em></p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">BMI:</label>
+                                    <input type="number" step="0.01" id="body-comp-bmi" class="form-control form-control-sm" min="10" max="50" placeholder="Ingrese BMI">
+                                  </div>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Edad (años):</label>
+                                    <input type="number" id="body-comp-age" class="form-control form-control-sm" min="1" max="150" 
+                                           th:value="${patientAge}" 
+                                           th:disabled="${patientAge == null}"
+                                           placeholder="Ingrese edad">
+                                    <small class="text-muted" th:if="${patientAge == null}">Edad no disponible</small>
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="body-fat-percentage-result" class="text-primary">-</span> <small>%</small>
+                                  </div>
+                                  <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="copyBodyFatToForm()">
+                                      <i class="fas fa-copy"></i> Copiar a Formulario
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Índice de Grasa Corporal</h6>
+                                  <p class="text-muted small mb-2">Mismo valor que el Porcentaje de Grasa Corporal</p>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="body-fat-index-result" class="text-primary">-</span>
+                                  </div>
+                                  <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="copyBodyFatIndexToForm()">
+                                      <i class="fas fa-copy"></i> Copiar a Formulario
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Porcentaje de Masa Muscular</h6>
+                                  <p class="text-muted small mb-2">Aproximación: 100% - % Grasa Corporal</p>
+                                  <p class="text-muted small mb-2"><em>Estimación basada en porcentaje de grasa corporal</em></p>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="muscle-mass-percentage-result" class="text-primary">-</span> <small>%</small>
+                                  </div>
+                                  <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="copyMuscleMassToForm()">
+                                      <i class="fas fa-copy"></i> Copiar a Formulario
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
