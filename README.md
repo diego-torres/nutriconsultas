@@ -61,6 +61,20 @@ JDBC_DATABASE_PASSWORD=nutriconsultas
 
 If no `.env` file is present, the script will use default values.
 
+### Alternative Startup Methods
+
+There are two ways to start the development environment:
+
+**Path A — One-shot (dev script):**  
+Use `./dev-start.sh` which starts Postgres in podman, exports env variables from `.env`, and runs Spring Boot.
+
+**Path B — Manual / IDE:**  
+Start a Postgres container on `localhost:5432` with the default values from `.env.example`:
+```bash
+podman compose up -d postgres
+```
+Then run `mvn spring-boot:run`. The default values (`nutriconsultas/nutriconsultas/nutriconsultas`) in `application.properties` handle unset environment variables.
+
 ### Manual Setup
 
 If you prefer to set up the database manually:
