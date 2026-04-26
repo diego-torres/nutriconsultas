@@ -40,7 +40,7 @@ public final class TotalBodyWaterCalculationService {
 		final double heightCm = height * 100;
 		final double tbw;
 		if (isMale) {
-			tbw = 2.447 - (0.09156 * age) + (0.1074 * heightCm) + (0.3362 * weight);
+			tbw = 2.447 - (0.091_56 * age) + (0.1074 * heightCm) + (0.3362 * weight);
 		}
 		else {
 			tbw = -2.097 + (0.1069 * heightCm) + (0.2466 * weight);
@@ -67,10 +67,10 @@ public final class TotalBodyWaterCalculationService {
 		final double heightCm = height * 100;
 		final double tbw;
 		if (isMale) {
-			tbw = (0.194786 * heightCm) + (0.296785 * weight) - 14.012934;
+			tbw = (0.194_786 * heightCm) + (0.296_785 * weight) - 14.012_934;
 		}
 		else {
-			tbw = (0.344547 * heightCm) + (0.183809 * weight) - 35.270121;
+			tbw = (0.344_547 * heightCm) + (0.183_809 * weight) - 35.270_121;
 		}
 		log.debug("Calculated Hume-Meyers TBW: {} L for weight={}kg, height={}m, isMale={}", tbw, weight, height,
 				isMale);
