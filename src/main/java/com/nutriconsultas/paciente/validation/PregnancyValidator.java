@@ -1,8 +1,8 @@
 package com.nutriconsultas.paciente.validation;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 import jakarta.validation.ConstraintValidator;
@@ -89,7 +89,7 @@ public class PregnancyValidator implements ConstraintValidator<ValidPregnancy, B
 			log.warn("Date of birth is in the future: {}", dob);
 			return null;
 		}
-		return (int) ChronoUnit.YEARS.between(birthDate, currentDate);
+		return Period.between(birthDate, currentDate).getYears();
 	}
 
 }

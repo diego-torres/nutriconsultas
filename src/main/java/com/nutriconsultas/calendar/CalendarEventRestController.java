@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Period;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -672,8 +673,7 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 				log.warn("Date of birth is in the future: {}", dob);
 				return null;
 			}
-			return currentDate.getYear() - birthDate.getYear()
-					- (currentDate.getDayOfYear() < birthDate.getDayOfYear() ? 1 : 0);
+			return Period.between(birthDate, currentDate).getYears();
 		}
 		catch (final Exception e) {
 			log.warn("Error calculating age from date of birth: {}", dob, e);
