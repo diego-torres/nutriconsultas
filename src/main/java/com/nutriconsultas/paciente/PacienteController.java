@@ -40,6 +40,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 
 @Controller
 @Slf4j
@@ -906,8 +907,7 @@ public class PacienteController extends AbstractAuthorizedController {
 			log.warn("Date of birth is in the future: {}", dob);
 			return null;
 		}
-		return currentDate.getYear() - birthDate.getYear()
-				- (currentDate.getDayOfYear() < birthDate.getDayOfYear() ? 1 : 0);
+		return (int) ChronoUnit.YEARS.between(birthDate, currentDate);
 	}
 
 	/**
