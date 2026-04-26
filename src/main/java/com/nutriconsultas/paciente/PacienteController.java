@@ -39,6 +39,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.ZoneId;
 
 @Controller
@@ -918,8 +919,7 @@ public class PacienteController extends AbstractAuthorizedController {
 			log.warn("Date of birth is in the future: {}", dob);
 			return null;
 		}
-		return currentDate.getYear() - birthDate.getYear()
-				- (currentDate.getDayOfYear() < birthDate.getDayOfYear() ? 1 : 0);
+		return Period.between(birthDate, currentDate).getYears();
 	}
 
 	/**
