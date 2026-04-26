@@ -16,8 +16,6 @@
 		<exclude name="AvoidUsingHardCodedIP" />
 		<!-- Exclude AbstractClassWithoutAbstractMethod: Valid pattern for base classes -->
 		<exclude name="AbstractClassWithoutAbstractMethod" />
-		<!-- Exclude FinalClass: Spring Boot main application classes cannot be final -->
-		<exclude name="FinalClass" />
 		<!-- Keep UnusedAssignment: Catches real bugs -->
 		<!-- Keep OneDeclarationPerLine: Improves readability -->
 		<!-- Keep other best practice rules -->
@@ -112,8 +110,6 @@
 		<exclude name="SimplifiedTernary" />
 		<!-- Exclude ClassWithOnlyPrivateConstructorsShouldBeFinal: Utility classes pattern -->
 		<exclude name="ClassWithOnlyPrivateConstructorsShouldBeFinal" />
-		<!-- Exclude ConstructorCallsOverridableMethod: Spring handles this -->
-		<exclude name="ConstructorCallsOverridableMethod" />
 		<!-- Exclude MutableStaticState: May be needed for Spring configuration -->
 		<exclude name="MutableStaticState" />
 		<!-- Exclude AvoidCatchingGenericException: Sometimes needed in Spring error handlers -->
@@ -181,8 +177,6 @@
 	<rule ref="category/java/performance.xml">
 		<!-- Exclude UseStringBufferForStringAppends: Modern JVM optimizes StringBuilder -->
 		<exclude name="UseStringBufferForStringAppends" />
-		<!-- Exclude ReplaceJavaUtilDate: Migration in progress -->
-		<exclude name="ReplaceJavaUtilDate" />
 		<!-- Exclude AvoidInstantiatingObjectsInLoops: Sometimes necessary -->
 		<exclude name="AvoidInstantiatingObjectsInLoops" />
 		<!-- Exclude AddEmptyString: Sometimes needed for type conversion -->
@@ -192,9 +186,7 @@
 
 	<!-- Security: Keep most rules, they're important -->
 	<rule ref="category/java/security.xml">
-		<!-- Exclude AvoidUsingHardCodedIP: May be needed for localhost/development -->
-		<exclude name="AvoidUsingHardCodedIP" />
-		<!-- Keep other security rules: they catch security vulnerabilities -->
+		<!-- Keep security rules: they catch security vulnerabilities -->
 	</rule>
 
 </ruleset>

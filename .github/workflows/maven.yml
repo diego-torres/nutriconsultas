@@ -50,21 +50,21 @@ jobs:
     - name: Check Logging Security
       run: bash scripts/audit-logging.sh
     - name: Upload Checkstyle results
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: always()
       with:
         name: checkstyle-results
         path: target/checkstyle-result.xml
         retention-days: 7
     - name: Upload SpotBugs results
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: always()
       with:
         name: spotbugs-results
         path: target/spotbugsXml.xml
         retention-days: 7
     - name: Upload PMD results
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: always()
       with:
         name: pmd-results
@@ -106,21 +106,21 @@ jobs:
     - name: Check test coverage
       run: mvn -B jacoco:check -Pci
     - name: Upload test results
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: always()
       with:
         name: test-results
         path: target/surefire-reports
         retention-days: 7
     - name: Upload JaCoCo coverage report
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: always()
       with:
         name: jacoco-coverage-report
         path: target/site/jacoco
         retention-days: 7
     - name: Upload JaCoCo execution data
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: always()
       with:
         name: jacoco-exec-data
