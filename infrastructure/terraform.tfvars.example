@@ -1,0 +1,30 @@
+# Copy to `terraform.tfvars` (not committed) and fill in. Prefer TF_VAR_db_app_password in the environment.
+
+aws_region        = "us-east-1"
+project           = "nutriconsultas"
+
+# Must be your public IPv4/32 to SSH to the app host. Example: 203.0.113.45/32
+# Never use 0.0.0.0/0 for SSH in production.
+admin_ssh_cidr = "CHANGE_ME/32"
+
+# Optional: an existing key pair in this region (stops Terraform from creating one).
+# ec2_key_name  = "my-laptop"
+create_key_pair = true
+
+# Common free/tiny sizes (two instances may exceed 750h combined free tier).
+db_instance_type  = "t3.micro"
+app_instance_type = "t3.micro"
+ebs_root_volume_size_gb = 30
+
+# Database and user created by the first-boot script on the DB host.
+# db_name        = "nutriconsultas"
+# db_app_username = "nutriapp"
+# Set the password via environment, not in this file if you can avoid it:
+#   export TF_VAR_db_app_password='...'
+# or uncomment:
+# db_app_password = "use-only-for-local-experiments"
+
+# Optional: create Route 53 hosted zone + A records to the app’s Elastic IP (~$0.50/mo per zone).
+# If null, you can still point DNS at the EIP at your registrar; see domain-setup.md.
+# route53_domain   = "minutriporcion.com"
+# route53_www_record = true
