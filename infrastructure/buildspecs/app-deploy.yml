@@ -1,5 +1,7 @@
 # CodeBuild deploy: S3 + SSM (NUTR_PROJECT = Terraform var.project, set in the CodeBuild project).
 version: 0.2
+env:
+  shell: bash
 phases:
   build:
     commands:
