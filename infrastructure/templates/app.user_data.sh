@@ -67,13 +67,13 @@ cat > /etc/systemd/system/nutriconsultas.service <<'UNIT'
 Description=Nutriconsultas (Spring Boot)
 After=network-online.target
 Wants=network-online.target
+ConditionPathExists=/opt/nutriconsultas/app.jar
 
 [Service]
 Type=simple
 User=nutri
 Group=nutri
 WorkingDirectory=/opt/nutriconsultas
-ConditionPathExists=/opt/nutriconsultas/app.jar
 EnvironmentFile=-/opt/nutriconsultas/app.env
 ExecStart=/usr/bin/java -Dserver.port=3000 -Djava.net.preferIPv4Stack=true -Xms256m -Xmx512m -XX:+UseG1GC -jar /opt/nutriconsultas/app.jar
 Restart=on-failure
