@@ -4,9 +4,8 @@ set -euxo pipefail
 exec > >(tee /var/log/postgresql-user-data.log) 2>&1
 
 # Skip full `dnf -y update` to keep first boot within a few minutes; apply patches via SSM later.
-if ! dnf list installed postgresql15-server &>/dev/null; then
-  dnf -y install postgresql15 postgresql15-server
-fi
+# contrib supplies uuid-ossp (used below); install even if server was already present.
+dnf -y install postgresql15 postgresql15-server postgresql15-contrib
 
 # AL2023 postgresql15-server: PGDATA is /var/lib/pgsql/data and unit is postgresql.service
 # (not /usr/pgsql-15/... or postgresql-15, which are RHEL / Software Collections layouts).

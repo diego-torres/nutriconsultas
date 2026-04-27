@@ -61,6 +61,65 @@ variable "db_app_password" {
 }
 
 # -----------------------------------------------------------------------------
+# Application secrets (written to /opt/nutriconsultas/app.env on first boot)
+# - Values are base64-encoded into user_data by Terraform and decoded on the host
+#   (safe for special characters). Changing these replaces the app instance when
+#   user_data_replace_on_change is true.
+# - EC2 user_data is visible to principals with ec2:DescribeInstances; prefer
+#   AWS Secrets Manager or SSM Parameter Store for stricter production controls.
+# -----------------------------------------------------------------------------
+
+variable "auth_client" {
+  type        = string
+  description = "Auth0 application Client ID (spring.security.oauth2.client.registration.auth0.client-id)."
+  sensitive   = true
+}
+
+variable "auth_secret" {
+  type        = string
+  description = "Auth0 application Client Secret."
+  sensitive   = true
+}
+
+variable "auth_issuer" {
+  type        = string
+  description = "Auth0 issuer URI, e.g. https://YOUR_TENANT.auth0.com/ (include trailing slash if your Auth0 docs show it)."
+  sensitive   = true
+}
+
+variable "aws_bucket" {
+  type        = string
+  description = "S3 bucket name for application uploads (amazon.s3.bucket)."
+  sensitive   = true
+}
+
+variable "aws_key" {
+  type        = string
+  description = "AWS access key id for S3 (amazon.s3.key)."
+  sensitive   = true
+}
+
+variable "aws_secret" {
+  type        = string
+  description = "AWS secret access key for S3 (amazon.s3.secret)."
+  sensitive   = true
+}
+
+variable "maps_key" {
+  type        = string
+  description = "Google Maps API key (maps.api.key). Optional: use empty string if unused."
+  default     = ""
+  sensitive   = true
+}
+
+variable "recaptcha_secret_key" {
+  type        = string
+  description = "reCAPTCHA secret (recaptcha.secret-key). Optional: use empty string if unused."
+  default     = ""
+  sensitive   = true
+}
+
+# -----------------------------------------------------------------------------
 # Optional Route 53: create hosted zone + records (see domain-setup.md for GoDaddy)
 # -----------------------------------------------------------------------------
 

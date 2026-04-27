@@ -1,6 +1,7 @@
 #!/bin/bash
 # App: Java 21, nginx (port 80 -> 3000), env file, systemd. Copy the Spring Boot JAR to start.
-set -euxo pipefail
+# No bash -x: user_data contains secret material; avoid writing it to cloud-init logs.
+set -euo pipefail
 exec > >(tee /var/log/app-user-data.log) 2>&1
 
 dnf -y install java-21-amazon-corretto-headless nginx awscli
@@ -14,12 +15,36 @@ fi
 
 install -d -o root -g nutri -m 750 /opt/nutriconsultas
 
-# JDBC env: base64 in Terraform; decode with printf|base64 — no $() (avoids $$ + $( escaping bugs in user_data).
+# app.env: JDBC + OAuth + AWS + optional keys. Secrets arrive base64-encoded from Terraform.
 {
   echo "JDBC_DATABASE_URL=jdbc:postgresql://${db_private_ip}:5432/${db_name}"
   echo "JDBC_DATABASE_USERNAME=${db_user}"
   echo -n "JDBC_DATABASE_PASSWORD="
   printf '%s' '${db_password_b64}' | base64 -d
+  echo
+  echo -n "AUTH_CLIENT="
+  printf '%s' '${auth_client_b64}' | base64 -d
+  echo
+  echo -n "AUTH_SECRET="
+  printf '%s' '${auth_secret_b64}' | base64 -d
+  echo
+  echo -n "AUTH_ISSUER="
+  printf '%s' '${auth_issuer_b64}' | base64 -d
+  echo
+  echo -n "AWS_BUCKET="
+  printf '%s' '${aws_bucket_b64}' | base64 -d
+  echo
+  echo -n "AWS_KEY="
+  printf '%s' '${aws_key_b64}' | base64 -d
+  echo
+  echo -n "AWS_SECRET="
+  printf '%s' '${aws_secret_b64}' | base64 -d
+  echo
+  echo -n "MAPS_KEY="
+  printf '%s' '${maps_key_b64}' | base64 -d
+  echo
+  echo -n "RECAPTCHA_SECRET_KEY="
+  printf '%s' '${recaptcha_secret_key_b64}' | base64 -d
   echo
 } > /opt/nutriconsultas/app.env
 chown root:nutri /opt/nutriconsultas/app.env

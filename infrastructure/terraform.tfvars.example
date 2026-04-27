@@ -16,6 +16,23 @@ ebs_root_volume_size_gb = 30
 # or uncomment:
 # db_app_password = "use-only-for-local-experiments"
 
+# App secrets (written to /opt/nutriconsultas/app.env on first boot). Prefer environment:
+#   export TF_VAR_auth_client='...' TF_VAR_auth_secret='...' TF_VAR_auth_issuer='https://.../'
+#   export TF_VAR_aws_bucket='...' TF_VAR_aws_key='...' TF_VAR_aws_secret='...'
+# Optional (empty string ok if unused):
+#   export TF_VAR_maps_key='' TF_VAR_recaptcha_secret_key=''
+# auth_client            = "from-auth0-application"
+# auth_secret            = "from-auth0-application"
+# auth_issuer            = "https://YOUR_TENANT.auth0.com/"
+# aws_bucket             = "your-s3-bucket"
+# aws_key                = "AKIA..."
+# aws_secret             = "..."
+# maps_key               = ""
+# recaptcha_secret_key   = ""
+#
+# Security: EC2 user_data is readable via DescribeInstances; Terraform state also holds
+# these values. For production, consider SSM SecureString / Secrets Manager instead.
+
 # Optional: create Route 53 hosted zone + A records to the app’s Elastic IP (~$0.50/mo per zone).
 # If null, you can still point DNS at the EIP at your registrar; see domain-setup.md.
 # route53_domain   = "minutriporcion.com"
