@@ -55,4 +55,12 @@ You can either **delegate the whole domain to Route 53** (useful if you want al
 - From a laptop: `dig +short minutriporcion.com` (or an online “DNS checker”) should return the app’s **public** IPv4 after TTL expires.
 - From a browser: `http://minutriporcion.com` should hit **nginx** on 80, which reverse-proxies to the Spring Boot port **3000** on the same instance.
 
+### HTTP works but HTTPS does not (connection refused, `curl` shows `000`)
+
+The security group allows **443**, but **nginx only listens on 80** until **Let’s Encrypt (Certbot)** has run successfully. Certbot is triggered from **EC2 user data** when `public_site_domain` and `certbot_admin_email` are set in Terraform. If first-boot Certbot did not complete (e.g. DNS not ready yet, or package install failed on Amazon Linux 2023), you will have HTTP but **no listener on 443** until you fix it on the host.
+
+- **Re-running CodePipeline** only uploads the JAR and restarts the app via SSM. It does **not** re-run cloud-init, reinstall Certbot, or add the HTTPS listener. **A pipeline re-run alone will not fix port 443.**
+- **To enable HTTPS on the current instance:** use **SSM Session Manager** on the app EC2, install `certbot` and `python3-certbot-nginx` if needed, then run `certbot --nginx` for your domain(s) (same hostnames as in Terraform). See `templates/app.user_data.sh` and variable `certbot_admin_email`.
+- **New instances only:** after fixing `templates/app.user_data.sh`, `terraform apply` can replace the instance (`user_data_replace_on_change`); that runs user data again. Prefer one-off **manual Certbot** for production unless you plan a controlled replacement.
+
 **IPv6** is not configured in the Terraform here; you can add AAAA to an Elastic IP that supports it or use a dual-stack design later. For a minimal first deployment, **A** to the IPv4 EIP is enough.
