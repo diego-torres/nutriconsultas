@@ -9,6 +9,10 @@ registro de consultorio de nutrición
 
 **Branding:** Minutriporcion is the product and branding name for the nutriconsultas project. The project "nutriconsultas" is developed for the company Minutriporcion.
 
+## AWS (production infrastructure)
+
+The Terraform under [`infrastructure/`](infrastructure/) deploys the app and database to EC2, optionally **AWS CodePipeline** (CodeStar connection to **GitHub**, then CodeBuild, then S3+SSM deploy to the app instance). There is **no public SSH (port 22)**; use **SSM Session Manager** to shell into instances. See the **[infrastructure README](infrastructure/README.md)** for the CodePipeline/connection steps and **[SSM connection](infrastructure/README.md#connect-to-the-ec2-instances-ssm-session-manager-only)**.
+
 ## Contributing
 
 When creating a pull request, please use the [PR template](.github/pull_request_template.md) which includes checklists for:

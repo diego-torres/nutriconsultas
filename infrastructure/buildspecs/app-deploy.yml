@@ -1,0 +1,17 @@
+# CodeBuild deploy: S3 + SSM (NUTR_PROJECT = Terraform var.project, set in the CodeBuild project).
+version: 0.2
+phases:
+  build:
+    commands:
+      - set -euxo pipefail
+      - apt-get update -qq
+      - apt-get install -y -qq jq
+      - 'cd "${CODEBUILD_SRC_DIR:-.}"'
+      - 'export JAR=$(find . -name "nutriconsultas-web-*.jar" -type f | head -1)'
+      - 'test -n "$JAR" -a -f "$JAR"'
+      - chmod +x infrastructure/scripts/deploy-jar-to-ec2-ssm.sh
+      - bash infrastructure/scripts/deploy-jar-to-ec2-ssm.sh "$JAR" "$NUTR_PROJECT"
+      - echo "deploy-ok" > .pipeline-deploy-marker
+artifacts:
+  base-directory: .
+  files: [".pipeline-deploy-marker"]
