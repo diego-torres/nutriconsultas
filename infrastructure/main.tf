@@ -42,6 +42,15 @@ locals {
   }
 
   subnet_id = data.aws_subnets.default.ids[0]
+
+  # nginx server_name + Certbot -d list (DNS must resolve to app EIP before first boot for auto-issue)
+  app_certbot_hostnames = compact(distinct(concat(
+    trimspace(var.public_site_domain) != "" ? [trimspace(var.public_site_domain)] : [],
+    [for h in var.public_site_domain_aliases : trimspace(h)]
+  )))
+  app_nginx_server_names = length(local.app_certbot_hostnames) > 0 ? join(" ", local.app_certbot_hostnames) : "_"
+  app_certbot_d_flags = length(local.app_certbot_hostnames) > 0 ? join(" ", [for h in local.app_certbot_hostnames : "-d ${h}"]) : ""
+  app_certbot_enabled = length(local.app_certbot_hostnames) > 0 && trimspace(var.certbot_admin_email) != ""
 }
 
 # -----------------------------------------------------------------------------
@@ -236,8 +245,12 @@ resource "aws_instance" "app" {
         aws_secret_b64           = base64encode(var.aws_secret)
         maps_key_b64             = base64encode(var.maps_key)
         recaptcha_secret_key_b64 = base64encode(var.recaptcha_secret_key)
-        # Static nginx site (so $http_host is not written as $$ by shell/Terraform)
-        nginx_config = file("${path.module}/templates/nutriconsultas-nginx.conf")
+        nginx_config = templatefile("${path.module}/templates/nutriconsultas-nginx.conf.tpl", {
+          nginx_server_names = local.app_nginx_server_names
+        })
+        certbot_run_flag   = local.app_certbot_enabled ? "1" : "0"
+        certbot_d_flags     = local.app_certbot_d_flags
+        certbot_email_b64   = base64encode(trimspace(var.certbot_admin_email))
       }
     )
   )

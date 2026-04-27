@@ -33,6 +33,11 @@ ebs_root_volume_size_gb = 30
 # Security: EC2 user_data is readable via DescribeInstances; Terraform state also holds
 # these values. For production, consider SSM SecureString / Secrets Manager instead.
 
+# HTTPS (Let's Encrypt on the app EC2). Point DNS A/AAAA for each name to terraform output app_public_ip first.
+# public_site_domain             = "minutriporcion.com"
+# public_site_domain_aliases     = ["www.minutriporcion.com"]
+# certbot_admin_email             = "you@example.com"
+
 # Optional: create Route 53 hosted zone + A records to the app’s Elastic IP (~$0.50/mo per zone).
 # If null, you can still point DNS at the EIP at your registrar; see domain-setup.md.
 # route53_domain   = "minutriporcion.com"

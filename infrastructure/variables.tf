@@ -120,6 +120,29 @@ variable "recaptcha_secret_key" {
 }
 
 # -----------------------------------------------------------------------------
+# HTTPS (Let's Encrypt Certbot on the app EC2; DNS must point apex/aliases to the app EIP first)
+# -----------------------------------------------------------------------------
+
+variable "public_site_domain" {
+  type        = string
+  description = "Primary hostname for nginx server_name and Certbot (e.g. minutriporcion.com). Empty keeps server_name _ and skips Certbot."
+  default     = ""
+}
+
+variable "public_site_domain_aliases" {
+  type        = list(string)
+  description = "Extra hostnames for nginx and Certbot (e.g. [\"www.minutriporcion.com\"]). DNS A/AAAA or CNAME for each must reach the app EIP."
+  default     = []
+}
+
+variable "certbot_admin_email" {
+  type        = string
+  description = "Let's Encrypt registration email (ACME). Required to run Certbot when public_site_domain is set. Empty skips Certbot (run manually later via SSM)."
+  default     = ""
+  sensitive   = true
+}
+
+# -----------------------------------------------------------------------------
 # Optional Route 53: create hosted zone + records (see domain-setup.md for GoDaddy)
 # -----------------------------------------------------------------------------
 

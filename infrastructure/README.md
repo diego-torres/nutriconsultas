@@ -197,7 +197,7 @@ If that command errors because the output is empty, set `github_repository` in T
 
 ## What is *not* automated (by design, for simplicity and cost)
 
-- **TLS/HTTPS** on a public host name: use certbot, or a load balancer, after DNS points to the EIP.
+- **TLS/HTTPS**: optional **Certbot** on the app instance when `public_site_domain` and `certbot_admin_email` are set in tfvars (DNS must point to the EIP before apply). See `terraform.tfvars.example`.
 - **Backups, observability, and high availability**: a single-EC2 database is a starting point, not a production backup strategy.
 
 ## Files
@@ -208,5 +208,5 @@ If that command errors because the output is empty, set `github_repository` in T
 - `iam/codeconnections-read.json` – optional IAM policy for `aws codestar-connections list/get-connection` (not required for the pipeline service roles)
 - `buildspecs/app-build.yml`, `buildspecs/app-deploy.yml` – Build and deploy for CodeBuild
 - `variables.tf` / `outputs.tf` – Config and post-apply values
-- `templates/*.sh` – User data for database and app hosts; `templates/nutriconsultas-nginx.conf` – nginx `server` block (literal `$` variables, included into app user-data)
+- `templates/*.sh` – User data for database and app hosts; `templates/nutriconsultas-nginx.conf.tpl` – nginx `server` block (Terraform `templatefile`, Certbot-friendly `server_name`)
 - `scripts/deploy-jar-to-ec2-ssm.sh` – Upload JAR to S3 and SSM on the app instance (used by CodeBuild deploy and by hand)
