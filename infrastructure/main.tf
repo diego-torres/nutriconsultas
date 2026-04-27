@@ -230,6 +230,8 @@ resource "aws_instance" "app" {
       }
     )
   )
+  # New instance on user_data change; cloud-init only runs the script on first boot.
+  user_data_replace_on_change = true
 
   metadata_options {
     http_tokens = "required"
