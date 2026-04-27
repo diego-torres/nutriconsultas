@@ -1,5 +1,7 @@
 # CodeBuild: Maven package + artifact for CodePipeline (include deploy helper script).
-# Used when source = CODEPIPELINE.
+# Used when source = CODEPIPELINE. -Dmaven.test.skip=true skips test compile and run (faster).
+# The POM has no test-generated sources feeding main; `mvn -Dmaven.test.skip=true package` is green locally.
+# Full tests + Thymeleaf template checks run in GitHub CI.
 version: 0.2
 env:
   shell: bash
@@ -10,7 +12,7 @@ phases:
   build:
     commands:
       - set -euxo pipefail
-      - mvn -B package --file pom.xml
+      - mvn -B package -Dmaven.test.skip=true --file pom.xml
 artifacts:
   name: build_output
   base-directory: .
