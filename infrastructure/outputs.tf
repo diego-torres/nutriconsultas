@@ -23,6 +23,11 @@ output "jdbc_example" {
   value       = "jdbc:postgresql://${aws_instance.db.private_ip}:5432/${var.db_name}"
 }
 
+output "app_uploads_bucket" {
+  description = "S3 bucket Terraform manages for application uploads (var.aws_bucket / amazon.s3.bucket)."
+  value       = aws_s3_bucket.app_uploads.bucket
+}
+
 output "route53_name_servers" {
   description = "If route53_domain is set, add these as nameservers in your registrar (see domain-setup.md). Empty when Route 53 is not created."
   value       = length(aws_route53_zone.app) > 0 ? aws_route53_zone.app[0].name_servers : []

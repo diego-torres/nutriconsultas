@@ -89,7 +89,7 @@ variable "auth_issuer" {
 
 variable "aws_bucket" {
   type        = string
-  description = "S3 bucket name for application uploads (amazon.s3.bucket)."
+  description = "S3 bucket name for application uploads (amazon.s3.bucket). Terraform creates this bucket (see s3-app-uploads.tf). If it already exists, run: terraform import aws_s3_bucket.app_uploads NAME"
   sensitive   = true
 }
 
