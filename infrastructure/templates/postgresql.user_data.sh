@@ -8,19 +8,23 @@ if ! dnf list installed postgresql15-server &>/dev/null; then
   dnf -y install postgresql15 postgresql15-server
 fi
 
-PG_DATA="/var/lib/pgsql/15/data"
+# AL2023 postgresql15-server: PGDATA is /var/lib/pgsql/data and unit is postgresql.service
+# (not /usr/pgsql-15/... or postgresql-15, which are RHEL / Software Collections layouts).
+PG_DATA="/var/lib/pgsql/data"
 if [ ! -f "$${PG_DATA}/PG_VERSION" ]; then
-  if [ -x /usr/pgsql-15/bin/postgresql-15-setup ]; then
+  if [ -x /usr/bin/postgresql-setup ]; then
+    /usr/bin/postgresql-setup --initdb
+  elif [ -x /usr/pgsql-15/bin/postgresql-15-setup ]; then
     /usr/pgsql-15/bin/postgresql-15-setup initdb
   elif [ -x /usr/pgsql-15/bin/postgresql-setup ]; then
     /usr/pgsql-15/bin/postgresql-setup --initdb
   else
-    echo "Cannot find postgresql*setup" >&2
+    echo "Cannot find postgresql-setup (expected /usr/bin/postgresql-setup on AL2023)" >&2
     exit 1
   fi
 fi
 
-systemctl enable --now postgresql-15
+systemctl enable --now postgresql
 sleep 3
 
 # listen on all addresses; 5432 is not exposed to the public internet, only the app’s SG
@@ -28,7 +32,7 @@ sed -i "s/^#*listen_addresses *=.*/listen_addresses = '*'/g" $${PG_DATA}/postgre
 
 # VPC-only clients (CIDR of the default or chosen VPC)
 echo "host all all ${vpc_cidr} scram-sha-256" >> $${PG_DATA}/pg_hba.conf
-systemctl reload postgresql-15
+systemctl reload postgresql
 
 sudo -u postgres psql -c "SELECT 1" postgres
 
@@ -50,7 +54,7 @@ set +e
 sudo -u postgres psql -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";" -d "${db_name}" 2>/dev/null
 set -e
 
-systemctl restart postgresql-15
+systemctl restart postgresql
 
 # Admin access: SSM only. Security group has no 22; stop the SSH daemon on the host.
 systemctl stop sshd 2>/dev/null || true
