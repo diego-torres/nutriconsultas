@@ -34,6 +34,7 @@ JSON="$(jq -n \
   '{
      DocumentName: "AWS-RunShellScript",
      InstanceIds: [$iid],
+     TimeoutSeconds: 1800,
      Parameters: {
        commands: [
          "set -euo pipefail",
@@ -53,7 +54,9 @@ JSON="$(jq -n \
    }')"
 
 CMD_ID="$(aws ssm send-command --cli-input-json "$JSON" --query "Command.CommandId" --output text)"
-for _ in $(seq 1 72); do
+echo "SSM CommandId=$CMD_ID instance=$INSTANCE_ID (waiting up to ~20m for completion)"
+# Poll: 240 * 5s = 20m (JAR copy + JVM start can exceed the old 6m cap).
+for _ in $(seq 1 240); do
   ST=$(aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" --query "Status" --output text 2>/dev/null) || true
   ST="${ST:-InProgress}"
   case "$ST" in
@@ -61,7 +64,7 @@ for _ in $(seq 1 72); do
       echo "Deploy complete (SSM $CMD_ID)."
       exit 0
       ;;
-    Failed|Cancelled|TimedOut|CANCELLED|FAILED)
+    Failed|Cancelled|Cancelling|TimedOut|CANCELLED|FAILED)
       echo "SSM command failed: $ST" >&2
       aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" || true
       exit 1
@@ -71,5 +74,6 @@ for _ in $(seq 1 72); do
       ;;
   esac
 done
-echo "Timeout waiting for SSM." >&2
+echo "Timeout waiting for SSM (still not Success after ~20m)." >&2
+aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" || true
 exit 1
