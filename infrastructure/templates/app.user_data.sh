@@ -87,10 +87,10 @@ chown -R root:nutri /opt/nutriconsultas
 systemctl daemon-reload
 
 # Let's Encrypt (HTTP-01): DNS for all names must point to this host before this runs.
+# On Amazon Linux 2023, use OS repos only — do not install EPEL; it breaks Python deps for certbot.
 if [ '${certbot_run_flag}' = '1' ] && [ -n '${certbot_d_flags}' ]; then
-  dnf -y install epel-release || true
   if ! dnf -y install certbot python3-certbot-nginx; then
-    echo "WARN: certbot install failed; install EPEL + certbot manually, then: certbot --nginx ..." >&2
+    echo "WARN: certbot install failed; on AL2023 run: dnf install -y certbot python3-certbot-nginx then certbot --nginx ..." >&2
   else
     CERTBOT_EMAIL="$(printf '%s' '${certbot_email_b64}' | base64 -d)"
     certbot_ok=0
