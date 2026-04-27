@@ -227,6 +227,8 @@ resource "aws_instance" "app" {
         db_name         = var.db_name
         db_user         = var.db_app_username
         db_password_b64 = base64encode(var.db_app_password)
+        # Static nginx site (so $http_host is not written as $$ by shell/Terraform)
+        nginx_config    = file("${path.module}/templates/nutriconsultas-nginx.conf")
       }
     )
   )

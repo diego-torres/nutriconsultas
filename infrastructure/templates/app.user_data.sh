@@ -25,23 +25,10 @@ install -d -o root -g nutri -m 750 /opt/nutriconsultas
 chown root:nutri /opt/nutriconsultas/app.env
 chmod 640 /opt/nutriconsultas/app.env
 
-# In the next heredoc, 'NGX' stops bash from expanding. Terraform runs first: $$ in this
-# .tpl file becomes a single $ in the generated script, which nginx will read as a variable.
-cat > /etc/nginx/conf.d/nutriconsultas.conf <<'NGX'
-server {
-  listen 80 default_server;
-  listen [::]:80 default_server;
-  server_name _;
-  client_max_body_size 50M;
-  location / {
-    proxy_pass http://127.0.0.1:3000;
-    proxy_set_header Host $$http_host;
-    proxy_set_header X-Real-IP $$remote_addr;
-    proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $$scheme;
-  }
-}
-NGX
+# Nginx: content from templates/nutriconsultas-nginx.conf (literal $var — not $$), injected by Terraform.
+cat > /etc/nginx/conf.d/nutriconsultas.conf <<'NUTRINX'
+${nginx_config}
+NUTRINX
 
 systemctl enable --now nginx
 

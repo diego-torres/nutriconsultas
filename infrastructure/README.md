@@ -208,5 +208,5 @@ If that command errors because the output is empty, set `github_repository` in T
 - `iam/codeconnections-read.json` – optional IAM policy for `aws codestar-connections list/get-connection` (not required for the pipeline service roles)
 - `buildspecs/app-build.yml`, `buildspecs/app-deploy.yml` – Build and deploy for CodeBuild
 - `variables.tf` / `outputs.tf` – Config and post-apply values
-- `templates/*.sh` – User data for database and app hosts
+- `templates/*.sh` – User data for database and app hosts; `templates/nutriconsultas-nginx.conf` – nginx `server` block (literal `$` variables, included into app user-data)
 - `scripts/deploy-jar-to-ec2-ssm.sh` – Upload JAR to S3 and SSM on the app instance (used by CodeBuild deploy and by hand)
