@@ -1,4 +1,4 @@
-# CodeBuild: Maven package + artifact for CodePipeline (include deploy helper script).
+# CodeBuild: Maven package + artifact for CodePipeline (JAR, deploy script, systemd unit for SSM).
 # Used when source = CODEPIPELINE. -Dmaven.test.skip=true skips test compile and run (faster).
 # The POM has no test-generated sources feeding main; `mvn -Dmaven.test.skip=true package` is green locally.
 # Full tests + Thymeleaf template checks run in GitHub CI.
@@ -19,4 +19,5 @@ artifacts:
   files:
     - target/nutriconsultas-web-*.jar
     - infrastructure/scripts/deploy-jar-to-ec2-ssm.sh
+    - infrastructure/scripts/nutriconsultas-app.service
   discard-paths: no
