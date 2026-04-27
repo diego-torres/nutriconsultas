@@ -14,14 +14,14 @@ fi
 
 install -d -o root -g nutri -m 750 /opt/nutriconsultas
 
-# Password is set by Terraform (base64); not logged here.
-# Single-quote the base64 in the rendered script (base64 charset is safe for single quotes).
-APP_PW_DECODED=$$(printf '%s' '${db_password_b64}' | base64 -d)
-cat > /opt/nutriconsultas/app.env <<ENVEOF
-JDBC_DATABASE_URL=jdbc:postgresql://${db_private_ip}:5432/${db_name}
-JDBC_DATABASE_USERNAME=${db_user}
-JDBC_DATABASE_PASSWORD=$$APP_PW_DECODED
-ENVEOF
+# JDBC env: base64 in Terraform; decode with printf|base64 — no $() (avoids $$ + $( escaping bugs in user_data).
+{
+  echo "JDBC_DATABASE_URL=jdbc:postgresql://${db_private_ip}:5432/${db_name}"
+  echo "JDBC_DATABASE_USERNAME=${db_user}"
+  echo -n "JDBC_DATABASE_PASSWORD="
+  printf '%s' '${db_password_b64}' | base64 -d
+  echo
+} > /opt/nutriconsultas/app.env
 chown root:nutri /opt/nutriconsultas/app.env
 chmod 640 /opt/nutriconsultas/app.env
 
