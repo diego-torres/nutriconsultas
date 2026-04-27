@@ -46,11 +46,30 @@ resource "aws_codestarconnections_connection" "github" {
 }
 
 # -----------------------------------------------------------------------------
-# IAM: CodeBuild (deploy) - S3 JAR + SSM (same surface as the old GHA role)
+# IAM: CodeBuild (deploy) - pipeline artifacts (read prior stage) + S3 JAR + SSM
 # -----------------------------------------------------------------------------
 
 data "aws_iam_policy_document" "codebuild_app_deploy" {
   count = local.codepipeline_enabled ? 1 : 0
+  # Same bucket as the build project: input artifacts from the Build stage (CODEPIPELINE).
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:PutObject",
+      "s3:AbortMultipartUpload",
+      "s3:GetObject",
+      "s3:GetObjectVersion",
+    ]
+    resources = [
+      "${aws_s3_bucket.codepipeline[0].arn}",
+      "${aws_s3_bucket.codepipeline[0].arn}/*",
+    ]
+  }
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:ListBucket"]
+    resources = [aws_s3_bucket.codepipeline[0].arn]
+  }
   statement {
     effect    = "Allow"
     actions   = ["s3:PutObject", "s3:AbortMultipartUpload"]
