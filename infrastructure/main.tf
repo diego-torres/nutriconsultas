@@ -49,8 +49,8 @@ locals {
     [for h in var.public_site_domain_aliases : trimspace(h)]
   )))
   app_nginx_server_names = length(local.app_certbot_hostnames) > 0 ? join(" ", local.app_certbot_hostnames) : "_"
-  app_certbot_d_flags = length(local.app_certbot_hostnames) > 0 ? join(" ", [for h in local.app_certbot_hostnames : "-d ${h}"]) : ""
-  app_certbot_enabled = length(local.app_certbot_hostnames) > 0 && trimspace(var.certbot_admin_email) != ""
+  app_certbot_d_flags    = length(local.app_certbot_hostnames) > 0 ? join(" ", [for h in local.app_certbot_hostnames : "-d ${h}"]) : ""
+  app_certbot_enabled    = length(local.app_certbot_hostnames) > 0 && trimspace(var.certbot_admin_email) != ""
 }
 
 # -----------------------------------------------------------------------------
@@ -248,9 +248,9 @@ resource "aws_instance" "app" {
         nginx_config = templatefile("${path.module}/templates/nutriconsultas-nginx.conf.tpl", {
           nginx_server_names = local.app_nginx_server_names
         })
-        certbot_run_flag   = local.app_certbot_enabled ? "1" : "0"
-        certbot_d_flags     = local.app_certbot_d_flags
-        certbot_email_b64   = base64encode(trimspace(var.certbot_admin_email))
+        certbot_run_flag  = local.app_certbot_enabled ? "1" : "0"
+        certbot_d_flags   = local.app_certbot_d_flags
+        certbot_email_b64 = base64encode(trimspace(var.certbot_admin_email))
       }
     )
   )
