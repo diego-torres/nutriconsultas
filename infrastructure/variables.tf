@@ -77,17 +77,17 @@ variable "route53_www_record" {
 }
 
 # -----------------------------------------------------------------------------
-# GitHub Actions: OIDC for deploy job (S3 put + SSM to app). Leave empty to skip the role.
+# CodePipeline: GitHub source (CodeStar Connection) + CodeBuild. Leave empty to skip.
 # -----------------------------------------------------------------------------
 
 variable "github_repository" {
   type        = string
-  description = "Set to the GitHub repo in org/repo form (e.g. diego-torres/nutriconsultas) so the deploy workflow on main can assume a role. Empty string = do not create OIDC provider/role (S3 and SSM parameters are still created)."
+  description = "GitHub repo in org/name form (e.g. diego-torres/nutriconsultas) for CodeStar Connection and CodePipeline source. Empty = no CodePipeline, connection, or CodeBuild project."
   default     = ""
 }
 
-variable "github_actions_thumbprints" {
-  type        = list(string)
-  description = "Root CA thumbprints for https://token.actions.githubusercontent.com. Add entries if GitHub publishes new certificates."
-  default     = ["6938fd4e98bab03faadb97b34396831e3780aea1"]
+variable "codepipeline_branch" {
+  type        = string
+  description = "Branch that triggers the pipeline (pushes) and is checked out in the build stage."
+  default     = "main"
 }

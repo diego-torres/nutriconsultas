@@ -88,7 +88,7 @@ resource "aws_security_group" "app" {
 
 resource "aws_security_group" "db" {
   name_prefix = "${var.project}-db-"
-  description = "PostgreSQL — only the app may connect on 5432"
+  description = "PostgreSQL: only the app may connect on 5432"
   vpc_id      = data.aws_vpc.this.id
 
   # Least privilege: only from the app’s security group

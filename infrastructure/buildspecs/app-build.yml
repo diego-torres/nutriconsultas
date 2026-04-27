@@ -1,0 +1,18 @@
+# CodeBuild: Maven package + artifact for CodePipeline (include deploy helper script).
+# Used when source = CODEPIPELINE.
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      java: corretto21
+  build:
+    commands:
+      - set -euxo pipefail
+      - mvn -B package --file pom.xml
+artifacts:
+  name: build_output
+  base-directory: .
+  files:
+    - target/nutriconsultas-web-*.jar
+    - infrastructure/scripts/deploy-jar-to-ec2-ssm.sh
+  discard-paths: no

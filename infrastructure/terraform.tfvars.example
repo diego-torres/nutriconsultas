@@ -21,6 +21,7 @@ ebs_root_volume_size_gb = 30
 # route53_domain   = "minutriporcion.com"
 # route53_www_record = true
 
-# Optional: main-branch GitHub Action deploys the JAR via OIDC. Set the repo, apply, then
-# set GitHub repository variable GITHUB_AWS_OIDC_DEPLOY_ROLE_ARN to the role ARN.
-# github_repository = "your-org/nutriconsultas"
+# Optional: CodePipeline (CodeStar to GitHub) + CodeBuild. Set repo, apply, then complete the
+# pending CodeStar connection in the AWS console so pushes to codepipeline_branch can run the pipeline.
+# github_repository  = "your-org/nutriconsultas"
+# codepipeline_branch  = "main"

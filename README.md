@@ -11,7 +11,7 @@ registro de consultorio de nutrición
 
 ## AWS (production infrastructure)
 
-The Terraform under [`infrastructure/`](infrastructure/) deploys the app and database to EC2. There is **no public SSH (port 22)** on those instances; you connect with **SSM Session Manager** only. See the **[infrastructure README](infrastructure/README.md#connect-to-the-ec2-instances-ssm-session-manager-only)** for prerequisites, console and CLI `aws ssm start-session` steps, and optional port forwarding.
+The Terraform under [`infrastructure/`](infrastructure/) deploys the app and database to EC2, optionally **AWS CodePipeline** (CodeStar connection to **GitHub**, then CodeBuild, then S3+SSM deploy to the app instance). There is **no public SSH (port 22)**; use **SSM Session Manager** to shell into instances. See the **[infrastructure README](infrastructure/README.md)** for the CodePipeline/connection steps and **[SSM connection](infrastructure/README.md#connect-to-the-ec2-instances-ssm-session-manager-only)**.
 
 ## Contributing
 

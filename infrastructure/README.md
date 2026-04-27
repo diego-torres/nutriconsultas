@@ -106,17 +106,22 @@ Set `AUTH_*`, `AWS_*`, and any other required environment variables. Edit `/opt/
 - `app_public_ip` – Elastic IP (HTTP on port 80, nginx to the app on 3000).
 - `db_private_ip` / `jdbc_example` – connection details; password is the value you set for the database user (treat state as sensitive).
 - `route53_name_servers` – if you set `route53_domain`, add these in your registrar. See [domain-setup.md](domain-setup.md).
-- `s3_app_artifact_bucket` / `s3_app_artifact_key` – JAR location for CI (see below).
-- `github_actions_oidc_role_arn` – if `github_repository` is set, use as the GitHub repository variable for deploy (below).
+- `s3_app_artifact_bucket` / `s3_app_artifact_key` – S3 JAR key used by the deploy step (and SSM).
+- `codepipeline_name` / `codepipeline_arn` – set when `github_repository` is non-empty; open the pipeline in the **CodePipeline** console to see runs and failures.
+- `codestar_connection_arn` – you must **authorize the GitHub connection** once in the console (see below) before the pipeline can fetch the repo.
 
-## GitHub Actions: deploy on `main` (S3 + SSM)
+## AWS CodePipeline: deploy to EC2 (replaces a GitHub Actions deploy)
 
-1. In Terraform, set `github_repository` to this repo in `org/name` form (e.g. `diego-torres/nutriconsultas`) and run `terraform apply`. If an **OIDC provider** for `token.actions.githubusercontent.com` already exists in the account, import it or see the note in [cicd.tf](cicd.tf) instead of creating a second one.
-2. In the GitHub repo, add **Settings → Secrets and variables → Actions → Variables** (not secrets):
-   - `GITHUB_AWS_OIDC_DEPLOY_ROLE_ARN` = value of `terraform output -raw github_actions_oidc_role_arn`
-   - Optional: `AWS_DEFAULT_REGION` (must match the EC2 region if not `us-east-1`); `NUTRICONSULTAS_TERRAFORM_PROJECT` if you changed the Terraform `project` variable (default `nutriconsultas` — must match the SSM path `/{project}/deploy/...`).
-3. On every **push to `main`** with a green **build** job, the **Deploy to EC2** job runs (if the variable from step 2 is set): it uploads the built JAR to the S3 bucket, then [scripts/deploy-jar-to-ec2-ssm.sh](scripts/deploy-jar-to-ec2-ssm.sh) uses **SSM** on the app instance to copy the JAR to `/opt/nutriconsultas/app.jar` and restarts `nutriconsultas`. If the variable is unset, the job is skipped so forks and local tests do not need AWS.
-4. Manual run from a machine with `aws` + `jq` and the same role (or an admin user): `bash infrastructure/scripts/deploy-jar-to-ec2-ssm.sh path/to/nutriconsultas-web-*.jar [project]`
+GitHub is still the **source of truth** for the code, but the **orchestration** to build and deploy runs in **AWS** on push to the branch you set (default `main` via `codepipeline_branch`).
+
+1. Set in Terraform, for example:
+   - `github_repository  = "your-github-org/nutriconsultas"`
+   - `codepipeline_branch  = "main"`
+   - Run `terraform apply`.
+2. In the **AWS account**, open **Developer tools** (or **Settings**), then **Connections** (or search for **CodeStar connections**). Select the new connection, choose **Update pending connection**, and sign in to **GitHub** to authorize the app. Wait until the status is **Available** (not *Pending*).
+3. Pushes to `codepipeline_branch` in that GitHub repository trigger: **Source** (zip from GitHub) -> **Build** (CodeBuild runs Maven with [buildspecs/app-build.yml](buildspecs/app-build.yml)) -> **Deploy** (CodeBuild runs [buildspecs/app-deploy.yml](buildspecs/app-deploy.yml), which calls [scripts/deploy-jar-to-ec2-ssm.sh](scripts/deploy-jar-to-ec2-ssm.sh): S3 `PutObject` for the JAR, then SSM to the app EC2).
+4. The **.github/workflows/maven.yml** job only runs **lint and tests** (no deploy to AWS). If the pipeline fails, use **CodePipeline** / **CodeBuild** log groups in CloudWatch for the failing stage.
+5. **Manual** deploy (same as before) from a laptop with `aws` + `jq` and the right IAM: `bash infrastructure/scripts/deploy-jar-to-ec2-ssm.sh path/to/nutriconsultas-web-*.jar [project]`
 
 ## What is *not* automated (by design, for simplicity and cost)
 
@@ -126,7 +131,9 @@ Set `AUTH_*`, `AWS_*`, and any other required environment variables. Edit `/opt/
 ## Files
 
 - `main.tf` – Security groups (no 22 on app), EC2, SSM instance profile, EIP, optional Route 53
-- `cicd.tf` – S3 for JARs, optional GitHub OIDC role, SSM parameters for the deploy script
+- `cicd.tf` – S3 JAR bucket, SSM parameters for the deploy script
+- `codepipeline.tf` – CodeStar Connection, S3 for pipeline artifacts, CodeBuild, CodePipeline (if `github_repository` is set)
+- `buildspecs/app-build.yml`, `buildspecs/app-deploy.yml` – Build and deploy for CodeBuild
 - `variables.tf` / `outputs.tf` – Config and post-apply values
 - `templates/*.sh` – User data for database and app hosts
-- `scripts/deploy-jar-to-ec2-ssm.sh` – Upload JAR to S3 and SSM `AWS-RunShellScript` on the app instance
+- `scripts/deploy-jar-to-ec2-ssm.sh` – Upload JAR to S3 and SSM on the app instance (used by CodeBuild deploy and by hand)

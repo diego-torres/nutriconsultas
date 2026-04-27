@@ -34,7 +34,7 @@ output "route53_domain" {
 }
 
 # -----------------------------------------------------------------------------
-# CI/CD: copy into GitHub repository **Variables** (not secrets) after apply
+# CI/CD
 # -----------------------------------------------------------------------------
 
 output "s3_app_artifact_bucket" {
@@ -47,7 +47,17 @@ output "s3_app_artifact_key" {
   value       = local.deploy_artifact_s3_key
 }
 
-output "github_actions_oidc_role_arn" {
-  description = "Set as GitHub repository variable GITHUB_AWS_OIDC_DEPLOY_ROLE_ARN when github_repository is set. Empty if OIDC was not created."
-  value       = try(aws_iam_role.github_actions_deploy[0].arn, "")
+output "codepipeline_name" {
+  description = "CodePipeline name when github_repository is set. Empty if not created."
+  value       = try(aws_codepipeline.app[0].name, "")
+}
+
+output "codepipeline_arn" {
+  description = "CodePipeline ARN; open in console to view runs and errors."
+  value       = try(aws_codepipeline.app[0].arn, "")
+}
+
+output "codestar_connection_arn" {
+  description = "CodeStar connection for GitHub. In AWS console: update pending connection to authorize, then the pipeline can run on push to the branch."
+  value       = try(aws_codestarconnections_connection.github[0].arn, "")
 }
