@@ -45,39 +45,12 @@ locals {
 }
 
 # -----------------------------------------------------------------------------
-# Optional: EC2 key pair (SSH to app; DB uses SSM, no public SSH)
-# -----------------------------------------------------------------------------
-
-resource "tls_private_key" "this" {
-  count     = (var.create_key_pair && var.ec2_key_name == null) ? 1 : 0
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-
-resource "aws_key_pair" "this" {
-  count      = (var.create_key_pair && var.ec2_key_name == null) ? 1 : 0
-  key_name   = "${var.project}-ec2"
-  public_key = tls_private_key.this[0].public_key_openssh
-  tags = merge(
-    local.common_tags,
-    { Name = "${var.project}-ec2" }
-  )
-}
-
-locals {
-  effective_key_name = coalesce(
-    var.ec2_key_name,
-    try(aws_key_pair.this[0].key_name, null)
-  )
-}
-
-# -----------------------------------------------------------------------------
-# Security groups: DB accepts 5432 only from app; app accepts HTTP/HTTPS; SSH/SSM
+# Security groups: no inbound port 22 — admin only via SSM Session Manager. DB: 5432 from app only.
 # -----------------------------------------------------------------------------
 
 resource "aws_security_group" "app" {
   name_prefix = "${var.project}-app-"
-  description = "App EC2: HTTP, HTTPS, optional SSH; can reach DB on 5432"
+  description = "App EC2: HTTP, HTTPS, admin via SSM only; can reach DB on 5432"
   vpc_id      = data.aws_vpc.this.id
 
   # Public web
@@ -94,15 +67,6 @@ resource "aws_security_group" "app" {
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Only your IP (change admin_ssh_cidr) — 127.0.0.1/32 is a no-op; set before apply
-  ingress {
-    description = "SSH admin"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.admin_ssh_cidr]
   }
 
   egress {
@@ -154,7 +118,7 @@ resource "aws_security_group" "db" {
 }
 
 # -----------------------------------------------------------------------------
-# SSM: manage instances without public SSH to the DB
+# SSM: required for app and DB (no public SSH; security group does not open port 22)
 # -----------------------------------------------------------------------------
 
 data "aws_iam_policy_document" "ec2_trust" {
@@ -238,11 +202,12 @@ resource "aws_instance" "db" {
 resource "aws_instance" "app" {
   depends_on = [aws_instance.db]
 
-  ami                         = data.aws_ami.al2023.id
-  instance_type               = var.app_instance_type
-  subnet_id                   = local.subnet_id
-  vpc_security_group_ids      = [aws_security_group.app.id]
-  key_name                    = local.effective_key_name
+  ami                    = data.aws_ami.al2023.id
+  instance_type          = var.app_instance_type
+  subnet_id              = local.subnet_id
+  vpc_security_group_ids = [aws_security_group.app.id]
+  # No key pair: shell access is only via SSM (Session Manager). Port 22 is not in the app SG.
+  key_name                    = null
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm.id
 

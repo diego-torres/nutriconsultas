@@ -126,3 +126,55 @@ jobs:
         name: jacoco-exec-data
         path: target/jacoco.exec
         retention-days: 7
+    - name: Upload JAR for EC2 deploy
+      if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: actions/upload-artifact@v7
+      with:
+        name: app-jar
+        # Built by the Spring Boot / Maven JAR (matches pom artifactId).
+        path: target/nutriconsultas-web-*.jar
+        retention-days: 7
+
+  # Upload JAR to S3 and SSM on the app EC2 (infrastructure/cicd.tf, infrastructure/scripts/…).
+  # Set repository variable GITHUB_AWS_OIDC_DEPLOY_ROLE_ARN (terraform output github_actions_oidc_role_arn)
+  # and set `github_repository` in Terraform. Optional: AWS_DEFAULT_REGION, NUTRICONSULTAS_TERRAFORM_PROJECT.
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && (vars.GITHUB_AWS_OIDC_DEPLOY_ROLE_ARN || '') != ''
+    name: Deploy to EC2 (S3 + SSM)
+    runs-on: ubuntu-latest
+    needs: [ build ]
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION || 'us-east-1' }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: Download JAR artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: app-jar
+        path: app-jar
+    - name: Install jq
+      run: sudo apt-get update -q && sudo apt-get install -y -q jq
+    - name: Configure AWS (OIDC)
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ vars.GITHUB_AWS_OIDC_DEPLOY_ROLE_ARN }}
+        aws-region: ${{ env.AWS_DEFAULT_REGION }}
+    - name: Copy JAR to S3 and restart via SSM
+      env:
+        TF_PROJECT: ${{ vars.NUTRICONSULTAS_TERRAFORM_PROJECT || 'nutriconsultas' }}
+      run: |
+        set -euxo pipefail
+        JAR_PATH="$(ls -1 app-jar/nutriconsultas-web-*.jar 2>/dev/null | head -1 || true)"
+        if [ -z "$JAR_PATH" ] || [ ! -f "$JAR_PATH" ]; then
+          JAR_PATH="$(find app-jar -name '*.jar' -type f | head -1)"
+        fi
+        if [ -z "$JAR_PATH" ] || [ ! -f "$JAR_PATH" ]; then
+          echo "No JAR file found in app-jar" >&2
+          ls -laR app-jar
+          exit 1
+        fi
+        echo "Using JAR: $JAR_PATH"
+        bash infrastructure/scripts/deploy-jar-to-ec2-ssm.sh "$JAR_PATH" "$TF_PROJECT"

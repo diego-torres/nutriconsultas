@@ -51,4 +51,9 @@ sudo -u postgres psql -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";" -d "${d
 set -e
 
 systemctl restart postgresql-15
+
+# Admin access: SSM only. Security group has no 22; stop the SSH daemon on the host.
+systemctl stop sshd 2>/dev/null || true
+systemctl mask --now sshd 2>/dev/null || true
+
 echo "PostgreSQL bootstrap done."

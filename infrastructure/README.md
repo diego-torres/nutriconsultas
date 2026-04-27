@@ -1,6 +1,6 @@
 # AWS infrastructure (Terraform)
 
-Provisions a **small, cost-oriented** two-instance layout: one EC2 for **PostgreSQL** and one for the **Spring Boot** app, in the **default VPC** of the target region. Security groups follow least privilege: **port 5432** on the database is reachable **only** from the application’s security group.
+Provisions a **small, cost-oriented** two-instance layout: one EC2 for **PostgreSQL** and one for the **Spring Boot** app, in the **default VPC** of your target region. The app security group **does not open port 22**; shell access is **SSM Session Manager** only. Security groups: **port 5432** on the database is reachable **only** from the application’s security group.
 
 This matches [issue #69](https://github.com/diego-torres/nutriconsultas/issues/69) (repository layout, automation, and documentation). **No secrets** belong in this repository: use a local `terraform.tfvars` (ignored by git) and/or `TF_VAR_*` (see [variables](variables.tf)).
 
@@ -27,7 +27,7 @@ This matches [issue #69](https://github.com/diego-torres/nutriconsultas/issues/6
 1. **Copy the example variable file and edit (do not commit secrets):**
    ```bash
    cp terraform.tfvars.example terraform.tfvars
-   # Edit: admin_ssh_cidr, db_app_password, region, and optional domain.
+   # Edit: db password, region, and optional domain.
    ```
 2. **Set the database password (required; this variable has no default):**
    ```bash
@@ -40,41 +40,93 @@ This matches [issue #69](https://github.com/diego-torres/nutriconsultas/issues/6
    terraform plan
    terraform apply
    ```
+4. **If you are upgrading** from a version that set `admin_ssh_cidr` or an EC2 key pair, remove those from `terraform.tfvars` and run `terraform plan` to drop the key pair and remove port 22 from the app security group.
 
-4. **SSH key (optional):** If `create_key_pair = true` and you did not set `ec2_key_name`, the **private** PEM is in the sensitive output `ec2_key_pair_private_pem` (not printed by default; use `terraform output -raw ec2_key_pair_private_pem` and save to a file, `chmod 400`). The database instance has **no** key pair: use **SSM Session Manager** (`aws ssm start-session --target <db_instance_id>`) once the SSM agent is online.
+5. **Destroy (when you are sure):** `cd infrastructure && terraform destroy`
 
-5. **Deploy the application JAR** to the app instance, then start the service:
-   ```bash
-   # Example: copy from your laptop (replace key path and user ubuntu vs ec2-user — Amazon Linux uses ec2-user)
-   scp -i your-key.pem ../target/nutriconsultas-*.jar ec2-user@<app_public_ip>:/tmp/app.jar
-   # On the app host
-   sudo mv /tmp/app.jar /opt/nutriconsultas/app.jar
-   sudo chown nutri:nutri /opt/nutriconsultas/app.jar
-   sudo systemctl enable --now nutriconsultas
-   ```
+## Connect to the EC2 instances (SSM Session Manager only)
 
-6. **OAuth2 / environment:** Set `AUTH_*`, `AWS_*`, and any other required variables for the app. Options include editing `/opt/nutriconsultas/app.env` and extending the `systemd` `EnvironmentFile`, or a separate drop-in. Never commit real secrets to git.
+**There is no public SSH (port 22) on these instances** — the app security group does not allow it, the instances have **no** EC2 key pair, and the **sshd** service is stopped and **masked** on first boot in user data (defense in depth). Use **SSM Session Manager** for a shell, file inspection, and troubleshooting. The SSM agent (Amazon Linux 2023) uses the instance IAM profile (`AmazonSSMManagedInstanceCore`); the instance can reach the SSM endpoints over the internet (public subnet + public IP, default VPC route to the internet).
 
-7. **Destroy (when you are sure):**
-   ```bash
-   terraform destroy
-   ```
+### Your IAM user or role (who runs the CLI or console)
+
+Must allow, at minimum, starting a session and usually describing instances, for example:
+
+- `ssm:StartSession`, `ssm:DescribeSessions`, `ssm:TerminateSession` (or use the `AmazonSSMFullAccess` managed policy for a lab account; tighten for production)
+- `ssm:SendCommand` if you use the deploy script or SSM for automation
+- `ec2:DescribeInstances` (or scoped) to find instance IDs, unless you use IDs from `terraform output`
+
+[Session Manager plugin for the AWS CLI](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html) is **required** for `aws ssm start-session` from a laptop.
+
+### Instance IDs
+
+- `terraform output -raw app_instance_id`
+- `terraform output -raw db_instance_id`
+
+### AWS Console
+
+1. Open **Systems Manager** → **Session Manager** → **Start session**.
+2. Filter by the instance name tag (e.g. `Name = nutriconsultas-app`) and select the instance, then **Start session**.
+
+If **Start session** is disabled, check that the instance is **online** in the AWS console, that the **SSM agent** is running on the host, and that the instance profile is attached. After first boot, wait 1–2 minutes for the agent to register with SSM.
+
+### AWS CLI
+
+Replace `i-…` and the region with your values:
+
+```bash
+aws ssm start-session --target i-0abc1234 --region us-east-1
+```
+
+**Port forwarding (optional,** to reach the app on the instance at `localhost:3000` from your machine):
+
+```bash
+aws ssm start-session --target i-0abc1234 --region us-east-1 \
+  --document-name AWS-StartPortForwardingSession \
+  --parameters "portNumber=3000,localPortNumber=13000"
+```
+
+Then open `http://127.0.0.1:13000`. See [Session Manager port forwarding](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-sessions.html).
+
+### First-time application deploy (manual, without GitHub)
+
+Preferred: the GitHub Action on `main` (see below) or [scripts/deploy-jar-to-ec2-ssm.sh](scripts/deploy-jar-to-ec2-ssm.sh) from a machine with AWS credentials that can `PutObject` the JAR and `SendCommand` (same pattern as the CI role).
+
+**Option A — SSM from your laptop (after a session is open):** in the interactive shell, you cannot `scp` from the laptop through classical SSH, because port 22 is closed. **Upload the JAR to the S3 artifact bucket** (see `s3_app_artifact_bucket` output) at the key `releases/nutriconsultas-web.jar` using `aws s3 cp`, then in the SSM session run the same `aws s3 cp` / `mv` / `systemctl restart` steps the deploy script uses, or run the full script with credentials that have permission to target the instance.
+
+**Option B — One-shot:** run [scripts/deploy-jar-to-ec2-ssm.sh](scripts/deploy-jar-to-ec2-ssm.sh) (requires `aws` CLI, `jq`, and IAM for S3 + SSM).
+
+### OAuth2 and app secrets on the server
+
+Set `AUTH_*`, `AWS_*`, and any other required environment variables. Edit `/opt/nutriconsultas/app.env` in an SSM session (or a systemd `EnvironmentFile` drop-in). Never commit real secrets to git.
 
 ## Outputs
 
-- `app_public_ip` – Elastic IP (HTTP on port 80, nginx to Tomcat/embedded 3000).
-- `db_private_ip` / `jdbc_example` – connection details; password is the value you set for the database user, not the Terraform state password field alone (treat state as sensitive).
+- `app_instance_id` / `db_instance_id` — for SSM `--target` (and outputs below).
+- `app_public_ip` – Elastic IP (HTTP on port 80, nginx to the app on 3000).
+- `db_private_ip` / `jdbc_example` – connection details; password is the value you set for the database user (treat state as sensitive).
 - `route53_name_servers` – if you set `route53_domain`, add these in your registrar. See [domain-setup.md](domain-setup.md).
-- `ec2_key_pair_private_pem` – when Terraform created the key pair; save and protect.
+- `s3_app_artifact_bucket` / `s3_app_artifact_key` – JAR location for CI (see below).
+- `github_actions_oidc_role_arn` – if `github_repository` is set, use as the GitHub repository variable for deploy (below).
+
+## GitHub Actions: deploy on `main` (S3 + SSM)
+
+1. In Terraform, set `github_repository` to this repo in `org/name` form (e.g. `diego-torres/nutriconsultas`) and run `terraform apply`. If an **OIDC provider** for `token.actions.githubusercontent.com` already exists in the account, import it or see the note in [cicd.tf](cicd.tf) instead of creating a second one.
+2. In the GitHub repo, add **Settings → Secrets and variables → Actions → Variables** (not secrets):
+   - `GITHUB_AWS_OIDC_DEPLOY_ROLE_ARN` = value of `terraform output -raw github_actions_oidc_role_arn`
+   - Optional: `AWS_DEFAULT_REGION` (must match the EC2 region if not `us-east-1`); `NUTRICONSULTAS_TERRAFORM_PROJECT` if you changed the Terraform `project` variable (default `nutriconsultas` — must match the SSM path `/{project}/deploy/...`).
+3. On every **push to `main`** with a green **build** job, the **Deploy to EC2** job runs (if the variable from step 2 is set): it uploads the built JAR to the S3 bucket, then [scripts/deploy-jar-to-ec2-ssm.sh](scripts/deploy-jar-to-ec2-ssm.sh) uses **SSM** on the app instance to copy the JAR to `/opt/nutriconsultas/app.jar` and restarts `nutriconsultas`. If the variable is unset, the job is skipped so forks and local tests do not need AWS.
+4. Manual run from a machine with `aws` + `jq` and the same role (or an admin user): `bash infrastructure/scripts/deploy-jar-to-ec2-ssm.sh path/to/nutriconsultas-web-*.jar [project]`
 
 ## What is *not* automated (by design, for simplicity and cost)
 
 - **TLS/HTTPS** on a public host name: use certbot, or a load balancer, after DNS points to the EIP.
 - **Backups, observability, and high availability**: a single-EC2 database is a starting point, not a production backup strategy.
-- **Bastion host**: SSM is preferred over opening SSH to the data tier.
 
 ## Files
 
-- `main.tf` – Security groups, EC2, EIAM SSM, EIP, optional Route 53
+- `main.tf` – Security groups (no 22 on app), EC2, SSM instance profile, EIP, optional Route 53
+- `cicd.tf` – S3 for JARs, optional GitHub OIDC role, SSM parameters for the deploy script
 - `variables.tf` / `outputs.tf` – Config and post-apply values
 - `templates/*.sh` – User data for database and app hosts
+- `scripts/deploy-jar-to-ec2-ssm.sh` – Upload JAR to S3 and SSM `AWS-RunShellScript` on the app instance

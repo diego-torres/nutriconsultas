@@ -9,7 +9,7 @@ output "app_instance_id" {
 }
 
 output "db_instance_id" {
-  description = "Database EC2 instance id (SSM: no public SSH; use Session Manager after the agent is online)."
+  description = "PostgreSQL host EC2 instance id (SSM Session Manager: aws ssm start-session --target <id>)."
   value       = aws_instance.db.id
 }
 
@@ -23,12 +23,6 @@ output "jdbc_example" {
   value       = "jdbc:postgresql://${aws_instance.db.private_ip}:5432/${var.db_name}"
 }
 
-output "ec2_key_pair_private_pem" {
-  description = "PEM of the generated key (only if create_key_pair = true and ec2_key_name is not set). Save to a file and chmod 600; never commit."
-  value       = try(tls_private_key.this[0].private_key_pem, null)
-  sensitive   = true
-}
-
 output "route53_name_servers" {
   description = "If route53_domain is set, add these as nameservers in your registrar (see domain-setup.md). Empty when Route 53 is not created."
   value       = length(aws_route53_zone.app) > 0 ? aws_route53_zone.app[0].name_servers : []
@@ -37,4 +31,23 @@ output "route53_name_servers" {
 output "route53_domain" {
   value       = var.route53_domain
   description = "The zone name if created; otherwise null."
+}
+
+# -----------------------------------------------------------------------------
+# CI/CD: copy into GitHub repository **Variables** (not secrets) after apply
+# -----------------------------------------------------------------------------
+
+output "s3_app_artifact_bucket" {
+  description = "S3 bucket for the JAR. Keys also in SSM (project/deploy s3_bucket and s3_key parameters)."
+  value       = aws_s3_bucket.app_artifacts.bucket
+}
+
+output "s3_app_artifact_key" {
+  description = "S3 key for the JAR; also in SSM."
+  value       = local.deploy_artifact_s3_key
+}
+
+output "github_actions_oidc_role_arn" {
+  description = "Set as GitHub repository variable GITHUB_AWS_OIDC_DEPLOY_ROLE_ARN when github_repository is set. Empty if OIDC was not created."
+  value       = try(aws_iam_role.github_actions_deploy[0].arn, "")
 }

@@ -3,7 +3,7 @@
 set -euxo pipefail
 exec > >(tee /var/log/app-user-data.log) 2>&1
 
-dnf -y install java-21-amazon-corretto-headless nginx
+dnf -y install java-21-amazon-corretto-headless nginx awscli
 
 if ! getent group nutri >/dev/null; then
   groupadd -r nutri
@@ -67,4 +67,9 @@ UNIT
 
 chown -R root:nutri /opt/nutriconsultas
 systemctl daemon-reload
-echo "Copy the JAR to /opt/nutriconsultas/app.jar, chown nutri:nutri, then: systemctl enable --now nutriconsultas"
+
+# Admin access: SSM only. Security group has no 22; do not run sshd on the host.
+systemctl stop sshd 2>/dev/null || true
+systemctl mask --now sshd 2>/dev/null || true
+
+echo "After the first JAR (CI or S3+SSM), use: systemctl enable --now nutriconsultas. Shell: SSM Session Manager only (no port 22)."

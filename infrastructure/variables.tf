@@ -39,16 +39,6 @@ variable "ebs_root_volume_size_gb" {
 }
 
 # -----------------------------------------------------------------------------
-# SSH: restrict to your home or office IP (CIDR) — never use 0.0.0.0/0 for 22
-# -----------------------------------------------------------------------------
-
-variable "admin_ssh_cidr" {
-  type        = string
-  description = "IPv4 CIDR allowed to reach SSH (port 22) on the app instance. Example: 203.0.113.10/32. Database instance has no SSH from the internet; use SSM Session Manager if needed."
-  default     = "127.0.0.1/32" # must be set for real use
-}
-
-# -----------------------------------------------------------------------------
 # PostgreSQL bootstrap
 # -----------------------------------------------------------------------------
 
@@ -71,24 +61,6 @@ variable "db_app_password" {
 }
 
 # -----------------------------------------------------------------------------
-# Key pair: create one in the EC2 console in this region and set ec2_key_name, or
-# set create_key_pair = true to generate a key in Terraform (private key in output).
-# You can also omit both and use only SSM Session Manager to reach the app host.
-# -----------------------------------------------------------------------------
-
-variable "ec2_key_name" {
-  type        = string
-  description = "Name of an existing EC2 key pair in this region (app instance only)."
-  default     = null
-}
-
-variable "create_key_pair" {
-  type        = bool
-  description = "If true, create an EC2 key pair; private key in outputs (sensitive). Ignored if ec2_key_name is set."
-  default     = true
-}
-
-# -----------------------------------------------------------------------------
 # Optional Route 53: create hosted zone + records (see domain-setup.md for GoDaddy)
 # -----------------------------------------------------------------------------
 
@@ -102,4 +74,20 @@ variable "route53_www_record" {
   type        = bool
   description = "If route53_domain is set, add an A record for www to the app EIP. (Same as apex; for HTTP www→root redirect, configure the app or reverse proxy later.)"
   default     = true
+}
+
+# -----------------------------------------------------------------------------
+# GitHub Actions: OIDC for deploy job (S3 put + SSM to app). Leave empty to skip the role.
+# -----------------------------------------------------------------------------
+
+variable "github_repository" {
+  type        = string
+  description = "Set to the GitHub repo in org/repo form (e.g. diego-torres/nutriconsultas) so the deploy workflow on main can assume a role. Empty string = do not create OIDC provider/role (S3 and SSM parameters are still created)."
+  default     = ""
+}
+
+variable "github_actions_thumbprints" {
+  type        = list(string)
+  description = "Root CA thumbprints for https://token.actions.githubusercontent.com. Add entries if GitHub publishes new certificates."
+  default     = ["6938fd4e98bab03faadb97b34396831e3780aea1"]
 }

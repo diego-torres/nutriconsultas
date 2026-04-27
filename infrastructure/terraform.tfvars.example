@@ -3,14 +3,6 @@
 aws_region        = "us-east-1"
 project           = "nutriconsultas"
 
-# Must be your public IPv4/32 to SSH to the app host. Example: 203.0.113.45/32
-# Never use 0.0.0.0/0 for SSH in production.
-admin_ssh_cidr = "CHANGE_ME/32"
-
-# Optional: an existing key pair in this region (stops Terraform from creating one).
-# ec2_key_name  = "my-laptop"
-create_key_pair = true
-
 # Common free/tiny sizes (two instances may exceed 750h combined free tier).
 db_instance_type  = "t3.micro"
 app_instance_type = "t3.micro"
@@ -28,3 +20,7 @@ ebs_root_volume_size_gb = 30
 # If null, you can still point DNS at the EIP at your registrar; see domain-setup.md.
 # route53_domain   = "minutriporcion.com"
 # route53_www_record = true
+
+# Optional: main-branch GitHub Action deploys the JAR via OIDC. Set the repo, apply, then
+# set GitHub repository variable GITHUB_AWS_OIDC_DEPLOY_ROLE_ARN to the role ARN.
+# github_repository = "your-org/nutriconsultas"
