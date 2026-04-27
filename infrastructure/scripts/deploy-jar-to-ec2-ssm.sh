@@ -13,6 +13,14 @@ if [ ! -f "$JAR_FILE" ]; then
   exit 1
 fi
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+UNIT_FILE="$SCRIPT_DIR/nutriconsultas-app.service"
+if [ ! -f "$UNIT_FILE" ]; then
+  echo "Missing systemd unit template: $UNIT_FILE" >&2
+  exit 1
+fi
+UNIT_B64=$(base64 < "$UNIT_FILE" | tr -d '\n')
+
 BUCKET="$(aws ssm get-parameter --name "$P/s3_bucket" --query "Parameter.Value" --output text)"
 KEY="$(aws ssm get-parameter --name "$P/s3_key" --query "Parameter.Value" --output text)"
 INSTANCE_ID="$(aws ssm get-parameter --name "$P/app_instance_id" --query "Parameter.Value" --output text)"
@@ -21,14 +29,17 @@ aws s3 cp "$JAR_FILE" "$S3URI" --no-progress
 
 JSON="$(jq -n \
   --arg s3 "$S3URI" \
+  --arg ub "$UNIT_B64" \
   --arg iid "$INSTANCE_ID" \
   '{
      DocumentName: "AWS-RunShellScript",
      InstanceIds: [$iid],
      Parameters: {
        commands: [
-         "set -euxo pipefail",
+         "set -euo pipefail",
          "command -v aws || sudo dnf -y -q install awscli",
+         ("printf %s " + ($ub | @sh) + " | base64 -d | sudo tee /etc/systemd/system/nutriconsultas.service > /dev/null"),
+         "sudo systemctl daemon-reload",
          ("sudo /usr/bin/aws s3 cp " + $s3 + " /opt/nutriconsultas/app.new.jar --no-progress"),
          "sudo chown nutri:nutri /opt/nutriconsultas/app.new.jar",
          "sudo mv -f /opt/nutriconsultas/app.new.jar /opt/nutriconsultas/app.jar",

@@ -61,30 +61,7 @@ nginx -t
 systemctl enable --now nginx
 systemctl reload nginx
 
-# Let's Encrypt (HTTP-01): DNS for all names must point to this host before this runs.
-if [ '${certbot_run_flag}' = '1' ] && [ -n '${certbot_d_flags}' ]; then
-  dnf -y install epel-release || true
-  if ! dnf -y install certbot python3-certbot-nginx; then
-    echo "WARN: certbot install failed; install EPEL + certbot manually, then: certbot --nginx ..." >&2
-  else
-    CERTBOT_EMAIL="$(printf '%s' '${certbot_email_b64}' | base64 -d)"
-    certbot_ok=0
-    for attempt in 1 2 3 4 5 6; do
-      if certbot --nginx --non-interactive --agree-tos --email "$$CERTBOT_EMAIL" ${certbot_d_flags} --redirect; then
-        certbot_ok=1
-        break
-      fi
-      echo "Certbot attempt $$attempt failed (DNS may not have propagated); retry in 90s..." >&2
-      sleep 90
-    done
-    if [ "$$certbot_ok" = "1" ]; then
-      systemctl enable --now certbot-renew.timer 2>/dev/null || systemctl enable --now certbot.timer 2>/dev/null || true
-    else
-      echo "WARN: Certbot did not obtain a certificate after retries. When DNS points here, run certbot manually via SSM." >&2
-    fi
-  fi
-fi
-
+# systemd unit BEFORE Certbot so cloud-init timeouts / long LE retries cannot skip service install.
 cat > /etc/systemd/system/nutriconsultas.service <<'UNIT'
 [Unit]
 Description=Nutriconsultas (Spring Boot)
@@ -108,6 +85,30 @@ UNIT
 
 chown -R root:nutri /opt/nutriconsultas
 systemctl daemon-reload
+
+# Let's Encrypt (HTTP-01): DNS for all names must point to this host before this runs.
+if [ '${certbot_run_flag}' = '1' ] && [ -n '${certbot_d_flags}' ]; then
+  dnf -y install epel-release || true
+  if ! dnf -y install certbot python3-certbot-nginx; then
+    echo "WARN: certbot install failed; install EPEL + certbot manually, then: certbot --nginx ..." >&2
+  else
+    CERTBOT_EMAIL="$(printf '%s' '${certbot_email_b64}' | base64 -d)"
+    certbot_ok=0
+    for attempt in 1 2 3 4 5 6; do
+      if certbot --nginx --non-interactive --agree-tos --email "$$CERTBOT_EMAIL" ${certbot_d_flags} --redirect; then
+        certbot_ok=1
+        break
+      fi
+      echo "Certbot attempt $$attempt failed (DNS may not have propagated); retry in 90s..." >&2
+      sleep 90
+    done
+    if [ "$$certbot_ok" = "1" ]; then
+      systemctl enable --now certbot-renew.timer 2>/dev/null || systemctl enable --now certbot.timer 2>/dev/null || true
+    else
+      echo "WARN: Certbot did not obtain a certificate after retries. When DNS points here, run certbot manually via SSM." >&2
+    fi
+  fi
+fi
 
 # Admin access: SSM only. Security group has no 22; do not run sshd on the host.
 systemctl stop sshd 2>/dev/null || true

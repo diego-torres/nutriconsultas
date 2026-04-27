@@ -209,4 +209,4 @@ If that command errors because the output is empty, set `github_repository` in T
 - `buildspecs/app-build.yml`, `buildspecs/app-deploy.yml` – Build and deploy for CodeBuild
 - `variables.tf` / `outputs.tf` – Config and post-apply values
 - `templates/*.sh` – User data for database and app hosts; `templates/nutriconsultas-nginx.conf.tpl` – nginx `server` block (Terraform `templatefile`, Certbot-friendly `server_name`)
-- `scripts/deploy-jar-to-ec2-ssm.sh` – Upload JAR to S3 and SSM on the app instance (used by CodeBuild deploy and by hand)
+- `scripts/deploy-jar-to-ec2-ssm.sh`, `scripts/nutriconsultas-app.service` – Upload JAR to S3 and install/restart systemd on the app instance (deploy writes the unit if missing — same fragment as app user-data)
