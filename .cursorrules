@@ -421,6 +421,9 @@ The application requires these environment variables (set in `.env` file):
 - Code formatting is enforced via git pre-commit hook
 - CI/CD runs linting in strict mode (`ci` profile)
 
+## AWS (infrastructure and operations)
+- When helping inspect or verify EC2, IAM, CodePipeline, etc., **prefer the AWS CLI** (e.g. `aws ec2 describe-instances`, `aws codepipeline list-pipelines`, `aws sts get-caller-identity`, `terraform output`) over sending the user to the **AWS console**, unless a task is **console-only** (e.g. completing a CodeStar GitHub OAuth flow). The agent should run or suggest concrete `aws` / `terraform` commands when possible.
+
 ## When Making Changes
 1. **New Controller**: Extend `AbstractAuthorizedController` if authentication required
 2. **New Template**: Place in `sbadmin/` (admin) or `eterna/` (public) directory

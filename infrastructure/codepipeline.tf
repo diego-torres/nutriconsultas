@@ -210,7 +210,7 @@ resource "aws_codebuild_project" "app_deploy" {
   service_role  = aws_iam_role.codebuild_deploy[0].arn
   tags          = local.common_tags
 
-  artifacts { type = "NO_ARTIFACTS" }
+  artifacts { type = "CODEPIPELINE" }
   source {
     type      = "CODEPIPELINE"
     buildspec = file("${path.module}/buildspecs/app-deploy.yml")

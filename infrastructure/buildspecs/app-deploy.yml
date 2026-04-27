@@ -11,3 +11,7 @@ phases:
       - 'test -n "$JAR" -a -f "$JAR"'
       - chmod +x infrastructure/scripts/deploy-jar-to-ec2-ssm.sh
       - bash infrastructure/scripts/deploy-jar-to-ec2-ssm.sh "$JAR" "$NUTR_PROJECT"
+      - echo "deploy-ok" > .pipeline-deploy-marker
+artifacts:
+  base-directory: .
+  files: [".pipeline-deploy-marker"]

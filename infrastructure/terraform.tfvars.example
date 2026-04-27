@@ -21,7 +21,8 @@ ebs_root_volume_size_gb = 30
 # route53_domain   = "minutriporcion.com"
 # route53_www_record = true
 
-# Optional: CodePipeline (CodeStar to GitHub) + CodeBuild. Set repo, apply, then complete the
-# pending CodeStar connection in the AWS console so pushes to codepipeline_branch can run the pipeline.
-# github_repository  = "your-org/nutriconsultas"
-# codepipeline_branch  = "main"
+# CodePipeline (CodeStar → GitHub → CodeBuild → SSM deploy). OMITTING github_repository
+# (or leaving it as "") means Terraform will NOT create CodePipeline, CodeBuild, or a CodeStar
+# connection — list-pipelines will be empty. Set a real org/repo, then `terraform apply`.
+# github_repository   = "your-github-org/nutriconsultas"
+# codepipeline_branch   = "main"   # branch that triggers the pipeline
