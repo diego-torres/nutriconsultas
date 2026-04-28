@@ -31,18 +31,18 @@
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
   <style th:inline="text">
-    .carousel-pic1 {
-      background-image: url('[(@{/eterna/assets/img/carousel/bienvenido.png})]');
-    }
-    .carousel-pic2 {
-      background-image: url('[(@{/eterna/assets/img/carousel/gestion_profesional.jpeg})]');
-    }
-    .carousel-pic3 {
-      background-image: url('[(@{/eterna/assets/img/carousel/personas-ejercitandose.jpeg})]');
-    }
-    #main {
-      padding-top: 150px;
-    }
+  .carousel-pic1 {
+    background-image: url('[(@{/eterna/assets/img/carousel/bienvenido.png})]');
+  }
+  .carousel-pic2 {
+    background-image: url('[(@{/eterna/assets/img/carousel/gestion_profesional.jpeg})]');
+  }
+  .carousel-pic3 {
+    background-image: url('[(@{/eterna/assets/img/carousel/personas-ejercitandose.jpeg})]');
+  }
+  #main {
+    padding-top: 150px;
+  }
   </style>
 </head>
 
@@ -252,76 +252,132 @@
           <div class="col-lg-3 box">
             <h3>Básico</h3>
             <h4>$5<span>/mes</span></h4>
-            <p class="text-muted small">Pago mensual: 12 meses</p>
-            <p class="text-success small"><strong>Pago anual: $50/año</strong> (10 meses, ahorra $10)</p>
-            <ul>
-              <li><i class="bx bx-check"></i> Hasta 10 pacientes</li>
-              <li><i class="bx bx-check"></i> Gestión de pacientes</li>
-              <li><i class="bx bx-check"></i> Planes de alimentación</li>
-              <li><i class="bx bx-check"></i> Seguimiento nutricional</li>
-              <li><i class="bx bx-check"></i> Calendario de citas</li>
-              <li><i class="bx bx-check"></i> Reportes básicos</li>
-              <li class="na"><i class="bx bx-x"></i> <span>Reportes avanzados</span></li>
-            </ul>
             <a href="#contact" class="buy-btn">Solicitar Acceso</a>
           </div>
 
           <div class="col-lg-3 box">
             <h3>Profesional</h3>
             <h4>$10<span>/mes</span></h4>
-            <p class="text-muted small">Pago mensual: 12 meses</p>
-            <p class="text-success small"><strong>Pago anual: $100/año</strong> (10 meses, ahorra $20)</p>
-            <ul>
-              <li><i class="bx bx-check"></i> Hasta 50 pacientes</li>
-              <li><i class="bx bx-check"></i> Gestión de pacientes</li>
-              <li><i class="bx bx-check"></i> Planes de alimentación</li>
-              <li><i class="bx bx-check"></i> Seguimiento nutricional</li>
-              <li><i class="bx bx-check"></i> Calendario de citas</li>
-              <li><i class="bx bx-check"></i> Reportes completos</li>
-              <li><i class="bx bx-check"></i> Exportación PDF</li>
-            </ul>
             <a href="#contact" class="buy-btn">Solicitar Acceso</a>
           </div>
 
           <div class="col-lg-3 box featured">
             <span class="featured-badge">Popular</span>
             <h3>Plus</h3>
-            <h4>$20<span>/mes</span></h4>
-            <p class="text-muted small">Pago mensual: 12 meses</p>
-            <p class="text-success small"><strong>Pago anual: $200/año</strong> (10 meses, ahorra $40)</p>
-            <ul>
-              <li><i class="bx bx-check"></i> Pacientes ilimitados</li>
-              <li><i class="bx bx-check"></i> Gestión de pacientes</li>
-              <li><i class="bx bx-check"></i> Planes de alimentación</li>
-              <li><i class="bx bx-check"></i> Seguimiento nutricional</li>
-              <li><i class="bx bx-check"></i> Calendario de citas</li>
-              <li><i class="bx bx-check"></i> Reportes completos</li>
-              <li><i class="bx bx-check"></i> Exportación PDF</li>
-              <li><i class="bx bx-check"></i> Soporte prioritario</li>
-            </ul>
+            <h4>$30<span>/mes</span></h4>
             <a href="#contact" class="buy-btn">Solicitar Acceso</a>
           </div>
 
           <div class="col-lg-3 box">
             <h3>Consultorio</h3>
             <h4>$45<span>/mes</span></h4>
-            <p class="text-muted small">Pago mensual: 12 meses</p>
-            <p class="text-success small"><strong>Pago anual: $450/año</strong> (10 meses, ahorra $90)</p>
-            <ul>
-              <li><i class="bx bx-check"></i> Pacientes ilimitados</li>
-              <li><i class="bx bx-check"></i> Hasta 20 nutriólogos</li>
-              <li><i class="bx bx-check"></i> Gestión de pacientes</li>
-              <li><i class="bx bx-check"></i> Planes de alimentación</li>
-              <li><i class="bx bx-check"></i> Seguimiento nutricional</li>
-              <li><i class="bx bx-check"></i> Calendario de citas</li>
-              <li><i class="bx bx-check"></i> Reportes completos</li>
-              <li><i class="bx bx-check"></i> Exportación PDF</li>
-              <li><i class="bx bx-check"></i> Soporte prioritario</li>
-              <li><i class="bx bx-check"></i> Administración de usuarios</li>
-            </ul>
             <a href="#contact" class="buy-btn">Solicitar Acceso</a>
           </div>
 
+        </div>
+
+        <div class="row mt-4">
+          <div class="col-lg-12">
+            <div class="table-responsive pricing-comparison">
+              <table class="table pricing-table">
+                <thead>
+                  <tr>
+                    <th class="feature-col">Característica</th>
+                    <th>Básico</th>
+                    <th>Profesional</th>
+                    <th class="featured-col">Plus</th>
+                    <th>Consultorio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="feature-col">Pacientes</td>
+                    <td>Hasta 10</td>
+                    <td>Hasta 50</td>
+                    <td class="featured-col">Ilimitados</td>
+                    <td>Ilimitados</td>
+                  </tr>
+                  <tr>
+                    <td class="feature-col">Gestión de pacientes</td>
+                    <td><i class="bx bx-check"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                    <td class="featured-col"><i class="bx bx-check"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                  </tr>
+                  <tr>
+                    <td class="feature-col">Planes de alimentación</td>
+                    <td><i class="bx bx-check"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                    <td class="featured-col"><i class="bx bx-check"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                  </tr>
+                  <tr>
+                    <td class="feature-col">Seguimiento nutricional</td>
+                    <td><i class="bx bx-check"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                    <td class="featured-col"><i class="bx bx-check"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                  </tr>
+                  <tr>
+                    <td class="feature-col">Calendario de citas</td>
+                    <td><i class="bx bx-check"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                    <td class="featured-col"><i class="bx bx-check"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                  </tr>
+                  <tr>
+                    <td class="feature-col">Reportes básicos</td>
+                    <td><i class="bx bx-check"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                    <td class="featured-col"><i class="bx bx-check"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                  </tr>
+                  <tr>
+                    <td class="feature-col">Reportes avanzados</td>
+                    <td><i class="bx bx-x"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                    <td class="featured-col"><i class="bx bx-check"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                  </tr>
+                  <tr>
+                    <td class="feature-col">Reportes completos</td>
+                    <td><i class="bx bx-x"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                    <td class="featured-col"><i class="bx bx-check"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                  </tr>
+                  <tr>
+                    <td class="feature-col">Exportación PDF</td>
+                    <td><i class="bx bx-x"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                    <td class="featured-col"><i class="bx bx-check"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                  </tr>
+                  <tr>
+                    <td class="feature-col">Soporte prioritario</td>
+                    <td><i class="bx bx-x"></i></td>
+                    <td><i class="bx bx-x"></i></td>
+                    <td class="featured-col"><i class="bx bx-check"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                  </tr>
+                  <tr>
+                    <td class="feature-col">Nutriólogos</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td class="featured-col">1</td>
+                    <td>Hasta 20</td>
+                  </tr>
+                  <tr>
+                    <td class="feature-col">Administración de usuarios</td>
+                    <td><i class="bx bx-x"></i></td>
+                    <td><i class="bx bx-x"></i></td>
+                    <td class="featured-col"><i class="bx bx-x"></i></td>
+                    <td><i class="bx bx-check"></i></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <div class="row mt-4">
