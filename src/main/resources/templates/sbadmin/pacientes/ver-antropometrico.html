@@ -460,6 +460,9 @@
                               </div>
                               <div class="alert alert-light mb-0">
                                 <strong>Resultado:</strong> <span id="classic-bmi-result" class="text-primary">-</span>
+                                <div class="mt-1">
+                                  <button type="button" class="btn btn-sm btn-outline-primary assign-bmi-btn" data-source="classic-bmi-result">Asignar al paciente</button>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -483,6 +486,9 @@
                               </div>
                               <div class="alert alert-light mb-0">
                                 <strong>Resultado:</strong> <span id="trefethen-bmi-result" class="text-primary">-</span>
+                                <div class="mt-1">
+                                  <button type="button" class="btn btn-sm btn-outline-primary assign-bmi-btn" data-source="trefethen-bmi-result">Asignar al paciente</button>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -531,6 +537,9 @@
                               <p class="text-muted small mb-2">Mismo valor que BMI Clásico</p>
                               <div class="alert alert-light mb-0">
                                 <strong>Resultado:</strong> <span id="imc-result" class="text-primary">-</span>
+                                <div class="mt-1">
+                                  <button type="button" class="btn btn-sm btn-outline-primary assign-bmi-btn" data-source="imc-result">Asignar al paciente</button>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -573,6 +582,9 @@
                               </div>
                               <div class="alert alert-light mb-0">
                                 <strong>Resultado:</strong> <span id="msj-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
+                                <div class="mt-1">
+                                  <button type="button" class="btn btn-sm btn-outline-success assign-bmr-btn" data-source="msj-bmr-result">Asignar al paciente</button>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -609,6 +621,9 @@
                               </div>
                               <div class="alert alert-light mb-0">
                                 <strong>Resultado:</strong> <span id="hb-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
+                                <div class="mt-1">
+                                  <button type="button" class="btn btn-sm btn-outline-success assign-bmr-btn" data-source="hb-bmr-result">Asignar al paciente</button>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -654,6 +669,9 @@
                               </div>
                               <div class="alert alert-light mb-0">
                                 <strong>Resultado:</strong> <span id="fao-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
+                                <div class="mt-1">
+                                  <button type="button" class="btn btn-sm btn-outline-success assign-bmr-btn" data-source="fao-bmr-result">Asignar al paciente</button>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -691,6 +709,9 @@
                               </div>
                               <div class="alert alert-light mb-0">
                                 <strong>Resultado:</strong> <span id="val-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
+                                <div class="mt-1">
+                                  <button type="button" class="btn btn-sm btn-outline-success assign-bmr-btn" data-source="val-bmr-result">Asignar al paciente</button>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -727,6 +748,9 @@
                               </div>
                               <div class="alert alert-light mb-0">
                                 <strong>Resultado:</strong> <span id="prom-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
+                                <div class="mt-1">
+                                  <button type="button" class="btn btn-sm btn-outline-success assign-bmr-btn" data-source="prom-bmr-result">Asignar al paciente</button>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -933,6 +957,67 @@
 
     <!-- Calculation Tab JavaScript -->
     <div th:insert="~{sbadmin/pacientes/calculation-script :: calculationScript(false)}"></div>
+
+    <!-- Assign BMI/BMR to Patient -->
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      (function () {
+        var pacienteId = /*[[${paciente.id}]]*/ null;
+
+        function showToast(message, success) {
+          if (typeof toastr !== 'undefined') {
+            if (success) { toastr.success(message); } else { toastr.error(message); }
+            return;
+          }
+          var cls = success ? 'alert-success' : 'alert-danger';
+          var div = document.createElement('div');
+          div.className = 'alert ' + cls + ' alert-dismissible fade show position-fixed';
+          div.style.cssText = 'top:1rem;right:1rem;z-index:9999;min-width:250px';
+          div.innerHTML = message + '<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>';
+          document.body.appendChild(div);
+          setTimeout(function () { div.remove(); }, 4000);
+        }
+
+        function assignValue(endpoint, value, label) {
+          if (!pacienteId || isNaN(value) || value <= 0) {
+            showToast('Calcule ' + label + ' antes de asignar.', false);
+            return;
+          }
+          var body = {};
+          body[label === 'BMI' ? 'imc' : 'bmr'] = value;
+          fetch('/rest/pacientes/' + pacienteId + '/' + endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          }).then(function (res) {
+            if (res.ok) {
+              showToast(label + ' asignado correctamente al paciente.', true);
+            } else {
+              showToast('Error al asignar ' + label + '. Código: ' + res.status, false);
+            }
+          }).catch(function () {
+            showToast('Error de red al asignar ' + label + '.', false);
+          });
+        }
+
+        document.addEventListener('click', function (e) {
+          var btn = e.target.closest('.assign-bmi-btn');
+          if (btn) {
+            var spanId = btn.getAttribute('data-source');
+            var val = parseFloat(document.getElementById(spanId).textContent);
+            assignValue('assign-bmi', val, 'BMI');
+            return;
+          }
+          btn = e.target.closest('.assign-bmr-btn');
+          if (btn) {
+            var spanId2 = btn.getAttribute('data-source');
+            var val2 = parseFloat(document.getElementById(spanId2).textContent);
+            assignValue('assign-bmr', val2, 'BMR');
+          }
+        });
+      })();
+      /*]]>*/
+    </script>
 
 </body>
 
