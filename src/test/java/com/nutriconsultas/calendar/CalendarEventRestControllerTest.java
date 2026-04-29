@@ -1987,7 +1987,7 @@ public class CalendarEventRestControllerTest {
 		eventData.put("estatura", 1.75);
 
 		when(service.findById(1L)).thenReturn(existingEvent);
-		when(service.save(any(CalendarEvent.class))).thenAnswer(inv -> inv.getArgument(0));
+		lenient().when(service.save(any(CalendarEvent.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		// Act & Assert
 		org.assertj.core.api.Assertions.assertThatCode(
