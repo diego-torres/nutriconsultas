@@ -71,6 +71,9 @@ public class Paciente {
 	@Column(precision = 3)
 	private Double imc;
 
+	@Column(precision = 7)
+	private Double bmr;
+
 	private NivelPeso nivelPeso;
 
 	// ANTECEDENTES
