@@ -69,6 +69,11 @@
                       <p class="mb-0 text-muted" th:if="${ultimoImc == null}">N/A</p>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                      <i class="fas fa-fire fa-lg" style="color: #ff6b35;"></i>
+                      <p class="mb-0" th:if="${paciente.bmr != null}">[[(${#numbers.formatDecimal(paciente.bmr,1,'COMMA',0,'POINT')})]] kcal/día (BMR)</p>
+                      <p class="mb-0 text-muted" th:if="${paciente.bmr == null}">BMR N/A</p>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center p-3">
                       <i class="fas fa-calendar fa-lg" style="color: #ac2bac;"></i>
                       <p class="mb-0">[[(${citaAnterior})]] - Cita Anterior</p>
                     </li>
