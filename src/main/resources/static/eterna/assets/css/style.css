@@ -2221,3 +2221,59 @@ section {
   font-size: 13px;
   color: #fff;
 }
+
+/*--------------------------------------------------------------
+# Pricing Comparison Table
+--------------------------------------------------------------*/
+.pricing .pricing-comparison {
+  margin-top: 30px;
+}
+.pricing .pricing-table {
+  background: #fff;
+}
+.pricing .pricing-table th,
+.pricing .pricing-table td {
+  vertical-align: middle;
+  text-align: center;
+  padding: 14px 16px;
+  border-color: #e6e6e6;
+}
+.pricing .pricing-table thead th {
+  background: #f7f9fc;
+  font-weight: 600;
+  border-bottom: 2px solid #2dc997;
+}
+.pricing .pricing-table .feature-col {
+  text-align: left;
+  font-weight: 500;
+  position: sticky;
+  left: 0;
+  background: #fff;
+  z-index: 2;
+  min-width: 200px;
+}
+.pricing .pricing-table thead .feature-col {
+  background: #f7f9fc;
+}
+.pricing .pricing-table .featured-col {
+  background: rgba(45, 201, 151, 0.08);
+  font-weight: 500;
+}
+.pricing .pricing-table thead .featured-col {
+  background: #2dc997;
+  color: #fff;
+  border-bottom-color: #2dc997;
+}
+.pricing .pricing-table .bx-check {
+  color: #2dc997;
+  font-size: 1.4rem;
+}
+.pricing .pricing-table .bx-x {
+  color: #c0392b;
+  font-size: 1.4rem;
+}
+@media (max-width: 768px) {
+  .pricing .pricing-table .feature-col {
+    min-width: 160px;
+  }
+}
