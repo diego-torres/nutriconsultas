@@ -2,6 +2,7 @@ package com.nutriconsultas.paciente;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -11,7 +12,11 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+
+import org.junit.jupiter.api.DisplayName;
+import org.springframework.http.ResponseEntity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -366,6 +371,82 @@ public class PacienteRestControllerTest {
 		verify(service).findAllByUserIdAndSearchTerm(eq(TEST_USER_ID), eq("juan"), any(Pageable.class));
 		verify(service).countByUserIdAndSearchTerm(eq(TEST_USER_ID), eq("juan"));
 		log.info("finished testGetRowsWithSearch");
+	}
+
+	@Test
+	@DisplayName("assignBmi with valid data returns 200 and updates patient imc")
+	void assignBmi_validData_returns200AndUpdatesImc() {
+		when(principal.getSubject()).thenReturn(TEST_USER_ID);
+		when(service.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(paciente1);
+		when(service.save(any(Paciente.class))).thenReturn(paciente1);
+
+		final ResponseEntity<java.util.Map<String, Object>> response =
+			controller.assignBmi(1L, new HashMap<>(java.util.Map.of("bmi", "22.5")), principal);
+
+		assertThat(response.getStatusCode().value()).isEqualTo(200);
+		assertThat(response.getBody()).containsEntry("success", true);
+		assertThat(response.getBody()).containsKey("imc");
+		verify(service).save(argThat(p -> p.getImc() != null && Double.compare(p.getImc(), 22.5) == 0));
+	}
+
+	@Test
+	@DisplayName("assignBmi with patient not owned by user returns 404")
+	void assignBmi_patientNotOwnedByUser_returns404() {
+		when(principal.getSubject()).thenReturn(TEST_USER_ID);
+		when(service.findByIdAndUserId(99L, TEST_USER_ID)).thenReturn(null);
+
+		final ResponseEntity<java.util.Map<String, Object>> response =
+			controller.assignBmi(99L, new HashMap<>(java.util.Map.of("bmi", "22.5")), principal);
+
+		assertThat(response.getStatusCode().value()).isEqualTo(404);
+		assertThat(response.getBody()).containsEntry("success", false);
+	}
+
+	@Test
+	@DisplayName("assignBmi unauthenticated returns 401")
+	void assignBmi_unauthenticated_returns401() {
+		final ResponseEntity<java.util.Map<String, Object>> response =
+			controller.assignBmi(1L, new HashMap<>(java.util.Map.of("bmi", "22.5")), null);
+
+		assertThat(response.getStatusCode().value()).isEqualTo(401);
+	}
+
+	@Test
+	@DisplayName("assignBmr with valid data returns 200 and updates patient bmr")
+	void assignBmr_validData_returns200AndUpdatesBmr() {
+		when(principal.getSubject()).thenReturn(TEST_USER_ID);
+		when(service.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(paciente1);
+		when(service.save(any(Paciente.class))).thenReturn(paciente1);
+
+		final ResponseEntity<java.util.Map<String, Object>> response =
+			controller.assignBmr(1L, new HashMap<>(java.util.Map.of("bmr", "1650.0")), principal);
+
+		assertThat(response.getStatusCode().value()).isEqualTo(200);
+		assertThat(response.getBody()).containsEntry("success", true);
+		assertThat(response.getBody()).containsKey("bmr");
+		verify(service).save(argThat(p -> p.getBmr() != null && p.getBmr() > 0));
+	}
+
+	@Test
+	@DisplayName("assignBmr with patient not owned by user returns 404")
+	void assignBmr_patientNotOwnedByUser_returns404() {
+		when(principal.getSubject()).thenReturn(TEST_USER_ID);
+		when(service.findByIdAndUserId(99L, TEST_USER_ID)).thenReturn(null);
+
+		final ResponseEntity<java.util.Map<String, Object>> response =
+			controller.assignBmr(99L, new HashMap<>(java.util.Map.of("bmr", "1650.0")), principal);
+
+		assertThat(response.getStatusCode().value()).isEqualTo(404);
+		assertThat(response.getBody()).containsEntry("success", false);
+	}
+
+	@Test
+	@DisplayName("assignBmr unauthenticated returns 401")
+	void assignBmr_unauthenticated_returns401() {
+		final ResponseEntity<java.util.Map<String, Object>> response =
+			controller.assignBmr(1L, new HashMap<>(java.util.Map.of("bmr", "1650.0")), null);
+
+		assertThat(response.getStatusCode().value()).isEqualTo(401);
 	}
 
 }
