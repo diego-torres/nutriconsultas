@@ -40,6 +40,7 @@ import com.nutriconsultas.paciente.BodyFatCalculatorService;
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.paciente.calculation.BmrCalculationService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -638,6 +639,7 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 				existingEvent.setTemperatura(Double.parseDouble(eventData.get("temperatura").toString()));
 			}
 			final CalendarEvent savedEvent = service.save(existingEvent);
+			updatePatientSnapshot(savedEvent);
 			final Map<String, Object> response = new HashMap<>();
 			response.put("success", true);
 			response.put("event", toCalendarEventMap(savedEvent));
@@ -649,6 +651,33 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			errorResponse.put("success", false);
 			errorResponse.put("error", e.getMessage());
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+		}
+	}
+
+	private void updatePatientSnapshot(final CalendarEvent event) {
+		final Paciente paciente = event.getPaciente();
+		if (paciente == null) {
+			return;
+		}
+		boolean changed = false;
+		if (event.getImc() != null) {
+			paciente.setImc(event.getImc());
+			changed = true;
+		}
+		if (event.getPeso() != null && event.getEstatura() != null) {
+			final Integer age = calculateAge(paciente.getDob());
+			final Boolean isMale = "M".equalsIgnoreCase(paciente.getGender());
+			final Double bmr = BmrCalculationService.calculatePromedioBmr(
+					event.getPeso(), event.getEstatura(), age, isMale);
+			if (bmr != null) {
+				paciente.setBmr(bmr);
+				changed = true;
+			}
+		}
+		if (changed) {
+			pacienteRepository.save(paciente);
+			log.debug("Updated patient {} snapshot: imc={}, bmr={}",
+					paciente.getId(), paciente.getImc(), paciente.getBmr());
 		}
 	}
 
