@@ -16,9 +16,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -211,6 +215,64 @@ public class PacienteRestController extends AbstractGridController<Paciente> {
 		return Stream.of("nombre", "dob", "email", "phone", "gender", "responsible")
 			.map(Column::new)
 			.collect(Collectors.toList());
+	}
+
+	@PostMapping("/{id}/assign-bmi")
+	public ResponseEntity<java.util.Map<String, Object>> assignBmi(
+			@PathVariable @NonNull final Long id,
+			@RequestBody final java.util.Map<String, Object> body,
+			@AuthenticationPrincipal final OidcUser principal) {
+		final String userId = principal != null ? principal.getSubject() : null;
+		if (userId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				.body(java.util.Map.of("success", false, "error", "Not authenticated"));
+		}
+		try {
+			final Paciente paciente = service.findByIdAndUserId(id, userId);
+			if (paciente == null) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(java.util.Map.of("success", false, "error", "Paciente no encontrado"));
+			}
+			final Double bmi = Double.parseDouble(body.get("bmi").toString());
+			paciente.setImc(bmi);
+			service.save(paciente);
+			log.debug("Assigned BMI {} to patient {}", bmi, id);
+			return ResponseEntity.ok(java.util.Map.of("success", true, "imc", bmi));
+		}
+		catch (Exception e) {
+			log.error("Error assigning BMI to patient {}", id, e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(java.util.Map.of("success", false, "error", e.getMessage()));
+		}
+	}
+
+	@PostMapping("/{id}/assign-bmr")
+	public ResponseEntity<java.util.Map<String, Object>> assignBmr(
+			@PathVariable @NonNull final Long id,
+			@RequestBody final java.util.Map<String, Object> body,
+			@AuthenticationPrincipal final OidcUser principal) {
+		final String userId = principal != null ? principal.getSubject() : null;
+		if (userId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				.body(java.util.Map.of("success", false, "error", "Not authenticated"));
+		}
+		try {
+			final Paciente paciente = service.findByIdAndUserId(id, userId);
+			if (paciente == null) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(java.util.Map.of("success", false, "error", "Paciente no encontrado"));
+			}
+			final Double bmr = Double.parseDouble(body.get("bmr").toString());
+			paciente.setBmr(bmr);
+			service.save(paciente);
+			log.debug("Assigned BMR {} to patient {}", bmr, id);
+			return ResponseEntity.ok(java.util.Map.of("success", true, "bmr", bmr));
+		}
+		catch (Exception e) {
+			log.error("Error assigning BMR to patient {}", id, e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(java.util.Map.of("success", false, "error", e.getMessage()));
+		}
 	}
 
 }

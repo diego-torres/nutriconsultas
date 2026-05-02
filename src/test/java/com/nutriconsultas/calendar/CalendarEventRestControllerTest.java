@@ -1922,4 +1922,102 @@ public class CalendarEventRestControllerTest {
 		log.info("finished testUpdateEventWithSqlDate");
 	}
 
+	@Test
+	@org.junit.jupiter.api.DisplayName("updateEvent with peso and estatura propagates imc and bmr to patient")
+	public void updateEvent_withPesoAndEstatura_propagatesImcAndBmrToPatient() {
+		log.info("starting updateEvent_withPesoAndEstatura_propagatesImcAndBmrToPatient");
+		// Arrange
+		final CalendarEvent existingEvent = events.get(0); // has paciente with dob and gender set
+		final Map<String, Object> eventData = new HashMap<>();
+		eventData.put("peso", 70.0);
+		eventData.put("estatura", 1.75);
+		eventData.put("imc", 22.9);
+
+		when(service.findById(1L)).thenReturn(existingEvent);
+		when(service.save(any(CalendarEvent.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		// Act
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData,
+				principal);
+
+		// Assert
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		verify(pacienteRepository).save(org.mockito.ArgumentMatchers.argThat(
+				p -> p.getImc() != null && p.getBmr() != null && p.getBmr() > 0));
+		log.info("finished updateEvent_withPesoAndEstatura_propagatesImcAndBmrToPatient");
+	}
+
+	@Test
+	@org.junit.jupiter.api.DisplayName("updateEvent without peso does not update patient snapshot")
+	public void updateEvent_withoutPeso_doesNotUpdatePatientSnapshot() {
+		log.info("starting updateEvent_withoutPeso_doesNotUpdatePatientSnapshot");
+		// Arrange
+		final CalendarEvent existingEvent = events.get(0);
+		final Map<String, Object> eventData = new HashMap<>();
+		eventData.put("status", "SCHEDULED");
+
+		when(service.findById(1L)).thenReturn(existingEvent);
+		when(service.save(any(CalendarEvent.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		// Act
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData,
+				principal);
+
+		// Assert
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		verify(pacienteRepository, never()).save(any());
+		log.info("finished updateEvent_withoutPeso_doesNotUpdatePatientSnapshot");
+	}
+
+	@Test
+	@org.junit.jupiter.api.DisplayName("updateEvent with null paciente does not throw")
+	public void updateEvent_withNullPaciente_doesNotThrow() {
+		log.info("starting updateEvent_withNullPaciente_doesNotThrow");
+		// Arrange
+		final CalendarEvent existingEvent = new CalendarEvent();
+		existingEvent.setId(1L);
+		existingEvent.setTitle("Sin paciente");
+		existingEvent.setEventDateTime(new Date());
+		existingEvent.setDurationMinutes(30);
+		existingEvent.setStatus(EventStatus.SCHEDULED);
+		existingEvent.setPaciente(null);
+
+		final Map<String, Object> eventData = new HashMap<>();
+		eventData.put("peso", 70.0);
+		eventData.put("estatura", 1.75);
+
+		when(service.findById(1L)).thenReturn(existingEvent);
+		lenient().when(service.save(any(CalendarEvent.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		// Act & Assert
+		org.assertj.core.api.Assertions.assertThatCode(
+				() -> calendarEventRestController.updateEvent(1L, eventData, principal))
+				.doesNotThrowAnyException();
+		verify(pacienteRepository, never()).save(any());
+		log.info("finished updateEvent_withNullPaciente_doesNotThrow");
+	}
+
+	@Test
+	@org.junit.jupiter.api.DisplayName("updateEvent with explicit imc only updates imc without bmr")
+	public void updateEvent_withExplicitImcOnly_updatesImcWithoutBmr() {
+		log.info("starting updateEvent_withExplicitImcOnly_updatesImcWithoutBmr");
+		// Arrange
+		final CalendarEvent existingEvent = events.get(0);
+		final Map<String, Object> eventData = new HashMap<>();
+		eventData.put("imc", 24.1);
+
+		when(service.findById(1L)).thenReturn(existingEvent);
+		when(service.save(any(CalendarEvent.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		// Act
+		final ResponseEntity<Map<String, Object>> response = calendarEventRestController.updateEvent(1L, eventData,
+				principal);
+
+		// Assert
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		verify(pacienteRepository).save(org.mockito.ArgumentMatchers.argThat(
+				p -> p.getImc() != null && p.getBmr() == null));
+		log.info("finished updateEvent_withExplicitImcOnly_updatesImcWithoutBmr");
+	}
+
 }
