@@ -71,6 +71,9 @@ public class Paciente {
 	@Column(precision = 3)
 	private Double imc;
 
+	/**
+	 * Basal metabolic rate (BMR) in kcal/day.
+	 */
 	@Column(precision = 7)
 	private Double bmr;
 
