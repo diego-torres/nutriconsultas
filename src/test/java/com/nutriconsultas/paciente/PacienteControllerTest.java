@@ -2,6 +2,7 @@ package com.nutriconsultas.paciente;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
@@ -11,6 +12,7 @@ import static org.mockito.Mockito.when;
 import org.mockito.ArgumentCaptor;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +39,7 @@ import com.nutriconsultas.clinical.exam.ClinicalExamService;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.anthropometric.BodyMass;
 import com.nutriconsultas.clinical.exam.anthropometric.Circumferences;
+import com.nutriconsultas.paciente.calculation.BmrCalculationService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -216,6 +219,7 @@ public class PacienteControllerTest {
 		assertThat(paciente.getEstatura()).isEqualTo(1.75);
 		assertThat(paciente.getImc()).isNotNull();
 		assertThat(paciente.getNivelPeso()).isNotNull();
+		assertPacienteBmrMatchesPromedio(70.0, 1.75);
 		log.info("finished testAgregarConsultaPacienteUpdatesPatientWeight");
 	}
 
@@ -1327,6 +1331,7 @@ public class PacienteControllerTest {
 		assertThat(paciente.getEstatura()).isEqualTo(1.75);
 		assertThat(paciente.getImc()).isNotNull();
 		assertThat(paciente.getNivelPeso()).isNotNull();
+		assertPacienteBmrMatchesPromedio(70.0, 1.75);
 		log.info("finished testAgregarClinicosPacienteUpdatesPatientWeight");
 	}
 
@@ -1519,6 +1524,8 @@ public class PacienteControllerTest {
 		assertThat(result).contains("redirect:/admin/pacientes/1/historial");
 		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(anthropometricMeasurementService).save(any(AnthropometricMeasurement.class));
+		verify(pacienteRepository).save(any(Paciente.class));
+		assertPacienteBmrMatchesPromedio(70.0, 1.75);
 		log.info("finished testAgregarAntropometricosPaciente");
 	}
 
@@ -1564,6 +1571,8 @@ public class PacienteControllerTest {
 		assertThat(measurement.getCircumferences().getWaistCircumference()).isEqualTo(80.0);
 		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(anthropometricMeasurementService).save(any(AnthropometricMeasurement.class));
+		verify(pacienteRepository).save(any(Paciente.class));
+		assertPacienteBmrMatchesPromedio(70.0, 1.75);
 		log.info("finished testAgregarAntropometricosPacienteWithCategoryObjects");
 	}
 
@@ -1926,6 +1935,16 @@ public class PacienteControllerTest {
 		assertThat(result).isEqualTo("redirect:/admin/pacientes/6");
 		verify(pacienteRepository).save(any(Paciente.class));
 		log.info("finished testCambiaDesarrolloPacienteAcceptsPregnancyForFemaleAge50");
+	}
+
+	private void assertPacienteBmrMatchesPromedio(final double peso, final double estatura) {
+		final LocalDate birthDate = paciente.getDob().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		final int age = Period.between(birthDate, LocalDate.now()).getYears();
+		final Double expected = BmrCalculationService.calculatePromedioBmr(peso, estatura, age,
+				"M".equalsIgnoreCase(paciente.getGender()));
+		assertThat(expected).as("promedio BMR should be defined for test inputs").isNotNull();
+		assertThat(paciente.getBmr()).isNotNull();
+		assertThat(paciente.getBmr()).isCloseTo(expected, within(0.02));
 	}
 
 }

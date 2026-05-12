@@ -32,6 +32,7 @@ import com.nutriconsultas.controller.AbstractAuthorizedController;
 import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.DietaRepository;
 import com.nutriconsultas.dieta.DietaService;
+import com.nutriconsultas.paciente.calculation.BmrCalculationService;
 import com.nutriconsultas.util.LogRedaction;
 
 import org.springframework.http.HttpHeaders;
@@ -1219,6 +1220,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		if (np != null) {
 			paciente.setNivelPeso(np);
 		}
+		refreshPatientBmrIfPossible(paciente);
 		pacienteRepository.save(paciente);
 	}
 
@@ -1239,6 +1241,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		if (np != null) {
 			paciente.setNivelPeso(np);
 		}
+		refreshPatientBmrIfPossible(paciente);
 		pacienteRepository.save(paciente);
 	}
 
@@ -1385,7 +1388,25 @@ public class PacienteController extends AbstractAuthorizedController {
 		if (np != null) {
 			paciente.setNivelPeso(np);
 		}
+		refreshPatientBmrIfPossible(paciente);
 		pacienteRepository.save(paciente);
+	}
+
+	/**
+	 * Sets {@link Paciente#getBmr()} using the same average-BMR formulas as calendar REST
+	 * updates when weight, height, age, and sex support it.
+	 */
+	private void refreshPatientBmrIfPossible(@NonNull final Paciente paciente) {
+		if (paciente.getPeso() == null || paciente.getEstatura() == null) {
+			return;
+		}
+		final Integer age = calculateAge(paciente.getDob());
+		final Boolean isMale = "M".equalsIgnoreCase(paciente.getGender());
+		final Double bmr = BmrCalculationService.calculatePromedioBmr(paciente.getPeso(), paciente.getEstatura(), age,
+				isMale);
+		if (bmr != null) {
+			paciente.setBmr(bmr);
+		}
 	}
 
 	/**
