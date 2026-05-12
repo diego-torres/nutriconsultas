@@ -189,9 +189,16 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 		for (final Map<String, Object> ing : ingredientes) {
 			final Alimento alimento = resolveAlimentoForIngredientRow(platilloName, ing);
 			if (alimento == null) {
-				if (ing.get("alimento_nombre") instanceof String s && !s.trim().isEmpty()) {
-					log.warn("No alimento matched SMAE nombre '{}' for platillo '{}'. Skipping ingredient.", s.trim(),
-							platilloName);
+				if (ing.get("alimento_nombre") instanceof String s) {
+					final String nombreTrim = s.trim();
+					if (!nombreTrim.isEmpty()) {
+						log.warn("No alimento matched SMAE nombre '{}' for platillo '{}'. Skipping ingredient.",
+								nombreTrim, platilloName);
+					}
+					else if (ing.get("alimento_id") instanceof Number n) {
+						log.warn("Alimento with id {} not found. Skipping ingredient for platillo '{}'.", n.longValue(),
+								platilloName);
+					}
 				}
 				else if (ing.get("alimento_id") instanceof Number n) {
 					log.warn("Alimento with id {} not found. Skipping ingredient for platillo '{}'.", n.longValue(),
@@ -303,7 +310,7 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 	}
 
 	private void verifyAuxCountsAfterSeed() {
-		boolean tablesCreated = false;
+		boolean tablesCreated;
 		try {
 			tablesCreated = checkTableExists("seed_platillo_ingrediente");
 		}
