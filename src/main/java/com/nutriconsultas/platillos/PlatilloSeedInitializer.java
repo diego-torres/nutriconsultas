@@ -84,12 +84,12 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 
 		// Read platillos from auxiliary table
 		final List<Map<String, Object>> platillos = jdbc
-			.queryForList("SELECT name, description, ingestas_sugeridas FROM public.seed_platillo ORDER BY name");
+			.queryForList("SELECT name, description, ingestas_sugeridas FROM seed_platillo ORDER BY name");
 
 		log.info("Found {} platillos in auxiliary table", platillos.size());
 
 		// Verify ingredients exist in auxiliary table
-		final Integer totalIngredientes = jdbc.queryForObject("SELECT COUNT(*) FROM public.seed_platillo_ingrediente",
+		final Integer totalIngredientes = jdbc.queryForObject("SELECT COUNT(*) FROM seed_platillo_ingrediente",
 				Integer.class);
 		log.info("Found {} total ingredients in auxiliary table", totalIngredientes != null ? totalIngredientes : 0);
 
@@ -114,36 +114,31 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 				continue;
 			}
 
-			// Read ingredients from auxiliary table
+			// Read ingredients from auxiliary table (nombre matches SMAE alimentos seed;
+			// optional legacy column alimento_id)
 			final List<Map<String, Object>> ingredientes = jdbc
-				.queryForList("SELECT alimento_id, peso_neto FROM public.seed_platillo_ingrediente "
+				.queryForList("SELECT alimento_nombre, alimento_id, peso_neto FROM seed_platillo_ingrediente "
 						+ "WHERE platillo_name = ? ORDER BY orden, id", name);
 
-			// Diagnostic: if no ingredients found, check if any ingredients exist for
-			// similar names
 			if (ingredientes.isEmpty()) {
 				final Integer countForName = jdbc.queryForObject(
-						"SELECT COUNT(*) FROM public.seed_platillo_ingrediente WHERE platillo_name = ?", Integer.class,
-						name);
+						"SELECT COUNT(*) FROM seed_platillo_ingrediente WHERE platillo_name = ?", Integer.class, name);
 				log.warn("No ingredients found for platillo '{}' (id: {}). Count query returned: {}", name, platilloId,
 						countForName);
-				// Check for similar names (first 50 chars)
 				if (name.length() > 50) {
 					final String namePrefix = name.substring(0, 50);
 					final Integer countSimilar = jdbc.queryForObject(
-							"SELECT COUNT(*) FROM public.seed_platillo_ingrediente " + "WHERE platillo_name LIKE ?",
-							Integer.class, namePrefix + "%");
+							"SELECT COUNT(*) FROM seed_platillo_ingrediente WHERE platillo_name LIKE ?", Integer.class,
+							namePrefix + "%");
 					log.debug("Found {} ingredients for names starting with '{}'", countSimilar, namePrefix);
 				}
 			}
 
 			log.debug("Adding {} ingredients to platillo '{}' (id: {})", ingredientes.size(), name, platilloId);
 
-			// Add ingredients using service (calculates nutrients automatically)
 			final int addedCount = addIngredientsToPlatillo(platilloId, name, ingredientes);
 			ingredientCount += addedCount;
 
-			// Verify ingredients were added by checking the database directly
 			Integer dbIngredientCount = jdbc.queryForObject("SELECT COUNT(*) FROM ingrediente WHERE platillo_id = ?",
 					Integer.class, platilloId);
 			if (dbIngredientCount == null) {
@@ -170,32 +165,62 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 		log.info("Finished seeding {} platillos", platillos.size());
 	}
 
+	private Alimento resolveAlimentoForIngredientRow(final String platilloName, final Map<String, Object> ing) {
+		final Object nombreRaw = ing.get("alimento_nombre");
+		if (nombreRaw instanceof String nombreAlimentoStr) {
+			final String trimmed = nombreAlimentoStr.trim();
+			if (!trimmed.isEmpty()) {
+				return alimentosRepository.findFirstByNombreAlimentoIgnoreCaseOrderByIdAsc(trimmed).orElse(null);
+			}
+		}
+		final Object alimentoIdObj = ing.get("alimento_id");
+		if (!(alimentoIdObj instanceof Number)) {
+			log.warn("Seed row missing alimento_nombre/alimento_id for platillo '{}'. Cannot resolve alimento.",
+					platilloName);
+			return null;
+		}
+		final Long alimentoId = ((Number) alimentoIdObj).longValue();
+		return alimentosRepository.findById(alimentoId).orElse(null);
+	}
+
 	private int addIngredientsToPlatillo(final Long platilloId, final String platilloName,
 			final List<Map<String, Object>> ingredientes) {
 		int addedCount = 0;
 		for (final Map<String, Object> ing : ingredientes) {
-			final Object alimentoIdObj = ing.get("alimento_id");
-			if (alimentoIdObj == null) {
-				log.warn("alimento_id is null. Skipping ingredient for platillo '{}'.", platilloName);
+			final Alimento alimento = resolveAlimentoForIngredientRow(platilloName, ing);
+			if (alimento == null) {
+				if (ing.get("alimento_nombre") instanceof String s) {
+					final String nombreTrim = s.trim();
+					if (!nombreTrim.isEmpty()) {
+						log.warn("No alimento matched SMAE nombre '{}' for platillo '{}'. Skipping ingredient.",
+								nombreTrim, platilloName);
+					}
+					else if (ing.get("alimento_id") instanceof Number n) {
+						log.warn("Alimento with id {} not found. Skipping ingredient for platillo '{}'.", n.longValue(),
+								platilloName);
+					}
+				}
+				else if (ing.get("alimento_id") instanceof Number n) {
+					log.warn("Alimento with id {} not found. Skipping ingredient for platillo '{}'.", n.longValue(),
+							platilloName);
+				}
 				continue;
 			}
-			final Long alimentoId = ((Number) alimentoIdObj).longValue();
+			final Long alimentoId = alimento.getId();
+			if (alimentoId == null) {
+				log.warn("Resolved alimento has null id for platillo '{}'. Skipping ingredient.", platilloName);
+				continue;
+			}
 			final Object pesoObj = ing.get("peso_neto");
-			if (pesoObj == null) {
-				log.warn("peso_neto is null. Skipping ingredient for platillo '{}'.", platilloName);
+			if (!(pesoObj instanceof Number)) {
+				log.warn("peso_neto is missing or invalid. Skipping ingredient for platillo '{}'.", platilloName);
 				continue;
 			}
 			final Integer peso = ((Number) pesoObj).intValue();
 
-			final Alimento alimento = alimentosRepository.findById(alimentoId).orElse(null);
-			if (alimento == null) {
-				log.warn("Alimento with id {} not found. Skipping ingredient for platillo '{}'.", alimentoId,
-						platilloName);
-				continue;
-			}
 			final String cantidad = alimento.getFractionalCantSugerida();
-			if (cantidad == null) {
-				log.warn("Alimento {} has no fractionalCantSugerida. Skipping ingredient for platillo '{}'.",
+			if (cantidad == null || cantidad.isEmpty()) {
+				log.warn("Alimento id {} has no fractionalCantSugerida. Skipping ingredient for platillo '{}'.",
 						alimentoId, platilloName);
 				continue;
 			}
@@ -217,8 +242,8 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 				}
 			}
 			catch (final Exception e) {
-				log.error("Exception while adding ingrediente (alimentoId: {}, peso: {}) to platillo '{}' "
-						+ "(id: {}): {}", alimentoId, peso, platilloName, platilloId, e.getMessage(), e);
+				log.error("Exception while adding ingrediente (alimentoId: {}, peso: {}) to platillo '{}' (id: {}): {}",
+						alimentoId, peso, platilloName, platilloId, e.getMessage(), e);
 			}
 		}
 		return addedCount;
@@ -233,32 +258,7 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 				log.info("Auxiliary tables do not exist. Initializing from seed_platillos.sql...");
 				try {
 					executeSeedScript();
-					final boolean tablesCreated = checkTableExists("seed_platillo_ingrediente");
-					if (tablesCreated) {
-						log.info("Successfully initialized auxiliary tables from seed_platillos.sql");
-						// Verify data was inserted
-						try {
-							final Integer platilloCount = jdbc
-								.queryForObject("SELECT COUNT(*) FROM public.seed_platillo", Integer.class);
-							final String countQuery = "SELECT COUNT(*) FROM public.seed_platillo_ingrediente";
-							final Integer ingredienteCount = jdbc.queryForObject(countQuery, Integer.class);
-							log.info("Auxiliary tables populated: {} platillos, {} ingredients",
-									platilloCount != null ? platilloCount : 0,
-									ingredienteCount != null ? ingredienteCount : 0);
-							if (platilloCount == null || platilloCount == 0) {
-								log.warn("Auxiliary table seed_platillo is empty after initialization!");
-							}
-							if (ingredienteCount == null || ingredienteCount == 0) {
-								log.warn("Auxiliary table seed_platillo_ingrediente is empty after initialization!");
-							}
-						}
-						catch (final Exception e) {
-							log.warn("Could not verify auxiliary table data: {}", e.getMessage());
-						}
-					}
-					else {
-						log.warn("Auxiliary tables were not created. Script may have failed.");
-					}
+					verifyAuxCountsAfterSeed();
 				}
 				catch (final Exception e) {
 					log.error("Error during auxiliary table initialization: {}", e.getMessage());
@@ -267,30 +267,25 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 			}
 			else {
 				log.debug("Auxiliary tables already exist. Checking if they need to be populated...");
-				// Check if tables are empty and need to be populated
 				try {
-					Integer platilloCount = jdbc.queryForObject("SELECT COUNT(*) FROM public.seed_platillo",
+					Integer platilloCount = jdbc.queryForObject("SELECT COUNT(*) FROM seed_platillo", Integer.class);
+					Integer ingredienteCount = jdbc.queryForObject("SELECT COUNT(*) FROM seed_platillo_ingrediente",
 							Integer.class);
-					Integer ingredienteCount = jdbc
-						.queryForObject("SELECT COUNT(*) FROM public.seed_platillo_ingrediente", Integer.class);
 					log.info("Auxiliary tables contain: {} platillos, {} ingredients",
 							platilloCount != null ? platilloCount : 0, ingredienteCount != null ? ingredienteCount : 0);
 
-					// If tables exist but are empty, run the script to populate them
 					if ((platilloCount == null || platilloCount == 0)
 							|| (ingredienteCount == null || ingredienteCount == 0)) {
 						log.info("Auxiliary tables exist but are empty. Populating from seed_platillos.sql...");
 						try {
-							// Clear existing data to ensure clean state
-							jdbc.update("DELETE FROM public.seed_platillo_ingrediente");
-							jdbc.update("DELETE FROM public.seed_platillo");
+							jdbc.update("DELETE FROM seed_platillo_ingrediente");
+							jdbc.update("DELETE FROM seed_platillo");
 							log.debug("Cleared existing auxiliary table data");
 							executeSeedScript();
-							// Re-check counts after script execution
-							platilloCount = jdbc.queryForObject("SELECT COUNT(*) FROM public.seed_platillo",
+							verifyAuxCountsAfterSeed();
+							platilloCount = jdbc.queryForObject("SELECT COUNT(*) FROM seed_platillo", Integer.class);
+							ingredienteCount = jdbc.queryForObject("SELECT COUNT(*) FROM seed_platillo_ingrediente",
 									Integer.class);
-							final String countQuery = "SELECT COUNT(*) FROM public.seed_platillo_ingrediente";
-							ingredienteCount = jdbc.queryForObject(countQuery, Integer.class);
 							log.info("After population: {} platillos, {} ingredients",
 									platilloCount != null ? platilloCount : 0,
 									ingredienteCount != null ? ingredienteCount : 0);
@@ -314,11 +309,49 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 		}
 	}
 
+	private void verifyAuxCountsAfterSeed() {
+		boolean tablesCreated;
+		try {
+			tablesCreated = checkTableExists("seed_platillo_ingrediente");
+		}
+		catch (SQLException e) {
+			log.warn("Could not verify auxiliary seed table existence after script: {}", e.getMessage());
+			return;
+		}
+		if (!tablesCreated) {
+			log.warn("Auxiliary tables were not created. Script may have failed.");
+			return;
+		}
+		try {
+			final Integer platilloCount = jdbc.queryForObject("SELECT COUNT(*) FROM seed_platillo", Integer.class);
+			final String countQuery = "SELECT COUNT(*) FROM seed_platillo_ingrediente";
+			final Integer ingredienteCount = jdbc.queryForObject(countQuery, Integer.class);
+			log.info("Auxiliary tables populated: {} platillos, {} ingredients",
+					platilloCount != null ? platilloCount : 0, ingredienteCount != null ? ingredienteCount : 0);
+			if (platilloCount == null || platilloCount == 0) {
+				log.warn("Auxiliary table seed_platillo is empty after initialization!");
+			}
+			if (ingredienteCount == null || ingredienteCount == 0) {
+				log.warn("Auxiliary table seed_platillo_ingrediente is empty after initialization!");
+			}
+		}
+		catch (final Exception e) {
+			log.warn("Could not verify auxiliary table data: {}", e.getMessage());
+		}
+	}
+
 	private boolean checkTableExists(final String tableName) throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			final DatabaseMetaData metaData = connection.getMetaData();
-			try (ResultSet tables = metaData.getTables(null, "public", tableName, null)) {
-				return tables.next();
+			final String catalog = connection.getCatalog();
+			try (ResultSet tables = metaData.getTables(catalog, null, "%", new String[] { "TABLE" })) {
+				while (tables.next()) {
+					final String foundName = tables.getString("TABLE_NAME");
+					if (foundName != null && foundName.equalsIgnoreCase(tableName)) {
+						return true;
+					}
+				}
+				return false;
 			}
 		}
 	}
@@ -353,14 +386,12 @@ public class PlatilloSeedInitializer implements CommandLineRunner {
 	}
 
 	private @NonNull Resource getSeedPlatillosSqlResource() throws IOException {
-		// Try to load from classpath first
 		final ClassPathResource classPathResource = new ClassPathResource("seed_platillos.sql");
 		if (classPathResource.exists()) {
 			log.debug("Loading seed_platillos.sql from classpath");
 			return classPathResource;
 		}
 
-		// Fallback to root directory
 		final File sqlFile = new File("seed_platillos.sql");
 		if (!sqlFile.exists()) {
 			throw new IOException("seed_platillos.sql file not found in classpath or root directory");

@@ -1,6 +1,7 @@
 package com.nutriconsultas.alimentos;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Repository;
 public interface AlimentosRepository extends JpaRepository<Alimento, Long> {
 
 	List<Alimento> findByNombreAlimentoContainingIgnoreCase(String nombreAlimento);
+
+	Optional<Alimento> findFirstByNombreAlimentoIgnoreCaseOrderByIdAsc(String nombreAlimento);
 
 	@Query("SELECT a FROM Alimento a WHERE "
 			+ "(LOWER(a.nombreAlimento) LIKE LOWER(:searchTerm) OR LOWER(a.clasificacion) LIKE LOWER(:searchTerm))")
