@@ -29,7 +29,7 @@ variable "db_instance_type" {
 variable "app_instance_type" {
   type        = string
   description = "EC2 for the Java application. t3.micro is a common free-tier class for new accounts."
-  default     = "t3.micro"
+  default     = "t3.small"
 }
 
 variable "ebs_root_volume_size_gb" {
