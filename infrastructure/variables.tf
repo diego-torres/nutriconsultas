@@ -29,7 +29,7 @@ variable "db_instance_type" {
 variable "app_instance_type" {
   type        = string
   description = "EC2 for the Java application. t3.micro is a common free-tier class for new accounts."
-  default     = "t3.micro"
+  default     = "t3.small"
 }
 
 variable "ebs_root_volume_size_gb" {
@@ -170,6 +170,6 @@ variable "github_repository" {
 
 variable "codepipeline_branch" {
   type        = string
-  description = "Branch that triggers the pipeline (pushes) and is checked out in the build stage."
+  description = "Branch that triggers the pipeline on push (CodePipeline V2 Git trigger `includes`) and is checked out in the Source stage."
   default     = "main"
 }

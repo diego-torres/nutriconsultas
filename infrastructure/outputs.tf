@@ -63,6 +63,6 @@ output "codepipeline_arn" {
 }
 
 output "codestar_connection_arn" {
-  description = "CodeStar connection for GitHub. In AWS console: update pending connection to authorize, then the pipeline can run on push to the branch."
+  description = "CodeStar connection for GitHub. In AWS console: update pending connection to authorize. When AVAILABLE, CodePipeline V2 Git push trigger + DetectChanges start runs on pushes to codepipeline_branch."
   value       = try(aws_codestarconnections_connection.github[0].arn, "")
 }

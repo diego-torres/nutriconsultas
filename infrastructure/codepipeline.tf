@@ -1,5 +1,10 @@
 # CodePipeline: GitHub (CodeStar Connection) -> CodeBuild (Maven) -> CodeBuild (S3 + SSM to EC2).
 # Set github_repository = "org/repo" in tfvars. Leave empty to skip the pipeline, connection, and build projects.
+#
+# pipeline_type V2 plus an explicit CodeStarSourceConnection trigger makes push events on codepipeline_branch
+# start a new execution (V1/API-only pipelines can miss the console-style default change detection).
+# DetectChanges on the source action is set explicitly for the same reason (AWS default is true; Terraform/API
+# pipelines historically omitted it).
 
 locals {
   codepipeline_enabled      = trimspace(var.github_repository) != ""
@@ -322,10 +327,23 @@ resource "aws_iam_role_policy" "codepipeline" {
 }
 
 resource "aws_codepipeline" "app" {
-  count    = local.codepipeline_enabled ? 1 : 0
-  name     = "${var.project}-app"
-  role_arn = aws_iam_role.codepipeline[0].arn
-  tags     = local.common_tags
+  count         = local.codepipeline_enabled ? 1 : 0
+  name          = "${var.project}-app"
+  role_arn      = aws_iam_role.codepipeline[0].arn
+  tags          = local.common_tags
+  pipeline_type = "V2"
+
+  trigger {
+    provider_type = "CodeStarSourceConnection"
+    git_configuration {
+      source_action_name = "GitHub"
+      push {
+        branches {
+          includes = [var.codepipeline_branch]
+        }
+      }
+    }
+  }
 
   artifact_store {
     location = aws_s3_bucket.codepipeline[0].id
@@ -347,6 +365,7 @@ resource "aws_codepipeline" "app" {
         FullRepositoryId     = var.github_repository
         BranchName           = var.codepipeline_branch
         OutputArtifactFormat = "CODE_ZIP"
+        DetectChanges        = "true"
       }
     }
   }
