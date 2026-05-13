@@ -197,6 +197,7 @@ public class SearchServiceTest {
 		assertThat(result).isNotNull();
 		assertThat(result.getAlimentos().getResults()).hasSize(1);
 		assertThat(result.getAlimentos().getResults().get(0).getTitle()).isEqualTo("Manzana");
+		assertThat(result.getAlimentos().getResults().get(0).getLink()).isEqualTo("/admin/alimentos/1");
 		assertThat(result.getAlimentos().getTotalCount()).isEqualTo(1);
 		assertThat(result.getTotalResults()).isEqualTo(1);
 		log.info("finished testSearchAlimentos");
@@ -223,6 +224,7 @@ public class SearchServiceTest {
 		assertThat(result).isNotNull();
 		assertThat(result.getPlatillos().getResults()).hasSize(1);
 		assertThat(result.getPlatillos().getResults().get(0).getTitle()).isEqualTo("Ensalada");
+		assertThat(result.getPlatillos().getResults().get(0).getLink()).isEqualTo("/admin/platillos/1");
 		assertThat(result.getPlatillos().getTotalCount()).isEqualTo(1);
 		assertThat(result.getTotalResults()).isEqualTo(1);
 		log.info("finished testSearchPlatillos");
