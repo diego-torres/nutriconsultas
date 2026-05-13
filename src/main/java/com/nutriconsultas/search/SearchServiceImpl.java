@@ -64,7 +64,7 @@ public class SearchServiceImpl implements SearchService {
 		final List<Alimento> allAlimentos = alimentosRepository.findByNombreAlimentoContainingIgnoreCase(query);
 		final List<SearchResult> allAlimentoResults = allAlimentos.stream()
 			.map(a -> new SearchResult(SearchResultType.ALIMENTO, a.getId(), a.getNombreAlimento(),
-					"Clasificación: " + a.getClasificacion(), "/admin/alimentos"))
+					"Clasificación: " + a.getClasificacion(), "/admin/alimentos/" + a.getId()))
 			.collect(Collectors.toList());
 		final PaginatedSearchResults alimentos = paginateResults(allAlimentoResults, pageNumber,
 				"alimentos".equals(category));
@@ -73,7 +73,7 @@ public class SearchServiceImpl implements SearchService {
 		final List<Platillo> allPlatillos = platilloRepository.findByNameContainingIgnoreCase(query);
 		final List<SearchResult> allPlatilloResults = allPlatillos.stream()
 			.map(p -> new SearchResult(SearchResultType.PLATILLO, p.getId(), p.getName(),
-					p.getDescription() != null ? p.getDescription() : "", "/admin/platillos"))
+					p.getDescription() != null ? p.getDescription() : "", "/admin/platillos/" + p.getId()))
 			.collect(Collectors.toList());
 		final PaginatedSearchResults platillos = paginateResults(allPlatilloResults, pageNumber,
 				"platillos".equals(category));
