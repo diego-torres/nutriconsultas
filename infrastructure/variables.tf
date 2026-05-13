@@ -170,6 +170,6 @@ variable "github_repository" {
 
 variable "codepipeline_branch" {
   type        = string
-  description = "Branch that triggers the pipeline (pushes) and is checked out in the build stage."
+  description = "Branch that triggers the pipeline on push (CodePipeline V2 Git trigger `includes`) and is checked out in the Source stage."
   default     = "main"
 }

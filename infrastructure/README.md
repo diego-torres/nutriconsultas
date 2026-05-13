@@ -143,9 +143,15 @@ GitHub is still the **source of truth** for the code, but the **orchestration** 
    - `codepipeline_branch  = "main"`
    - Run `terraform apply`.
 2. In the **AWS account**, open **Developer tools** (or **Settings**), then **Connections** (or search for **CodeStar connections**). Select the new connection, choose **Update pending connection**, and sign in to **GitHub** to authorize the app. Wait until the status is **Available** (not *Pending*).
-3. Pushes to `codepipeline_branch` in that GitHub repository trigger: **Source** (zip from GitHub) -> **Build** (CodeBuild runs Maven with [buildspecs/app-build.yml](buildspecs/app-build.yml)) -> **Deploy** (CodeBuild runs [buildspecs/app-deploy.yml](buildspecs/app-deploy.yml), which calls [scripts/deploy-jar-to-ec2-ssm.sh](scripts/deploy-jar-to-ec2-ssm.sh): S3 `PutObject` for the JAR, then SSM to the app EC2).
+3. Pushes to `codepipeline_branch` in that GitHub repository start a **CodePipeline V2** run (explicit **CodeStarSourceConnection** push trigger on that branch, plus `DetectChanges` on the source action): **Source** (zip from GitHub) -> **Build** (CodeBuild runs Maven with [buildspecs/app-build.yml](buildspecs/app-build.yml)) -> **Deploy** (CodeBuild runs [buildspecs/app-deploy.yml](buildspecs/app-deploy.yml), which calls [scripts/deploy-jar-to-ec2-ssm.sh](scripts/deploy-jar-to-ec2-ssm.sh): S3 `PutObject` for the JAR, then SSM to the app EC2).
 4. The **.github/workflows/maven.yml** job only runs **lint and tests** (no deploy to AWS). If the pipeline fails, use **CodePipeline** / **CodeBuild** log groups in CloudWatch for the failing stage.
 5. **Manual** deploy (same as before) from a laptop with `aws` + `jq` and the right IAM: `bash infrastructure/scripts/deploy-jar-to-ec2-ssm.sh path/to/nutriconsultas-web-*.jar [project]`
+
+#### Disable automatic runs quickly (rollback / break-glass)
+
+- **Stop an in-flight execution:** `aws codepipeline stop-pipeline-execution --pipeline-name "<name-from-terraform-output>" --pipeline-execution-id "<id>" --region <region> --abort`
+- **Pause new runs:** in the CodePipeline console, **Edit** the pipeline and **Disable transition** on the first stage (or use `aws codepipeline disable-stage-transition`), or remove the `trigger` block / set `github_repository` empty and `terraform apply` to tear down the pipeline/connection stack (destructive).
+- **Stop reacting to GitHub pushes but keep the pipeline definition:** change Terraform to remove the `trigger` block and set `pipeline_type = "V1"` (or omit triggers) and `DetectChanges = "false"` on the source action, then `terraform apply`; merge/PR to `main` will no longer auto-start runs until you revert.
 
 #### Check connection status: AWS CLI and `gh` (optional)
 
