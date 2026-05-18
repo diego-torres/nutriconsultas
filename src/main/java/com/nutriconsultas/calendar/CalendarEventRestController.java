@@ -667,8 +667,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		if (event.getPeso() != null && event.getEstatura() != null) {
 			final Integer age = calculateAge(paciente.getDob());
 			final Boolean isMale = "M".equalsIgnoreCase(paciente.getGender());
-			final Double bmr = BmrCalculationService.calculatePromedioBmr(
-					event.getPeso(), event.getEstatura(), age, isMale);
+			final Double bmr = BmrCalculationService.calculatePromedioBmr(event.getPeso(), event.getEstatura(), age,
+					isMale);
 			if (bmr != null) {
 				paciente.setBmr(bmr);
 				changed = true;
@@ -676,8 +676,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		}
 		if (changed) {
 			pacienteRepository.save(paciente);
-			log.debug("Updated patient {} snapshot: imc={}, bmr={}",
-					paciente.getId(), paciente.getImc(), paciente.getBmr());
+			log.debug("Updated patient {} snapshot: imc={}, bmr={}", paciente.getId(), paciente.getImc(),
+					paciente.getBmr());
 		}
 	}
 

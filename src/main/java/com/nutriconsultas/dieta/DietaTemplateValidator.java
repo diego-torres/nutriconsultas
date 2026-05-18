@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.nutriconsultas.profile.NutritionistProfile;
 import com.nutriconsultas.validation.template.BaseTemplateValidator;
 
 /**
@@ -256,6 +257,13 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		variables.put("totalProteina", totalProteina);
 		variables.put("totalLipidos", totalLipidos);
 		variables.put("totalHidratosDeCarbono", totalHidratosDeCarbono);
+
+		// Add nutritionist branding mock variables for printable template header
+		final NutritionistProfile mockProfile = new NutritionistProfile();
+		mockProfile.setId(1L);
+		mockProfile.setCedulaProfesional("12345678");
+		variables.put("nutritionistProfile", mockProfile);
+		variables.put("logoBase64", null);
 	}
 
 	/**

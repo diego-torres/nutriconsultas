@@ -8,6 +8,7 @@ import com.nutriconsultas.calendar.CalendarTemplateValidator;
 import com.nutriconsultas.dieta.DietaTemplateValidator;
 import com.nutriconsultas.paciente.PacienteTemplateValidator;
 import com.nutriconsultas.platillos.PlatilloTemplateValidator;
+import com.nutriconsultas.profile.ProfileTemplateValidator;
 import com.nutriconsultas.reports.ReportTemplateValidator;
 import com.nutriconsultas.search.SearchTemplateValidator;
 
@@ -31,6 +32,7 @@ public class TemplateValidatorRegistry {
 		register(new AlimentoTemplateValidator());
 		register(new ReportTemplateValidator());
 		register(new SearchTemplateValidator());
+		register(new ProfileTemplateValidator());
 		register(new EternaTemplateValidator());
 		// Default validator should be last (handles "*")
 		register(new DefaultTemplateValidator());

@@ -218,10 +218,8 @@ public class PacienteRestController extends AbstractGridController<Paciente> {
 	}
 
 	@PostMapping("/{id}/assign-bmi")
-	public ResponseEntity<java.util.Map<String, Object>> assignBmi(
-			@PathVariable @NonNull final Long id,
-			@RequestBody final java.util.Map<String, Object> body,
-			@AuthenticationPrincipal final OidcUser principal) {
+	public ResponseEntity<java.util.Map<String, Object>> assignBmi(@PathVariable @NonNull final Long id,
+			@RequestBody final java.util.Map<String, Object> body, @AuthenticationPrincipal final OidcUser principal) {
 		final String userId = principal != null ? principal.getSubject() : null;
 		if (userId == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -247,10 +245,8 @@ public class PacienteRestController extends AbstractGridController<Paciente> {
 	}
 
 	@PostMapping("/{id}/assign-bmr")
-	public ResponseEntity<java.util.Map<String, Object>> assignBmr(
-			@PathVariable @NonNull final Long id,
-			@RequestBody final java.util.Map<String, Object> body,
-			@AuthenticationPrincipal final OidcUser principal) {
+	public ResponseEntity<java.util.Map<String, Object>> assignBmr(@PathVariable @NonNull final Long id,
+			@RequestBody final java.util.Map<String, Object> body, @AuthenticationPrincipal final OidcUser principal) {
 		final String userId = principal != null ? principal.getSubject() : null;
 		if (userId == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

@@ -3,7 +3,9 @@ package com.nutriconsultas.reports;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
 import com.nutriconsultas.paciente.PacienteService;
+import com.nutriconsultas.profile.NutritionistProfileService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -60,6 +63,12 @@ public class PatientReportServiceTest {
 	@Mock
 	private PacienteDietaRepository pacienteDietaRepository;
 
+	@Mock
+	private NutritionistProfileService nutritionistProfileService;
+
+	@Mock
+	private ClinicStatisticsService clinicStatisticsService;
+
 	private Paciente paciente;
 
 	@BeforeEach
@@ -73,6 +82,14 @@ public class PatientReportServiceTest {
 		paciente.setPeso(70.0);
 		paciente.setEstatura(1.75);
 		paciente.setImc(22.86);
+
+		// Stub nutritionist profile service for all tests (returns empty profile, no
+		// logo)
+		// Use lenient() because some tests throw before reaching the profile service call
+		final com.nutriconsultas.profile.NutritionistProfile emptyProfile = new com.nutriconsultas.profile.NutritionistProfile();
+		emptyProfile.setUserId("user123");
+		lenient().when(nutritionistProfileService.getOrCreateProfile(anyString())).thenReturn(emptyProfile);
+		lenient().when(nutritionistProfileService.getLogoAsBase64DataUri(anyString())).thenReturn(null);
 	}
 
 	@Test

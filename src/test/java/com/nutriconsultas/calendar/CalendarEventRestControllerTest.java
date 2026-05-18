@@ -1927,7 +1927,8 @@ public class CalendarEventRestControllerTest {
 	public void updateEvent_withPesoAndEstatura_propagatesImcAndBmrToPatient() {
 		log.info("starting updateEvent_withPesoAndEstatura_propagatesImcAndBmrToPatient");
 		// Arrange
-		final CalendarEvent existingEvent = events.get(0); // has paciente with dob and gender set
+		final CalendarEvent existingEvent = events.get(0); // has paciente with dob and
+															// gender set
 		final Map<String, Object> eventData = new HashMap<>();
 		eventData.put("peso", 70.0);
 		eventData.put("estatura", 1.75);
@@ -1942,8 +1943,8 @@ public class CalendarEventRestControllerTest {
 
 		// Assert
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-		verify(pacienteRepository).save(org.mockito.ArgumentMatchers.argThat(
-				p -> p.getImc() != null && p.getBmr() != null && p.getBmr() > 0));
+		verify(pacienteRepository).save(
+				org.mockito.ArgumentMatchers.argThat(p -> p.getImc() != null && p.getBmr() != null && p.getBmr() > 0));
 		log.info("finished updateEvent_withPesoAndEstatura_propagatesImcAndBmrToPatient");
 	}
 
@@ -1990,9 +1991,9 @@ public class CalendarEventRestControllerTest {
 		lenient().when(service.save(any(CalendarEvent.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		// Act & Assert
-		org.assertj.core.api.Assertions.assertThatCode(
-				() -> calendarEventRestController.updateEvent(1L, eventData, principal))
-				.doesNotThrowAnyException();
+		org.assertj.core.api.Assertions
+			.assertThatCode(() -> calendarEventRestController.updateEvent(1L, eventData, principal))
+			.doesNotThrowAnyException();
 		verify(pacienteRepository, never()).save(any());
 		log.info("finished updateEvent_withNullPaciente_doesNotThrow");
 	}
@@ -2015,8 +2016,8 @@ public class CalendarEventRestControllerTest {
 
 		// Assert
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-		verify(pacienteRepository).save(org.mockito.ArgumentMatchers.argThat(
-				p -> p.getImc() != null && p.getBmr() == null));
+		verify(pacienteRepository)
+			.save(org.mockito.ArgumentMatchers.argThat(p -> p.getImc() != null && p.getBmr() == null));
 		log.info("finished updateEvent_withExplicitImcOnly_updatesImcWithoutBmr");
 	}
 

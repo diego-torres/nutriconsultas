@@ -380,8 +380,8 @@ public class PacienteRestControllerTest {
 		when(service.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(paciente1);
 		when(service.save(any(Paciente.class))).thenReturn(paciente1);
 
-		final ResponseEntity<java.util.Map<String, Object>> response =
-			controller.assignBmi(1L, new HashMap<>(java.util.Map.of("bmi", "22.5")), principal);
+		final ResponseEntity<java.util.Map<String, Object>> response = controller.assignBmi(1L,
+				new HashMap<>(java.util.Map.of("bmi", "22.5")), principal);
 
 		assertThat(response.getStatusCode().value()).isEqualTo(200);
 		assertThat(response.getBody()).containsEntry("success", true);
@@ -395,8 +395,8 @@ public class PacienteRestControllerTest {
 		when(principal.getSubject()).thenReturn(TEST_USER_ID);
 		when(service.findByIdAndUserId(99L, TEST_USER_ID)).thenReturn(null);
 
-		final ResponseEntity<java.util.Map<String, Object>> response =
-			controller.assignBmi(99L, new HashMap<>(java.util.Map.of("bmi", "22.5")), principal);
+		final ResponseEntity<java.util.Map<String, Object>> response = controller.assignBmi(99L,
+				new HashMap<>(java.util.Map.of("bmi", "22.5")), principal);
 
 		assertThat(response.getStatusCode().value()).isEqualTo(404);
 		assertThat(response.getBody()).containsEntry("success", false);
@@ -405,8 +405,8 @@ public class PacienteRestControllerTest {
 	@Test
 	@DisplayName("assignBmi unauthenticated returns 401")
 	void assignBmi_unauthenticated_returns401() {
-		final ResponseEntity<java.util.Map<String, Object>> response =
-			controller.assignBmi(1L, new HashMap<>(java.util.Map.of("bmi", "22.5")), null);
+		final ResponseEntity<java.util.Map<String, Object>> response = controller.assignBmi(1L,
+				new HashMap<>(java.util.Map.of("bmi", "22.5")), null);
 
 		assertThat(response.getStatusCode().value()).isEqualTo(401);
 	}
@@ -418,8 +418,8 @@ public class PacienteRestControllerTest {
 		when(service.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(paciente1);
 		when(service.save(any(Paciente.class))).thenReturn(paciente1);
 
-		final ResponseEntity<java.util.Map<String, Object>> response =
-			controller.assignBmr(1L, new HashMap<>(java.util.Map.of("bmr", "1650.0")), principal);
+		final ResponseEntity<java.util.Map<String, Object>> response = controller.assignBmr(1L,
+				new HashMap<>(java.util.Map.of("bmr", "1650.0")), principal);
 
 		assertThat(response.getStatusCode().value()).isEqualTo(200);
 		assertThat(response.getBody()).containsEntry("success", true);
@@ -433,8 +433,8 @@ public class PacienteRestControllerTest {
 		when(principal.getSubject()).thenReturn(TEST_USER_ID);
 		when(service.findByIdAndUserId(99L, TEST_USER_ID)).thenReturn(null);
 
-		final ResponseEntity<java.util.Map<String, Object>> response =
-			controller.assignBmr(99L, new HashMap<>(java.util.Map.of("bmr", "1650.0")), principal);
+		final ResponseEntity<java.util.Map<String, Object>> response = controller.assignBmr(99L,
+				new HashMap<>(java.util.Map.of("bmr", "1650.0")), principal);
 
 		assertThat(response.getStatusCode().value()).isEqualTo(404);
 		assertThat(response.getBody()).containsEntry("success", false);
@@ -443,8 +443,8 @@ public class PacienteRestControllerTest {
 	@Test
 	@DisplayName("assignBmr unauthenticated returns 401")
 	void assignBmr_unauthenticated_returns401() {
-		final ResponseEntity<java.util.Map<String, Object>> response =
-			controller.assignBmr(1L, new HashMap<>(java.util.Map.of("bmr", "1650.0")), null);
+		final ResponseEntity<java.util.Map<String, Object>> response = controller.assignBmr(1L,
+				new HashMap<>(java.util.Map.of("bmr", "1650.0")), null);
 
 		assertThat(response.getStatusCode().value()).isEqualTo(401);
 	}

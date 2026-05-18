@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="Gestiona tu perfil profesional de nutricionista" />
+    <meta name="author" content="" />
+    <!-- Favicons -->
+    <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon" />
+    <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon" />
+
+    <title>Minutriporcion - Mi Perfil Profesional</title>
+
+    <!-- Custom fonts -->
+    <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet" />
+
+    <!-- Custom styles -->
+    <link th:href="@{/sbadmin/css/sb-admin-2.css}" rel="stylesheet" />
+  </head>
+
+  <body id="page-top">
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+      <div th:insert="~{sbadmin/dietas/sidebar :: sidebar}"></div>
+
+      <!-- Content Wrapper -->
+      <div id="content-wrapper" class="d-flex flex-column">
+
+        <!-- Main Content -->
+        <div id="content">
+          <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+
+          <!-- Begin Page Content -->
+          <div class="container-fluid">
+
+            <!-- Page Heading -->
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+              <h1 class="h3 mb-0 text-gray-800">Mi Perfil Profesional</h1>
+            </div>
+
+            <!-- Error alert -->
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+              <span th:text="${errorMessage}">Error</span>
+              <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+
+            <!-- Content Row -->
+            <div class="row">
+
+              <!-- Profile Text Fields Card -->
+              <div class="col-xl-6 col-lg-7">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                      <i class="fas fa-user-md"></i> Datos Profesionales
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <form th:action="@{/admin/perfil/save}" th:object="${profile}" method="post">
+                      <input type="hidden" th:field="*{id}" />
+                      <input type="hidden" th:field="*{userId}" />
+                      <input type="hidden" th:field="*{logoExtension}" />
+
+                      <div class="form-group row">
+                        <label for="displayName" class="col-sm-4 col-form-label">Nombre para mostrar</label>
+                        <div class="col-sm-8">
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="displayName"
+                            th:field="*{displayName}"
+                            placeholder="Ej: Dra. María García"
+                            maxlength="100"
+                          />
+                          <small class="form-text text-muted">
+                            Si está vacío se usará el nombre de tu cuenta.
+                          </small>
+                        </div>
+                      </div>
+
+                      <div class="form-group row">
+                        <label for="cedulaProfesional" class="col-sm-4 col-form-label">Cédula Profesional</label>
+                        <div class="col-sm-8">
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="cedulaProfesional"
+                            th:field="*{cedulaProfesional}"
+                            placeholder="Ej: 12345678"
+                            maxlength="20"
+                          />
+                          <small class="form-text text-muted">
+                            Aparecerá en todos los PDFs generados.
+                          </small>
+                        </div>
+                      </div>
+
+                      <hr />
+                      <div class="form-group row">
+                        <div class="col-sm-4"></div>
+                        <div class="col-sm-8">
+                          <button type="submit" id="btnSaveProfile" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar cambios
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Logo Upload Card -->
+              <div class="col-xl-6 col-lg-5">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                      <i class="fas fa-image"></i> Logo de la clínica
+                    </h6>
+                  </div>
+                  <div class="card-body text-center">
+                    <p class="text-muted small">
+                      El logo aparecerá en la esquina superior derecha de los PDFs generados.
+                      Se recomienda formato PNG con fondo transparente.
+                    </p>
+                    <form th:action="@{/admin/perfil/logo}" method="post" enctype="multipart/form-data">
+                      <div class="form-group custom-file mb-3">
+                        <input
+                          type="file"
+                          class="custom-file-input"
+                          id="logoFile"
+                          name="logoFile"
+                          accept="image/png,image/jpeg,image/gif"
+                          required
+                        />
+                        <label class="custom-file-label" for="logoFile">Seleccionar imagen&hellip;</label>
+                      </div>
+                      <hr />
+                      <button type="submit" id="btnUploadLogo" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> Subir logo
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <!-- /.row -->
+
+          </div>
+          <!-- /.container-fluid -->
+        </div>
+        <!-- End of Main Content -->
+
+        <div th:insert="~{sbadmin/footer :: footer}"></div>
+      </div>
+      <!-- End of Content Wrapper -->
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Bootstrap core JavaScript -->
+    <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+    <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+    <script lang="javascript">
+      'use strict';
+      (function ($) {
+        // Show filename in custom file input label
+        $('#logoFile').on('change', function () {
+          var fileName = $(this).val().split('\\').pop();
+          $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
+        });
+      })(jQuery);
+    </script>
+  </body>
+</html>

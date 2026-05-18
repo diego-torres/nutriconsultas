@@ -13,6 +13,7 @@ import com.nutriconsultas.clinical.exam.anthropometric.BodyMass;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
+import com.nutriconsultas.profile.NutritionistProfile;
 import com.nutriconsultas.validation.template.BaseTemplateValidator;
 
 /**
@@ -76,6 +77,13 @@ public class ReportTemplateValidator extends BaseTemplateValidator {
 		// templates
 		final ClinicStatistics mockStatistics = createMockClinicStatistics();
 		variables.put("statistics", mockStatistics);
+
+		// Add nutritionist branding mock variables for all PDF report templates
+		final NutritionistProfile mockProfile = new NutritionistProfile();
+		mockProfile.setId(1L);
+		mockProfile.setCedulaProfesional("12345678");
+		variables.put("nutritionistProfile", mockProfile);
+		variables.put("logoBase64", null);
 
 		return variables;
 	}
