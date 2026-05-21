@@ -27,6 +27,8 @@ import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
 import com.nutriconsultas.paciente.PacienteService;
+import com.nutriconsultas.profile.NutritionistProfile;
+import com.nutriconsultas.profile.NutritionistProfileService;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -97,6 +99,9 @@ public class PatientReportService {
 	@Autowired
 	private ClinicStatisticsService clinicStatisticsService;
 
+	@Autowired
+	private NutritionistProfileService nutritionistProfileService;
+
 	/**
 	 * Generates a PDF progress report for a patient.
 	 * @param pacienteId the ID of the patient
@@ -136,6 +141,11 @@ public class PatientReportService {
 		context.setVariable("startDate", startDate);
 		context.setVariable("endDate", endDate);
 		context.setVariable("reportDate", new Date());
+
+		// Inject nutritionist profile branding
+		final NutritionistProfile profile = nutritionistProfileService.getOrCreateProfile(userId);
+		context.setVariable("nutritionistProfile", profile);
+		context.setVariable("logoBase64", nutritionistProfileService.getLogoAsBase64DataUri(userId));
 
 		// Render Thymeleaf template to HTML
 		final String html = templateEngine.process("sbadmin/reports/patient-progress", context);
@@ -250,6 +260,11 @@ public class PatientReportService {
 		context.setVariable("analysis", analysis);
 		context.setVariable("reportDate", new Date());
 
+		// Inject nutritionist profile branding
+		final NutritionistProfile nutritionAnalysisProfile = nutritionistProfileService.getOrCreateProfile(userId);
+		context.setVariable("nutritionistProfile", nutritionAnalysisProfile);
+		context.setVariable("logoBase64", nutritionistProfileService.getLogoAsBase64DataUri(userId));
+
 		// Render Thymeleaf template to HTML
 		final String html = templateEngine.process("sbadmin/reports/nutrition-analysis", context);
 
@@ -278,6 +293,11 @@ public class PatientReportService {
 		context.setVariable("startDate", startDate);
 		context.setVariable("endDate", endDate);
 		context.setVariable("reportDate", new Date());
+
+		// Inject nutritionist profile branding
+		final NutritionistProfile clinicProfile = nutritionistProfileService.getOrCreateProfile(userId);
+		context.setVariable("nutritionistProfile", clinicProfile);
+		context.setVariable("logoBase64", nutritionistProfileService.getLogoAsBase64DataUri(userId));
 
 		// Render Thymeleaf template to HTML
 		final String html = templateEngine.process("sbadmin/reports/clinic-statistics-pdf", context);

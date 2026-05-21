@@ -189,4 +189,31 @@ public final class LogRedaction {
 		}
 	}
 
+	/**
+	 * Redacts a user ID (Auth0 sub) for logging purposes. Shows only the first 6
+	 * characters to allow correlation without exposing the full identifier.
+	 * @param userId the Auth0 subject claim
+	 * @return a safe truncated representation (e.g., "userId[abc123...REDACTED]")
+	 */
+	public static String redactUserId(final String userId) {
+		if (userId == null || userId.isEmpty()) {
+			return "userId[null]";
+		}
+		final String prefix = userId.length() > 6 ? userId.substring(0, 6) : userId;
+		return "userId[" + prefix + "...REDACTED]";
+	}
+
+	/**
+	 * Redacts a NutritionistProfile for logging purposes. Returns only the profile ID.
+	 * <strong>Never log cédula profesional or display name directly.</strong>
+	 * @param profileId the profile entity ID
+	 * @return a safe string representation (e.g., "NutritionistProfile[id=1]")
+	 */
+	public static String redactNutritionistProfile(final Long profileId) {
+		if (profileId == null) {
+			return "NutritionistProfile[id=null]";
+		}
+		return "NutritionistProfile[id=" + profileId + "]";
+	}
+
 }

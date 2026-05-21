@@ -53,6 +53,11 @@
         <i class="fas fa-fw fa-file-prescription"></i>
         <span>Reportes</span></a>
     </li>
+    <li class="nav-item" th:classappend="${activeMenu == 'perfil' ? 'active' : ''}">
+      <a class="nav-link" th:href="@{/admin/perfil}">
+        <i class="fas fa-fw fa-user-md"></i>
+        <span>Mi Perfil</span></a>
+    </li>
 
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
