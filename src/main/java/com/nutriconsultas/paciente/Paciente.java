@@ -37,6 +37,14 @@ public class Paciente {
 	@Column(nullable = false, length = 255)
 	private String userId;
 
+	/**
+	 * Patient Auth0 {@code sub} claim for mobile JWT identity. Distinct from
+	 * {@link #userId} (nutritionist tenant owner). Formal Liquibase changeset tracked in
+	 * issue #46.
+	 */
+	@Column(unique = true, length = 255)
+	private String patientAuthSub;
+
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@Temporal(TemporalType.DATE)
 	@NotNull(message = "La fecha de nacimiento es requerida")
