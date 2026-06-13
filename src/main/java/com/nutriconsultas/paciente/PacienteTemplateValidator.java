@@ -35,6 +35,7 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		variables.put("ultimoPeso", null);
 		variables.put("ultimaEstatura", null);
 		variables.put("ultimoImc", null);
+		variables.put("ultimoNivelPeso", null);
 		variables.put("isEligibleForPregnancy", false);
 		variables.put("isUnder18", false);
 		variables.put("growthMeasurements", new ArrayList<AnthropometricMeasurement>());

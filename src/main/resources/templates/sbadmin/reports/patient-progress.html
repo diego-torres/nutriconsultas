@@ -242,11 +242,9 @@
 			</tr>
 			<tr th:if="${paciente.imc != null}">
 				<td>IMC Actual:</td>
-				<td th:text="${#numbers.formatDecimal(paciente.imc, 1, 2)}"></td>
-			</tr>
-			<tr th:if="${paciente.nivelPeso != null}">
-				<td>Nivel de Peso:</td>
-				<td th:text="${paciente.nivelPeso}"></td>
+				<td>
+					<div th:replace="~{sbadmin/pacientes/imc-gauge :: imcGaugePdf(${paciente.imc}, ${paciente.nivelPeso})}"></div>
+				</td>
 			</tr>
 			<tr th:if="${paciente.responsibleName != null && !paciente.responsibleName.isEmpty()}">
 				<td>Responsable:</td>

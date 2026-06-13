@@ -1,0 +1,128 @@
+<!--
+  Reusable IMC gauge bar with color gradient (range 15–40).
+  Fragments: imcGaugeStyles, imcGauge, imcGaugeCompact, imcGaugePdf
+-->
+<div th:fragment="imcGaugeStyles">
+  <style>
+    .imc-gauge {
+      width: 100%;
+    }
+
+    .imc-gauge__value {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .imc-gauge--compact .imc-gauge__value {
+      font-size: 0.85rem;
+    }
+
+    .imc-gauge__unit {
+      font-weight: 400;
+      color: #6c757d;
+      font-size: 0.8rem;
+      margin-left: 0.15rem;
+    }
+
+    .imc-gauge__track {
+      position: relative;
+      height: 10px;
+      border-radius: 5px;
+    }
+
+    .imc-gauge--compact .imc-gauge__track {
+      height: 8px;
+    }
+
+    .imc-gauge__gradient {
+      height: 100%;
+      border-radius: 5px;
+      background: linear-gradient(to right,
+        #3b82f6 0%, #3b82f6 14%,
+        #22c55e 14%, #22c55e 40%,
+        #eab308 40%, #eab308 60%,
+        #ef4444 60%, #ef4444 100%);
+    }
+
+    .imc-gauge__marker {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .imc-gauge--compact .imc-gauge__marker {
+      width: 10px;
+      height: 10px;
+      border-width: 1.5px;
+    }
+  </style>
+</div>
+
+<div th:fragment="imcGauge(imc, nivelPeso)" class="imc-gauge">
+  <p class="text-muted mb-0" th:if="${imc == null}">N/A</p>
+  <div th:if="${imc != null}"
+       role="img"
+       th:attr="aria-label=${T(com.nutriconsultas.util.ImcGaugeUtils).ariaLabel(imc, nivelPeso)}">
+    <div class="imc-gauge__value">
+      <span th:text="${#numbers.formatDecimal(imc, 1, 2)}">24.50</span><span class="imc-gauge__unit">IMC</span>
+    </div>
+    <div class="imc-gauge__track">
+      <div class="imc-gauge__gradient"></div>
+      <div class="imc-gauge__marker"
+           th:style="|left: ${T(com.nutriconsultas.util.ImcGaugeUtils).markerPosition(imc)}%;
+                     background-color: ${T(com.nutriconsultas.util.ImcGaugeUtils).markerColor(
+                       T(com.nutriconsultas.util.ImcGaugeUtils).resolveNivelPeso(imc, nivelPeso))};|">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div th:fragment="imcGaugeCompact(imc, nivelPeso)" class="imc-gauge imc-gauge--compact">
+  <p class="text-muted mb-0" th:if="${imc == null}">N/A</p>
+  <div th:if="${imc != null}"
+       role="img"
+       th:attr="aria-label=${T(com.nutriconsultas.util.ImcGaugeUtils).ariaLabel(imc, nivelPeso)}">
+    <div class="imc-gauge__value">
+      <span th:text="${#numbers.formatDecimal(imc, 1, 2)}">24.50</span><span class="imc-gauge__unit">IMC</span>
+    </div>
+    <div class="imc-gauge__track">
+      <div class="imc-gauge__gradient"></div>
+      <div class="imc-gauge__marker"
+           th:style="|left: ${T(com.nutriconsultas.util.ImcGaugeUtils).markerPosition(imc)}%;
+                     background-color: ${T(com.nutriconsultas.util.ImcGaugeUtils).markerColor(
+                       T(com.nutriconsultas.util.ImcGaugeUtils).resolveNivelPeso(imc, nivelPeso))};|">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div th:fragment="imcGaugePdf(imc, nivelPeso)">
+  <p th:if="${imc == null}">N/A</p>
+  <div th:if="${imc != null}"
+       role="img"
+       th:attr="aria-label=${T(com.nutriconsultas.util.ImcGaugeUtils).ariaLabel(imc, nivelPeso)}"
+       style="display: inline-block; vertical-align: middle;">
+    <span th:text="${#numbers.formatDecimal(imc, 1, 2)}"
+          style="font-weight: bold; margin-right: 8px;">24.50</span>
+    <span style="display: inline-block; position: relative; width: 180px; height: 10px; vertical-align: middle;">
+      <span style="display: flex; height: 100%; border-radius: 4px; overflow: hidden;">
+        <span style="width: 14%; background-color: #3b82f6;"></span>
+        <span style="width: 26%; background-color: #22c55e;"></span>
+        <span style="width: 20%; background-color: #eab308;"></span>
+        <span style="width: 40%; background-color: #ef4444;"></span>
+      </span>
+      <span th:style="|position: absolute; top: 50%; left: ${T(com.nutriconsultas.util.ImcGaugeUtils).markerPosition(imc)}%;
+                       transform: translate(-50%, -50%); width: 10px; height: 10px; border-radius: 50%;
+                       border: 1.5px solid #ffffff;
+                       background-color: ${T(com.nutriconsultas.util.ImcGaugeUtils).markerColor(
+                         T(com.nutriconsultas.util.ImcGaugeUtils).resolveNivelPeso(imc, nivelPeso))};|">
+      </span>
+    </span>
+  </div>
+</div>

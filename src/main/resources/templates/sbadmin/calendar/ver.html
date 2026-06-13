@@ -23,6 +23,7 @@
   <!-- Custom styles for this template-->
   <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
   <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
+  <div th:insert="~{sbadmin/pacientes/imc-gauge :: imcGaugeStyles}"></div>
 
 </head>
 
@@ -98,14 +99,12 @@
                         <div class="col-md-3" th:if="${event.estatura != null}">
                           <p><strong>Estatura:</strong> <span th:text="${#numbers.formatDecimal(event.estatura, 2, 2)} + ' m'">-</span></p>
                         </div>
-                        <div class="col-md-3" th:if="${event.imc != null}">
-                          <p><strong>IMC:</strong> <span th:text="${#numbers.formatDecimal(event.imc, 2, 2)}">-</span></p>
+                        <div class="col-md-6" th:if="${event.imc != null}">
+                          <p class="mb-2"><strong>IMC</strong></p>
+                          <div th:replace="~{sbadmin/pacientes/imc-gauge :: imcGauge(${event.imc}, ${event.nivelPeso})}"></div>
                         </div>
                         <div class="col-md-3" th:if="${event.indiceGrasaCorporal != null}">
                           <p><strong>Índice Grasa Corporal:</strong> <span th:text="${#numbers.formatDecimal(event.indiceGrasaCorporal, 2, 2)} + '%'">-</span></p>
-                        </div>
-                        <div class="col-md-3" th:if="${event.nivelPeso != null}">
-                          <p><strong>Nivel de Peso:</strong> <span th:text="${event.nivelPeso.name()}">-</span></p>
                         </div>
                         <div class="col-md-3" th:if="${event.sistolica != null}">
                           <p><strong>Sistólica:</strong> <span th:text="${event.sistolica} + ' mmHg'">-</span></p>
