@@ -3,6 +3,8 @@ package com.nutriconsultas.paciente;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,6 +18,10 @@ public interface PacienteDietaRepository extends JpaRepository<PacienteDieta, Lo
 	List<PacienteDieta> findByPacienteIdAndStatus(Long pacienteId, PacienteDietaStatus status);
 
 	List<PacienteDieta> findByPacienteIdOrderByStartDateDesc(Long pacienteId);
+
+	Page<PacienteDieta> findByPacienteId(Long pacienteId, Pageable pageable);
+
+	Page<PacienteDieta> findByPacienteIdAndStatus(Long pacienteId, PacienteDietaStatus status, Pageable pageable);
 
 	List<PacienteDieta> findByDietaId(Long dietaId);
 
