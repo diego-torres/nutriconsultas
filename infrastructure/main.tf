@@ -198,6 +198,12 @@ resource "aws_instance" "db" {
     http_tokens = "required" # IMDSv2
   }
 
+  # data.aws_ami.al2023 drifts when Amazon publishes new AL2023 builds; replacing the DB
+  # EC2 would destroy PostgreSQL data. Pin the running AMI in state; upgrade AMI manually.
+  lifecycle {
+    ignore_changes = [ami]
+  }
+
   tags = merge(
     local.common_tags,
     { Name = "${var.project}-postgresql" }
