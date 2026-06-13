@@ -18,12 +18,14 @@ ebs_root_volume_size_gb = 30
 
 # App secrets (written to /opt/nutriconsultas/app.env on first boot). Prefer environment:
 #   export TF_VAR_auth_client='...' TF_VAR_auth_secret='...' TF_VAR_auth_issuer='https://.../'
+#   export TF_VAR_auth_audience='https://api.example.com/mobile'
 #   export TF_VAR_aws_bucket='...' TF_VAR_aws_key='...' TF_VAR_aws_secret='...'
 # Optional (empty string ok if unused):
 #   export TF_VAR_maps_key='' TF_VAR_recaptcha_secret_key=''
 # auth_client            = "from-auth0-application"
 # auth_secret            = "from-auth0-application"
 # auth_issuer            = "https://YOUR_TENANT.auth0.com/"
+# auth_audience          = "https://api.example.com/mobile"   # Auth0 API identifier; must match mobile AUTH0_AUDIENCE
 # aws_bucket             = "your-s3-bucket"   # Terraform creates this bucket; import if it already exists
 # aws_key                = "AKIA..."
 # aws_secret             = "..."

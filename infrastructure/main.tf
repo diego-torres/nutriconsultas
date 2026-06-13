@@ -198,6 +198,12 @@ resource "aws_instance" "db" {
     http_tokens = "required" # IMDSv2
   }
 
+  # data.aws_ami.al2023 drifts when Amazon publishes new AL2023 builds; replacing the DB
+  # EC2 would destroy PostgreSQL data. Pin the running AMI in state; upgrade AMI manually.
+  lifecycle {
+    ignore_changes = [ami]
+  }
+
   tags = merge(
     local.common_tags,
     { Name = "${var.project}-postgresql" }
@@ -240,6 +246,7 @@ resource "aws_instance" "app" {
         auth_client_b64          = base64encode(var.auth_client)
         auth_secret_b64          = base64encode(var.auth_secret)
         auth_issuer_b64          = base64encode(var.auth_issuer)
+        auth_audience_b64        = base64encode(var.auth_audience)
         aws_bucket_b64           = base64encode(var.aws_bucket)
         aws_key_b64              = base64encode(var.aws_key)
         aws_secret_b64           = base64encode(var.aws_secret)

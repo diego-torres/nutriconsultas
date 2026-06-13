@@ -401,7 +401,7 @@ The application requires these environment variables (set in `.env` file):
 - `JDBC_DATABASE_URL`
 - `JDBC_DATABASE_USERNAME`
 - `JDBC_DATABASE_PASSWORD`
-- `AUTH_CLIENT`, `AUTH_SECRET`, `AUTH_ISSUER`
+- `AUTH_CLIENT`, `AUTH_SECRET`, `AUTH_ISSUER`, `AUTH_AUDIENCE`
 - `AWS_BUCKET`, `AWS_KEY`, `AWS_SECRET`
 - `MAPS_KEY` (optional)
 

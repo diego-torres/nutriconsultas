@@ -479,6 +479,7 @@ Entities that reference `Paciente` (like `CalendarEvent`, `ClinicalExam`, `Anthr
 - `AUTH_CLIENT`: Auth0 client ID
 - `AUTH_SECRET`: Auth0 client secret
 - `AUTH_ISSUER`: Auth0 issuer URI
+- `AUTH_AUDIENCE`: Auth0 API identifier for mobile JWT validation (must match mobile `AUTH0_AUDIENCE`)
 - `AWS_BUCKET`: S3 bucket name
 - `AWS_KEY`: AWS access key
 - `AWS_SECRET`: AWS secret key

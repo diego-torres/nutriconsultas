@@ -87,6 +87,12 @@ variable "auth_issuer" {
   sensitive   = true
 }
 
+variable "auth_audience" {
+  type        = string
+  description = "Auth0 API identifier for patient mobile JWT validation (app.security.jwt.audience / AUTH_AUDIENCE). Must match mobile AUTH0_AUDIENCE."
+  sensitive   = false
+}
+
 variable "aws_bucket" {
   type        = string
   description = "S3 bucket name for application uploads (amazon.s3.bucket). Terraform creates this bucket (see s3-app-uploads.tf). If it already exists, run: terraform import aws_s3_bucket.app_uploads NAME"
