@@ -31,6 +31,9 @@ install -d -o root -g nutri -m 750 /opt/nutriconsultas
   echo -n "AUTH_ISSUER="
   printf '%s' '${auth_issuer_b64}' | base64 -d
   echo
+  echo -n "AUTH_AUDIENCE="
+  printf '%s' '${auth_audience_b64}' | base64 -d
+  echo
   echo -n "AWS_BUCKET="
   printf '%s' '${aws_bucket_b64}' | base64 -d
   echo

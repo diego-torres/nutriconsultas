@@ -122,7 +122,7 @@ Preferred: the GitHub Action on `main` (see below) or [scripts/deploy-jar-to-ec2
 
 ### OAuth2 and app secrets on the server
 
-Set `AUTH_*`, `AWS_*`, and any other required environment variables. Edit `/opt/nutriconsultas/app.env` in an SSM session (or a systemd `EnvironmentFile` drop-in). Never commit real secrets to git.
+Set `AUTH_*` (including `AUTH_AUDIENCE` for `/rest/mobile/**` JWT validation), `AWS_*`, and any other required environment variables. Edit `/opt/nutriconsultas/app.env` in an SSM session (or a systemd `EnvironmentFile` drop-in). On instances already running, add `AUTH_AUDIENCE` manually and restart the app — `user_data` only runs at first boot. Never commit real secrets to git.
 
 ## Outputs
 

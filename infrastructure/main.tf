@@ -240,6 +240,7 @@ resource "aws_instance" "app" {
         auth_client_b64          = base64encode(var.auth_client)
         auth_secret_b64          = base64encode(var.auth_secret)
         auth_issuer_b64          = base64encode(var.auth_issuer)
+        auth_audience_b64        = base64encode(var.auth_audience)
         aws_bucket_b64           = base64encode(var.aws_bucket)
         aws_key_b64              = base64encode(var.aws_key)
         aws_secret_b64           = base64encode(var.aws_secret)
