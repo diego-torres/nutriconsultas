@@ -230,7 +230,8 @@ resource "aws_codebuild_project" "app_deploy" {
   count         = local.codepipeline_enabled ? 1 : 0
   name          = "${var.project}-app-deploy"
   description   = "S3 + SSM deploy to app EC2"
-  build_timeout = 30
+  # Must exceed deploy-jar-to-ec2-ssm.sh SSM poll window (~35m) plus apt/jq/setup.
+  build_timeout = 45
   service_role  = aws_iam_role.codebuild_deploy[0].arn
   tags          = local.common_tags
 
