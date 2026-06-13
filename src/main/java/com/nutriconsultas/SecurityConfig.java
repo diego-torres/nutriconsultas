@@ -4,10 +4,12 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 import com.nutriconsultas.admin.LogoutHandler;
 
@@ -25,11 +27,13 @@ public class SecurityConfig {
 	}
 
 	@Bean
+	@Order(2)
 	// package-private
 	SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
-		log.info("ENABLING security filter chain.");
+		log.info("ENABLING nutritionist web security filter chain.");
 
-		http.cors(withDefaults())
+		http.securityMatcher(new NegatedRequestMatcher(new AntPathRequestMatcher("/rest/mobile/**")))
+			.cors(withDefaults())
 			.csrf(csrf -> csrf.disable())
 			.headers(headers -> headers.frameOptions(options -> options.sameOrigin()))
 			.authorizeHttpRequests(ar -> ar.requestMatchers("/rest/**")

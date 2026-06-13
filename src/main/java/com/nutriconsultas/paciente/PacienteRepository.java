@@ -19,6 +19,8 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 
 	Optional<Paciente> findByIdAndUserId(Long id, String userId);
 
+	Optional<Paciente> findByPatientAuthSub(String patientAuthSub);
+
 	@Query("SELECT p FROM Paciente p WHERE p.userId = :userId AND "
 			+ "(LOWER(p.name) LIKE LOWER(:searchTerm) OR LOWER(p.email) LIKE LOWER(:searchTerm) "
 			+ "OR LOWER(p.phone) LIKE LOWER(:searchTerm))")
