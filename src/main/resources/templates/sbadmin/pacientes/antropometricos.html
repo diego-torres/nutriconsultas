@@ -124,6 +124,7 @@
                               </div>
                             </div>
                           </div>
+                          <div th:insert="~{sbadmin/pacientes/body-mass-imc-live :: bodyMassImcDisplay}"></div>
                           <div class="row">
                             <div class="col-md-12">
                               <div class="form-group">
@@ -1155,6 +1156,7 @@
 
     <!-- Calculation Tab JavaScript -->
     <div th:insert="~{sbadmin/pacientes/calculation-script :: calculationScript(true)}"></div>
+    <div th:insert="~{sbadmin/pacientes/body-mass-imc-live :: bodyMassImcScript}"></div>
 
 </body>
 

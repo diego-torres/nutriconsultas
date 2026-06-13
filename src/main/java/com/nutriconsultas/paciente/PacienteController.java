@@ -60,6 +60,9 @@ public class PacienteController extends AbstractAuthorizedController {
 	private com.nutriconsultas.clinical.exam.AnthropometricMeasurementService anthropometricMeasurementService;
 
 	@Autowired
+	private com.nutriconsultas.paciente.metrics.BodyMetricRecordService bodyMetricRecordService;
+
+	@Autowired
 	private BodyFatCalculatorService bodyFatCalculatorService;
 
 	@Autowired
@@ -171,13 +174,16 @@ public class PacienteController extends AbstractAuthorizedController {
 		final String fechaCitaSiguiente = citaSiguiente != null ? dateFormat.format(citaSiguiente.getEventDateTime())
 				: "";
 		model.addAttribute("citaSiguiente", fechaCitaSiguiente);
-		// obtener último registro médico (peso, estatura, IMC)
-		final CalendarEvent ultimoRegistro = getUltimoRegistroMedico(id);
-		if (ultimoRegistro != null) {
-			model.addAttribute("ultimoPeso", ultimoRegistro.getPeso());
-			model.addAttribute("ultimaEstatura", ultimoRegistro.getEstatura());
-			model.addAttribute("ultimoImc", ultimoRegistro.getImc());
-		}
+		// obtener último registro de métricas corporales (consultas, antropométricos,
+		// exámenes)
+		bodyMetricRecordService.findLatestByPacienteId(id).ifPresent(latest -> {
+			model.addAttribute("ultimoPeso", latest.getWeight());
+			model.addAttribute("ultimaEstatura", latest.getHeight());
+			model.addAttribute("ultimoImc", latest.getImc());
+			model.addAttribute("ultimoNivelPeso", latest.getNivelPeso());
+			model.addAttribute("ultimoIndiceGrasaCorporal",
+					latest.getBodyFatIndex() != null ? latest.getBodyFatIndex() : latest.getBodyFatPercentage());
+		});
 		// Calculate age and check if patient is under 18 for growth table display
 		final Integer age = calculateAge(paciente.getDob());
 		final boolean isUnder18 = age != null && age < 18;
@@ -223,22 +229,6 @@ public class PacienteController extends AbstractAuthorizedController {
 				.collect(Collectors.toList());
 			if (!eventosFuturos.isEmpty()) {
 				result = eventosFuturos.get(0);
-			}
-		}
-		return result;
-	}
-
-	private CalendarEvent getUltimoRegistroMedico(@NonNull final Long pacienteId) {
-		final List<CalendarEvent> eventos = calendarEventService.findByPacienteId(pacienteId);
-		CalendarEvent result = null;
-		if (!eventos.isEmpty()) {
-			final List<CalendarEvent> eventosConDatos = eventos.stream()
-				.filter(e -> e.getEventDateTime() != null)
-				.filter(e -> e.getPeso() != null || e.getEstatura() != null || e.getImc() != null)
-				.sorted(Comparator.comparing(CalendarEvent::getEventDateTime).reversed())
-				.collect(Collectors.toList());
-			if (!eventosConDatos.isEmpty()) {
-				result = eventosConDatos.get(0);
 			}
 		}
 		return result;
@@ -637,6 +627,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		verifyPatientOwnership(paciente, userId);
 
 		measurement.setPaciente(paciente);
+		ensureAnthropometricBodyMass(measurement);
 
 		final BmiCalculationResult bmiResult = calculateBmiAndBodyFatForMeasurement(measurement, paciente);
 		updatePatientWeightIfNeededForMeasurement(paciente, measurement, bmiResult.getImc(), bmiResult.getNivelPeso(),
@@ -1455,6 +1446,13 @@ public class PacienteController extends AbstractAuthorizedController {
 			final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement) {
 		if (measurement.getTitle() == null || measurement.getTitle().isBlank()) {
 			measurement.setTitle("Medición Antropométrica");
+		}
+	}
+
+	private void ensureAnthropometricBodyMass(
+			final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement) {
+		if (measurement.getBodyMass() == null) {
+			measurement.setBodyMass(new com.nutriconsultas.clinical.exam.anthropometric.BodyMass());
 		}
 	}
 

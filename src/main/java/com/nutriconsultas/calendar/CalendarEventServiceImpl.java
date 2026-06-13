@@ -8,6 +8,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.nutriconsultas.paciente.metrics.BodyMetricSource;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -16,6 +18,9 @@ public class CalendarEventServiceImpl implements CalendarEventService {
 
 	@Autowired
 	private CalendarEventRepository repository;
+
+	@Autowired
+	private com.nutriconsultas.paciente.metrics.BodyMetricRecordService bodyMetricRecordService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -59,6 +64,7 @@ public class CalendarEventServiceImpl implements CalendarEventService {
 	public CalendarEvent save(@NonNull final CalendarEvent event) {
 		log.info("saving CalendarEvent {}.", event);
 		final CalendarEvent saved = repository.save(event);
+		bodyMetricRecordService.syncFromConsultation(saved);
 		log.info("CalendarEvent saved {}.", saved);
 		return saved;
 	}
@@ -67,7 +73,17 @@ public class CalendarEventServiceImpl implements CalendarEventService {
 	@Transactional
 	public void delete(@NonNull final Long id) {
 		log.info("deleting CalendarEvent with id {}.", id);
-		repository.deleteById(id);
+		final CalendarEvent event = repository.findById(id).orElse(null);
+		if (event != null) {
+			final Long pacienteId = event.getPaciente() != null ? event.getPaciente().getId() : null;
+			repository.deleteById(id);
+			if (pacienteId != null) {
+				bodyMetricRecordService.removeSourceAndRefreshPatient(BodyMetricSource.CONSULTATION, id, pacienteId);
+			}
+		}
+		else {
+			repository.deleteById(id);
+		}
 		log.info("CalendarEvent {} deleted successfully.", id);
 	}
 

@@ -77,6 +77,9 @@ public class PacienteControllerTest {
 	private com.nutriconsultas.clinical.exam.AnthropometricMeasurementService anthropometricMeasurementService;
 
 	@Mock
+	private com.nutriconsultas.paciente.metrics.BodyMetricRecordService bodyMetricRecordService;
+
+	@Mock
 	private BindingResult bindingResult;
 
 	private Paciente paciente;
@@ -115,6 +118,7 @@ public class PacienteControllerTest {
 		// Create mock OidcUser principal
 		principal = org.mockito.Mockito.mock(OidcUser.class);
 		lenient().when(principal.getSubject()).thenReturn(TEST_USER_ID);
+		lenient().when(bodyMetricRecordService.findLatestByPacienteId(any())).thenReturn(java.util.Optional.empty());
 
 		log.info("finished setting up PacienteController test");
 	}
@@ -1525,6 +1529,8 @@ public class PacienteControllerTest {
 		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(anthropometricMeasurementService).save(any(AnthropometricMeasurement.class));
 		verify(pacienteRepository).save(any(Paciente.class));
+		assertThat(measurement.getImc()).isNotNull();
+		assertThat(measurement.getNivelPeso()).isNotNull();
 		assertPacienteBmrMatchesPromedio(70.0, 1.75);
 		log.info("finished testAgregarAntropometricosPaciente");
 	}

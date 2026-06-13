@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.nutriconsultas.util.LogRedaction;
 
+import com.nutriconsultas.paciente.metrics.BodyMetricSource;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -17,6 +19,9 @@ public class ClinicalExamServiceImpl implements ClinicalExamService {
 
 	@Autowired
 	private ClinicalExamRepository repository;
+
+	@Autowired
+	private com.nutriconsultas.paciente.metrics.BodyMetricRecordService bodyMetricRecordService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -36,14 +41,26 @@ public class ClinicalExamServiceImpl implements ClinicalExamService {
 	@Transactional
 	public ClinicalExam save(@NonNull final ClinicalExam exam) {
 		log.debug("Saving clinical exam: {}", LogRedaction.redactClinicalExam(exam));
-		return repository.save(exam);
+		final ClinicalExam saved = repository.save(exam);
+		bodyMetricRecordService.syncFromClinicalExam(saved);
+		return saved;
 	}
 
 	@Override
 	@Transactional
 	public void deleteById(@NonNull final Long id) {
 		log.debug("Deleting clinical exam with id: {}", id);
-		repository.deleteById(id);
+		final ClinicalExam exam = repository.findById(id).orElse(null);
+		if (exam != null) {
+			final Long pacienteId = exam.getPaciente() != null ? exam.getPaciente().getId() : null;
+			repository.deleteById(id);
+			if (pacienteId != null) {
+				bodyMetricRecordService.removeSourceAndRefreshPatient(BodyMetricSource.CLINICAL_EXAM, id, pacienteId);
+			}
+		}
+		else {
+			repository.deleteById(id);
+		}
 	}
 
 	@Override

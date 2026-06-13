@@ -119,6 +119,12 @@
                         <div class="col-md-6" th:if="${measurement.bodyMass != null && measurement.bodyMass.height != null}">
                           <p><strong>Estatura:</strong> <span th:text="${#numbers.formatDecimal(measurement.bodyMass.height, 2, 2)} + ' m'">-</span></p>
                         </div>
+                        <div class="col-md-6" th:if="${measurement.imc != null}">
+                          <p><strong>IMC:</strong> <span th:text="${#numbers.formatDecimal(measurement.imc, 1, 2)}">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${measurement.nivelPeso != null}">
+                          <p><strong>Nivel de peso:</strong> <span th:text="${measurement.nivelPeso.name()}">-</span></p>
+                        </div>
                       </div>
                       <div class="row" th:if="${measurement.notes != null && !measurement.notes.isEmpty()}">
                         <div class="col-md-12">

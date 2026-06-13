@@ -22,6 +22,8 @@ import com.nutriconsultas.clinical.exam.ClinicalExam;
 import com.nutriconsultas.clinical.exam.ClinicalExamRepository;
 import com.nutriconsultas.clinical.exam.ClinicalExamServiceImpl;
 
+import com.nutriconsultas.paciente.metrics.BodyMetricSource;
+
 import lombok.extern.slf4j.Slf4j;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,6 +37,9 @@ public class ClinicalExamServiceTest {
 
 	@Mock
 	private ClinicalExamRepository repository;
+
+	@Mock
+	private com.nutriconsultas.paciente.metrics.BodyMetricRecordService bodyMetricRecordService;
 
 	private Paciente paciente;
 
@@ -200,14 +205,14 @@ public class ClinicalExamServiceTest {
 	@Test
 	public void testDeleteById() {
 		log.info("starting testDeleteById");
-		// Arrange
-		org.mockito.Mockito.doNothing().when(repository).deleteById(1L);
+		when(repository.findById(1L)).thenReturn(Optional.of(exam));
 
 		// Act
 		service.deleteById(1L);
 
 		// Assert
 		verify(repository).deleteById(1L);
+		verify(bodyMetricRecordService).removeSourceAndRefreshPatient(BodyMetricSource.CLINICAL_EXAM, 1L, 1L);
 		log.info("finished testDeleteById");
 	}
 
