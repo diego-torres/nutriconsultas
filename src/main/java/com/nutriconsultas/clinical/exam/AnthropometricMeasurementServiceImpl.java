@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.nutriconsultas.util.LogRedaction;
 
+import com.nutriconsultas.paciente.metrics.BodyMetricSource;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -17,6 +19,9 @@ public class AnthropometricMeasurementServiceImpl implements AnthropometricMeasu
 
 	@Autowired
 	private AnthropometricMeasurementRepository repository;
+
+	@Autowired
+	private com.nutriconsultas.paciente.metrics.BodyMetricRecordService bodyMetricRecordService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -36,14 +41,26 @@ public class AnthropometricMeasurementServiceImpl implements AnthropometricMeasu
 	@Transactional
 	public AnthropometricMeasurement save(@NonNull final AnthropometricMeasurement measurement) {
 		log.debug("Saving anthropometric measurement: {}", LogRedaction.redactAnthropometricMeasurement(measurement));
-		return repository.save(measurement);
+		final AnthropometricMeasurement saved = repository.save(measurement);
+		bodyMetricRecordService.syncFromAnthropometric(saved);
+		return saved;
 	}
 
 	@Override
 	@Transactional
 	public void deleteById(@NonNull final Long id) {
 		log.debug("Deleting anthropometric measurement with id: {}", id);
-		repository.deleteById(id);
+		final AnthropometricMeasurement measurement = repository.findById(id).orElse(null);
+		if (measurement != null) {
+			final Long pacienteId = measurement.getPaciente() != null ? measurement.getPaciente().getId() : null;
+			repository.deleteById(id);
+			if (pacienteId != null) {
+				bodyMetricRecordService.removeSourceAndRefreshPatient(BodyMetricSource.ANTHROPOMETRIC, id, pacienteId);
+			}
+		}
+		else {
+			repository.deleteById(id);
+		}
 	}
 
 	@Override

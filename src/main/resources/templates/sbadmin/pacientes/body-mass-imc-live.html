@@ -1,0 +1,120 @@
+<!--
+  Live classic BMI (IMC) and weight level display for anthropometric body-mass forms.
+  Fragments: bodyMassImcDisplay (markup), bodyMassImcScript (JavaScript)
+-->
+<div th:fragment="bodyMassImcDisplay">
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <div class="form-group mb-0">
+        <label>IMC calculado</label>
+        <input type="text" id="body-mass-imc-display" class="form-control" readonly
+               aria-live="polite" placeholder="—">
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="form-group mb-0">
+        <label>Nivel de peso</label>
+        <input type="text" id="body-mass-nivel-peso-display" class="form-control" readonly
+               aria-live="polite" placeholder="—">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div th:fragment="bodyMassImcScript">
+  <script>
+    (function() {
+      function calculateClassicBmi(weight, height) {
+        if (!weight || !height || weight <= 0 || height <= 0) {
+          return null;
+        }
+        return weight / (height * height);
+      }
+
+      function calculateNivelPeso(bmi) {
+        if (bmi === null || bmi === undefined || isNaN(bmi)) {
+          return null;
+        }
+        if (bmi > 30.0) {
+          return 'SOBREPESO';
+        }
+        if (bmi > 25.0) {
+          return 'ALTO';
+        }
+        if (bmi > 18.5) {
+          return 'NORMAL';
+        }
+        return 'BAJO';
+      }
+
+      function formatBmi(bmi) {
+        return bmi.toFixed(2);
+      }
+
+      function clearBodyMassImcDisplay() {
+        const imcDisplay = document.getElementById('body-mass-imc-display');
+        const nivelDisplay = document.getElementById('body-mass-nivel-peso-display');
+        if (imcDisplay) {
+          imcDisplay.value = '';
+        }
+        if (nivelDisplay) {
+          nivelDisplay.value = '';
+        }
+      }
+
+      function updateBodyMassImcLive() {
+        const weightInput = document.querySelector('input[name*="bodyMass.weight"]');
+        const heightInput = document.querySelector('input[name*="bodyMass.height"]');
+        const imcHidden = document.querySelector('input[name*="bodyMass.imc"]');
+        const nivelHidden = document.querySelector('input[name*="bodyMass.nivelPeso"]');
+        const imcDisplay = document.getElementById('body-mass-imc-display');
+        const nivelDisplay = document.getElementById('body-mass-nivel-peso-display');
+
+        if (!weightInput || !heightInput || !imcDisplay || !nivelDisplay) {
+          return;
+        }
+
+        const weight = parseFloat(weightInput.value);
+        const height = parseFloat(heightInput.value);
+        const bmi = calculateClassicBmi(weight, height);
+
+        if (bmi === null) {
+          clearBodyMassImcDisplay();
+          if (imcHidden) {
+            imcHidden.value = '';
+          }
+          if (nivelHidden) {
+            nivelHidden.value = '';
+          }
+          return;
+        }
+
+        const formattedBmi = formatBmi(bmi);
+        const nivelPeso = calculateNivelPeso(bmi);
+
+        imcDisplay.value = formattedBmi;
+        nivelDisplay.value = nivelPeso !== null ? nivelPeso : '';
+
+        if (imcHidden) {
+          imcHidden.value = formattedBmi;
+        }
+        if (nivelHidden) {
+          nivelHidden.value = nivelPeso !== null ? nivelPeso : '';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const weightInput = document.querySelector('input[name*="bodyMass.weight"]');
+        const heightInput = document.querySelector('input[name*="bodyMass.height"]');
+
+        if (!weightInput || !heightInput) {
+          return;
+        }
+
+        weightInput.addEventListener('input', updateBodyMassImcLive);
+        heightInput.addEventListener('input', updateBodyMassImcLive);
+        updateBodyMassImcLive();
+      });
+    })();
+  </script>
+</div>

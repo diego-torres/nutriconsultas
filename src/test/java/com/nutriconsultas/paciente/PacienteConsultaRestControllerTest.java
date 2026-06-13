@@ -6,7 +6,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +40,9 @@ public class PacienteConsultaRestControllerTest {
 
 	@Mock
 	private CalendarEventService calendarEventService;
+
+	@Mock
+	private com.nutriconsultas.paciente.metrics.BodyMetricRecordService bodyMetricRecordService;
 
 	private Paciente paciente;
 
@@ -325,49 +330,38 @@ public class PacienteConsultaRestControllerTest {
 	@Test
 	public void testGetChartData() {
 		log.info("Starting testGetChartData");
-		// Arrange
-		when(calendarEventService.findByPacienteId(1L)).thenReturn(Arrays.asList(consulta1, consulta2));
+		final Map<String, Object> chartData = new HashMap<>();
+		chartData.put("imc", Arrays.asList(22.86, 23.18));
+		chartData.put("grasaCorporal", Arrays.asList(15.5, 16.0));
+		chartData.put("imcLabels", Arrays.asList("01/01/2024", "02/01/2024"));
+		chartData.put("grasaCorporalLabels", Arrays.asList("01/01/2024", "02/01/2024"));
+		when(bodyMetricRecordService.buildChartResponse(1L))
+			.thenReturn(new ChartResponse(Arrays.asList("01/01/2024", "02/01/2024"), chartData));
 
-		// Act
-		ChartResponse result = pacienteConsultaRestController.getChartData(1L, "peso");
+		final ChartResponse result = pacienteConsultaRestController.getChartData(1L, "peso");
 
-		// Assert
 		assertThat(result).isNotNull();
-		assertThat(result.getLabels()).isNotNull();
-		assertThat(result.getLabels().size()).isEqualTo(2);
-		assertThat(result.getData()).isNotNull();
-		assertThat(result.getData().containsKey("peso")).isTrue();
-		assertThat(result.getData().containsKey("estatura")).isTrue();
-		assertThat(result.getData().containsKey("imc")).isTrue();
-		assertThat(result.getData().containsKey("grasaCorporal")).isTrue();
-		assertThat(result.getData().containsKey("presionArterial")).isTrue();
-		assertThat(result.getData().containsKey("sistolica")).isTrue();
-		assertThat(result.getData().containsKey("diastolica")).isTrue();
-		assertThat(result.getData().containsKey("indiceGlucemico")).isTrue();
-
+		assertThat(result.getLabels()).hasSize(2);
+		assertThat(result.getData()).containsKeys("imc", "grasaCorporal", "imcLabels", "grasaCorporalLabels");
 		@SuppressWarnings("unchecked")
-		List<Double> pesoData = (List<Double>) result.getData().get("peso");
-		assertThat(pesoData).isNotNull();
-		assertThat(pesoData.size()).isEqualTo(2);
-		assertThat(pesoData.get(0)).isEqualTo(70.0);
-		assertThat(pesoData.get(1)).isEqualTo(71.0);
-
-		verify(calendarEventService).findByPacienteId(1L);
+		final List<Double> imcData = (List<Double>) result.getData().get("imc");
+		assertThat(imcData).containsExactly(22.86, 23.18);
+		verify(bodyMetricRecordService).buildChartResponse(1L);
 		log.info("Finishing testGetChartData");
 	}
 
 	@Test
 	public void testGetChartDataWithNullValues() {
 		log.info("Starting testGetChartDataWithNullValues");
-		// Arrange
-		CalendarEvent consulta = new CalendarEvent();
-		consulta.setEventDateTime(new Date());
-		when(calendarEventService.findByPacienteId(1L)).thenReturn(Arrays.asList(consulta));
+		final Map<String, Object> chartData = new HashMap<>();
+		chartData.put("imc", Arrays.asList());
+		chartData.put("grasaCorporal", Arrays.asList());
+		chartData.put("imcLabels", Arrays.asList());
+		chartData.put("grasaCorporalLabels", Arrays.asList());
+		when(bodyMetricRecordService.buildChartResponse(1L)).thenReturn(new ChartResponse(Arrays.asList(), chartData));
 
-		// Act
-		ChartResponse result = pacienteConsultaRestController.getChartData(1L, "peso");
+		final ChartResponse result = pacienteConsultaRestController.getChartData(1L, "peso");
 
-		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.getLabels()).isNotNull();
 		assertThat(result.getData()).isNotNull();
@@ -377,17 +371,16 @@ public class PacienteConsultaRestControllerTest {
 	@Test
 	public void testGetChartDataWithNullEventDateTime() {
 		log.info("Starting testGetChartDataWithNullEventDateTime");
-		// Arrange
-		CalendarEvent consulta = new CalendarEvent();
-		consulta.setEventDateTime(null);
-		when(calendarEventService.findByPacienteId(1L)).thenReturn(Arrays.asList(consulta));
+		final Map<String, Object> chartData = new HashMap<>();
+		chartData.put("imc", Arrays.asList(22.0));
+		chartData.put("imcLabels", Arrays.asList("01/01/2024"));
+		when(bodyMetricRecordService.buildChartResponse(1L))
+			.thenReturn(new ChartResponse(Arrays.asList("01/01/2024"), chartData));
 
-		// Act
-		ChartResponse result = pacienteConsultaRestController.getChartData(1L, "peso");
+		final ChartResponse result = pacienteConsultaRestController.getChartData(1L, "peso");
 
-		// Assert
 		assertThat(result).isNotNull();
-		assertThat(result.getLabels()).isEmpty();
+		assertThat(result.getLabels()).containsExactly("01/01/2024");
 		log.info("Finishing testGetChartDataWithNullEventDateTime");
 	}
 

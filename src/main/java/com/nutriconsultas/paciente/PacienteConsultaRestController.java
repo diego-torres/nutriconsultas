@@ -39,6 +39,9 @@ public class PacienteConsultaRestController extends AbstractGridController<Calen
 	@Autowired
 	private CalendarEventService calendarEventService;
 
+	@Autowired
+	private com.nutriconsultas.paciente.metrics.BodyMetricRecordService bodyMetricRecordService;
+
 	@PostMapping("data-table")
 	public PageArray getPageArray(@RequestBody final PagingRequest pagingRequest,
 			@PathVariable @NonNull final Long id) {
@@ -160,61 +163,7 @@ public class PacienteConsultaRestController extends AbstractGridController<Calen
 	public com.nutriconsultas.charts.ChartResponse getChartData(@PathVariable @NonNull final Long id,
 			@PathVariable @NonNull final String chartType) {
 		log.debug("Getting chart data for paciente {} with chart type {}", id, chartType);
-		final List<CalendarEvent> consultas = calendarEventService.findByPacienteId(id);
-		// Sort by date ascending
-		consultas.sort(Comparator.comparing(CalendarEvent::getEventDateTime, Comparator.nullsLast(Date::compareTo)));
-
-		final java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd/MM/yyyy");
-		final List<String> labels = consultas.stream()
-			.filter(c -> c.getEventDateTime() != null)
-			.map(c -> dateFormat.format(c.getEventDateTime()))
-			.collect(Collectors.toList());
-
-		final java.util.Map<String, Object> data = new java.util.HashMap<>();
-
-		// Add all the data fields needed for the histogram
-		final List<Double> pesoData = consultas.stream().map(CalendarEvent::getPeso).collect(Collectors.toList());
-		data.put("peso", pesoData);
-
-		final List<Double> estaturaData = consultas.stream()
-			.map(CalendarEvent::getEstatura)
-			.collect(Collectors.toList());
-		data.put("estatura", estaturaData);
-
-		final List<Double> imcData = consultas.stream().map(CalendarEvent::getImc).collect(Collectors.toList());
-		data.put("imc", imcData);
-
-		final List<Double> grasaCorporalData = consultas.stream()
-			.map(CalendarEvent::getIndiceGrasaCorporal)
-			.collect(Collectors.toList());
-		data.put("grasaCorporal", grasaCorporalData);
-
-		// Presión arterial - combinamos sistólica y diastólica
-		final List<String> presionArterialData = consultas.stream().map(c -> {
-			if (c.getSistolica() != null && c.getDiastolica() != null) {
-				return c.getSistolica() + "/" + c.getDiastolica();
-			}
-			return null;
-		}).collect(Collectors.toList());
-		data.put("presionArterial", presionArterialData);
-
-		// También guardamos sistólica y diastólica por separado para gráficos
-		final List<Integer> sistolicaData = consultas.stream()
-			.map(CalendarEvent::getSistolica)
-			.collect(Collectors.toList());
-		data.put("sistolica", sistolicaData);
-
-		final List<Integer> diastolicaData = consultas.stream()
-			.map(CalendarEvent::getDiastolica)
-			.collect(Collectors.toList());
-		data.put("diastolica", diastolicaData);
-
-		final List<Integer> indiceGlucemicoData = consultas.stream()
-			.map(CalendarEvent::getIndiceGlucemico)
-			.collect(Collectors.toList());
-		data.put("indiceGlucemico", indiceGlucemicoData);
-
-		return new com.nutriconsultas.charts.ChartResponse(labels, data);
+		return bodyMetricRecordService.buildChartResponse(id);
 	}
 
 }

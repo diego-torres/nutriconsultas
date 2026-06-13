@@ -26,6 +26,8 @@ import com.nutriconsultas.clinical.exam.anthropometric.BodyComposition;
 import com.nutriconsultas.clinical.exam.anthropometric.Bioimpedance;
 import com.nutriconsultas.clinical.exam.anthropometric.Skinfolds;
 
+import com.nutriconsultas.paciente.metrics.BodyMetricSource;
+
 import lombok.extern.slf4j.Slf4j;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,6 +41,9 @@ public class AnthropometricMeasurementServiceTest {
 
 	@Mock
 	private AnthropometricMeasurementRepository repository;
+
+	@Mock
+	private com.nutriconsultas.paciente.metrics.BodyMetricRecordService bodyMetricRecordService;
 
 	private Paciente paciente;
 
@@ -288,11 +293,13 @@ public class AnthropometricMeasurementServiceTest {
 	@Test
 	public void testDeleteById() {
 		log.info("starting testDeleteById");
+		when(repository.findById(1L)).thenReturn(Optional.of(measurement));
 		// Act
 		service.deleteById(1L);
 
 		// Assert
 		verify(repository).deleteById(1L);
+		verify(bodyMetricRecordService).removeSourceAndRefreshPatient(BodyMetricSource.ANTHROPOMETRIC, 1L, 1L);
 		log.info("finished testDeleteById");
 	}
 

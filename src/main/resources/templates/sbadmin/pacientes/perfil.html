@@ -378,9 +378,9 @@
 
         $.getJSON(url, data).done(function(response) {
             console.debug("response", response);
-            chart.data.labels = response.labels;
-            // Determine which data field to use based on chart type
             var dataField = currentChartType === 'imc' ? 'imc' : 'grasaCorporal';
+            var labelsField = currentChartType === 'imc' ? 'imcLabels' : 'grasaCorporalLabels';
+            chart.data.labels = response.data[labelsField] || response.labels || [];
             chart.data.datasets[0].data = response.data[dataField] || [];
             chart.update(); // finally update our chart
         });
