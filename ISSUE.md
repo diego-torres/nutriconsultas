@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-12 — **#107 in-progress** on branch `mobile-api/107-jwt-resource-server`. Next unblocked after merge: **#110**.
+**Last updated:** 2026-06-13 — **#109 in-progress** on branch `mobile-api/109-patient-auth0-linkage`. **#107 done** (`aa4db72`). **#118 done** (`0437a6c`, `AUTH_AUDIENCE` on prod EC2). Next after #109: **#110**.
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116) plus the directly-related `[Dashboard]` IMC gauge (#106). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -19,8 +19,8 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 | Mobile API audience | **Patient-only** — `/rest/mobile/patient/**` serves a patient their **own** visits, diet plans, progress, messages. Never another patient's, never cross-tenant. |
 | Nutritionist mobile app | **Out of scope** — roster/consultation/meal-plan authoring stays on the existing Thymeleaf web app. No `[Mobile API]` endpoint exposes authoring. |
 | `[Mobile API] #114` (nutritionist reply) | **Web/backend feature** — lives in this repo, but it is **not** consumed by the patient mobile app. It feeds the patient `messages` thread (#96). |
-| Patient identity | JWT `sub` resolves to **`Paciente.patientAuthSub`** (NEW field, #107). **Never `Paciente.userId`** — that is the NUTRITIONIST's Auth0 sub / tenant owner (ALIGNMENT-SPEC §F2). 403 if no linked `Paciente`. |
-| Linkage mechanism | **Undefined** — how an Auth0 `sub` first binds to a `Paciente` (admin invite / email match / assign) is designed in **#109** and gates live integration. |
+| Patient identity | JWT `sub` resolves to **`Paciente.patientAuthSub`** (#107). **Never `Paciente.userId`** — that is the NUTRITIONIST's Auth0 sub / tenant owner (ALIGNMENT-SPEC §F2). 403 if no linked `Paciente`. |
+| Linkage mechanism | **Option A (nutritionist-initiated)** — #109: nutritionist links from **Afiliación** via patient email (Auth0 Management API lookup) or manual `sub` assign; unlink clears `patientAuthSub`. Requires optional `AUTH0_MGMT_*` env for email lookup. |
 
 ## Design & schema ground truth (ALIGNMENT-SPEC §F8 — verified at `228bbc3`)
 
@@ -46,20 +46,26 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 | `done` | Merged to `main` |
 | `deferred` | Intentionally paused — decision pending |
 
-All `[Mobile API]` issues are currently `open` — none of Phase 0 has shipped.
+Phase 0 JWT resource server (#107) is **done**. Patient linkage (#109) is **in-progress**.
 
 ---
 
 ## Phase 0 — Foundation (P0 · blocks every endpoint)
 
-No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `done`.
+No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `done`. Linkage (#109) gates **live** mobile E2E but not endpoint development (seed `patientAuthSub` for tests).
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| **107** | Phase 0 — Auth0 JWT resource server + patient Auth0 linkage | https://github.com/diego-torres/nutriconsultas/issues/107 | **in-progress** | — | New `MobileSecurityConfig` `@Order(1)` stateless chain on `/rest/mobile/**`; add `Paciente.patientAuthSub` (unique, nullable) + principal resolver; Liquibase column (coord. #46). **Blocks #91–#99.** Mirror of mobile [#22](https://github.com/Escanor4323/nutriconsultas-mobile/issues/22). |
-| 108 | Auth0 API resource + audience + scopes setup | https://github.com/diego-torres/nutriconsultas/issues/108 | open | 107 | Auth0-tenant config: API identifier (audience), scopes; feeds `issuer-uri`/`audience` validation in #107. |
-| 109 | Patient-Auth0 account linkage (admin invite/assign flow) | https://github.com/diego-torres/nutriconsultas/issues/109 | open | 107 | Defines how a `sub` first binds to `patientAuthSub`. Gates **live** E2E; endpoints can be built/tested with seeded linkage before this lands. |
-| 110 | DTO conventions + `ApiResponse`/`PagedResponse` wrappers | https://github.com/diego-torres/nutriconsultas/issues/110 | open | — | `com.nutriconsultas.mobile.dto`: `ApiResponse<T>`, `PagedResponse<T>` (+ cursor variant for #96); ISO-8601 dates (Jackson `JavaTimeModule`, `WRITE_DATES_AS_TIMESTAMPS=false`). **Blocks #91–#99.** |
+| **107** | Phase 0 — Auth0 JWT resource server + patient Auth0 linkage | https://github.com/diego-torres/nutriconsultas/issues/107 | **done** | — | Merged `aa4db72`: `MobileSecurityConfig` `@Order(1)` on `/rest/mobile/**`; `Paciente.patientAuthSub` + `PatientAuthService` / `PatientLinkageFilter`. |
+| 108 | Auth0 API resource + audience + scopes setup | https://github.com/diego-torres/nutriconsultas/issues/108 | open | 107 | Auth0-tenant config: API identifier `https://api.nutriconsultas.minutriporcion.com`, scopes; prod `AUTH_AUDIENCE` deployed via #118. |
+| **109** | Patient-Auth0 account linkage (admin invite/assign flow) | https://github.com/diego-torres/nutriconsultas/issues/109 | **in-progress** | 107 | Branch `mobile-api/109-patient-auth0-linkage`: admin Afiliación UI + `POST/DELETE /rest/pacientes/{id}/mobile-auth`. Option A: email lookup via Auth0 Management API. |
+| 110 | DTO conventions + `ApiResponse`/`PagedResponse` wrappers | https://github.com/diego-torres/nutriconsultas/issues/110 | open | — | `com.nutriconsultas.mobile.dto`: `ApiResponse<T>`, `PagedResponse<T>` (+ cursor variant for #96); ISO-8601 dates. **Blocks #91–#99.** |
+
+### Infra (mobile JWT)
+
+| PR | Title | State | Notes |
+|----|-------|-------|-------|
+| **118** | deploy `AUTH_AUDIENCE` for mobile JWT validation | **done** | Merged `0437a6c`; prod EC2 `app.env` has `AUTH_AUDIENCE` (verified 2026-06-13). |
 
 ## Phase 1 — Cross-cutting foundation (P1 · applies to all endpoints)
 
@@ -136,6 +142,11 @@ Each mobile feature consumes these backend endpoints. Two-way linking with the m
 - i18n: `Accept-Language` (es-MX default) error bodies (#111).
 - PHI-safe logging (`LogRedaction`, #115); no names/emails/DOB at INFO.
 
+**E2E HTTP codes (2026-06-13):**
+- **401** — missing/invalid JWT or wrong `aud` (check mobile `AUTH0_AUDIENCE` = `https://api.nutriconsultas.minutriporcion.com`).
+- **403** `patient_not_linked` — JWT valid, no `Paciente.patientAuthSub` match (#109 linkage required).
+- **404** — linkage OK but endpoint not implemented yet (#91+).
+
 ---
 
 ## How to update this file
@@ -143,13 +154,13 @@ Each mobile feature consumes these backend endpoints. Two-way linking with the m
 **Starting work** — mark `in-progress`, keep `NEXT` on it until the PR merges:
 
 ```text
-| 107 | Phase 0 — Auth0 JWT resource server ... | https://... | in-progress | — | ... |
+| 109 | Patient-Auth0 account linkage ... | https://... | in-progress | 107 | ... |
 ```
 
-**After PR merges** — mark `done` and advance `NEXT` to the next unblocked row (Phase 0 order: #107 → #110 → #108/#109 → endpoints):
+**After PR merges** — mark `done` and advance `NEXT` to the next unblocked row (Phase 0 order: #109 → #110 → #108 → endpoints):
 
 ```text
-| 107 | Phase 0 ... | https://... | done | — | ... |
+| 109 | Patient-Auth0 account linkage ... | https://... | done | 107 | ... |
 | 110 | DTO conventions ... | https://... | **NEXT** | — | ... |
 ```
 
