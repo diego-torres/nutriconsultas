@@ -105,6 +105,7 @@ fi
 export JDBC_DATABASE_URL=${JDBC_DATABASE_URL:-jdbc:postgresql://localhost:5432/nutriconsultas}
 export JDBC_DATABASE_USERNAME=${JDBC_DATABASE_USERNAME:-nutriconsultas}
 export JDBC_DATABASE_PASSWORD=${JDBC_DATABASE_PASSWORD:-nutriconsultas}
+export AUTH_AUDIENCE=${AUTH_AUDIENCE:-https://api.nutriconsultas.minutriporcion.com}
 
 # Run Spring Boot application
 echo -e "${GREEN}✓ Starting Spring Boot application...${NC}"
