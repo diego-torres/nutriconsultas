@@ -234,22 +234,6 @@ public class PacienteController extends AbstractAuthorizedController {
 		return result;
 	}
 
-	private CalendarEvent getUltimoRegistroMedico(@NonNull final Long pacienteId) {
-		final List<CalendarEvent> eventos = calendarEventService.findByPacienteId(pacienteId);
-		CalendarEvent result = null;
-		if (!eventos.isEmpty()) {
-			final List<CalendarEvent> eventosConDatos = eventos.stream()
-				.filter(e -> e.getEventDateTime() != null)
-				.filter(e -> e.getPeso() != null || e.getEstatura() != null || e.getImc() != null)
-				.sorted(Comparator.comparing(CalendarEvent::getEventDateTime).reversed())
-				.collect(Collectors.toList());
-			if (!eventosConDatos.isEmpty()) {
-				result = eventosConDatos.get(0);
-			}
-		}
-		return result;
-	}
-
 	@GetMapping(path = "/admin/pacientes/{id}/afiliacion")
 	public String afiliacionPaciente(@PathVariable @NonNull Long id, Model model,
 			@AuthenticationPrincipal final OidcUser principal) {
