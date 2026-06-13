@@ -14,9 +14,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import com.nutriconsultas.mobile.dto.ApiResponse;
+import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
 import com.nutriconsultas.mobile.dto.PagedResponse;
 import com.nutriconsultas.paciente.Paciente;
@@ -55,6 +59,27 @@ class MobilePatientDietPlanControllerTest {
 		assertThat(response.data().content().get(0).dietaName()).isEqualTo("Plan A");
 		assertThat(response.timestamp()).isNotNull();
 		verify(mobilePatientDietPlanService).listDietPlans(3L, 0, 20, true);
+	}
+
+	@Test
+	void getDietPlanPdf_returnsPdfResponseWithContentDisposition() {
+		final Paciente paciente = new Paciente();
+		paciente.setId(3L);
+		final Jwt jwt = jwtWithSub(PATIENT_SUB);
+		final byte[] pdfBytes = new byte[] { 37, 80, 68, 70 };
+		final DietPlanPdfResult pdf = new DietPlanPdfResult(pdfBytes, "Plan A.pdf");
+
+		when(patientAuthService.requirePacienteByJwt(jwt)).thenReturn(paciente);
+		when(mobilePatientDietPlanService.generateDietPlanPdf(3L, 7L)).thenReturn(pdf);
+
+		final ResponseEntity<byte[]> response = controller.getDietPlanPdf(jwt, 7L);
+
+		assertThat(response.getStatusCode().value()).isEqualTo(200);
+		assertThat(response.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION))
+			.isEqualTo("attachment; filename=\"Plan A.pdf\"");
+		assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PDF);
+		assertThat(response.getBody()).isEqualTo(pdfBytes);
+		verify(mobilePatientDietPlanService).generateDietPlanPdf(3L, 7L);
 	}
 
 	private static Jwt jwtWithSub(final String subject) {

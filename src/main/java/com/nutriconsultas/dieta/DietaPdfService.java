@@ -155,13 +155,40 @@ public class DietaPdfService {
 				.orElse(null);
 		}
 
+		return buildPdf(dieta, activeAssignment);
+	}
+
+	/**
+	 * Generates a patient-specific PDF for an explicit {@link PacienteDieta} assignment.
+	 *
+	 * <p>
+	 * Used by the mobile API so the PDF reflects the requested assignment (notes, dates,
+	 * patient context) rather than the first active assignment on the dieta.
+	 * @param assignment the patient diet assignment; must reference a persisted dieta
+	 * @return PDF document as byte array
+	 * @throws IllegalArgumentException if the assignment has no dieta or the dieta is
+	 * missing
+	 */
+	public byte[] generatePdfForAssignment(@NonNull final PacienteDieta assignment) {
+		if (assignment.getDieta() == null || assignment.getDieta().getId() == null) {
+			throw new IllegalArgumentException("Assignment has no dieta");
+		}
+		final Long dietaId = assignment.getDieta().getId();
+		log.info("Generating PDF for assignment id: {} dieta id: {}", assignment.getId(), dietaId);
+		final Dieta dieta = dietaService.getDieta(dietaId);
+		if (dieta == null) {
+			throw new IllegalArgumentException("Dieta with id " + dietaId + " not found");
+		}
+		return buildPdf(dieta, assignment);
+	}
+
+	private byte[] buildPdf(final Dieta dieta, final PacienteDieta assignment) {
 		// Prepare context for Thymeleaf template
 		// Template will conditionally render patient info based on these variables
 		final Context context = new Context();
 		context.setVariable("dieta", dieta);
-		// null if unassigned or if includePatientInfo is false
-		context.setVariable("pacienteDieta", activeAssignment);
-		context.setVariable("paciente", activeAssignment != null ? activeAssignment.getPaciente() : null);
+		context.setVariable("pacienteDieta", assignment);
+		context.setVariable("paciente", assignment != null ? assignment.getPaciente() : null);
 
 		// Sort ingestas by id
 		final List<Ingesta> sortedIngestas = dieta.getIngestas()

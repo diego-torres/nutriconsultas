@@ -174,4 +174,30 @@ public class DietaPdfServiceTest {
 		// This is verified implicitly - if it were called, we'd need to mock it
 	}
 
+	@Test
+	public void testGeneratePdfForAssignmentUsesProvidedAssignment() {
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		pacienteDieta.setId(5L);
+		pacienteDieta.setStatus(PacienteDietaStatus.ACTIVE);
+		pacienteDieta.setDieta(dieta);
+
+		when(dietaService.getDieta(1L)).thenReturn(dieta);
+		when(templateEngine.process(eq("sbadmin/dietas/printable"), any(Context.class)))
+			.thenReturn("<html><body>Test</body></html>");
+
+		final byte[] pdfBytes = dietaPdfService.generatePdfForAssignment(pacienteDieta);
+
+		assertThat(pdfBytes).isNotNull();
+		assertThat(pdfBytes.length).isGreaterThan(0);
+	}
+
+	@Test
+	public void testGeneratePdfForAssignmentWithoutDietaThrows() {
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+
+		assertThatThrownBy(() -> dietaPdfService.generatePdfForAssignment(pacienteDieta))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("no dieta");
+	}
+
 }

@@ -1,5 +1,8 @@
 package com.nutriconsultas.mobile;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
+import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
 import com.nutriconsultas.mobile.dto.PagedResponse;
 import com.nutriconsultas.paciente.Paciente;
@@ -54,6 +58,21 @@ public class MobilePatientDietPlanController extends AbstractMobilePatientContro
 		}
 		final DietPlanDetailDto plan = mobilePatientDietPlanService.getDietPlanDetail(paciente.getId(), assignmentId);
 		return ApiResponse.ok(plan);
+	}
+
+	@GetMapping(value = "/{assignmentId}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+	public ResponseEntity<byte[]> getDietPlanPdf(@AuthenticationPrincipal final Jwt jwt,
+			@PathVariable final Long assignmentId) {
+		final Paciente paciente = getAuthenticatedPaciente(jwt);
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile get diet plan PDF {} for patient {}", assignmentId,
+					LogRedaction.redactPaciente(paciente.getId()));
+		}
+		final DietPlanPdfResult pdf = mobilePatientDietPlanService.generateDietPlanPdf(paciente.getId(), assignmentId);
+		return ResponseEntity.ok()
+			.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + pdf.filename() + "\"")
+			.contentType(MediaType.APPLICATION_PDF)
+			.body(pdf.content());
 	}
 
 }
