@@ -1,7 +1,6 @@
 package com.nutriconsultas.mobile;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import com.nutriconsultas.paciente.Paciente;
 
@@ -17,14 +16,11 @@ public abstract class AbstractMobilePatientController {
 		this.patientAuthService = patientAuthService;
 	}
 
-	protected Paciente getAuthenticatedPaciente(@AuthenticationPrincipal final JwtAuthenticationToken authentication) {
-		if (authentication == null) {
+	protected Paciente getAuthenticatedPaciente(final Jwt jwt) {
+		if (jwt == null) {
 			throw new PatientNotLinkedException();
 		}
-		if (authentication.getDetails() instanceof PatientPrincipal patientPrincipal) {
-			return patientAuthService.requirePacienteById(patientPrincipal.getPacienteId());
-		}
-		return patientAuthService.requirePacienteByJwt(authentication.getToken());
+		return patientAuthService.requirePacienteByJwt(jwt);
 	}
 
 }

@@ -96,6 +96,50 @@
                       <button type="submit" class="btn btn-success ">Listo!</button>
                     </form>
                   </div>
+
+                  <!-- Mobile app Auth0 linkage (#109) -->
+                  <div class="info-form p-5 border-top" th:if="${paciente != null and paciente.id != null}">
+                    <h5 class="text-gray-800 mb-3">App móvil del paciente</h5>
+                    <p class="text-muted small">
+                      Vincule la cuenta Auth0 del paciente para que pueda iniciar sesión en la app móvil.
+                      El identificador se guarda en <code>patientAuthSub</code> (distinto del nutricionista).
+                    </p>
+                    <div id="mobile-auth-alert" class="alert d-none" role="alert"></div>
+                    <div class="mb-3">
+                      <span class="font-weight-bold">Estado:</span>
+                      <span id="mobile-auth-status-badge" class="badge"
+                        th:classappend="${mobileAuth != null and mobileAuth.linked} ? 'badge-success' : 'badge-secondary'"
+                        th:text="${mobileAuth != null and mobileAuth.linked} ? 'Vinculado' : 'No vinculado'">No vinculado</span>
+                      <span id="mobile-auth-sub" class="text-muted small ml-2"
+                        th:if="${mobileAuth != null and mobileAuth.linked}"
+                        th:text="'(' + ${mobileAuth.patientAuthSubRedacted} + ')'"></span>
+                    </div>
+                    <div class="form-row align-items-end">
+                      <div class="form-group col-md-8" th:if="${mobileAuth == null or !mobileAuth.linked}">
+                        <label for="mobile-auth-sub-input">Identificador Auth0 (sub)</label>
+                        <input type="text" class="form-control" id="mobile-auth-sub-input"
+                          placeholder="auth0|… o google-oauth2|…">
+                        <small class="form-text text-muted">Opcional si usa vinculación por correo del paciente.</small>
+                      </div>
+                      <div class="form-group col-md-12">
+                        <button type="button" class="btn btn-primary btn-sm" id="mobile-auth-link-email-btn"
+                          th:if="${mobileAuth != null and mobileAuth.emailLookupAvailable and (mobileAuth == null or !mobileAuth.linked)}">
+                          Vincular por correo del paciente
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="mobile-auth-link-sub-btn"
+                          th:if="${mobileAuth == null or !mobileAuth.linked}">
+                          Vincular por identificador
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-sm" id="mobile-auth-unlink-btn"
+                          th:if="${mobileAuth != null and mobileAuth.linked}">
+                          Desvincular
+                        </button>
+                      </div>
+                    </div>
+                    <p class="text-muted small mb-0" th:if="${mobileAuth != null and !mobileAuth.emailLookupAvailable}">
+                      Vinculación por correo no disponible (configure <code>AUTH0_MGMT_CLIENT_ID</code> en el servidor).
+                    </p>
+                  </div>
                   <br>
 
                   <a href="#nav-main" class="btn btn-secondary-outline btn-sm" role="button">↓</a>
@@ -126,6 +170,111 @@
 
     <!-- Custom scripts for all pages-->
     <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+
+    <script th:inline="javascript">
+      (function () {
+        var pacienteId = /*[[${paciente != null ? paciente.id : null}]]*/ null;
+        if (!pacienteId) {
+          return;
+        }
+        var baseUrl = '/rest/pacientes/' + pacienteId + '/mobile-auth';
+        var alertEl = document.getElementById('mobile-auth-alert');
+        var badgeEl = document.getElementById('mobile-auth-status-badge');
+        var subEl = document.getElementById('mobile-auth-sub');
+
+        function showAlert(type, message) {
+          if (!alertEl) {
+            return;
+          }
+          alertEl.className = 'alert alert-' + type;
+          alertEl.textContent = message;
+          alertEl.classList.remove('d-none');
+        }
+
+        function refreshStatus(data) {
+          if (!data) {
+            return;
+          }
+          var linked = !!data.linked;
+          if (badgeEl) {
+            badgeEl.textContent = linked ? 'Vinculado' : 'No vinculado';
+            badgeEl.className = 'badge ' + (linked ? 'badge-success' : 'badge-secondary');
+          }
+          if (subEl) {
+            if (linked && data.patientAuthSubRedacted) {
+              subEl.textContent = '(' + data.patientAuthSubRedacted + ')';
+              subEl.classList.remove('d-none');
+            } else {
+              subEl.textContent = '';
+              subEl.classList.add('d-none');
+            }
+          }
+          if (linked) {
+            window.location.reload();
+          }
+        }
+
+        function postLink(body) {
+          return fetch(baseUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body || {})
+          }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, status: r.status, body: j }; }); });
+        }
+
+        var emailBtn = document.getElementById('mobile-auth-link-email-btn');
+        if (emailBtn) {
+          emailBtn.addEventListener('click', function () {
+            postLink({}).then(function (res) {
+              if (res.ok && res.body.success) {
+                showAlert('success', 'Cuenta móvil vinculada correctamente.');
+                refreshStatus(res.body);
+              } else {
+                showAlert('danger', res.body.message || res.body.error || 'No se pudo vincular.');
+              }
+            }).catch(function () { showAlert('danger', 'Error de red al vincular.'); });
+          });
+        }
+
+        var subBtn = document.getElementById('mobile-auth-link-sub-btn');
+        if (subBtn) {
+          subBtn.addEventListener('click', function () {
+            var input = document.getElementById('mobile-auth-sub-input');
+            var sub = input ? input.value.trim() : '';
+            if (!sub) {
+              showAlert('warning', 'Ingrese el identificador Auth0 (sub).');
+              return;
+            }
+            postLink({ patientAuthSub: sub }).then(function (res) {
+              if (res.ok && res.body.success) {
+                showAlert('success', 'Cuenta móvil vinculada correctamente.');
+                refreshStatus(res.body);
+              } else {
+                showAlert('danger', res.body.message || res.body.error || 'No se pudo vincular.');
+              }
+            }).catch(function () { showAlert('danger', 'Error de red al vincular.'); });
+          });
+        }
+
+        var unlinkBtn = document.getElementById('mobile-auth-unlink-btn');
+        if (unlinkBtn) {
+          unlinkBtn.addEventListener('click', function () {
+            if (!window.confirm('¿Desvincular la cuenta móvil de este paciente?')) {
+              return;
+            }
+            fetch(baseUrl, { method: 'DELETE' }).then(function (r) {
+              return r.json().then(function (j) { return { ok: r.ok, body: j }; });
+            }).then(function (res) {
+              if (res.ok && res.body.success) {
+                window.location.reload();
+              } else {
+                showAlert('danger', res.body.error || 'No se pudo desvincular.');
+              }
+            }).catch(function () { showAlert('danger', 'Error de red al desvincular.'); });
+          });
+        }
+      })();
+    </script>
 
 </body>
 

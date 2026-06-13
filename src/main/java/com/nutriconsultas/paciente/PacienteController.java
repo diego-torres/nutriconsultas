@@ -28,7 +28,9 @@ import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.ClinicalExam;
 import com.nutriconsultas.clinical.exam.ClinicalExamService;
+import com.nutriconsultas.auth0.Auth0UserLookup;
 import com.nutriconsultas.controller.AbstractAuthorizedController;
+import com.nutriconsultas.mobile.PatientMobileAuthStatus;
 import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.DietaRepository;
 import com.nutriconsultas.dieta.DietaService;
@@ -79,6 +81,9 @@ public class PacienteController extends AbstractAuthorizedController {
 
 	@Autowired
 	private PacienteDietaRepository pacienteDietaRepository;
+
+	@Autowired
+	private Auth0UserLookup auth0UserLookup;
 
 	/**
 	 * Gets the user ID from the OAuth2 principal.
@@ -248,6 +253,8 @@ public class PacienteController extends AbstractAuthorizedController {
 
 		model.addAttribute("activeMenu", "afiliacion");
 		model.addAttribute("paciente", paciente);
+		model.addAttribute("mobileAuth",
+				PatientMobileAuthStatus.of(paciente.getPatientAuthSub(), auth0UserLookup.isConfigured()));
 		return "sbadmin/pacientes/afiliacion";
 	}
 

@@ -1,8 +1,9 @@
 package com.nutriconsultas.mobile;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static com.nutriconsultas.mobile.MobileIntegrationTestJwt.mobileJwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
@@ -38,7 +39,7 @@ class MobileSecurityIntegrationTest {
 	@BeforeEach
 	void seedLinkedPatient() {
 		if (pacienteRepository.findByPatientAuthSub(LINKED_SUB).isEmpty()) {
-			pacienteRepository.save(samplePaciente(LINKED_SUB));
+			pacienteRepository.saveAndFlush(samplePaciente(LINKED_SUB));
 		}
 	}
 
@@ -49,21 +50,21 @@ class MobileSecurityIntegrationTest {
 
 	@Test
 	void patientEndpoint_withUnlinkedJwt_returnsForbidden() throws Exception {
-		mockMvc.perform(get("/rest/mobile/patient/visits").with(jwt().jwt(j -> j.subject(UNLINKED_SUB))))
+		mockMvc.perform(get("/rest/mobile/patient/visits").with(mobileJwt(UNLINKED_SUB)))
 			.andExpect(status().isForbidden())
 			.andExpect(content().json("{\"error\":\"patient_not_linked\"}"));
 	}
 
 	@Test
 	void patientEndpoint_withLinkedJwt_passesLinkageFilter() throws Exception {
-		mockMvc.perform(get("/rest/mobile/patient/visits").with(jwt().jwt(j -> j.subject(LINKED_SUB))))
-			.andExpect(status().isNotFound());
+		mockMvc.perform(get("/rest/mobile/patient/visits").with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.content").isArray());
 	}
 
 	@Test
 	void nonPatientMobilePath_doesNotRequirePatientLinkage() throws Exception {
-		mockMvc.perform(get("/rest/mobile/status").with(jwt().jwt(j -> j.subject(UNLINKED_SUB))))
-			.andExpect(status().isNotFound());
+		mockMvc.perform(get("/rest/mobile/status").with(mobileJwt(UNLINKED_SUB))).andExpect(status().isNotFound());
 	}
 
 	private static Paciente samplePaciente(final String patientAuthSub) {
