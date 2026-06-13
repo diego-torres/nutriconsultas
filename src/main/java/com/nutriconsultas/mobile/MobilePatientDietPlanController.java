@@ -3,11 +3,13 @@ package com.nutriconsultas.mobile;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nutriconsultas.mobile.dto.ApiResponse;
+import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
 import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
 import com.nutriconsultas.mobile.dto.PagedResponse;
 import com.nutriconsultas.paciente.Paciente;
@@ -40,6 +42,18 @@ public class MobilePatientDietPlanController extends AbstractMobilePatientContro
 		final PagedResponse<DietPlanSummaryDto> plans = mobilePatientDietPlanService.listDietPlans(paciente.getId(),
 				page, size, activeOnly);
 		return ApiResponse.ok(plans);
+	}
+
+	@GetMapping("/{assignmentId}")
+	public ApiResponse<DietPlanDetailDto> getDietPlanDetail(@AuthenticationPrincipal final Jwt jwt,
+			@PathVariable final Long assignmentId) {
+		final Paciente paciente = getAuthenticatedPaciente(jwt);
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile get diet plan {} for patient {}", assignmentId,
+					LogRedaction.redactPaciente(paciente.getId()));
+		}
+		final DietPlanDetailDto plan = mobilePatientDietPlanService.getDietPlanDetail(paciente.getId(), assignmentId);
+		return ApiResponse.ok(plan);
 	}
 
 }

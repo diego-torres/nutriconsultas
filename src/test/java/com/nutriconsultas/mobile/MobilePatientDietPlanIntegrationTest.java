@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,8 +18,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.nutriconsultas.dieta.AlimentoIngesta;
 import com.nutriconsultas.dieta.Dieta;
 import com.nutriconsultas.dieta.DietaRepository;
+import com.nutriconsultas.dieta.Ingesta;
+import com.nutriconsultas.dieta.PlatilloIngesta;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
@@ -46,31 +50,70 @@ class MobilePatientDietPlanIntegrationTest {
 
 	private Paciente linkedPaciente;
 
+	private PacienteDieta linkedAssignment;
+
 	@BeforeEach
 	void seedData() {
 		linkedPaciente = pacienteRepository.findByPatientAuthSub(LINKED_SUB).orElseGet(() -> {
 			final Paciente paciente = samplePaciente(LINKED_SUB);
 			return pacienteRepository.saveAndFlush(paciente);
 		});
-		if (pacienteDietaRepository.findByPacienteId(linkedPaciente.getId()).isEmpty()) {
-			final Dieta dieta = new Dieta();
-			dieta.setNombre("Dieta integración");
-			dieta.setUserId("nutritionist-sub");
-			dieta.setEnergia(1900);
-			dieta.setProteina(95.0);
-			dieta.setLipidos(65.0);
-			dieta.setHidratosDeCarbono(210.0);
-			final Dieta savedDieta = dietaRepository.saveAndFlush(dieta);
+		linkedAssignment = ensureAssignmentWithMealTree();
+	}
 
-			final PacienteDieta assignment = new PacienteDieta();
-			assignment.setPaciente(linkedPaciente);
-			assignment.setDieta(savedDieta);
-			assignment.setStatus(PacienteDietaStatus.ACTIVE);
-			assignment
-				.setStartDate(Date.from(LocalDate.now().minusDays(7).atStartOfDay(ZoneId.systemDefault()).toInstant()));
-			assignment.setNotes("Plan activo de prueba");
-			pacienteDietaRepository.saveAndFlush(assignment);
+	private PacienteDieta ensureAssignmentWithMealTree() {
+		for (final PacienteDieta assignment : pacienteDietaRepository.findByPacienteId(linkedPaciente.getId())) {
+			if ("Plan activo de prueba con arbol".equals(assignment.getNotes())) {
+				return assignment;
+			}
 		}
+		return createAssignmentWithMealTree();
+	}
+
+	private PacienteDieta createAssignmentWithMealTree() {
+		final Dieta dieta = new Dieta();
+		dieta.setNombre("Dieta integración");
+		dieta.setUserId("nutritionist-sub");
+		dieta.setEnergia(1900);
+		dieta.setProteina(95.0);
+		dieta.setLipidos(65.0);
+		dieta.setHidratosDeCarbono(210.0);
+
+		final Ingesta ingesta = new Ingesta("Desayuno");
+		ingesta.setDieta(dieta);
+		ingesta.setEnergia(400);
+		ingesta.setProteina(18.0);
+		ingesta.setLipidos(10.0);
+		ingesta.setHidratosDeCarbono(50.0);
+
+		final PlatilloIngesta platillo = new PlatilloIngesta();
+		platillo.setName("Huevos revueltos");
+		platillo.setPortions(1);
+		platillo.setEnergia(280);
+		platillo.setRecommendations("Con verduras");
+		platillo.setIngesta(ingesta);
+
+		final AlimentoIngesta alimento = new AlimentoIngesta();
+		alimento.setName("Pan integral");
+		alimento.setPortions(2);
+		alimento.setEnergia(120);
+		alimento.setUnidad("rebanada");
+		alimento.setIngesta(ingesta);
+
+		ingesta.setPlatillos(List.of(platillo));
+		ingesta.setAlimentos(List.of(alimento));
+		dieta.setIngestas(List.of(ingesta));
+
+		final Dieta savedDieta = dietaRepository.saveAndFlush(dieta);
+
+		final PacienteDieta assignment = new PacienteDieta();
+		assignment.setPaciente(linkedPaciente);
+		assignment.setDieta(savedDieta);
+		assignment.setStatus(PacienteDietaStatus.ACTIVE);
+		assignment
+			.setStartDate(Date.from(LocalDate.now().minusDays(7).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+		assignment.setNotes("Plan activo de prueba con arbol");
+		return pacienteDietaRepository.saveAndFlush(assignment);
 	}
 
 	@Test
@@ -89,6 +132,56 @@ class MobilePatientDietPlanIntegrationTest {
 		mockMvc.perform(get("/rest/mobile/patient/diet-plans").param("activeOnly", "true").with(mobileJwt(LINKED_SUB)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.content[0].status").value("ACTIVE"));
+	}
+
+	@Test
+	void getDietPlanDetailWithLinkedJwtReturnsStructuredMealTree() throws Exception {
+		mockMvc.perform(get("/rest/mobile/patient/diet-plans/" + linkedAssignment.getId()).with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.assignmentId").value(linkedAssignment.getId()))
+			.andExpect(jsonPath("$.data.dietaName").value("Dieta integración"))
+			.andExpect(jsonPath("$.data.totalKcal").value(1900))
+			.andExpect(jsonPath("$.data.ingestas[0].tipo").value("Desayuno"))
+			.andExpect(jsonPath("$.data.ingestas[0].platillos[0].nombre").value("Huevos revueltos"))
+			.andExpect(jsonPath("$.data.ingestas[0].platillos[0].porciones").value(1))
+			.andExpect(jsonPath("$.data.ingestas[0].alimentos[0].nombre").value("Pan integral"))
+			.andExpect(jsonPath("$.timestamp").exists());
+	}
+
+	@Test
+	void getDietPlanDetailForOtherPatientsAssignmentReturnsNotFound() throws Exception {
+		final Paciente otherPatient = pacienteRepository.findByPatientAuthSub("auth0|mobile-diet-plan-other")
+			.orElseGet(() -> {
+				final Paciente paciente = samplePaciente("auth0|mobile-diet-plan-other");
+				return pacienteRepository.saveAndFlush(paciente);
+			});
+		final PacienteDieta otherAssignment = pacienteDietaRepository.findByPacienteId(otherPatient.getId())
+			.stream()
+			.findFirst()
+			.orElseGet(() -> {
+				final Dieta dieta = new Dieta();
+				dieta.setNombre("Dieta ajena");
+				dieta.setUserId("nutritionist-sub");
+				dieta.setEnergia(1500);
+				final Dieta savedDieta = dietaRepository.saveAndFlush(dieta);
+
+				final PacienteDieta assignment = new PacienteDieta();
+				assignment.setPaciente(otherPatient);
+				assignment.setDieta(savedDieta);
+				assignment.setStatus(PacienteDietaStatus.ACTIVE);
+				assignment.setStartDate(
+						Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+				return pacienteDietaRepository.saveAndFlush(assignment);
+			});
+
+		mockMvc.perform(get("/rest/mobile/patient/diet-plans/" + otherAssignment.getId()).with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void getDietPlanDetailForMissingAssignmentReturnsNotFound() throws Exception {
+		mockMvc.perform(get("/rest/mobile/patient/diet-plans/999999").with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isNotFound());
 	}
 
 	private static Paciente samplePaciente(final String patientAuthSub) {
