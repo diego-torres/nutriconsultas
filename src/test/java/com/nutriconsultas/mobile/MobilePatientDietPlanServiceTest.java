@@ -2,6 +2,7 @@ package com.nutriconsultas.mobile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
@@ -20,9 +21,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.dieta.AlimentoIngesta;
 import com.nutriconsultas.dieta.Dieta;
+import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.Ingesta;
 import com.nutriconsultas.dieta.PlatilloIngesta;
 import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
+import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
@@ -36,6 +39,9 @@ class MobilePatientDietPlanServiceTest {
 
 	@Mock
 	private PacienteDietaRepository pacienteDietaRepository;
+
+	@Mock
+	private DietaPdfService dietaPdfService;
 
 	@Test
 	void getDietPlanDetail_returnsStructuredMealTreeWhenOwnedByPatient() {
@@ -63,6 +69,29 @@ class MobilePatientDietPlanServiceTest {
 		when(pacienteDietaRepository.findByIdAndPacienteId(99L, 1L)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> service.getDietPlanDetail(1L, 99L)).isInstanceOf(ResponseStatusException.class)
+			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+			.isEqualTo(HttpStatus.NOT_FOUND);
+	}
+
+	@Test
+	void generateDietPlanPdf_returnsPdfWithFilenameWhenOwnedByPatient() {
+		final PacienteDieta assignment = sampleAssignment(5L, 1L);
+		final byte[] pdfBytes = new byte[] { 37, 80, 68, 70 };
+		when(pacienteDietaRepository.findByIdAndPacienteId(5L, 1L)).thenReturn(Optional.of(assignment));
+		when(dietaPdfService.generatePdfForAssignment(assignment)).thenReturn(pdfBytes);
+
+		final DietPlanPdfResult result = service.generateDietPlanPdf(1L, 5L);
+
+		assertThat(result.content()).isEqualTo(pdfBytes);
+		assertThat(result.filename()).isEqualTo("Plan hipocalórico.pdf");
+		verify(dietaPdfService).generatePdfForAssignment(assignment);
+	}
+
+	@Test
+	void generateDietPlanPdf_throwsNotFoundWhenMissingOrNotOwned() {
+		when(pacienteDietaRepository.findByIdAndPacienteId(99L, 1L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.generateDietPlanPdf(1L, 99L)).isInstanceOf(ResponseStatusException.class)
 			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
 			.isEqualTo(HttpStatus.NOT_FOUND);
 	}

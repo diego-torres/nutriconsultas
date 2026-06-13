@@ -10,8 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.dieta.Dieta;
+import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.Ingesta;
 import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
+import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
 import com.nutriconsultas.mobile.dto.PagedResponse;
 import com.nutriconsultas.paciente.PacienteDieta;
@@ -29,8 +31,12 @@ public class MobilePatientDietPlanService {
 
 	private final PacienteDietaRepository pacienteDietaRepository;
 
-	public MobilePatientDietPlanService(final PacienteDietaRepository pacienteDietaRepository) {
+	private final DietaPdfService dietaPdfService;
+
+	public MobilePatientDietPlanService(final PacienteDietaRepository pacienteDietaRepository,
+			final DietaPdfService dietaPdfService) {
 		this.pacienteDietaRepository = pacienteDietaRepository;
+		this.dietaPdfService = dietaPdfService;
 	}
 
 	@Transactional(readOnly = true)
@@ -60,6 +66,20 @@ public class MobilePatientDietPlanService {
 					LogRedaction.redactPaciente(pacienteId));
 		}
 		return DietPlanDetailDto.fromEntity(assignment);
+	}
+
+	@Transactional(readOnly = true)
+	public DietPlanPdfResult generateDietPlanPdf(final Long pacienteId, final Long assignmentId) {
+		final PacienteDieta assignment = pacienteDietaRepository.findByIdAndPacienteId(assignmentId, pacienteId)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		final byte[] pdfBytes = dietaPdfService.generatePdfForAssignment(assignment);
+		final Dieta dieta = assignment.getDieta();
+		final String filename = (dieta != null && dieta.getNombre() != null ? dieta.getNombre() : "dieta") + ".pdf";
+		if (log.isDebugEnabled()) {
+			log.debug("Generated mobile diet plan PDF assignmentId={} for patient {}", assignmentId,
+					LogRedaction.redactPaciente(pacienteId));
+		}
+		return new DietPlanPdfResult(pdfBytes, filename);
 	}
 
 	private static void initializeDietaTree(final Dieta dieta) {

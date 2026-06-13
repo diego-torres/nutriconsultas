@@ -1,7 +1,11 @@
 package com.nutriconsultas.mobile;
 
 import static com.nutriconsultas.mobile.MobileIntegrationTestJwt.mobileJwt;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -15,11 +19,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.nutriconsultas.dieta.AlimentoIngesta;
 import com.nutriconsultas.dieta.Dieta;
+import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.DietaRepository;
 import com.nutriconsultas.dieta.Ingesta;
 import com.nutriconsultas.dieta.PlatilloIngesta;
@@ -47,6 +55,9 @@ class MobilePatientDietPlanIntegrationTest {
 
 	@Autowired
 	private PacienteDietaRepository pacienteDietaRepository;
+
+	@MockBean
+	private DietaPdfService dietaPdfService;
 
 	private Paciente linkedPaciente;
 
@@ -181,6 +192,58 @@ class MobilePatientDietPlanIntegrationTest {
 	@Test
 	void getDietPlanDetailForMissingAssignmentReturnsNotFound() throws Exception {
 		mockMvc.perform(get("/rest/mobile/patient/diet-plans/999999").with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void getDietPlanPdfForMissingAssignmentReturnsNotFound() throws Exception {
+		mockMvc.perform(get("/rest/mobile/patient/diet-plans/999999/pdf").with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void getDietPlanPdfWithLinkedJwtReturnsPdfAttachment() throws Exception {
+		when(dietaPdfService.generatePdfForAssignment(any(PacienteDieta.class)))
+			.thenReturn(new byte[] { 37, 80, 68, 70 });
+
+		mockMvc
+			.perform(get("/rest/mobile/patient/diet-plans/" + linkedAssignment.getId() + "/pdf")
+				.with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isOk())
+			.andExpect(content().contentType(MediaType.APPLICATION_PDF))
+			.andExpect(
+					header().string(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"Dieta integración.pdf\""));
+	}
+
+	@Test
+	void getDietPlanPdfForOtherPatientsAssignmentReturnsNotFound() throws Exception {
+		final Paciente otherPatient = pacienteRepository.findByPatientAuthSub("auth0|mobile-diet-plan-other")
+			.orElseGet(() -> {
+				final Paciente paciente = samplePaciente("auth0|mobile-diet-plan-other");
+				return pacienteRepository.saveAndFlush(paciente);
+			});
+		final PacienteDieta otherAssignment = pacienteDietaRepository.findByPacienteId(otherPatient.getId())
+			.stream()
+			.findFirst()
+			.orElseGet(() -> {
+				final Dieta dieta = new Dieta();
+				dieta.setNombre("Dieta ajena");
+				dieta.setUserId("nutritionist-sub");
+				dieta.setEnergia(1500);
+				final Dieta savedDieta = dietaRepository.saveAndFlush(dieta);
+
+				final PacienteDieta assignment = new PacienteDieta();
+				assignment.setPaciente(otherPatient);
+				assignment.setDieta(savedDieta);
+				assignment.setStatus(PacienteDietaStatus.ACTIVE);
+				assignment.setStartDate(
+						Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+				return pacienteDietaRepository.saveAndFlush(assignment);
+			});
+
+		mockMvc
+			.perform(get("/rest/mobile/patient/diet-plans/" + otherAssignment.getId() + "/pdf")
+				.with(mobileJwt(LINKED_SUB)))
 			.andExpect(status().isNotFound());
 	}
 
