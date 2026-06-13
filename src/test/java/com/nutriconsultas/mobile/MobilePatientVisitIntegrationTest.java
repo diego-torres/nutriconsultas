@@ -2,7 +2,6 @@ package com.nutriconsultas.mobile;
 
 import static com.nutriconsultas.mobile.MobileIntegrationTestJwt.mobileJwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,17 +17,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.nutriconsultas.calendar.CalendarEvent;
+import com.nutriconsultas.calendar.CalendarEventRepository;
+import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class MobileSecurityIntegrationTest {
+class MobilePatientVisitIntegrationTest {
 
-	private static final String LINKED_SUB = "auth0|mobile-security-linked";
-
-	private static final String UNLINKED_SUB = "auth0|mobile-security-unlinked";
+	private static final String LINKED_SUB = "auth0|mobile-visit-integration";
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -36,40 +36,42 @@ class MobileSecurityIntegrationTest {
 	@Autowired
 	private PacienteRepository pacienteRepository;
 
+	@Autowired
+	private CalendarEventRepository calendarEventRepository;
+
+	private Paciente linkedPaciente;
+
 	@BeforeEach
-	void seedLinkedPatient() {
-		if (pacienteRepository.findByPatientAuthSub(LINKED_SUB).isEmpty()) {
-			pacienteRepository.saveAndFlush(samplePaciente(LINKED_SUB));
+	void seedData() {
+		linkedPaciente = pacienteRepository.findByPatientAuthSub(LINKED_SUB).orElseGet(() -> {
+			final Paciente paciente = samplePaciente(LINKED_SUB);
+			return pacienteRepository.saveAndFlush(paciente);
+		});
+		if (calendarEventRepository.findByPacienteId(linkedPaciente.getId()).isEmpty()) {
+			final CalendarEvent event = new CalendarEvent();
+			event.setPaciente(linkedPaciente);
+			event.setTitle("Consulta integración");
+			event.setStatus(EventStatus.SCHEDULED);
+			event.setDurationMinutes(60);
+			event.setEventDateTime(
+					Date.from(LocalDate.now().plusDays(3).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+			calendarEventRepository.saveAndFlush(event);
 		}
 	}
 
 	@Test
-	void patientEndpoint_withoutJwt_returnsUnauthorized() throws Exception {
-		mockMvc.perform(get("/rest/mobile/patient/visits")).andExpect(status().isUnauthorized());
-	}
-
-	@Test
-	void patientEndpoint_withUnlinkedJwt_returnsForbidden() throws Exception {
-		mockMvc.perform(get("/rest/mobile/patient/visits").with(mobileJwt(UNLINKED_SUB)))
-			.andExpect(status().isForbidden())
-			.andExpect(content().json("{\"error\":\"patient_not_linked\"}"));
-	}
-
-	@Test
-	void patientEndpoint_withLinkedJwt_passesLinkageFilter() throws Exception {
+	void listVisitsWithLinkedJwtReturnsPagedSummaries() throws Exception {
 		mockMvc.perform(get("/rest/mobile/patient/visits").with(mobileJwt(LINKED_SUB)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.content").isArray());
-	}
-
-	@Test
-	void nonPatientMobilePath_doesNotRequirePatientLinkage() throws Exception {
-		mockMvc.perform(get("/rest/mobile/status").with(mobileJwt(UNLINKED_SUB))).andExpect(status().isNotFound());
+			.andExpect(jsonPath("$.data.content").isArray())
+			.andExpect(jsonPath("$.data.content[0].title").value("Consulta integración"))
+			.andExpect(jsonPath("$.data.content[0].status").value("SCHEDULED"))
+			.andExpect(jsonPath("$.timestamp").exists());
 	}
 
 	private static Paciente samplePaciente(final String patientAuthSub) {
 		final Paciente paciente = new Paciente();
-		paciente.setName("Mobile Security Patient");
+		paciente.setName("Mobile Visit Patient");
 		paciente.setUserId("nutritionist-sub");
 		paciente.setPatientAuthSub(patientAuthSub);
 		final LocalDate dob = LocalDate.now().minusYears(28);
