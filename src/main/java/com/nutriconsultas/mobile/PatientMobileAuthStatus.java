@@ -20,6 +20,7 @@ public final class PatientMobileAuthStatus {
 		this.emailLookupAvailable = emailLookupAvailable;
 	}
 
+	@SuppressWarnings("PMD.ShortMethodName")
 	public static PatientMobileAuthStatus of(final String patientAuthSub, final boolean emailLookupAvailable) {
 		final boolean linked = patientAuthSub != null && !patientAuthSub.isBlank();
 		final String redacted = linked ? redactSub(patientAuthSub) : null;

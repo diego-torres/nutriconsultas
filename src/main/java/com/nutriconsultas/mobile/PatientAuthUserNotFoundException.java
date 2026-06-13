@@ -5,6 +5,8 @@ package com.nutriconsultas.mobile;
  */
 public class PatientAuthUserNotFoundException extends RuntimeException {
 
+	private static final long serialVersionUID = 1L;
+
 	public PatientAuthUserNotFoundException() {
 		super("patient_auth_user_not_found");
 	}

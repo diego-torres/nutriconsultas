@@ -9,6 +9,6 @@ public interface Auth0UserLookup {
 
 	boolean isConfigured();
 
-	Optional<String> findUserIdByEmail(final String email);
+	Optional<String> findUserIdByEmail(String email);
 
 }

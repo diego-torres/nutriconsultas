@@ -5,6 +5,8 @@ package com.nutriconsultas.mobile;
  */
 public class PatientAuthSubAlreadyLinkedException extends RuntimeException {
 
+	private static final long serialVersionUID = 1L;
+
 	public PatientAuthSubAlreadyLinkedException() {
 		super("patient_auth_sub_already_linked");
 	}

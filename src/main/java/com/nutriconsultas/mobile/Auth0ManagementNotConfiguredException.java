@@ -6,6 +6,8 @@ package com.nutriconsultas.mobile;
  */
 public class Auth0ManagementNotConfiguredException extends RuntimeException {
 
+	private static final long serialVersionUID = 1L;
+
 	public Auth0ManagementNotConfiguredException() {
 		super("auth0_management_not_configured");
 	}

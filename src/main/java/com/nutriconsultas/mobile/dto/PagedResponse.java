@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record PagedResponse<T>(List<T> content, int page, int size, long totalElements, int totalPages, boolean last) {
 
+	@SuppressWarnings("PMD.ShortMethodName")
 	public static <T> PagedResponse<T> of(final Page<T> page) {
 		return new PagedResponse<>(page.getContent(), page.getNumber(), page.getSize(), page.getTotalElements(),
 				page.getTotalPages(), page.isLast());

@@ -5,6 +5,8 @@ package com.nutriconsultas.mobile;
  */
 public class PatientEmailRequiredForLinkException extends RuntimeException {
 
+	private static final long serialVersionUID = 1L;
+
 	public PatientEmailRequiredForLinkException() {
 		super("patient_email_required");
 	}
