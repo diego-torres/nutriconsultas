@@ -4,9 +4,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import com.nutriconsultas.dieta.Dieta;
+import com.nutriconsultas.dieta.Ingesta;
+import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
 import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
 import com.nutriconsultas.mobile.dto.PagedResponse;
 import com.nutriconsultas.paciente.PacienteDieta;
@@ -43,6 +48,32 @@ public class MobilePatientDietPlanService {
 					safeSize, summaries.getNumberOfElements(), activeOnly, LogRedaction.redactPaciente(pacienteId));
 		}
 		return PagedResponse.of(summaries);
+	}
+
+	@Transactional(readOnly = true)
+	public DietPlanDetailDto getDietPlanDetail(final Long pacienteId, final Long assignmentId) {
+		final PacienteDieta assignment = pacienteDietaRepository.findByIdAndPacienteId(assignmentId, pacienteId)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		initializeDietaTree(assignment.getDieta());
+		if (log.isDebugEnabled()) {
+			log.debug("Loaded mobile diet plan detail assignmentId={} for patient {}", assignmentId,
+					LogRedaction.redactPaciente(pacienteId));
+		}
+		return DietPlanDetailDto.fromEntity(assignment);
+	}
+
+	private static void initializeDietaTree(final Dieta dieta) {
+		if (dieta == null || dieta.getIngestas() == null) {
+			return;
+		}
+		for (final Ingesta ingesta : dieta.getIngestas()) {
+			if (ingesta.getPlatillos() != null) {
+				ingesta.getPlatillos().size();
+			}
+			if (ingesta.getAlimentos() != null) {
+				ingesta.getAlimentos().size();
+			}
+		}
 	}
 
 }

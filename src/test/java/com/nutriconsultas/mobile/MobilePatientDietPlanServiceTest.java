@@ -1,29 +1,28 @@
 package com.nutriconsultas.mobile;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
+import com.nutriconsultas.dieta.AlimentoIngesta;
 import com.nutriconsultas.dieta.Dieta;
-import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
-import com.nutriconsultas.mobile.dto.PagedResponse;
+import com.nutriconsultas.dieta.Ingesta;
+import com.nutriconsultas.dieta.PlatilloIngesta;
+import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
@@ -39,62 +38,84 @@ class MobilePatientDietPlanServiceTest {
 	private PacienteDietaRepository pacienteDietaRepository;
 
 	@Test
-	void listDietPlans_mapsAssignmentsToSummaryDtos() {
-		final PacienteDieta assignment = sampleAssignment(5L, PacienteDietaStatus.ACTIVE, "Plan semanal");
-		final Page<PacienteDieta> page = new PageImpl<>(List.of(assignment), PageRequest.of(0, 20), 1);
-		when(pacienteDietaRepository.findByPacienteId(eq(1L), any(Pageable.class))).thenReturn(page);
+	void getDietPlanDetail_returnsStructuredMealTreeWhenOwnedByPatient() {
+		final PacienteDieta assignment = sampleAssignment(5L, 1L);
+		when(pacienteDietaRepository.findByIdAndPacienteId(5L, 1L)).thenReturn(Optional.of(assignment));
 
-		final PagedResponse<DietPlanSummaryDto> result = service.listDietPlans(1L, 0, 20, false);
+		final DietPlanDetailDto result = service.getDietPlanDetail(1L, 5L);
 
-		assertThat(result.content()).hasSize(1);
-		assertThat(result.content().get(0).assignmentId()).isEqualTo(5L);
-		assertThat(result.content().get(0).dietaName()).isEqualTo("Plan semanal");
-		assertThat(result.content().get(0).status()).isEqualTo(PacienteDietaStatus.ACTIVE);
-		assertThat(result.content().get(0).totalKcal()).isEqualTo(1800);
+		assertThat(result.assignmentId()).isEqualTo(5L);
+		assertThat(result.dietaName()).isEqualTo("Plan hipocalórico");
+		assertThat(result.totalKcal()).isEqualTo(1800);
+		assertThat(result.ingestas()).hasSize(1);
+		assertThat(result.ingestas().get(0).tipo()).isEqualTo("Desayuno");
+		assertThat(result.ingestas().get(0).platillos()).hasSize(1);
+		assertThat(result.ingestas().get(0).platillos().get(0).nombre()).isEqualTo("Avena con fruta");
+		assertThat(result.ingestas().get(0).platillos().get(0).porciones()).isEqualTo(2);
+		assertThat(result.ingestas().get(0).platillos().get(0).kcal()).isEqualTo(320);
+		assertThat(result.ingestas().get(0).alimentos()).hasSize(1);
+		assertThat(result.ingestas().get(0).alimentos().get(0).nombre()).isEqualTo("Manzana");
+		assertThat(result.ingestas().get(0).alimentos().get(0).unidad()).isEqualTo("pieza");
 	}
 
 	@Test
-	void listDietPlans_activeOnlyQueriesActiveStatus() {
-		when(pacienteDietaRepository.findByPacienteIdAndStatus(eq(1L), eq(PacienteDietaStatus.ACTIVE),
-				any(Pageable.class)))
-			.thenReturn(Page.empty());
+	void getDietPlanDetail_throwsNotFoundWhenMissingOrNotOwned() {
+		when(pacienteDietaRepository.findByIdAndPacienteId(99L, 1L)).thenReturn(Optional.empty());
 
-		service.listDietPlans(1L, 0, 20, true);
-
-		verify(pacienteDietaRepository).findByPacienteIdAndStatus(eq(1L), eq(PacienteDietaStatus.ACTIVE),
-				any(Pageable.class));
+		assertThatThrownBy(() -> service.getDietPlanDetail(1L, 99L)).isInstanceOf(ResponseStatusException.class)
+			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+			.isEqualTo(HttpStatus.NOT_FOUND);
 	}
 
-	@Test
-	void listDietPlans_capsPageSizeAt100() {
-		when(pacienteDietaRepository.findByPacienteId(eq(1L), any(Pageable.class))).thenReturn(Page.empty());
-
-		service.listDietPlans(1L, 0, 500, false);
-
-		final ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-		verify(pacienteDietaRepository).findByPacienteId(eq(1L), pageableCaptor.capture());
-		assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(100);
-		assertThat(pageableCaptor.getValue().getSort()).isEqualTo(Sort.by(Sort.Direction.DESC, "startDate"));
-	}
-
-	private static PacienteDieta sampleAssignment(final Long id, final PacienteDietaStatus status,
-			final String dietaName) {
+	private static PacienteDieta sampleAssignment(final Long assignmentId, final Long pacienteId) {
 		final Paciente paciente = new Paciente();
-		paciente.setId(1L);
+		paciente.setId(pacienteId);
+
 		final Dieta dieta = new Dieta();
 		dieta.setId(10L);
-		dieta.setNombre(dietaName);
+		dieta.setNombre("Plan hipocalórico");
+		dieta.setUserId("nutritionist-sub");
 		dieta.setEnergia(1800);
 		dieta.setProteina(90.0);
 		dieta.setLipidos(60.0);
 		dieta.setHidratosDeCarbono(200.0);
+
+		final Ingesta ingesta = new Ingesta("Desayuno");
+		ingesta.setId(20L);
+		ingesta.setDieta(dieta);
+		ingesta.setEnergia(450);
+		ingesta.setProteina(20.0);
+		ingesta.setLipidos(12.0);
+		ingesta.setHidratosDeCarbono(55.0);
+
+		final PlatilloIngesta platillo = new PlatilloIngesta();
+		platillo.setId(30L);
+		platillo.setName("Avena con fruta");
+		platillo.setPortions(2);
+		platillo.setEnergia(320);
+		platillo.setRecommendations("Servir tibia");
+		platillo.setIngesta(ingesta);
+
+		final AlimentoIngesta alimento = new AlimentoIngesta();
+		alimento.setId(40L);
+		alimento.setName("Manzana");
+		alimento.setPortions(1);
+		alimento.setEnergia(52);
+		alimento.setUnidad("pieza");
+		alimento.setIngesta(ingesta);
+
+		ingesta.setPlatillos(List.of(platillo));
+		ingesta.setAlimentos(List.of(alimento));
+		dieta.setIngestas(List.of(ingesta));
+
 		final PacienteDieta assignment = new PacienteDieta();
-		assignment.setId(id);
+		assignment.setId(assignmentId);
 		assignment.setPaciente(paciente);
 		assignment.setDieta(dieta);
-		assignment.setStatus(status);
-		assignment.setStartDate(new Date());
-		assignment.setNotes("Notas del plan");
+		assignment.setStatus(PacienteDietaStatus.ACTIVE);
+		assignment
+			.setStartDate(Date.from(LocalDate.now().minusDays(3).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+		assignment.setNotes("Seguimiento semanal");
 		return assignment;
 	}
 
