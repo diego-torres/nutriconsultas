@@ -5,6 +5,7 @@ import java.time.Instant;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.PagedResponse;
+import com.nutriconsultas.mobile.dto.VisitDetailDto;
 import com.nutriconsultas.mobile.dto.VisitSummaryDto;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.util.LogRedaction;
@@ -43,6 +45,17 @@ public class MobilePatientVisitController extends AbstractMobilePatientControlle
 		final PagedResponse<VisitSummaryDto> visits = mobilePatientVisitService.listVisits(paciente.getId(), page, size,
 				status, from, to);
 		return ApiResponse.ok(visits);
+	}
+
+	@GetMapping("/{visitId}")
+	public ApiResponse<VisitDetailDto> getVisitDetail(@AuthenticationPrincipal final Jwt jwt,
+			@PathVariable final Long visitId) {
+		final Paciente paciente = getAuthenticatedPaciente(jwt);
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile get visit {} for patient {}", visitId, LogRedaction.redactPaciente(paciente.getId()));
+		}
+		final VisitDetailDto visit = mobilePatientVisitService.getVisitDetail(paciente.getId(), visitId);
+		return ApiResponse.ok(visit);
 	}
 
 }

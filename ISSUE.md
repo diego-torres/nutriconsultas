@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-13 — **#91 done** on branch `mobile-api/91-patient-visits` (stacked on #110). **#110** pushed on `mobile-api/110-dto-wrappers`. **#109** on `mobile-api/109-patient-auth0-linkage`.
+**Last updated:** 2026-06-13 — **#92 done** on branch `mobile-api/92-patient-visit-detail` (stacked on #91).
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116) plus the directly-related `[Dashboard]` IMC gauge (#106). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -84,7 +84,7 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 | # | Endpoint | URL | State | Backend source |
 |---|----------|-----|-------|----------------|
 | **91** | `GET /rest/mobile/patient/visits` — list session summaries | https://github.com/diego-torres/nutriconsultas/issues/91 | **done** | 107, 110 | Branch `mobile-api/91-patient-visits`: paged `VisitSummaryDto`, filters (`status`, `from`, `to`), `ApiResponse`/`PagedResponse` envelope; `@AuthenticationPrincipal Jwt`. |
-| 92 | `GET /rest/mobile/patient/visits/{visitId}` — single detail | https://github.com/diego-torres/nutriconsultas/issues/92 | open | 91 | `CalendarEvent` detail. **IDOR guard: 404 (not 403) on ownership miss** — don't leak existence. |
+| **92** | `GET /rest/mobile/patient/visits/{visitId}` — single detail | https://github.com/diego-torres/nutriconsultas/issues/92 | **done** | 91 | Branch `mobile-api/92-patient-visit-detail`: `VisitDetailDto`, `findByIdAndPacienteId` IDOR guard → 404. |
 
 ### Diet Plans — `PacienteDieta` / `Dieta`
 

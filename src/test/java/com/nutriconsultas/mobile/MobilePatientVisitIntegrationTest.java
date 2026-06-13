@@ -41,22 +41,28 @@ class MobilePatientVisitIntegrationTest {
 
 	private Paciente linkedPaciente;
 
+	private CalendarEvent linkedEvent;
+
 	@BeforeEach
 	void seedData() {
 		linkedPaciente = pacienteRepository.findByPatientAuthSub(LINKED_SUB).orElseGet(() -> {
 			final Paciente paciente = samplePaciente(LINKED_SUB);
 			return pacienteRepository.saveAndFlush(paciente);
 		});
-		if (calendarEventRepository.findByPacienteId(linkedPaciente.getId()).isEmpty()) {
-			final CalendarEvent event = new CalendarEvent();
-			event.setPaciente(linkedPaciente);
-			event.setTitle("Consulta integración");
-			event.setStatus(EventStatus.SCHEDULED);
-			event.setDurationMinutes(60);
-			event.setEventDateTime(
-					Date.from(LocalDate.now().plusDays(3).atStartOfDay(ZoneId.systemDefault()).toInstant()));
-			calendarEventRepository.saveAndFlush(event);
-		}
+		linkedEvent = calendarEventRepository.findByPacienteId(linkedPaciente.getId())
+			.stream()
+			.findFirst()
+			.orElseGet(() -> {
+				final CalendarEvent event = new CalendarEvent();
+				event.setPaciente(linkedPaciente);
+				event.setTitle("Consulta integración");
+				event.setDescription("Detalle de consulta");
+				event.setStatus(EventStatus.SCHEDULED);
+				event.setDurationMinutes(60);
+				event.setEventDateTime(
+						Date.from(LocalDate.now().plusDays(3).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+				return calendarEventRepository.saveAndFlush(event);
+			});
 	}
 
 	@Test
@@ -67,6 +73,47 @@ class MobilePatientVisitIntegrationTest {
 			.andExpect(jsonPath("$.data.content[0].title").value("Consulta integración"))
 			.andExpect(jsonPath("$.data.content[0].status").value("SCHEDULED"))
 			.andExpect(jsonPath("$.timestamp").exists());
+	}
+
+	@Test
+	void getVisitDetailWithLinkedJwtReturnsFullDetail() throws Exception {
+		mockMvc.perform(get("/rest/mobile/patient/visits/" + linkedEvent.getId()).with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.id").value(linkedEvent.getId()))
+			.andExpect(jsonPath("$.data.title").value("Consulta integración"))
+			.andExpect(jsonPath("$.data.description").value("Detalle de consulta"))
+			.andExpect(jsonPath("$.timestamp").exists());
+	}
+
+	@Test
+	void getVisitDetailForOtherPatientsVisitReturnsNotFound() throws Exception {
+		final Paciente otherPatient = pacienteRepository.findByPatientAuthSub("auth0|mobile-visit-other")
+			.orElseGet(() -> {
+				final Paciente paciente = samplePaciente("auth0|mobile-visit-other");
+				return pacienteRepository.saveAndFlush(paciente);
+			});
+		final CalendarEvent otherEvent = calendarEventRepository.findByPacienteId(otherPatient.getId())
+			.stream()
+			.findFirst()
+			.orElseGet(() -> {
+				final CalendarEvent event = new CalendarEvent();
+				event.setPaciente(otherPatient);
+				event.setTitle("Consulta ajena");
+				event.setStatus(EventStatus.SCHEDULED);
+				event.setDurationMinutes(30);
+				event.setEventDateTime(
+						Date.from(LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+				return calendarEventRepository.saveAndFlush(event);
+			});
+
+		mockMvc.perform(get("/rest/mobile/patient/visits/" + otherEvent.getId()).with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void getVisitDetailForMissingVisitReturnsNotFound() throws Exception {
+		mockMvc.perform(get("/rest/mobile/patient/visits/999999").with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isNotFound());
 	}
 
 	private static Paciente samplePaciente(final String patientAuthSub) {

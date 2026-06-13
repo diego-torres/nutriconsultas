@@ -2,6 +2,7 @@ package com.nutriconsultas.calendar;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,8 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
 			+ "AND (:toDate IS NULL OR e.eventDateTime <= :toDate)")
 	Page<CalendarEvent> findPatientVisits(@Param("pacienteId") Long pacienteId, @Param("status") EventStatus status,
 			@Param("fromDate") Date fromDate, @Param("toDate") Date toDate, Pageable pageable);
+
+	Optional<CalendarEvent> findByIdAndPacienteId(Long id, Long pacienteId);
 
 	List<CalendarEvent> findByStatus(EventStatus status);
 

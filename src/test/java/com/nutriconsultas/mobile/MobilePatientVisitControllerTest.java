@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.PagedResponse;
+import com.nutriconsultas.mobile.dto.VisitDetailDto;
 import com.nutriconsultas.mobile.dto.VisitSummaryDto;
 import com.nutriconsultas.paciente.Paciente;
 
@@ -56,6 +57,25 @@ class MobilePatientVisitControllerTest {
 		assertThat(response.message()).isNull();
 		assertThat(response.timestamp()).isNotNull();
 		verify(mobilePatientVisitService).listVisits(5L, 0, 20, null, null, null);
+	}
+
+	@Test
+	void getVisitDetail_returnsApiResponseEnvelope() {
+		final Paciente paciente = new Paciente();
+		paciente.setId(5L);
+		final VisitDetailDto detail = new VisitDetailDto(8L, null, "Consulta", EventStatus.SCHEDULED, 45, null,
+				"Descripción", null, null, null, null, null, null, null, null, null, null, null);
+		final Jwt jwt = jwtWithSub(PATIENT_SUB);
+
+		when(patientAuthService.requirePacienteByJwt(jwt)).thenReturn(paciente);
+		when(mobilePatientVisitService.getVisitDetail(5L, 8L)).thenReturn(detail);
+
+		final ApiResponse<VisitDetailDto> response = controller.getVisitDetail(jwt, 8L);
+
+		assertThat(response.data().id()).isEqualTo(8L);
+		assertThat(response.data().description()).isEqualTo("Descripción");
+		assertThat(response.timestamp()).isNotNull();
+		verify(mobilePatientVisitService).getVisitDetail(5L, 8L);
 	}
 
 	private static Jwt jwtWithSub(final String subject) {

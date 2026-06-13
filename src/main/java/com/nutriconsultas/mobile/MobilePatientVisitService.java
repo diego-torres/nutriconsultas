@@ -7,13 +7,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventRepository;
 import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.mobile.dto.PagedResponse;
+import com.nutriconsultas.mobile.dto.VisitDetailDto;
 import com.nutriconsultas.mobile.dto.VisitSummaryDto;
 import com.nutriconsultas.util.LogRedaction;
 
@@ -47,6 +50,13 @@ public class MobilePatientVisitService {
 					summaries.getNumberOfElements(), LogRedaction.redactPaciente(pacienteId));
 		}
 		return PagedResponse.of(summaries);
+	}
+
+	@Transactional(readOnly = true)
+	public VisitDetailDto getVisitDetail(final Long pacienteId, final Long visitId) {
+		return calendarEventRepository.findByIdAndPacienteId(visitId, pacienteId)
+			.map(VisitDetailDto::fromEntity)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 	}
 
 }

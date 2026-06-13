@@ -1,6 +1,7 @@
 package com.nutriconsultas.mobile;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.when;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,12 +23,16 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventRepository;
 import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.mobile.dto.PagedResponse;
+import com.nutriconsultas.mobile.dto.VisitDetailDto;
 import com.nutriconsultas.mobile.dto.VisitSummaryDto;
+import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
 
 @ExtendWith(MockitoExtension.class)
@@ -80,6 +86,31 @@ class MobilePatientVisitServiceTest {
 
 		verify(calendarEventRepository).findPatientVisits(eq(2L), eq(EventStatus.SCHEDULED), any(Date.class),
 				any(Date.class), any(Pageable.class));
+	}
+
+	@Test
+	void getVisitDetail_returnsDetailWhenOwnedByPatient() {
+		final CalendarEvent event = sampleEvent(10L, "Consulta inicial", EventStatus.COMPLETED);
+		event.setDescription("Notas de la consulta");
+		event.setPeso(72.5);
+		event.setNivelPeso(NivelPeso.NORMAL);
+		when(calendarEventRepository.findByIdAndPacienteId(10L, 1L)).thenReturn(Optional.of(event));
+
+		final VisitDetailDto result = service.getVisitDetail(1L, 10L);
+
+		assertThat(result.id()).isEqualTo(10L);
+		assertThat(result.description()).isEqualTo("Notas de la consulta");
+		assertThat(result.peso()).isEqualTo(72.5);
+		assertThat(result.nivelPeso()).isEqualTo(NivelPeso.NORMAL);
+	}
+
+	@Test
+	void getVisitDetail_throwsNotFoundWhenMissingOrNotOwned() {
+		when(calendarEventRepository.findByIdAndPacienteId(99L, 1L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.getVisitDetail(1L, 99L)).isInstanceOf(ResponseStatusException.class)
+			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+			.isEqualTo(HttpStatus.NOT_FOUND);
 	}
 
 	private static CalendarEvent sampleEvent(final Long id, final String title, final EventStatus status) {
