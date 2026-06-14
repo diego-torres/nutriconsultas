@@ -130,7 +130,8 @@ public class CalendarControllerTest {
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	public void testNuevoEventoWithPacienteIdPreselectsPatient() throws Exception {
 		log.info("Starting testNuevoEventoWithPacienteIdPreselectsPatient");
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/nuevo").param("pacienteId", "1").with(oidcLogin()))
+		mockMvc
+			.perform(MockMvcRequestBuilders.get("/admin/calendario/nuevo").param("pacienteId", "1").with(oidcLogin()))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/calendar/formulario"))
 			.andExpect(MockMvcResultMatchers.model().attribute("pacientePreseleccionado", true))
