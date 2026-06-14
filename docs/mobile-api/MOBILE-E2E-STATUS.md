@@ -1,0 +1,211 @@
+# Mobile E2E — Backend & Auth0 status
+
+**Date:** 2026-06-14  
+**Audience:** [nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) team  
+**Backend:** https://minutriporcion.com  
+**Auth0 tenant:** `dev-imd1udg26uvzvfto.us.auth0.com`
+
+This document summarizes what the backend team verified after Auth0 CLI authentication and production checks. Use it to resume live E2E testing with `MOCK_AUTH=false`.
+
+---
+
+## Quick verdict
+
+| Area | Status | Action for mobile team |
+|------|--------|------------------------|
+| Auth0 API + audience | ✅ Ready | Keep `AUTH0_AUDIENCE=https://api.nutriconsultas.minutriporcion.com` |
+| Native client + client grant | ✅ Ready | Use `CmZdUaMZ3Oqs4JSbUBdYZYmKoqDUiLBk` |
+| Google login | ✅ Ready | `connection=google-oauth2` |
+| Apple login | ✅ Ready (dev keys) | Connection `apple` enabled on `minutriporcion-native` — uses Auth0 dev keys until Apple Developer creds are added |
+| JWT validation on prod (`AUTH_AUDIENCE`) | ✅ Ready | Valid token should **not** return 401 |
+| Patient linkage (prod test user) | ✅ Ready | Paciente linked to Google account below |
+| Visits / diet-plans / messages API | ✅ Deployed | Expect **200** after login + linkage |
+| Progress API (#98) | ⚠️ Pending deploy | Merged in backend `main`; prod JAR may lag |
+
+---
+
+## Auth0 configuration (verified 2026-06-14)
+
+### Tenant & API (#108)
+
+| Setting | Value |
+|---------|-------|
+| API name | `nutriconsultas-mobile-api` |
+| API identifier (audience) | `https://api.nutriconsultas.minutriporcion.com` |
+| Signing algorithm | RS256 |
+| Scopes | `read:visits`, `read:diet-plans`, `read:progress`, `read:messages`, `write:messages` |
+
+Mobile `.env` **must** use the same audience on `login()`:
+
+```env
+AUTH0_AUDIENCE=https://api.nutriconsultas.minutriporcion.com
+```
+
+### Native application
+
+| Setting | Value |
+|---------|-------|
+| Name | `minutriporcion-native` |
+| Client ID | `CmZdUaMZ3Oqs4JSbUBdYZYmKoqDUiLBk` |
+| Type | Native |
+| Client grant | ✅ Authorized for `nutriconsultas-mobile-api` with all scopes above |
+
+**Connections enabled on native app:**
+
+| Connection | Enabled | Notes |
+|------------|---------|-------|
+| `google-oauth2` | ✅ | Use for Android + iOS Google button |
+| `Username-Password-Authentication` | ✅ | Email/password flow |
+| `apple` | ✅ | Enabled on native app; **Auth0 dev keys** (blank Client ID) — OK for E2E, not for production |
+
+### Callback URLs (Auth0 dashboard)
+
+Currently registered:
+
+```
+com.example.mobile://dev-imd1udg26uvzvfto.us.auth0.com/ios/com.example.mobile/callback
+com.example.mobile://dev-imd1udg26uvzvfto.us.auth0.com/android/com.example.mobile/callback
+```
+
+Confirm these match your **production bundle ID / application ID** in `auth0.properties` / `Info.plist`. If the app uses a different scheme (e.g. `com.minutriporcion.app`), update Auth0 callbacks or you'll see callback mismatch errors.
+
+---
+
+## Production backend
+
+### Environment
+
+| Variable | Prod value |
+|----------|------------|
+| `AUTH_ISSUER` | `https://dev-imd1udg26uvzvfto.us.auth0.com/` |
+| `AUTH_AUDIENCE` | `https://api.nutriconsultas.minutriporcion.com` |
+| `AUTH0_MGMT_*` | Not configured (admin email lookup unavailable; manual `sub` linkage only) |
+
+### Anonymous requests (no Bearer)
+
+All return **401** as expected:
+
+```
+GET /rest/mobile/patient/visits      → 401
+GET /rest/mobile/patient/diet-plans  → 401
+GET /rest/mobile/patient/messages    → 401
+GET /rest/mobile/patient/progress    → 401
+GET /actuator/health                 → 200
+```
+
+### HTTP codes after login
+
+| Code | Meaning |
+|------|---------|
+| **401** | Missing/invalid JWT, wrong issuer, or wrong `aud` |
+| **403** `patient_not_linked` | JWT valid but `sub` not linked to any `Paciente.patientAuthSub` |
+| **200** | Auth + linkage OK; endpoint implemented |
+| **404** | Auth + linkage OK but resource not found (or endpoint not deployed yet) |
+
+---
+
+## Test patient linked for E2E
+
+A production patient record is linked for live testing:
+
+| Field | Value |
+|-------|-------|
+| Paciente ID | `1` |
+| Name | Diego Torres |
+| Email | `diego.torres.fuerte@gmail.com` |
+| Auth0 `sub` (must match JWT) | `google-oauth2\|105777036752849735533` |
+
+**Important:** Linkage uses the **patient's mobile Auth0 `sub`**, not the nutritionist's web-admin `sub`. The first linkage attempt used the nutritionist sub by mistake; it was corrected on 2026-06-14.
+
+### Who can test?
+
+Log in on the mobile app with Google account **`diego.torres.fuerte@gmail.com`**. After login, API calls should pass linkage and return data (1 visit and 1 diet assignment exist in prod for this patient).
+
+To link another tester, ask the nutritionist to use **Admin → Pacientes → Afiliación → Vincular** with the patient's Auth0 `sub`, or contact the backend team.
+
+---
+
+## Blockers
+
+### A1 — Apple Sign-In (Auth0) — resolved 2026-06-14
+
+| Item | Detail |
+|------|--------|
+| Connection | `apple` (`con_DsJCAz8WVvd2Atp3`) |
+| Native app | ✅ `CmZdUaMZ3Oqs4JSbUBdYZYmKoqDUiLBk` enabled |
+| Credentials | **Auth0 development keys** (Client ID / signing key left blank) — sufficient for simulator E2E |
+| Production | Replace with Apple Developer **Services ID**, **Team ID**, **Key ID**, and **.p8 signing key** in Auth0 → Authentication → Social → apple → Settings |
+| App-side | No change needed — `connection=apple` is correct |
+
+### B3 — Progress endpoint deploy lag
+
+| Item | Detail |
+|------|--------|
+| Backend PR | [#148](https://github.com/diego-torres/nutriconsultas/pull/148) **merged** (`GET /rest/mobile/patient/progress`) |
+| Prod | May still run an older JAR until CodePipeline deploys |
+| Symptom | Linked JWT → **404** on `/progress` until redeploy |
+| Action | Backend will trigger deploy; retest progress after deploy |
+
+---
+
+## Recommended test matrix (update as you go)
+
+Run with `MOCK_AUTH=false` against **https://minutriporcion.com**.
+
+### Welcome — social login
+
+| Step | iOS | Android | Expected |
+|------|-----|---------|----------|
+| Tap **Google** | [ ] | [ ] | Google account picker → return to app |
+| Tap **Apple** | [ ] | n/a | Should open Apple sign-in (Auth0 dev keys) |
+| Callback returns to app | [ ] | [ ] | No URL mismatch |
+| Lands on home tabs | [ ] | [ ] | |
+
+### Post-login API (Google account above)
+
+| Endpoint | Expected | Actual | Notes |
+|----------|----------|--------|-------|
+| `GET /rest/mobile/patient/visits` | 200 + paged data | [ ] | |
+| `GET /rest/mobile/patient/diet-plans` | 200 + paged data | [ ] | |
+| `GET /rest/mobile/patient/messages` | 200 (may be empty) | [ ] | |
+| `POST /rest/mobile/patient/messages` | 201/200 | [ ] | |
+| `GET /rest/mobile/patient/progress` | 200 after deploy | [ ] | 404 until prod redeploy |
+
+### Token sanity check
+
+After login, decode the access token (or use app logs):
+
+- `iss` = `https://dev-imd1udg26uvzvfto.us.auth0.com/`
+- `aud` includes `https://api.nutriconsultas.minutriporcion.com`
+- `sub` = `google-oauth2|105777036752849735533` (for the linked test account)
+
+Optional backend script (requires access token from the app):
+
+```bash
+./scripts/mobile-auth0-e2e-setup.sh verify-token '<access_token>'
+```
+
+---
+
+## Mobile app checklist (unchanged)
+
+| Item | Status |
+|------|--------|
+| Native `AUTH_CLIENT` (`CmZdUaMZ…`) | ✅ |
+| `AUTH0_AUDIENCE` on `login()` | ✅ |
+| Google → `connection=google-oauth2` | ✅ |
+| Apple → `connection=apple` (iOS) | ✅ wired + Auth0 connection enabled |
+| `MOCK_AUTH=false` for live test | Required |
+
+---
+
+## Backend contacts & references
+
+- Mobile API registry: [`ISSUE.md`](../../ISSUE.md)
+- Alignment spec: [`docs/mobile-api/ALIGNMENT-SPEC.md`](ALIGNMENT-SPEC.md) (if present)
+- E2E setup script: [`scripts/mobile-auth0-e2e-setup.sh`](../../scripts/mobile-auth0-e2e-setup.sh)
+- Related mobile issues: [#22](https://github.com/Escanor4323/nutriconsultas-mobile/issues/22), PR [#61](https://github.com/Escanor4323/nutriconsultas-mobile/pull/61)
+
+---
+
+*Updated 2026-06-14: Apple connection created and enabled on `minutriporcion-native` (Auth0 dev keys).*
