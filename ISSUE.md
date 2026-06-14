@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-14 — **#99 in progress** (PR pending). **#98 done** (PR #148). **NEXT:** [#99](https://github.com/diego-torres/nutriconsultas/issues/99) until PR merges; then #112 / #115.
+**Last updated:** 2026-06-14 — **#99 done** (PR #153). All endpoints #91–#99 **done** on `main`. **NEXT:** [#112](https://github.com/diego-torres/nutriconsultas/issues/112) OpenAPI spec.
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116) plus the directly-related `[Dashboard]` IMC gauge (#106). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -46,7 +46,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 | `done` | Merged to `main` |
 | `deferred` | Intentionally paused — decision pending |
 
-Phase 0 (#107, #109, #110) is **done**. Patient linkage (#109) is **done**. Endpoints #91–#98 are **done** on `main`. Messages (#96/#97) + i18n (#111) + rate limit (#113) shipped in PR #151. **#99 in progress** (branch `mobile-api/99-progress-measurements`).
+Phase 0 (#107, #109, #110) is **done**. Patient linkage (#109) is **done**. Endpoints **#91–#99 are done** on `main` (PR #153 completes the endpoint set). **NEXT:** #112 (OpenAPI spec).
 
 ---
 
@@ -73,7 +73,7 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 |---|-------|-----|-------|-----------|-------|
 | 111 | Accept-Language filter + MessageSource i18n for REST errors | https://github.com/diego-torres/nutriconsultas/issues/111 | **done** | 110 | Merged PR #151: `LocaleContextFilter`, `MobileApiErrorResponses`, `MobileApiExceptionHandler` (403/404/400/429), localized `PatientLinkageFilter` |
 | 115 | PHI log redaction audit for all mobile controllers | https://github.com/diego-torres/nutriconsultas/issues/115 | open | 110 | Audit every `/rest/mobile/**` controller against `util/LogRedaction`; CI gate `scripts/audit-logging.sh`. No names/emails/DOB at INFO. |
-| 112 | OpenAPI spec for `/rest/mobile/patient/**` | https://github.com/diego-torres/nutriconsultas/issues/112 | open | 110, endpoints | springdoc spec; mobile reads it as the integration contract. Track per-endpoint as they land. |
+| 112 | OpenAPI spec for `/rest/mobile/patient/**` | https://github.com/diego-torres/nutriconsultas/issues/112 | **NEXT** | 110, endpoints | springdoc spec; mobile reads it as the integration contract. All #91–#99 endpoints landed — document full surface. |
 
 ---
 
@@ -106,7 +106,7 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 | # | Endpoint | URL | State | Backend source |
 |---|----------|-----|-------|----------------|
 | 98 | `GET /rest/mobile/patient/progress` — BMI/indicator snapshot | https://github.com/diego-torres/nutriconsultas/issues/98 | **done** | PR #148: `deltaPeso`/`deltaImc`, `imcLabel`, BMR, optional circumferences |
-| 99 | `GET /rest/mobile/patient/progress/measurements` — time series | https://github.com/diego-torres/nutriconsultas/issues/99 | **in-progress** | 98 | Branch `mobile-api/99-progress-measurements`: `from`/`to` ISO-8601; `maxRows` cap 365; ASC order; `porcentajeGrasaCorporal` |
+| 99 | `GET /rest/mobile/patient/progress/measurements` — time series | https://github.com/diego-torres/nutriconsultas/issues/99 | **done** | 98 | Merged PR #153: `from`/`to` ISO-8601; `maxRows` cap 365; ASC order; `porcentajeGrasaCorporal`; `truncated` flag |
 
 ---
 
