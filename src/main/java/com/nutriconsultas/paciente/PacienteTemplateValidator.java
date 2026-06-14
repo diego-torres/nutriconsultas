@@ -7,6 +7,9 @@ import java.util.Map;
 
 import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.EventStatus;
+import com.nutriconsultas.paciente.calculation.PhysiologicalStressType;
+import com.nutriconsultas.paciente.calculation.StressFormulaTable;
+import com.nutriconsultas.paciente.calculation.StressIncrementMode;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.ClinicalExam;
 import com.nutriconsultas.dieta.Dieta;
@@ -238,6 +241,20 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		measurement.setMuslo(null);
 		measurement.setPorcentajeGrasaCorporal(null);
 		measurement.setPorcentajeMasaMuscular(null);
+		measurement.setBmrUsed(1500.0);
+		measurement.setGetKcal(2100.0);
+		measurement.setTefKcal(210.0);
+		measurement.setTotalAdjustedKcal(2310.0);
+		measurement.setPhysiologicalStressActive(true);
+		measurement.setPhysiologicalStressType(PhysiologicalStressType.FEVER);
+		measurement.setStressFormulaTable(StressFormulaTable.LONG);
+		measurement.setStressIncrementMode(StressIncrementMode.MULTIPLIER_BMR);
+		measurement.setStressFactorValue(1.2);
+		measurement.setStressFeverTemperature(38.5);
+		measurement.setStressValidFrom(new Date());
+		measurement.setStressValidUntil(new Date());
+		measurement.setStressKcal(462.0);
+		measurement.setFinalTotalKcal(2772.0);
 		return measurement;
 	}
 

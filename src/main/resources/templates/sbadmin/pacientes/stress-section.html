@@ -164,3 +164,113 @@
   <input type="hidden" id="get-stress-hidden" th:field="*{stressKcal}">
   <input type="hidden" id="get-final-hidden" th:field="*{finalTotalKcal}">
 </div>
+
+<!-- Read-only: energy breakdown + stress config (ver antropométrico, consulta, etc.) -->
+<div th:fragment="stressViewSection(record)" class="mt-3">
+  <h6 class="text-muted mb-2">Gasto energético y estrés fisiológico</h6>
+  <div class="row mb-2">
+    <div class="col-6 col-md-4 col-lg-2 mb-2">
+      <div class="alert alert-secondary mb-0 py-2 text-center h-100">
+        <small class="d-block text-muted">TMB</small>
+        <strong th:text="${record.bmrUsed != null ? #numbers.formatDecimal(record.bmrUsed, 1, 0) + ' kcal' : '—'}">—</strong>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2 mb-2">
+      <div class="alert alert-secondary mb-0 py-2 text-center h-100">
+        <small class="d-block text-muted">Actividad</small>
+        <strong th:text="${record.getKcal != null and record.bmrUsed != null ? #numbers.formatDecimal(record.getKcal - record.bmrUsed, 1, 0) + ' kcal' : '—'}">—</strong>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2 mb-2">
+      <div class="alert alert-info mb-0 py-2 text-center h-100">
+        <small class="d-block text-muted">GET</small>
+        <strong th:text="${record.getKcal != null ? #numbers.formatDecimal(record.getKcal, 1, 0) + ' kcal' : '—'}">—</strong>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2 mb-2">
+      <div class="alert alert-warning mb-0 py-2 text-center h-100">
+        <small class="d-block text-muted">TEF</small>
+        <strong th:text="${record.tefKcal != null ? #numbers.formatDecimal(record.tefKcal, 1, 0) + ' kcal' : '—'}">—</strong>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2 mb-2">
+      <div class="alert alert-primary mb-0 py-2 text-center h-100">
+        <small class="d-block text-muted">Total (GET+TEF)</small>
+        <strong th:text="${record.totalAdjustedKcal != null ? #numbers.formatDecimal(record.totalAdjustedKcal, 1, 0) + ' kcal' : '—'}">—</strong>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2 mb-2" th:if="${record.stressKcal != null}">
+      <div class="alert alert-danger mb-0 py-2 text-center h-100">
+        <small class="d-block text-muted">Estrés</small>
+        <strong th:text="${#numbers.formatDecimal(record.stressKcal, 1, 0) + ' kcal'}">—</strong>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2 mb-2" th:if="${record.finalTotalKcal != null}">
+      <div class="alert alert-success mb-0 py-2 text-center h-100">
+        <small class="d-block text-muted">Final</small>
+        <strong th:text="${#numbers.formatDecimal(record.finalTotalKcal, 1, 0) + ' kcal'}">—</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-warning mb-3"
+       th:if="${record.physiologicalStressActive == true or record.stressKcal != null}">
+    <div class="card-header bg-warning text-dark py-2">
+      <strong><i class="fas fa-heartbeat mr-1"></i> Factor de estrés fisiológico</strong>
+    </div>
+    <div class="card-body py-2">
+      <div class="row">
+        <div class="col-md-3">
+          <small class="text-muted d-block">Estado</small>
+          <span th:if="${record.physiologicalStressActive == true}" class="badge badge-warning">Activo</span>
+          <span th:unless="${record.physiologicalStressActive == true}" class="badge badge-secondary">Inactivo</span>
+        </div>
+        <div class="col-md-3" th:if="${record.physiologicalStressType != null}">
+          <small class="text-muted d-block">Tipo</small>
+          <span th:text="${record.physiologicalStressType.displayName}">—</span>
+        </div>
+        <div class="col-md-3" th:if="${record.stressFormulaTable != null}">
+          <small class="text-muted d-block">Tabla</small>
+          <span th:text="${record.stressFormulaTable.displayName}">—</span>
+        </div>
+        <div class="col-md-3" th:if="${record.stressIncrementMode != null}">
+          <small class="text-muted d-block">Modo</small>
+          <span th:text="${record.stressIncrementMode.displayName}">—</span>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-md-3" th:if="${record.stressFactorValue != null}">
+          <small class="text-muted d-block">Factor aplicado</small>
+          <strong th:text="${#numbers.formatDecimal(record.stressFactorValue, 1, 2)}">—</strong>
+        </div>
+        <div class="col-md-3" th:if="${record.stressFeverTemperature != null}">
+          <small class="text-muted d-block">Temperatura (°C)</small>
+          <span th:text="${#numbers.formatDecimal(record.stressFeverTemperature, 1, 1) + ' °C'}">—</span>
+        </div>
+        <div class="col-md-3" th:if="${record.stressValidFrom != null}">
+          <small class="text-muted d-block">Vigencia desde</small>
+          <span th:text="${#dates.format(record.stressValidFrom, 'dd/MM/yyyy')}">—</span>
+        </div>
+        <div class="col-md-3" th:if="${record.stressValidUntil != null}">
+          <small class="text-muted d-block">Vigencia hasta</small>
+          <span th:text="${#dates.format(record.stressValidUntil, 'dd/MM/yyyy')}">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-warning mb-0"
+       th:if="${record.stressKcal != null or record.physiologicalStressActive == true}">
+    <i class="fas fa-exclamation-triangle mr-1"></i>
+    <strong>Requiere validación clínica profesional.</strong>
+    Los valores de estrés fisiológico son orientativos y deben ser confirmados por el nutricionista
+    o el equipo clínico antes de usarse en la prescripción dietética.
+  </div>
+  <div class="alert alert-light border mb-0"
+       th:if="${record.stressKcal == null and record.physiologicalStressActive != true}">
+    <small class="text-muted">
+      <i class="fas fa-info-circle mr-1"></i>
+      No se aplicó factor de estrés fisiológico en este registro.
+    </small>
+  </div>
+</div>
