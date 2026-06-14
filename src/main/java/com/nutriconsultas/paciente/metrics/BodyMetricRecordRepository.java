@@ -13,6 +13,8 @@ public interface BodyMetricRecordRepository extends JpaRepository<BodyMetricReco
 
 	Optional<BodyMetricRecord> findFirstByPacienteIdOrderByRecordedAtDescIdDesc(Long pacienteId);
 
+	List<BodyMetricRecord> findTop2ByPacienteIdOrderByRecordedAtDescIdDesc(Long pacienteId);
+
 	Optional<BodyMetricRecord> findBySourceAndSourceId(BodyMetricSource source, Long sourceId);
 
 	boolean existsByPacienteId(Long pacienteId);
