@@ -8,6 +8,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -68,7 +69,7 @@ public final class MobileApiErrorResponses {
 	}
 
 	public String validationMessageKey(final MethodArgumentNotValidException ex) {
-		final var fieldError = ex.getBindingResult().getFieldError();
+		final FieldError fieldError = ex.getBindingResult().getFieldError();
 		if (fieldError != null && "body".equals(fieldError.getField())) {
 			if ("Size".equals(fieldError.getCode())) {
 				return KEY_MESSAGE_TOO_LONG;
