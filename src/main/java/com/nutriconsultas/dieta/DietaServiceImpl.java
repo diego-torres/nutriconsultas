@@ -1,9 +1,11 @@
 package com.nutriconsultas.dieta;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +56,92 @@ public class DietaServiceImpl implements DietaService {
 	public List<Dieta> getDietas() {
 		log.info("Getting all dietas");
 		return dietaRepository.findAll();
+	}
+
+	private static final int PICKER_MAX_PAGE_SIZE = 50;
+
+	@Override
+	@Transactional(readOnly = true)
+	public DietaPickerPageDto findPickerPage(final String search, final int page, final int size,
+			final Double requerimientoKcal) {
+		final String term = search == null ? "" : search.trim().toLowerCase();
+		final int safeSize = Math.min(Math.max(size, 1), PICKER_MAX_PAGE_SIZE);
+		final int safePage = Math.max(page, 0);
+
+		final List<DietaPickerItemDto> filtered = dietaRepository.findAll(Sort.by("nombre"))
+			.stream()
+			.filter(dieta -> matchesPickerSearch(dieta, term))
+			.map(this::toPickerItem)
+			.sorted(pickerComparator(requerimientoKcal))
+			.toList();
+
+		final int total = filtered.size();
+		final int fromIndex = safePage * safeSize;
+		final List<DietaPickerItemDto> pageItems;
+		if (fromIndex >= total) {
+			pageItems = List.of();
+		}
+		else {
+			final int toIndex = Math.min(fromIndex + safeSize, total);
+			pageItems = filtered.subList(fromIndex, toIndex);
+		}
+
+		final DietaPickerPageDto result = new DietaPickerPageDto();
+		result.setItems(new ArrayList<>(pageItems));
+		result.setPage(safePage);
+		result.setSize(safeSize);
+		result.setTotalElements(total);
+		result.setHasNext(fromIndex + safeSize < total);
+		return result;
+	}
+
+	private DietaPickerItemDto toPickerItem(final Dieta dieta) {
+		final Double kcal = DietaNutritionCalculator.calculateTotalKcal(dieta);
+		return new DietaPickerItemDto(dieta.getId(), dieta.getNombre(), kcal != null ? kcal.intValue() : 0);
+	}
+
+	private boolean matchesPickerSearch(final Dieta dieta, final String term) {
+		if (term.isEmpty()) {
+			return true;
+		}
+		if (dieta.getNombre() != null && dieta.getNombre().toLowerCase().contains(term)) {
+			return true;
+		}
+		final int kcal = DietaNutritionCalculator.calculateTotalKcal(dieta).intValue();
+		if (String.valueOf(kcal).contains(term)) {
+			return true;
+		}
+		if (dieta.getIngestas() != null) {
+			return dieta.getIngestas()
+				.stream()
+				.anyMatch(ingesta -> ingesta.getNombre() != null
+						&& ingesta.getNombre().toLowerCase().contains(term));
+		}
+		return false;
+	}
+
+	private Comparator<DietaPickerItemDto> pickerComparator(final Double requerimientoKcal) {
+		if (requerimientoKcal == null) {
+			return Comparator.comparing(DietaPickerItemDto::getNombre, String.CASE_INSENSITIVE_ORDER);
+		}
+		return Comparator.comparingInt((DietaPickerItemDto item) -> caloricFitRank(item.getEnergiaKcal(), requerimientoKcal))
+			.thenComparingInt(item -> Math.abs(item.getEnergiaKcal() - requerimientoKcal.intValue()))
+			.thenComparing(DietaPickerItemDto::getNombre, String.CASE_INSENSITIVE_ORDER);
+	}
+
+	private int caloricFitRank(final Integer energiaKcal, final Double requerimientoKcal) {
+		if (requerimientoKcal == null || energiaKcal == null || energiaKcal <= 0) {
+			return 3;
+		}
+		final double tolerance = Math.max(50, requerimientoKcal * 0.05);
+		final double diff = energiaKcal - requerimientoKcal;
+		if (Math.abs(diff) <= tolerance) {
+			return 0;
+		}
+		if (diff < 0) {
+			return 1;
+		}
+		return 2;
 	}
 
 	@Override

@@ -13,6 +13,12 @@
       intense: [[${paciente != null && paciente.customFactorIntense != null ? paciente.customFactorIntense : 'null'}]],
       veryIntense: [[${paciente != null && paciente.customFactorVeryIntense != null ? paciente.customFactorVeryIntense : 'null'}]]
     };
+    const patientTefMethod = '[[${paciente != null && paciente.tefMethod != null ? paciente.tefMethod.name() : "FIXED"}]]';
+    const patientTefBase = '[[${paciente != null && paciente.tefBase != null ? paciente.tefBase.name() : "GET"}]]';
+    const patientTefFixedPercent = [[${paciente != null && paciente.tefFixedPercent != null ? paciente.tefFixedPercent : 10.0}]];
+    const patientTefMacroProtein = [[${paciente != null && paciente.tefMacroProteinPercent != null ? paciente.tefMacroProteinPercent : 'null'}]];
+    const patientTefMacroCarbs = [[${paciente != null && paciente.tefMacroCarbsPercent != null ? paciente.tefMacroCarbsPercent : 'null'}]];
+    const patientTefMacroFat = [[${paciente != null && paciente.tefMacroFatPercent != null ? paciente.tefMacroFatPercent : 'null'}]];
     const calculationEnableSync = [[${enableSync}]];
 
     function getCalcSubTabPanes(tabContent) {
@@ -219,6 +225,29 @@
       }
     }
 
+    function calculateTef(bmr, getValue) {
+      if (!getValue) {
+        return null;
+      }
+      if (patientTefMethod === 'MACRONUTRIENTS') {
+        const protein = patientTefMacroProtein != null ? patientTefMacroProtein : 30;
+        const carbs = patientTefMacroCarbs != null ? patientTefMacroCarbs : 50;
+        const fat = patientTefMacroFat != null ? patientTefMacroFat : 20;
+        const sum = protein + carbs + fat;
+        if (sum <= 0) {
+          return null;
+        }
+        const weighted = (protein / sum) * 0.25 + (carbs / sum) * 0.075 + (fat / sum) * 0.02;
+        return getValue * weighted;
+      }
+      const percent = patientTefFixedPercent > 0 ? patientTefFixedPercent : 10;
+      const base = patientTefBase === 'BMR' ? bmr : getValue;
+      if (!base) {
+        return null;
+      }
+      return base * (percent / 100);
+    }
+
     function updateGetCalculations() {
       const formulaEl = document.getElementById('get-bmr-formula');
       const levelEl = document.getElementById('get-activity-level');
@@ -240,18 +269,31 @@
       const bmr = calculateBmrByFormula(formula, weight, height, age, patientIsMale);
       const factor = resolveActivityFactor(patientActivityScale, level, customFactor);
       const getValue = bmr && factor ? bmr * factor : null;
+      const activityKcal = bmr && getValue ? getValue - bmr : null;
+      const tefValue = calculateTef(bmr, getValue);
+      const totalValue = getValue != null ? getValue + (tefValue || 0) : null;
 
       const bmrResult = document.getElementById('get-bmr-used-result');
+      const activityResult = document.getElementById('get-activity-kcal-result');
       const factorResult = document.getElementById('get-factor-result');
       const getResult = document.getElementById('get-result');
+      const tefResult = document.getElementById('get-tef-result');
+      const totalResult = document.getElementById('get-total-result');
       const bmrHidden = document.getElementById('get-bmr-used-hidden');
       const getHidden = document.getElementById('get-kcal-hidden');
+      const tefHidden = document.getElementById('get-tef-hidden');
+      const totalHidden = document.getElementById('get-total-hidden');
 
-      if (bmrResult) bmrResult.textContent = formatNumber(bmr);
+      if (bmrResult) bmrResult.textContent = formatEnergyKcal(bmr);
+      if (activityResult) activityResult.textContent = formatEnergyKcal(activityKcal);
       if (factorResult) factorResult.textContent = factor ? factor.toFixed(3) : '-';
-      if (getResult) getResult.textContent = formatNumber(getValue);
+      if (getResult) getResult.textContent = formatEnergyKcal(getValue);
+      if (tefResult) tefResult.textContent = formatEnergyKcal(tefValue);
+      if (totalResult) totalResult.textContent = formatEnergyKcal(totalValue);
       if (bmrHidden && bmr) bmrHidden.value = bmr.toFixed(2);
       if (getHidden && getValue) getHidden.value = getValue.toFixed(2);
+      if (tefHidden && tefValue) tefHidden.value = tefValue.toFixed(2);
+      if (totalHidden && totalValue) totalHidden.value = totalValue.toFixed(2);
     }
 
     // Ideal Weight Calculation Functions
@@ -347,6 +389,17 @@
         return '-';
       }
       return value.toFixed(2);
+    }
+
+    // Energy values (kcal) with thousands separator — matches Thymeleaf COMMA grouping
+    function formatEnergyKcal(value) {
+      if (value === null || value === undefined || isNaN(value)) {
+        return '-';
+      }
+      return Math.round(value).toLocaleString('es-MX', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      });
     }
 
     // Calculate Nivel de Peso from BMI

@@ -23,6 +23,58 @@
   <!-- Custom styles for this template-->
   <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
 
+  <style>
+    .dieta-picker-list {
+      max-height: 360px;
+      overflow-y: auto;
+      border: 1px solid #e3e6f0;
+      border-radius: 0.35rem;
+    }
+
+    .dieta-picker-item {
+      cursor: pointer;
+      border-left: 4px solid transparent;
+      transition: background-color 0.15s ease;
+    }
+
+    .dieta-picker-item:hover {
+      background-color: #f8f9fc;
+    }
+
+    .dieta-picker-item.selected {
+      border-color: #4e73df;
+      background-color: #eaecf4;
+    }
+
+    .dieta-picker-item.dieta-fit-match {
+      border-left-color: #1cc88a;
+    }
+
+    .dieta-picker-item.dieta-fit-under {
+      border-left-color: #f6c23e;
+    }
+
+    .dieta-picker-item.dieta-fit-over {
+      border-left-color: #e74a3b;
+    }
+
+    .dieta-picker-item.hidden-by-search {
+      display: none;
+    }
+
+    .dieta-fit-badge-match {
+      color: #1cc88a;
+    }
+
+    .dieta-fit-badge-under {
+      color: #f6c23e;
+    }
+
+    .dieta-picker-status {
+      font-size: 0.875rem;
+    }
+  </style>
+
 </head>
 
 <body id="page-top">
@@ -43,6 +95,18 @@
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Asignar Dieta a Paciente [[(${paciente != null ? paciente.name : ''})]]</h1>
           </div>
+          <div class="alert alert-info" th:if="${requerimientoKcal != null}">
+            <i class="fas fa-info-circle"></i>
+            Requerimiento energético del paciente
+            <span th:if="${paciente.totalAdjustedKcal != null}">(GET + TEF)</span>
+            <span th:if="${paciente.totalAdjustedKcal == null && paciente.getKcal != null}">(GET)</span>:
+            <strong th:text="${#numbers.formatDecimal(requerimientoKcal, 1, 'COMMA', 0, 'POINT')} + ' kcal/día'">0 kcal/día</strong>
+          </div>
+          <div class="alert alert-secondary" th:if="${requerimientoKcal == null}">
+            <i class="fas fa-info-circle"></i>
+            No hay requerimiento calórico registrado para este paciente. Puede asignar una dieta, pero no se marcarán
+            coincidencias calóricas hasta calcular GET/TEF en antropométricos o consulta.
+          </div>
 
           <!-- Content Row -->
           <div class="row">
@@ -52,17 +116,44 @@
                 <div class="col-sm-10 offset-sm-1">
 
                   <div class="info-form p-5">
-                    <form th:action="@{/admin/pacientes/{id}/dietas/asignar(id=${paciente != null ? paciente.id : 0})}" 
+                    <form id="asignarDietaForm"
+                          th:action="@{/admin/pacientes/{id}/dietas/asignar(id=${paciente != null ? paciente.id : 0})}" 
                           th:object="${pacienteDieta}" method="POST">
                       <div class="form-group">
                         <label>Dieta<span style="color:red;">*</span></label>
-                        <select class="form-control" name="dietaId" required>
-                          <option value="">Seleccione una dieta</option>
-                          <option th:each="dieta : ${dietasDisponibles}" 
-                                  th:value="${dieta.id}" 
-                                  th:text="${dieta.nombre}">
-                          </option>
-                        </select>
+                        <input type="hidden" name="dietaId" id="dietaIdInput" value="">
+                        <div id="dietaSelectionError" class="alert alert-danger py-2 d-none" role="alert">
+                          Seleccione una dieta de la lista.
+                        </div>
+                        <div id="dietaSelectedSummary" class="alert alert-primary py-2 d-none mb-2" role="status">
+                          <i class="fas fa-check-circle"></i>
+                          <strong>Seleccionada:</strong> <span id="dietaSelectedLabel">-</span>
+                        </div>
+                        <div class="input-group mb-2">
+                          <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                          </div>
+                          <input type="search" class="form-control" id="dietaSearchInput"
+                                 placeholder="Buscar por nombre o kilocalorías..." autocomplete="off">
+                        </div>
+                        <div class="d-flex flex-wrap small text-muted mb-2" th:if="${requerimientoKcal != null}">
+                          <span class="mr-3"><i class="fas fa-check-circle dieta-fit-badge-match"></i> Adecuada (±5%)</span>
+                          <span class="mr-3"><i class="fas fa-arrow-down dieta-fit-badge-under"></i> Por debajo</span>
+                          <span><i class="fas fa-arrow-up dieta-fit-badge-over"></i> Por encima</span>
+                        </div>
+                        <div id="dietaPickerList" class="list-group dieta-picker-list"></div>
+                        <div id="dietaPickerLoading" class="text-center text-muted py-2 dieta-picker-status d-none">
+                          <i class="fas fa-spinner fa-spin"></i> Cargando dietas...
+                        </div>
+                        <div id="dietaPickerEnd" class="text-center text-muted py-2 dieta-picker-status d-none">
+                          Fin de la lista
+                        </div>
+                        <div id="dietaPickerEmpty" class="alert alert-warning mb-0 d-none">
+                          No hay dietas disponibles. Cree una dieta en el catálogo antes de asignar.
+                        </div>
+                        <div id="dietaSearchNoResults" class="alert alert-secondary mt-2 mb-0 d-none">
+                          No hay dietas que coincidan con la búsqueda.
+                        </div>
                         <span th:if="${#fields.hasErrors('dieta')}" th:errors="*{dieta}"></span>
                       </div>
                       <div class="form-group">
@@ -123,6 +214,253 @@
 
     <!-- Custom scripts for all pages-->
     <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+
+    <script th:inline="javascript">
+      document.addEventListener('DOMContentLoaded', function() {
+        const requerimientoKcal = /*[[${requerimientoKcal}]]*/ null;
+        const pickerPageSize = 20;
+        const dietaIdInput = document.getElementById('dietaIdInput');
+        const searchInput = document.getElementById('dietaSearchInput');
+        const pickerList = document.getElementById('dietaPickerList');
+        const pickerLoading = document.getElementById('dietaPickerLoading');
+        const pickerEnd = document.getElementById('dietaPickerEnd');
+        const pickerEmpty = document.getElementById('dietaPickerEmpty');
+        const selectedSummary = document.getElementById('dietaSelectedSummary');
+        const selectedLabel = document.getElementById('dietaSelectedLabel');
+        const selectionError = document.getElementById('dietaSelectionError');
+        const noResults = document.getElementById('dietaSearchNoResults');
+        const form = document.getElementById('asignarDietaForm');
+
+        if (!pickerList) {
+          return;
+        }
+
+        let currentPage = 0;
+        let hasNextPage = true;
+        let loading = false;
+        let searchTerm = '';
+        let searchDebounceTimer = null;
+        let selectedDietaId = null;
+
+        function formatKcal(value) {
+          if (value === null || value === undefined || isNaN(value)) {
+            return '-';
+          }
+          return Math.round(value).toLocaleString('es-MX', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+          });
+        }
+
+        function classifyCaloricFit(dietKcal) {
+          if (requerimientoKcal == null || dietKcal == null || dietKcal <= 0) {
+            return { fit: 'unknown', label: 'Sin comparación', diff: null };
+          }
+          const tolerance = Math.max(50, requerimientoKcal * 0.05);
+          const diff = dietKcal - requerimientoKcal;
+          if (Math.abs(diff) <= tolerance) {
+            return { fit: 'match', label: 'Adecuada', diff: diff };
+          }
+          if (diff < 0) {
+            return { fit: 'under', label: 'Por debajo (' + formatKcal(Math.abs(diff)) + ' kcal)', diff: diff };
+          }
+          return { fit: 'over', label: 'Por encima (+' + formatKcal(diff) + ' kcal)', diff: diff };
+        }
+
+        function buildPickerItem(dieta) {
+          const item = document.createElement('button');
+          item.type = 'button';
+          item.className = 'list-group-item list-group-item-action dieta-picker-item';
+          item.setAttribute('data-dieta-id', String(dieta.id));
+          item.setAttribute('data-nombre', dieta.nombre || '');
+          item.setAttribute('data-energia', String(dieta.energiaKcal != null ? dieta.energiaKcal : 0));
+
+          const fitInfo = classifyCaloricFit(dieta.energiaKcal);
+          item.classList.add('dieta-fit-' + fitInfo.fit);
+
+          let iconClass = 'fas fa-minus-circle text-muted';
+          let fitLabelClass = 'small dieta-fit-label text-muted mt-1';
+          if (fitInfo.fit === 'match') {
+            iconClass = 'fas fa-check-circle dieta-fit-badge-match';
+            fitLabelClass = 'small dieta-fit-label dieta-fit-badge-match mt-1';
+          } else if (fitInfo.fit === 'under') {
+            iconClass = 'fas fa-arrow-down dieta-fit-badge-under';
+            fitLabelClass = 'small dieta-fit-label dieta-fit-badge-under mt-1';
+          } else if (fitInfo.fit === 'over') {
+            iconClass = 'fas fa-arrow-up dieta-fit-badge-over';
+            fitLabelClass = 'small dieta-fit-label dieta-fit-badge-over mt-1';
+          }
+
+          item.innerHTML =
+            '<div class="d-flex justify-content-between align-items-center">' +
+              '<div>' +
+                '<span class="dieta-fit-icon mr-2"><i class="' + iconClass + '"></i></span>' +
+                '<strong>' + escapeHtml(dieta.nombre || '') + '</strong>' +
+              '</div>' +
+              '<div class="text-right">' +
+                '<span class="badge badge-light dieta-kcal-label">' + formatKcal(dieta.energiaKcal) + ' kcal</span>' +
+                '<div class="' + fitLabelClass + '">' + fitInfo.label + '</div>' +
+              '</div>' +
+            '</div>';
+
+          item.addEventListener('click', function() {
+            selectDieta(item, dieta);
+          });
+
+          if (selectedDietaId != null && String(selectedDietaId) === String(dieta.id)) {
+            item.classList.add('selected');
+          }
+
+          return item;
+        }
+
+        function escapeHtml(value) {
+          return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
+
+        function setLoading(isLoading) {
+          loading = isLoading;
+          if (pickerLoading) {
+            pickerLoading.classList.toggle('d-none', !isLoading);
+          }
+        }
+
+        let totalElements = 0;
+
+        function updateStatus() {
+          if (pickerEmpty) {
+            pickerEmpty.classList.toggle('d-none', totalElements > 0 || loading);
+          }
+          if (noResults) {
+            noResults.classList.toggle('d-none', totalElements > 0 || loading || !searchTerm);
+          }
+          if (pickerEnd) {
+            pickerEnd.classList.toggle('d-none', hasNextPage || totalElements === 0 || loading);
+          }
+        }
+
+        function buildPickerUrl(page) {
+          const params = new URLSearchParams();
+          params.set('page', String(page));
+          params.set('size', String(pickerPageSize));
+          if (searchTerm) {
+            params.set('q', searchTerm);
+          }
+          if (requerimientoKcal != null) {
+            params.set('requerimientoKcal', String(requerimientoKcal));
+          }
+          return '/rest/dietas/picker?' + params.toString();
+        }
+
+        function loadPickerPage(page, append) {
+          if (loading || (!append && page > 0) || (append && !hasNextPage)) {
+            return;
+          }
+          setLoading(true);
+          fetch(buildPickerUrl(page), {
+            headers: { 'Accept': 'application/json' }
+          })
+            .then(function(response) {
+              if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+              }
+              return response.json();
+            })
+            .then(function(data) {
+              if (!append) {
+                pickerList.innerHTML = '';
+              }
+              const items = data.items || [];
+              items.forEach(function(dieta) {
+                pickerList.appendChild(buildPickerItem(dieta));
+              });
+              currentPage = data.page != null ? data.page : page;
+              hasNextPage = !!data.hasNext;
+              totalElements = data.totalElements != null ? data.totalElements : pickerList.children.length;
+              updateStatus();
+            })
+            .catch(function() {
+              if (!append && pickerList.children.length === 0 && pickerEmpty) {
+                pickerEmpty.classList.remove('d-none');
+                pickerEmpty.textContent = 'No se pudieron cargar las dietas. Intente de nuevo.';
+              }
+            })
+            .finally(function() {
+              setLoading(false);
+              updateStatus();
+            });
+        }
+
+        function resetAndLoad() {
+          currentPage = 0;
+          hasNextPage = true;
+          totalElements = 0;
+          loadPickerPage(0, false);
+        }
+
+        function selectDieta(item, dieta) {
+          pickerList.querySelectorAll('.dieta-picker-item').forEach(function(el) {
+            el.classList.remove('selected');
+          });
+          item.classList.add('selected');
+          selectedDietaId = dieta.id;
+          dietaIdInput.value = String(dieta.id);
+          if (selectionError) {
+            selectionError.classList.add('d-none');
+          }
+          if (selectedSummary && selectedLabel) {
+            const fitInfo = classifyCaloricFit(dieta.energiaKcal);
+            selectedLabel.textContent = (dieta.nombre || '') + ' — ' + formatKcal(dieta.energiaKcal)
+              + ' kcal (' + fitInfo.label + ')';
+            selectedSummary.classList.remove('d-none');
+          }
+        }
+
+        pickerList.addEventListener('scroll', function() {
+          if (loading || !hasNextPage) {
+            return;
+          }
+          const threshold = 40;
+          if (pickerList.scrollTop + pickerList.clientHeight >= pickerList.scrollHeight - threshold) {
+            loadPickerPage(currentPage + 1, true);
+          }
+        });
+
+        if (searchInput) {
+          searchInput.addEventListener('input', function() {
+            const nextTerm = searchInput.value.trim();
+            if (searchDebounceTimer) {
+              clearTimeout(searchDebounceTimer);
+            }
+            searchDebounceTimer = setTimeout(function() {
+              searchTerm = nextTerm;
+              resetAndLoad();
+            }, 300);
+          });
+        }
+
+        if (form) {
+          form.addEventListener('submit', function(e) {
+            if (!dietaIdInput.value) {
+              e.preventDefault();
+              if (selectionError) {
+                selectionError.classList.remove('d-none');
+              }
+              if (searchInput) {
+                searchInput.focus();
+              }
+            }
+          });
+        }
+
+        resetAndLoad();
+      });
+    </script>
 
 </body>
 

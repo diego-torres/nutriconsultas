@@ -242,6 +242,23 @@ public class DietasRestControllerTest {
 	}
 
 	@Test
+	public void testGetPickerPageDelegatesToService() {
+		final DietaPickerPageDto expected = new DietaPickerPageDto();
+		expected.setPage(0);
+		expected.setSize(20);
+		expected.setTotalElements(1);
+		expected.setHasNext(false);
+		expected.setItems(List.of(new DietaPickerItemDto(1L, "Dieta", 2000)));
+		when(dietaService.findPickerPage("test", 0, 20, 2000.0)).thenReturn(expected);
+
+		final DietaPickerPageDto result = dietasRestController.getPickerPage("test", 0, 20, 2000.0);
+
+		assertThat(result.getItems()).hasSize(1);
+		assertThat(result.getItems().get(0).getEnergiaKcal()).isEqualTo(2000);
+		verify(dietaService).findPickerPage("test", 0, 20, 2000.0);
+	}
+
+	@Test
 	public void testGetPageArrayEmptyDietShowsEmptyDistribution() {
 		log.info("Starting testGetPageArrayEmptyDietShowsEmptyDistribution");
 

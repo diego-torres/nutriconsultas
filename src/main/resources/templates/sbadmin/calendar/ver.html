@@ -109,6 +109,12 @@
                         <div class="col-md-3" th:if="${event.getKcal != null}">
                           <p><strong>GET:</strong> <span th:text="${#numbers.formatDecimal(event.getKcal, 1, 0)} + ' kcal/día'">-</span></p>
                         </div>
+                        <div class="col-md-3" th:if="${event.tefKcal != null}">
+                          <p><strong>TEF:</strong> <span th:text="${#numbers.formatDecimal(event.tefKcal, 1, 0)} + ' kcal/día'">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${event.totalAdjustedKcal != null}">
+                          <p><strong>Total ajustado:</strong> <span class="font-weight-bold text-success" th:text="${#numbers.formatDecimal(event.totalAdjustedKcal, 1, 0)} + ' kcal/día'">-</span></p>
+                        </div>
                         <div class="col-md-3" th:if="${event.physicalActivityLevel != null}">
                           <p><strong>Actividad:</strong> <span th:text="${event.physicalActivityLevel.displayName}">-</span></p>
                         </div>
@@ -371,6 +377,30 @@
         OMS: { SEDENTARY: 1.40, LIGHT: 1.60, MODERATE: 1.80, INTENSE: 2.00, VERY_INTENSE: 2.20 }
       };
 
+      function calculateWizardTef(bmr, getVal) {
+        const method = window.patientTefMethod || 'FIXED';
+        if (!getVal) {
+          return null;
+        }
+        if (method === 'MACRONUTRIENTS') {
+          const protein = window.patientTefMacroProtein != null ? window.patientTefMacroProtein : 30;
+          const carbs = window.patientTefMacroCarbs != null ? window.patientTefMacroCarbs : 50;
+          const fat = window.patientTefMacroFat != null ? window.patientTefMacroFat : 20;
+          const sum = protein + carbs + fat;
+          if (sum <= 0) {
+            return null;
+          }
+          const weighted = (protein / sum) * 0.25 + (carbs / sum) * 0.075 + (fat / sum) * 0.02;
+          return Math.round(getVal * weighted);
+        }
+        const percent = window.patientTefFixedPercent > 0 ? window.patientTefFixedPercent : 10;
+        const base = (window.patientTefBase || 'GET') === 'BMR' ? bmr : getVal;
+        if (!base) {
+          return null;
+        }
+        return Math.round(base * (percent / 100));
+      }
+
       function updateWizardGetPreview() {
         const preview = jQuery('#wizardGetPreview');
         if (!preview.length) return;
@@ -380,6 +410,7 @@
         const scale = window.patientActivityScale || 'HARRIS_BENEDICT';
         if (!peso || !estatura || !level) {
           preview.text('GET estimado: — kcal/día');
+          window.wizardTotalAdjustedKcal = null;
           return;
         }
         let factor = null;
@@ -390,13 +421,31 @@
         }
         if (!factor) {
           preview.text('GET estimado: — kcal/día');
+          window.wizardTotalAdjustedKcal = null;
           return;
         }
         const imc = peso / (estatura * estatura);
         const age = /*[[${event.paciente.dob != null ? 30 : 30}]]*/ 30;
         const bmrApprox = 10 * peso + 6.25 * (estatura * 100) - 5 * age;
         const getVal = Math.round(bmrApprox * factor);
-        preview.text('GET estimado: ' + getVal + ' kcal/día (aprox.; se recalcula al guardar)');
+        const tefVal = calculateWizardTef(bmrApprox, getVal);
+        const totalVal = tefVal != null ? getVal + tefVal : getVal;
+        window.wizardTotalAdjustedKcal = totalVal;
+        let previewText = 'GET estimado: ' + getVal + ' kcal/día';
+        if (tefVal != null) {
+          previewText += ' | TEF: ' + tefVal + ' | Total: ' + totalVal + ' kcal/día';
+        }
+        preview.text(previewText + ' (aprox.; se recalcula al guardar)');
+      }
+
+      function prefillWizardDailyCalories() {
+        const caloriesInput = jQuery('#summaryNotesWizardModal input[name="caloriasDiarias"]');
+        if (!caloriesInput.length || caloriesInput.val()) {
+          return;
+        }
+        if (window.wizardTotalAdjustedKcal) {
+          caloriesInput.val(window.wizardTotalAdjustedKcal);
+        }
       }
       
       // Function to show summary notes wizard
@@ -413,12 +462,19 @@
           physicalActivityLevel: /*[[${event.physicalActivityLevel != null ? event.physicalActivityLevel.name() : null}]]*/ null,
           bmrFormula: /*[[${event.bmrFormula != null ? event.bmrFormula.name() : null}]]*/ null,
           activityFactor: /*[[${event.activityFactor}]]*/ null,
-          getKcal: /*[[${event.getKcal}]]*/ null
+          getKcal: /*[[${event.getKcal}]]*/ null,
+          totalAdjustedKcal: /*[[${event.totalAdjustedKcal}]]*/ null
         };
         const patientActivityScale = /*[[${event.paciente.activityFactorScale != null ? event.paciente.activityFactorScale.name() : 'HARRIS_BENEDICT'}]]*/ 'HARRIS_BENEDICT';
         const patientPreferredBmr = /*[[${event.paciente.preferredBmrFormula != null ? event.paciente.preferredBmrFormula.name() : 'PROMEDIO'}]]*/ 'PROMEDIO';
         window.patientActivityScale = patientActivityScale;
         window.patientPreferredBmr = patientPreferredBmr;
+        window.patientTefMethod = /*[[${event.paciente.tefMethod != null ? event.paciente.tefMethod.name() : 'FIXED'}]]*/ 'FIXED';
+        window.patientTefBase = /*[[${event.paciente.tefBase != null ? event.paciente.tefBase.name() : 'GET'}]]*/ 'GET';
+        window.patientTefFixedPercent = /*[[${event.paciente.tefFixedPercent != null ? event.paciente.tefFixedPercent : 10}]]*/ 10;
+        window.patientTefMacroProtein = /*[[${event.paciente.tefMacroProteinPercent}]]*/ null;
+        window.patientTefMacroCarbs = /*[[${event.paciente.tefMacroCarbsPercent}]]*/ null;
+        window.patientTefMacroFat = /*[[${event.paciente.tefMacroFatPercent}]]*/ null;
         
         // Create wizard modal
         let wizardHtml = '<div class="modal fade" id="summaryNotesWizardModal" tabindex="-1" role="dialog">';
@@ -552,7 +608,8 @@
         wizardHtml += '<h6>Plan de Alimentación</h6>';
         wizardHtml += '<div class="form-group">';
         wizardHtml += '<label>Calorías diarias recomendadas:</label>';
-        wizardHtml += '<input type="number" class="form-control" name="caloriasDiarias" placeholder="Ej: 2000">';
+        wizardHtml += '<input type="number" class="form-control" name="caloriasDiarias" id="wizardCaloriasDiarias" placeholder="Ej: 2000">';
+        wizardHtml += '<small class="form-text text-muted">Se sugiere automáticamente el total ajustado (GET + TEF) del paciente.</small>';
         wizardHtml += '</div>';
         wizardHtml += '<div class="form-group">';
         wizardHtml += '<label>Distribución de macronutrientes:</label>';
@@ -681,6 +738,10 @@
         });
         
         // Generate summary when moving to final step
+        jQuery('#summaryNotesWizardModal').on('shown.bs.tab', '#wizardTabs a[href="#step3"]', function() {
+          prefillWizardDailyCalories();
+        });
+
         jQuery('#summaryNotesWizardModal').on('shown.bs.tab', '#wizardTabs a[href="#step5"]', function() {
           generateSummaryNotes();
         });

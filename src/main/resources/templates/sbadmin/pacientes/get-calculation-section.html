@@ -4,7 +4,10 @@
       <div class="card border-left-warning">
         <div class="card-body">
           <p class="text-muted small mb-3">
-            GET = TMB × factor de actividad. Escala del paciente:
+            GET = TMB × factor de actividad. TEF según preferencias del paciente
+            (<span th:text="${paciente.tefMethod != null ? paciente.tefMethod.displayName : 'Porcentaje fijo'}">Porcentaje fijo</span>,
+            base <span th:text="${paciente.tefBase != null ? paciente.tefBase.displayName : 'GET'}">GET</span>).
+            Escala de actividad:
             <strong th:text="${paciente.activityFactorScale != null ? paciente.activityFactorScale.displayName : 'Harris-Benedict'}">Harris-Benedict</strong>
           </p>
           <div class="row">
@@ -12,7 +15,7 @@
               <div class="form-group">
                 <label class="small">Fórmula TMB:</label>
                 <select class="form-control form-control-sm" id="get-bmr-formula" th:field="*{bmrFormula}">
-                  <option value="">Usar preferencia del paciente</option>
+                  <option value="">Usar preferencia guardada</option>
                   <option th:each="formula : ${T(com.nutriconsultas.paciente.calculation.BmrFormulaType).values()}"
                           th:value="${formula.name()}" th:text="${formula.displayName}"></option>
                 </select>
@@ -39,24 +42,39 @@
             </div>
           </div>
           <div class="row mt-2">
-            <div class="col-md-4">
+            <div class="col-md-3">
               <div class="alert alert-light mb-0 py-2">
                 <strong>TMB:</strong> <span id="get-bmr-used-result" class="text-primary">-</span> <small>kcal/día</small>
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
               <div class="alert alert-light mb-0 py-2">
-                <strong>Factor:</strong> <span id="get-factor-result" class="text-primary">-</span>
+                <strong>Actividad:</strong> <span id="get-activity-kcal-result" class="text-info">-</span> <small>kcal/día</small>
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="alert alert-warning mb-0 py-2">
+            <div class="col-md-2">
+              <div class="alert alert-light mb-0 py-2">
                 <strong>GET:</strong> <span id="get-result" class="text-dark font-weight-bold">-</span> <small>kcal/día</small>
               </div>
             </div>
+            <div class="col-md-2">
+              <div class="alert alert-light mb-0 py-2">
+                <strong>TEF:</strong> <span id="get-tef-result" class="text-success">-</span> <small>kcal/día</small>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="alert alert-warning mb-0 py-2">
+                <strong>Total:</strong> <span id="get-total-result" class="text-dark font-weight-bold">-</span> <small>kcal/día</small>
+              </div>
+            </div>
           </div>
+          <p class="text-muted small mb-0 mt-2">
+            Total ajustado = TMB + actividad + TEF = GET + TEF
+          </p>
           <input type="hidden" id="get-bmr-used-hidden" th:field="*{bmrUsed}">
           <input type="hidden" id="get-kcal-hidden" th:field="*{getKcal}">
+          <input type="hidden" id="get-tef-hidden" th:field="*{tefKcal}">
+          <input type="hidden" id="get-total-hidden" th:field="*{totalAdjustedKcal}">
         </div>
       </div>
     </div>
@@ -66,7 +84,7 @@
 <div th:fragment="energyPreferencesSection">
   <hr>
   <h5 class="mb-3"><i class="fas fa-sliders-h"></i> Preferencias Energéticas</h5>
-  <p class="text-muted small">Se aplican por paciente al calcular GET en antropométricos y consultas.</p>
+  <p class="text-muted small">Se aplican por paciente al calcular GET y TEF en antropométricos y consultas.</p>
   <div class="form-group">
     <label>Escala de factores de actividad</label>
     <select class="form-control" th:field="*{activityFactorScale}" id="activityFactorScaleSelect">
@@ -106,18 +124,86 @@
       </div>
     </div>
   </div>
+  <hr>
+  <h6 class="mb-3"><i class="fas fa-thermometer-half"></i> Efecto termogénico (TEF / ETA)</h6>
+  <div class="form-group">
+    <label>Método de cálculo TEF</label>
+    <select class="form-control" th:field="*{tefMethod}" id="tefMethodSelect">
+      <option th:each="method : ${T(com.nutriconsultas.paciente.calculation.TefMethod).values()}"
+              th:value="${method.name()}" th:text="${method.displayName}"></option>
+    </select>
+  </div>
+  <div id="tefFixedSection">
+    <div class="row">
+      <div class="col-md-6 form-group">
+        <label>Base del porcentaje fijo</label>
+        <select class="form-control" th:field="*{tefBase}" id="tefBaseSelect">
+          <option th:each="base : ${T(com.nutriconsultas.paciente.calculation.TefBase).values()}"
+                  th:value="${base.name()}" th:text="${base.displayName}"></option>
+        </select>
+      </div>
+      <div class="col-md-6 form-group">
+        <label>Porcentaje TEF fijo (%)</label>
+        <input type="number" step="0.1" min="0" max="30" class="form-control" th:field="*{tefFixedPercent}"
+               placeholder="Ej: 10">
+      </div>
+    </div>
+  </div>
+  <div id="tefMacroSection" style="display:none;">
+    <label>Distribución de macronutrientes para TEF (% del total calórico)</label>
+    <div class="row">
+      <div class="col-md-4 form-group">
+        <label class="small">Proteínas (%)</label>
+        <input type="number" step="0.1" min="0" max="100" class="form-control" th:field="*{tefMacroProteinPercent}"
+               placeholder="Ej: 30">
+      </div>
+      <div class="col-md-4 form-group">
+        <label class="small">Carbohidratos (%)</label>
+        <input type="number" step="0.1" min="0" max="100" class="form-control" th:field="*{tefMacroCarbsPercent}"
+               placeholder="Ej: 50">
+      </div>
+      <div class="col-md-4 form-group">
+        <label class="small">Grasas (%)</label>
+        <input type="number" step="0.1" min="0" max="100" class="form-control" th:field="*{tefMacroFatPercent}"
+               placeholder="Ej: 20">
+      </div>
+    </div>
+    <p class="text-muted small">Coeficientes: proteína ~25%, carbohidratos ~7.5%, grasa ~2% de cada macro.</p>
+  </div>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const scaleSelect = document.getElementById('activityFactorScaleSelect');
       const customSection = document.getElementById('customFactorsSection');
+      const tefMethodSelect = document.getElementById('tefMethodSelect');
+      const tefFixedSection = document.getElementById('tefFixedSection');
+      const tefMacroSection = document.getElementById('tefMacroSection');
+
       function toggleCustom() {
         if (scaleSelect && customSection) {
           customSection.style.display = scaleSelect.value === 'CUSTOM' ? '' : 'none';
         }
       }
+
+      function toggleTefSections() {
+        if (!tefMethodSelect) {
+          return;
+        }
+        const isMacro = tefMethodSelect.value === 'MACRONUTRIENTS';
+        if (tefFixedSection) {
+          tefFixedSection.style.display = isMacro ? 'none' : '';
+        }
+        if (tefMacroSection) {
+          tefMacroSection.style.display = isMacro ? '' : 'none';
+        }
+      }
+
       if (scaleSelect) {
         scaleSelect.addEventListener('change', toggleCustom);
         toggleCustom();
+      }
+      if (tefMethodSelect) {
+        tefMethodSelect.addEventListener('change', toggleTefSections);
+        toggleTefSections();
       }
     });
   </script>

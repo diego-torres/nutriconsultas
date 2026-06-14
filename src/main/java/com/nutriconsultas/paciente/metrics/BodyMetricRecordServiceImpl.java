@@ -64,7 +64,8 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 		}
 		upsertRecord(new BodyMetricUpsertData(event.getPaciente(), event.getEventDateTime(),
 				BodyMetricSource.CONSULTATION, event.getId(), event.getPeso(), event.getEstatura(), event.getImc(),
-				event.getNivelPeso(), event.getIndiceGrasaCorporal(), null, event.getBmrUsed(), event.getGetKcal()));
+				event.getNivelPeso(), event.getIndiceGrasaCorporal(), null, event.getBmrUsed(), event.getGetKcal(),
+				event.getTefKcal(), event.getTotalAdjustedKcal()));
 	}
 
 	@Override
@@ -77,7 +78,8 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 		upsertRecord(new BodyMetricUpsertData(measurement.getPaciente(), measurement.getMeasurementDateTime(),
 				BodyMetricSource.ANTHROPOMETRIC, measurement.getId(), measurement.getPeso(), measurement.getEstatura(),
 				measurement.getImc(), measurement.getNivelPeso(), measurement.getIndiceGrasaCorporal(),
-				measurement.getPorcentajeGrasaCorporal(), measurement.getBmrUsed(), measurement.getGetKcal()));
+				measurement.getPorcentajeGrasaCorporal(), measurement.getBmrUsed(), measurement.getGetKcal(),
+				measurement.getTefKcal(), measurement.getTotalAdjustedKcal()));
 	}
 
 	@Override
@@ -88,7 +90,7 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 		}
 		upsertRecord(new BodyMetricUpsertData(exam.getPaciente(), exam.getExamDateTime(),
 				BodyMetricSource.CLINICAL_EXAM, exam.getId(), exam.getPeso(), exam.getEstatura(), exam.getImc(),
-				exam.getNivelPeso(), exam.getIndiceGrasaCorporal(), null, null, null));
+				exam.getNivelPeso(), exam.getIndiceGrasaCorporal(), null, null, null, null, null));
 	}
 
 	@Override
@@ -194,12 +196,14 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 		record.setBodyFatPercentage(data.bodyFatPercentage());
 		record.setBmr(data.bmr());
 		record.setGetKcal(data.getKcal());
+		record.setTefKcal(data.tefKcal());
+		record.setTotalAdjustedKcal(data.totalAdjustedKcal());
 		repository.save(record);
 	}
 
 	private record BodyMetricUpsertData(Paciente paciente, java.util.Date recordedAt, BodyMetricSource source,
 			Long sourceId, Double weight, Double height, Double imc, NivelPeso nivelPeso, Double bodyFatIndex,
-			Double bodyFatPercentage, Double bmr, Double getKcal) {
+			Double bodyFatPercentage, Double bmr, Double getKcal, Double tefKcal, Double totalAdjustedKcal) {
 	}
 
 	private boolean hasBodyMetricData(final Double weight, final Double height, final Double imc,
@@ -230,6 +234,8 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 			paciente.setNivelPeso(record.getNivelPeso());
 			paciente.setBmr(record.getBmr());
 			paciente.setGetKcal(record.getGetKcal());
+			paciente.setTefKcal(record.getTefKcal());
+			paciente.setTotalAdjustedKcal(record.getTotalAdjustedKcal());
 		}
 		else {
 			paciente.setPeso(null);
@@ -238,6 +244,8 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 			paciente.setNivelPeso(null);
 			paciente.setBmr(null);
 			paciente.setGetKcal(null);
+			paciente.setTefKcal(null);
+			paciente.setTotalAdjustedKcal(null);
 		}
 		refreshPatientBmrIfPossible(paciente);
 		pacienteRepository.save(paciente);
@@ -265,6 +273,8 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 				if (result.getKcal() != null) {
 					paciente.setGetKcal(result.getKcal());
 					paciente.setActivityFactor(result.activityFactor());
+					paciente.setTefKcal(result.tefKcal());
+					paciente.setTotalAdjustedKcal(result.totalAdjustedKcal());
 				}
 			}
 		}

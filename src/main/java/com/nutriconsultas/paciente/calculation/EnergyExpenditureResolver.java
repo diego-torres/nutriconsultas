@@ -18,17 +18,24 @@ public final class EnergyExpenditureResolver {
 		// Utility class
 	}
 
-	public record EnergyResult(Double bmr, Double activityFactor, Double getKcal) {
+	public record EnergyResult(Double bmr, Double activityFactor, Double getKcal, Double activityKcal, Double tefKcal,
+			Double totalAdjustedKcal) {
+
+		public EnergyResult(final Double bmr, final Double activityFactor, final Double getKcal) {
+			this(bmr, activityFactor, getKcal, null, null, getKcal);
+		}
+
 	}
 
 	/**
-	 * Computes BMR, activity factor and GET from patient context and inputs.
+	 * Computes BMR, activity factor, GET, TEF and total adjusted energy from patient
+	 * context.
 	 */
 	public static EnergyResult resolve(final Paciente paciente, @Nullable final BmrFormulaType bmrFormulaOverride,
 			@Nullable final PhysicalActivityLevel activityLevel, @Nullable final Double customFactorValue,
 			final Double weight, final Double height) {
 		if (paciente == null || weight == null || height == null || weight <= 0 || height <= 0) {
-			return new EnergyResult(null, null, null);
+			return new EnergyResult(null, null, null, null, null, null);
 		}
 		final Integer age = calculateAge(paciente.getDob());
 		final Boolean isMale = "M".equalsIgnoreCase(paciente.getGender());
@@ -36,14 +43,44 @@ public final class EnergyExpenditureResolver {
 				: PatientEnergyPreferences.resolveBmrFormula(paciente);
 		final Double bmr = TdeeCalculationService.calculateBmr(formula, weight, height, age, isMale);
 		if (bmr == null || activityLevel == null) {
-			return new EnergyResult(bmr, null, null);
+			return new EnergyResult(bmr, null, null, null, null, null);
 		}
 		final ActivityFactorScale scale = PatientEnergyPreferences.resolveScale(paciente);
 		final CustomActivityFactors customFactors = PatientEnergyPreferences.customFactorsFrom(paciente);
 		final Double factor = TdeeCalculationService.resolveActivityFactor(scale, activityLevel, customFactors,
 				customFactorValue);
 		final Double getKcal = TdeeCalculationService.calculateGet(bmr, factor);
-		return new EnergyResult(bmr, factor, getKcal);
+		return applyTef(paciente, bmr, factor, getKcal);
+	}
+
+	/**
+	 * Applies TEF preferences to an existing GET/BMR result.
+	 */
+	public static EnergyResult applyTef(final Paciente paciente, final Double bmr, final Double activityFactor,
+			final Double getKcal) {
+		if (getKcal == null) {
+			return new EnergyResult(bmr, activityFactor, null, null, null, null);
+		}
+		final Double tefKcal = TefCalculationService.calculateTef(PatientEnergyPreferences.resolveTefMethod(paciente),
+				PatientEnergyPreferences.resolveTefBase(paciente), paciente.getTefFixedPercent(),
+				paciente.getTefMacroProteinPercent(), paciente.getTefMacroCarbsPercent(),
+				paciente.getTefMacroFatPercent(), bmr, getKcal);
+		final Double totalAdjustedKcal = TefCalculationService.calculateTotalAdjustedKcal(getKcal, tefKcal);
+		final Double activityKcal = TefCalculationService.calculateActivityKcal(bmr, getKcal);
+		return new EnergyResult(bmr, activityFactor, getKcal, activityKcal, tefKcal, totalAdjustedKcal);
+	}
+
+	/**
+	 * Target daily calories for diet assignment (GET + TEF when available).
+	 */
+	public static Double resolveTargetDailyCalories(final Paciente paciente) {
+		if (paciente == null) {
+			return null;
+		}
+		if (paciente.getTotalAdjustedKcal() != null) {
+			return paciente.getTotalAdjustedKcal();
+		}
+		return paciente.getGetKcal();
 	}
 
 	/**
@@ -59,6 +96,12 @@ public final class EnergyExpenditureResolver {
 		}
 		if (result.getKcal() != null) {
 			paciente.setGetKcal(result.getKcal());
+		}
+		if (result.tefKcal() != null) {
+			paciente.setTefKcal(result.tefKcal());
+		}
+		if (result.totalAdjustedKcal() != null) {
+			paciente.setTotalAdjustedKcal(result.totalAdjustedKcal());
 		}
 		if (activityLevel != null) {
 			paciente.setPhysicalActivityLevel(activityLevel);

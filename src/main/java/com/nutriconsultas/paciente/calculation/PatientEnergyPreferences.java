@@ -34,4 +34,18 @@ public final class PatientEnergyPreferences {
 		return paciente.getPreferredBmrFormula();
 	}
 
+	public static TefMethod resolveTefMethod(final Paciente paciente) {
+		if (paciente == null || paciente.getTefMethod() == null) {
+			return TefMethod.FIXED;
+		}
+		return paciente.getTefMethod();
+	}
+
+	public static TefBase resolveTefBase(final Paciente paciente) {
+		if (paciente == null || paciente.getTefBase() == null) {
+			return TefBase.GET;
+		}
+		return paciente.getTefBase();
+	}
+
 }

@@ -31,6 +31,7 @@ import com.nutriconsultas.clinical.exam.ClinicalExamService;
 import com.nutriconsultas.auth0.Auth0UserLookup;
 import com.nutriconsultas.controller.AbstractAuthorizedController;
 import com.nutriconsultas.mobile.PatientMobileAuthStatus;
+import com.nutriconsultas.dieta.DietaNutritionCalculator;
 import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.DietaRepository;
 import com.nutriconsultas.dieta.DietaService;
@@ -106,6 +107,13 @@ public class PacienteController extends AbstractAuthorizedController {
 	 * @param userId the current user's ID
 	 * @throws IllegalArgumentException if the patient does not belong to the user
 	 */
+	private Double resolveRequerimientoKcal(final Paciente paciente) {
+		if (paciente.getTotalAdjustedKcal() != null) {
+			return paciente.getTotalAdjustedKcal();
+		}
+		return paciente.getGetKcal();
+	}
+
 	private void verifyPatientOwnership(final Paciente paciente, final String userId) {
 		if (paciente == null) {
 			throw new IllegalArgumentException("Paciente no encontrado");
@@ -415,14 +423,7 @@ public class PacienteController extends AbstractAuthorizedController {
 				if (dietaId != null) {
 					final com.nutriconsultas.dieta.Dieta dieta = dietaService.getDieta(dietaId);
 					if (dieta != null) {
-						// Calculate and set macronutrientes
-						dieta.setProteina(getTotalProteina(dieta));
-						dieta.setLipidos(getTotalLipidos(dieta));
-						dieta.setHidratosDeCarbono(getTotalHidratosDeCarbono(dieta));
-						// Calculate and set kilocalorías
-						final Double kCal = getTotalKCal(dieta);
-						dieta.setEnergia(kCal != null ? kCal.intValue() : 0);
-						// Update the dieta in pacienteDieta
+						DietaNutritionCalculator.applyCalculatedNutrients(dieta);
 						pacienteDieta.setDieta(dieta);
 					}
 				}
@@ -437,22 +438,15 @@ public class PacienteController extends AbstractAuthorizedController {
 				if (dietaId != null) {
 					final com.nutriconsultas.dieta.Dieta dieta = dietaService.getDieta(dietaId);
 					if (dieta != null) {
-						// Calculate and set macronutrientes
-						dieta.setProteina(getTotalProteina(dieta));
-						dieta.setLipidos(getTotalLipidos(dieta));
-						dieta.setHidratosDeCarbono(getTotalHidratosDeCarbono(dieta));
-						// Calculate and set kilocalorías
-						final Double kCal = getTotalKCal(dieta);
-						dieta.setEnergia(kCal != null ? kCal.intValue() : 0);
-						// Update the dieta in pacienteDieta
+						DietaNutritionCalculator.applyCalculatedNutrients(dieta);
 						pacienteDieta.setDieta(dieta);
 					}
 				}
 			}
 		}
 		model.addAttribute("dietasActivas", dietasActivas);
-		// obtener todas las dietas disponibles para asignar
-		model.addAttribute("dietasDisponibles", dietaService.getDietas());
+		// obtener todas las dietas disponibles para asignar (legacy attribute for dietas template)
+		model.addAttribute("dietasDisponibles", getDietasDisponiblesWithCalculatedNutrients());
 		return "sbadmin/pacientes/dietas";
 	}
 
@@ -705,7 +699,7 @@ public class PacienteController extends AbstractAuthorizedController {
 
 		model.addAttribute("activeMenu", "perfil");
 		model.addAttribute("paciente", paciente);
-		model.addAttribute("dietasDisponibles", dietaService.getDietas());
+		model.addAttribute("requerimientoKcal", resolveRequerimientoKcal(paciente));
 		model.addAttribute("pacienteDieta", new PacienteDieta());
 		return "sbadmin/pacientes/asignar-dieta";
 	}
@@ -765,7 +759,7 @@ public class PacienteController extends AbstractAuthorizedController {
 				.forEach(error -> log.error("Error: {} - {}", error.getObjectName(), error.getDefaultMessage()));
 			model.addAttribute("activeMenu", "perfil");
 			model.addAttribute("paciente", paciente);
-			model.addAttribute("dietasDisponibles", dietaService.getDietas());
+			model.addAttribute("requerimientoKcal", resolveRequerimientoKcal(paciente));
 			return "sbadmin/pacientes/asignar-dieta";
 		}
 		final PacienteDieta saved = pacienteDietaService.assignDieta(id, dietaId, pacienteDieta, userId);
@@ -968,81 +962,27 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	/**
-	 * Calculates total protein from a dieta.
-	 * @param dieta the dieta to calculate protein from
-	 * @return total protein in grams
+	 * Loads available dietas with kcal/macros calculated from ingestas (same formula as
+	 * {@code /admin/dietas} grid), not the persisted {@code energia} column.
 	 */
-	private Double getTotalProteina(final com.nutriconsultas.dieta.Dieta dieta) {
-		if (dieta == null || dieta.getIngestas() == null) {
-			return 0.0;
-		}
-		return dieta.getIngestas().stream().mapToDouble(i -> {
-			double platillosProteina = i.getPlatillos() != null
-					? i.getPlatillos().stream().mapToDouble(p -> p.getProteina() != null ? p.getProteina() : 0.0).sum()
-					: 0.0;
-			double alimentosProteina = i.getAlimentos() != null
-					? i.getAlimentos().stream().mapToDouble(a -> a.getProteina() != null ? a.getProteina() : 0.0).sum()
-					: 0.0;
-			return platillosProteina + alimentosProteina;
-		}).sum();
+	private List<com.nutriconsultas.dieta.Dieta> getDietasDisponiblesWithCalculatedNutrients() {
+		return dietaService.getDietas()
+			.stream()
+			.map(this::enrichDietaWithCalculatedNutrients)
+			.collect(Collectors.toList());
 	}
 
-	/**
-	 * Calculates total lipids from a dieta.
-	 * @param dieta the dieta to calculate lipids from
-	 * @return total lipids in grams
-	 */
-	private Double getTotalLipidos(final com.nutriconsultas.dieta.Dieta dieta) {
-		if (dieta == null || dieta.getIngestas() == null) {
-			return 0.0;
+	private com.nutriconsultas.dieta.Dieta enrichDietaWithCalculatedNutrients(
+			final com.nutriconsultas.dieta.Dieta dieta) {
+		if (dieta == null || dieta.getId() == null) {
+			return dieta;
 		}
-		return dieta.getIngestas().stream().mapToDouble(i -> {
-			double platillosLipidos = i.getPlatillos() != null
-					? i.getPlatillos().stream().mapToDouble(p -> p.getLipidos() != null ? p.getLipidos() : 0.0).sum()
-					: 0.0;
-			double alimentosLipidos = i.getAlimentos() != null
-					? i.getAlimentos().stream().mapToDouble(a -> a.getLipidos() != null ? a.getLipidos() : 0.0).sum()
-					: 0.0;
-			return platillosLipidos + alimentosLipidos;
-		}).sum();
-	}
-
-	/**
-	 * Calculates total carbohydrates from a dieta.
-	 * @param dieta the dieta to calculate carbohydrates from
-	 * @return total carbohydrates in grams
-	 */
-	private Double getTotalHidratosDeCarbono(final com.nutriconsultas.dieta.Dieta dieta) {
-		if (dieta == null || dieta.getIngestas() == null) {
-			return 0.0;
+		final com.nutriconsultas.dieta.Dieta fullDieta = dietaService.getDieta(dieta.getId());
+		if (fullDieta == null) {
+			return dieta;
 		}
-		return dieta.getIngestas().stream().mapToDouble(i -> {
-			double platillosHidratos = i.getPlatillos() != null ? i.getPlatillos()
-				.stream()
-				.mapToDouble(p -> p.getHidratosDeCarbono() != null ? p.getHidratosDeCarbono() : 0.0)
-				.sum() : 0.0;
-			double alimentosHidratos = i.getAlimentos() != null ? i.getAlimentos()
-				.stream()
-				.mapToDouble(a -> a.getHidratosDeCarbono() != null ? a.getHidratosDeCarbono() : 0.0)
-				.sum() : 0.0;
-			return platillosHidratos + alimentosHidratos;
-		}).sum();
-	}
-
-	/**
-	 * Calculates total kilocalories from a dieta. Formula: protein * 4 + lipids * 9 +
-	 * carbohydrates * 4
-	 * @param dieta the dieta to calculate kilocalories from
-	 * @return total kilocalories
-	 */
-	private Double getTotalKCal(final com.nutriconsultas.dieta.Dieta dieta) {
-		if (dieta == null) {
-			return 0.0;
-		}
-		final Double proteina = getTotalProteina(dieta);
-		final Double lipidos = getTotalLipidos(dieta);
-		final Double hidratosDeCarbono = getTotalHidratosDeCarbono(dieta);
-		return proteina * 4 + lipidos * 9 + hidratosDeCarbono * 4;
+		DietaNutritionCalculator.applyCalculatedNutrients(fullDieta);
+		return fullDieta;
 	}
 
 	/**

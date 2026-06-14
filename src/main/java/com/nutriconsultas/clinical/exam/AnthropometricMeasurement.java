@@ -106,6 +106,12 @@ public class AnthropometricMeasurement {
 	@Column(precision = 7)
 	private Double getKcal;
 
+	@Column(precision = 7)
+	private Double tefKcal;
+
+	@Column(precision = 7)
+	private Double totalAdjustedKcal;
+
 	// Convenience methods for backward compatibility
 	public Double getPeso() {
 		return bodyMass != null ? bodyMass.getWeight() : null;

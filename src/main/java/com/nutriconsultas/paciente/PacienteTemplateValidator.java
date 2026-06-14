@@ -113,7 +113,18 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 
 		final List<Dieta> mockDietasDisponibles = new ArrayList<>();
 		mockDietasDisponibles.add(mockDieta);
+		final Dieta dietaAlta = new Dieta();
+		dietaAlta.setId(2L);
+		dietaAlta.setNombre("Dieta 2200 kcal");
+		dietaAlta.setEnergia(2200);
+		mockDietasDisponibles.add(dietaAlta);
+		final Dieta dietaBaja = new Dieta();
+		dietaBaja.setId(3L);
+		dietaBaja.setNombre("Dieta 1500 kcal");
+		dietaBaja.setEnergia(1500);
+		mockDietasDisponibles.add(dietaBaja);
 		variables.put("dietasDisponibles", mockDietasDisponibles);
+		variables.put("requerimientoKcal", 2000.0);
 	}
 
 	private void addMockConsulta(final Map<String, Object> variables, final Paciente paciente) {
