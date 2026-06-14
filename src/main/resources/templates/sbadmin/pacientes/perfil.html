@@ -242,6 +242,13 @@
   </div>
   <!-- End of Page Wrapper -->
 
+  <script th:inline="javascript">
+    window.PATIENT_CHAT_CONTEXT = {
+      pacienteId: /*[[${paciente.id}]]*/ 0,
+      pacienteName: /*[[${paciente.name}]]*/ ''
+    };
+  </script>
+
   <!-- Bootstrap core JavaScript-->
   <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
   <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>

@@ -15,9 +15,9 @@ public class EternaTemplateValidator extends BaseTemplateValidator {
 
 	@Override
 	public Map<String, Object> createMockModelVariables() {
-		// Public templates may not need username/user_picture, but we include them
-		// for consistency
-		return super.createMockModelVariables();
+		final Map<String, Object> variables = super.createMockModelVariables();
+		variables.put("recaptchaSiteKey", "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI");
+		return variables;
 	}
 
 }

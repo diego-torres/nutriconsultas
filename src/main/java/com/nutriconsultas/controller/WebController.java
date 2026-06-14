@@ -3,13 +3,18 @@ package com.nutriconsultas.controller;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestClient;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.nutriconsultas.contact.ContactInquiry;
+import com.nutriconsultas.contact.ContactInquiryService;
+import com.nutriconsultas.util.LogRedaction;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -22,17 +27,34 @@ public class WebController {
 
 	private final RestClient restClient;
 
+	private final ContactInquiryService contactInquiryService;
+
 	@Value("${recaptcha.secret-key:6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe}")
 	private String recaptchaSecretKey;
 
-	public WebController() {
+	@Value("${recaptcha.site-key:6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI}")
+	private String recaptchaSiteKey;
+
+	public WebController(final ContactInquiryService contactInquiryService) {
 		this.restClient = RestClient.create();
+		this.contactInquiryService = contactInquiryService;
+	}
+
+	@ModelAttribute
+	public void addPublicPageAttributes(final Model model) {
+		model.addAttribute("recaptchaSiteKey", recaptchaSiteKey);
 	}
 
 	@GetMapping(path = "/")
 	public String index() {
 		log.debug("Resolving index");
 		return "eterna/index";
+	}
+
+	@GetMapping(path = "/contact")
+	public String contactPage() {
+		log.debug("Resolving contact page");
+		return "eterna/contact";
 	}
 
 	@PostMapping(path = "/contact")
@@ -55,9 +77,8 @@ public class WebController {
 			return ResponseEntity.badRequest().body("La verificación reCAPTCHA falló. Por favor, intenta nuevamente.");
 		}
 
-		log.info("Contact form submitted successfully from: {}", contactForm.getEmail());
-		// TODO: Send email notification or save to database
-		// For now, we just log and return success
+		final ContactInquiry saved = contactInquiryService.saveFromForm(contactForm);
+		log.info("Contact form submitted successfully: {}", LogRedaction.redactContactInquiry(saved.getId()));
 
 		return ResponseEntity.ok("OK");
 	}
