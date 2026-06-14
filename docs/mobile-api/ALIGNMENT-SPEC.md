@@ -40,7 +40,8 @@ permission_handler, flutter_svg.
 pubspec currently LACKS (must be added for the roadmap): auth0_flutter, flutter_secure_storage, fl_chart,
 flutter_pdfview, connectivity_plus, envied (env config). (notification deps already present → FL-9 push is partly enabled.)
 
-### F6 — Backend has spring-boot-starter-oauth2-CLIENT + security only. NO resource-server. Confirms G1 blocker.
+### F6 — Backend auth (updated 2026-06-14)
+`spring-boot-starter-oauth2-resource-server` + `MobileSecurityConfig` `@Order(1)` on `/rest/mobile/**` (**#107 done**, PR #117). Patient JWT `sub` → `Paciente.patientAuthSub`; `PatientLinkageFilter` returns localized 403 (#111).
 
 ## RECONCILIATION MAP — roadmap FL-N  ↔  existing mobile issues #1–#21  ↔  backend issues #91–#99
 
@@ -155,10 +156,11 @@ Add to each a short "Backend dependency" line per the cross-reference table, e.g
 - `PacienteDietaStatus`: ACTIVE / COMPLETED / CANCELLED (no INACTIVE exists)
 - `NivelPeso`: BAJO / NORMAL / ALTO / SOBREPESO → service translates to `imcLabel` display string
 
-### F8.3 — Verified gaps (backend, updated 2026-06-12)
-- **#107 DONE** ([PR #117](https://github.com/diego-torres/nutriconsultas/pull/117)): `Paciente.patientAuthSub`, `oauth2-resource-server`, `MobileSecurityConfig` `@Order(1)`, `PatientAuthService`, `PatientLinkageFilter`. Requires `AUTH_AUDIENCE` env var. No `/rest/mobile/patient/**` feature controllers yet.
-- **#110 OPEN** — `ApiResponse`/`PagedResponse` not implemented; all #91–#99 still blocked on #110.
-- NO message entity/repo/service/controller exists — #96/#97 are greenfield.
+### F8.3 — Verified gaps (backend, updated 2026-06-14)
+- **Phase 0 DONE:** #107 (PR #117), #109 (PR #142), #110 (DTO envelope).
+- **Endpoints on `main`:** #91–#98 (visits, diet plans + PDF, messages, progress snapshot); #96/#97 messaging with HTTP 201 + Resilience4j 10/min (#113, PR #151).
+- **i18n (#111) DONE** (PR #151): `LocaleContextFilter`, `MobileApiErrorResponses`, localized 403/404/400/429.
+- **Remaining endpoint:** #99 progress measurements time series (**NEXT**).
 - `deltaPeso`/`deltaImc` are computed-at-query, not stored.
 - Progress `grasa` ambiguity: prefer `bodyComposition.porcentajeGrasaCorporal` (patient-facing %) over `indiceGrasaCorporal`.
 - Template dietas (seed `system:template-dietas`) have 4 ingestas incl. Colación — contract examples show only 3.

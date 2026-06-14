@@ -9,6 +9,12 @@ registro de consultorio de nutrición
 
 **Branding:** Minutriporcion is the product and branding name for the nutriconsultas project. The project "nutriconsultas" is developed for the company Minutriporcion.
 
+### Patient mobile API
+
+Backend REST endpoints for the Flutter patient app live under `/rest/mobile/patient/**`. Issue tracking and endpoint status: [`ISSUE.md`](ISSUE.md). Agent workflow: [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md). Contract docs: [`docs/mobile-api/`](docs/mobile-api/).
+
+**On `main` (2026-06-14):** Phase 0 auth (#107, #109, #110); visits, diet plans (+ PDF), messages (list + send with rate limit), progress snapshot; localized API errors (#111). **Next:** #99 progress measurements time series.
+
 ## AWS (production infrastructure)
 
 The Terraform under [`infrastructure/`](infrastructure/) deploys the app and database to EC2, optionally **AWS CodePipeline** (CodeStar connection to **GitHub**, then CodeBuild, then S3+SSM deploy to the app instance). There is **no public SSH (port 22)**; use **SSM Session Manager** to shell into instances. See the **[infrastructure README](infrastructure/README.md)** for the CodePipeline/connection steps and **[SSM connection](infrastructure/README.md#connect-to-the-ec2-instances-ssm-session-manager-only)**.

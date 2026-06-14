@@ -555,6 +555,14 @@ public class ExampleRestController {
 6. **Port**: Application runs on port 3000 (configurable via `server.port`)
 7. **Session Storage**: Uses JDBC-backed sessions (PostgreSQL)
 
+## Patient mobile API (tracking)
+
+Issue registry: [`ISSUE.md`](ISSUE.md). Agent workflow: [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md).
+
+**Done on `main` (2026-06-14):** #107/#109/#110 (JWT + linkage + DTO envelope); endpoints #91–#98; messages #96/#97 with rate limit (#113); localized errors (#111, PR #151); dashboard IMC gauge (#106).
+
+**Next:** [#99](https://github.com/diego-torres/nutriconsultas/issues/99) progress measurements time series. Open cross-cutting: #112 (OpenAPI), #115 (PHI audit), #116 (`senderDisplayName`), web #114 (nutritionist reply).
+
 ## Resources
 
 - [Spring Boot Documentation](https://spring.io/projects/spring-boot)

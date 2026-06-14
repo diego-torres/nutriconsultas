@@ -19,8 +19,9 @@ This document summarizes what the backend team verified after Auth0 CLI authenti
 | Apple login | ✅ Ready (dev keys) | Connection `apple` enabled on `minutriporcion-native` — uses Auth0 dev keys until Apple Developer creds are added |
 | JWT validation on prod (`AUTH_AUDIENCE`) | ✅ Ready | Valid token should **not** return 401 |
 | Patient linkage (prod test user) | ✅ Ready | Paciente linked to Google account below |
-| Visits / diet-plans / messages API | ✅ Deployed | Expect **200** after login + linkage |
-| Progress API (#98) | ⚠️ Pending deploy | Merged in backend `main`; prod JAR may lag |
+| Visits / diet-plans / messages / progress API | ✅ Deployed on `main` | Expect **200** (POST messages **201**) after login + linkage |
+| Localized error envelope (#111) | ✅ Deployed | 403/404/400/429 return `ApiResponse` with localized `message` |
+| Message rate limit (#113) | ✅ Deployed | POST messages: 10/min per `patientAuthSub`; **429** + `Retry-After: 60` |
 
 ---
 
@@ -98,9 +99,12 @@ GET /actuator/health                 → 200
 | Code | Meaning |
 |------|---------|
 | **401** | Missing/invalid JWT, wrong issuer, or wrong `aud` |
-| **403** `patient_not_linked` | JWT valid but `sub` not linked to any `Paciente.patientAuthSub` |
+| **403** | JWT valid but no linked `Paciente.patientAuthSub` — localized `ApiResponse.message` (`error.patient.not.linked`, #111) |
 | **200** | Auth + linkage OK; endpoint implemented |
-| **404** | Auth + linkage OK but resource not found (or endpoint not deployed yet) |
+| **201** | POST `/messages` success (#97) |
+| **400** | Validation failure (localized message, #111) |
+| **404** | Resource not found (localized message, #111) |
+| **429** | Write rate limit exceeded (#113); `Retry-After: 60` |
 
 ---
 
@@ -137,14 +141,13 @@ To link another tester, ask the nutritionist to use **Admin → Pacientes → Af
 | Production | Replace with Apple Developer **Services ID**, **Team ID**, **Key ID**, and **.p8 signing key** in Auth0 → Authentication → Social → apple → Settings |
 | App-side | No change needed — `connection=apple` is correct |
 
-### B3 — Progress endpoint deploy lag
+### B3 — Progress endpoint — resolved 2026-06-14
 
 | Item | Detail |
 |------|--------|
 | Backend PR | [#148](https://github.com/diego-torres/nutriconsultas/pull/148) **merged** (`GET /rest/mobile/patient/progress`) |
-| Prod | May still run an older JAR until CodePipeline deploys |
-| Symptom | Linked JWT → **404** on `/progress` until redeploy |
-| Action | Backend will trigger deploy; retest progress after deploy |
+| Prod | Deploy with latest `main` (includes #98, #111, #113 via #151) |
+| Symptom if stale | Linked JWT → **404** on `/progress` until redeploy |
 
 ---
 
@@ -168,8 +171,8 @@ Run with `MOCK_AUTH=false` against **https://minutriporcion.com**.
 | `GET /rest/mobile/patient/visits` | 200 + paged data | [ ] | |
 | `GET /rest/mobile/patient/diet-plans` | 200 + paged data | [ ] | |
 | `GET /rest/mobile/patient/messages` | 200 (may be empty) | [ ] | |
-| `POST /rest/mobile/patient/messages` | 201/200 | [ ] | |
-| `GET /rest/mobile/patient/progress` | 200 after deploy | [ ] | 404 until prod redeploy |
+| `POST /rest/mobile/patient/messages` | 201 + envelope | [ ] | Rate limit: 11th POST in 1 min → **429** |
+| `GET /rest/mobile/patient/progress` | 200 + snapshot | [ ] | |
 
 ### Token sanity check
 
@@ -208,4 +211,4 @@ Optional backend script (requires access token from the app):
 
 ---
 
-*Updated 2026-06-14: Apple connection created and enabled on `minutriporcion-native` (Auth0 dev keys).*
+*Updated 2026-06-14: Registry sync — #91–#98, #111, #113 on `main`; localized errors; message rate limit; progress snapshot deployed with #151.*

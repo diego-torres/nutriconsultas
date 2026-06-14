@@ -10,7 +10,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) | Canonical cross-repo contract — §F8 schema/enum map, per-issue corrected scope |
 | [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) | Endpoint request/response specs (#91–#99) with field mappings |
 
-**Current next issue:** [#110 — DTO conventions + `ApiResponse`/`PagedResponse` wrappers](https://github.com/diego-torres/nutriconsultas/issues/110) — **NEXT** (P0, blocks every endpoint). [#107](https://github.com/diego-torres/nutriconsultas/issues/107) shipped in [PR #117](https://github.com/diego-torres/nutriconsultas/pull/117) (CI green, merge pending).
+**Current next issue:** [#99 — `GET /rest/mobile/patient/progress/measurements`](https://github.com/diego-torres/nutriconsultas/issues/99) — **NEXT** (P1, last endpoint in #91–#99). Phase 0 (#107, #109, #110) and endpoints #91–#98, #96/#97, #111, #113 are **done** on `main` (PRs #146–#151).
 
 ---
 
@@ -22,11 +22,11 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | **API surface** | All mobile endpoints live under `/rest/mobile/patient/` as plain JSON (not DataTables-shaped like the admin `*RestController`s). |
 | **Identity (security-critical)** | JWT `sub` → **`Paciente.patientAuthSub`** (#107 ✓ PR #117). **Never `Paciente.userId`** — that is the NUTRITIONIST's Auth0 sub / tenant owner (ALIGNMENT-SPEC §F2). `PatientLinkageFilter` returns **403** if no linked `Paciente`. |
 | **Ownership / IDOR** | Return only the authenticated patient's rows. On an ownership miss prefer **404** (not 403) so existence isn't leaked (esp. #92). Never return cross-tenant data. |
-| **Backend state** | **#107 done on branch** `mobile-api/107-jwt-resource-server` ([PR #117](https://github.com/diego-torres/nutriconsultas/pull/117)): `patientAuthSub`, `oauth2-resource-server`, `MobileSecurityConfig` `@Order(1)`, `PatientAuthService` + linkage filter. **Still missing:** `ApiResponse`/`PagedResponse` (#110), `/rest/mobile/patient/**` feature controllers (#91–#99), message entity (#96/#97). Requires `AUTH_AUDIENCE` env var. |
-| **DTO envelope** | `ApiResponse<T>`; lists in `PagedResponse<T>` (cursor variant for messages); ISO-8601 date strings (Jackson `JavaTimeModule`, `WRITE_DATES_AS_TIMESTAMPS=false`). See #110. |
+| **Backend state** | **Phase 0 done** (#107 PR #117, #109 PR #142, #110 merged). **Endpoints on `main`:** visits #91/#92, diet #93–#95, messages #96/#97 (PR #147 + #151), progress snapshot #98 (PR #148), i18n #111 + rate limit #113 (PR #151). **Remaining endpoint:** #99 measurements time series. Requires `AUTH_AUDIENCE` env var. |
+| **DTO envelope** | `ApiResponse<T>`; lists in `PagedResponse<T>` or `CursorPagedResponse<T>` (messages); ISO-8601 date strings. See #110. |
 | **Schema ground truth** | ALIGNMENT-SPEC §F8 field-name map (`nombre→dietaName`, `energia→totalKcal`, `lipidos→totalGrasas`, `hidratosDeCarbono→totalCarbohidratos`, `Ingesta.nombre→tipo`); enums `EventStatus`/`PacienteDietaStatus` (no INACTIVE)/`NivelPeso`. Serialization aliases only — **no DB schema changes** for field renames. |
 | **PHI & logging** | No patient names/emails/DOB in unstructured logs. Follow `util/LogRedaction`; CI runs `scripts/audit-logging.sh` (#115). |
-| **Existing code to reuse** | Visits → `calendar/CalendarEventService.findByPacienteId`; Diet → `paciente/PacienteDietaService` + `dieta/` tree + existing PDF export (#14); Progress → `clinical/exam/AnthropometricMeasurement` + `Paciente` BMI/BMR; Messages → **none, build new**. |
+| **Existing code to reuse** | Visits → `calendar/CalendarEventService`; Diet → `PacienteDietaService` + `dieta/` + PDF (#95); Progress → `BodyMetricRecordService` + anthropometrics (#98/#99); Messages → `PatientMessage` entity + mobile/admin controllers (#96/#97). |
 
 ---
 
@@ -319,27 +319,28 @@ gh pr create ...
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#110 — DTO conventions + `ApiResponse`/`PagedResponse` wrappers](https://github.com/diego-torres/nutriconsultas/issues/110) |
-| **Suggested branch** | `mobile-api/110-dto-envelope` |
-| **Phase** | Phase 0 — Foundation (P0) |
-| **Depends on** | — |
-| **Blocks** | #91–#99 (every endpoint) until #110 also `done` |
-| **Just completed** | [#107](https://github.com/diego-torres/nutriconsultas/issues/107) — [PR #117](https://github.com/diego-torres/nutriconsultas/pull/117) (CI green, merge pending) |
-| **In scope for #110** | `com.nutriconsultas.mobile.dto`: `ApiResponse<T>`, `PagedResponse<T>`; ISO-8601 Jackson config |
-| **Out of scope for #110** | Feature endpoints (#91–#99), i18n filter (#111) |
+| **Next issue** | [#99 — `GET /rest/mobile/patient/progress/measurements`](https://github.com/diego-torres/nutriconsultas/issues/99) |
+| **Suggested branch** | `mobile-api/99-progress-measurements` |
+| **Phase** | Endpoints (P1) — last of #91–#99 |
+| **Depends on** | #98 |
+| **Blocks** | — |
+| **Just completed** | [#113](https://github.com/diego-torres/nutriconsultas/issues/113) + [#111](https://github.com/diego-torres/nutriconsultas/issues/111) + [#97](https://github.com/diego-torres/nutriconsultas/issues/97) polish — [PR #151](https://github.com/diego-torres/nutriconsultas/pull/151); [#98](https://github.com/diego-torres/nutriconsultas/issues/98) — [PR #148](https://github.com/diego-torres/nutriconsultas/pull/148); [#106](https://github.com/diego-torres/nutriconsultas/issues/106) dashboard IMC gauge |
+| **In scope for #99** | Time-series BMI/anthropometrics; `from`/`to` ISO-8601; `maxRows` cap 365; ASC order; prefer `porcentajeGrasaCorporal` |
 
 ### Upcoming gates
 
 | Gate | Issues | When |
 |------|--------|------|
-| Phase 0 foundation | ~~#107~~ ✓, **#110** | **Before any endpoint** |
-| Auth linkage | #108, #109 | Before live E2E with a real Auth0 patient |
-| Endpoints | #91–#99 | After #107 merged + #110 `done` |
-| Cross-cutting | #111 (i18n), #115 (PHI audit), #112 (OpenAPI) | Alongside endpoints |
-| Hardening / additive | #113 (rate limit w/ #97), #116 (senderDisplayName) | With/after owning endpoint |
+| Phase 0 foundation | ~~#107~~ ✓, ~~#109~~ ✓, ~~#110~~ ✓ | **Done** |
+| Auth linkage (tenant) | #108 (tenant config; prod audience deployed #118) | Before full Auth0 tenant hardening |
+| Endpoints | ~~#91–#98~~ ✓, **#99** | **#99 is NEXT** |
+| Cross-cutting | ~~#111~~ ✓, #115 (PHI audit), #112 (OpenAPI) | Alongside / after endpoints |
+| Hardening / additive | ~~#113~~ ✓, #116 (senderDisplayName), #114 (nutritionist reply) | With/after owning feature |
 
-### Status snapshot (2026-06-12)
+### Status snapshot (2026-06-14)
 
-**#107 implemented** on `mobile-api/107-jwt-resource-server` ([PR #117](https://github.com/diego-torres/nutriconsultas/pull/117), CI green). Auth foundation: `MobileSecurityConfig`, `Paciente.patientAuthSub`, `PatientAuthService`, `PatientLinkageFilter`. **Next:** **#110** (DTO envelope), then endpoints by feature (Visits #91/#92 → Diet #93–#95 → Progress #98/#99 → Messages #96/#97). #108/#109 for Auth0 tenant + patient linkage. #114 stays web-only.
+**Patient mobile API on `main`:** JWT resource server (#107), DTO envelope (#110), patient linkage (#109), visits (#91/#92), diet plans (#93–#95), messages list/send (#96/#97 with HTTP 201 + rate limit), progress snapshot (#98), localized API errors (#111), Resilience4j write throttling (#113). Dashboard IMC gauge (#106) done for web tablero.
+
+**Next:** #99 progress measurements time series, then cross-cutting #112 (OpenAPI), #115 (PHI audit), additive #116 / web #114.
 
 See [`ISSUE.md`](ISSUE.md) Data contracts and [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) §F8 for per-endpoint field requirements.
