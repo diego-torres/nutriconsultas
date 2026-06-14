@@ -13,6 +13,9 @@ public interface AnthropometricMeasurementRepository extends JpaRepository<Anthr
 
 	List<AnthropometricMeasurement> findByPacienteId(Long pacienteId);
 
+	java.util.Optional<AnthropometricMeasurement> findFirstByPacienteIdOrderByMeasurementDateTimeDescIdDesc(
+			Long pacienteId);
+
 	@Query("SELECT COUNT(m) FROM AnthropometricMeasurement m WHERE m.paciente.userId = :userId")
 	long countByUserId(@Param("userId") String userId);
 
