@@ -15,7 +15,7 @@
               <div class="form-group">
                 <label class="small">Fórmula TMB:</label>
                 <select class="form-control form-control-sm" id="get-bmr-formula" th:field="*{bmrFormula}">
-                  <option value="">Usar preferencia del paciente</option>
+                  <option value="">Usar preferencia guardada</option>
                   <option th:each="formula : ${T(com.nutriconsultas.paciente.calculation.BmrFormulaType).values()}"
                           th:value="${formula.name()}" th:text="${formula.displayName}"></option>
                 </select>
