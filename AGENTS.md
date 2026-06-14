@@ -561,7 +561,7 @@ Issue registry: [`ISSUE.md`](ISSUE.md). Agent workflow: [`AGENT-WORKFLOW.md`](AG
 
 **Done on `main` (2026-06-14):** #107/#109/#110 (JWT + linkage + DTO envelope); endpoints #91–#98; messages #96/#97 with rate limit (#113); localized errors (#111, PR #151); dashboard IMC gauge (#106).
 
-**Next:** [#99](https://github.com/diego-torres/nutriconsultas/issues/99) progress measurements time series. Open cross-cutting: #112 (OpenAPI), #115 (PHI audit), #116 (`senderDisplayName`), web #114 (nutritionist reply).
+**Next:** [#99](https://github.com/diego-torres/nutriconsultas/issues/99) progress measurements time series (**in-progress**, branch `mobile-api/99-progress-measurements`). Open cross-cutting: #112 (OpenAPI), #115 (PHI audit), #116 (`senderDisplayName`), web #114 (nutritionist reply).
 
 ## Resources
 

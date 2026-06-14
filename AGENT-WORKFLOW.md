@@ -10,7 +10,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) | Canonical cross-repo contract — §F8 schema/enum map, per-issue corrected scope |
 | [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) | Endpoint request/response specs (#91–#99) with field mappings |
 
-**Current next issue:** [#99 — `GET /rest/mobile/patient/progress/measurements`](https://github.com/diego-torres/nutriconsultas/issues/99) — **NEXT** (P1, last endpoint in #91–#99). Phase 0 (#107, #109, #110) and endpoints #91–#98, #96/#97, #111, #113 are **done** on `main` (PRs #146–#151).
+**Current next issue:** [#99 — `GET /rest/mobile/patient/progress/measurements`](https://github.com/diego-torres/nutriconsultas/issues/99) — **in-progress** (branch `mobile-api/99-progress-measurements`). After merge, next cross-cutting: #112 (OpenAPI), #115 (PHI audit).
 
 ---
 
@@ -22,7 +22,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | **API surface** | All mobile endpoints live under `/rest/mobile/patient/` as plain JSON (not DataTables-shaped like the admin `*RestController`s). |
 | **Identity (security-critical)** | JWT `sub` → **`Paciente.patientAuthSub`** (#107 ✓ PR #117). **Never `Paciente.userId`** — that is the NUTRITIONIST's Auth0 sub / tenant owner (ALIGNMENT-SPEC §F2). `PatientLinkageFilter` returns **403** if no linked `Paciente`. |
 | **Ownership / IDOR** | Return only the authenticated patient's rows. On an ownership miss prefer **404** (not 403) so existence isn't leaked (esp. #92). Never return cross-tenant data. |
-| **Backend state** | **Phase 0 done** (#107 PR #117, #109 PR #142, #110 merged). **Endpoints on `main`:** visits #91/#92, diet #93–#95, messages #96/#97 (PR #147 + #151), progress snapshot #98 (PR #148), i18n #111 + rate limit #113 (PR #151). **Remaining endpoint:** #99 measurements time series. Requires `AUTH_AUDIENCE` env var. |
+| **Backend state** | **Phase 0 done** (#107 PR #117, #109 PR #142, #110 merged). **Endpoints on `main`:** visits #91/#92, diet #93–#95, messages #96/#97 (PR #147 + #151), progress snapshot #98 (PR #148), i18n #111 + rate limit #113 (PR #151). **#99 measurements time series in progress.** Requires `AUTH_AUDIENCE` env var. |
 | **DTO envelope** | `ApiResponse<T>`; lists in `PagedResponse<T>` or `CursorPagedResponse<T>` (messages); ISO-8601 date strings. See #110. |
 | **Schema ground truth** | ALIGNMENT-SPEC §F8 field-name map (`nombre→dietaName`, `energia→totalKcal`, `lipidos→totalGrasas`, `hidratosDeCarbono→totalCarbohidratos`, `Ingesta.nombre→tipo`); enums `EventStatus`/`PacienteDietaStatus` (no INACTIVE)/`NivelPeso`. Serialization aliases only — **no DB schema changes** for field renames. |
 | **PHI & logging** | No patient names/emails/DOB in unstructured logs. Follow `util/LogRedaction`; CI runs `scripts/audit-logging.sh` (#115). |
@@ -319,13 +319,13 @@ gh pr create ...
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#99 — `GET /rest/mobile/patient/progress/measurements`](https://github.com/diego-torres/nutriconsultas/issues/99) |
+| **Next issue** | [#99 — `GET /rest/mobile/patient/progress/measurements`](https://github.com/diego-torres/nutriconsultas/issues/99) (**in-progress**) |
 | **Suggested branch** | `mobile-api/99-progress-measurements` |
 | **Phase** | Endpoints (P1) — last of #91–#99 |
 | **Depends on** | #98 |
 | **Blocks** | — |
-| **Just completed** | [#113](https://github.com/diego-torres/nutriconsultas/issues/113) + [#111](https://github.com/diego-torres/nutriconsultas/issues/111) + [#97](https://github.com/diego-torres/nutriconsultas/issues/97) polish — [PR #151](https://github.com/diego-torres/nutriconsultas/pull/151); [#98](https://github.com/diego-torres/nutriconsultas/issues/98) — [PR #148](https://github.com/diego-torres/nutriconsultas/pull/148); [#106](https://github.com/diego-torres/nutriconsultas/issues/106) dashboard IMC gauge |
-| **In scope for #99** | Time-series BMI/anthropometrics; `from`/`to` ISO-8601; `maxRows` cap 365; ASC order; prefer `porcentajeGrasaCorporal` |
+| **Just completed** | [#113](https://github.com/diego-torres/nutriconsultas/issues/113) + [#111](https://github.com/diego-torres/nutriconsultas/issues/111) + [#97](https://github.com/diego-torres/nutriconsultas/issues/97) polish — [PR #151](https://github.com/diego-torres/nutriconsultas/pull/151); [#98](https://github.com/diego-torres/nutriconsultas/issues/98) — [PR #148](https://github.com/diego-torres/nutriconsultas/pull/148) |
+| **In scope for #99** | Time-series BMI/anthropometrics; `from`/`to` ISO-8601; `maxRows` cap 365; ASC order; prefer `porcentajeGrasaCorporal`; `truncated` flag when capped |
 
 ### Upcoming gates
 
@@ -333,7 +333,7 @@ gh pr create ...
 |------|--------|------|
 | Phase 0 foundation | ~~#107~~ ✓, ~~#109~~ ✓, ~~#110~~ ✓ | **Done** |
 | Auth linkage (tenant) | #108 (tenant config; prod audience deployed #118) | Before full Auth0 tenant hardening |
-| Endpoints | ~~#91–#98~~ ✓, **#99** | **#99 is NEXT** |
+| Endpoints | ~~#91–#98~~ ✓, **#99** in progress | **#99 PR pending** |
 | Cross-cutting | ~~#111~~ ✓, #115 (PHI audit), #112 (OpenAPI) | Alongside / after endpoints |
 | Hardening / additive | ~~#113~~ ✓, #116 (senderDisplayName), #114 (nutritionist reply) | With/after owning feature |
 
@@ -341,6 +341,6 @@ gh pr create ...
 
 **Patient mobile API on `main`:** JWT resource server (#107), DTO envelope (#110), patient linkage (#109), visits (#91/#92), diet plans (#93–#95), messages list/send (#96/#97 with HTTP 201 + rate limit), progress snapshot (#98), localized API errors (#111), Resilience4j write throttling (#113). Dashboard IMC gauge (#106) done for web tablero.
 
-**Next:** #99 progress measurements time series, then cross-cutting #112 (OpenAPI), #115 (PHI audit), additive #116 / web #114.
+**Next:** #99 progress measurements time series (**in-progress**), then cross-cutting #112 (OpenAPI), #115 (PHI audit), additive #116 / web #114.
 
 See [`ISSUE.md`](ISSUE.md) Data contracts and [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) §F8 for per-endpoint field requirements.

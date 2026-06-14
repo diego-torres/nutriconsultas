@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-14 — **#113 done** (PR #151). **#111 done** (PR #151). **#97 production-ready** on `main` (PR #147 + #151: HTTP 201, rate limit). **#98 done** (PR #148). **#106 done** (dashboard IMC gauge). **NEXT:** [#99](https://github.com/diego-torres/nutriconsultas/issues/99).
+**Last updated:** 2026-06-14 — **#99 in progress** (PR pending). **#98 done** (PR #148). **NEXT:** [#99](https://github.com/diego-torres/nutriconsultas/issues/99) until PR merges; then #112 / #115.
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116) plus the directly-related `[Dashboard]` IMC gauge (#106). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -46,7 +46,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 | `done` | Merged to `main` |
 | `deferred` | Intentionally paused — decision pending |
 
-Phase 0 (#107, #109, #110) is **done**. Patient linkage (#109) is **done**. Endpoints #91–#98 are **done** on `main`. Messages (#96/#97) + i18n (#111) + rate limit (#113) shipped in PR #151. **NEXT:** #99 (progress time series).
+Phase 0 (#107, #109, #110) is **done**. Patient linkage (#109) is **done**. Endpoints #91–#98 are **done** on `main`. Messages (#96/#97) + i18n (#111) + rate limit (#113) shipped in PR #151. **#99 in progress** (branch `mobile-api/99-progress-measurements`).
 
 ---
 
@@ -106,7 +106,7 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 | # | Endpoint | URL | State | Backend source |
 |---|----------|-----|-------|----------------|
 | 98 | `GET /rest/mobile/patient/progress` — BMI/indicator snapshot | https://github.com/diego-torres/nutriconsultas/issues/98 | **done** | PR #148: `deltaPeso`/`deltaImc`, `imcLabel`, BMR, optional circumferences |
-| 99 | `GET /rest/mobile/patient/progress/measurements` — time series | https://github.com/diego-torres/nutriconsultas/issues/99 | **NEXT** | 98 | `from`/`to` ISO-8601; cap `maxRows=365`; ASC order; prefer `porcentajeGrasaCorporal` |
+| 99 | `GET /rest/mobile/patient/progress/measurements` — time series | https://github.com/diego-torres/nutriconsultas/issues/99 | **in-progress** | 98 | Branch `mobile-api/99-progress-measurements`: `from`/`to` ISO-8601; `maxRows` cap 365; ASC order; `porcentajeGrasaCorporal` |
 
 ---
 

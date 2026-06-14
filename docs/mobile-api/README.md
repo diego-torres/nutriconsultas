@@ -4,8 +4,8 @@ Canonical cross-repo contracts for the `[Mobile API]` track, vendored into this 
 
 | File | What it is |
 |------|-----------|
-| `ALIGNMENT-SPEC.md` | Source-of-truth contract for all agents. §F8 = backend↔mobile field/enum map. Phase 0 + endpoints #91–#98, #111, #113 **done on `main`** (PRs #117, #142–#151). |
-| `mobile-api-roadmap-v2.md` | Per-endpoint (#91–#99) request/response JSON and field mappings. **#99 measurements** is next. |
+| `ALIGNMENT-SPEC.md` | Source-of-truth contract for all agents. §F8 = backend↔mobile field/enum map. Phase 0 + endpoints #91–#98, #111, #113 **done on `main`** (PRs #117, #142–#151). **#99 in progress.** |
+| `mobile-api-roadmap-v2.md` | Per-endpoint (#91–#99) request/response JSON and field mappings. **#99 measurements** in progress. |
 
 **Provenance / drift:** these are synced copies of the workspace-root originals
 (`/Users/joelmartinez/Documents/Work/ALIGNMENT-SPEC.md` and `mobile-api-roadmap-v2.md`),
