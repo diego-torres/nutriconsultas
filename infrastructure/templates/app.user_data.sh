@@ -49,6 +49,9 @@ install -d -o root -g nutri -m 750 /opt/nutriconsultas
   echo -n "RECAPTCHA_SECRET_KEY="
   printf '%s' '${recaptcha_secret_key_b64}' | base64 -d
   echo
+  echo -n "RECAPTCHA_SITE_KEY="
+  printf '%s' '${recaptcha_site_key_b64}' | base64 -d
+  echo
   echo -n "PLATFORM_ADMIN_EMAILS="
   printf '%s' '${platform_admin_emails_b64}' | base64 -d
   echo

@@ -125,6 +125,13 @@ variable "recaptcha_secret_key" {
   sensitive   = true
 }
 
+variable "recaptcha_site_key" {
+  type        = string
+  description = "reCAPTCHA v2 site key (recaptcha.site-key / RECAPTCHA_SITE_KEY). Public widget key paired with recaptcha_secret_key."
+  default     = ""
+  sensitive   = false
+}
+
 variable "platform_admin_emails" {
   type        = list(string)
   description = "OAuth login emails granted platform admin (contact inquiries inbox). Written to app.env as PLATFORM_ADMIN_EMAILS (comma-separated)."

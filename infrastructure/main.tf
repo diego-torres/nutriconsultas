@@ -252,6 +252,7 @@ resource "aws_instance" "app" {
         aws_secret_b64           = base64encode(var.aws_secret)
         maps_key_b64             = base64encode(var.maps_key)
         recaptcha_secret_key_b64 = base64encode(var.recaptcha_secret_key)
+        recaptcha_site_key_b64   = base64encode(var.recaptcha_site_key)
         platform_admin_emails_b64 = base64encode(join(",", var.platform_admin_emails))
         nginx_config = templatefile("${path.module}/templates/nutriconsultas-nginx.conf.tpl", {
           nginx_server_names = local.app_nginx_server_names

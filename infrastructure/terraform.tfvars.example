@@ -21,7 +21,7 @@ ebs_root_volume_size_gb = 30
 #   export TF_VAR_auth_audience='https://api.example.com/mobile'
 #   export TF_VAR_aws_bucket='...' TF_VAR_aws_key='...' TF_VAR_aws_secret='...'
 # Optional (empty string ok if unused):
-#   export TF_VAR_maps_key='' TF_VAR_recaptcha_secret_key=''
+#   export TF_VAR_maps_key='' TF_VAR_recaptcha_secret_key='' TF_VAR_recaptcha_site_key=''
 # auth_client            = "from-auth0-application"
 # auth_secret            = "from-auth0-application"
 # auth_issuer            = "https://YOUR_TENANT.auth0.com/"
@@ -31,6 +31,7 @@ ebs_root_volume_size_gb = 30
 # aws_secret             = "..."
 # maps_key               = ""
 # recaptcha_secret_key   = ""
+# recaptcha_site_key     = ""   # reCAPTCHA v2 checkbox (public site key)
 #
 # Platform admins (OAuth login emails; contact inquiries inbox). Gitignored tfvars only:
 # platform_admin_emails = ["you@example.com", "colleague@example.com"]

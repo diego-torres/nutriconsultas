@@ -3,8 +3,10 @@ package com.nutriconsultas.controller;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestClient;
@@ -29,9 +31,17 @@ public class WebController {
 	@Value("${recaptcha.secret-key:6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe}")
 	private String recaptchaSecretKey;
 
+	@Value("${recaptcha.site-key:6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI}")
+	private String recaptchaSiteKey;
+
 	public WebController(final ContactInquiryService contactInquiryService) {
 		this.restClient = RestClient.create();
 		this.contactInquiryService = contactInquiryService;
+	}
+
+	@ModelAttribute
+	public void addPublicPageAttributes(final Model model) {
+		model.addAttribute("recaptchaSiteKey", recaptchaSiteKey);
 	}
 
 	@GetMapping(path = "/")
