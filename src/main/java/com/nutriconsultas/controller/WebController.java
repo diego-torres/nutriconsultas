@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestClient;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.nutriconsultas.contact.ContactInquiry;
 import com.nutriconsultas.contact.ContactInquiryService;
 import com.nutriconsultas.util.LogRedaction;
 
@@ -76,7 +77,7 @@ public class WebController {
 			return ResponseEntity.badRequest().body("La verificación reCAPTCHA falló. Por favor, intenta nuevamente.");
 		}
 
-		final var saved = contactInquiryService.saveFromForm(contactForm);
+		final ContactInquiry saved = contactInquiryService.saveFromForm(contactForm);
 		log.info("Contact form submitted successfully: {}", LogRedaction.redactContactInquiry(saved.getId()));
 
 		return ResponseEntity.ok("OK");

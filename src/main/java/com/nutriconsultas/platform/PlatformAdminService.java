@@ -19,17 +19,11 @@ public class PlatformAdminService {
 		if (principal == null) {
 			return false;
 		}
-		if (isPlatformAdminByUserId(principal.getSubject())) {
-			return true;
-		}
-		return isPlatformAdminByEmail(principal.getEmail());
+		return isPlatformAdminByUserId(principal.getSubject()) || isPlatformAdminByEmail(principal.getEmail());
 	}
 
 	public boolean isPlatformAdminByUserId(final String userId) {
-		if (!StringUtils.hasText(userId)) {
-			return false;
-		}
-		return platformAdminProperties.getAdminUserIds().contains(userId);
+		return StringUtils.hasText(userId) && platformAdminProperties.getAdminUserIds().contains(userId);
 	}
 
 	private boolean isPlatformAdminByEmail(final String email) {

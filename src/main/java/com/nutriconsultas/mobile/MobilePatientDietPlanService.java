@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -88,10 +89,10 @@ public class MobilePatientDietPlanService {
 		}
 		for (final Ingesta ingesta : dieta.getIngestas()) {
 			if (ingesta.getPlatillos() != null) {
-				ingesta.getPlatillos().size();
+				Hibernate.initialize(ingesta.getPlatillos());
 			}
 			if (ingesta.getAlimentos() != null) {
-				ingesta.getAlimentos().size();
+				Hibernate.initialize(ingesta.getAlimentos());
 			}
 		}
 	}
