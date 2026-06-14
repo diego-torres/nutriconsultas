@@ -24,6 +24,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.calculation.BmrFormulaType;
+import com.nutriconsultas.paciente.calculation.PhysicalActivityLevel;
+
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity
 @Data
@@ -94,5 +99,22 @@ public class CalendarEvent {
 
 	@Column(precision = 5)
 	private Double temperatura;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private PhysicalActivityLevel physicalActivityLevel;
+
+	@Column(precision = 4)
+	private Double activityFactor;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private BmrFormulaType bmrFormula;
+
+	@Column(precision = 7)
+	private Double bmrUsed;
+
+	@Column(precision = 7)
+	private Double getKcal;
 
 }

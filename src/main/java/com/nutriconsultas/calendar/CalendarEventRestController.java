@@ -40,7 +40,10 @@ import com.nutriconsultas.paciente.BodyFatCalculatorService;
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
-import com.nutriconsultas.paciente.calculation.BmrCalculationService;
+import com.nutriconsultas.paciente.calculation.BmrFormulaType;
+import com.nutriconsultas.paciente.calculation.EnergyExpenditureResolver;
+import com.nutriconsultas.paciente.calculation.PatientEnergyPreferences;
+import com.nutriconsultas.paciente.calculation.PhysicalActivityLevel;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -217,6 +220,21 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		}
 		if (event.getTemperatura() != null) {
 			extendedProps.put("temperatura", event.getTemperatura());
+		}
+		if (event.getPhysicalActivityLevel() != null) {
+			extendedProps.put("physicalActivityLevel", event.getPhysicalActivityLevel().name());
+		}
+		if (event.getActivityFactor() != null) {
+			extendedProps.put("activityFactor", event.getActivityFactor());
+		}
+		if (event.getBmrFormula() != null) {
+			extendedProps.put("bmrFormula", event.getBmrFormula().name());
+		}
+		if (event.getBmrUsed() != null) {
+			extendedProps.put("bmrUsed", event.getBmrUsed());
+		}
+		if (event.getGetKcal() != null) {
+			extendedProps.put("getKcal", event.getGetKcal());
 		}
 		eventMap.put("extendedProps", extendedProps);
 		eventMap.put("url", "/admin/calendario/" + event.getId());
@@ -638,6 +656,7 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			if (eventData.get("temperatura") != null) {
 				existingEvent.setTemperatura(Double.parseDouble(eventData.get("temperatura").toString()));
 			}
+			applyEnergyFields(existingEvent, eventData);
 			final CalendarEvent savedEvent = service.save(existingEvent);
 			updatePatientSnapshot(savedEvent);
 			final Map<String, Object> response = new HashMap<>();
@@ -664,21 +683,61 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			paciente.setImc(event.getImc());
 			changed = true;
 		}
-		if (event.getPeso() != null && event.getEstatura() != null) {
-			final Integer age = calculateAge(paciente.getDob());
-			final Boolean isMale = "M".equalsIgnoreCase(paciente.getGender());
-			final Double bmr = BmrCalculationService.calculatePromedioBmr(event.getPeso(), event.getEstatura(), age,
-					isMale);
-			if (bmr != null) {
-				paciente.setBmr(bmr);
+		if (event.getGetKcal() != null) {
+			EnergyExpenditureResolver.applyToPatient(paciente,
+					new EnergyExpenditureResolver.EnergyResult(event.getBmrUsed(), event.getActivityFactor(),
+							event.getGetKcal()),
+					event.getPhysicalActivityLevel());
+			changed = true;
+		}
+		else if (event.getPeso() != null && event.getEstatura() != null) {
+			final BmrFormulaType formula = event.getBmrFormula() != null ? event.getBmrFormula()
+					: PatientEnergyPreferences.resolveBmrFormula(paciente);
+			final EnergyExpenditureResolver.EnergyResult result = EnergyExpenditureResolver.resolve(paciente, formula,
+					event.getPhysicalActivityLevel(), event.getActivityFactor(), event.getPeso(), event.getEstatura());
+			if (result.bmr() != null) {
+				event.setBmrUsed(result.bmr());
+				event.setActivityFactor(result.activityFactor());
+				event.setGetKcal(result.getKcal());
+				EnergyExpenditureResolver.applyToPatient(paciente, result, event.getPhysicalActivityLevel());
 				changed = true;
 			}
 		}
 		if (changed) {
 			pacienteRepository.save(paciente);
-			log.debug("Updated patient {} snapshot: imc={}, bmr={}", paciente.getId(), paciente.getImc(),
-					paciente.getBmr());
+			log.debug("Updated patient {} snapshot: imc={}, bmr={}, get={}", paciente.getId(), paciente.getImc(),
+					paciente.getBmr(), paciente.getGetKcal());
 		}
+	}
+
+	private void applyEnergyFields(final CalendarEvent event, final Map<String, Object> eventData) {
+		if (eventData.get("physicalActivityLevel") != null) {
+			event.setPhysicalActivityLevel(
+					PhysicalActivityLevel.valueOf(eventData.get("physicalActivityLevel").toString()));
+		}
+		if (eventData.get("bmrFormula") != null) {
+			event.setBmrFormula(BmrFormulaType.valueOf(eventData.get("bmrFormula").toString()));
+		}
+		if (eventData.get("customActivityFactor") != null) {
+			final Double customFactor = Double.parseDouble(eventData.get("customActivityFactor").toString());
+			event.setPhysicalActivityLevel(PhysicalActivityLevel.CUSTOM);
+			event.setActivityFactor(customFactor);
+		}
+		final Paciente paciente = event.getPaciente();
+		if (paciente == null || event.getPeso() == null || event.getEstatura() == null
+				|| event.getPhysicalActivityLevel() == null) {
+			return;
+		}
+		final BmrFormulaType formula = event.getBmrFormula() != null ? event.getBmrFormula()
+				: PatientEnergyPreferences.resolveBmrFormula(paciente);
+		final Double customFactor = event.getPhysicalActivityLevel() == PhysicalActivityLevel.CUSTOM
+				? event.getActivityFactor() : null;
+		final EnergyExpenditureResolver.EnergyResult result = EnergyExpenditureResolver.resolve(paciente, formula,
+				event.getPhysicalActivityLevel(), customFactor, event.getPeso(), event.getEstatura());
+		event.setBmrFormula(formula);
+		event.setBmrUsed(result.bmr());
+		event.setActivityFactor(result.activityFactor());
+		event.setGetKcal(result.getKcal());
 	}
 
 	/**

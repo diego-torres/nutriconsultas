@@ -4,6 +4,15 @@
     // Get patient data from Thymeleaf
     const patientAge = [[${patientAge != null ? patientAge : 'null'}]];
     const patientIsMale = [[${patientIsMale != null ? patientIsMale : 'false'}]];
+    const patientActivityScale = '[[${paciente != null && paciente.activityFactorScale != null ? paciente.activityFactorScale.name() : "HARRIS_BENEDICT"}]]';
+    const patientPreferredBmrFormula = '[[${paciente != null && paciente.preferredBmrFormula != null ? paciente.preferredBmrFormula.name() : "PROMEDIO"}]]';
+    const patientCustomFactors = {
+      sedentary: [[${paciente != null && paciente.customFactorSedentary != null ? paciente.customFactorSedentary : 'null'}]],
+      light: [[${paciente != null && paciente.customFactorLight != null ? paciente.customFactorLight : 'null'}]],
+      moderate: [[${paciente != null && paciente.customFactorModerate != null ? paciente.customFactorModerate : 'null'}]],
+      intense: [[${paciente != null && paciente.customFactorIntense != null ? paciente.customFactorIntense : 'null'}]],
+      veryIntense: [[${paciente != null && paciente.customFactorVeryIntense != null ? paciente.customFactorVeryIntense : 'null'}]]
+    };
 
     // BMI Calculation Functions
     function calculateClassicBmi(weight, height) {
@@ -124,6 +133,78 @@
       }
       
       return sum / validCount;
+    }
+
+    const ACTIVITY_FACTORS = {
+      HARRIS_BENEDICT: { SEDENTARY: 1.2, LIGHT: 1.375, MODERATE: 1.55, INTENSE: 1.725, VERY_INTENSE: 1.9 },
+      FAO_WHO: { SEDENTARY: 1.53, LIGHT: 1.76, MODERATE: 2.10, INTENSE: 2.40, VERY_INTENSE: 2.80 },
+      OMS: { SEDENTARY: 1.40, LIGHT: 1.60, MODERATE: 1.80, INTENSE: 2.00, VERY_INTENSE: 2.20 }
+    };
+
+    function resolveActivityFactor(scale, level, customFactorValue) {
+      if (!level) return null;
+      if (level === 'CUSTOM') {
+        return customFactorValue && customFactorValue > 0 ? customFactorValue : null;
+      }
+      if (scale === 'CUSTOM') {
+        const map = {
+          SEDENTARY: patientCustomFactors.sedentary,
+          LIGHT: patientCustomFactors.light,
+          MODERATE: patientCustomFactors.moderate,
+          INTENSE: patientCustomFactors.intense,
+          VERY_INTENSE: patientCustomFactors.veryIntense
+        };
+        return map[level] || null;
+      }
+      const factors = ACTIVITY_FACTORS[scale] || ACTIVITY_FACTORS.HARRIS_BENEDICT;
+      return factors[level] || null;
+    }
+
+    function calculateBmrByFormula(formula, weight, height, age, isMale) {
+      const f = formula || patientPreferredBmrFormula;
+      switch (f) {
+        case 'MIFFLIN_ST_JEOR': return calculateMifflinStJeorBmr(weight, height, age, isMale);
+        case 'HARRIS_BENEDICT': return calculateHarrisBenedictBmr(weight, height, age, isMale);
+        case 'FAO_WHO_ONU': return calculateFaoWhoOnuBmr(weight, age, isMale);
+        case 'VALENCIA': return calculateValenciaBmr(weight, height, age, isMale);
+        case 'PROMEDIO':
+        default: return calculatePromedioBmr(weight, height, age, isMale);
+      }
+    }
+
+    function updateGetCalculations() {
+      const formulaEl = document.getElementById('get-bmr-formula');
+      const levelEl = document.getElementById('get-activity-level');
+      const customGroup = document.getElementById('get-custom-factor-group');
+      const customFactorEl = document.getElementById('get-custom-factor');
+      if (!formulaEl || !levelEl) return;
+
+      const level = levelEl.value;
+      if (customGroup) {
+        customGroup.style.display = level === 'CUSTOM' ? '' : 'none';
+      }
+
+      const weight = parseFloat(document.getElementById('bmr-weight-prom')?.value || document.getElementById('calc-weight')?.value);
+      const height = parseFloat(document.getElementById('bmr-height-prom')?.value || document.getElementById('calc-height')?.value);
+      const age = parseInt(document.getElementById('bmr-age-prom')?.value) || patientAge;
+      const formula = formulaEl.value || patientPreferredBmrFormula;
+      const customFactor = customFactorEl ? parseFloat(customFactorEl.value) : null;
+
+      const bmr = calculateBmrByFormula(formula, weight, height, age, patientIsMale);
+      const factor = resolveActivityFactor(patientActivityScale, level, customFactor);
+      const getValue = bmr && factor ? bmr * factor : null;
+
+      const bmrResult = document.getElementById('get-bmr-used-result');
+      const factorResult = document.getElementById('get-factor-result');
+      const getResult = document.getElementById('get-result');
+      const bmrHidden = document.getElementById('get-bmr-used-hidden');
+      const getHidden = document.getElementById('get-kcal-hidden');
+
+      if (bmrResult) bmrResult.textContent = formatNumber(bmr);
+      if (factorResult) factorResult.textContent = factor ? factor.toFixed(3) : '-';
+      if (getResult) getResult.textContent = formatNumber(getValue);
+      if (bmrHidden && bmr) bmrHidden.value = bmr.toFixed(2);
+      if (getHidden && getValue) getHidden.value = getValue.toFixed(2);
     }
 
     // Ideal Weight Calculation Functions
@@ -543,6 +624,7 @@
       
       updateBmiCalculations();
       updateBmrCalculations();
+      updateGetCalculations();
       updateIdealWeightCalculations();
       updateTotalBodyWaterCalculations();
       updateBodyCompositionCalculations();
@@ -580,7 +662,12 @@
       safeAddEventListener('bmr-age-val', 'input', updateBmrCalculations);
       safeAddEventListener('bmr-weight-prom', 'input', updateBmrCalculations);
       safeAddEventListener('bmr-height-prom', 'input', updateBmrCalculations);
-      safeAddEventListener('bmr-age-prom', 'input', updateBmrCalculations);
+      safeAddEventListener('bmr-age-prom', 'input', function() { updateBmrCalculations(); updateGetCalculations(); });
+
+      // GET inputs
+      safeAddEventListener('get-bmr-formula', 'change', updateGetCalculations);
+      safeAddEventListener('get-activity-level', 'change', updateGetCalculations);
+      safeAddEventListener('get-custom-factor', 'input', updateGetCalculations);
 
       // Ideal Weight inputs
       safeAddEventListener('ideal-weight-height-rob', 'input', updateIdealWeightCalculations);
@@ -610,6 +697,7 @@
           } else {
       updateBmiCalculations();
       updateBmrCalculations();
+      updateGetCalculations();
       updateIdealWeightCalculations();
       updateTotalBodyWaterCalculations();
       updateBodyCompositionCalculations();
@@ -656,9 +744,11 @@
       // Initial calculation if values are already present
       updateBmiCalculations();
       updateBmrCalculations();
+      updateGetCalculations();
       updateIdealWeightCalculations();
       updateTotalBodyWaterCalculations();
       updateBodyCompositionCalculations();
+      updateGetCalculations();
     });
   </script>
 </div>

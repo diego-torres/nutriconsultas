@@ -24,7 +24,11 @@ import com.nutriconsultas.clinical.exam.ClinicalExamRepository;
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
-import com.nutriconsultas.paciente.calculation.BmrCalculationService;
+import com.nutriconsultas.paciente.calculation.BmrFormulaType;
+import com.nutriconsultas.paciente.calculation.EnergyExpenditureResolver;
+import com.nutriconsultas.paciente.calculation.PatientEnergyPreferences;
+import com.nutriconsultas.paciente.calculation.PhysicalActivityLevel;
+import com.nutriconsultas.paciente.calculation.TdeeCalculationService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -61,7 +65,7 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 		}
 		upsertRecord(event.getPaciente(), event.getEventDateTime(), BodyMetricSource.CONSULTATION, event.getId(),
 				event.getPeso(), event.getEstatura(), event.getImc(), event.getNivelPeso(),
-				event.getIndiceGrasaCorporal(), null);
+				event.getIndiceGrasaCorporal(), null, event.getBmrUsed(), event.getGetKcal());
 	}
 
 	@Override
@@ -74,7 +78,7 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 		upsertRecord(measurement.getPaciente(), measurement.getMeasurementDateTime(), BodyMetricSource.ANTHROPOMETRIC,
 				measurement.getId(), measurement.getPeso(), measurement.getEstatura(), measurement.getImc(),
 				measurement.getNivelPeso(), measurement.getIndiceGrasaCorporal(),
-				measurement.getPorcentajeGrasaCorporal());
+				measurement.getPorcentajeGrasaCorporal(), measurement.getBmrUsed(), measurement.getGetKcal());
 	}
 
 	@Override
@@ -85,7 +89,7 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 		}
 		upsertRecord(exam.getPaciente(), exam.getExamDateTime(), BodyMetricSource.CLINICAL_EXAM, exam.getId(),
 				exam.getPeso(), exam.getEstatura(), exam.getImc(), exam.getNivelPeso(), exam.getIndiceGrasaCorporal(),
-				null);
+				null, null, null);
 	}
 
 	@Override
@@ -145,11 +149,22 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 			.collect(Collectors.toList());
 		final List<Double> fatData = fatRecords.stream().map(this::resolveBodyFatValue).collect(Collectors.toList());
 
+		final List<Double> getData = records.stream()
+			.filter(record -> record.getGetKcal() != null)
+			.map(BodyMetricRecord::getGetKcal)
+			.collect(Collectors.toList());
+		final List<String> getLabels = records.stream()
+			.filter(record -> record.getGetKcal() != null)
+			.map(record -> dateFormat.format(record.getRecordedAt()))
+			.collect(Collectors.toList());
+
 		final Map<String, Object> data = new HashMap<>();
 		data.put("imc", imcData);
 		data.put("grasaCorporal", fatData);
+		data.put("getKcal", getData);
 		data.put("imcLabels", imcLabels);
 		data.put("grasaCorporalLabels", fatLabels);
+		data.put("getKcalLabels", getLabels);
 
 		// Legacy keys: use IMC timeline as default labels for backward-compatible clients
 		final List<String> labels = imcLabels.isEmpty() ? fatLabels : imcLabels;
@@ -161,8 +176,8 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 
 	private void upsertRecord(final Paciente paciente, final java.util.Date recordedAt, final BodyMetricSource source,
 			final Long sourceId, final Double weight, final Double height, final Double imc, final NivelPeso nivelPeso,
-			final Double bodyFatIndex, final Double bodyFatPercentage) {
-		if (!hasBodyMetricData(weight, height, imc, bodyFatIndex, bodyFatPercentage)) {
+			final Double bodyFatIndex, final Double bodyFatPercentage, final Double bmr, final Double getKcal) {
+		if (!hasBodyMetricData(weight, height, imc, bodyFatIndex, bodyFatPercentage, bmr, getKcal)) {
 			repository.deleteBySourceAndSourceId(source, sourceId);
 			return;
 		}
@@ -179,12 +194,15 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 		record.setNivelPeso(nivelPeso);
 		record.setBodyFatIndex(bodyFatIndex);
 		record.setBodyFatPercentage(bodyFatPercentage);
+		record.setBmr(bmr);
+		record.setGetKcal(getKcal);
 		repository.save(record);
 	}
 
 	private boolean hasBodyMetricData(final Double weight, final Double height, final Double imc,
-			final Double bodyFatIndex, final Double bodyFatPercentage) {
-		return weight != null || height != null || imc != null || bodyFatIndex != null || bodyFatPercentage != null;
+			final Double bodyFatIndex, final Double bodyFatPercentage, final Double bmr, final Double getKcal) {
+		return weight != null || height != null || imc != null || bodyFatIndex != null || bodyFatPercentage != null
+				|| bmr != null || getKcal != null;
 	}
 
 	private Double resolveBodyFatValue(final BodyMetricRecord record) {
@@ -207,6 +225,8 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 			paciente.setEstatura(record.getHeight());
 			paciente.setImc(record.getImc());
 			paciente.setNivelPeso(record.getNivelPeso());
+			paciente.setBmr(record.getBmr());
+			paciente.setGetKcal(record.getGetKcal());
 		}
 		else {
 			paciente.setPeso(null);
@@ -214,6 +234,7 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 			paciente.setImc(null);
 			paciente.setNivelPeso(null);
 			paciente.setBmr(null);
+			paciente.setGetKcal(null);
 		}
 		refreshPatientBmrIfPossible(paciente);
 		pacienteRepository.save(paciente);
@@ -221,15 +242,28 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 	}
 
 	private void refreshPatientBmrIfPossible(final Paciente paciente) {
+		if (paciente.getGetKcal() != null) {
+			return;
+		}
 		if (paciente.getPeso() == null || paciente.getEstatura() == null) {
 			return;
 		}
+		final BmrFormulaType formula = PatientEnergyPreferences.resolveBmrFormula(paciente);
 		final Integer age = calculateAge(paciente.getDob());
 		final Boolean isMale = "M".equalsIgnoreCase(paciente.getGender());
-		final Double bmr = BmrCalculationService.calculatePromedioBmr(paciente.getPeso(), paciente.getEstatura(), age,
+		final Double bmr = TdeeCalculationService.calculateBmr(formula, paciente.getPeso(), paciente.getEstatura(), age,
 				isMale);
 		if (bmr != null) {
 			paciente.setBmr(bmr);
+			if (paciente.getPhysicalActivityLevel() != null) {
+				final EnergyExpenditureResolver.EnergyResult result = EnergyExpenditureResolver.resolve(paciente,
+						formula, paciente.getPhysicalActivityLevel(), paciente.getActivityFactor(), paciente.getPeso(),
+						paciente.getEstatura());
+				if (result.getKcal() != null) {
+					paciente.setGetKcal(result.getKcal());
+					paciente.setActivityFactor(result.activityFactor());
+				}
+			}
 		}
 	}
 
