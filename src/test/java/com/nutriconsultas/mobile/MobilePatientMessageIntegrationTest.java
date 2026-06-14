@@ -104,7 +104,9 @@ class MobilePatientMessageIntegrationTest {
 			.perform(post("/rest/mobile/patient/messages").with(mobileJwt(LINKED_SUB))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"body\":\"   \"}"))
-			.andExpect(status().isBadRequest());
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("El texto del mensaje es obligatorio."))
+			.andExpect(jsonPath("$.timestamp").exists());
 	}
 
 	@Test

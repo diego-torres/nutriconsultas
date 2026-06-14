@@ -113,7 +113,9 @@ class MobilePatientVisitIntegrationTest {
 	@Test
 	void getVisitDetailForMissingVisitReturnsNotFound() throws Exception {
 		mockMvc.perform(get("/rest/mobile/patient/visits/999999").with(mobileJwt(LINKED_SUB)))
-			.andExpect(status().isNotFound());
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.message").value("Recurso no encontrado."))
+			.andExpect(jsonPath("$.timestamp").exists());
 	}
 
 	private static Paciente samplePaciente(final String patientAuthSub) {
