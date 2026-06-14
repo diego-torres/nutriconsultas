@@ -173,102 +173,65 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			eventMap.put("backgroundColor", getEventColor(event.getStatus()));
 			eventMap.put("borderColor", getEventColor(event.getStatus()));
 		}
-		final Map<String, Object> extendedProps = new HashMap<>();
-		if (event.getPaciente() != null) {
-			extendedProps.put("paciente", event.getPaciente().getName());
-			extendedProps.put("pacienteId", event.getPaciente().getId());
-			if (event.getPaciente().getActivityFactorScale() != null) {
-				extendedProps.put("patientActivityFactorScale", event.getPaciente().getActivityFactorScale().name());
-			}
-			if (event.getPaciente().getPreferredBmrFormula() != null) {
-				extendedProps.put("patientPreferredBmrFormula", event.getPaciente().getPreferredBmrFormula().name());
-			}
-			if (event.getPaciente().getTefMethod() != null) {
-				extendedProps.put("patientTefMethod", event.getPaciente().getTefMethod().name());
-			}
-			if (event.getPaciente().getTefBase() != null) {
-				extendedProps.put("patientTefBase", event.getPaciente().getTefBase().name());
-			}
-			if (event.getPaciente().getTefFixedPercent() != null) {
-				extendedProps.put("patientTefFixedPercent", event.getPaciente().getTefFixedPercent());
-			}
-			if (event.getPaciente().getTefMacroProteinPercent() != null) {
-				extendedProps.put("patientTefMacroProteinPercent", event.getPaciente().getTefMacroProteinPercent());
-			}
-			if (event.getPaciente().getTefMacroCarbsPercent() != null) {
-				extendedProps.put("patientTefMacroCarbsPercent", event.getPaciente().getTefMacroCarbsPercent());
-			}
-			if (event.getPaciente().getTefMacroFatPercent() != null) {
-				extendedProps.put("patientTefMacroFatPercent", event.getPaciente().getTefMacroFatPercent());
-			}
-		}
-		if (event.getStatus() != null) {
-			extendedProps.put("status", event.getStatus().name());
-		}
-		if (event.getDescription() != null) {
-			extendedProps.put("description", event.getDescription());
-		}
-		if (event.getSummaryNotes() != null) {
-			extendedProps.put("summaryNotes", event.getSummaryNotes());
-		}
-		extendedProps.put("durationMinutes", event.getDurationMinutes());
-		if (event.getPeso() != null) {
-			extendedProps.put("peso", event.getPeso());
-		}
-		if (event.getEstatura() != null) {
-			extendedProps.put("estatura", event.getEstatura());
-		}
-		if (event.getImc() != null) {
-			extendedProps.put("imc", event.getImc());
-		}
-		if (event.getIndiceGrasaCorporal() != null) {
-			extendedProps.put("indiceGrasaCorporal", event.getIndiceGrasaCorporal());
-		}
-		if (event.getNivelPeso() != null) {
-			extendedProps.put("nivelPeso", event.getNivelPeso().name());
-		}
-		if (event.getSistolica() != null) {
-			extendedProps.put("sistolica", event.getSistolica());
-		}
-		if (event.getDiastolica() != null) {
-			extendedProps.put("diastolica", event.getDiastolica());
-		}
-		if (event.getPulso() != null) {
-			extendedProps.put("pulso", event.getPulso());
-		}
-		if (event.getIndiceGlucemico() != null) {
-			extendedProps.put("indiceGlucemico", event.getIndiceGlucemico());
-		}
-		if (event.getSpo2() != null) {
-			extendedProps.put("spo2", event.getSpo2());
-		}
-		if (event.getTemperatura() != null) {
-			extendedProps.put("temperatura", event.getTemperatura());
-		}
-		if (event.getPhysicalActivityLevel() != null) {
-			extendedProps.put("physicalActivityLevel", event.getPhysicalActivityLevel().name());
-		}
-		if (event.getActivityFactor() != null) {
-			extendedProps.put("activityFactor", event.getActivityFactor());
-		}
-		if (event.getBmrFormula() != null) {
-			extendedProps.put("bmrFormula", event.getBmrFormula().name());
-		}
-		if (event.getBmrUsed() != null) {
-			extendedProps.put("bmrUsed", event.getBmrUsed());
-		}
-		if (event.getGetKcal() != null) {
-			extendedProps.put("getKcal", event.getGetKcal());
-		}
-		if (event.getTefKcal() != null) {
-			extendedProps.put("tefKcal", event.getTefKcal());
-		}
-		if (event.getTotalAdjustedKcal() != null) {
-			extendedProps.put("totalAdjustedKcal", event.getTotalAdjustedKcal());
-		}
+		final Map<String, Object> extendedProps = buildExtendedProps(event);
 		eventMap.put("extendedProps", extendedProps);
 		eventMap.put("url", "/admin/calendario/" + event.getId());
 		return eventMap;
+	}
+
+	private Map<String, Object> buildExtendedProps(final CalendarEvent event) {
+		final Map<String, Object> extendedProps = new HashMap<>();
+		if (event.getPaciente() != null) {
+			appendPatientExtendedProps(extendedProps, event.getPaciente());
+		}
+		putEnumNameIfPresent(extendedProps, "status", event.getStatus());
+		putIfPresent(extendedProps, "description", event.getDescription());
+		putIfPresent(extendedProps, "summaryNotes", event.getSummaryNotes());
+		extendedProps.put("durationMinutes", event.getDurationMinutes());
+		putIfPresent(extendedProps, "peso", event.getPeso());
+		putIfPresent(extendedProps, "estatura", event.getEstatura());
+		putIfPresent(extendedProps, "imc", event.getImc());
+		putIfPresent(extendedProps, "indiceGrasaCorporal", event.getIndiceGrasaCorporal());
+		putEnumNameIfPresent(extendedProps, "nivelPeso", event.getNivelPeso());
+		putIfPresent(extendedProps, "sistolica", event.getSistolica());
+		putIfPresent(extendedProps, "diastolica", event.getDiastolica());
+		putIfPresent(extendedProps, "pulso", event.getPulso());
+		putIfPresent(extendedProps, "indiceGlucemico", event.getIndiceGlucemico());
+		putIfPresent(extendedProps, "spo2", event.getSpo2());
+		putIfPresent(extendedProps, "temperatura", event.getTemperatura());
+		putEnumNameIfPresent(extendedProps, "physicalActivityLevel", event.getPhysicalActivityLevel());
+		putIfPresent(extendedProps, "activityFactor", event.getActivityFactor());
+		putEnumNameIfPresent(extendedProps, "bmrFormula", event.getBmrFormula());
+		putIfPresent(extendedProps, "bmrUsed", event.getBmrUsed());
+		putIfPresent(extendedProps, "getKcal", event.getGetKcal());
+		putIfPresent(extendedProps, "tefKcal", event.getTefKcal());
+		putIfPresent(extendedProps, "totalAdjustedKcal", event.getTotalAdjustedKcal());
+		return extendedProps;
+	}
+
+	private void appendPatientExtendedProps(final Map<String, Object> extendedProps, final Paciente paciente) {
+		extendedProps.put("paciente", paciente.getName());
+		extendedProps.put("pacienteId", paciente.getId());
+		putEnumNameIfPresent(extendedProps, "patientActivityFactorScale", paciente.getActivityFactorScale());
+		putEnumNameIfPresent(extendedProps, "patientPreferredBmrFormula", paciente.getPreferredBmrFormula());
+		putEnumNameIfPresent(extendedProps, "patientTefMethod", paciente.getTefMethod());
+		putEnumNameIfPresent(extendedProps, "patientTefBase", paciente.getTefBase());
+		putIfPresent(extendedProps, "patientTefFixedPercent", paciente.getTefFixedPercent());
+		putIfPresent(extendedProps, "patientTefMacroProteinPercent", paciente.getTefMacroProteinPercent());
+		putIfPresent(extendedProps, "patientTefMacroCarbsPercent", paciente.getTefMacroCarbsPercent());
+		putIfPresent(extendedProps, "patientTefMacroFatPercent", paciente.getTefMacroFatPercent());
+	}
+
+	private static void putIfPresent(final Map<String, Object> target, final String key, final Object value) {
+		if (value != null) {
+			target.put(key, value);
+		}
+	}
+
+	private static void putEnumNameIfPresent(final Map<String, Object> target, final String key, final Enum<?> value) {
+		if (value != null) {
+			target.put(key, value.name());
+		}
 	}
 
 	private String getEventColor(final EventStatus status) {

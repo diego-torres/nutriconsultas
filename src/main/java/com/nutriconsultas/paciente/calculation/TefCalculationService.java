@@ -74,11 +74,11 @@ public final class TefCalculationService {
 	static Double calculateFixedTef(final TefBase base, final Double fixedPercent, final Double bmr,
 			final Double getKcal) {
 		final TefBase resolvedBase = base != null ? base : TefBase.GET;
-		final double percent = fixedPercent != null && fixedPercent > 0 ? fixedPercent : DEFAULT_FIXED_TEF_PERCENT;
 		final Double tefBase = resolvedBase == TefBase.BMR ? bmr : getKcal;
 		if (tefBase == null || tefBase <= 0) {
 			return null;
 		}
+		final double percent = fixedPercent != null && fixedPercent > 0 ? fixedPercent : DEFAULT_FIXED_TEF_PERCENT;
 		final double tef = tefBase * (percent / 100.0);
 		log.debug("Calculated fixed TEF: {} kcal/day (base={}, percent={}%)", tef, tefBase, percent);
 		return tef;

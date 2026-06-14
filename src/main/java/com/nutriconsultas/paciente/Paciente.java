@@ -33,6 +33,7 @@ import jakarta.persistence.Enumerated;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@SuppressWarnings("PMD.TooManyFields")
 public class Paciente {
 
 	@Id
