@@ -13,6 +13,53 @@
       intense: [[${paciente != null && paciente.customFactorIntense != null ? paciente.customFactorIntense : 'null'}]],
       veryIntense: [[${paciente != null && paciente.customFactorVeryIntense != null ? paciente.customFactorVeryIntense : 'null'}]]
     };
+    const calculationEnableSync = [[${enableSync}]];
+
+    function getCalcSubTabPanes(tabContent) {
+      return Array.prototype.filter.call(tabContent.children, function(child) {
+        return child.classList && child.classList.contains('tab-pane');
+      });
+    }
+
+    function refreshAllCalculationPanels() {
+      if (calculationEnableSync) {
+        syncFromBodyMassTab();
+      } else {
+        updateBmiCalculations();
+        updateBmrCalculations();
+        updateGetCalculations();
+        updateIdealWeightCalculations();
+        updateTotalBodyWaterCalculations();
+        updateBodyCompositionCalculations();
+      }
+    }
+
+    function showCalculationSubTab(targetId) {
+      const tabList = document.getElementById('calculationSubTabs');
+      const tabContent = document.getElementById('calculationSubTabsContent');
+      if (!tabList || !tabContent || !targetId) {
+        return;
+      }
+      const paneId = targetId.charAt(0) === '#' ? targetId.substring(1) : targetId;
+      tabList.querySelectorAll('.calc-subtab-link').forEach(function(link) {
+        link.classList.remove('active');
+        link.setAttribute('aria-selected', 'false');
+      });
+      getCalcSubTabPanes(tabContent).forEach(function(pane) {
+        pane.classList.remove('show', 'active');
+      });
+      const link = tabList.querySelector('[data-calc-target="' + paneId + '"]');
+      const pane = document.getElementById(paneId);
+      if (link) {
+        link.classList.add('active');
+        link.setAttribute('aria-selected', 'true');
+      }
+      if (pane) {
+        pane.classList.add('active', 'show');
+      }
+      refreshAllCalculationPanels();
+    }
+    window.showCalculationSubTab = showCalculationSubTab;
 
     // BMI Calculation Functions
     function calculateClassicBmi(weight, height) {
@@ -321,11 +368,19 @@
 
     // Update BMI calculations
     function updateBmiCalculations() {
+      const calcWeightEl = document.getElementById('calc-weight');
+      const calcHeightEl = document.getElementById('calc-height');
+      if (!calcWeightEl || !calcHeightEl) {
+        return;
+      }
       // Classic BMI
-      const weight1 = parseFloat(document.getElementById('calc-weight').value);
-      const height1 = parseFloat(document.getElementById('calc-height').value);
+      const weight1 = parseFloat(calcWeightEl.value);
+      const height1 = parseFloat(calcHeightEl.value);
       const classicBmi = calculateClassicBmi(weight1, height1);
-      document.getElementById('classic-bmi-result').textContent = formatNumber(classicBmi);
+      const classicBmiResult = document.getElementById('classic-bmi-result');
+      if (classicBmiResult) {
+        classicBmiResult.textContent = formatNumber(classicBmi);
+      }
       
       // Auto-populate body composition BMI if classic BMI is calculated
       const bodyCompBmiField = document.getElementById('body-comp-bmi');
@@ -358,10 +413,17 @@
       updateIndiceGrasaCorporal();
 
       // Trefethen BMI
-      const weight2 = parseFloat(document.getElementById('calc-weight-trefethen').value);
-      const height2 = parseFloat(document.getElementById('calc-height-trefethen').value);
-      const trefethenBmi = calculateTrefethenBmi(weight2, height2);
-      document.getElementById('trefethen-bmi-result').textContent = formatNumber(trefethenBmi);
+      const weightTrefethenEl = document.getElementById('calc-weight-trefethen');
+      const heightTrefethenEl = document.getElementById('calc-height-trefethen');
+      if (weightTrefethenEl && heightTrefethenEl) {
+        const weight2 = parseFloat(weightTrefethenEl.value);
+        const height2 = parseFloat(heightTrefethenEl.value);
+        const trefethenBmi = calculateTrefethenBmi(weight2, height2);
+        const trefethenBmiResult = document.getElementById('trefethen-bmi-result');
+        if (trefethenBmiResult) {
+          trefethenBmiResult.textContent = formatNumber(trefethenBmi);
+        }
+      }
     }
 
     // Update BMR calculations
@@ -580,36 +642,43 @@
     }
 
     // Sync weight/height from Body Mass tab to Calculation tab (only for form templates)
+    function syncCalcFieldValue(fieldId, value) {
+      const field = document.getElementById(fieldId);
+      if (field) {
+        field.value = value;
+      }
+    }
+
     function syncFromBodyMassTab() {
       const bodyMassWeight = document.querySelector('input[name*="bodyMass.weight"]');
       const bodyMassHeight = document.querySelector('input[name*="bodyMass.height"]');
       
       if (bodyMassWeight && bodyMassWeight.value) {
-        document.getElementById('calc-weight').value = bodyMassWeight.value;
-        document.getElementById('calc-weight-trefethen').value = bodyMassWeight.value;
-        document.getElementById('bmr-weight-msj').value = bodyMassWeight.value;
-        document.getElementById('bmr-weight-hb').value = bodyMassWeight.value;
-        document.getElementById('bmr-weight-fao').value = bodyMassWeight.value;
-        document.getElementById('bmr-weight-val').value = bodyMassWeight.value;
-        document.getElementById('bmr-weight-prom').value = bodyMassWeight.value;
-        document.getElementById('tbw-weight-wat').value = bodyMassWeight.value;
-        document.getElementById('tbw-weight-hm').value = bodyMassWeight.value;
+        syncCalcFieldValue('calc-weight', bodyMassWeight.value);
+        syncCalcFieldValue('calc-weight-trefethen', bodyMassWeight.value);
+        syncCalcFieldValue('bmr-weight-msj', bodyMassWeight.value);
+        syncCalcFieldValue('bmr-weight-hb', bodyMassWeight.value);
+        syncCalcFieldValue('bmr-weight-fao', bodyMassWeight.value);
+        syncCalcFieldValue('bmr-weight-val', bodyMassWeight.value);
+        syncCalcFieldValue('bmr-weight-prom', bodyMassWeight.value);
+        syncCalcFieldValue('tbw-weight-wat', bodyMassWeight.value);
+        syncCalcFieldValue('tbw-weight-hm', bodyMassWeight.value);
       }
       
       if (bodyMassHeight && bodyMassHeight.value) {
-        document.getElementById('calc-height').value = bodyMassHeight.value;
-        document.getElementById('calc-height-trefethen').value = bodyMassHeight.value;
-        document.getElementById('bmr-height-msj').value = bodyMassHeight.value;
-        document.getElementById('bmr-height-hb').value = bodyMassHeight.value;
-        document.getElementById('bmr-height-val').value = bodyMassHeight.value;
-        document.getElementById('bmr-height-prom').value = bodyMassHeight.value;
-        document.getElementById('ideal-weight-height-rob').value = bodyMassHeight.value;
-        document.getElementById('ideal-weight-height-met').value = bodyMassHeight.value;
-        document.getElementById('ideal-weight-height-ham').value = bodyMassHeight.value;
-        document.getElementById('ideal-weight-height-lor').value = bodyMassHeight.value;
-        document.getElementById('ideal-weight-height-trad').value = bodyMassHeight.value;
-        document.getElementById('tbw-height-wat').value = bodyMassHeight.value;
-        document.getElementById('tbw-height-hm').value = bodyMassHeight.value;
+        syncCalcFieldValue('calc-height', bodyMassHeight.value);
+        syncCalcFieldValue('calc-height-trefethen', bodyMassHeight.value);
+        syncCalcFieldValue('bmr-height-msj', bodyMassHeight.value);
+        syncCalcFieldValue('bmr-height-hb', bodyMassHeight.value);
+        syncCalcFieldValue('bmr-height-val', bodyMassHeight.value);
+        syncCalcFieldValue('bmr-height-prom', bodyMassHeight.value);
+        syncCalcFieldValue('ideal-weight-height-rob', bodyMassHeight.value);
+        syncCalcFieldValue('ideal-weight-height-met', bodyMassHeight.value);
+        syncCalcFieldValue('ideal-weight-height-ham', bodyMassHeight.value);
+        syncCalcFieldValue('ideal-weight-height-lor', bodyMassHeight.value);
+        syncCalcFieldValue('ideal-weight-height-trad', bodyMassHeight.value);
+        syncCalcFieldValue('tbw-height-wat', bodyMassHeight.value);
+        syncCalcFieldValue('tbw-height-hm', bodyMassHeight.value);
       }
       
       // Sync BMI to body composition calculation
@@ -617,8 +686,7 @@
         const weight = parseFloat(bodyMassWeight.value);
         const height = parseFloat(bodyMassHeight.value);
         if (weight > 0 && height > 0) {
-          const bmi = weight / (height * height);
-          document.getElementById('body-comp-bmi').value = bmi.toFixed(2);
+          syncCalcFieldValue('body-comp-bmi', (weight / (height * height)).toFixed(2));
         }
       }
       
@@ -687,41 +755,20 @@
       safeAddEventListener('body-comp-bmi', 'input', updateBodyCompositionCalculations);
       safeAddEventListener('body-comp-age', 'input', updateBodyCompositionCalculations);
 
-      // Calculate on tab show
+      // Calculate on main Cálculos tab show
       const calculationTab = document.getElementById('calculation-tab');
       if (calculationTab) {
         $(calculationTab).on('shown.bs.tab', function() {
-          const enableSync = [[${enableSync}]];
-          if (enableSync) {
-            syncFromBodyMassTab();
-          } else {
-      updateBmiCalculations();
-      updateBmrCalculations();
-      updateGetCalculations();
-      updateIdealWeightCalculations();
-      updateTotalBodyWaterCalculations();
-      updateBodyCompositionCalculations();
-        }
-      });
-        
-        // Also trigger calculations if calculation tab is already active on page load
+          refreshAllCalculationPanels();
+        });
+
         if ($(calculationTab).hasClass('active')) {
-          const enableSync = [[${enableSync}]];
-          if (enableSync) {
-            syncFromBodyMassTab();
-          } else {
-            updateBmiCalculations();
-            updateBmrCalculations();
-            updateIdealWeightCalculations();
-            updateTotalBodyWaterCalculations();
-            updateBodyCompositionCalculations();
-          }
+          refreshAllCalculationPanels();
         }
       }
 
       // Sync functionality (only enabled for form templates)
-      const enableSync = [[${enableSync}]];
-      if (enableSync) {
+      if (calculationEnableSync) {
         // Also sync when Body Mass inputs change
         const bodyMassWeight = document.querySelector('input[name*="bodyMass.weight"]');
         const bodyMassHeight = document.querySelector('input[name*="bodyMass.height"]');
@@ -750,6 +797,16 @@
       updateBodyCompositionCalculations();
       updateGetCalculations();
     });
+
+    document.addEventListener('click', function(e) {
+      const trigger = e.target.closest('#calculationSubTabs .calc-subtab-link[data-calc-target]');
+      if (!trigger) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      showCalculationSubTab(trigger.getAttribute('data-calc-target'));
+    }, true);
   </script>
 </div>
 

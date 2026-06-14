@@ -567,8 +567,12 @@
                             <i class="fas fa-info-circle"></i> Los cálculos se actualizan automáticamente cuando se ingresan peso y estatura en la pestaña "Peso/Altura".
                           </div>
 
-                          <!-- Ideal Weight (Peso Teórico) Section -->
-                          <h5 class="mb-3"><i class="fas fa-weight"></i> Peso Teórico</h5>
+                          <div th:insert="~{sbadmin/pacientes/calculation-subtabs :: calculationSubTabsStyle}"></div>
+                          <div th:insert="~{sbadmin/pacientes/calculation-subtabs :: calculationSubTabsNav}"></div>
+                          <div class="tab-content border rounded p-3 bg-white" id="calculationSubTabsContent">
+
+                          <!-- Peso Teórico -->
+                          <div class="tab-pane fade show active" id="calc-ideal-weight" role="tabpanel" aria-labelledby="calc-ideal-weight-subtab">
                           <div class="row mb-4">
                             <div class="col-md-6">
                               <div class="card">
@@ -603,10 +607,10 @@
                                   <div class="form-group mb-2">
                                     <label class="small">Estatura (m):</label>
                                     <input type="number" step="0.01" id="ideal-weight-height-met" class="form-control form-control-sm" min="0.5" max="3" placeholder="Ingrese estatura">
-                              </div>
+                                  </div>
                                   <div class="alert alert-light mb-0">
                                     <strong>Resultado:</strong> <span id="met-ideal-weight-result" class="text-primary">-</span> <small>kg</small>
-                            </div>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -666,13 +670,14 @@
                                   <div class="alert alert-light mb-0">
                                     <strong>Resultado:</strong> <span id="trad-ideal-weight-result" class="text-primary">-</span> <small>kg</small>
                                   </div>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
+                          </div>
 
-                          <!-- BMI Section -->
-                          <h5 class="mb-3"><i class="fas fa-weight"></i> Índice de Masa Corporal (BMI)</h5>
+                          <!-- IMC -->
+                          <div class="tab-pane fade" id="calc-bmi" role="tabpanel" aria-labelledby="calc-bmi-subtab">
                           <div class="row mb-4">
                             <div class="col-md-6">
                               <div class="card">
@@ -770,9 +775,10 @@
                               </div>
                             </div>
                           </div>
+                          </div>
 
-                          <!-- BMR Section -->
-                          <h5 class="mb-3"><i class="fas fa-fire"></i> Metabolismo Basal (BMR)</h5>
+                          <!-- TMB -->
+                          <div class="tab-pane fade" id="calc-bmr" role="tabpanel" aria-labelledby="calc-bmr-subtab">
                           <div class="row mb-4">
                             <div class="col-md-6">
                               <div class="card">
@@ -949,10 +955,50 @@
                             </div>
                           </div>
 
-                          <div th:insert="~{sbadmin/pacientes/get-calculation-section :: getCalculationSection}"></div>
+                          <!-- Optional BMR formulas (if lean body mass is available) -->
+                          <div class="row mb-4">
+                            <div class="col-md-6">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Katch-McArdle</h6>
+                                  <p class="text-muted small mb-2">Fórmula: 370 + (21.6 × masa magra (kg))</p>
+                                  <p class="text-muted small mb-2"><em>Requiere masa magra (masa libre de grasa)</em></p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Masa Magra (kg):</label>
+                                    <input type="number" step="0.01" id="lean-mass-km" class="form-control form-control-sm" min="0" placeholder="Ingrese masa magra">
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="km-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6 class="card-title">Cunningham</h6>
+                                  <p class="text-muted small mb-2">Fórmula: 500 + (22 × masa magra (kg))</p>
+                                  <p class="text-muted small mb-2"><em>Requiere masa magra (masa libre de grasa)</em></p>
+                                  <div class="form-group mb-2">
+                                    <label class="small">Masa Magra (kg):</label>
+                                    <input type="number" step="0.01" id="lean-mass-cun" class="form-control form-control-sm" min="0" placeholder="Ingrese masa magra">
+                                  </div>
+                                  <div class="alert alert-light mb-0">
+                                    <strong>Resultado:</strong> <span id="cun-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          </div>
 
-                          <!-- Total Body Water (Agua Corporal Total) Section -->
-                          <h5 class="mb-3"><i class="fas fa-tint"></i> Agua Corporal Total</h5>
+                          <!-- GET -->
+                          <div class="tab-pane fade" id="calc-get" role="tabpanel" aria-labelledby="calc-get-subtab">
+                          <div th:insert="~{sbadmin/pacientes/get-calculation-section :: getCalculationSection}"></div>
+                          </div>
+
+                          <!-- Agua Corporal Total -->
+                          <div class="tab-pane fade" id="calc-tbw" role="tabpanel" aria-labelledby="calc-tbw-subtab">
                           <div class="row mb-4">
                             <div class="col-md-6">
                               <div class="card">
@@ -1014,45 +1060,10 @@
                               </div>
                             </div>
                           </div>
-
-                          <!-- Optional BMR formulas (if lean body mass is available) -->
-                          <div class="row mb-4">
-                            <div class="col-md-6">
-                              <div class="card">
-                                <div class="card-body">
-                                  <h6 class="card-title">Katch-McArdle</h6>
-                                  <p class="text-muted small mb-2">Fórmula: 370 + (21.6 × masa magra (kg))</p>
-                                  <p class="text-muted small mb-2"><em>Requiere masa magra (masa libre de grasa)</em></p>
-                                  <div class="form-group mb-2">
-                                    <label class="small">Masa Magra (kg):</label>
-                                    <input type="number" step="0.01" id="lean-mass-km" class="form-control form-control-sm" min="0" placeholder="Ingrese masa magra">
-                                  </div>
-                                  <div class="alert alert-light mb-0">
-                                    <strong>Resultado:</strong> <span id="km-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="col-md-6">
-                              <div class="card">
-                                <div class="card-body">
-                                  <h6 class="card-title">Cunningham</h6>
-                                  <p class="text-muted small mb-2">Fórmula: 500 + (22 × masa magra (kg))</p>
-                                  <p class="text-muted small mb-2"><em>Requiere masa magra (masa libre de grasa)</em></p>
-                                  <div class="form-group mb-2">
-                                    <label class="small">Masa Magra (kg):</label>
-                                    <input type="number" step="0.01" id="lean-mass-cun" class="form-control form-control-sm" min="0" placeholder="Ingrese masa magra">
-                                  </div>
-                                  <div class="alert alert-light mb-0">
-                                    <strong>Resultado:</strong> <span id="cun-bmr-result" class="text-primary">-</span> <small>kcal/día</small>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
                           </div>
 
-                          <!-- Body Composition Section -->
-                          <h5 class="mb-3"><i class="fas fa-percentage"></i> Composición Corporal</h5>
+                          <!-- Composición Corporal -->
+                          <div class="tab-pane fade" id="calc-body-comp" role="tabpanel" aria-labelledby="calc-body-comp-subtab">
                           <div class="row mb-4">
                             <div class="col-md-4">
                               <div class="card">
@@ -1117,7 +1128,10 @@
                               </div>
                             </div>
                           </div>
-                        </div>
+                          </div>
+
+                          </div><!-- /calculationSubTabsContent -->
+                        </div><!-- /calculation tab -->
                       </div>
 
                       <div class="mt-4">
