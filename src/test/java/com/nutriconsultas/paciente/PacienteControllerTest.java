@@ -734,7 +734,6 @@ public class PacienteControllerTest {
 
 		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.of(dieta));
-		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
 		when(bindingResult.getAllErrors()).thenReturn(new ArrayList<>());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
@@ -750,7 +749,7 @@ public class PacienteControllerTest {
 		verify(bindingResult).rejectValue(eq("status"), eq("NotNull"), eq("El estado es requerido"));
 		verify(model).addAttribute("activeMenu", "perfil");
 		verify(model).addAttribute("paciente", paciente);
-		verify(model).addAttribute("dietasDisponibles", new ArrayList<>());
+		verify(model).addAttribute("requerimientoKcal", null);
 		verify(pacienteDietaService, org.mockito.Mockito.never()).assignDieta(any(Long.class), any(Long.class),
 				any(PacienteDieta.class), any(String.class));
 		log.info("finished testGuardarAsignacionDietaWithErrors");
@@ -770,7 +769,6 @@ public class PacienteControllerTest {
 
 		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.of(dieta));
-		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
 		when(bindingResult.getAllErrors()).thenReturn(new ArrayList<>());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
@@ -801,7 +799,6 @@ public class PacienteControllerTest {
 
 		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(dietaRepository.findById(1L)).thenReturn(java.util.Optional.of(dieta));
-		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
 		when(bindingResult.getAllErrors()).thenReturn(new ArrayList<>());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
