@@ -256,7 +256,7 @@ resource "aws_instance" "app" {
         platform_admin_emails_b64 = base64encode(join(",", var.platform_admin_emails))
         auth0_mgmt_client_id_b64     = base64encode(var.auth0_mgmt_client_id)
         auth0_mgmt_client_secret_b64 = base64encode(var.auth0_mgmt_client_secret)
-        auth0_mgmt_domain_b64        = base64encode(var.auth0_mgmt_domain)
+        auth0_mgmt_domain_b64        = base64encode(var.auth0_mgmt_domain != "" ? var.auth0_mgmt_domain : var.auth_issuer)
         nginx_config = templatefile("${path.module}/templates/nutriconsultas-nginx.conf.tpl", {
           nginx_server_names = local.app_nginx_server_names
         })
