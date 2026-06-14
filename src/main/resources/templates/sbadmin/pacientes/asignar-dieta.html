@@ -43,6 +43,16 @@
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Asignar Dieta a Paciente [[(${paciente != null ? paciente.name : ''})]]</h1>
           </div>
+          <div class="alert alert-info" th:if="${paciente.totalAdjustedKcal != null}">
+            <i class="fas fa-info-circle"></i>
+            Requerimiento energético total ajustado del paciente (GET + TEF):
+            <strong th:text="${#numbers.formatDecimal(paciente.totalAdjustedKcal, 1, 0)} + ' kcal/día'">0 kcal/día</strong>
+          </div>
+          <div class="alert alert-secondary" th:if="${paciente.totalAdjustedKcal == null && paciente.getKcal != null}">
+            <i class="fas fa-info-circle"></i>
+            GET del paciente: <strong th:text="${#numbers.formatDecimal(paciente.getKcal, 1, 0)} + ' kcal/día'">0 kcal/día</strong>
+            (sin TEF configurado).
+          </div>
 
           <!-- Content Row -->
           <div class="row">

@@ -117,4 +117,10 @@ public class CalendarEvent {
 	@Column(precision = 7)
 	private Double getKcal;
 
+	@Column(precision = 7)
+	private Double tefKcal;
+
+	@Column(precision = 7)
+	private Double totalAdjustedKcal;
+
 }

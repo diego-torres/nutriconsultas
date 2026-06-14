@@ -21,6 +21,9 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 import com.nutriconsultas.paciente.calculation.ActivityFactorScale;
 import com.nutriconsultas.paciente.calculation.BmrFormulaType;
 import com.nutriconsultas.paciente.calculation.PhysicalActivityLevel;
+import com.nutriconsultas.paciente.calculation.TefBase;
+import com.nutriconsultas.paciente.calculation.TefCalculationService;
+import com.nutriconsultas.paciente.calculation.TefMethod;
 import com.nutriconsultas.paciente.validation.ValidPregnancy;
 
 import jakarta.persistence.EnumType;
@@ -96,6 +99,38 @@ public class Paciente {
 	 */
 	@Column(precision = 7)
 	private Double getKcal;
+
+	/**
+	 * Thermic effect of food (TEF / ETA) in kcal/day.
+	 */
+	@Column(precision = 7)
+	private Double tefKcal;
+
+	/**
+	 * Total adjusted daily energy requirement (GET + TEF) in kcal/day.
+	 */
+	@Column(precision = 7)
+	private Double totalAdjustedKcal;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private TefMethod tefMethod = TefMethod.FIXED;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private TefBase tefBase = TefBase.GET;
+
+	@Column(precision = 5)
+	private Double tefFixedPercent = TefCalculationService.DEFAULT_FIXED_TEF_PERCENT;
+
+	@Column(precision = 5)
+	private Double tefMacroProteinPercent;
+
+	@Column(precision = 5)
+	private Double tefMacroCarbsPercent;
+
+	@Column(precision = 5)
+	private Double tefMacroFatPercent;
 
 	@Enumerated(EnumType.STRING)
 	@Column(length = 30)

@@ -84,4 +84,10 @@ public class BodyMetricRecord {
 	@Column(precision = 7)
 	private Double getKcal;
 
+	@Column(precision = 7)
+	private Double tefKcal;
+
+	@Column(precision = 7)
+	private Double totalAdjustedKcal;
+
 }

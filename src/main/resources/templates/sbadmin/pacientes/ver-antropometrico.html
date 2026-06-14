@@ -828,6 +828,12 @@
                               <div class="col-md-3" th:if="${measurement.getKcal != null}">
                                 <p><strong>GET:</strong> <span class="font-weight-bold text-warning" th:text="${#numbers.formatDecimal(measurement.getKcal, 1, 0)} + ' kcal/día'">-</span></p>
                               </div>
+                              <div class="col-md-3" th:if="${measurement.tefKcal != null}">
+                                <p><strong>TEF:</strong> <span th:text="${#numbers.formatDecimal(measurement.tefKcal, 1, 0)} + ' kcal/día'">-</span></p>
+                              </div>
+                              <div class="col-md-3" th:if="${measurement.totalAdjustedKcal != null}">
+                                <p><strong>Total ajustado:</strong> <span class="font-weight-bold text-success" th:text="${#numbers.formatDecimal(measurement.totalAdjustedKcal, 1, 0)} + ' kcal/día'">-</span></p>
+                              </div>
                             </div>
                           </div>
                           <div class="alert alert-secondary mb-0" th:unless="${measurement.getKcal != null || measurement.physicalActivityLevel != null}">

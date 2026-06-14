@@ -183,6 +183,24 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			if (event.getPaciente().getPreferredBmrFormula() != null) {
 				extendedProps.put("patientPreferredBmrFormula", event.getPaciente().getPreferredBmrFormula().name());
 			}
+			if (event.getPaciente().getTefMethod() != null) {
+				extendedProps.put("patientTefMethod", event.getPaciente().getTefMethod().name());
+			}
+			if (event.getPaciente().getTefBase() != null) {
+				extendedProps.put("patientTefBase", event.getPaciente().getTefBase().name());
+			}
+			if (event.getPaciente().getTefFixedPercent() != null) {
+				extendedProps.put("patientTefFixedPercent", event.getPaciente().getTefFixedPercent());
+			}
+			if (event.getPaciente().getTefMacroProteinPercent() != null) {
+				extendedProps.put("patientTefMacroProteinPercent", event.getPaciente().getTefMacroProteinPercent());
+			}
+			if (event.getPaciente().getTefMacroCarbsPercent() != null) {
+				extendedProps.put("patientTefMacroCarbsPercent", event.getPaciente().getTefMacroCarbsPercent());
+			}
+			if (event.getPaciente().getTefMacroFatPercent() != null) {
+				extendedProps.put("patientTefMacroFatPercent", event.getPaciente().getTefMacroFatPercent());
+			}
 		}
 		if (event.getStatus() != null) {
 			extendedProps.put("status", event.getStatus().name());
@@ -241,6 +259,12 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		}
 		if (event.getGetKcal() != null) {
 			extendedProps.put("getKcal", event.getGetKcal());
+		}
+		if (event.getTefKcal() != null) {
+			extendedProps.put("tefKcal", event.getTefKcal());
+		}
+		if (event.getTotalAdjustedKcal() != null) {
+			extendedProps.put("totalAdjustedKcal", event.getTotalAdjustedKcal());
 		}
 		eventMap.put("extendedProps", extendedProps);
 		eventMap.put("url", "/admin/calendario/" + event.getId());
@@ -690,10 +714,11 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			changed = true;
 		}
 		if (event.getGetKcal() != null) {
-			EnergyExpenditureResolver.applyToPatient(paciente,
-					new EnergyExpenditureResolver.EnergyResult(event.getBmrUsed(), event.getActivityFactor(),
-							event.getGetKcal()),
-					event.getPhysicalActivityLevel());
+			final EnergyExpenditureResolver.EnergyResult tefResult = EnergyExpenditureResolver.applyTef(paciente,
+					event.getBmrUsed(), event.getActivityFactor(), event.getGetKcal());
+			event.setTefKcal(tefResult.tefKcal());
+			event.setTotalAdjustedKcal(tefResult.totalAdjustedKcal());
+			EnergyExpenditureResolver.applyToPatient(paciente, tefResult, event.getPhysicalActivityLevel());
 			changed = true;
 		}
 		else if (event.getPeso() != null && event.getEstatura() != null) {
@@ -705,14 +730,16 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 				event.setBmrUsed(result.bmr());
 				event.setActivityFactor(result.activityFactor());
 				event.setGetKcal(result.getKcal());
+				event.setTefKcal(result.tefKcal());
+				event.setTotalAdjustedKcal(result.totalAdjustedKcal());
 				EnergyExpenditureResolver.applyToPatient(paciente, result, event.getPhysicalActivityLevel());
 				changed = true;
 			}
 		}
 		if (changed) {
 			pacienteRepository.save(paciente);
-			log.debug("Updated patient {} snapshot: imc={}, bmr={}, get={}", paciente.getId(), paciente.getImc(),
-					paciente.getBmr(), paciente.getGetKcal());
+			log.debug("Updated patient {} snapshot: imc={}, bmr={}, get={}, total={}", paciente.getId(),
+					paciente.getImc(), paciente.getBmr(), paciente.getGetKcal(), paciente.getTotalAdjustedKcal());
 		}
 	}
 
@@ -744,6 +771,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		event.setBmrUsed(result.bmr());
 		event.setActivityFactor(result.activityFactor());
 		event.setGetKcal(result.getKcal());
+		event.setTefKcal(result.tefKcal());
+		event.setTotalAdjustedKcal(result.totalAdjustedKcal());
 	}
 
 	/**
