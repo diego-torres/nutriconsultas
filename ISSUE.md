@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-14 — **#98 done** (PR #148). **#97 done** on `main`.
+**Last updated:** 2026-06-13 — **#113 in-progress** (branch `issue-97-113-message-rate-limit`): Resilience4j 10/min per `patientAuthSub` on POST #97; localized 429 + `Retry-After`. **#97** rate limit + HTTP 201 on same branch.
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116) plus the directly-related `[Dashboard]` IMC gauge (#106). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -99,7 +99,7 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 | # | Endpoint | URL | State | Backend source |
 |---|----------|-----|-------|----------------|
 | 96 | `GET /rest/mobile/patient/messages` — list thread | https://github.com/diego-torres/nutriconsultas/issues/96 | **done** | Merged PR #146: cursor pagination; contact form → `ContactInquiry`; admin inbox |
-| 97 | `POST /rest/mobile/patient/messages` — send to nutritionist | https://github.com/diego-torres/nutriconsultas/issues/97 | **done** | Merged PR #147: `senderRole=PATIENT` from JWT; `@Valid @Size(max=2000)`; rate limit deferred to #113 |
+| 97 | `POST /rest/mobile/patient/messages` — send to nutritionist | https://github.com/diego-torres/nutriconsultas/issues/97 | **done** | Merged PR #147 on `main`; branch `issue-97-113-message-rate-limit` adds HTTP 201 + #113 rate limit |
 
 ### Progress — `AnthropometricMeasurement` / `Paciente`
 
@@ -114,7 +114,7 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 
 | # | Title | URL | State | Notes |
 |---|-------|-----|-------|-------|
-| 113 | Rate limiting on patient write endpoints (Resilience4j) | https://github.com/diego-torres/nutriconsultas/issues/113 | open | 10/min on #97; returns 429 + i18n message (#111) |
+| 113 | Rate limiting on patient write endpoints (Resilience4j) | https://github.com/diego-torres/nutriconsultas/issues/113 | in-progress | Branch `issue-97-113-message-rate-limit`: 10/min per `patientAuthSub` on POST #97; 429 + `Retry-After: 60`; `error.rate.limit.exceeded` via `MessageSource` (partial #111) |
 | 116 | Additive: `senderDisplayName` in message DTOs from `NutritionistProfile` | https://github.com/diego-torres/nutriconsultas/issues/116 | open | Additive to #96 DTO; **non-blocking** for mobile #19. Source `NutritionistProfile.displayName`. |
 | 114 | Nutritionist reply to patient messages | https://github.com/diego-torres/nutriconsultas/issues/114 | open | **Web/backend only** — not a mobile-app endpoint; writes into the same thread #96 reads. |
 | 106 | `[Dashboard]` IMC gauge with color bands (anthropometric tablero) | https://github.com/diego-torres/nutriconsultas/issues/106 | open | Web dashboard; shares `NivelPeso` color-band logic the mobile `ImcGauge` (mobile #21) mirrors. Not a `/rest/mobile/**` endpoint. |
@@ -146,6 +146,7 @@ Each mobile feature consumes these backend endpoints. Two-way linking with the m
 - **401** — missing/invalid JWT or wrong `aud` (check mobile `AUTH0_AUDIENCE` = `https://api.nutriconsultas.minutriporcion.com`).
 - **403** `patient_not_linked` — JWT valid, no `Paciente.patientAuthSub` match (#109 linkage required).
 - **404** — linkage OK but endpoint not implemented yet (#91+).
+- **429** — patient write rate limit exceeded (#113); `Retry-After: 60`; localized `error.rate.limit.exceeded`.
 
 ---
 
