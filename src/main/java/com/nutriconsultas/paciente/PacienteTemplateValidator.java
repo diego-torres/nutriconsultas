@@ -40,6 +40,7 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		variables.put("ultimoNivelPeso", null);
 		variables.put("isEligibleForPregnancy", false);
 		variables.put("isUnder18", false);
+		variables.put("suggestedStressTypes", List.of());
 		variables.put("growthMeasurements", new ArrayList<AnthropometricMeasurement>());
 		// Calculation tab variables
 		variables.put("patientAge", 30);

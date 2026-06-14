@@ -67,9 +67,20 @@
                 <strong>Total:</strong> <span id="get-total-result" class="text-dark font-weight-bold">-</span> <small>kcal/día</small>
               </div>
             </div>
+            <div class="col-md-2">
+              <div class="alert alert-danger mb-0 py-2">
+                <strong>Estrés:</strong> <span id="get-stress-result" class="text-danger">-</span> <small>kcal/día</small>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="alert alert-success mb-0 py-2">
+                <strong>Final:</strong> <span id="get-final-result" class="text-dark font-weight-bold">-</span> <small>kcal/día</small>
+              </div>
+            </div>
           </div>
+          <div th:insert="~{sbadmin/pacientes/stress-section :: stressCalculationSection}"></div>
           <p class="text-muted small mb-0 mt-2">
-            Total ajustado = TMB + actividad + TEF = GET + TEF
+            Total final = TMB + actividad + TEF + estrés = GET + TEF + estrés
           </p>
           <input type="hidden" id="get-bmr-used-hidden" th:field="*{bmrUsed}">
           <input type="hidden" id="get-kcal-hidden" th:field="*{getKcal}">

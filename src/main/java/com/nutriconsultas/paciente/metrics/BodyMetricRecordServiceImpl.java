@@ -275,6 +275,8 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 					paciente.setActivityFactor(result.activityFactor());
 					paciente.setTefKcal(result.tefKcal());
 					paciente.setTotalAdjustedKcal(result.totalAdjustedKcal());
+					paciente.setStressKcal(result.stressKcal());
+					paciente.setFinalTotalKcal(result.finalTotalKcal());
 				}
 			}
 		}

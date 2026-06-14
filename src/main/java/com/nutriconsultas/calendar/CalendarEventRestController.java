@@ -44,6 +44,9 @@ import com.nutriconsultas.paciente.calculation.BmrFormulaType;
 import com.nutriconsultas.paciente.calculation.EnergyExpenditureResolver;
 import com.nutriconsultas.paciente.calculation.PatientEnergyPreferences;
 import com.nutriconsultas.paciente.calculation.PhysicalActivityLevel;
+import com.nutriconsultas.paciente.calculation.PhysiologicalStressType;
+import com.nutriconsultas.paciente.calculation.StressFormulaTable;
+import com.nutriconsultas.paciente.calculation.StressIncrementMode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -206,6 +209,14 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		putIfPresent(extendedProps, "getKcal", event.getGetKcal());
 		putIfPresent(extendedProps, "tefKcal", event.getTefKcal());
 		putIfPresent(extendedProps, "totalAdjustedKcal", event.getTotalAdjustedKcal());
+		putIfPresent(extendedProps, "stressKcal", event.getStressKcal());
+		putIfPresent(extendedProps, "finalTotalKcal", event.getFinalTotalKcal());
+		putIfPresent(extendedProps, "physiologicalStressActive", event.getPhysiologicalStressActive());
+		putEnumNameIfPresent(extendedProps, "physiologicalStressType", event.getPhysiologicalStressType());
+		putEnumNameIfPresent(extendedProps, "stressFormulaTable", event.getStressFormulaTable());
+		putEnumNameIfPresent(extendedProps, "stressIncrementMode", event.getStressIncrementMode());
+		putIfPresent(extendedProps, "stressFactorValue", event.getStressFactorValue());
+		putIfPresent(extendedProps, "stressFeverTemperature", event.getStressFeverTemperature());
 		return extendedProps;
 	}
 
@@ -679,31 +690,57 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		if (event.getGetKcal() != null) {
 			final EnergyExpenditureResolver.EnergyResult tefResult = EnergyExpenditureResolver.applyTef(paciente,
 					event.getBmrUsed(), event.getActivityFactor(), event.getGetKcal());
-			event.setTefKcal(tefResult.tefKcal());
-			event.setTotalAdjustedKcal(tefResult.totalAdjustedKcal());
-			EnergyExpenditureResolver.applyToPatient(paciente, tefResult, event.getPhysicalActivityLevel());
+			final EnergyExpenditureResolver.EnergyResult withStress = EnergyExpenditureResolver.applyStress(paciente,
+					tefResult, event, null, event.getTemperatura());
+			event.setTefKcal(withStress.tefKcal());
+			event.setTotalAdjustedKcal(withStress.totalAdjustedKcal());
+			event.setStressKcal(withStress.stressKcal());
+			event.setFinalTotalKcal(withStress.finalTotalKcal());
+			EnergyExpenditureResolver.applyToPatient(paciente, withStress, event.getPhysicalActivityLevel());
+			syncPatientStressFromEvent(paciente, event);
 			changed = true;
 		}
 		else if (event.getPeso() != null && event.getEstatura() != null) {
 			final BmrFormulaType formula = event.getBmrFormula() != null ? event.getBmrFormula()
 					: PatientEnergyPreferences.resolveBmrFormula(paciente);
+			final Double customFactor = event.getPhysicalActivityLevel() == PhysicalActivityLevel.CUSTOM
+					? event.getActivityFactor() : null;
 			final EnergyExpenditureResolver.EnergyResult result = EnergyExpenditureResolver.resolve(paciente, formula,
-					event.getPhysicalActivityLevel(), event.getActivityFactor(), event.getPeso(), event.getEstatura());
+					event.getPhysicalActivityLevel(), customFactor, event.getPeso(), event.getEstatura(), event, null,
+					event.getTemperatura());
 			if (result.bmr() != null) {
 				event.setBmrUsed(result.bmr());
 				event.setActivityFactor(result.activityFactor());
 				event.setGetKcal(result.getKcal());
 				event.setTefKcal(result.tefKcal());
 				event.setTotalAdjustedKcal(result.totalAdjustedKcal());
+				event.setStressKcal(result.stressKcal());
+				event.setFinalTotalKcal(result.finalTotalKcal());
 				EnergyExpenditureResolver.applyToPatient(paciente, result, event.getPhysicalActivityLevel());
+				syncPatientStressFromEvent(paciente, event);
 				changed = true;
 			}
 		}
 		if (changed) {
 			pacienteRepository.save(paciente);
-			log.debug("Updated patient {} snapshot: imc={}, bmr={}, get={}, total={}", paciente.getId(),
-					paciente.getImc(), paciente.getBmr(), paciente.getGetKcal(), paciente.getTotalAdjustedKcal());
+			log.debug("Updated patient {} snapshot: imc={}, bmr={}, get={}, total={}, final={}", paciente.getId(),
+					paciente.getImc(), paciente.getBmr(), paciente.getGetKcal(), paciente.getTotalAdjustedKcal(),
+					paciente.getFinalTotalKcal());
 		}
+	}
+
+	private void syncPatientStressFromEvent(final Paciente paciente, final CalendarEvent event) {
+		if (paciente == null || event == null || !Boolean.TRUE.equals(event.getPhysiologicalStressActive())) {
+			return;
+		}
+		paciente.setPhysiologicalStressActive(event.getPhysiologicalStressActive());
+		paciente.setPhysiologicalStressType(event.getPhysiologicalStressType());
+		paciente.setStressFormulaTable(event.getStressFormulaTable());
+		paciente.setStressIncrementMode(event.getStressIncrementMode());
+		paciente.setStressFactorValue(event.getStressFactorValue());
+		paciente.setStressValidFrom(event.getStressValidFrom());
+		paciente.setStressValidUntil(event.getStressValidUntil());
+		paciente.setStressFeverTemperature(event.getStressFeverTemperature());
 	}
 
 	private void applyEnergyFields(final CalendarEvent event, final Map<String, Object> eventData) {
@@ -719,6 +756,7 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			event.setPhysicalActivityLevel(PhysicalActivityLevel.CUSTOM);
 			event.setActivityFactor(customFactor);
 		}
+		applyStressFields(event, eventData);
 		final Paciente paciente = event.getPaciente();
 		if (paciente == null || event.getPeso() == null || event.getEstatura() == null
 				|| event.getPhysicalActivityLevel() == null) {
@@ -729,13 +767,44 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		final Double customFactor = event.getPhysicalActivityLevel() == PhysicalActivityLevel.CUSTOM
 				? event.getActivityFactor() : null;
 		final EnergyExpenditureResolver.EnergyResult result = EnergyExpenditureResolver.resolve(paciente, formula,
-				event.getPhysicalActivityLevel(), customFactor, event.getPeso(), event.getEstatura());
+				event.getPhysicalActivityLevel(), customFactor, event.getPeso(), event.getEstatura(), event, null,
+				event.getTemperatura());
 		event.setBmrFormula(formula);
 		event.setBmrUsed(result.bmr());
 		event.setActivityFactor(result.activityFactor());
 		event.setGetKcal(result.getKcal());
 		event.setTefKcal(result.tefKcal());
 		event.setTotalAdjustedKcal(result.totalAdjustedKcal());
+		event.setStressKcal(result.stressKcal());
+		event.setFinalTotalKcal(result.finalTotalKcal());
+	}
+
+	private void applyStressFields(final CalendarEvent event, final Map<String, Object> eventData) {
+		if (eventData.get("physiologicalStressActive") != null) {
+			event.setPhysiologicalStressActive(Boolean.parseBoolean(eventData.get("physiologicalStressActive").toString()));
+		}
+		if (eventData.get("physiologicalStressType") != null) {
+			event.setPhysiologicalStressType(
+					PhysiologicalStressType.valueOf(eventData.get("physiologicalStressType").toString()));
+		}
+		if (eventData.get("stressFormulaTable") != null) {
+			event.setStressFormulaTable(StressFormulaTable.valueOf(eventData.get("stressFormulaTable").toString()));
+		}
+		if (eventData.get("stressIncrementMode") != null) {
+			event.setStressIncrementMode(StressIncrementMode.valueOf(eventData.get("stressIncrementMode").toString()));
+		}
+		if (eventData.get("stressFactorValue") != null) {
+			event.setStressFactorValue(Double.parseDouble(eventData.get("stressFactorValue").toString()));
+		}
+		if (eventData.get("stressFeverTemperature") != null) {
+			event.setStressFeverTemperature(Double.parseDouble(eventData.get("stressFeverTemperature").toString()));
+		}
+		if (eventData.get("stressValidFrom") != null && !eventData.get("stressValidFrom").toString().isBlank()) {
+			event.setStressValidFrom(java.sql.Date.valueOf(eventData.get("stressValidFrom").toString()));
+		}
+		if (eventData.get("stressValidUntil") != null && !eventData.get("stressValidUntil").toString().isBlank()) {
+			event.setStressValidUntil(java.sql.Date.valueOf(eventData.get("stressValidUntil").toString()));
+		}
 	}
 
 	/**

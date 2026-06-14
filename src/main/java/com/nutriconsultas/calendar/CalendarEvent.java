@@ -26,6 +26,9 @@ import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.calculation.BmrFormulaType;
 import com.nutriconsultas.paciente.calculation.PhysicalActivityLevel;
+import com.nutriconsultas.paciente.calculation.PhysiologicalStressType;
+import com.nutriconsultas.paciente.calculation.StressFormulaTable;
+import com.nutriconsultas.paciente.calculation.StressIncrementMode;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -122,5 +125,39 @@ public class CalendarEvent {
 
 	@Column(precision = 7)
 	private Double totalAdjustedKcal;
+
+	@Column(precision = 7)
+	private Double stressKcal;
+
+	@Column(precision = 7)
+	private Double finalTotalKcal;
+
+	private Boolean physiologicalStressActive = false;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 40)
+	private PhysiologicalStressType physiologicalStressType;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private StressFormulaTable stressFormulaTable;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private StressIncrementMode stressIncrementMode;
+
+	@Column(precision = 5)
+	private Double stressFactorValue;
+
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@Temporal(TemporalType.DATE)
+	private Date stressValidFrom;
+
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@Temporal(TemporalType.DATE)
+	private Date stressValidUntil;
+
+	@Column(precision = 4)
+	private Double stressFeverTemperature;
 
 }

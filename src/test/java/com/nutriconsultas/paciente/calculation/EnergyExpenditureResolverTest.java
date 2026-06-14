@@ -32,7 +32,22 @@ class EnergyExpenditureResolverTest {
 		assertThat(result.getKcal()).isNotNull();
 		assertThat(result.tefKcal()).isNotNull();
 		assertThat(result.totalAdjustedKcal()).isEqualTo(result.getKcal() + result.tefKcal());
+		assertThat(result.finalTotalKcal()).isEqualTo(result.totalAdjustedKcal());
 		assertThat(result.activityKcal()).isEqualTo(result.getKcal() - result.bmr());
+	}
+
+	@Test
+	void resolveIncludesStressWhenPatientStressActive() {
+		paciente.setPhysiologicalStressActive(true);
+		paciente.setPhysiologicalStressType(PhysiologicalStressType.MINOR_SURGERY);
+		paciente.setStressFormulaTable(StressFormulaTable.LONG);
+		paciente.setStressIncrementMode(StressIncrementMode.MULTIPLIER_BMR);
+
+		final EnergyExpenditureResolver.EnergyResult result = EnergyExpenditureResolver.resolve(paciente,
+				BmrFormulaType.MIFFLIN_ST_JEOR, PhysicalActivityLevel.MODERATE, null, 70.0, 1.75);
+
+		assertThat(result.stressKcal()).isNotNull().isPositive();
+		assertThat(result.finalTotalKcal()).isEqualTo(result.totalAdjustedKcal() + result.stressKcal());
 	}
 
 	@Test
@@ -47,6 +62,15 @@ class EnergyExpenditureResolverTest {
 
 		assertThat(result.tefKcal()).isNotNull();
 		assertThat(result.totalAdjustedKcal()).isGreaterThan(result.getKcal());
+	}
+
+	@Test
+	void resolveTargetDailyCaloriesPrefersFinalTotal() {
+		paciente.setGetKcal(2000.0);
+		paciente.setTotalAdjustedKcal(2200.0);
+		paciente.setFinalTotalKcal(2500.0);
+
+		assertThat(EnergyExpenditureResolver.resolveTargetDailyCalories(paciente)).isEqualTo(2500.0);
 	}
 
 	@Test

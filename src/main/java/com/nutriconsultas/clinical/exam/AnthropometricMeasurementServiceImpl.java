@@ -72,13 +72,15 @@ public class AnthropometricMeasurementServiceImpl implements AnthropometricMeasu
 				? measurement.getActivityFactor() : null;
 		final EnergyExpenditureResolver.EnergyResult result = EnergyExpenditureResolver.resolve(
 				measurement.getPaciente(), formula, measurement.getPhysicalActivityLevel(), customFactor, weight,
-				height);
+				height, null, measurement, null);
 		measurement.setBmrFormula(formula);
 		measurement.setBmrUsed(result.bmr());
 		measurement.setActivityFactor(result.activityFactor());
 		measurement.setGetKcal(result.getKcal());
 		measurement.setTefKcal(result.tefKcal());
 		measurement.setTotalAdjustedKcal(result.totalAdjustedKcal());
+		measurement.setStressKcal(result.stressKcal());
+		measurement.setFinalTotalKcal(result.finalTotalKcal());
 	}
 
 	private void syncPatientEnergySnapshot(final AnthropometricMeasurement measurement) {
@@ -88,7 +90,8 @@ public class AnthropometricMeasurementServiceImpl implements AnthropometricMeasu
 		final Paciente paciente = measurement.getPaciente();
 		EnergyExpenditureResolver.applyToPatient(paciente,
 				new EnergyExpenditureResolver.EnergyResult(measurement.getBmrUsed(), measurement.getActivityFactor(),
-						measurement.getGetKcal(), null, measurement.getTefKcal(), measurement.getTotalAdjustedKcal()),
+						measurement.getGetKcal(), null, measurement.getTefKcal(), measurement.getTotalAdjustedKcal(),
+						measurement.getStressKcal(), measurement.getFinalTotalKcal()),
 				measurement.getPhysicalActivityLevel());
 		pacienteRepository.save(paciente);
 	}

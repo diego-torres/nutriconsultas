@@ -1,0 +1,166 @@
+<div th:fragment="stressPatientSection">
+  <hr>
+  <div class="form-group">
+    <label><i class="fas fa-heartbeat text-danger"></i> Estrés fisiológico</label>
+    <p class="text-muted small mb-2">
+      Registre una condición de estrés con vigencia. Los valores se usan como base en consultas y cálculos energéticos.
+    </p>
+    <div th:if="${suggestedStressTypes != null && !suggestedStressTypes.isEmpty()}" class="alert alert-info py-2">
+      <strong>Sugerencias según patologías:</strong>
+      <span th:each="type, iter : ${suggestedStressTypes}">
+        <span th:text="${type.displayName}">Tipo</span><span th:if="${!iter.last}">, </span>
+      </span>
+    </div>
+    <div class="form-check mb-2">
+      <input class="form-check-input" type="checkbox" th:field="*{physiologicalStressActive}" id="physiologicalStressActive">
+      <label class="form-check-label" for="physiologicalStressActive">Paciente con estrés fisiológico activo</label>
+    </div>
+    <div class="alert alert-warning py-2 small mb-3">
+      El incremento por estrés requiere validación clínica profesional antes de aplicarlo al plan nutricional.
+    </div>
+  </div>
+  <div id="stressPatientFields">
+    <div class="row">
+      <div class="col-md-6 form-group">
+        <label class="small">Tipo de estrés</label>
+        <select class="form-control" th:field="*{physiologicalStressType}" id="physiologicalStressType">
+          <option value="">Seleccione...</option>
+          <optgroup label="Comunes">
+            <option th:each="type : ${T(com.nutriconsultas.paciente.calculation.PhysiologicalStressCatalog).commonTypes()}"
+                    th:value="${type.name()}" th:text="${type.displayName}"></option>
+          </optgroup>
+          <optgroup label="Poco frecuentes">
+            <option th:each="type : ${T(com.nutriconsultas.paciente.calculation.PhysiologicalStressCatalog).uncommonTypes()}"
+                    th:value="${type.name()}" th:text="${type.displayName}"></option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="col-md-6 form-group">
+        <label class="small">Tabla / fórmula</label>
+        <select class="form-control" th:field="*{stressFormulaTable}" id="stressFormulaTable">
+          <option th:each="table : ${T(com.nutriconsultas.paciente.calculation.StressFormulaTable).values()}"
+                  th:value="${table.name()}" th:text="${table.displayName}"></option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4 form-group">
+        <label class="small">Modo de incremento</label>
+        <select class="form-control" th:field="*{stressIncrementMode}" id="stressIncrementMode">
+          <option th:each="mode : ${T(com.nutriconsultas.paciente.calculation.StressIncrementMode).values()}"
+                  th:value="${mode.name()}" th:text="${mode.displayName}"></option>
+        </select>
+      </div>
+      <div class="col-md-4 form-group">
+        <label class="small">Factor / kcal personalizado</label>
+        <input type="number" step="0.01" min="0" class="form-control" th:field="*{stressFactorValue}"
+               placeholder="Ej: 1.3 o 400">
+      </div>
+      <div class="col-md-4 form-group" id="stressFeverTempGroup">
+        <label class="small">Temperatura (°C) para fiebre</label>
+        <input type="number" step="0.1" min="35" max="43" class="form-control" th:field="*{stressFeverTemperature}"
+               placeholder="Ej: 38.5">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 form-group">
+        <label class="small">Vigencia desde</label>
+        <input type="date" class="form-control" th:field="*{stressValidFrom}">
+      </div>
+      <div class="col-md-6 form-group">
+        <label class="small">Vigencia hasta</label>
+        <input type="date" class="form-control" th:field="*{stressValidUntil}">
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const activeCheckbox = document.getElementById('physiologicalStressActive');
+      const fields = document.getElementById('stressPatientFields');
+      const formulaSelect = document.getElementById('stressFormulaTable');
+      const feverGroup = document.getElementById('stressFeverTempGroup');
+      function toggleStressFields() {
+        if (fields && activeCheckbox) {
+          fields.style.display = activeCheckbox.checked ? '' : 'none';
+        }
+      }
+      function toggleFeverField() {
+        if (feverGroup && formulaSelect) {
+          feverGroup.style.display = formulaSelect.value === 'FEVER_PER_DEGREE' ? '' : 'none';
+        }
+      }
+      if (activeCheckbox) {
+        activeCheckbox.addEventListener('change', toggleStressFields);
+        toggleStressFields();
+      }
+      if (formulaSelect) {
+        formulaSelect.addEventListener('change', toggleFeverField);
+        toggleFeverField();
+      }
+    });
+  </script>
+</div>
+
+<div th:fragment="stressCalculationSection">
+  <hr class="mt-3">
+  <h6 class="mb-2"><i class="fas fa-heartbeat text-danger"></i> Estrés fisiológico</h6>
+  <p class="text-muted small mb-2">
+    Valores base del paciente:
+    <span th:if="${paciente != null && paciente.physiologicalStressActive}">
+      <strong th:text="${paciente.physiologicalStressType != null ? paciente.physiologicalStressType.displayName : 'Activo'}">Activo</strong>
+      (<span th:text="${paciente.stressFormulaTable != null ? paciente.stressFormulaTable.displayName : 'Long'}">Long</span>)
+    </span>
+    <span th:unless="${paciente != null && paciente.physiologicalStressActive}">sin estrés registrado</span>.
+    Puede ajustar valores solo para este cálculo.
+  </p>
+  <div class="alert alert-warning py-2 small">
+    Requiere validación clínica profesional cuando se active estrés fisiológico.
+  </div>
+  <div class="form-check mb-2">
+    <input class="form-check-input" type="checkbox" th:field="*{physiologicalStressActive}" id="calcPhysiologicalStressActive">
+    <label class="form-check-label" for="calcPhysiologicalStressActive">Aplicar estrés fisiológico en este cálculo</label>
+  </div>
+  <div id="stressCalculationFields">
+    <div class="row">
+      <div class="col-md-4 form-group">
+        <label class="small">Tipo</label>
+        <select class="form-control form-control-sm" th:field="*{physiologicalStressType}" id="calcStressType">
+          <option value="">Usar preferencia del paciente</option>
+          <option th:each="type : ${T(com.nutriconsultas.paciente.calculation.PhysiologicalStressType).values()}"
+                  th:if="${type.name() != 'NONE'}"
+                  th:value="${type.name()}" th:text="${type.displayName}"></option>
+        </select>
+      </div>
+      <div class="col-md-4 form-group">
+        <label class="small">Tabla / fórmula</label>
+        <select class="form-control form-control-sm" th:field="*{stressFormulaTable}" id="calcStressFormula">
+          <option value="">Usar preferencia del paciente</option>
+          <option th:each="table : ${T(com.nutriconsultas.paciente.calculation.StressFormulaTable).values()}"
+                  th:value="${table.name()}" th:text="${table.displayName}"></option>
+        </select>
+      </div>
+      <div class="col-md-4 form-group">
+        <label class="small">Modo</label>
+        <select class="form-control form-control-sm" th:field="*{stressIncrementMode}" id="calcStressIncrementMode">
+          <option value="">Usar preferencia del paciente</option>
+          <option th:each="mode : ${T(com.nutriconsultas.paciente.calculation.StressIncrementMode).values()}"
+                  th:value="${mode.name()}" th:text="${mode.displayName}"></option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4 form-group">
+        <label class="small">Factor / kcal (override)</label>
+        <input type="number" step="0.01" min="0" class="form-control form-control-sm" th:field="*{stressFactorValue}"
+               id="calcStressFactorValue" placeholder="Opcional">
+      </div>
+      <div class="col-md-4 form-group">
+        <label class="small">Temperatura (°C)</label>
+        <input type="number" step="0.1" min="35" max="43" class="form-control form-control-sm"
+               th:field="*{stressFeverTemperature}" id="calcStressFeverTemperature">
+      </div>
+    </div>
+  </div>
+  <input type="hidden" id="get-stress-hidden" th:field="*{stressKcal}">
+  <input type="hidden" id="get-final-hidden" th:field="*{finalTotalKcal}">
+</div>
