@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-13 — **#111 done** on branch `issue-97-113-message-rate-limit` (localized mobile API errors). **#113 in-progress** on same branch.
+**Last updated:** 2026-06-14 — **#113 done** (PR #151). **#111 done** (PR #151). **#97 production-ready** on `main` (PR #147 + #151: HTTP 201, rate limit). **#98 done** (PR #148). **#106 done** (dashboard IMC gauge). **NEXT:** [#99](https://github.com/diego-torres/nutriconsultas/issues/99).
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116) plus the directly-related `[Dashboard]` IMC gauge (#106). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -30,7 +30,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 | **Enums (expose all values)** | `EventStatus = SCHEDULED / COMPLETED / CANCELLED` (`calendar/EventStatus.java`); `PacienteDietaStatus = ACTIVE / COMPLETED / CANCELLED` — **no INACTIVE** (`paciente/PacienteDietaStatus.java`); `NivelPeso = BAJO / NORMAL / ALTO / SOBREPESO` → service maps to `imcLabel` display string. |
 | **Body-fat field** | Prefer **`bodyComposition.porcentajeGrasaCorporal`** (patient-facing %) over `indiceGrasaCorporal` for #98/#99 consistency. |
 | **Computed fields** | `deltaPeso` / `deltaImc` are **computed at query time**, not stored — aggregate in the service layer (#98). |
-| **Greenfield** | **No** message entity/repo/service/controller exists — #96/#97 are built from scratch. |
+| **Greenfield** | Message entity/repo/service/controllers **implemented** (#96/#97, PRs #146–#147, #151). Contact form uses `ContactInquiry` (not patient thread). |
 | **Branding** | `NutritionistProfile` (entity @ `228bbc3`: `userId`, `displayName`, `cedulaProfesional`, `logoExtension`, `registro`) already brands diet PDFs (#95) transparently; supplies optional `senderDisplayName` for #96 (#116). |
 | **Package note** | Actual entity package is `com.nutriconsultas.paciente` (singular) — issue #107 text says `pacientes`; follow the code. |
 
@@ -46,7 +46,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 | `done` | Merged to `main` |
 | `deferred` | Intentionally paused — decision pending |
 
-Phase 0 JWT (#107) and DTO wrappers (#110) are **done**. Patient linkage (#109) is **done**. Visits (#91–#92) and diet plans (#93–#95) are **done** on `main`.
+Phase 0 (#107, #109, #110) is **done**. Patient linkage (#109) is **done**. Endpoints #91–#98 are **done** on `main`. Messages (#96/#97) + i18n (#111) + rate limit (#113) shipped in PR #151. **NEXT:** #99 (progress time series).
 
 ---
 
@@ -71,7 +71,7 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| 111 | Accept-Language filter + MessageSource i18n for REST errors | https://github.com/diego-torres/nutriconsultas/issues/111 | **done** | Branch `issue-97-113-message-rate-limit`: `LocaleContextFilter`, `MobileApiErrorResponses`, `MobileApiExceptionHandler` (403/404/400/429), localized `PatientLinkageFilter` |
+| 111 | Accept-Language filter + MessageSource i18n for REST errors | https://github.com/diego-torres/nutriconsultas/issues/111 | **done** | 110 | Merged PR #151: `LocaleContextFilter`, `MobileApiErrorResponses`, `MobileApiExceptionHandler` (403/404/400/429), localized `PatientLinkageFilter` |
 | 115 | PHI log redaction audit for all mobile controllers | https://github.com/diego-torres/nutriconsultas/issues/115 | open | 110 | Audit every `/rest/mobile/**` controller against `util/LogRedaction`; CI gate `scripts/audit-logging.sh`. No names/emails/DOB at INFO. |
 | 112 | OpenAPI spec for `/rest/mobile/patient/**` | https://github.com/diego-torres/nutriconsultas/issues/112 | open | 110, endpoints | springdoc spec; mobile reads it as the integration contract. Track per-endpoint as they land. |
 
@@ -99,14 +99,14 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 | # | Endpoint | URL | State | Backend source |
 |---|----------|-----|-------|----------------|
 | 96 | `GET /rest/mobile/patient/messages` — list thread | https://github.com/diego-torres/nutriconsultas/issues/96 | **done** | Merged PR #146: cursor pagination; contact form → `ContactInquiry`; admin inbox |
-| 97 | `POST /rest/mobile/patient/messages` — send to nutritionist | https://github.com/diego-torres/nutriconsultas/issues/97 | **done** | Merged PR #147 on `main`; branch `issue-97-113-message-rate-limit` adds HTTP 201 + #113 rate limit |
+| 97 | `POST /rest/mobile/patient/messages` — send to nutritionist | https://github.com/diego-torres/nutriconsultas/issues/97 | **done** | Merged PR #147 (`senderRole=PATIENT`, validation); PR #151 adds HTTP 201 + #113 rate limit |
 
 ### Progress — `AnthropometricMeasurement` / `Paciente`
 
 | # | Endpoint | URL | State | Backend source |
 |---|----------|-----|-------|----------------|
 | 98 | `GET /rest/mobile/patient/progress` — BMI/indicator snapshot | https://github.com/diego-torres/nutriconsultas/issues/98 | **done** | PR #148: `deltaPeso`/`deltaImc`, `imcLabel`, BMR, optional circumferences |
-| 99 | `GET /rest/mobile/patient/progress/measurements` — time series | https://github.com/diego-torres/nutriconsultas/issues/99 | open | `from`/`to` ISO-8601; cap `maxRows=365`; ASC order; prefer `porcentajeGrasaCorporal` |
+| 99 | `GET /rest/mobile/patient/progress/measurements` — time series | https://github.com/diego-torres/nutriconsultas/issues/99 | **NEXT** | 98 | `from`/`to` ISO-8601; cap `maxRows=365`; ASC order; prefer `porcentajeGrasaCorporal` |
 
 ---
 
@@ -114,10 +114,10 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 
 | # | Title | URL | State | Notes |
 |---|-------|-----|-------|-------|
-| 113 | Rate limiting on patient write endpoints (Resilience4j) | https://github.com/diego-torres/nutriconsultas/issues/113 | in-progress | Branch `issue-97-113-message-rate-limit`: 10/min per `patientAuthSub` on POST #97; 429 + `Retry-After: 60`; localized via #111 |
+| 113 | Rate limiting on patient write endpoints (Resilience4j) | https://github.com/diego-torres/nutriconsultas/issues/113 | **done** | Merged PR #151: 10/min per `patientAuthSub` on POST #97; 429 + `Retry-After: 60`; localized via #111 |
 | 116 | Additive: `senderDisplayName` in message DTOs from `NutritionistProfile` | https://github.com/diego-torres/nutriconsultas/issues/116 | open | Additive to #96 DTO; **non-blocking** for mobile #19. Source `NutritionistProfile.displayName`. |
 | 114 | Nutritionist reply to patient messages | https://github.com/diego-torres/nutriconsultas/issues/114 | open | **Web/backend only** — not a mobile-app endpoint; writes into the same thread #96 reads. |
-| 106 | `[Dashboard]` IMC gauge with color bands (anthropometric tablero) | https://github.com/diego-torres/nutriconsultas/issues/106 | open | Web dashboard; shares `NivelPeso` color-band logic the mobile `ImcGauge` (mobile #21) mirrors. Not a `/rest/mobile/**` endpoint. |
+| 106 | `[Dashboard]` IMC gauge with color bands (anthropometric tablero) | https://github.com/diego-torres/nutriconsultas/issues/106 | **done** | Web dashboard; shares `NivelPeso` color-band logic the mobile `ImcGauge` (mobile #21) mirrors. Not a `/rest/mobile/**` endpoint. |
 
 ---
 
@@ -142,10 +142,11 @@ Each mobile feature consumes these backend endpoints. Two-way linking with the m
 - i18n: `Accept-Language` (es-MX default) error bodies (#111).
 - PHI-safe logging (`LogRedaction`, #115); no names/emails/DOB at INFO.
 
-**E2E HTTP codes (2026-06-13):**
+**E2E HTTP codes (2026-06-14):**
 - **401** — missing/invalid JWT or wrong `aud` (check mobile `AUTH0_AUDIENCE` = `https://api.nutriconsultas.minutriporcion.com`).
-- **403** `patient_not_linked` — JWT valid, no `Paciente.patientAuthSub` match (#109 linkage required).
-- **404** — linkage OK but endpoint not implemented yet (#91+).
+- **403** — JWT valid, no `Paciente.patientAuthSub` match (#109 linkage required). Localized `ApiResponse` with `error.patient.not.linked` (#111).
+- **404** — linkage OK but resource not found (localized `error.resource.not.found`).
+- **400** — validation failure (e.g. blank message body → `error.message.required`).
 - **429** — patient write rate limit exceeded (#113); `Retry-After: 60`; localized `error.rate.limit.exceeded`.
 
 ---
