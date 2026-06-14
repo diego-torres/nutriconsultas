@@ -277,9 +277,20 @@ public class PacienteController extends AbstractAuthorizedController {
 		pacienteEntity.setGender(paciente.getGender());
 		pacienteEntity.setResponsibleName(paciente.getResponsibleName());
 		pacienteEntity.setParentesco(paciente.getParentesco());
+		if (paciente.getActivityFactorScale() != null) {
+			pacienteEntity.setActivityFactorScale(paciente.getActivityFactorScale());
+		}
+		if (paciente.getPreferredBmrFormula() != null) {
+			pacienteEntity.setPreferredBmrFormula(paciente.getPreferredBmrFormula());
+		}
+		pacienteEntity.setCustomFactorSedentary(paciente.getCustomFactorSedentary());
+		pacienteEntity.setCustomFactorLight(paciente.getCustomFactorLight());
+		pacienteEntity.setCustomFactorModerate(paciente.getCustomFactorModerate());
+		pacienteEntity.setCustomFactorIntense(paciente.getCustomFactorIntense());
+		pacienteEntity.setCustomFactorVeryIntense(paciente.getCustomFactorVeryIntense());
 
 		pacienteRepository.save(pacienteEntity);
-		return String.format("redirect:/admin/pacientes/%d", id);
+		return String.format("redirect:/admin/pacientes/%d/afiliacion", id);
 	}
 
 	@GetMapping(path = "/admin/pacientes/{id}/antecedentes")

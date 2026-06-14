@@ -39,7 +39,9 @@ import com.nutriconsultas.clinical.exam.ClinicalExamService;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.anthropometric.BodyMass;
 import com.nutriconsultas.clinical.exam.anthropometric.Circumferences;
+import com.nutriconsultas.paciente.calculation.ActivityFactorScale;
 import com.nutriconsultas.paciente.calculation.BmrCalculationService;
+import com.nutriconsultas.paciente.calculation.BmrFormulaType;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -1941,6 +1943,33 @@ public class PacienteControllerTest {
 		assertThat(result).isEqualTo("redirect:/admin/pacientes/6");
 		verify(pacienteRepository).save(any(Paciente.class));
 		log.info("finished testCambiaDesarrolloPacienteAcceptsPregnancyForFemaleAge50");
+	}
+
+	@Test
+	public void testCambiaAfiliacionPacientePersistsEnergyPreferences() {
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteRepository.save(any(Paciente.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		lenient().when(bindingResult.hasErrors()).thenReturn(false);
+
+		final Paciente formPaciente = new Paciente();
+		formPaciente.setName("Juan Perez");
+		formPaciente.setDob(paciente.getDob());
+		formPaciente.setEmail("juan@example.com");
+		formPaciente.setGender("M");
+		formPaciente.setActivityFactorScale(ActivityFactorScale.FAO_WHO);
+		formPaciente.setPreferredBmrFormula(BmrFormulaType.MIFFLIN_ST_JEOR);
+		formPaciente.setCustomFactorModerate(2.05);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+		final String result = controller.cambiaAfiliacionPaciente(1L, formPaciente, bindingResult, model, principal);
+
+		assertThat(result).isEqualTo("redirect:/admin/pacientes/1/afiliacion");
+		final ArgumentCaptor<Paciente> captor = ArgumentCaptor.forClass(Paciente.class);
+		verify(pacienteRepository).save(captor.capture());
+		final Paciente saved = captor.getValue();
+		assertThat(saved.getActivityFactorScale()).isEqualTo(ActivityFactorScale.FAO_WHO);
+		assertThat(saved.getPreferredBmrFormula()).isEqualTo(BmrFormulaType.MIFFLIN_ST_JEOR);
+		assertThat(saved.getCustomFactorModerate()).isEqualTo(2.05);
 	}
 
 	private void assertPacienteBmrMatchesPromedio(final double peso, final double estatura) {
