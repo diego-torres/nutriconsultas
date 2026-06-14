@@ -356,6 +356,9 @@ public class PacienteController extends AbstractAuthorizedController {
 		model.addAttribute("activeMenu", "desarrollo");
 		model.addAttribute("paciente", paciente);
 		model.addAttribute("isEligibleForPregnancy", isEligibleForPregnancy(paciente));
+		model.addAttribute("suggestedStressTypes",
+				com.nutriconsultas.paciente.calculation.PhysiologicalStressCatalog
+					.suggestFromPathologies(paciente));
 		return "sbadmin/pacientes/desarrollo";
 	}
 
@@ -394,6 +397,20 @@ public class PacienteController extends AbstractAuthorizedController {
 			}
 		}
 		pacienteEntity.setPregnancy(paciente.getPregnancy() != null ? paciente.getPregnancy() : false);
+
+		pacienteEntity.setPhysiologicalStressActive(
+				paciente.getPhysiologicalStressActive() != null ? paciente.getPhysiologicalStressActive() : false);
+		pacienteEntity.setPhysiologicalStressType(paciente.getPhysiologicalStressType());
+		if (paciente.getStressFormulaTable() != null) {
+			pacienteEntity.setStressFormulaTable(paciente.getStressFormulaTable());
+		}
+		if (paciente.getStressIncrementMode() != null) {
+			pacienteEntity.setStressIncrementMode(paciente.getStressIncrementMode());
+		}
+		pacienteEntity.setStressFactorValue(paciente.getStressFactorValue());
+		pacienteEntity.setStressValidFrom(paciente.getStressValidFrom());
+		pacienteEntity.setStressValidUntil(paciente.getStressValidUntil());
+		pacienteEntity.setStressFeverTemperature(paciente.getStressFeverTemperature());
 
 		pacienteRepository.save(pacienteEntity);
 		return String.format("redirect:/admin/pacientes/%d", id);
@@ -487,7 +504,20 @@ public class PacienteController extends AbstractAuthorizedController {
 		evento.setTitle("Consulta");
 		evento.setDurationMinutes(60);
 		evento.setStatus(EventStatus.SCHEDULED);
+		if (Boolean.TRUE.equals(paciente.getPhysiologicalStressActive())) {
+			evento.setPhysiologicalStressActive(true);
+			evento.setPhysiologicalStressType(paciente.getPhysiologicalStressType());
+			evento.setStressFormulaTable(paciente.getStressFormulaTable());
+			evento.setStressIncrementMode(paciente.getStressIncrementMode());
+			evento.setStressFactorValue(paciente.getStressFactorValue());
+			evento.setStressValidFrom(paciente.getStressValidFrom());
+			evento.setStressValidUntil(paciente.getStressValidUntil());
+			evento.setStressFeverTemperature(paciente.getStressFeverTemperature());
+		}
 		model.addAttribute("consulta", evento);
+		model.addAttribute("suggestedStressTypes",
+				com.nutriconsultas.paciente.calculation.PhysiologicalStressCatalog
+					.suggestFromPathologies(paciente));
 		return "sbadmin/pacientes/consulta";
 	}
 
@@ -513,7 +543,18 @@ public class PacienteController extends AbstractAuthorizedController {
 		setEventDefaultValues(evento);
 
 		log.debug("Evento lista para grabar {}", LogRedaction.redactCalendarEvent(evento));
-		calendarEventService.save(evento);
+		final CalendarEvent savedEvent = calendarEventService.save(evento);
+		if (Boolean.TRUE.equals(savedEvent.getPhysiologicalStressActive())) {
+			paciente.setPhysiologicalStressActive(savedEvent.getPhysiologicalStressActive());
+			paciente.setPhysiologicalStressType(savedEvent.getPhysiologicalStressType());
+			paciente.setStressFormulaTable(savedEvent.getStressFormulaTable());
+			paciente.setStressIncrementMode(savedEvent.getStressIncrementMode());
+			paciente.setStressFactorValue(savedEvent.getStressFactorValue());
+			paciente.setStressValidFrom(savedEvent.getStressValidFrom());
+			paciente.setStressValidUntil(savedEvent.getStressValidUntil());
+			paciente.setStressFeverTemperature(savedEvent.getStressFeverTemperature());
+			pacienteRepository.save(paciente);
+		}
 		return String.format("redirect:/admin/pacientes/%d/historial", pacienteId);
 	}
 

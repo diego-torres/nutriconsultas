@@ -21,6 +21,9 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 import com.nutriconsultas.paciente.calculation.ActivityFactorScale;
 import com.nutriconsultas.paciente.calculation.BmrFormulaType;
 import com.nutriconsultas.paciente.calculation.PhysicalActivityLevel;
+import com.nutriconsultas.paciente.calculation.PhysiologicalStressType;
+import com.nutriconsultas.paciente.calculation.StressFormulaTable;
+import com.nutriconsultas.paciente.calculation.StressIncrementMode;
 import com.nutriconsultas.paciente.calculation.TefBase;
 import com.nutriconsultas.paciente.calculation.TefCalculationService;
 import com.nutriconsultas.paciente.calculation.TefMethod;
@@ -112,6 +115,46 @@ public class Paciente {
 	 */
 	@Column(precision = 7)
 	private Double totalAdjustedKcal;
+
+	/**
+	 * Additional energy from physiological stress in kcal/day.
+	 */
+	@Column(precision = 7)
+	private Double stressKcal;
+
+	/**
+	 * Final daily energy requirement (GET + TEF + stress) in kcal/day.
+	 */
+	@Column(precision = 7)
+	private Double finalTotalKcal;
+
+	private Boolean physiologicalStressActive = false;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 40)
+	private PhysiologicalStressType physiologicalStressType;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private StressFormulaTable stressFormulaTable = StressFormulaTable.LONG;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private StressIncrementMode stressIncrementMode = StressIncrementMode.MULTIPLIER_BMR;
+
+	@Column(precision = 5)
+	private Double stressFactorValue;
+
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@Temporal(TemporalType.DATE)
+	private Date stressValidFrom;
+
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@Temporal(TemporalType.DATE)
+	private Date stressValidUntil;
+
+	@Column(precision = 4)
+	private Double stressFeverTemperature;
 
 	@Enumerated(EnumType.STRING)
 	@Column(length = 30)

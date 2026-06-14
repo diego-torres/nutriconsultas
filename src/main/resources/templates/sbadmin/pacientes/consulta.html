@@ -108,6 +108,7 @@
                         <input type="number" step="0.1" th:field="*{temperatura}" class="form-control">
                         <span th:if="${#fields.hasErrors('temperatura')}" th:errors="*{temperatura}"></span>
                       </div>
+                      <div th:insert="~{sbadmin/pacientes/stress-section :: stressPatientSection}"></div>
                       <div class="form-group">
                         <label>Notas</label>
                         <textarea class="form-control" rows="3" th:field="*{summaryNotes}"></textarea>

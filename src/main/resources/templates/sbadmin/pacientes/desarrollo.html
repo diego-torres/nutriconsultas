@@ -116,6 +116,7 @@
                         <input class="form-check-input" type="checkbox" th:field="*{pregnancy}">
                         <label class="form-check-label" for="pregnancy">Embarazada</label>
                       </div>
+                      <div th:insert="~{sbadmin/pacientes/stress-section :: stressPatientSection}"></div>
                       <div style="height: 30px;"></div>
                       <button type="submit" class="btn btn-success ">Listo!</button>
                     </form>

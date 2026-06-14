@@ -19,6 +19,12 @@
     const patientTefMacroProtein = [[${paciente != null && paciente.tefMacroProteinPercent != null ? paciente.tefMacroProteinPercent : 'null'}]];
     const patientTefMacroCarbs = [[${paciente != null && paciente.tefMacroCarbsPercent != null ? paciente.tefMacroCarbsPercent : 'null'}]];
     const patientTefMacroFat = [[${paciente != null && paciente.tefMacroFatPercent != null ? paciente.tefMacroFatPercent : 'null'}]];
+    const patientStressActive = [[${paciente != null && paciente.physiologicalStressActive != null ? paciente.physiologicalStressActive : false}]];
+    const patientStressType = '[[${paciente != null && paciente.physiologicalStressType != null ? paciente.physiologicalStressType.name() : ""}]]';
+    const patientStressFormula = '[[${paciente != null && paciente.stressFormulaTable != null ? paciente.stressFormulaTable.name() : "LONG"}]]';
+    const patientStressIncrementMode = '[[${paciente != null && paciente.stressIncrementMode != null ? paciente.stressIncrementMode.name() : "MULTIPLIER_BMR"}]]';
+    const patientStressFactorValue = [[${paciente != null && paciente.stressFactorValue != null ? paciente.stressFactorValue : 'null'}]];
+    const patientStressFeverTemperature = [[${paciente != null && paciente.stressFeverTemperature != null ? paciente.stressFeverTemperature : 'null'}]];
     const calculationEnableSync = [[${enableSync}]];
 
     function getCalcSubTabPanes(tabContent) {
@@ -194,6 +200,68 @@
       OMS: { SEDENTARY: 1.40, LIGHT: 1.60, MODERATE: 1.80, INTENSE: 2.00, VERY_INTENSE: 2.20 }
     };
 
+    const STRESS_LONG_FACTORS = {
+      MINOR_SURGERY: 1.10, MAJOR_SURGERY: 1.20, MODERATE_INFECTION: 1.20, SEVERE_INFECTION: 1.40,
+      SEPSIS: 1.50, TRAUMA: 1.35, BURNS: 1.50, CANCER: 1.25, FRACTURE: 1.20, POST_OPERATIVE: 1.15,
+      MULTIPLE_TRAUMA: 1.50, HEAD_INJURY: 1.40, ORGAN_FAILURE: 1.50, PREGNANCY_COMPLICATION: 1.20,
+      COPD_EXACERBATION: 1.20
+    };
+
+    const STRESS_ASPEN_FACTORS = {
+      MINOR_SURGERY: 1.10, MAJOR_SURGERY: 1.25, MODERATE_INFECTION: 1.30, SEVERE_INFECTION: 1.55,
+      SEPSIS: 1.60, TRAUMA: 1.40, BURNS: 1.80, CANCER: 1.30, FRACTURE: 1.20, POST_OPERATIVE: 1.15,
+      MULTIPLE_TRAUMA: 1.60, HEAD_INJURY: 1.45, ORGAN_FAILURE: 1.55, PREGNANCY_COMPLICATION: 1.25,
+      COPD_EXACERBATION: 1.25
+    };
+
+    function resolveStressCatalogFactor(formula, stressType) {
+      if (!stressType) return null;
+      if (formula === 'ASPEN') return STRESS_ASPEN_FACTORS[stressType] || null;
+      return STRESS_LONG_FACTORS[stressType] || null;
+    }
+
+    function readStressCalculationInputs() {
+      const activeEl = document.getElementById('calcPhysiologicalStressActive');
+      const active = activeEl ? activeEl.checked : patientStressActive;
+      const typeEl = document.getElementById('calcStressType');
+      const formulaEl = document.getElementById('calcStressFormula');
+      const modeEl = document.getElementById('calcStressIncrementMode');
+      const factorEl = document.getElementById('calcStressFactorValue');
+      const feverEl = document.getElementById('calcStressFeverTemperature');
+      return {
+        active: active,
+        stressType: (typeEl && typeEl.value) ? typeEl.value : patientStressType,
+        formula: (formulaEl && formulaEl.value) ? formulaEl.value : patientStressFormula,
+        incrementMode: (modeEl && modeEl.value) ? modeEl.value : patientStressIncrementMode,
+        factorValue: factorEl && factorEl.value ? parseFloat(factorEl.value) : patientStressFactorValue,
+        feverTemperature: feverEl && feverEl.value ? parseFloat(feverEl.value) : patientStressFeverTemperature
+      };
+    }
+
+    function calculateStressKcal(bmr, getValue, stressConfig) {
+      if (!stressConfig.active || !stressConfig.stressType || stressConfig.stressType === 'NONE') {
+        return null;
+      }
+      const formula = stressConfig.formula || 'LONG';
+      const mode = stressConfig.incrementMode || 'MULTIPLIER_BMR';
+      if (formula === 'FEVER_PER_DEGREE' && stressConfig.stressType === 'FEVER') {
+        const temp = stressConfig.feverTemperature;
+        if (!bmr || !temp || temp <= 37) return null;
+        return bmr * 0.13 * (temp - 37);
+      }
+      if (mode === 'FIXED_KCAL') {
+        return stressConfig.factorValue > 0 ? stressConfig.factorValue : null;
+      }
+      const multiplier = stressConfig.factorValue > 0
+        ? stressConfig.factorValue
+        : resolveStressCatalogFactor(formula, stressConfig.stressType);
+      if (!multiplier || multiplier <= 1) return null;
+      if (mode === 'MULTIPLIER_GET') {
+        return getValue ? getValue * (multiplier - 1) : null;
+      }
+      return bmr ? bmr * (multiplier - 1) : null;
+    }
+
     function resolveActivityFactor(scale, level, customFactorValue) {
       if (!level) return null;
       if (level === 'CUSTOM') {
@@ -272,6 +340,8 @@
       const activityKcal = bmr && getValue ? getValue - bmr : null;
       const tefValue = calculateTef(bmr, getValue);
       const totalValue = getValue != null ? getValue + (tefValue || 0) : null;
+      const stressValue = calculateStressKcal(bmr, getValue, readStressCalculationInputs());
+      const finalValue = totalValue != null ? totalValue + (stressValue || 0) : null;
 
       const bmrResult = document.getElementById('get-bmr-used-result');
       const activityResult = document.getElementById('get-activity-kcal-result');
@@ -279,10 +349,14 @@
       const getResult = document.getElementById('get-result');
       const tefResult = document.getElementById('get-tef-result');
       const totalResult = document.getElementById('get-total-result');
+      const stressResult = document.getElementById('get-stress-result');
+      const finalResult = document.getElementById('get-final-result');
       const bmrHidden = document.getElementById('get-bmr-used-hidden');
       const getHidden = document.getElementById('get-kcal-hidden');
       const tefHidden = document.getElementById('get-tef-hidden');
       const totalHidden = document.getElementById('get-total-hidden');
+      const stressHidden = document.getElementById('get-stress-hidden');
+      const finalHidden = document.getElementById('get-final-hidden');
 
       if (bmrResult) bmrResult.textContent = formatEnergyKcal(bmr);
       if (activityResult) activityResult.textContent = formatEnergyKcal(activityKcal);
@@ -290,10 +364,22 @@
       if (getResult) getResult.textContent = formatEnergyKcal(getValue);
       if (tefResult) tefResult.textContent = formatEnergyKcal(tefValue);
       if (totalResult) totalResult.textContent = formatEnergyKcal(totalValue);
+      if (stressResult) stressResult.textContent = formatEnergyKcal(stressValue);
+      if (finalResult) finalResult.textContent = formatEnergyKcal(finalValue);
       if (bmrHidden && bmr) bmrHidden.value = bmr.toFixed(2);
       if (getHidden && getValue) getHidden.value = getValue.toFixed(2);
       if (tefHidden && tefValue) tefHidden.value = tefValue.toFixed(2);
       if (totalHidden && totalValue) totalHidden.value = totalValue.toFixed(2);
+      if (stressHidden && stressValue) stressHidden.value = stressValue.toFixed(2);
+      if (finalHidden && finalValue) finalHidden.value = finalValue.toFixed(2);
+    }
+
+    function toggleStressCalculationFields() {
+      const activeEl = document.getElementById('calcPhysiologicalStressActive');
+      const fields = document.getElementById('stressCalculationFields');
+      if (activeEl && fields) {
+        fields.style.display = activeEl.checked ? '' : 'none';
+      }
     }
 
     // Ideal Weight Calculation Functions
@@ -789,6 +875,15 @@
       safeAddEventListener('get-bmr-formula', 'change', updateGetCalculations);
       safeAddEventListener('get-activity-level', 'change', updateGetCalculations);
       safeAddEventListener('get-custom-factor', 'input', updateGetCalculations);
+      safeAddEventListener('calcPhysiologicalStressActive', 'change', function() {
+        toggleStressCalculationFields();
+        updateGetCalculations();
+      });
+      safeAddEventListener('calcStressType', 'change', updateGetCalculations);
+      safeAddEventListener('calcStressFormula', 'change', updateGetCalculations);
+      safeAddEventListener('calcStressIncrementMode', 'change', updateGetCalculations);
+      safeAddEventListener('calcStressFactorValue', 'input', updateGetCalculations);
+      safeAddEventListener('calcStressFeverTemperature', 'input', updateGetCalculations);
 
       // Ideal Weight inputs
       safeAddEventListener('ideal-weight-height-rob', 'input', updateIdealWeightCalculations);
@@ -848,6 +943,7 @@
       updateIdealWeightCalculations();
       updateTotalBodyWaterCalculations();
       updateBodyCompositionCalculations();
+      toggleStressCalculationFields();
       updateGetCalculations();
     });
 
