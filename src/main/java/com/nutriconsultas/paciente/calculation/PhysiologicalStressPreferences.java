@@ -23,7 +23,7 @@ public final class PhysiologicalStressPreferences {
 		if (paciente == null) {
 			return StressContext.inactive();
 		}
-		return StressContext.of(paciente.getPhysiologicalStressActive(), paciente.getPhysiologicalStressType(),
+		return StressContext.fromValues(paciente.getPhysiologicalStressActive(), paciente.getPhysiologicalStressType(),
 				paciente.getStressFormulaTable(), paciente.getStressIncrementMode(), paciente.getStressFactorValue(),
 				paciente.getStressValidFrom(), paciente.getStressValidUntil(), paciente.getStressFeverTemperature());
 	}
@@ -32,7 +32,7 @@ public final class PhysiologicalStressPreferences {
 		if (event == null) {
 			return StressContext.inactive();
 		}
-		return StressContext.of(event.getPhysiologicalStressActive(), event.getPhysiologicalStressType(),
+		return StressContext.fromValues(event.getPhysiologicalStressActive(), event.getPhysiologicalStressType(),
 				event.getStressFormulaTable(), event.getStressIncrementMode(), event.getStressFactorValue(),
 				event.getStressValidFrom(), event.getStressValidUntil(), event.getStressFeverTemperature());
 	}
@@ -41,7 +41,8 @@ public final class PhysiologicalStressPreferences {
 		if (measurement == null) {
 			return StressContext.inactive();
 		}
-		return StressContext.of(measurement.getPhysiologicalStressActive(), measurement.getPhysiologicalStressType(),
+		return StressContext.fromValues(measurement.getPhysiologicalStressActive(),
+				measurement.getPhysiologicalStressType(),
 				measurement.getStressFormulaTable(), measurement.getStressIncrementMode(),
 				measurement.getStressFactorValue(), measurement.getStressValidFrom(),
 				measurement.getStressValidUntil(), measurement.getStressFeverTemperature());
@@ -85,10 +86,7 @@ public final class PhysiologicalStressPreferences {
 		if (validFrom != null && referenceDate.isBefore(validFrom)) {
 			return false;
 		}
-		if (validUntil != null && referenceDate.isAfter(validUntil)) {
-			return false;
-		}
-		return true;
+		return validUntil == null || !referenceDate.isAfter(validUntil);
 	}
 
 	private static LocalDate toLocalDate(final Date date) {

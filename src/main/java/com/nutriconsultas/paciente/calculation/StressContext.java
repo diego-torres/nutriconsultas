@@ -15,7 +15,7 @@ public record StressContext(Boolean active, PhysiologicalStressType stressType, 
 		return new StressContext(false, null, null, null, null, null, null, null);
 	}
 
-	public static StressContext of(final Boolean active, @Nullable final PhysiologicalStressType stressType,
+	public static StressContext fromValues(final Boolean active, @Nullable final PhysiologicalStressType stressType,
 			@Nullable final StressFormulaTable formulaTable, @Nullable final StressIncrementMode incrementMode,
 			@Nullable final Double factorValue, @Nullable final Date validFrom, @Nullable final Date validUntil,
 			@Nullable final Double feverTemperature) {

@@ -8,7 +8,7 @@ class PhysiologicalStressCalculationServiceTest {
 
 	@Test
 	void calculateLongMultiplierStressOnBmr() {
-		final StressContext context = StressContext.of(true, PhysiologicalStressType.MAJOR_SURGERY,
+		final StressContext context = StressContext.fromValues(true, PhysiologicalStressType.MAJOR_SURGERY,
 				StressFormulaTable.LONG, StressIncrementMode.MULTIPLIER_BMR, null, null, null, null);
 		final Double stressKcal = PhysiologicalStressCalculationService.calculateStressKcal(context, 1500.0, 2000.0,
 				null);
@@ -17,7 +17,7 @@ class PhysiologicalStressCalculationServiceTest {
 
 	@Test
 	void calculateAspenMultiplierStressOnGet() {
-		final StressContext context = StressContext.of(true, PhysiologicalStressType.TRAUMA, StressFormulaTable.ASPEN,
+		final StressContext context = StressContext.fromValues(true, PhysiologicalStressType.TRAUMA, StressFormulaTable.ASPEN,
 				StressIncrementMode.MULTIPLIER_GET, null, null, null, null);
 		final Double stressKcal = PhysiologicalStressCalculationService.calculateStressKcal(context, 1500.0, 2000.0,
 				null);
@@ -26,7 +26,7 @@ class PhysiologicalStressCalculationServiceTest {
 
 	@Test
 	void calculateFixedKcalStress() {
-		final StressContext context = StressContext.of(true, PhysiologicalStressType.OTHER, StressFormulaTable.CUSTOM,
+		final StressContext context = StressContext.fromValues(true, PhysiologicalStressType.OTHER, StressFormulaTable.CUSTOM,
 				StressIncrementMode.FIXED_KCAL, 450.0, null, null, null);
 		assertThat(PhysiologicalStressCalculationService.calculateStressKcal(context, 1500.0, 2000.0, null))
 			.isEqualTo(450.0);
@@ -34,7 +34,7 @@ class PhysiologicalStressCalculationServiceTest {
 
 	@Test
 	void calculateFeverPerDegreeStress() {
-		final StressContext context = StressContext.of(true, PhysiologicalStressType.FEVER,
+		final StressContext context = StressContext.fromValues(true, PhysiologicalStressType.FEVER,
 				StressFormulaTable.FEVER_PER_DEGREE, StressIncrementMode.MULTIPLIER_BMR, null, null, null, 39.0);
 		final Double stressKcal = PhysiologicalStressCalculationService.calculateStressKcal(context, 1500.0, 2000.0,
 				null);
@@ -43,7 +43,7 @@ class PhysiologicalStressCalculationServiceTest {
 
 	@Test
 	void calculateStressUsesCustomFactorOverride() {
-		final StressContext context = StressContext.of(true, PhysiologicalStressType.OTHER, StressFormulaTable.LONG,
+		final StressContext context = StressContext.fromValues(true, PhysiologicalStressType.OTHER, StressFormulaTable.LONG,
 				StressIncrementMode.MULTIPLIER_BMR, 1.50, null, null, null);
 		assertThat(PhysiologicalStressCalculationService.calculateStressKcal(context, 1000.0, 1500.0, null))
 			.isEqualTo(500.0);
@@ -56,7 +56,7 @@ class PhysiologicalStressCalculationServiceTest {
 
 	@Test
 	void inactiveStressReturnsNull() {
-		final StressContext context = StressContext.of(false, PhysiologicalStressType.FEVER, StressFormulaTable.LONG,
+		final StressContext context = StressContext.fromValues(false, PhysiologicalStressType.FEVER, StressFormulaTable.LONG,
 				StressIncrementMode.MULTIPLIER_BMR, null, null, null, null);
 		assertThat(PhysiologicalStressCalculationService.calculateStressKcal(context, 1500.0, 2000.0, null)).isNull();
 	}
