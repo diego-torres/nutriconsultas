@@ -2,6 +2,7 @@ package com.nutriconsultas.mobile;
 
 import static com.nutriconsultas.mobile.MobileIntegrationTestJwt.mobileJwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -12,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -45,21 +48,17 @@ class MobilePatientMessageIntegrationTest {
 			final Paciente paciente = samplePaciente(LINKED_SUB);
 			return pacienteRepository.saveAndFlush(paciente);
 		});
-		patientMessageRepository
-			.findThreadForPatient(linkedPaciente.getId(), null, org.springframework.data.domain.PageRequest.of(0, 1))
-			.stream()
-			.findFirst()
-			.orElseGet(() -> {
-				final PatientMessage message = new PatientMessage();
-				message.setPaciente(linkedPaciente);
-				message.setNutritionistUserId(linkedPaciente.getUserId());
-				message.setSenderRole(MessageSenderRole.NUTRITIONIST);
-				message.setBody("Bienvenido a tu consultorio digital");
-				message.setSentAt(Instant.parse("2026-06-01T10:00:00Z"));
-				message.setReadByPatient(false);
-				message.setReadByNutritionist(true);
-				return patientMessageRepository.saveAndFlush(message);
-			});
+		patientMessageRepository.findThreadForPatient(linkedPaciente.getId(), null, PageRequest.of(0, 500))
+			.forEach(patientMessageRepository::delete);
+		final PatientMessage message = new PatientMessage();
+		message.setPaciente(linkedPaciente);
+		message.setNutritionistUserId(linkedPaciente.getUserId());
+		message.setSenderRole(MessageSenderRole.NUTRITIONIST);
+		message.setBody("Bienvenido a tu consultorio digital");
+		message.setSentAt(Instant.parse("2026-06-01T10:00:00Z"));
+		message.setReadByPatient(false);
+		message.setReadByNutritionist(true);
+		patientMessageRepository.saveAndFlush(message);
 	}
 
 	@Test
@@ -76,6 +75,37 @@ class MobilePatientMessageIntegrationTest {
 	@Test
 	void listMessagesForUnlinkedJwtReturnsForbidden() throws Exception {
 		mockMvc.perform(get("/rest/mobile/patient/messages").with(mobileJwt("auth0|mobile-message-unlinked")))
+			.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void sendMessageWithLinkedJwtPersistsPatientMessage() throws Exception {
+		mockMvc
+			.perform(post("/rest/mobile/patient/messages").with(mobileJwt(LINKED_SUB))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"body\":\"Tengo una duda sobre mi dieta\"}"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.senderRole").value("PATIENT"))
+			.andExpect(jsonPath("$.data.body").value("Tengo una duda sobre mi dieta"))
+			.andExpect(jsonPath("$.data.read").value(true))
+			.andExpect(jsonPath("$.timestamp").exists());
+	}
+
+	@Test
+	void sendMessageWithBlankBodyReturnsBadRequest() throws Exception {
+		mockMvc
+			.perform(post("/rest/mobile/patient/messages").with(mobileJwt(LINKED_SUB))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"body\":\"   \"}"))
+			.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void sendMessageForUnlinkedJwtReturnsForbidden() throws Exception {
+		mockMvc
+			.perform(post("/rest/mobile/patient/messages").with(mobileJwt("auth0|mobile-message-unlinked"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"body\":\"Hola\"}"))
 			.andExpect(status().isForbidden());
 	}
 

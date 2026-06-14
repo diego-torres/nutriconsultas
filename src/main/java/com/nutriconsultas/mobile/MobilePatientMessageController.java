@@ -3,6 +3,8 @@ package com.nutriconsultas.mobile;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,9 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.CursorPagedResponse;
 import com.nutriconsultas.mobile.dto.PatientMessageSummaryDto;
+import com.nutriconsultas.mobile.dto.SendPatientMessageRequest;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.util.LogRedaction;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -39,6 +43,17 @@ public class MobilePatientMessageController extends AbstractMobilePatientControl
 		final CursorPagedResponse<PatientMessageSummaryDto> messages = mobilePatientMessageService
 			.listMessages(paciente.getId(), cursor, size);
 		return ApiResponse.ok(messages);
+	}
+
+	@PostMapping
+	public ApiResponse<PatientMessageSummaryDto> sendMessage(@AuthenticationPrincipal final Jwt jwt,
+			@Valid @RequestBody final SendPatientMessageRequest request) {
+		final Paciente paciente = getAuthenticatedPaciente(jwt);
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile send message request for patient {}", LogRedaction.redactPaciente(paciente.getId()));
+		}
+		final PatientMessageSummaryDto sent = mobilePatientMessageService.sendMessage(paciente, request.body());
+		return ApiResponse.ok(sent);
 	}
 
 }

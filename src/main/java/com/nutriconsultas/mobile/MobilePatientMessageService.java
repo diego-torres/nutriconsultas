@@ -7,10 +7,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.nutriconsultas.message.MessageSenderRole;
 import com.nutriconsultas.message.PatientMessage;
 import com.nutriconsultas.message.PatientMessageRepository;
 import com.nutriconsultas.mobile.dto.CursorPagedResponse;
 import com.nutriconsultas.mobile.dto.PatientMessageSummaryDto;
+import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.util.LogRedaction;
 
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +49,18 @@ public class MobilePatientMessageService {
 					LogRedaction.redactPaciente(pacienteId));
 		}
 		return CursorPagedResponse.of(summaries, nextCursor);
+	}
+
+	@Transactional
+	public PatientMessageSummaryDto sendMessage(final Paciente paciente, final String body) {
+		final PatientMessage message = new PatientMessage();
+		message.setPaciente(paciente);
+		message.setNutritionistUserId(paciente.getUserId());
+		message.setSenderRole(MessageSenderRole.PATIENT);
+		message.setBody(body.trim());
+		final PatientMessage saved = patientMessageRepository.save(message);
+		log.info("Patient sent message: {}", LogRedaction.redactPatientMessage(saved.getId()));
+		return PatientMessageSummaryDto.fromEntity(saved);
 	}
 
 	private Long parseCursor(final String cursor) {
