@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-14 — **#98 in progress** on branch `mobile-api/98-patient-progress-snapshot`. **#97 done** on `main`.
+**Last updated:** 2026-06-14 — **#98 done** (PR #148). **#97 done** on `main`.
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116) plus the directly-related `[Dashboard]` IMC gauge (#106). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -105,7 +105,7 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 
 | # | Endpoint | URL | State | Backend source |
 |---|----------|-----|-------|----------------|
-| 98 | `GET /rest/mobile/patient/progress` — BMI/indicator snapshot | https://github.com/diego-torres/nutriconsultas/issues/98 | **in-progress** | Aggregate in service; `deltaPeso`/`deltaImc` vs prior measurement; `NivelPeso`→`imcLabel`; BMI/BMR on `Paciente` |
+| 98 | `GET /rest/mobile/patient/progress` — BMI/indicator snapshot | https://github.com/diego-torres/nutriconsultas/issues/98 | **done** | PR #148: `deltaPeso`/`deltaImc`, `imcLabel`, BMR, optional circumferences |
 | 99 | `GET /rest/mobile/patient/progress/measurements` — time series | https://github.com/diego-torres/nutriconsultas/issues/99 | open | `from`/`to` ISO-8601; cap `maxRows=365`; ASC order; prefer `porcentajeGrasaCorporal` |
 
 ---
