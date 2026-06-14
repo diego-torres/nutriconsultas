@@ -177,6 +177,12 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 		if (event.getPaciente() != null) {
 			extendedProps.put("paciente", event.getPaciente().getName());
 			extendedProps.put("pacienteId", event.getPaciente().getId());
+			if (event.getPaciente().getActivityFactorScale() != null) {
+				extendedProps.put("patientActivityFactorScale", event.getPaciente().getActivityFactorScale().name());
+			}
+			if (event.getPaciente().getPreferredBmrFormula() != null) {
+				extendedProps.put("patientPreferredBmrFormula", event.getPaciente().getPreferredBmrFormula().name());
+			}
 		}
 		if (event.getStatus() != null) {
 			extendedProps.put("status", event.getStatus().name());
