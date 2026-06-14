@@ -38,11 +38,12 @@ public class Auth0UserLookupImpl implements Auth0UserLookup {
 	public Auth0UserLookupImpl(final RestClient.Builder restClientBuilder,
 			@Value("${app.auth0.management.client-id}") final String clientId,
 			@Value("${app.auth0.management.client-secret}") final String clientSecret,
-			@Value("${app.auth0.management.domain}") final String domain) {
+			@Value("${app.auth0.management.domain}") final String domain,
+			@Value("${AUTH_ISSUER:}") final String authIssuer) {
 		this.restClient = restClientBuilder.build();
 		this.clientId = clientId;
 		this.clientSecret = clientSecret;
-		this.domain = normalizeDomain(domain);
+		this.domain = normalizeDomain(StringUtils.hasText(domain) ? domain : authIssuer);
 	}
 
 	@Override
