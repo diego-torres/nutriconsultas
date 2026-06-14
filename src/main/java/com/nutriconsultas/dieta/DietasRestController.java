@@ -13,6 +13,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,6 +36,14 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 
 	@Autowired
 	private DietaService dietaService;
+
+	@GetMapping("picker")
+	public DietaPickerPageDto getPickerPage(@RequestParam(required = false) final String q,
+			@RequestParam(defaultValue = "0") final int page, @RequestParam(defaultValue = "20") final int size,
+			@RequestParam(required = false) final Double requerimientoKcal) {
+		log.debug("Dieta picker page={}, size={}, q={}", page, size, q);
+		return dietaService.findPickerPage(q, page, size, requerimientoKcal);
+	}
 
 	@PostMapping("add")
 	public Dieta addDieta(@RequestBody final Dieta dieta, @AuthenticationPrincipal final OidcUser principal) {

@@ -284,12 +284,12 @@
       const tefHidden = document.getElementById('get-tef-hidden');
       const totalHidden = document.getElementById('get-total-hidden');
 
-      if (bmrResult) bmrResult.textContent = formatNumber(bmr);
-      if (activityResult) activityResult.textContent = formatNumber(activityKcal);
+      if (bmrResult) bmrResult.textContent = formatEnergyKcal(bmr);
+      if (activityResult) activityResult.textContent = formatEnergyKcal(activityKcal);
       if (factorResult) factorResult.textContent = factor ? factor.toFixed(3) : '-';
-      if (getResult) getResult.textContent = formatNumber(getValue);
-      if (tefResult) tefResult.textContent = formatNumber(tefValue);
-      if (totalResult) totalResult.textContent = formatNumber(totalValue);
+      if (getResult) getResult.textContent = formatEnergyKcal(getValue);
+      if (tefResult) tefResult.textContent = formatEnergyKcal(tefValue);
+      if (totalResult) totalResult.textContent = formatEnergyKcal(totalValue);
       if (bmrHidden && bmr) bmrHidden.value = bmr.toFixed(2);
       if (getHidden && getValue) getHidden.value = getValue.toFixed(2);
       if (tefHidden && tefValue) tefHidden.value = tefValue.toFixed(2);
@@ -389,6 +389,17 @@
         return '-';
       }
       return value.toFixed(2);
+    }
+
+    // Energy values (kcal) with thousands separator — matches Thymeleaf COMMA grouping
+    function formatEnergyKcal(value) {
+      if (value === null || value === undefined || isNaN(value)) {
+        return '-';
+      }
+      return Math.round(value).toLocaleString('es-MX', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      });
     }
 
     // Calculate Nivel de Peso from BMI

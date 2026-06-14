@@ -674,7 +674,6 @@ public class PacienteControllerTest {
 		log.info("starting testAsignarDieta");
 		// Arrange
 		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
-		when(dietaService.getDietas()).thenReturn(new ArrayList<>());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
@@ -684,7 +683,7 @@ public class PacienteControllerTest {
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/asignar-dieta");
 		verify(model).addAttribute("paciente", paciente);
-		verify(model).addAttribute("dietasDisponibles", new ArrayList<>());
+		verify(model).addAttribute("requerimientoKcal", null);
 		verify(model).addAttribute(eq("pacienteDieta"), any(PacienteDieta.class));
 		log.info("finished testAsignarDieta");
 	}
