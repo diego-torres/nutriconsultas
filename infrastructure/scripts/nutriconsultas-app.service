@@ -10,6 +10,8 @@ User=nutri
 Group=nutri
 WorkingDirectory=/opt/nutriconsultas
 EnvironmentFile=-/opt/nutriconsultas/app.env
+TimeoutStartSec=300
+TimeoutStopSec=120
 ExecStart=/usr/bin/java -Dserver.port=3000 -Djava.net.preferIPv4Stack=true -Xms256m -Xmx512m -XX:+UseG1GC -jar /opt/nutriconsultas/app.jar
 Restart=on-failure
 RestartSec=5
