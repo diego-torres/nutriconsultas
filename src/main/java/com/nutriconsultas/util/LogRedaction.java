@@ -216,4 +216,16 @@ public final class LogRedaction {
 		return "NutritionistProfile[id=" + profileId + "]";
 	}
 
+	/**
+	 * Redacts a contact inquiry for logging purposes. Returns only the inquiry ID.
+	 * @param inquiryId the contact inquiry ID
+	 * @return a safe string representation (e.g., "ContactInquiry[id=1]")
+	 */
+	public static String redactContactInquiry(final Long inquiryId) {
+		if (inquiryId == null) {
+			return "ContactInquiry[id=null]";
+		}
+		return "ContactInquiry[id=" + inquiryId + "]";
+	}
+
 }

@@ -1,0 +1,63 @@
+package com.nutriconsultas.mobile;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.oauth2.jwt.Jwt;
+
+import com.nutriconsultas.message.MessageSenderRole;
+import com.nutriconsultas.mobile.dto.ApiResponse;
+import com.nutriconsultas.mobile.dto.CursorPagedResponse;
+import com.nutriconsultas.mobile.dto.PatientMessageSummaryDto;
+import com.nutriconsultas.paciente.Paciente;
+
+@ExtendWith(MockitoExtension.class)
+class MobilePatientMessageControllerTest {
+
+	private static final String PATIENT_SUB = "auth0|mobile-message-patient";
+
+	@InjectMocks
+	private MobilePatientMessageController controller;
+
+	@Mock
+	private PatientAuthService patientAuthService;
+
+	@Mock
+	private MobilePatientMessageService mobilePatientMessageService;
+
+	@Test
+	void listMessages_returnsApiResponseEnvelope() {
+		final Paciente paciente = new Paciente();
+		paciente.setId(5L);
+		final PatientMessageSummaryDto summary = new PatientMessageSummaryDto(1L, Instant.parse("2026-06-01T12:00:00Z"),
+				MessageSenderRole.PATIENT, "Hola", true);
+		final CursorPagedResponse<PatientMessageSummaryDto> page = CursorPagedResponse.of(List.of(summary), null);
+		final Jwt jwt = jwtWithSub(PATIENT_SUB);
+
+		when(patientAuthService.requirePacienteByJwt(jwt)).thenReturn(paciente);
+		when(mobilePatientMessageService.listMessages(eq(5L), eq(null), eq(20))).thenReturn(page);
+
+		final ApiResponse<CursorPagedResponse<PatientMessageSummaryDto>> response = controller.listMessages(jwt, null,
+				20);
+
+		assertThat(response.data().content()).hasSize(1);
+		assertThat(response.data().content().get(0).body()).isEqualTo("Hola");
+		assertThat(response.timestamp()).isNotNull();
+		verify(mobilePatientMessageService).listMessages(5L, null, 20);
+	}
+
+	private static Jwt jwtWithSub(final String subject) {
+		return Jwt.withTokenValue("token").header("alg", "none").subject(subject).build();
+	}
+
+}

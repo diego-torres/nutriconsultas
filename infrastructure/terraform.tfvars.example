@@ -32,6 +32,9 @@ ebs_root_volume_size_gb = 30
 # maps_key               = ""
 # recaptcha_secret_key   = ""
 #
+# Platform admins (OAuth login emails; contact inquiries inbox). Gitignored tfvars only:
+# platform_admin_emails = ["you@example.com", "colleague@example.com"]
+#
 # Security: EC2 user_data is readable via DescribeInstances; Terraform state also holds
 # these values. For production, consider SSM SecureString / Secrets Manager instead.
 

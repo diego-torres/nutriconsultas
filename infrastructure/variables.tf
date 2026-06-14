@@ -125,6 +125,13 @@ variable "recaptcha_secret_key" {
   sensitive   = true
 }
 
+variable "platform_admin_emails" {
+  type        = list(string)
+  description = "OAuth login emails granted platform admin (contact inquiries inbox). Written to app.env as PLATFORM_ADMIN_EMAILS (comma-separated)."
+  default     = []
+  sensitive   = true
+}
+
 # -----------------------------------------------------------------------------
 # HTTPS (Let's Encrypt Certbot on the app EC2; DNS must point apex/aliases to the app EIP first)
 # -----------------------------------------------------------------------------

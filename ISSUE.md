@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-13 — **#95 in-progress** on branch `mobile-api/95-patient-diet-plan-pdf`.
+**Last updated:** 2026-06-14 — **#96 done** (in progress on branch). Contact form persisted; platform admin inbox at `/admin/contact-inquiries`.
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116) plus the directly-related `[Dashboard]` IMC gauge (#106). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -46,7 +46,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 | `done` | Merged to `main` |
 | `deferred` | Intentionally paused — decision pending |
 
-Phase 0 JWT (#107) and DTO wrappers (#110) are **done** on stacked branches. Patient linkage (#109) is **pushed**. Visits (#91–#92) and diet plan list (#93) land on `mobile-api/93-patient-diet-plans`.
+Phase 0 JWT (#107) and DTO wrappers (#110) are **done**. Patient linkage (#109) is **done**. Visits (#91–#92) and diet plans (#93–#95) are **done** on `main`.
 
 ---
 
@@ -92,13 +92,13 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 |---|----------|-----|-------|----------------|
 | **93** | `GET /rest/mobile/patient/diet-plans` — list assigned plans | https://github.com/diego-torres/nutriconsultas/issues/93 | **done** | 110 | Merged PR #142: paged `DietPlanSummaryDto`, `activeOnly` filter, macro aliases per §F8. |
 | **94** | `GET /rest/mobile/patient/diet-plans/{assignmentId}` — structured meal JSON | https://github.com/diego-torres/nutriconsultas/issues/94 | **done** | 93 | Merged PR #143: `DietPlanDetailDto` + ingesta/platillo/alimento tree; `findByIdAndPacienteId` IDOR guard → 404. |
-| **95** | `GET /rest/mobile/patient/diet-plans/{assignmentId}/pdf` — printable PDF | https://github.com/diego-torres/nutriconsultas/issues/95 | **in-progress** | 94 | Branch `mobile-api/95-patient-diet-plan-pdf`: reuses `DietaPdfService.generatePdfForAssignment`, `Content-Disposition`, ownership → 404. |
+| **95** | `GET /rest/mobile/patient/diet-plans/{assignmentId}/pdf` — printable PDF | https://github.com/diego-torres/nutriconsultas/issues/95 | **done** | 94 | Merged PR #144: `DietaPdfService.generatePdfForAssignment`, `Content-Disposition`, ownership → 404. |
 
 ### Messages — **greenfield** (no entity exists)
 
 | # | Endpoint | URL | State | Backend source |
 |---|----------|-----|-------|----------------|
-| 96 | `GET /rest/mobile/patient/messages` — list thread | https://github.com/diego-torres/nutriconsultas/issues/96 | open | NEW entity/repo/service; **cursor** pagination (not offset); never log body; optional `senderDisplayName` (#116) |
+| 96 | `GET /rest/mobile/patient/messages` — list thread | https://github.com/diego-torres/nutriconsultas/issues/96 | **done** (branch) | NEW entity/repo/service; **cursor** pagination; contact form → `ContactInquiry`; admin inbox |
 | 97 | `POST /rest/mobile/patient/messages` — send to nutritionist | https://github.com/diego-torres/nutriconsultas/issues/97 | open | `senderRole=PATIENT` from JWT only; `@Valid @Size(max=2000)`; rate limit via #113 |
 
 ### Progress — `AnthropometricMeasurement` / `Paciente`

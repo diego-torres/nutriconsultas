@@ -1,5 +1,6 @@
 package com.nutriconsultas.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -15,6 +16,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import com.nutriconsultas.contact.ContactInquiryRepository;
+
 import lombok.extern.slf4j.Slf4j;
 
 @SpringBootTest
@@ -25,6 +28,9 @@ public class WebControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
+
+	@Autowired
+	private ContactInquiryRepository contactInquiryRepository;
 
 	@Test
 	public void testIndex() throws Exception {
@@ -42,6 +48,29 @@ public class WebControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("eterna/index"));
 		log.info("Finishing testIndexWithTrailingSlash");
+	}
+
+	@Test
+	public void testContactPage() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/contact"))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.view().name("eterna/contact"));
+	}
+
+	@Test
+	public void testContactFormSuccess() throws Exception {
+		final long before = contactInquiryRepository.count();
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/contact")
+				.contentType(Objects.requireNonNull(MediaType.APPLICATION_FORM_URLENCODED))
+				.param("name", "Test User")
+				.param("email", "test@example.com")
+				.param("subject", "Test Subject")
+				.param("message", "Test message")
+				.param("recaptcha-response", "test-token"))
+			.andExpect(status().isOk())
+			.andExpect(content().string("OK"));
+		assertThat(contactInquiryRepository.count()).isEqualTo(before + 1);
 	}
 
 	@Test

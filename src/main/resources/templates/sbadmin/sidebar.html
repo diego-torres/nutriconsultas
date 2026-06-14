@@ -58,6 +58,11 @@
         <i class="fas fa-fw fa-user-md"></i>
         <span>Mi Perfil</span></a>
     </li>
+    <li class="nav-item" th:if="${platformAdmin}" th:classappend="${activeMenu == 'contact-inquiries' ? 'active' : ''}">
+      <a class="nav-link" th:href="@{/admin/contact-inquiries}">
+        <i class="fas fa-fw fa-envelope"></i>
+        <span>Mensajes de contacto</span></a>
+    </li>
 
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">

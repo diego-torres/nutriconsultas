@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestClient;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.nutriconsultas.contact.ContactInquiryService;
+import com.nutriconsultas.util.LogRedaction;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -22,17 +24,26 @@ public class WebController {
 
 	private final RestClient restClient;
 
+	private final ContactInquiryService contactInquiryService;
+
 	@Value("${recaptcha.secret-key:6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe}")
 	private String recaptchaSecretKey;
 
-	public WebController() {
+	public WebController(final ContactInquiryService contactInquiryService) {
 		this.restClient = RestClient.create();
+		this.contactInquiryService = contactInquiryService;
 	}
 
 	@GetMapping(path = "/")
 	public String index() {
 		log.debug("Resolving index");
 		return "eterna/index";
+	}
+
+	@GetMapping(path = "/contact")
+	public String contactPage() {
+		log.debug("Resolving contact page");
+		return "eterna/contact";
 	}
 
 	@PostMapping(path = "/contact")
@@ -55,9 +66,8 @@ public class WebController {
 			return ResponseEntity.badRequest().body("La verificación reCAPTCHA falló. Por favor, intenta nuevamente.");
 		}
 
-		log.info("Contact form submitted successfully from: {}", contactForm.getEmail());
-		// TODO: Send email notification or save to database
-		// For now, we just log and return success
+		final var saved = contactInquiryService.saveFromForm(contactForm);
+		log.info("Contact form submitted successfully: {}", LogRedaction.redactContactInquiry(saved.getId()));
 
 		return ResponseEntity.ok("OK");
 	}

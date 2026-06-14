@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <title>Minutriporcion - Mensajes de contacto</title>
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link th:href="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+</head>
+
+<body id="page-top">
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/sidebar :: sidebar}"></div>
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <div class="container-fluid">
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Mensajes de contacto</h1>
+          </div>
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Solicitudes enviadas desde el sitio público</h6>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered" id="contactInquiriesTable" width="100%" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Nombre</th>
+                      <th>Email</th>
+                      <th>Asunto</th>
+                      <th>Mensaje</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="inquiry : ${inquiries}">
+                      <td th:text="${#temporals.format(inquiry.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                      <td th:text="${inquiry.name}">Nombre</td>
+                      <td th:text="${inquiry.email}">email@example.com</td>
+                      <td th:text="${inquiry.subject}">Asunto</td>
+                      <td th:text="${inquiry.message}">Mensaje</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p th:if="${#lists.isEmpty(inquiries)}" class="text-muted mb-0">No hay mensajes de contacto todavía.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div th:insert="~{sbadmin/footer :: footer}"></div>
+    </div>
+  </div>
+  <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+  <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/datatables/jquery.dataTables.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.js}"></script>
+  <script th:inline="javascript">
+    $(document).ready(function () {
+      $('#contactInquiriesTable').DataTable({
+        order: [[0, 'desc']],
+        language: {
+          url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
