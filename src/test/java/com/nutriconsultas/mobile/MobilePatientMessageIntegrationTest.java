@@ -57,6 +57,7 @@ class MobilePatientMessageIntegrationTest {
 				message.setBody("Bienvenido a tu consultorio digital");
 				message.setSentAt(Instant.parse("2026-06-01T10:00:00Z"));
 				message.setReadByPatient(false);
+				message.setReadByNutritionist(true);
 				return patientMessageRepository.saveAndFlush(message);
 			});
 	}

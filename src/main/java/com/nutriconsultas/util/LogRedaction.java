@@ -228,4 +228,16 @@ public final class LogRedaction {
 		return "ContactInquiry[id=" + inquiryId + "]";
 	}
 
+	/**
+	 * Redacts a patient message ID for logging purposes.
+	 * @param messageId the message ID
+	 * @return a safe string representation (e.g., "PatientMessage[id=123]")
+	 */
+	public static String redactPatientMessage(final Long messageId) {
+		if (messageId == null) {
+			return "PatientMessage[id=null]";
+		}
+		return "PatientMessage[id=" + messageId + "]";
+	}
+
 }

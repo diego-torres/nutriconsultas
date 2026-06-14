@@ -1,0 +1,38 @@
+<div th:fragment="widget">
+  <link rel="stylesheet" th:href="@{/sbadmin/css/patient-messages-widget.css}" />
+  <div id="patientChatRoot" aria-live="polite">
+    <div id="patientChatPanel" hidden>
+      <div id="patientChatHeader">
+        <button type="button" id="patientChatBackBtn" class="patient-chat-icon-btn" title="Volver" hidden>
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <h2 id="patientChatTitle">Mensajes de pacientes</h2>
+        <button type="button" id="patientChatClose" class="patient-chat-icon-btn" title="Cerrar">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div id="patientChatBody">
+        <p id="patientChatProfileHint" hidden>Conversación con el paciente de este perfil.</p>
+        <div id="patientChatGlobalView">
+          <div id="patientChatUnreadList">
+            <p class="patient-chat-empty">Cargando mensajes…</p>
+          </div>
+        </div>
+        <div id="patientChatThreadView" hidden>
+          <div id="patientChatMessages"></div>
+          <div id="patientChatComposer">
+            <textarea id="patientChatInput" rows="2" maxlength="2000" placeholder="Escribe un mensaje…"></textarea>
+            <button type="button" id="patientChatSendBtn" title="Enviar">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button type="button" id="patientChatToggle" title="Mensajes de pacientes" aria-label="Mensajes de pacientes">
+      <i class="fas fa-comments fa-lg"></i>
+      <span id="patientChatBadge" hidden>0</span>
+    </button>
+  </div>
+  <script th:src="@{/sbadmin/js/patient-messages-widget.js}" defer></script>
+</div>

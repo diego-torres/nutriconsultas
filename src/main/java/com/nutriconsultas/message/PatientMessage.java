@@ -48,10 +48,21 @@ public class PatientMessage {
 	@Column(nullable = false)
 	private boolean readByPatient;
 
+	@Column(nullable = false)
+	private boolean readByNutritionist;
+
 	@PrePersist
 	void onCreate() {
 		if (sentAt == null) {
 			sentAt = Instant.now();
+		}
+		if (senderRole == MessageSenderRole.NUTRITIONIST) {
+			readByNutritionist = true;
+			readByPatient = false;
+		}
+		else if (senderRole == MessageSenderRole.PATIENT) {
+			readByPatient = true;
+			readByNutritionist = false;
 		}
 	}
 
