@@ -3,6 +3,7 @@ package com.nutriconsultas.mobile;
 import static com.nutriconsultas.mobile.MobileIntegrationTestJwt.mobileJwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -24,6 +25,8 @@ import com.nutriconsultas.message.PatientMessageRepository;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
 
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -40,10 +43,14 @@ class MobilePatientMessageIntegrationTest {
 	@Autowired
 	private PatientMessageRepository patientMessageRepository;
 
+	@Autowired
+	private RateLimiterRegistry rateLimiterRegistry;
+
 	private Paciente linkedPaciente;
 
 	@BeforeEach
 	void seedData() {
+		rateLimiterRegistry.remove(PatientWriteRateLimiter.PATIENT_MESSAGES + ":" + LINKED_SUB);
 		linkedPaciente = pacienteRepository.findByPatientAuthSub(LINKED_SUB).orElseGet(() -> {
 			final Paciente paciente = samplePaciente(LINKED_SUB);
 			return pacienteRepository.saveAndFlush(paciente);
@@ -84,7 +91,7 @@ class MobilePatientMessageIntegrationTest {
 			.perform(post("/rest/mobile/patient/messages").with(mobileJwt(LINKED_SUB))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"body\":\"Tengo una duda sobre mi dieta\"}"))
-			.andExpect(status().isOk())
+			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.data.senderRole").value("PATIENT"))
 			.andExpect(jsonPath("$.data.body").value("Tengo una duda sobre mi dieta"))
 			.andExpect(jsonPath("$.data.read").value(true))
@@ -107,6 +114,30 @@ class MobilePatientMessageIntegrationTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"body\":\"Hola\"}"))
 			.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void sendMessageExceedingRateLimitReturns429WithLocalizedMessage() throws Exception {
+		postMessage("Primer mensaje");
+		postMessage("Segundo mensaje");
+
+		mockMvc
+			.perform(post("/rest/mobile/patient/messages").with(mobileJwt(LINKED_SUB))
+				.header("Accept-Language", "en")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"body\":\"Tercer mensaje\"}"))
+			.andExpect(status().isTooManyRequests())
+			.andExpect(header().string("Retry-After", "60"))
+			.andExpect(jsonPath("$.message").value("Too many requests. Please try again in a minute."))
+			.andExpect(jsonPath("$.timestamp").exists());
+	}
+
+	private void postMessage(final String body) throws Exception {
+		mockMvc
+			.perform(post("/rest/mobile/patient/messages").with(mobileJwt(LINKED_SUB))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"body\":\"" + body + "\"}"))
+			.andExpect(status().isCreated());
 	}
 
 	private static Paciente samplePaciente(final String patientAuthSub) {

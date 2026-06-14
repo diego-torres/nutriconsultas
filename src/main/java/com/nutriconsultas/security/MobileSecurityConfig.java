@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.server.resource.web.authentication.Be
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.nutriconsultas.mobile.PatientLinkageFilter;
+import com.nutriconsultas.mobile.filter.LocaleContextFilter;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,10 +22,14 @@ public class MobileSecurityConfig {
 
 	private final PatientLinkageFilter patientLinkageFilter;
 
+	private final LocaleContextFilter localeContextFilter;
+
 	private final JwtDecoder mobileJwtDecoder;
 
-	public MobileSecurityConfig(final PatientLinkageFilter patientLinkageFilter, final JwtDecoder mobileJwtDecoder) {
+	public MobileSecurityConfig(final PatientLinkageFilter patientLinkageFilter,
+			final LocaleContextFilter localeContextFilter, final JwtDecoder mobileJwtDecoder) {
 		this.patientLinkageFilter = patientLinkageFilter;
+		this.localeContextFilter = localeContextFilter;
 		this.mobileJwtDecoder = mobileJwtDecoder;
 	}
 
@@ -39,7 +44,8 @@ public class MobileSecurityConfig {
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
 			.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(mobileJwtDecoder)))
-			.addFilterAfter(patientLinkageFilter, BearerTokenAuthenticationFilter.class);
+			.addFilterAfter(localeContextFilter, BearerTokenAuthenticationFilter.class)
+			.addFilterAfter(patientLinkageFilter, LocaleContextFilter.class);
 
 		return http.build();
 	}
