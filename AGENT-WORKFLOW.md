@@ -6,7 +6,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 | File | Purpose |
 |------|---------|
-| [`ISSUE.md`](ISSUE.md) | All `[Mobile API]` issues (#91–#99, #107–#116), URLs, states, dependencies, and data-contract sources |
+| [`ISSUE.md`](ISSUE.md) | All `[Mobile API]` issues (#91–#99, #107–#116), integration prerequisites (#156, #46), URLs, states, dependencies, and data-contract sources |
 | [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) | Canonical cross-repo contract — §F8 schema/enum map, per-issue corrected scope |
 | [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) | Endpoint request/response specs (#91–#99) with field mappings |
 
@@ -27,6 +27,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | **Schema ground truth** | ALIGNMENT-SPEC §F8 field-name map (`nombre→dietaName`, `energia→totalKcal`, `lipidos→totalGrasas`, `hidratosDeCarbono→totalCarbohidratos`, `Ingesta.nombre→tipo`); enums `EventStatus`/`PacienteDietaStatus` (no INACTIVE)/`NivelPeso`. Serialization aliases only — **no DB schema changes** for field renames. |
 | **PHI & logging** | No patient names/emails/DOB in unstructured logs. Follow `util/LogRedaction`; CI runs `scripts/audit-logging.sh` (#115). |
 | **Existing code to reuse** | Visits → `calendar/CalendarEventService`; Diet → `PacienteDietaService` + `dieta/` + PDF (#95); Progress → `BodyMetricRecordService` + anthropometrics (#98/#99); Messages → `PatientMessage` entity + mobile/admin controllers (#96/#97). |
+| **`Paciente` / Liquibase order** | [#156](https://github.com/diego-torres/nutriconsultas/issues/156) (projections + `@Embeddable`, optional satellite tables) must complete **before** [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46). Mobile `#98`/`#99` DTOs stay stable — refactor maps in the service layer only. Do not add #132 onboarding columns to the monolithic entity until #156 Phase B lands. |
 
 ---
 
@@ -67,6 +68,8 @@ flowchart LR
    - **#109 (linkage) gates live E2E** — endpoints can be built and tested with a seeded `patientAuthSub` before #109, but cannot be exercised by a real Auth0 patient until it lands.
    - **#113 (rate limit)** should land with or before **#97** (write endpoint).
    - **#114 (nutritionist reply) is web-only** — do not expose it under `/rest/mobile/**`.
+   - **#46 (Liquibase) is blocked by #156** — do not cut the first Liquibase baseline until `Paciente` decomposition Phases A–B merge (see [`ISSUE.md`](ISSUE.md) Integration prerequisites).
+   - **#132 (onboarding schema)** coordinates with #156 — extend the decomposed `Paciente` model, not the current 44-field monolith.
    - If a dependency is still `open`, complete it first or document the blocker in the plan (Phase 2) and stop.
 5. **Update local registry** when remote state drifted (issue closed on GitHub but still `open` here, or vice versa). `ISSUE.md` must match GitHub before proceeding.
 
@@ -100,7 +103,7 @@ flowchart LR
    - Data flow: Controller → Service → Repository, and DTO mapping (entity field → contract key)
    - Security: filter-chain matcher, principal resolution, ownership/IDOR guard
    - Test strategy (`@WebMvcTest` security + slice, `@DataJpaTest`, service unit)
-   - CI impact (new deps in `pom.xml`? Liquibase migration? coverage threshold?)
+   - CI impact (new deps in `pom.xml`? Liquibase migration? coverage threshold?) — if schema changes: confirm #156 Phase complete or document why exempt; **#46 Liquibase changesets only after #156**
    - Risks, blockers, explicit out-of-scope items
 
 **Do not implement until the plan is acknowledged** (user says "go ahead" or equivalent).
@@ -118,7 +121,7 @@ For each plan step, delegate to the best-fit subagent. Run **independent** steps
 | Step type | Delegate to | Delivers |
 |-----------|-------------|----------|
 | Security filter chain / JWT | `coder` + security review | `MobileSecurityConfig`, resource-server config, principal resolver |
-| Entity / migration | `coder` | `Paciente.patientAuthSub`, new message entity, Liquibase changeset |
+| Entity / migration | `coder` | `Paciente.patientAuthSub`, #156 embeddables/projections, new message entity; Liquibase changeset **only after #156** (#46) |
 | DTOs + mappers | `coder` | `mobile/dto/*`, entity→DTO mapping per §F8 |
 | Controller + service | `coder` | `*MobileController`, service method (reuse existing services) |
 | Schema/contract check | `reviewer` / `architect` | DTO matches ALIGNMENT-SPEC §F8 and roadmap JSON |
@@ -224,7 +227,7 @@ Before the final commit:
 3. **Validate workflow artifacts are present and updated:**
    - [ ] `ISSUE.md` — issue marked `in-progress` (or `done` when closing); `NEXT` advanced when it merges
    - [ ] `AGENT-WORKFLOW.md` — sprint pointer updated when `NEXT` advances
-   - [ ] Liquibase changeset committed when schema changed (#107, #96/#97)
+   - [ ] Liquibase changeset committed when schema changed — **only after #156** (#46 baseline); until then manual SQL / `ddl-auto=update` per #156 Phase C notes
    - [ ] Mobile registry's "Backend cross-reference" kept in sync when an endpoint's state changes
    - [ ] Tests + any new `pom.xml` deps committed together with feature code
 4. If any Phase 1–6 step was skipped or failed, **go back and fix** — do not open a PR on a broken tree.
@@ -336,11 +339,14 @@ gh pr create ...
 | Endpoints | ~~#91–#99~~ ✓ | **Done** (PR #153) |
 | Cross-cutting | ~~#111~~ ✓, **#112** (OpenAPI), #115 (PHI audit) | **#112 is NEXT** |
 | Hardening / additive | ~~#113~~ ✓, #116 (senderDisplayName), #114 (nutritionist reply) | With/after owning feature |
+| Schema / Liquibase | **#156** (`Paciente` refactor) → **#46** (Liquibase baseline) → #132 (onboarding) | **#156 before any Liquibase cut** |
 
 ### Status snapshot (2026-06-14)
 
 **Patient mobile API on `main`:** JWT resource server (#107), DTO envelope (#110), patient linkage (#109), visits (#91/#92), diet plans (#93–#95), messages list/send (#96/#97 with HTTP 201 + rate limit), progress snapshot (#98) + measurements time series (#99, PR #153), localized API errors (#111), Resilience4j write throttling (#113). Dashboard IMC gauge (#106) done for web tablero.
 
 **Next:** #112 OpenAPI spec for `/rest/mobile/patient/**`, then #115 (PHI audit), additive #116 / web #114.
+
+**Schema gate (parallel track):** [#156](https://github.com/diego-torres/nutriconsultas/issues/156) `Paciente` decomposition blocks [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46); coordinate [#132](https://github.com/diego-torres/nutriconsultas/issues/132) onboarding columns after #156 Phase B.
 
 See [`ISSUE.md`](ISSUE.md) Data contracts and [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) §F8 for per-endpoint field requirements.

@@ -128,6 +128,51 @@ public class CalendarControllerTest {
 
 	@Test
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testNuevoEventoWithPacienteIdPreselectsPatient() throws Exception {
+		log.info("Starting testNuevoEventoWithPacienteIdPreselectsPatient");
+		mockMvc
+			.perform(MockMvcRequestBuilders.get("/admin/calendario/nuevo").param("pacienteId", "1").with(oidcLogin()))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.view().name("sbadmin/calendar/formulario"))
+			.andExpect(MockMvcResultMatchers.model().attribute("pacientePreseleccionado", true))
+			.andExpect(result -> {
+				final CalendarEvent createdEvent = (CalendarEvent) result.getModelAndView().getModel().get("event");
+				assertNotNull(createdEvent, "Event should not be null");
+				assertNotNull(createdEvent.getPaciente(), "Patient should be preselected");
+				assertEquals(1L, createdEvent.getPaciente().getId(), "Patient id should match query param");
+				assertEquals("Consulta", createdEvent.getTitle(), "Default title should be Consulta");
+			});
+		log.info("Finishing testNuevoEventoWithPacienteIdPreselectsPatient");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testAgregarNuevoEventoFromHistorialRedirectsToHistorial() throws Exception {
+		log.info("Starting testAgregarNuevoEventoFromHistorialRedirectsToHistorial");
+
+		when(calendarEventService.save(any(CalendarEvent.class))).thenReturn(event);
+
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/calendario/nuevo")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("pacienteId", "1")
+				.param("redirectToHistorial", "true")
+				.param("title", "Nueva Consulta")
+				.param("description", "Descripción de prueba")
+				.param("eventDateTime", "2024-12-31T10:00")
+				.param("durationMinutes", "60")
+				.param("status", "SCHEDULED")
+				.with(oidcLogin())
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/pacientes/1/historial"));
+
+		verify(calendarEventService, times(1)).save(any(CalendarEvent.class));
+		log.info("Finishing testAgregarNuevoEventoFromHistorialRedirectsToHistorial");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	public void testVerEvento() throws Exception {
 		log.info("Starting testVerEvento");
 		mockMvc.perform(MockMvcRequestBuilders.get("/admin/calendario/1").with(oidcLogin()))

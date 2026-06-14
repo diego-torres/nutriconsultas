@@ -7,6 +7,12 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.paciente.calculation.BmrFormulaType;
+import com.nutriconsultas.paciente.calculation.EnergyExpenditureResolver;
+import com.nutriconsultas.paciente.calculation.PatientEnergyPreferences;
+import com.nutriconsultas.paciente.calculation.PhysicalActivityLevel;
 import com.nutriconsultas.util.LogRedaction;
 
 import com.nutriconsultas.paciente.metrics.BodyMetricSource;
@@ -22,6 +28,9 @@ public class AnthropometricMeasurementServiceImpl implements AnthropometricMeasu
 
 	@Autowired
 	private com.nutriconsultas.paciente.metrics.BodyMetricRecordService bodyMetricRecordService;
+
+	@Autowired
+	private PacienteRepository pacienteRepository;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -41,9 +50,45 @@ public class AnthropometricMeasurementServiceImpl implements AnthropometricMeasu
 	@Transactional
 	public AnthropometricMeasurement save(@NonNull final AnthropometricMeasurement measurement) {
 		log.debug("Saving anthropometric measurement: {}", LogRedaction.redactAnthropometricMeasurement(measurement));
+		applyEnergyCalculation(measurement);
 		final AnthropometricMeasurement saved = repository.save(measurement);
 		bodyMetricRecordService.syncFromAnthropometric(saved);
+		syncPatientEnergySnapshot(saved);
 		return saved;
+	}
+
+	private void applyEnergyCalculation(final AnthropometricMeasurement measurement) {
+		if (measurement.getPhysicalActivityLevel() == null || measurement.getPaciente() == null) {
+			return;
+		}
+		final Double weight = measurement.getPeso();
+		final Double height = measurement.getEstatura();
+		if (weight == null || height == null) {
+			return;
+		}
+		final BmrFormulaType formula = measurement.getBmrFormula() != null ? measurement.getBmrFormula()
+				: PatientEnergyPreferences.resolveBmrFormula(measurement.getPaciente());
+		final Double customFactor = measurement.getPhysicalActivityLevel() == PhysicalActivityLevel.CUSTOM
+				? measurement.getActivityFactor() : null;
+		final EnergyExpenditureResolver.EnergyResult result = EnergyExpenditureResolver.resolve(
+				measurement.getPaciente(), formula, measurement.getPhysicalActivityLevel(), customFactor, weight,
+				height);
+		measurement.setBmrFormula(formula);
+		measurement.setBmrUsed(result.bmr());
+		measurement.setActivityFactor(result.activityFactor());
+		measurement.setGetKcal(result.getKcal());
+	}
+
+	private void syncPatientEnergySnapshot(final AnthropometricMeasurement measurement) {
+		if (measurement.getGetKcal() == null || measurement.getPaciente() == null) {
+			return;
+		}
+		final Paciente paciente = measurement.getPaciente();
+		EnergyExpenditureResolver.applyToPatient(
+				paciente, new EnergyExpenditureResolver.EnergyResult(measurement.getBmrUsed(),
+						measurement.getActivityFactor(), measurement.getGetKcal()),
+				measurement.getPhysicalActivityLevel());
+		pacienteRepository.save(paciente);
 	}
 
 	@Override

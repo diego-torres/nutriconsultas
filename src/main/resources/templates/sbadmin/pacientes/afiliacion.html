@@ -93,6 +93,7 @@
                         <input type="text" class="form-control" th:field="*{parentesco}" placeholder="Madre">
                         <span th:if="${#fields.hasErrors('parentesco')}" th:errors="*{parentesco}"></span>
                       </div>
+                      <div th:insert="~{sbadmin/pacientes/get-calculation-section :: energyPreferencesSection}"></div>
                       <button type="submit" class="btn btn-success ">Listo!</button>
                     </form>
                   </div>

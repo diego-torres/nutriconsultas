@@ -55,6 +55,15 @@ install -d -o root -g nutri -m 750 /opt/nutriconsultas
   echo -n "PLATFORM_ADMIN_EMAILS="
   printf '%s' '${platform_admin_emails_b64}' | base64 -d
   echo
+  echo -n "AUTH0_MGMT_CLIENT_ID="
+  printf '%s' '${auth0_mgmt_client_id_b64}' | base64 -d
+  echo
+  echo -n "AUTH0_MGMT_CLIENT_SECRET="
+  printf '%s' '${auth0_mgmt_client_secret_b64}' | base64 -d
+  echo
+  echo -n "AUTH0_MGMT_DOMAIN="
+  printf '%s' '${auth0_mgmt_domain_b64}' | base64 -d
+  echo
 } > /opt/nutriconsultas/app.env
 chown root:nutri /opt/nutriconsultas/app.env
 chmod 640 /opt/nutriconsultas/app.env

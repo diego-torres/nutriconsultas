@@ -89,7 +89,7 @@
                   <hr>
                   
                   <!-- Consulta data section -->
-                  <div class="row mb-3" th:if="${event.peso != null || event.estatura != null || event.imc != null || event.sistolica != null || event.diastolica != null || event.pulso != null || event.indiceGlucemico != null || event.spo2 != null || event.temperatura != null}">
+                  <div class="row mb-3" th:if="${event.peso != null || event.estatura != null || event.imc != null || event.getKcal != null || event.sistolica != null || event.diastolica != null || event.pulso != null || event.indiceGlucemico != null || event.spo2 != null || event.temperatura != null}">
                     <div class="col-md-12">
                       <h6>Datos de Consulta</h6>
                       <div class="row">
@@ -105,6 +105,12 @@
                         </div>
                         <div class="col-md-3" th:if="${event.indiceGrasaCorporal != null}">
                           <p><strong>Índice Grasa Corporal:</strong> <span th:text="${#numbers.formatDecimal(event.indiceGrasaCorporal, 2, 2)} + '%'">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${event.getKcal != null}">
+                          <p><strong>GET:</strong> <span th:text="${#numbers.formatDecimal(event.getKcal, 1, 0)} + ' kcal/día'">-</span></p>
+                        </div>
+                        <div class="col-md-3" th:if="${event.physicalActivityLevel != null}">
+                          <p><strong>Actividad:</strong> <span th:text="${event.physicalActivityLevel.displayName}">-</span></p>
                         </div>
                         <div class="col-md-3" th:if="${event.sistolica != null}">
                           <p><strong>Sistólica:</strong> <span th:text="${event.sistolica} + ' mmHg'">-</span></p>
@@ -358,6 +364,40 @@
         const currentNotes = button.getAttribute('data-summary-notes') || '';
         showSummaryNotesWizard(eventId, currentNotes);
       }
+
+      const WIZARD_ACTIVITY_FACTORS = {
+        HARRIS_BENEDICT: { SEDENTARY: 1.2, LIGHT: 1.375, MODERATE: 1.55, INTENSE: 1.725, VERY_INTENSE: 1.9 },
+        FAO_WHO: { SEDENTARY: 1.53, LIGHT: 1.76, MODERATE: 2.10, INTENSE: 2.40, VERY_INTENSE: 2.80 },
+        OMS: { SEDENTARY: 1.40, LIGHT: 1.60, MODERATE: 1.80, INTENSE: 2.00, VERY_INTENSE: 2.20 }
+      };
+
+      function updateWizardGetPreview() {
+        const preview = jQuery('#wizardGetPreview');
+        if (!preview.length) return;
+        const peso = parseFloat(jQuery('#pesoInput').val());
+        const estatura = parseFloat(jQuery('#estaturaInput').val());
+        const level = jQuery('#wizardActivityLevel').val();
+        const scale = window.patientActivityScale || 'HARRIS_BENEDICT';
+        if (!peso || !estatura || !level) {
+          preview.text('GET estimado: — kcal/día');
+          return;
+        }
+        let factor = null;
+        if (level === 'CUSTOM') {
+          factor = parseFloat(jQuery('#wizardCustomFactor').val());
+        } else {
+          factor = (WIZARD_ACTIVITY_FACTORS[scale] || WIZARD_ACTIVITY_FACTORS.HARRIS_BENEDICT)[level];
+        }
+        if (!factor) {
+          preview.text('GET estimado: — kcal/día');
+          return;
+        }
+        const imc = peso / (estatura * estatura);
+        const age = /*[[${event.paciente.dob != null ? 30 : 30}]]*/ 30;
+        const bmrApprox = 10 * peso + 6.25 * (estatura * 100) - 5 * age;
+        const getVal = Math.round(bmrApprox * factor);
+        preview.text('GET estimado: ' + getVal + ' kcal/día (aprox.; se recalcula al guardar)');
+      }
       
       // Function to show summary notes wizard
       function showSummaryNotesWizard(eventId, currentNotes) {
@@ -369,8 +409,16 @@
           indiceGrasaCorporal: /*[[${event.indiceGrasaCorporal}]]*/ null,
           sistolica: /*[[${event.sistolica}]]*/ null,
           diastolica: /*[[${event.diastolica}]]*/ null,
-          indiceGlucemico: /*[[${event.indiceGlucemico}]]*/ null
+          indiceGlucemico: /*[[${event.indiceGlucemico}]]*/ null,
+          physicalActivityLevel: /*[[${event.physicalActivityLevel != null ? event.physicalActivityLevel.name() : null}]]*/ null,
+          bmrFormula: /*[[${event.bmrFormula != null ? event.bmrFormula.name() : null}]]*/ null,
+          activityFactor: /*[[${event.activityFactor}]]*/ null,
+          getKcal: /*[[${event.getKcal}]]*/ null
         };
+        const patientActivityScale = /*[[${event.paciente.activityFactorScale != null ? event.paciente.activityFactorScale.name() : 'HARRIS_BENEDICT'}]]*/ 'HARRIS_BENEDICT';
+        const patientPreferredBmr = /*[[${event.paciente.preferredBmrFormula != null ? event.paciente.preferredBmrFormula.name() : 'PROMEDIO'}]]*/ 'PROMEDIO';
+        window.patientActivityScale = patientActivityScale;
+        window.patientPreferredBmr = patientPreferredBmr;
         
         // Create wizard modal
         let wizardHtml = '<div class="modal fade" id="summaryNotesWizardModal" tabindex="-1" role="dialog">';
@@ -462,14 +510,33 @@
         wizardHtml += '</div>';
         wizardHtml += '<div class="form-group">';
         wizardHtml += '<label>Nivel de actividad física:</label>';
-        wizardHtml += '<select class="form-control" name="actividadFisica">';
+        wizardHtml += '<select class="form-control" name="physicalActivityLevel" id="wizardActivityLevel">';
         wizardHtml += '<option value="">Seleccione...</option>';
-        wizardHtml += '<option value="sedentario">Sedentario</option>';
-        wizardHtml += '<option value="ligero">Ligero (1-3 días/semana)</option>';
-        wizardHtml += '<option value="moderado">Moderado (3-5 días/semana)</option>';
-        wizardHtml += '<option value="intenso">Intenso (6-7 días/semana)</option>';
+        wizardHtml += '<option value="SEDENTARY">Sedentario</option>';
+        wizardHtml += '<option value="LIGHT">Ligera</option>';
+        wizardHtml += '<option value="MODERATE">Moderada</option>';
+        wizardHtml += '<option value="INTENSE">Intensa</option>';
+        wizardHtml += '<option value="VERY_INTENSE">Muy intensa</option>';
+        wizardHtml += '<option value="CUSTOM">Personalizado</option>';
+        wizardHtml += '</select>';
+        wizardHtml += '<small class="text-muted">Escala del paciente: ' + patientActivityScale + '</small>';
+        wizardHtml += '</div>';
+        wizardHtml += '<div class="form-group" id="wizardCustomFactorGroup" style="display:none;">';
+        wizardHtml += '<label>Factor personalizado:</label>';
+        wizardHtml += '<input type="number" step="0.001" min="1" max="5" class="form-control" name="customActivityFactor" id="wizardCustomFactor">';
+        wizardHtml += '</div>';
+        wizardHtml += '<div class="form-group">';
+        wizardHtml += '<label>Fórmula TMB para GET:</label>';
+        wizardHtml += '<select class="form-control" name="bmrFormula" id="wizardBmrFormula">';
+        wizardHtml += '<option value="">Preferencia del paciente (' + patientPreferredBmr + ')</option>';
+        wizardHtml += '<option value="MIFFLIN_ST_JEOR">Mifflin-St Jeor</option>';
+        wizardHtml += '<option value="HARRIS_BENEDICT">Harris-Benedict</option>';
+        wizardHtml += '<option value="FAO_WHO_ONU">FAO/OMS/ONU</option>';
+        wizardHtml += '<option value="VALENCIA">Valencia</option>';
+        wizardHtml += '<option value="PROMEDIO">Promedio</option>';
         wizardHtml += '</select>';
         wizardHtml += '</div>';
+        wizardHtml += '<div class="alert alert-warning py-2" id="wizardGetPreview">GET estimado: — kcal/día</div>';
         wizardHtml += '<div class="form-group">';
         wizardHtml += '<label>Alergias o intolerancias:</label>';
         wizardHtml += '<textarea class="form-control" name="alergias" rows="2" placeholder="Liste alergias o intolerancias conocidas"></textarea>';
@@ -591,6 +658,26 @@
           if (eventData.indiceGlucemico) {
             jQuery('#summaryNotesWizardModal input[name="indiceGlucemico"]').val(eventData.indiceGlucemico);
           }
+          if (eventData.physicalActivityLevel) {
+            jQuery('#wizardActivityLevel').val(eventData.physicalActivityLevel);
+          }
+          if (eventData.bmrFormula) {
+            jQuery('#wizardBmrFormula').val(eventData.bmrFormula);
+          }
+          if (eventData.activityFactor && eventData.physicalActivityLevel === 'CUSTOM') {
+            jQuery('#wizardCustomFactor').val(eventData.activityFactor);
+            jQuery('#wizardCustomFactorGroup').show();
+          }
+          updateWizardGetPreview();
+        });
+
+        jQuery('#summaryNotesWizardModal').on('change input', '#wizardActivityLevel, #wizardBmrFormula, #wizardCustomFactor, #pesoInput, #estaturaInput', function() {
+          if (jQuery('#wizardActivityLevel').val() === 'CUSTOM') {
+            jQuery('#wizardCustomFactorGroup').show();
+          } else {
+            jQuery('#wizardCustomFactorGroup').hide();
+          }
+          updateWizardGetPreview();
         });
         
         // Generate summary when moving to final step
@@ -674,8 +761,20 @@
           summary += 'HÁBITOS ALIMENTARIOS:\n' + formData.habitosAlimentarios + '\n\n';
         }
         
-        if (formData.actividadFisica) {
-          summary += 'ACTIVIDAD FÍSICA: ' + formData.actividadFisica + '\n\n';
+        if (formData.physicalActivityLevel) {
+          summary += 'ACTIVIDAD FÍSICA: ' + formData.physicalActivityLevel;
+          if (formData.customActivityFactor) {
+            summary += ' (factor ' + formData.customActivityFactor + ')';
+          }
+          summary += '\n';
+          if (formData.bmrFormula) {
+            summary += 'Fórmula TMB: ' + formData.bmrFormula + '\n';
+          }
+          const getPreview = jQuery('#wizardGetPreview').text();
+          if (getPreview) {
+            summary += getPreview + '\n';
+          }
+          summary += '\n';
         }
         
         if (formData.alergias) {
@@ -762,6 +861,15 @@
         if (sistolica) formData.sistolica = parseInt(sistolica);
         if (diastolica) formData.diastolica = parseInt(diastolica);
         if (indiceGlucemico) formData.indiceGlucemico = parseInt(indiceGlucemico);
+
+        const activityLevel = jQuery('#wizardActivityLevel').val();
+        const bmrFormula = jQuery('#wizardBmrFormula').val();
+        const customFactor = jQuery('#wizardCustomFactor').val();
+        if (activityLevel) formData.physicalActivityLevel = activityLevel;
+        if (bmrFormula) formData.bmrFormula = bmrFormula;
+        if (activityLevel === 'CUSTOM' && customFactor) {
+          formData.customActivityFactor = parseFloat(customFactor);
+        }
         
         jQuery.ajax({
           url: '/rest/calendario/events/' + eventId,

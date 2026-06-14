@@ -4,6 +4,62 @@
     // Get patient data from Thymeleaf
     const patientAge = [[${patientAge != null ? patientAge : 'null'}]];
     const patientIsMale = [[${patientIsMale != null ? patientIsMale : 'false'}]];
+    const patientActivityScale = '[[${paciente != null && paciente.activityFactorScale != null ? paciente.activityFactorScale.name() : "HARRIS_BENEDICT"}]]';
+    const patientPreferredBmrFormula = '[[${paciente != null && paciente.preferredBmrFormula != null ? paciente.preferredBmrFormula.name() : "PROMEDIO"}]]';
+    const patientCustomFactors = {
+      sedentary: [[${paciente != null && paciente.customFactorSedentary != null ? paciente.customFactorSedentary : 'null'}]],
+      light: [[${paciente != null && paciente.customFactorLight != null ? paciente.customFactorLight : 'null'}]],
+      moderate: [[${paciente != null && paciente.customFactorModerate != null ? paciente.customFactorModerate : 'null'}]],
+      intense: [[${paciente != null && paciente.customFactorIntense != null ? paciente.customFactorIntense : 'null'}]],
+      veryIntense: [[${paciente != null && paciente.customFactorVeryIntense != null ? paciente.customFactorVeryIntense : 'null'}]]
+    };
+    const calculationEnableSync = [[${enableSync}]];
+
+    function getCalcSubTabPanes(tabContent) {
+      return Array.prototype.filter.call(tabContent.children, function(child) {
+        return child.classList && child.classList.contains('tab-pane');
+      });
+    }
+
+    function refreshAllCalculationPanels() {
+      if (calculationEnableSync) {
+        syncFromBodyMassTab();
+      } else {
+        updateBmiCalculations();
+        updateBmrCalculations();
+        updateGetCalculations();
+        updateIdealWeightCalculations();
+        updateTotalBodyWaterCalculations();
+        updateBodyCompositionCalculations();
+      }
+    }
+
+    function showCalculationSubTab(targetId) {
+      const tabList = document.getElementById('calculationSubTabs');
+      const tabContent = document.getElementById('calculationSubTabsContent');
+      if (!tabList || !tabContent || !targetId) {
+        return;
+      }
+      const paneId = targetId.charAt(0) === '#' ? targetId.substring(1) : targetId;
+      tabList.querySelectorAll('.calc-subtab-link').forEach(function(link) {
+        link.classList.remove('active');
+        link.setAttribute('aria-selected', 'false');
+      });
+      getCalcSubTabPanes(tabContent).forEach(function(pane) {
+        pane.classList.remove('show', 'active');
+      });
+      const link = tabList.querySelector('[data-calc-target="' + paneId + '"]');
+      const pane = document.getElementById(paneId);
+      if (link) {
+        link.classList.add('active');
+        link.setAttribute('aria-selected', 'true');
+      }
+      if (pane) {
+        pane.classList.add('active', 'show');
+      }
+      refreshAllCalculationPanels();
+    }
+    window.showCalculationSubTab = showCalculationSubTab;
 
     // BMI Calculation Functions
     function calculateClassicBmi(weight, height) {
@@ -126,6 +182,78 @@
       return sum / validCount;
     }
 
+    const ACTIVITY_FACTORS = {
+      HARRIS_BENEDICT: { SEDENTARY: 1.2, LIGHT: 1.375, MODERATE: 1.55, INTENSE: 1.725, VERY_INTENSE: 1.9 },
+      FAO_WHO: { SEDENTARY: 1.53, LIGHT: 1.76, MODERATE: 2.10, INTENSE: 2.40, VERY_INTENSE: 2.80 },
+      OMS: { SEDENTARY: 1.40, LIGHT: 1.60, MODERATE: 1.80, INTENSE: 2.00, VERY_INTENSE: 2.20 }
+    };
+
+    function resolveActivityFactor(scale, level, customFactorValue) {
+      if (!level) return null;
+      if (level === 'CUSTOM') {
+        return customFactorValue && customFactorValue > 0 ? customFactorValue : null;
+      }
+      if (scale === 'CUSTOM') {
+        const map = {
+          SEDENTARY: patientCustomFactors.sedentary,
+          LIGHT: patientCustomFactors.light,
+          MODERATE: patientCustomFactors.moderate,
+          INTENSE: patientCustomFactors.intense,
+          VERY_INTENSE: patientCustomFactors.veryIntense
+        };
+        return map[level] || null;
+      }
+      const factors = ACTIVITY_FACTORS[scale] || ACTIVITY_FACTORS.HARRIS_BENEDICT;
+      return factors[level] || null;
+    }
+
+    function calculateBmrByFormula(formula, weight, height, age, isMale) {
+      const f = formula || patientPreferredBmrFormula;
+      switch (f) {
+        case 'MIFFLIN_ST_JEOR': return calculateMifflinStJeorBmr(weight, height, age, isMale);
+        case 'HARRIS_BENEDICT': return calculateHarrisBenedictBmr(weight, height, age, isMale);
+        case 'FAO_WHO_ONU': return calculateFaoWhoOnuBmr(weight, age, isMale);
+        case 'VALENCIA': return calculateValenciaBmr(weight, height, age, isMale);
+        case 'PROMEDIO':
+        default: return calculatePromedioBmr(weight, height, age, isMale);
+      }
+    }
+
+    function updateGetCalculations() {
+      const formulaEl = document.getElementById('get-bmr-formula');
+      const levelEl = document.getElementById('get-activity-level');
+      const customGroup = document.getElementById('get-custom-factor-group');
+      const customFactorEl = document.getElementById('get-custom-factor');
+      if (!formulaEl || !levelEl) return;
+
+      const level = levelEl.value;
+      if (customGroup) {
+        customGroup.style.display = level === 'CUSTOM' ? '' : 'none';
+      }
+
+      const weight = parseFloat(document.getElementById('bmr-weight-prom')?.value || document.getElementById('calc-weight')?.value);
+      const height = parseFloat(document.getElementById('bmr-height-prom')?.value || document.getElementById('calc-height')?.value);
+      const age = parseInt(document.getElementById('bmr-age-prom')?.value) || patientAge;
+      const formula = formulaEl.value || patientPreferredBmrFormula;
+      const customFactor = customFactorEl ? parseFloat(customFactorEl.value) : null;
+
+      const bmr = calculateBmrByFormula(formula, weight, height, age, patientIsMale);
+      const factor = resolveActivityFactor(patientActivityScale, level, customFactor);
+      const getValue = bmr && factor ? bmr * factor : null;
+
+      const bmrResult = document.getElementById('get-bmr-used-result');
+      const factorResult = document.getElementById('get-factor-result');
+      const getResult = document.getElementById('get-result');
+      const bmrHidden = document.getElementById('get-bmr-used-hidden');
+      const getHidden = document.getElementById('get-kcal-hidden');
+
+      if (bmrResult) bmrResult.textContent = formatNumber(bmr);
+      if (factorResult) factorResult.textContent = factor ? factor.toFixed(3) : '-';
+      if (getResult) getResult.textContent = formatNumber(getValue);
+      if (bmrHidden && bmr) bmrHidden.value = bmr.toFixed(2);
+      if (getHidden && getValue) getHidden.value = getValue.toFixed(2);
+    }
+
     // Ideal Weight Calculation Functions
     const INCHES_PER_METER = 39.3701;
 
@@ -240,11 +368,19 @@
 
     // Update BMI calculations
     function updateBmiCalculations() {
+      const calcWeightEl = document.getElementById('calc-weight');
+      const calcHeightEl = document.getElementById('calc-height');
+      if (!calcWeightEl || !calcHeightEl) {
+        return;
+      }
       // Classic BMI
-      const weight1 = parseFloat(document.getElementById('calc-weight').value);
-      const height1 = parseFloat(document.getElementById('calc-height').value);
+      const weight1 = parseFloat(calcWeightEl.value);
+      const height1 = parseFloat(calcHeightEl.value);
       const classicBmi = calculateClassicBmi(weight1, height1);
-      document.getElementById('classic-bmi-result').textContent = formatNumber(classicBmi);
+      const classicBmiResult = document.getElementById('classic-bmi-result');
+      if (classicBmiResult) {
+        classicBmiResult.textContent = formatNumber(classicBmi);
+      }
       
       // Auto-populate body composition BMI if classic BMI is calculated
       const bodyCompBmiField = document.getElementById('body-comp-bmi');
@@ -277,10 +413,17 @@
       updateIndiceGrasaCorporal();
 
       // Trefethen BMI
-      const weight2 = parseFloat(document.getElementById('calc-weight-trefethen').value);
-      const height2 = parseFloat(document.getElementById('calc-height-trefethen').value);
-      const trefethenBmi = calculateTrefethenBmi(weight2, height2);
-      document.getElementById('trefethen-bmi-result').textContent = formatNumber(trefethenBmi);
+      const weightTrefethenEl = document.getElementById('calc-weight-trefethen');
+      const heightTrefethenEl = document.getElementById('calc-height-trefethen');
+      if (weightTrefethenEl && heightTrefethenEl) {
+        const weight2 = parseFloat(weightTrefethenEl.value);
+        const height2 = parseFloat(heightTrefethenEl.value);
+        const trefethenBmi = calculateTrefethenBmi(weight2, height2);
+        const trefethenBmiResult = document.getElementById('trefethen-bmi-result');
+        if (trefethenBmiResult) {
+          trefethenBmiResult.textContent = formatNumber(trefethenBmi);
+        }
+      }
     }
 
     // Update BMR calculations
@@ -499,36 +642,43 @@
     }
 
     // Sync weight/height from Body Mass tab to Calculation tab (only for form templates)
+    function syncCalcFieldValue(fieldId, value) {
+      const field = document.getElementById(fieldId);
+      if (field) {
+        field.value = value;
+      }
+    }
+
     function syncFromBodyMassTab() {
       const bodyMassWeight = document.querySelector('input[name*="bodyMass.weight"]');
       const bodyMassHeight = document.querySelector('input[name*="bodyMass.height"]');
       
       if (bodyMassWeight && bodyMassWeight.value) {
-        document.getElementById('calc-weight').value = bodyMassWeight.value;
-        document.getElementById('calc-weight-trefethen').value = bodyMassWeight.value;
-        document.getElementById('bmr-weight-msj').value = bodyMassWeight.value;
-        document.getElementById('bmr-weight-hb').value = bodyMassWeight.value;
-        document.getElementById('bmr-weight-fao').value = bodyMassWeight.value;
-        document.getElementById('bmr-weight-val').value = bodyMassWeight.value;
-        document.getElementById('bmr-weight-prom').value = bodyMassWeight.value;
-        document.getElementById('tbw-weight-wat').value = bodyMassWeight.value;
-        document.getElementById('tbw-weight-hm').value = bodyMassWeight.value;
+        syncCalcFieldValue('calc-weight', bodyMassWeight.value);
+        syncCalcFieldValue('calc-weight-trefethen', bodyMassWeight.value);
+        syncCalcFieldValue('bmr-weight-msj', bodyMassWeight.value);
+        syncCalcFieldValue('bmr-weight-hb', bodyMassWeight.value);
+        syncCalcFieldValue('bmr-weight-fao', bodyMassWeight.value);
+        syncCalcFieldValue('bmr-weight-val', bodyMassWeight.value);
+        syncCalcFieldValue('bmr-weight-prom', bodyMassWeight.value);
+        syncCalcFieldValue('tbw-weight-wat', bodyMassWeight.value);
+        syncCalcFieldValue('tbw-weight-hm', bodyMassWeight.value);
       }
       
       if (bodyMassHeight && bodyMassHeight.value) {
-        document.getElementById('calc-height').value = bodyMassHeight.value;
-        document.getElementById('calc-height-trefethen').value = bodyMassHeight.value;
-        document.getElementById('bmr-height-msj').value = bodyMassHeight.value;
-        document.getElementById('bmr-height-hb').value = bodyMassHeight.value;
-        document.getElementById('bmr-height-val').value = bodyMassHeight.value;
-        document.getElementById('bmr-height-prom').value = bodyMassHeight.value;
-        document.getElementById('ideal-weight-height-rob').value = bodyMassHeight.value;
-        document.getElementById('ideal-weight-height-met').value = bodyMassHeight.value;
-        document.getElementById('ideal-weight-height-ham').value = bodyMassHeight.value;
-        document.getElementById('ideal-weight-height-lor').value = bodyMassHeight.value;
-        document.getElementById('ideal-weight-height-trad').value = bodyMassHeight.value;
-        document.getElementById('tbw-height-wat').value = bodyMassHeight.value;
-        document.getElementById('tbw-height-hm').value = bodyMassHeight.value;
+        syncCalcFieldValue('calc-height', bodyMassHeight.value);
+        syncCalcFieldValue('calc-height-trefethen', bodyMassHeight.value);
+        syncCalcFieldValue('bmr-height-msj', bodyMassHeight.value);
+        syncCalcFieldValue('bmr-height-hb', bodyMassHeight.value);
+        syncCalcFieldValue('bmr-height-val', bodyMassHeight.value);
+        syncCalcFieldValue('bmr-height-prom', bodyMassHeight.value);
+        syncCalcFieldValue('ideal-weight-height-rob', bodyMassHeight.value);
+        syncCalcFieldValue('ideal-weight-height-met', bodyMassHeight.value);
+        syncCalcFieldValue('ideal-weight-height-ham', bodyMassHeight.value);
+        syncCalcFieldValue('ideal-weight-height-lor', bodyMassHeight.value);
+        syncCalcFieldValue('ideal-weight-height-trad', bodyMassHeight.value);
+        syncCalcFieldValue('tbw-height-wat', bodyMassHeight.value);
+        syncCalcFieldValue('tbw-height-hm', bodyMassHeight.value);
       }
       
       // Sync BMI to body composition calculation
@@ -536,13 +686,13 @@
         const weight = parseFloat(bodyMassWeight.value);
         const height = parseFloat(bodyMassHeight.value);
         if (weight > 0 && height > 0) {
-          const bmi = weight / (height * height);
-          document.getElementById('body-comp-bmi').value = bmi.toFixed(2);
+          syncCalcFieldValue('body-comp-bmi', (weight / (height * height)).toFixed(2));
         }
       }
       
       updateBmiCalculations();
       updateBmrCalculations();
+      updateGetCalculations();
       updateIdealWeightCalculations();
       updateTotalBodyWaterCalculations();
       updateBodyCompositionCalculations();
@@ -580,7 +730,12 @@
       safeAddEventListener('bmr-age-val', 'input', updateBmrCalculations);
       safeAddEventListener('bmr-weight-prom', 'input', updateBmrCalculations);
       safeAddEventListener('bmr-height-prom', 'input', updateBmrCalculations);
-      safeAddEventListener('bmr-age-prom', 'input', updateBmrCalculations);
+      safeAddEventListener('bmr-age-prom', 'input', function() { updateBmrCalculations(); updateGetCalculations(); });
+
+      // GET inputs
+      safeAddEventListener('get-bmr-formula', 'change', updateGetCalculations);
+      safeAddEventListener('get-activity-level', 'change', updateGetCalculations);
+      safeAddEventListener('get-custom-factor', 'input', updateGetCalculations);
 
       // Ideal Weight inputs
       safeAddEventListener('ideal-weight-height-rob', 'input', updateIdealWeightCalculations);
@@ -600,40 +755,20 @@
       safeAddEventListener('body-comp-bmi', 'input', updateBodyCompositionCalculations);
       safeAddEventListener('body-comp-age', 'input', updateBodyCompositionCalculations);
 
-      // Calculate on tab show
+      // Calculate on main Cálculos tab show
       const calculationTab = document.getElementById('calculation-tab');
       if (calculationTab) {
         $(calculationTab).on('shown.bs.tab', function() {
-          const enableSync = [[${enableSync}]];
-          if (enableSync) {
-            syncFromBodyMassTab();
-          } else {
-      updateBmiCalculations();
-      updateBmrCalculations();
-      updateIdealWeightCalculations();
-      updateTotalBodyWaterCalculations();
-      updateBodyCompositionCalculations();
-        }
-      });
-        
-        // Also trigger calculations if calculation tab is already active on page load
+          refreshAllCalculationPanels();
+        });
+
         if ($(calculationTab).hasClass('active')) {
-          const enableSync = [[${enableSync}]];
-          if (enableSync) {
-            syncFromBodyMassTab();
-          } else {
-            updateBmiCalculations();
-            updateBmrCalculations();
-            updateIdealWeightCalculations();
-            updateTotalBodyWaterCalculations();
-            updateBodyCompositionCalculations();
-          }
+          refreshAllCalculationPanels();
         }
       }
 
       // Sync functionality (only enabled for form templates)
-      const enableSync = [[${enableSync}]];
-      if (enableSync) {
+      if (calculationEnableSync) {
         // Also sync when Body Mass inputs change
         const bodyMassWeight = document.querySelector('input[name*="bodyMass.weight"]');
         const bodyMassHeight = document.querySelector('input[name*="bodyMass.height"]');
@@ -656,10 +791,22 @@
       // Initial calculation if values are already present
       updateBmiCalculations();
       updateBmrCalculations();
+      updateGetCalculations();
       updateIdealWeightCalculations();
       updateTotalBodyWaterCalculations();
       updateBodyCompositionCalculations();
+      updateGetCalculations();
     });
+
+    document.addEventListener('click', function(e) {
+      const trigger = e.target.closest('#calculationSubTabs .calc-subtab-link[data-calc-target]');
+      if (!trigger) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      showCalculationSubTab(trigger.getAttribute('data-calc-target'));
+    }, true);
   </script>
 </div>
 

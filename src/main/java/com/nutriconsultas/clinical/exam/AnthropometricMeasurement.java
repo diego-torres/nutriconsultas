@@ -29,6 +29,11 @@ import com.nutriconsultas.clinical.exam.anthropometric.Diameters;
 import com.nutriconsultas.clinical.exam.anthropometric.Skinfolds;
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.calculation.BmrFormulaType;
+import com.nutriconsultas.paciente.calculation.PhysicalActivityLevel;
+
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity
 @Data
@@ -83,6 +88,23 @@ public class AnthropometricMeasurement {
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "body_composition_id")
 	private BodyComposition bodyComposition;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private PhysicalActivityLevel physicalActivityLevel;
+
+	@Column(precision = 4)
+	private Double activityFactor;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private BmrFormulaType bmrFormula;
+
+	@Column(precision = 7)
+	private Double bmrUsed;
+
+	@Column(precision = 7)
+	private Double getKcal;
 
 	// Convenience methods for backward compatibility
 	public Double getPeso() {

@@ -78,4 +78,10 @@ public class BodyMetricRecord {
 	@Column(precision = 3)
 	private Double bodyFatPercentage;
 
+	@Column(precision = 7)
+	private Double bmr;
+
+	@Column(precision = 7)
+	private Double getKcal;
+
 }

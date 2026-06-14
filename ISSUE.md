@@ -8,7 +8,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
 **Last updated:** 2026-06-14 — **#99 done** (PR #153). All endpoints #91–#99 **done** on `main`. **NEXT:** [#112](https://github.com/diego-torres/nutriconsultas/issues/112) OpenAPI spec.
 
-> **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116) plus the directly-related `[Dashboard]` IMC gauge (#106). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
+> **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116) plus the directly-related `[Dashboard]` IMC gauge (#106) and **integration prerequisites** that gate schema work (#156). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
 ---
 
@@ -33,6 +33,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 | **Greenfield** | Message entity/repo/service/controllers **implemented** (#96/#97, PRs #146–#147, #151). Contact form uses `ContactInquiry` (not patient thread). |
 | **Branding** | `NutritionistProfile` (entity @ `228bbc3`: `userId`, `displayName`, `cedulaProfesional`, `logoExtension`, `registro`) already brands diet PDFs (#95) transparently; supplies optional `senderDisplayName` for #96 (#116). |
 | **Package note** | Actual entity package is `com.nutriconsultas.paciente` (singular) — issue #107 text says `pacientes`; follow the code. |
+| **`Paciente` entity** | Monolithic JPA entity (~44 fields post-#121). Mobile `#98`/`#99` consume **DTOs** mapped from `BodyMetricRecord` + snapshot cache on `Paciente` — not the entity shape. Decompose via [#156](https://github.com/diego-torres/nutriconsultas/issues/156) **before** [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46). |
 
 ---
 
@@ -121,6 +122,18 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 
 ---
 
+## Integration prerequisites (pre-Liquibase · P1)
+
+Schema-affecting work must respect mobile DTO contracts (§F8). These issues are **not** `/rest/mobile/**` endpoints but **block** Liquibase adoption and onboarding schema (#132).
+
+| # | Title | URL | State | Depends on | Blocks | Notes |
+|---|-------|-----|-------|-----------|--------|-------|
+| **156** | `[Integration]` Paciente domain refactor — incremental decomposition | https://github.com/diego-torres/nutriconsultas/issues/156 | open | [#121](https://github.com/diego-torres/nutriconsultas/issues/121) GET/TDEE | [#46](https://github.com/diego-torres/nutriconsultas/issues/46) Liquibase, [#132](https://github.com/diego-torres/nutriconsultas/issues/132) timing | Phases A–B (projections + `@Embeddable`, no mobile JSON changes); Phase C optional satellite tables. `#98`/`#99` DTO keys stable; `patientAuthSub` immovable. |
+| 46 | Implement Liquibase for database change management | https://github.com/diego-torres/nutriconsultas/issues/46 | open | **156** (Phases A–B min.) | — | First Liquibase baseline must capture post-#156 `Paciente` schema. Until then: `ddl-auto=update` + manual SQL if Phase C. |
+| 132 | Invitation & patient onboarding data model | https://github.com/diego-torres/nutriconsultas/issues/132 | open | #107 | — | Coordinate with #156 — add `Paciente.status` / `Invitation` **after** embeddable decomposition, not onto the monolith mid-refactor. |
+
+---
+
 ## Data contracts
 
 Each mobile feature consumes these backend endpoints. Two-way linking with the mobile registry ([`mobile/ISSUE.md`](../mobile/ISSUE.md) → "Backend cross-reference").
@@ -134,6 +147,7 @@ Each mobile feature consumes these backend endpoints. Two-way linking with the m
 | 107, 108, 109 | Auth / linkage | mobile #5, #7, #13, #22 | Auth |
 | 116 | `senderDisplayName` (optional) | mobile #19 | Read-only (additive) |
 | 114 | nutritionist reply | — (web only; feeds #96) | — |
+| 156 | `Paciente` internal refactor (pre-Liquibase) | — (backend only) | — | No mobile JSON change; `#98`/`#99` regression required per PR |
 
 **Common contract for every #91–#99** (ALIGNMENT-SPEC §"CORRECTED SCOPE"):
 - Auth: OAuth2 Resource Server JWT, separate `@Order(1)` `SecurityFilterChain`, stateless.

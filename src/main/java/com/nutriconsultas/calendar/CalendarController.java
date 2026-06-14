@@ -54,7 +54,8 @@ public class CalendarController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/calendario/nuevo")
-	public String nuevo(final Model model, @AuthenticationPrincipal final OidcUser principal) {
+	public String nuevo(final Model model, @AuthenticationPrincipal final OidcUser principal,
+			@org.springframework.web.bind.annotation.RequestParam(required = false) final Long pacienteId) {
 		log.debug("Starting nuevo method");
 		final String userId = getUserId(principal);
 		if (userId == null) {
@@ -65,9 +66,21 @@ public class CalendarController extends AbstractAuthorizedController {
 		event.setEventDateTime(new Date());
 		event.setDurationMinutes(60);
 		event.setStatus(EventStatus.SCHEDULED);
+		event.setTitle("Consulta");
+		boolean pacientePreseleccionado = false;
+		if (pacienteId != null) {
+			final com.nutriconsultas.paciente.Paciente paciente = pacienteRepository
+				.findByIdAndUserId(pacienteId, userId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+						"No se ha encontrado paciente con id " + pacienteId));
+			event.setPaciente(paciente);
+			pacientePreseleccionado = true;
+			log.debug("Preselected patient for new event: {}", LogRedaction.redactPaciente(paciente));
+		}
 		model.addAttribute("event", event);
 		model.addAttribute("pacientes", pacienteRepository.findByUserId(userId));
 		model.addAttribute("statuses", EventStatus.values());
+		model.addAttribute("pacientePreseleccionado", pacientePreseleccionado);
 		log.debug("Finished nuevo method with model {}", model);
 		return "sbadmin/calendar/formulario";
 	}
@@ -75,6 +88,7 @@ public class CalendarController extends AbstractAuthorizedController {
 	@PostMapping(path = "/admin/calendario/nuevo")
 	public String addEvent(final CalendarEvent event, final BindingResult result, final Model model,
 			@org.springframework.web.bind.annotation.RequestParam(required = false) final Long pacienteId,
+			@org.springframework.web.bind.annotation.RequestParam(required = false) final Boolean redirectToHistorial,
 			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Grabando nuevo evento: {}", event != null ? event.getTitle() : "null");
 
@@ -127,11 +141,17 @@ public class CalendarController extends AbstractAuthorizedController {
 			model.addAttribute("event", event);
 			model.addAttribute("pacientes", pacienteRepository.findByUserId(userId));
 			model.addAttribute("statuses", EventStatus.values());
+			model.addAttribute("pacientePreseleccionado", Boolean.TRUE.equals(redirectToHistorial));
 			resultView = "sbadmin/calendar/formulario";
 		}
 		else {
 			calendarEventService.save(event);
-			resultView = "redirect:/admin/calendario";
+			if (Boolean.TRUE.equals(redirectToHistorial) && event.getPaciente() != null) {
+				resultView = String.format("redirect:/admin/pacientes/%d/historial", event.getPaciente().getId());
+			}
+			else {
+				resultView = "redirect:/admin/calendario";
+			}
 		}
 		return resultView;
 	}
@@ -179,6 +199,7 @@ public class CalendarController extends AbstractAuthorizedController {
 		model.addAttribute("event", event);
 		model.addAttribute("pacientes", pacienteRepository.findByUserId(userId));
 		model.addAttribute("statuses", EventStatus.values());
+		model.addAttribute("pacientePreseleccionado", false);
 		return "sbadmin/calendar/formulario";
 	}
 
@@ -256,6 +277,7 @@ public class CalendarController extends AbstractAuthorizedController {
 			model.addAttribute("event", event);
 			model.addAttribute("pacientes", pacienteRepository.findByUserId(userId));
 			model.addAttribute("statuses", EventStatus.values());
+			model.addAttribute("pacientePreseleccionado", false);
 			return "sbadmin/calendar/formulario";
 		}
 		log.debug("No validation errors, proceeding with update");

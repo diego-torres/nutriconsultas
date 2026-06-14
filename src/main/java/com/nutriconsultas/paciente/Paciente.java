@@ -18,7 +18,13 @@ import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
+import com.nutriconsultas.paciente.calculation.ActivityFactorScale;
+import com.nutriconsultas.paciente.calculation.BmrFormulaType;
+import com.nutriconsultas.paciente.calculation.PhysicalActivityLevel;
 import com.nutriconsultas.paciente.validation.ValidPregnancy;
+
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity
 @Data
@@ -84,6 +90,42 @@ public class Paciente {
 	 */
 	@Column(precision = 7)
 	private Double bmr;
+
+	/**
+	 * Total daily energy expenditure (GET) in kcal/day.
+	 */
+	@Column(precision = 7)
+	private Double getKcal;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private ActivityFactorScale activityFactorScale = ActivityFactorScale.HARRIS_BENEDICT;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private BmrFormulaType preferredBmrFormula = BmrFormulaType.PROMEDIO;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private PhysicalActivityLevel physicalActivityLevel;
+
+	@Column(precision = 4)
+	private Double activityFactor;
+
+	@Column(precision = 4)
+	private Double customFactorSedentary;
+
+	@Column(precision = 4)
+	private Double customFactorLight;
+
+	@Column(precision = 4)
+	private Double customFactorModerate;
+
+	@Column(precision = 4)
+	private Double customFactorIntense;
+
+	@Column(precision = 4)
+	private Double customFactorVeryIntense;
 
 	private NivelPeso nivelPeso;
 

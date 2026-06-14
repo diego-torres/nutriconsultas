@@ -44,6 +44,8 @@ public class CalendarTemplateValidator extends BaseTemplateValidator {
 		// Mock statuses array
 		variables.put("statuses", EventStatus.values());
 
+		variables.put("pacientePreseleccionado", false);
+
 		return variables;
 	}
 

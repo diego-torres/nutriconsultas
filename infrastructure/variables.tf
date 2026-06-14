@@ -93,6 +93,27 @@ variable "auth_audience" {
   sensitive   = false
 }
 
+variable "auth0_mgmt_client_id" {
+  type        = string
+  description = "Auth0 M2M Client ID for Management API (AUTH0_MGMT_CLIENT_ID). Enables patient mobile linkage by email."
+  default     = ""
+  sensitive   = true
+}
+
+variable "auth0_mgmt_client_secret" {
+  type        = string
+  description = "Auth0 M2M Client Secret for Management API (AUTH0_MGMT_CLIENT_SECRET)."
+  default     = ""
+  sensitive   = true
+}
+
+variable "auth0_mgmt_domain" {
+  type        = string
+  description = "Auth0 Management API domain (AUTH0_MGMT_DOMAIN). Defaults to auth_issuer when empty."
+  default     = ""
+  sensitive   = false
+}
+
 variable "aws_bucket" {
   type        = string
   description = "S3 bucket name for application uploads (amazon.s3.bucket). Terraform creates this bucket (see s3-app-uploads.tf). If it already exists, run: terraform import aws_s3_bucket.app_uploads NAME"
