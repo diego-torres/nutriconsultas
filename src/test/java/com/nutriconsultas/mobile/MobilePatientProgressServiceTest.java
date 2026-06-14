@@ -1,6 +1,10 @@
 package com.nutriconsultas.mobile;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -14,11 +18,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurementRepository;
 import com.nutriconsultas.clinical.exam.anthropometric.Circumferences;
 import com.nutriconsultas.mobile.dto.PatientProgressSnapshotDto;
+import com.nutriconsultas.mobile.dto.ProgressMeasurementsDto;
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
@@ -94,6 +101,56 @@ class MobilePatientProgressServiceTest {
 
 		assertThat(snapshot.bodyFatPercentage()).isEqualTo(21.5);
 		assertThat(snapshot.deltaPeso()).isNull();
+	}
+
+	@Test
+	void listMeasurements_returnsAscendingSeriesWithCircumferences() {
+		final BodyMetricRecord older = metricRecord(1L, 72.0, 1.70, 24.9, NivelPeso.ALTO, 23.0, null,
+				Date.from(Instant.parse("2026-05-01T10:00:00Z")));
+		final BodyMetricRecord latest = metricRecord(2L, 70.0, 1.70, 24.2, NivelPeso.NORMAL, 19.0, 21.5,
+				Date.from(Instant.parse("2026-06-01T10:00:00Z")));
+		final AnthropometricMeasurement measurement = new AnthropometricMeasurement();
+		measurement.setId(2L);
+		measurement.setCircumferences(new Circumferences());
+		measurement.getCircumferences().setWaistCircumference(82.0);
+		measurement.getCircumferences().setHipCircumference(98.0);
+
+		when(bodyMetricRecordRepository.countPatientTimeline(eq(5L), isNull(), isNull())).thenReturn(2L);
+		when(bodyMetricRecordRepository.findPatientTimeline(eq(5L), isNull(), isNull(), any(Pageable.class)))
+			.thenReturn(List.of(older, latest));
+		when(anthropometricMeasurementRepository.findByPacienteIdAndIdIn(5L, List.of(1L, 2L)))
+			.thenReturn(List.of(measurement));
+
+		final ProgressMeasurementsDto series = service.listMeasurements(5L, null, null, null);
+
+		verify(bodyMetricRecordService).ensureBackfilled(5L);
+		assertThat(series.count()).isEqualTo(2);
+		assertThat(series.truncated()).isFalse();
+		assertThat(series.measurements()).extracting("weightKg").containsExactly(72.0, 70.0);
+		assertThat(series.measurements().get(1).bodyFatPercentage()).isEqualTo(21.5);
+		assertThat(series.measurements().get(1).circumferences().waistCm()).isEqualTo(82.0);
+	}
+
+	@Test
+	void listMeasurements_truncatesBeyondMaxRowsCap() {
+		when(bodyMetricRecordRepository.countPatientTimeline(eq(5L), isNull(), isNull())).thenReturn(400L);
+		when(bodyMetricRecordRepository.findPatientTimeline(eq(5L), isNull(), isNull(), any(Pageable.class)))
+			.thenReturn(List.of(metricRecord(1L, 70.0, 1.70, 24.2, NivelPeso.NORMAL, null, 22.0,
+					Date.from(Instant.parse("2026-06-01T10:00:00Z")))));
+		when(anthropometricMeasurementRepository.findByPacienteIdAndIdIn(eq(5L), any())).thenReturn(List.of());
+
+		final ProgressMeasurementsDto series = service.listMeasurements(5L, null, null, 500);
+
+		assertThat(series.truncated()).isTrue();
+	}
+
+	@Test
+	void listMeasurements_rejectsInvalidDateRange() {
+		final Instant from = Instant.parse("2026-06-02T00:00:00Z");
+		final Instant to = Instant.parse("2026-06-01T00:00:00Z");
+
+		assertThatThrownBy(() -> service.listMeasurements(5L, from, to, null))
+			.isInstanceOf(ResponseStatusException.class);
 	}
 
 	private static Paciente samplePaciente() {

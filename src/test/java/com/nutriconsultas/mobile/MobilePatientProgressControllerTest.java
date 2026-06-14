@@ -5,6 +5,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +16,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 
 import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.PatientProgressSnapshotDto;
+import com.nutriconsultas.mobile.dto.ProgressMeasurementPointDto;
+import com.nutriconsultas.mobile.dto.ProgressMeasurementsDto;
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
 
@@ -50,6 +53,27 @@ class MobilePatientProgressControllerTest {
 		assertThat(response.data().imcLabel()).isEqualTo("Normal");
 		assertThat(response.timestamp()).isNotNull();
 		verify(mobilePatientProgressService).getSnapshot(5L);
+	}
+
+	@Test
+	void listMeasurements_returnsApiResponseEnvelope() {
+		final Paciente paciente = new Paciente();
+		paciente.setId(5L);
+		final ProgressMeasurementsDto series = new ProgressMeasurementsDto(List
+			.of(new ProgressMeasurementPointDto(Instant.parse("2026-06-01T10:00:00Z"), 70.0, 1.70, 24.2, 22.0, null)),
+				1, false);
+		final Jwt jwt = Jwt.withTokenValue("token").header("alg", "none").subject(PATIENT_SUB).build();
+
+		when(patientAuthService.requirePacienteByJwt(jwt)).thenReturn(paciente);
+		when(mobilePatientProgressService.listMeasurements(5L, null, null, null)).thenReturn(series);
+
+		final ApiResponse<ProgressMeasurementsDto> response = controller.listMeasurements(jwt, null, null, null);
+
+		assertThat(response.data().count()).isEqualTo(1);
+		assertThat(response.data().measurements()).hasSize(1);
+		assertThat(response.data().measurements().get(0).weightKg()).isEqualTo(70.0);
+		assertThat(response.timestamp()).isNotNull();
+		verify(mobilePatientProgressService).listMeasurements(5L, null, null, null);
 	}
 
 }

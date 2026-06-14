@@ -13,6 +13,8 @@ public interface AnthropometricMeasurementRepository extends JpaRepository<Anthr
 
 	List<AnthropometricMeasurement> findByPacienteId(Long pacienteId);
 
+	List<AnthropometricMeasurement> findByPacienteIdAndIdIn(Long pacienteId, List<Long> ids);
+
 	java.util.Optional<AnthropometricMeasurement> findFirstByPacienteIdOrderByMeasurementDateTimeDescIdDesc(
 			Long pacienteId);
 

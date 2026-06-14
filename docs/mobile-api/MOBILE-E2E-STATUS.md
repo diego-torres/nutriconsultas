@@ -19,7 +19,7 @@ This document summarizes what the backend team verified after Auth0 CLI authenti
 | Apple login | ✅ Ready (dev keys) | Connection `apple` enabled on `minutriporcion-native` — uses Auth0 dev keys until Apple Developer creds are added |
 | JWT validation on prod (`AUTH_AUDIENCE`) | ✅ Ready | Valid token should **not** return 401 |
 | Patient linkage (prod test user) | ✅ Ready | Paciente linked to Google account below |
-| Visits / diet-plans / messages / progress API | ✅ Deployed on `main` | Expect **200** (POST messages **201**) after login + linkage |
+| Visits / diet-plans / messages / progress API | ✅ Deployed on `main` (incl. #99 via PR #153) | Expect **200** (POST messages **201**) after login + linkage |
 | Localized error envelope (#111) | ✅ Deployed | 403/404/400/429 return `ApiResponse` with localized `message` |
 | Message rate limit (#113) | ✅ Deployed | POST messages: 10/min per `patientAuthSub`; **429** + `Retry-After: 60` |
 
@@ -173,6 +173,7 @@ Run with `MOCK_AUTH=false` against **https://minutriporcion.com**.
 | `GET /rest/mobile/patient/messages` | 200 (may be empty) | [ ] | |
 | `POST /rest/mobile/patient/messages` | 201 + envelope | [ ] | Rate limit: 11th POST in 1 min → **429** |
 | `GET /rest/mobile/patient/progress` | 200 + snapshot | [ ] | |
+| `GET /rest/mobile/patient/progress/measurements` | 200 + ASC series (`truncated` when >365) | [ ] | After #153 deploy |
 
 ### Token sanity check
 
@@ -211,4 +212,4 @@ Optional backend script (requires access token from the app):
 
 ---
 
-*Updated 2026-06-14: Registry sync — #91–#98, #111, #113 on `main`; localized errors; message rate limit; progress snapshot deployed with #151.*
+*Updated 2026-06-14: Registry sync — all endpoints #91–#99 on `main` (PR #153); **NEXT:** #112 OpenAPI.*

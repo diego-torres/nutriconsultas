@@ -79,6 +79,39 @@ class MobilePatientProgressIntegrationTest {
 			.andExpect(status().isForbidden());
 	}
 
+	@Test
+	void listMeasurementsWithLinkedJwtReturnsAscendingSeries() throws Exception {
+		mockMvc.perform(get("/rest/mobile/patient/progress/measurements").with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.count").value(2))
+			.andExpect(jsonPath("$.data.truncated").value(false))
+			.andExpect(jsonPath("$.data.measurements[0].weightKg").value(72.0))
+			.andExpect(jsonPath("$.data.measurements[1].weightKg").value(70.0))
+			.andExpect(jsonPath("$.data.measurements[1].deltaPeso").doesNotExist())
+			.andExpect(jsonPath("$.timestamp").exists());
+	}
+
+	@Test
+	void listMeasurementsForUnlinkedJwtReturnsForbidden() throws Exception {
+		mockMvc
+			.perform(
+					get("/rest/mobile/patient/progress/measurements").with(mobileJwt("auth0|mobile-progress-unlinked")))
+			.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void listMeasurementsCapsAt365RowsForLargeHistory() throws Exception {
+		for (int index = 3; index <= 402; index++) {
+			saveMetric(linkedPaciente, (long) index, 70.0 + index, 24.0,
+					Date.from(Instant.parse("2025-01-01T00:00:00Z").plusSeconds(index * 86_400L)));
+		}
+
+		mockMvc.perform(get("/rest/mobile/patient/progress/measurements").with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.count").value(365))
+			.andExpect(jsonPath("$.data.truncated").value(true));
+	}
+
 	private static Paciente samplePaciente(final String patientAuthSub) {
 		final Paciente paciente = new Paciente();
 		paciente.setName("Paciente progreso");

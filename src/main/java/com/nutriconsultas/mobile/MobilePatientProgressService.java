@@ -1,22 +1,31 @@
 package com.nutriconsultas.mobile;
 
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurementRepository;
 import com.nutriconsultas.mobile.dto.PatientProgressSnapshotDto;
 import com.nutriconsultas.mobile.dto.ProgressCircumferenceDto;
+import com.nutriconsultas.mobile.dto.ProgressMeasurementPointDto;
+import com.nutriconsultas.mobile.dto.ProgressMeasurementsDto;
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.NivelPesoLabels;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.paciente.metrics.BodyMetricRecord;
 import com.nutriconsultas.paciente.metrics.BodyMetricRecordService;
+import com.nutriconsultas.paciente.metrics.BodyMetricSource;
 import com.nutriconsultas.util.ImcGaugeUtils;
 import com.nutriconsultas.util.LogRedaction;
 
@@ -25,6 +34,10 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class MobilePatientProgressService {
+
+	private static final int DEFAULT_MAX_ROWS = 365;
+
+	private static final int MAX_ROWS_CAP = 365;
 
 	private final BodyMetricRecordService bodyMetricRecordService;
 
@@ -76,6 +89,61 @@ public class MobilePatientProgressService {
 				toInstant(previousRecord.map(BodyMetricRecord::getRecordedAt).orElse(null)), weightKg, heightM, bmi,
 				nivelPeso, NivelPesoLabels.toImcLabel(nivelPeso), paciente.getBmr(), bodyFatPercentage, deltaPeso,
 				deltaImc, loadCircumferences(pacienteId));
+	}
+
+	@Transactional(readOnly = true)
+	public ProgressMeasurementsDto listMeasurements(final Long pacienteId, final Instant from, final Instant to,
+			final Integer maxRows) {
+		bodyMetricRecordService.ensureBackfilled(pacienteId);
+		final Date fromDate = from != null ? Date.from(from) : null;
+		final Date toDate = to != null ? Date.from(to) : null;
+		if (fromDate != null && toDate != null && fromDate.after(toDate)) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+		}
+		final int safeMaxRows = resolveMaxRows(maxRows);
+		final long totalMatching = bodyMetricRecordRepository.countPatientTimeline(pacienteId, fromDate, toDate);
+		final List<BodyMetricRecord> records = bodyMetricRecordRepository.findPatientTimeline(pacienteId, fromDate,
+				toDate, PageRequest.of(0, safeMaxRows));
+		final Map<Long, ProgressCircumferenceDto> circumferencesBySourceId = loadCircumferencesForRecords(pacienteId,
+				records);
+		final List<ProgressMeasurementPointDto> points = records.stream()
+			.map(record -> toMeasurementPoint(record, circumferencesBySourceId))
+			.toList();
+		if (log.isDebugEnabled()) {
+			log.debug("Listed {} mobile progress measurements (truncated={}) for patient {}", points.size(),
+					totalMatching > safeMaxRows, LogRedaction.redactPaciente(pacienteId));
+		}
+		return new ProgressMeasurementsDto(points, points.size(), totalMatching > safeMaxRows);
+	}
+
+	private static int resolveMaxRows(final Integer maxRows) {
+		if (maxRows == null) {
+			return DEFAULT_MAX_ROWS;
+		}
+		return Math.min(Math.max(maxRows, 1), MAX_ROWS_CAP);
+	}
+
+	private Map<Long, ProgressCircumferenceDto> loadCircumferencesForRecords(final Long pacienteId,
+			final List<BodyMetricRecord> records) {
+		final List<Long> anthropometricSourceIds = records.stream()
+			.filter(record -> record.getSource() == BodyMetricSource.ANTHROPOMETRIC)
+			.map(BodyMetricRecord::getSourceId)
+			.toList();
+		if (anthropometricSourceIds.isEmpty()) {
+			return Map.of();
+		}
+		return anthropometricMeasurementRepository.findByPacienteIdAndIdIn(pacienteId, anthropometricSourceIds)
+			.stream()
+			.collect(Collectors.toMap(AnthropometricMeasurement::getId, this::toCircumferenceDto,
+					(existing, replacement) -> existing));
+	}
+
+	private ProgressMeasurementPointDto toMeasurementPoint(final BodyMetricRecord record,
+			final Map<Long, ProgressCircumferenceDto> circumferencesBySourceId) {
+		final ProgressCircumferenceDto circumferences = record.getSource() == BodyMetricSource.ANTHROPOMETRIC
+				? circumferencesBySourceId.get(record.getSourceId()) : null;
+		return new ProgressMeasurementPointDto(toInstant(record.getRecordedAt()), record.getWeight(),
+				record.getHeight(), record.getImc(), resolveBodyFatPercentage(record), circumferences);
 	}
 
 	private ProgressCircumferenceDto loadCircumferences(final Long pacienteId) {
