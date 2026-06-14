@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,9 @@ class MobilePatientMessageServiceTest {
 
 	@Mock
 	private PatientMessageRepository patientMessageRepository;
+
+	@Mock
+	private PatientWriteRateLimiter patientWriteRateLimiter;
 
 	@Test
 	void listMessages_returnsCursorPageWithoutNextWhenNoMore() {
@@ -70,10 +74,17 @@ class MobilePatientMessageServiceTest {
 	}
 
 	@Test
-	void sendMessage_persistsPatientMessageWithNutritionistTenant() {
+	void sendMessage_persistsPatientMessageWithNutritionistTenant() throws Exception {
 		final Paciente paciente = new Paciente();
 		paciente.setId(5L);
 		paciente.setUserId("auth0|nutritionist-owner");
+		paciente.setPatientAuthSub("auth0|mobile-message-patient");
+		when(patientWriteRateLimiter.execute(eq(PatientWriteRateLimiter.PATIENT_MESSAGES),
+				eq("auth0|mobile-message-patient"), any(Callable.class)))
+			.thenAnswer(invocation -> {
+				final Callable<PatientMessageSummaryDto> callable = invocation.getArgument(2);
+				return callable.call();
+			});
 		when(patientMessageRepository.save(any(PatientMessage.class))).thenAnswer(invocation -> {
 			final PatientMessage saved = invocation.getArgument(0);
 			saved.setId(77L);

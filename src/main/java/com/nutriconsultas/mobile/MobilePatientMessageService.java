@@ -27,8 +27,12 @@ public class MobilePatientMessageService {
 
 	private final PatientMessageRepository patientMessageRepository;
 
-	public MobilePatientMessageService(final PatientMessageRepository patientMessageRepository) {
+	private final PatientWriteRateLimiter patientWriteRateLimiter;
+
+	public MobilePatientMessageService(final PatientMessageRepository patientMessageRepository,
+			final PatientWriteRateLimiter patientWriteRateLimiter) {
 		this.patientMessageRepository = patientMessageRepository;
+		this.patientWriteRateLimiter = patientWriteRateLimiter;
 	}
 
 	@Transactional(readOnly = true)
@@ -53,6 +57,11 @@ public class MobilePatientMessageService {
 
 	@Transactional
 	public PatientMessageSummaryDto sendMessage(final Paciente paciente, final String body) {
+		return patientWriteRateLimiter.execute(PatientWriteRateLimiter.PATIENT_MESSAGES, paciente.getPatientAuthSub(),
+				() -> persistPatientMessage(paciente, body));
+	}
+
+	private PatientMessageSummaryDto persistPatientMessage(final Paciente paciente, final String body) {
 		final PatientMessage message = new PatientMessage();
 		message.setPaciente(paciente);
 		message.setNutritionistUserId(paciente.getUserId());

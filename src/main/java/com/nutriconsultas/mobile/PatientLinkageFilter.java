@@ -1,14 +1,11 @@
 package com.nutriconsultas.mobile;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -25,8 +22,12 @@ public class PatientLinkageFilter extends OncePerRequestFilter {
 
 	private final PatientAuthService patientAuthService;
 
-	public PatientLinkageFilter(final PatientAuthService patientAuthService) {
+	private final MobileApiErrorResponses errorResponses;
+
+	public PatientLinkageFilter(final PatientAuthService patientAuthService,
+			final MobileApiErrorResponses errorResponses) {
 		this.patientAuthService = patientAuthService;
+		this.errorResponses = errorResponses;
 	}
 
 	@Override
@@ -53,15 +54,14 @@ public class PatientLinkageFilter extends OncePerRequestFilter {
 			if (log.isDebugEnabled()) {
 				log.debug("Mobile JWT sub has no linked Paciente.patientAuthSub");
 			}
-			writeForbidden(response);
+			writeForbidden(request, response);
 		}
 	}
 
-	private void writeForbidden(final HttpServletResponse response) throws IOException {
-		response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-		response.getWriter().write("{\"error\":\"patient_not_linked\"}");
+	private void writeForbidden(final HttpServletRequest request, final HttpServletResponse response)
+			throws IOException {
+		errorResponses.writeJson(response, HttpServletResponse.SC_FORBIDDEN,
+				errorResponses.error(MobileApiErrorResponses.KEY_PATIENT_NOT_LINKED, request));
 	}
 
 }

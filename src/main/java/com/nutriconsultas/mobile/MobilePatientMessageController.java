@@ -1,5 +1,6 @@
 package com.nutriconsultas.mobile;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nutriconsultas.mobile.dto.ApiResponse;
@@ -46,6 +48,7 @@ public class MobilePatientMessageController extends AbstractMobilePatientControl
 	}
 
 	@PostMapping
+	@ResponseStatus(HttpStatus.CREATED)
 	public ApiResponse<PatientMessageSummaryDto> sendMessage(@AuthenticationPrincipal final Jwt jwt,
 			@Valid @RequestBody final SendPatientMessageRequest request) {
 		final Paciente paciente = getAuthenticatedPaciente(jwt);

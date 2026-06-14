@@ -2,7 +2,6 @@ package com.nutriconsultas.mobile;
 
 import static com.nutriconsultas.mobile.MobileIntegrationTestJwt.mobileJwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,7 +51,16 @@ class MobileSecurityIntegrationTest {
 	void patientEndpoint_withUnlinkedJwt_returnsForbidden() throws Exception {
 		mockMvc.perform(get("/rest/mobile/patient/visits").with(mobileJwt(UNLINKED_SUB)))
 			.andExpect(status().isForbidden())
-			.andExpect(content().json("{\"error\":\"patient_not_linked\"}"));
+			.andExpect(jsonPath("$.message").value("La cuenta del paciente no está vinculada."))
+			.andExpect(jsonPath("$.timestamp").exists());
+	}
+
+	@Test
+	void patientEndpoint_withUnlinkedJwt_returnsEnglishMessageWhenRequested() throws Exception {
+		mockMvc
+			.perform(get("/rest/mobile/patient/visits").with(mobileJwt(UNLINKED_SUB)).header("Accept-Language", "en"))
+			.andExpect(status().isForbidden())
+			.andExpect(jsonPath("$.message").value("Patient account is not linked."));
 	}
 
 	@Test
