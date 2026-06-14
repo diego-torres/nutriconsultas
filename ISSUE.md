@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-14 — **#96 done** (in progress on branch). Contact form persisted; platform admin inbox at `/admin/contact-inquiries`.
+**Last updated:** 2026-06-14 — **#97 in progress** on branch `mobile-api/97-patient-send-message`. **#96 done** on `main`.
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116) plus the directly-related `[Dashboard]` IMC gauge (#106). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -98,8 +98,8 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 
 | # | Endpoint | URL | State | Backend source |
 |---|----------|-----|-------|----------------|
-| 96 | `GET /rest/mobile/patient/messages` — list thread | https://github.com/diego-torres/nutriconsultas/issues/96 | **done** (branch) | NEW entity/repo/service; **cursor** pagination; contact form → `ContactInquiry`; admin inbox |
-| 97 | `POST /rest/mobile/patient/messages` — send to nutritionist | https://github.com/diego-torres/nutriconsultas/issues/97 | open | `senderRole=PATIENT` from JWT only; `@Valid @Size(max=2000)`; rate limit via #113 |
+| 96 | `GET /rest/mobile/patient/messages` — list thread | https://github.com/diego-torres/nutriconsultas/issues/96 | **done** | Merged PR #146: cursor pagination; contact form → `ContactInquiry`; admin inbox |
+| 97 | `POST /rest/mobile/patient/messages` — send to nutritionist | https://github.com/diego-torres/nutriconsultas/issues/97 | **in-progress** | `senderRole=PATIENT` from JWT only; `@Valid @Size(max=2000)`; rate limit deferred to #113 |
 
 ### Progress — `AnthropometricMeasurement` / `Paciente`
 

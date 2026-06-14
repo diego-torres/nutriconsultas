@@ -1,8 +1,10 @@
 package com.nutriconsultas.mobile;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
@@ -10,6 +12,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -64,6 +67,33 @@ class MobilePatientMessageServiceTest {
 		assertThat(page.content()).hasSize(2);
 		assertThat(page.hasMore()).isTrue();
 		assertThat(page.nextCursor()).isEqualTo("99");
+	}
+
+	@Test
+	void sendMessage_persistsPatientMessageWithNutritionistTenant() {
+		final Paciente paciente = new Paciente();
+		paciente.setId(5L);
+		paciente.setUserId("auth0|nutritionist-owner");
+		when(patientMessageRepository.save(any(PatientMessage.class))).thenAnswer(invocation -> {
+			final PatientMessage saved = invocation.getArgument(0);
+			saved.setId(77L);
+			saved.setSentAt(Instant.parse("2026-06-01T13:00:00Z"));
+			saved.setReadByPatient(true);
+			saved.setReadByNutritionist(false);
+			return saved;
+		});
+
+		final PatientMessageSummaryDto sent = service.sendMessage(paciente, "  Hola doctor  ");
+
+		assertThat(sent.id()).isEqualTo(77L);
+		assertThat(sent.senderRole()).isEqualTo(MessageSenderRole.PATIENT);
+		assertThat(sent.body()).isEqualTo("Hola doctor");
+		assertThat(sent.read()).isTrue();
+		final ArgumentCaptor<PatientMessage> captor = ArgumentCaptor.forClass(PatientMessage.class);
+		verify(patientMessageRepository).save(captor.capture());
+		assertThat(captor.getValue().getSenderRole()).isEqualTo(MessageSenderRole.PATIENT);
+		assertThat(captor.getValue().getNutritionistUserId()).isEqualTo("auth0|nutritionist-owner");
+		assertThat(captor.getValue().getPaciente()).isSameAs(paciente);
 	}
 
 	private static PatientMessage sampleMessage(final Long id, final String body) {
