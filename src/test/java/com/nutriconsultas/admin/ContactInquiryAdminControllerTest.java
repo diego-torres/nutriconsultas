@@ -1,6 +1,8 @@
 package com.nutriconsultas.admin;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
@@ -39,6 +41,44 @@ class ContactInquiryAdminControllerTest {
 			.isInstanceOf(ResponseStatusException.class)
 			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode().value())
 			.isEqualTo(403);
+	}
+
+	@Test
+	void markAsRead_whenNotPlatformAdmin_throwsForbidden() {
+		when(platformAdminService.isPlatformAdmin(principal)).thenReturn(false);
+
+		assertThatThrownBy(() -> controller.markAsRead(principal, 1L)).isInstanceOf(ResponseStatusException.class)
+			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode().value())
+			.isEqualTo(403);
+	}
+
+	@Test
+	void markAsRead_whenPlatformAdmin_redirectsToList() {
+		when(platformAdminService.isPlatformAdmin(principal)).thenReturn(true);
+
+		final String view = controller.markAsRead(principal, 1L);
+
+		verify(contactInquiryService).markAsRead(1L);
+		assertThat(view).isEqualTo("redirect:/admin/contact-inquiries");
+	}
+
+	@Test
+	void delete_whenNotPlatformAdmin_throwsForbidden() {
+		when(platformAdminService.isPlatformAdmin(principal)).thenReturn(false);
+
+		assertThatThrownBy(() -> controller.delete(principal, 1L)).isInstanceOf(ResponseStatusException.class)
+			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode().value())
+			.isEqualTo(403);
+	}
+
+	@Test
+	void delete_whenPlatformAdmin_redirectsToList() {
+		when(platformAdminService.isPlatformAdmin(principal)).thenReturn(true);
+
+		final String view = controller.delete(principal, 1L);
+
+		verify(contactInquiryService).deleteById(1L);
+		assertThat(view).isEqualTo("redirect:/admin/contact-inquiries");
 	}
 
 }

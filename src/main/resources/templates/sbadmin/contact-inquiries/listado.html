@@ -34,20 +34,42 @@
                 <table class="table table-bordered" id="contactInquiriesTable" width="100%" cellspacing="0">
                   <thead>
                     <tr>
+                      <th>Estado</th>
                       <th>Fecha</th>
                       <th>Nombre</th>
                       <th>Email</th>
                       <th>Asunto</th>
                       <th>Mensaje</th>
+                      <th>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr th:each="inquiry : ${inquiries}">
+                    <tr th:each="inquiry : ${inquiries}"
+                      th:classappend="${!inquiry.readByAdmin} ? 'table-warning' : ''">
+                      <td>
+                        <span th:if="${inquiry.readByAdmin}" class="badge badge-secondary">Leído</span>
+                        <span th:unless="${inquiry.readByAdmin}" class="badge badge-primary">Nuevo</span>
+                      </td>
                       <td th:text="${#temporals.format(inquiry.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
                       <td th:text="${inquiry.name}">Nombre</td>
                       <td th:text="${inquiry.email}">email@example.com</td>
                       <td th:text="${inquiry.subject}">Asunto</td>
                       <td th:text="${inquiry.message}">Mensaje</td>
+                      <td class="text-nowrap">
+                        <form th:if="${!inquiry.readByAdmin}"
+                          th:action="@{/admin/contact-inquiries/{id}/read(id=${inquiry.id})}" method="post"
+                          class="d-inline">
+                          <button type="submit" class="btn btn-sm btn-success" title="Marcar como leído">
+                            <i class="fas fa-check"></i>
+                          </button>
+                        </form>
+                        <form th:action="@{/admin/contact-inquiries/{id}/delete(id=${inquiry.id})}" method="post"
+                          class="d-inline" onsubmit="return confirm('¿Eliminar este mensaje de contacto?');">
+                          <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </form>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -69,10 +91,13 @@
   <script th:inline="javascript">
     $(document).ready(function () {
       $('#contactInquiriesTable').DataTable({
-        order: [[0, 'desc']],
+        order: [[1, 'desc']],
         language: {
           url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
-        }
+        },
+        columnDefs: [
+          { orderable: false, targets: [6] }
+        ]
       });
     });
   </script>
