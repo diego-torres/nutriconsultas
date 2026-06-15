@@ -13,7 +13,7 @@ registro de consultorio de nutrición
 
 Backend REST endpoints for the Flutter patient app live under `/rest/mobile/patient/**`. Issue tracking and endpoint status: [`ISSUE.md`](ISSUE.md). Agent workflow: [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md). Contract docs: [`docs/mobile-api/`](docs/mobile-api/).
 
-**On `main` (2026-06-14):** Phase 0 auth (#107, #109, #110); all patient endpoints #91–#99 (visits, diet + PDF, messages, progress snapshot + measurements); localized API errors (#111); rate limit (#113). **Next:** #112 OpenAPI spec.
+**On `main` (2026-06-15):** Phase 0 auth (#107, #109, #110); all patient endpoints #91–#99; localized API errors (#111); rate limit (#113); **OpenAPI #112** (PR #164, `docs/api/openapi-mobile.yaml`). **Next:** #115 PHI audit.
 
 ## AWS (production infrastructure)
 
