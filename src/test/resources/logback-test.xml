@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+  <turboFilter class="com.nutriconsultas.mobile.logging.PhiLogTurboFilter" />
   <include resource="org/springframework/boot/logging/logback/defaults.xml" />
 	<property name="LOG_FILE" value="/tmp/minutriporcion.log}"/>
 	<include resource="org/springframework/boot/logging/logback/file-appender.xml" />

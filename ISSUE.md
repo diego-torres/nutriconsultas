@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-15 — #112 OpenAPI **done** ([PR #164](https://github.com/diego-torres/nutriconsultas/pull/164) merged). **NEXT:** [#115](https://github.com/diego-torres/nutriconsultas/issues/115) PHI audit.
+**Last updated:** 2026-06-15 — #115 PHI audit **in progress** on branch `mobile-api/115-phi-audit`.
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116, #132–#141 invitation onboarding) plus the directly-related `[Dashboard]` IMC gauge (#106) and **integration prerequisites** that gate schema work (#156, #46). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -49,7 +49,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 | `done` | Merged to `main` |
 | `deferred` | Intentionally paused — decision pending |
 
-Phase 0 (#107, #109, #110) is **done**. Patient linkage (#109) is **done**. Endpoints **#91–#99 are done** on `main` (PR #153). OpenAPI (#112, PR #164) is **done**. **NEXT:** #115 (PHI log redaction audit).
+Phase 0 (#107, #109, #110) is **done**. Patient linkage (#109) is **done**. Endpoints **#91–#99 are done** on `main` (PR #153). OpenAPI (#112, PR #164) is **done**. **#115 PHI audit in progress** on `mobile-api/115-phi-audit`.
 
 ---
 
@@ -75,7 +75,7 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
 | 111 | Accept-Language filter + MessageSource i18n for REST errors | https://github.com/diego-torres/nutriconsultas/issues/111 | **done** | 110 | Merged PR #151: `LocaleContextFilter`, `MobileApiErrorResponses`, `MobileApiExceptionHandler` (403/404/400/429). GitHub issue still open — close when convenient. |
-| 115 | PHI log redaction audit for all mobile controllers | https://github.com/diego-torres/nutriconsultas/issues/115 | **NEXT** | 110 | Audit every `/rest/mobile/**` controller against `util/LogRedaction`; CI gate `scripts/audit-logging.sh`. No names/emails/DOB at INFO. |
+| 115 | PHI log redaction audit for all mobile controllers | https://github.com/diego-torres/nutriconsultas/issues/115 | **in-progress** | 110 | `PhiLogTurboFilter`, `scripts/audit-mobile-logging.sh`, `docs/mobile-api/PHI-LOGGING-AUDIT.md`; branch `mobile-api/115-phi-audit`. |
 | 112 | OpenAPI spec for `/rest/mobile/patient/**` | https://github.com/diego-torres/nutriconsultas/issues/112 | **done** | 110, endpoints | Merged [PR #164](https://github.com/diego-torres/nutriconsultas/pull/164): springdoc + `docs/api/openapi-mobile.yaml`. |
 
 ---
@@ -118,7 +118,7 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 | # | Title | URL | State | Notes |
 |---|-------|-----|-------|-------|
 | 113 | Rate limiting on patient write endpoints (Resilience4j) | https://github.com/diego-torres/nutriconsultas/issues/113 | **done** | Merged PR #151: 10/min per `patientAuthSub` on POST #97; 429 + `Retry-After: 60`; localized via #111 |
-| 116 | Additive: `senderDisplayName` in message DTOs from `NutritionistProfile` | https://github.com/diego-torres/nutriconsultas/issues/116 | open | Additive to #96 DTO; **non-blocking** for mobile #19. Source `NutritionistProfile.displayName`. |
+| 116 | Additive: `senderDisplayName` in message DTOs from `NutritionistProfile` | https://github.com/diego-torres/nutriconsultas/issues/116 | **NEXT** | Additive to #96 DTO; **non-blocking** for mobile #19. Source `NutritionistProfile.displayName`. |
 | 114 | Nutritionist reply to patient messages | https://github.com/diego-torres/nutriconsultas/issues/114 | open | **Web/backend only** — not a mobile-app endpoint; writes into the same thread #96 reads. |
 | 106 | `[Dashboard]` IMC gauge with color bands (anthropometric tablero) | https://github.com/diego-torres/nutriconsultas/issues/106 | **done** | Web dashboard; shares `NivelPeso` color-band logic the mobile `ImcGauge` (mobile #21) mirrors. Not a `/rest/mobile/**` endpoint. |
 

@@ -68,7 +68,9 @@ public class MobilePatientMessageService {
 		message.setSenderRole(MessageSenderRole.PATIENT);
 		message.setBody(body.trim());
 		final PatientMessage saved = patientMessageRepository.save(message);
-		log.info("Patient sent message: {}", LogRedaction.redactPatientMessage(saved.getId()));
+		if (log.isInfoEnabled()) {
+			log.info("Patient sent message: {}", LogRedaction.redactPatientMessage(saved.getId()));
+		}
 		return PatientMessageSummaryDto.fromEntity(saved);
 	}
 

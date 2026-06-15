@@ -63,8 +63,8 @@ public class MobilePatientDietPlanService {
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		initializeDietaTree(assignment.getDieta());
 		if (log.isDebugEnabled()) {
-			log.debug("Loaded mobile diet plan detail assignmentId={} for patient {}", assignmentId,
-					LogRedaction.redactPaciente(pacienteId));
+			log.debug("Loaded mobile diet plan detail assignmentId={} for patient {}",
+					LogRedaction.redactPacienteDieta(assignmentId), LogRedaction.redactPaciente(pacienteId));
 		}
 		return DietPlanDetailDto.fromEntity(assignment);
 	}
@@ -77,8 +77,8 @@ public class MobilePatientDietPlanService {
 		final Dieta dieta = assignment.getDieta();
 		final String filename = (dieta != null && dieta.getNombre() != null ? dieta.getNombre() : "dieta") + ".pdf";
 		if (log.isDebugEnabled()) {
-			log.debug("Generated mobile diet plan PDF assignmentId={} for patient {}", assignmentId,
-					LogRedaction.redactPaciente(pacienteId));
+			log.debug("Generated mobile diet plan PDF assignmentId={} for patient {}",
+					LogRedaction.redactPacienteDieta(assignmentId), LogRedaction.redactPaciente(pacienteId));
 		}
 		return new DietPlanPdfResult(pdfBytes, filename);
 	}

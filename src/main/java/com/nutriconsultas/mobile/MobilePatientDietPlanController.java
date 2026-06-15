@@ -71,7 +71,7 @@ public class MobilePatientDietPlanController extends AbstractMobilePatientContro
 			@Parameter(description = "PacienteDieta assignment identifier") @PathVariable final Long assignmentId) {
 		final Paciente paciente = getAuthenticatedPaciente(jwt);
 		if (log.isDebugEnabled()) {
-			log.debug("Mobile get diet plan {} for patient {}", assignmentId,
+			log.debug("Mobile get diet plan {} for patient {}", LogRedaction.redactPacienteDieta(assignmentId),
 					LogRedaction.redactPaciente(paciente.getId()));
 		}
 		final DietPlanDetailDto plan = mobilePatientDietPlanService.getDietPlanDetail(paciente.getId(), assignmentId);
@@ -89,7 +89,7 @@ public class MobilePatientDietPlanController extends AbstractMobilePatientContro
 			@Parameter(description = "PacienteDieta assignment identifier") @PathVariable final Long assignmentId) {
 		final Paciente paciente = getAuthenticatedPaciente(jwt);
 		if (log.isDebugEnabled()) {
-			log.debug("Mobile get diet plan PDF {} for patient {}", assignmentId,
+			log.debug("Mobile get diet plan PDF {} for patient {}", LogRedaction.redactPacienteDieta(assignmentId),
 					LogRedaction.redactPaciente(paciente.getId()));
 		}
 		final DietPlanPdfResult pdf = mobilePatientDietPlanService.generateDietPlanPdf(paciente.getId(), assignmentId);

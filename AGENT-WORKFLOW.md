@@ -10,7 +10,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) | Canonical cross-repo contract — §F8 schema/enum map, per-issue corrected scope |
 | [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) | Endpoint request/response specs (#91–#99) with field mappings |
 
-**Current next issue:** [#115 — PHI log redaction audit for all mobile controllers](https://github.com/diego-torres/nutriconsultas/issues/115) — **NEXT** (P1 cross-cutting). #112 OpenAPI merged ([PR #164](https://github.com/diego-torres/nutriconsultas/pull/164)).
+**Current next issue:** [#116 — Additive: senderDisplayName in message DTOs](https://github.com/diego-torres/nutriconsultas/issues/116) — **NEXT** (additive). #115 PHI audit merged.
 
 ---
 
@@ -22,10 +22,10 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | **API surface** | All mobile endpoints live under `/rest/mobile/patient/` as plain JSON (not DataTables-shaped like the admin `*RestController`s). |
 | **Identity (security-critical)** | JWT `sub` → **`Paciente.patientAuthSub`** (#107 ✓ PR #117). **Never `Paciente.userId`** — that is the NUTRITIONIST's Auth0 sub / tenant owner (ALIGNMENT-SPEC §F2). `PatientLinkageFilter` returns **403** if no linked `Paciente`. |
 | **Ownership / IDOR** | Return only the authenticated patient's rows. On an ownership miss prefer **404** (not 403) so existence isn't leaked (esp. #92). Never return cross-tenant data. |
-| **Backend state** | **Phase 0 done** (#107, #109, #110). **All endpoints #91–#99 done** on `main`. **OpenAPI #112 done** (PR #164). Cross-cutting **NEXT:** #115 PHI audit. Requires `AUTH_AUDIENCE` env var. |
+| **Backend state** | **Phase 0 done** (#107, #109, #110). **All endpoints #91–#99 done** on `main`. **OpenAPI #112 done** (PR #164). **PHI audit #115 done**. **NEXT:** #116 `senderDisplayName`. Requires `AUTH_AUDIENCE` env var. |
 | **DTO envelope** | `ApiResponse<T>`; lists in `PagedResponse<T>` or `CursorPagedResponse<T>` (messages); ISO-8601 date strings. See #110. |
 | **Schema ground truth** | ALIGNMENT-SPEC §F8 field-name map (`nombre→dietaName`, `energia→totalKcal`, `lipidos→totalGrasas`, `hidratosDeCarbono→totalCarbohidratos`, `Ingesta.nombre→tipo`); enums `EventStatus`/`PacienteDietaStatus` (no INACTIVE)/`NivelPeso`. Serialization aliases only — **no DB schema changes** for field renames. |
-| **PHI & logging** | No patient names/emails/DOB in unstructured logs. Follow `util/LogRedaction`; CI runs `scripts/audit-logging.sh` (#115). |
+| **PHI & logging** | No patient names/emails/DOB in unstructured logs. `LogRedaction` + `PhiLogTurboFilter`; CI runs `scripts/audit-logging.sh` and `scripts/audit-mobile-logging.sh` (#115 done). |
 | **Existing code to reuse** | Visits → `calendar/CalendarEventService`; Diet → `PacienteDietaService` + `dieta/` + PDF (#95); Progress → `BodyMetricRecordService` + anthropometrics (#98/#99); Messages → `PatientMessage` entity + mobile/admin controllers (#96/#97). |
 | **`Paciente` / Liquibase order** | [#156](https://github.com/diego-torres/nutriconsultas/issues/156) (projections + `@Embeddable`, optional satellite tables) must complete **before** [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46). Mobile `#98`/`#99` DTOs stay stable — refactor maps in the service layer only. Do not add #132 onboarding columns to the monolithic entity until #156 Phase B lands. |
 
@@ -322,13 +322,13 @@ gh pr create ...
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#115 — PHI log redaction audit](https://github.com/diego-torres/nutriconsultas/issues/115) |
+| **Next issue** | [#116 — senderDisplayName in message DTOs](https://github.com/diego-torres/nutriconsultas/issues/116) |
 | **Status** | **NEXT** |
-| **Phase** | Cross-cutting (P1) |
-| **Depends on** | #110 |
+| **Phase** | Additive (optional) |
+| **Depends on** | #96 |
 | **Blocks** | — |
-| **Just completed** | [#112](https://github.com/diego-torres/nutriconsultas/issues/112) — [PR #164](https://github.com/diego-torres/nutriconsultas/pull/164): OpenAPI 3.1 + `docs/api/openapi-mobile.yaml` |
-| **In scope for #115** | Audit `/rest/mobile/**` logging; enforce `LogRedaction`; CI `scripts/audit-logging.sh` |
+| **Just completed** | [#115](https://github.com/diego-torres/nutriconsultas/issues/115) — PHI log redaction audit: `PhiLogTurboFilter`, `scripts/audit-mobile-logging.sh`, `docs/mobile-api/PHI-LOGGING-AUDIT.md` |
+| **In scope for #116** | Add `senderDisplayName` from `NutritionistProfile` to message DTOs |
 
 ### Upcoming gates
 
@@ -337,15 +337,15 @@ gh pr create ...
 | Phase 0 foundation | ~~#107~~ ✓, ~~#109~~ ✓, ~~#110~~ ✓ | **Done** |
 | Auth linkage (tenant) | #108 (tenant config; prod audience deployed #118) | Before full Auth0 tenant hardening |
 | Endpoints | ~~#91–#99~~ ✓ | **Done** (PR #153) |
-| Cross-cutting | ~~#111~~ ✓, ~~#112~~ ✓ (OpenAPI), **#115** (PHI audit) | **#115 is NEXT** |
-| Hardening / additive | ~~#113~~ ✓, #116 (senderDisplayName), #114 (nutritionist reply) | With/after owning feature |
+| Cross-cutting | ~~#111~~ ✓, ~~#112~~ ✓ (OpenAPI), ~~#115~~ ✓ (PHI audit) | **Done** |
+| Hardening / additive | ~~#113~~ ✓, **#116** (senderDisplayName), #114 (nutritionist reply) | **#116 is NEXT** |
 | Schema / Liquibase | **#156** (`Paciente` refactor) → **#46** (Liquibase baseline) → **#132–#141** (invitation onboarding) | **#156 before any Liquibase cut**; invitation epic not active sprint |
 
 ### Status snapshot (2026-06-15)
 
 **Patient mobile API on `main`:** JWT resource server (#107), DTO envelope (#110), patient linkage (#109), visits (#91/#92), diet plans (#93–#95), messages list/send (#96/#97 with HTTP 201 + rate limit), progress snapshot (#98) + measurements time series (#99, PR #153), localized API errors (#111), Resilience4j write throttling (#113), **OpenAPI spec (#112, PR #164)**. Dashboard IMC gauge (#106) done for web tablero.
 
-**Next:** #115 PHI log redaction audit, then additive #116 / web #114.
+**Next:** #116 `senderDisplayName`, then web #114.
 
 **GitHub drift (close when convenient):** #97 and #111 are **done on `main`** but still **open on GitHub** (implemented in PRs #147, #151).
 
