@@ -150,6 +150,7 @@
 	<!--
 		OPTIONAL MODEL VARIABLES:
 		- nutritionistProfile: NutritionistProfile entity (may be null)
+		- nutritionistDisplayName: resolved nutritionist name (may be null)
 		- logoBase64: Base64 Data URI string (may be null)
 	-->
 	<div class="header">
@@ -160,10 +161,7 @@
 					<p th:if="${analysis != null and analysis.dieta != null}">
 						<strong>Dieta:</strong> <span th:text="${analysis.dieta.nombre}"></span>
 					</p>
-					<p th:if="${nutritionistProfile != null and nutritionistProfile.cedulaProfesional != null
-					        and !#strings.isEmpty(nutritionistProfile.cedulaProfesional)}">
-						Ced. Prof. <span th:text="${nutritionistProfile.cedulaProfesional}">0000000</span>
-					</p>
+					<div th:replace="~{sbadmin/fragments/pdf-nutritionist-credentials :: credentials}"></div>
 					<p th:if="${reportDate != null}">
 						<strong>Fecha del Reporte:</strong>
 						<span th:text="${#dates.format(reportDate, 'dd/MM/yyyy HH:mm')}"></span>

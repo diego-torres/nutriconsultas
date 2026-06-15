@@ -83,8 +83,10 @@ public class ReportTemplateValidator extends BaseTemplateValidator {
 		// Add nutritionist branding mock variables for all PDF report templates
 		final NutritionistProfile mockProfile = new NutritionistProfile();
 		mockProfile.setId(1L);
+		mockProfile.setDisplayName("Lic. María García López");
 		mockProfile.setCedulaProfesional("12345678");
 		variables.put("nutritionistProfile", mockProfile);
+		variables.put("nutritionistDisplayName", "Lic. María García López");
 		variables.put("logoBase64", null);
 
 		return variables;

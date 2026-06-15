@@ -27,6 +27,7 @@ import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
 import com.nutriconsultas.paciente.PacienteService;
+import com.nutriconsultas.profile.NutritionistBrandingHelper;
 import com.nutriconsultas.profile.NutritionistProfile;
 import com.nutriconsultas.profile.NutritionistProfileService;
 
@@ -146,8 +147,8 @@ public class PatientReportService {
 
 		// Inject nutritionist profile branding
 		final NutritionistProfile profile = nutritionistProfileService.getOrCreateProfile(userId);
-		context.setVariable("nutritionistProfile", profile);
-		context.setVariable("logoBase64", nutritionistProfileService.getLogoAsBase64DataUri(userId));
+		final String logoBase64 = nutritionistProfileService.getLogoAsBase64DataUri(userId);
+		NutritionistBrandingHelper.addBrandingVariables(context, profile, logoBase64);
 
 		// Render Thymeleaf template to HTML
 		final String html = templateEngine.process("sbadmin/reports/patient-progress", context);
@@ -273,8 +274,8 @@ public class PatientReportService {
 
 		// Inject nutritionist profile branding
 		final NutritionistProfile nutritionAnalysisProfile = nutritionistProfileService.getOrCreateProfile(userId);
-		context.setVariable("nutritionistProfile", nutritionAnalysisProfile);
-		context.setVariable("logoBase64", nutritionistProfileService.getLogoAsBase64DataUri(userId));
+		final String nutritionLogoBase64 = nutritionistProfileService.getLogoAsBase64DataUri(userId);
+		NutritionistBrandingHelper.addBrandingVariables(context, nutritionAnalysisProfile, nutritionLogoBase64);
 
 		// Render Thymeleaf template to HTML
 		final String html = templateEngine.process("sbadmin/reports/nutrition-analysis", context);
@@ -307,8 +308,8 @@ public class PatientReportService {
 
 		// Inject nutritionist profile branding
 		final NutritionistProfile clinicProfile = nutritionistProfileService.getOrCreateProfile(userId);
-		context.setVariable("nutritionistProfile", clinicProfile);
-		context.setVariable("logoBase64", nutritionistProfileService.getLogoAsBase64DataUri(userId));
+		final String clinicLogoBase64 = nutritionistProfileService.getLogoAsBase64DataUri(userId);
+		NutritionistBrandingHelper.addBrandingVariables(context, clinicProfile, clinicLogoBase64);
 
 		// Render Thymeleaf template to HTML
 		final String html = templateEngine.process("sbadmin/reports/clinic-statistics-pdf", context);

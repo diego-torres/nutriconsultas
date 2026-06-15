@@ -781,7 +781,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 
 	private void applyStressFields(final CalendarEvent event, final Map<String, Object> eventData) {
 		if (eventData.get("physiologicalStressActive") != null) {
-			event.setPhysiologicalStressActive(Boolean.parseBoolean(eventData.get("physiologicalStressActive").toString()));
+			event.setPhysiologicalStressActive(
+					Boolean.parseBoolean(eventData.get("physiologicalStressActive").toString()));
 		}
 		if (eventData.get("physiologicalStressType") != null) {
 			event.setPhysiologicalStressType(

@@ -15,7 +15,6 @@ public final class PhysiologicalStressCalculationService {
 
 	/**
 	 * Calculates stress kcal/day from resolved context and energy components.
-	 *
 	 * @param context resolved stress configuration
 	 * @param bmr basal metabolic rate (kcal/day)
 	 * @param getKcal total daily energy expenditure before TEF (kcal/day)

@@ -11,7 +11,8 @@ import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.paciente.Paciente;
 
 /**
- * Resolves physiological stress preferences from patient records and clinical event overrides.
+ * Resolves physiological stress preferences from patient records and clinical event
+ * overrides.
  */
 public final class PhysiologicalStressPreferences {
 
@@ -42,15 +43,15 @@ public final class PhysiologicalStressPreferences {
 			return StressContext.inactive();
 		}
 		return StressContext.fromValues(measurement.getPhysiologicalStressActive(),
-				measurement.getPhysiologicalStressType(),
-				measurement.getStressFormulaTable(), measurement.getStressIncrementMode(),
-				measurement.getStressFactorValue(), measurement.getStressValidFrom(),
-				measurement.getStressValidUntil(), measurement.getStressFeverTemperature());
+				measurement.getPhysiologicalStressType(), measurement.getStressFormulaTable(),
+				measurement.getStressIncrementMode(), measurement.getStressFactorValue(),
+				measurement.getStressValidFrom(), measurement.getStressValidUntil(),
+				measurement.getStressFeverTemperature());
 	}
 
 	/**
-	 * Resolves effective stress context: event/measurement override when explicitly active,
-	 * otherwise patient baseline when valid on the reference date.
+	 * Resolves effective stress context: event/measurement override when explicitly
+	 * active, otherwise patient baseline when valid on the reference date.
 	 */
 	public static StressContext resolveEffective(final Paciente paciente, @Nullable final CalendarEvent event,
 			@Nullable final AnthropometricMeasurement measurement, @Nullable final LocalDate referenceDate) {

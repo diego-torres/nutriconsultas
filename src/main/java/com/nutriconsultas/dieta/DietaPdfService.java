@@ -14,6 +14,7 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
+import com.nutriconsultas.profile.NutritionistBrandingHelper;
 import com.nutriconsultas.profile.NutritionistProfile;
 import com.nutriconsultas.profile.NutritionistProfileService;
 
@@ -219,13 +220,11 @@ public class DietaPdfService {
 		// Dieta.userId identifies the owning nutritionist tenant
 		if (dieta.getUserId() != null) {
 			final NutritionistProfile profile = nutritionistProfileService.getOrCreateProfile(dieta.getUserId());
-			context.setVariable("nutritionistProfile", profile);
 			final String logoBase64 = nutritionistProfileService.getLogoAsBase64DataUri(dieta.getUserId());
-			context.setVariable("logoBase64", logoBase64);
+			NutritionistBrandingHelper.addBrandingVariables(context, profile, logoBase64);
 		}
 		else {
-			context.setVariable("nutritionistProfile", null);
-			context.setVariable("logoBase64", null);
+			NutritionistBrandingHelper.addBrandingVariables(context, null, null);
 		}
 
 		// Render Thymeleaf template to HTML

@@ -17,8 +17,8 @@ class PhysiologicalStressCalculationServiceTest {
 
 	@Test
 	void calculateAspenMultiplierStressOnGet() {
-		final StressContext context = StressContext.fromValues(true, PhysiologicalStressType.TRAUMA, StressFormulaTable.ASPEN,
-				StressIncrementMode.MULTIPLIER_GET, null, null, null, null);
+		final StressContext context = StressContext.fromValues(true, PhysiologicalStressType.TRAUMA,
+				StressFormulaTable.ASPEN, StressIncrementMode.MULTIPLIER_GET, null, null, null, null);
 		final Double stressKcal = PhysiologicalStressCalculationService.calculateStressKcal(context, 1500.0, 2000.0,
 				null);
 		assertThat(stressKcal).isCloseTo(800.0, org.assertj.core.data.Offset.offset(0.01));
@@ -26,8 +26,8 @@ class PhysiologicalStressCalculationServiceTest {
 
 	@Test
 	void calculateFixedKcalStress() {
-		final StressContext context = StressContext.fromValues(true, PhysiologicalStressType.OTHER, StressFormulaTable.CUSTOM,
-				StressIncrementMode.FIXED_KCAL, 450.0, null, null, null);
+		final StressContext context = StressContext.fromValues(true, PhysiologicalStressType.OTHER,
+				StressFormulaTable.CUSTOM, StressIncrementMode.FIXED_KCAL, 450.0, null, null, null);
 		assertThat(PhysiologicalStressCalculationService.calculateStressKcal(context, 1500.0, 2000.0, null))
 			.isEqualTo(450.0);
 	}
@@ -43,8 +43,8 @@ class PhysiologicalStressCalculationServiceTest {
 
 	@Test
 	void calculateStressUsesCustomFactorOverride() {
-		final StressContext context = StressContext.fromValues(true, PhysiologicalStressType.OTHER, StressFormulaTable.LONG,
-				StressIncrementMode.MULTIPLIER_BMR, 1.50, null, null, null);
+		final StressContext context = StressContext.fromValues(true, PhysiologicalStressType.OTHER,
+				StressFormulaTable.LONG, StressIncrementMode.MULTIPLIER_BMR, 1.50, null, null, null);
 		assertThat(PhysiologicalStressCalculationService.calculateStressKcal(context, 1000.0, 1500.0, null))
 			.isEqualTo(500.0);
 	}
@@ -56,8 +56,8 @@ class PhysiologicalStressCalculationServiceTest {
 
 	@Test
 	void inactiveStressReturnsNull() {
-		final StressContext context = StressContext.fromValues(false, PhysiologicalStressType.FEVER, StressFormulaTable.LONG,
-				StressIncrementMode.MULTIPLIER_BMR, null, null, null, null);
+		final StressContext context = StressContext.fromValues(false, PhysiologicalStressType.FEVER,
+				StressFormulaTable.LONG, StressIncrementMode.MULTIPLIER_BMR, null, null, null, null);
 		assertThat(PhysiologicalStressCalculationService.calculateStressKcal(context, 1500.0, 2000.0, null)).isNull();
 	}
 
