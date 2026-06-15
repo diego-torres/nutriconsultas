@@ -92,6 +92,7 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		paciente.setBulimia(false);
 		paciente.setAnorexia(false);
 		paciente.setPregnancy(false);
+		paciente.setPhysiologicalStressActive(null);
 		return paciente;
 	}
 
