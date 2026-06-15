@@ -55,6 +55,8 @@ public class MobilePatientProgressController extends AbstractMobilePatientContro
 	@MobileOpenApiResponses.AuthenticatedPatient
 	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",
 			description = "Measurement time series (ASC, max 365 rows)")
+	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400",
+			description = "Invalid date range (from after to)")
 	public ApiResponse<ProgressMeasurementsDto> listMeasurements(@AuthenticationPrincipal final Jwt jwt,
 			@Parameter(description = "Inclusive start instant (ISO-8601)") @RequestParam(
 					required = false) final Instant from,

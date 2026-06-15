@@ -269,6 +269,12 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseProgressMeasurementsDto"
+        "400":
+          description: Invalid date range (from after to)
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseProgressMeasurementsDto"
         "401":
           description: Missing or invalid JWT
           content:
@@ -419,6 +425,7 @@ components:
       properties:
         body:
           type: string
+          description: Message body
           maxLength: 2000
           minLength: 0
       required:
