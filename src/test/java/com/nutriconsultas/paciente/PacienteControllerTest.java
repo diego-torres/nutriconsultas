@@ -629,6 +629,7 @@ public class PacienteControllerTest {
 		// Arrange - Use existing paciente (30 years old)
 		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
+		when(anthropometricMeasurementService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
@@ -638,8 +639,8 @@ public class PacienteControllerTest {
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
 		verify(model).addAttribute("isUnder18", false);
-		// Should not fetch measurements for patients 18 or older
-		verify(anthropometricMeasurementService, org.mockito.Mockito.never()).findByPacienteId(any());
+		verify(anthropometricMeasurementService).findByPacienteId(1L);
+		verify(model, org.mockito.Mockito.never()).addAttribute(eq("growthMeasurements"), any(List.class));
 		log.info("finished testPerfilPaciente18OrOlder");
 	}
 
@@ -658,6 +659,7 @@ public class PacienteControllerTest {
 		when(pacienteRepository.findByIdAndUserId(4L, TEST_USER_ID))
 			.thenReturn(java.util.Optional.of(exactly18Paciente));
 		when(calendarEventService.findByPacienteId(4L)).thenReturn(new ArrayList<>());
+		when(anthropometricMeasurementService.findByPacienteId(4L)).thenReturn(new ArrayList<>());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
@@ -668,8 +670,8 @@ public class PacienteControllerTest {
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
 		// Patient exactly 18 should not show growth table (age < 18, not <= 18)
 		verify(model).addAttribute("isUnder18", false);
-		// Should not fetch measurements for patients 18 or older
-		verify(anthropometricMeasurementService, org.mockito.Mockito.never()).findByPacienteId(any());
+		verify(anthropometricMeasurementService).findByPacienteId(4L);
+		verify(model, org.mockito.Mockito.never()).addAttribute(eq("growthMeasurements"), any(List.class));
 		log.info("finished testPerfilPacienteBoundaryCaseExactly18");
 	}
 
