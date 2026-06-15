@@ -10,7 +10,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) | Canonical cross-repo contract — §F8 schema/enum map, per-issue corrected scope |
 | [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) | Endpoint request/response specs (#91–#99) with field mappings |
 
-**Current next issue:** [#112 — OpenAPI spec for `/rest/mobile/patient/**`](https://github.com/diego-torres/nutriconsultas/issues/112) — **in-progress** on `mobile-api/112-openapi` (P1 cross-cutting).
+**Current next issue:** [#112 — OpenAPI spec for `/rest/mobile/patient/**`](https://github.com/diego-torres/nutriconsultas/issues/112) — **in-progress** ([PR #164](https://github.com/diego-torres/nutriconsultas/pull/164)).
 
 ---
 
@@ -323,8 +323,8 @@ gh pr create ...
 | Field | Value |
 |-------|-------|
 | **Next issue** | [#112 — OpenAPI spec for `/rest/mobile/patient/**`](https://github.com/diego-torres/nutriconsultas/issues/112) |
-| **Status** | **in-progress** (`mobile-api/112-openapi`) |
-| **Suggested branch** | `mobile-api/112-openapi` |
+| **Status** | **in-progress** — [PR #164](https://github.com/diego-torres/nutriconsultas/pull/164) |
+| **Branch** | `mobile-api/112-openapi` |
 | **Phase** | Cross-cutting (P1) |
 | **Depends on** | #110, endpoints (#91–#99) |
 | **Blocks** | — |
