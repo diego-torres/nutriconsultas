@@ -49,6 +49,8 @@ jobs:
       run: mvn -B test -Dtest=ThymeleafTemplateValidationTest
     - name: Check Logging Security
       run: bash scripts/audit-logging.sh
+    - name: Check Mobile PHI Logging (#115)
+      run: bash scripts/audit-mobile-logging.sh
     - name: Upload Checkstyle results
       uses: actions/upload-artifact@v7
       if: always()

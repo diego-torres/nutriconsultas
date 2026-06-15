@@ -14,7 +14,7 @@
 
 > **State verification (2026-06-11):**
 >
-> - **Backend schema (2026-06-15):** Phase 0 **done** (#107, #109, #110). **All endpoints #91–#99 on `main`**. **#112 OpenAPI done** (PR #164, `docs/api/openapi-mobile.yaml`). **#96/#97** messaging (POST **201**, Resilience4j **10/min** — #113). **#111** localized errors. **NEXT:** #115 PHI audit. #116 optional `senderDisplayName`; #106 dashboard IMC gauge **done**.
+> - **Backend schema (2026-06-15):** Phase 0 **done** (#107, #109, #110). **All endpoints #91–#99 on `main`**. **#112 OpenAPI done** (PR #164). **#115 PHI audit in progress**. **#96/#97** messaging (POST **201**, Resilience4j **10/min** — #113). **#111** localized errors. **NEXT:** #116 `senderDisplayName`; #106 dashboard IMC gauge **done**.
 > - **DTO field-name map (authoritative — ALIGNMENT-SPEC §F8):** `Dieta.nombre→dietaName`, `energia→totalKcal`, `proteina→totalProteina`, `lipidos→totalGrasas`, `hidratosDeCarbono→totalCarbohidratos`; `Ingesta.nombre→tipo`; `PlatilloIngesta.name/portions/energia→nombre/porciones/kcal`, `hidratosDeCarbono→carbohidratos`, `lipidos→grasas` (same for `AlimentoIngesta`). Enums: `EventStatus = SCHEDULED/COMPLETED/CANCELLED`; `PacienteDietaStatus = ACTIVE/COMPLETED/CANCELLED` (no INACTIVE); `NivelPeso = BAJO/NORMAL/ALTO/SOBREPESO` (translate to `imcLabel` server-side). `deltaPeso`/`deltaImc` are computed, not stored.
 > - **Mobile redesign branch state (style/editorial-redesign):** Auth dedup complete — `AuthFlowController` + login/signup/welcome screens canonical; PR #48's `AuthController`/`LoginView` retired (commit 3427612); `flutter analyze` clean, 146/146 tests pass. Canonical design source: `.claude/MiNutriporcion-2/` (light editorial palette; dark welcome/login PNGs are OLD, ignore). Mobile issues #13/#21/#31 done; #32/#33 in flight on branch.
 
@@ -368,7 +368,7 @@ See Phase 0.
 |---------|--------|--------|
 | OpenAPI doc | Missing | Add `springdoc-openapi-starter-webmvc-ui`, annotate mobile controllers |
 | Rate limiting | Missing | Resilience4j `@RateLimiter` on `POST /messages`; 10 req/min per patient |
-| PHI-safe logging | Pattern exists | Apply `LogRedaction` to all mobile controllers before first deploy |
+| PHI-safe logging | Done (#115) | `LogRedaction` + `PhiLogTurboFilter`; see `docs/mobile-api/PHI-LOGGING-AUDIT.md` |
 | CORS | Unknown | Confirm WebView-only vs native HTTP; add `@CrossOrigin` or `CorsConfigurationSource` bean for `/rest/mobile/**` if native |
 | `Accept-Language` | Missing | `LocaleContextFilter` for `/rest/mobile/**` (see G3) |
 | Pagination defaults | Missing | Standard `page`/`size` params with `maxSize` cap — apply consistently to all list endpoints |

@@ -212,4 +212,4 @@ Optional backend script (requires access token from the app):
 
 ---
 
-*Updated 2026-06-15: #112 OpenAPI merged (PR #164); **NEXT:** #115 PHI audit.*
+*Updated 2026-06-15: #115 PHI audit in progress; **NEXT:** #116.*

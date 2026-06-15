@@ -69,7 +69,8 @@ public class MobilePatientVisitController extends AbstractMobilePatientControlle
 			@Parameter(description = "Visit identifier") @PathVariable final Long visitId) {
 		final Paciente paciente = getAuthenticatedPaciente(jwt);
 		if (log.isDebugEnabled()) {
-			log.debug("Mobile get visit {} for patient {}", visitId, LogRedaction.redactPaciente(paciente.getId()));
+			log.debug("Mobile get visit {} for patient {}", LogRedaction.redactCalendarEvent(visitId),
+					LogRedaction.redactPaciente(paciente.getId()));
 		}
 		final VisitDetailDto visit = mobilePatientVisitService.getVisitDetail(paciente.getId(), visitId);
 		return ApiResponse.ok(visit);
