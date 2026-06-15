@@ -282,4 +282,59 @@ public class AnthropometricMeasurement {
 		bodyComposition.setPorcentajeMasaMuscular(porcentajeMasaMuscular);
 	}
 
+	public Double getEndomorphy() {
+		return bodyComposition != null ? bodyComposition.getEndomorphy() : null;
+	}
+
+	public void setEndomorphy(final Double endomorphy) {
+		if (bodyComposition == null) {
+			bodyComposition = new BodyComposition();
+		}
+		bodyComposition.setEndomorphy(endomorphy);
+	}
+
+	public Double getMesomorphy() {
+		return bodyComposition != null ? bodyComposition.getMesomorphy() : null;
+	}
+
+	public void setMesomorphy(final Double mesomorphy) {
+		if (bodyComposition == null) {
+			bodyComposition = new BodyComposition();
+		}
+		bodyComposition.setMesomorphy(mesomorphy);
+	}
+
+	public Double getEctomorphy() {
+		return bodyComposition != null ? bodyComposition.getEctomorphy() : null;
+	}
+
+	public void setEctomorphy(final Double ectomorphy) {
+		if (bodyComposition == null) {
+			bodyComposition = new BodyComposition();
+		}
+		bodyComposition.setEctomorphy(ectomorphy);
+	}
+
+	public Double getSomatocartaX() {
+		return bodyComposition != null ? bodyComposition.getSomatocartaX() : null;
+	}
+
+	public void setSomatocartaX(final Double somatocartaX) {
+		if (bodyComposition == null) {
+			bodyComposition = new BodyComposition();
+		}
+		bodyComposition.setSomatocartaX(somatocartaX);
+	}
+
+	public Double getSomatocartaY() {
+		return bodyComposition != null ? bodyComposition.getSomatocartaY() : null;
+	}
+
+	public void setSomatocartaY(final Double somatocartaY) {
+		if (bodyComposition == null) {
+			bodyComposition = new BodyComposition();
+		}
+		bodyComposition.setSomatocartaY(somatocartaY);
+	}
+
 }

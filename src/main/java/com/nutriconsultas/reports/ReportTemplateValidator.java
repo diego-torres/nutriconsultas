@@ -9,6 +9,7 @@ import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.ClinicalExam;
+import com.nutriconsultas.clinical.exam.anthropometric.BodyComposition;
 import com.nutriconsultas.clinical.exam.anthropometric.BodyMass;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
@@ -55,6 +56,7 @@ public class ReportTemplateValidator extends BaseTemplateValidator {
 		// Create mock weight/BMI trend
 		final List<PatientReportService.WeightBmiDataPoint> mockWeightBmiTrend = createMockWeightBmiTrend();
 		variables.put("weightBmiTrend", mockWeightBmiTrend);
+		variables.put("latestSomatotypeMeasurement", mockMeasurements.isEmpty() ? null : mockMeasurements.get(0));
 
 		// Create date variables
 		final Date now = new Date();
@@ -141,6 +143,13 @@ public class ReportTemplateValidator extends BaseTemplateValidator {
 		bodyMass.setHeight(1.75);
 		bodyMass.setImc(22.86);
 		measurement.setBodyMass(bodyMass);
+		final BodyComposition bodyComposition = new BodyComposition();
+		bodyComposition.setEndomorphy(3.2);
+		bodyComposition.setMesomorphy(4.5);
+		bodyComposition.setEctomorphy(2.8);
+		bodyComposition.setSomatocartaX(-0.4);
+		bodyComposition.setSomatocartaY(3.0);
+		measurement.setBodyComposition(bodyComposition);
 		measurements.add(measurement);
 		return measurements;
 	}

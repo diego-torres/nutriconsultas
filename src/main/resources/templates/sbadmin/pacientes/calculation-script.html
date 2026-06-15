@@ -43,6 +43,7 @@
         updateIdealWeightCalculations();
         updateTotalBodyWaterCalculations();
         updateBodyCompositionCalculations();
+        updateSomatotypeCalculations();
       }
     }
 
@@ -527,6 +528,7 @@
         bodyCompBmiField.value = classicBmi.toFixed(2);
         updateBodyCompositionCalculations();
       }
+      updateSomatotypeCalculations();
 
       // Update Masa Corporal (same as weight)
       const bodyMassValueElement = document.getElementById('body-mass-value-result');
@@ -835,6 +837,168 @@
       updateIdealWeightCalculations();
       updateTotalBodyWaterCalculations();
       updateBodyCompositionCalculations();
+      updateSomatotypeCalculations();
+    }
+
+    const SOMATOTYPE_MIN_ADULT_AGE = 18;
+
+    function parseMeasurementInput(selector) {
+      const field = document.querySelector(selector);
+      if (!field || field.value === '' || field.value == null) {
+        return null;
+      }
+      const value = parseFloat(field.value);
+      return Number.isFinite(value) ? value : null;
+    }
+
+    function clampSomatotypeRating(value) {
+      return value <= 0 ? 0.1 : value;
+    }
+
+    function calculateHeathCarterEndomorphy(triceps, subscapular, supraspinal, heightCm) {
+      const sum = triceps + subscapular + supraspinal;
+      const x = sum * (170.18 / heightCm);
+      return -0.7182 + 0.1451 * x - 0.00068 * x * x + 0.0000014 * x * x * x;
+    }
+
+    function calculateHeathCarterMesomorphy(correctedArm, correctedCalf, humerus, femur, heightCm) {
+      return 0.858 * humerus + 0.601 * femur + 0.188 * correctedArm
+        + 0.161 * correctedCalf - 0.131 * heightCm + 4.5;
+    }
+
+    function calculateHeathCarterEctomorphy(heightCm, weightKg) {
+      const hwr = heightCm / Math.cbrt(weightKg);
+      if (hwr >= 40.75) {
+        return 0.732 * hwr - 28.58;
+      }
+      if (hwr > 38.25) {
+        return 0.463 * hwr - 17.63;
+      }
+      return 0.1;
+    }
+
+    function collectSomatotypeMissingMeasurements(weight, height, triceps, subscapular, supraspinal,
+        flexedArm, calf, medialCalf, humerus, femur) {
+      const missing = [];
+      if (!weight || weight <= 0) { missing.push('Peso'); }
+      if (!height || height <= 0) { missing.push('Estatura'); }
+      if (triceps == null) { missing.push('Pliegue tríceps'); }
+      if (subscapular == null) { missing.push('Pliegue subescapular'); }
+      if (supraspinal == null) { missing.push('Pliegue supraespinal'); }
+      if (flexedArm == null) { missing.push('Perímetro brazo contraído'); }
+      if (calf == null) { missing.push('Perímetro pantorrilla'); }
+      if (medialCalf == null) { missing.push('Pliegue pantorrilla medial'); }
+      if (humerus == null) { missing.push('Diámetro húmero'); }
+      if (femur == null) { missing.push('Diámetro fémur'); }
+      return missing;
+    }
+
+    function updateSomatotypeChart(endomorphy, mesomorphy, ectomorphy) {
+      const pointGroup = document.getElementById('somatotype-chart-point');
+      const circle = document.getElementById('somatotype-chart-circle');
+      const label = document.getElementById('somatotype-chart-label');
+      if (!pointGroup || !circle || !label) {
+        return;
+      }
+      if (endomorphy == null || mesomorphy == null || ectomorphy == null) {
+        pointGroup.style.display = 'none';
+        return;
+      }
+      const chartX = ectomorphy - endomorphy;
+      const chartY = 2 * mesomorphy - (ectomorphy + endomorphy);
+      const plotX = 110 + chartX * 7;
+      const plotY = 185 - chartY * 7;
+      circle.setAttribute('cx', plotX);
+      circle.setAttribute('cy', plotY);
+      label.setAttribute('x', plotX + 8);
+      label.setAttribute('y', plotY + 4);
+      label.textContent = endomorphy.toFixed(1) + '-' + mesomorphy.toFixed(1) + '-' + ectomorphy.toFixed(1);
+      pointGroup.style.display = '';
+    }
+
+    function updateSomatotypeCalculations() {
+      const endoEl = document.getElementById('somatotype-endo-result');
+      if (!endoEl) {
+        return;
+      }
+
+      const pediatricAlert = document.getElementById('somatotype-pediatric-alert');
+      const missingAlert = document.getElementById('somatotype-missing-alert');
+      const missingList = document.getElementById('somatotype-missing-list');
+
+      if (patientAge != null && patientAge < SOMATOTYPE_MIN_ADULT_AGE) {
+        endoEl.textContent = '-';
+        document.getElementById('somatotype-meso-result').textContent = '-';
+        document.getElementById('somatotype-ecto-result').textContent = '-';
+        if (pediatricAlert) { pediatricAlert.classList.remove('d-none'); }
+        if (missingAlert) { missingAlert.classList.add('d-none'); }
+        updateSomatotypeChart(null, null, null);
+        return;
+      }
+      if (pediatricAlert) { pediatricAlert.classList.add('d-none'); }
+
+      const weight = parseMeasurementInput('input[name*="bodyMass.weight"]');
+      const height = parseMeasurementInput('input[name*="bodyMass.height"]');
+      const triceps = parseMeasurementInput('input[name*="skinfolds.tricepsSkinfold"]');
+      const subscapular = parseMeasurementInput('input[name*="skinfolds.subscapularSkinfold"]');
+      const supraspinal = parseMeasurementInput('input[name*="skinfolds.supraespinalSkinfold"]');
+      const flexedArm = parseMeasurementInput('input[name*="circumferences.midUpperArmCircumferenceContracted"]');
+      const calf = parseMeasurementInput('input[name*="circumferences.calfCircumference"]');
+      const medialCalf = parseMeasurementInput('input[name*="skinfolds.medialCalfSkinfold"]');
+      const humerus = parseMeasurementInput('input[name*="diameters.humerusDiameter"]');
+      const femur = parseMeasurementInput('input[name*="diameters.femurDiameter"]');
+
+      const missing = collectSomatotypeMissingMeasurements(weight, height, triceps, subscapular, supraspinal,
+        flexedArm, calf, medialCalf, humerus, femur);
+
+      if (missing.length > 0) {
+        endoEl.textContent = '-';
+        document.getElementById('somatotype-meso-result').textContent = '-';
+        document.getElementById('somatotype-ecto-result').textContent = '-';
+        if (missingAlert && missingList) {
+          missingList.textContent = missing.join(', ');
+          missingAlert.classList.remove('d-none');
+        }
+        updateSomatotypeChart(null, null, null);
+        return;
+      }
+
+      if (missingAlert) { missingAlert.classList.add('d-none'); }
+
+      const heightCm = height * 100;
+      const endomorphy = clampSomatotypeRating(
+        calculateHeathCarterEndomorphy(triceps, subscapular, supraspinal, heightCm));
+      const correctedArm = flexedArm - triceps / 10;
+      const correctedCalf = calf - medialCalf / 10;
+      const mesomorphy = clampSomatotypeRating(
+        calculateHeathCarterMesomorphy(correctedArm, correctedCalf, humerus, femur, heightCm));
+      const ectomorphy = clampSomatotypeRating(calculateHeathCarterEctomorphy(heightCm, weight));
+
+      endoEl.textContent = endomorphy.toFixed(1);
+      document.getElementById('somatotype-meso-result').textContent = mesomorphy.toFixed(1);
+      document.getElementById('somatotype-ecto-result').textContent = ectomorphy.toFixed(1);
+      updateSomatotypeChart(endomorphy, mesomorphy, ectomorphy);
+    }
+
+    function attachSomatotypeInputListeners() {
+      const selectors = [
+        'input[name*="bodyMass.weight"]',
+        'input[name*="bodyMass.height"]',
+        'input[name*="skinfolds.tricepsSkinfold"]',
+        'input[name*="skinfolds.subscapularSkinfold"]',
+        'input[name*="skinfolds.supraespinalSkinfold"]',
+        'input[name*="skinfolds.medialCalfSkinfold"]',
+        'input[name*="circumferences.midUpperArmCircumferenceContracted"]',
+        'input[name*="circumferences.calfCircumference"]',
+        'input[name*="diameters.humerusDiameter"]',
+        'input[name*="diameters.femurDiameter"]'
+      ];
+      selectors.forEach(function(selector) {
+        const field = document.querySelector(selector);
+        if (field) {
+          field.addEventListener('input', updateSomatotypeCalculations);
+        }
+      });
     }
 
     // Event listeners for BMI inputs
@@ -943,6 +1107,8 @@
       updateIdealWeightCalculations();
       updateTotalBodyWaterCalculations();
       updateBodyCompositionCalculations();
+      updateSomatotypeCalculations();
+      attachSomatotypeInputListeners();
       toggleStressCalculationFields();
       updateGetCalculations();
     });

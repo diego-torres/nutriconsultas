@@ -125,6 +125,8 @@ public class PacienteControllerTest {
 		final com.nutriconsultas.clinical.exam.anthropometric.BodyCompositionService realBodyCompositionService = new com.nutriconsultas.clinical.exam.anthropometric.BodyCompositionService(
 				new BodyFatCalculatorService());
 		ReflectionTestUtils.setField(controller, "bodyCompositionService", realBodyCompositionService);
+		ReflectionTestUtils.setField(controller, "somatotypeService",
+				new com.nutriconsultas.clinical.exam.anthropometric.SomatotypeService());
 
 		log.info("finished setting up PacienteController test");
 	}
@@ -1537,6 +1539,49 @@ public class PacienteControllerTest {
 		assertThat(measurement.getPorcentajeMasaMuscular()).isNotNull();
 		assertPacienteBmrMatchesPromedio(70.0, 1.75);
 		log.info("finished testAgregarAntropometricosPaciente");
+	}
+
+	@Test
+	public void testAgregarAntropometricosPacienteCalculatesSomatotypeWhenComplete() {
+		log.info("starting testAgregarAntropometricosPacienteCalculatesSomatotypeWhenComplete");
+		final AnthropometricMeasurement measurement = new AnthropometricMeasurement();
+		measurement.setMeasurementDateTime(new Date());
+		measurement.setTitle("Medición Antropométrica");
+		measurement.setPeso(70.0);
+		measurement.setEstatura(1.75);
+
+		final com.nutriconsultas.clinical.exam.anthropometric.Skinfolds skinfolds = new com.nutriconsultas.clinical.exam.anthropometric.Skinfolds();
+		skinfolds.setTricepsSkinfold(10.0);
+		skinfolds.setSubscapularSkinfold(12.0);
+		skinfolds.setSupraespinalSkinfold(8.0);
+		skinfolds.setMedialCalfSkinfold(8.0);
+		measurement.setSkinfolds(skinfolds);
+
+		final Circumferences circumferences = new Circumferences();
+		circumferences.setMidUpperArmCircumferenceContracted(30.0);
+		circumferences.setCalfCircumference(36.0);
+		measurement.setCircumferences(circumferences);
+
+		final com.nutriconsultas.clinical.exam.anthropometric.Diameters diameters = new com.nutriconsultas.clinical.exam.anthropometric.Diameters();
+		diameters.setHumerusDiameter(6.5);
+		diameters.setFemurDiameter(9.5);
+		measurement.setDiameters(diameters);
+
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(anthropometricMeasurementService.save(any(AnthropometricMeasurement.class))).thenReturn(measurement);
+		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+		final String result = controller.agregarAntropometricosPaciente(1L, measurement, bindingResult, model,
+				principal);
+
+		assertThat(result).contains("redirect:/admin/pacientes/1/historial");
+		assertThat(measurement.getEndomorphy()).isNotNull();
+		assertThat(measurement.getMesomorphy()).isNotNull();
+		assertThat(measurement.getEctomorphy()).isNotNull();
+		assertThat(measurement.getSomatocartaX()).isNotNull();
+		assertThat(measurement.getSomatocartaY()).isNotNull();
+		log.info("finished testAgregarAntropometricosPacienteCalculatesSomatotypeWhenComplete");
 	}
 
 	@Test

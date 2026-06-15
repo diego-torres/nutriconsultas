@@ -29,4 +29,24 @@ public class BodyComposition {
 	@Column(precision = 3)
 	private Double porcentajeMasaMuscular;
 
+	/** Heath-Carter endomorphy rating (adults). */
+	@Column(precision = 4)
+	private Double endomorphy;
+
+	/** Heath-Carter mesomorphy rating (adults). */
+	@Column(precision = 4)
+	private Double mesomorphy;
+
+	/** Heath-Carter ectomorphy rating (adults). */
+	@Column(precision = 4)
+	private Double ectomorphy;
+
+	/** Somatocarta X: ectomorphy - endomorphy. */
+	@Column(precision = 4)
+	private Double somatocartaX;
+
+	/** Somatocarta Y: 2×mesomorphy - (ectomorphy + endomorphy). */
+	@Column(precision = 4)
+	private Double somatocartaY;
+
 }
