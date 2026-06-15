@@ -129,6 +129,7 @@ public class PatientReportService {
 		final List<ClinicalExam> exams = getExams(pacienteId, startDate, endDate);
 		final List<PacienteDieta> dietaryPlans = getDietaryPlans(pacienteId);
 		final List<WeightBmiDataPoint> weightBmiTrend = buildWeightBmiTrend(consultations, measurements, exams);
+		final AnthropometricMeasurement latestSomatotypeMeasurement = findLatestSomatotypeMeasurement(measurements);
 
 		// Prepare context for Thymeleaf template
 		final Context context = new Context();
@@ -138,6 +139,7 @@ public class PatientReportService {
 		context.setVariable("exams", exams);
 		context.setVariable("dietaryPlans", dietaryPlans);
 		context.setVariable("weightBmiTrend", weightBmiTrend);
+		context.setVariable("latestSomatotypeMeasurement", latestSomatotypeMeasurement);
 		context.setVariable("startDate", startDate);
 		context.setVariable("endDate", endDate);
 		context.setVariable("reportDate", new Date());
@@ -238,6 +240,15 @@ public class PatientReportService {
 		trend.sort(Comparator.comparing(WeightBmiDataPoint::getDate));
 
 		return trend;
+	}
+
+	private AnthropometricMeasurement findLatestSomatotypeMeasurement(
+			final List<AnthropometricMeasurement> measurements) {
+		return measurements.stream()
+			.filter(measurement -> measurement.getEndomorphy() != null)
+			.max(Comparator.comparing(AnthropometricMeasurement::getMeasurementDateTime,
+					Comparator.nullsLast(Comparator.naturalOrder())))
+			.orElse(null);
 	}
 
 	/**

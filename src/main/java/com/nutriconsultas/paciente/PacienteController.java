@@ -72,6 +72,9 @@ public class PacienteController extends AbstractAuthorizedController {
 	private com.nutriconsultas.clinical.exam.anthropometric.BodyCompositionService bodyCompositionService;
 
 	@Autowired
+	private com.nutriconsultas.clinical.exam.anthropometric.SomatotypeService somatotypeService;
+
+	@Autowired
 	private PacienteDietaService pacienteDietaService;
 
 	@Autowired
@@ -691,6 +694,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		updatePatientWeightIfNeededForMeasurement(paciente, measurement, bmiResult.getImc(), bmiResult.getNivelPeso(),
 				pacienteId, measurement.getMeasurementDateTime());
 		setMeasurementCalculatedValues(measurement, bmiResult);
+		somatotypeService.applyToMeasurement(measurement, paciente);
 		setMeasurementDefaultValues(measurement);
 
 		log.debug("Medición antropométrica lista para grabar {}",

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+  <!--
+    Heath-Carter somatocarta (triangular chart).
+    Parameters: endomorphy, mesomorphy, ectomorphy (required for plot point).
+    Optional: chartId suffix for unique SVG ids in pages with multiple charts.
+  -->
+  <div th:fragment="somatocarta(endomorphy, mesomorphy, ectomorphy, chartId)">
+    <svg th:id="${'somatocarta-' + chartId}" class="somatocarta-svg" viewBox="0 0 220 200"
+         xmlns="http://www.w3.org/2000/svg" role="img"
+         th:attr="aria-label=${endomorphy != null ? 'Somatocarta ' + #numbers.formatDecimal(endomorphy,1,1) + '-' + #numbers.formatDecimal(mesomorphy,1,1) + '-' + #numbers.formatDecimal(ectomorphy,1,1) : 'Somatocarta sin datos'}">
+      <polygon points="20,185 200,185 110,15" fill="#f8f9fc" stroke="#858796" stroke-width="1.5"/>
+      <text x="8" y="195" font-size="9" fill="#5a5c69">Endo</text>
+      <text x="188" y="195" font-size="9" fill="#5a5c69">Meso</text>
+      <text x="98" y="12" font-size="9" fill="#5a5c69">Ecto</text>
+      <line x1="20" y1="185" x2="200" y2="185" stroke="#d1d3e2" stroke-width="0.5"/>
+      <line x1="20" y1="185" x2="110" y2="15" stroke="#d1d3e2" stroke-width="0.5"/>
+      <line x1="200" y1="185" x2="110" y2="15" stroke="#d1d3e2" stroke-width="0.5"/>
+      <th:block th:if="${endomorphy != null and mesomorphy != null and ectomorphy != null}">
+        <th:block th:with="chartX=${ectomorphy - endomorphy}, chartY=${2 * mesomorphy - (ectomorphy + endomorphy)}, plotX=${110 + (ectomorphy - endomorphy) * 7}, plotY=${185 - (2 * mesomorphy - (ectomorphy + endomorphy)) * 7}">
+          <circle th:attr="cx=${plotX}, cy=${plotY}" r="6" fill="#4e73df" stroke="#2e59d9" stroke-width="1.5"/>
+          <text th:attr="x=${plotX + 8}, y=${plotY + 4}" font-size="8" fill="#3a3b45"
+                th:text="${#numbers.formatDecimal(endomorphy,1,1) + '-' + #numbers.formatDecimal(mesomorphy,1,1) + '-' + #numbers.formatDecimal(ectomorphy,1,1)}"></text>
+        </th:block>
+      </th:block>
+    </svg>
+  </div>
+
+  <style th:fragment="somatocartaStyle">
+    .somatocarta-svg {
+      max-width: 280px;
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
+</body>
+</html>

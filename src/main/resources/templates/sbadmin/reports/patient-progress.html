@@ -358,6 +358,7 @@
 					<th>IMC</th>
 					<th>% Grasa</th>
 					<th>% Masa muscular</th>
+					<th>Somatotipo</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -369,9 +370,34 @@
 					<td th:text="${measurement.bodyMass != null && measurement.bodyMass.imc != null ? #numbers.formatDecimal(measurement.bodyMass.imc, 1, 2) : 'N/A'}"></td>
 					<td th:text="${measurement.porcentajeGrasaCorporal != null ? (#numbers.formatDecimal(measurement.porcentajeGrasaCorporal, 1, 1) + '%') : 'N/A'}"></td>
 					<td th:text="${measurement.porcentajeMasaMuscular != null ? (#numbers.formatDecimal(measurement.porcentajeMasaMuscular, 1, 1) + '%') : 'N/A'}"></td>
+					<td th:text="${measurement.endomorphy != null ? (#numbers.formatDecimal(measurement.endomorphy,1,1) + '-' + #numbers.formatDecimal(measurement.mesomorphy,1,1) + '-' + #numbers.formatDecimal(measurement.ectomorphy,1,1)) : 'N/A'}"></td>
 				</tr>
 			</tbody>
 		</table>
+	</div>
+
+	<!-- Somatocarta (última medición con somatotipo) -->
+	<div class="section" th:if="${latestSomatotypeMeasurement != null}">
+		<h2>Somatocarta Heath-Carter</h2>
+		<p>
+			<strong>Medición:</strong>
+			<span th:text="${latestSomatotypeMeasurement.title}"></span>
+			(<span th:text="${latestSomatotypeMeasurement.measurementDateTime != null ? #dates.format(latestSomatotypeMeasurement.measurementDateTime, 'dd/MM/yyyy') : 'N/A'}"></span>)
+			—
+			<strong>Somatotipo:</strong>
+			<span th:text="${#numbers.formatDecimal(latestSomatotypeMeasurement.endomorphy,1,1) + '-' + #numbers.formatDecimal(latestSomatotypeMeasurement.mesomorphy,1,1) + '-' + #numbers.formatDecimal(latestSomatotypeMeasurement.ectomorphy,1,1)}"></span>
+		</p>
+		<div style="text-align: center;">
+			<svg viewBox="0 0 220 200" width="220" height="200" xmlns="http://www.w3.org/2000/svg">
+				<polygon points="20,185 200,185 110,15" fill="#f8f9fc" stroke="#858796" stroke-width="1.5"/>
+				<text x="8" y="195" font-size="9" fill="#5a5c69">Endo</text>
+				<text x="188" y="195" font-size="9" fill="#5a5c69">Meso</text>
+				<text x="98" y="12" font-size="9" fill="#5a5c69">Ecto</text>
+				<th:block th:with="endo=${latestSomatotypeMeasurement.endomorphy}, meso=${latestSomatotypeMeasurement.mesomorphy}, ecto=${latestSomatotypeMeasurement.ectomorphy}, plotX=${110 + (latestSomatotypeMeasurement.ectomorphy - latestSomatotypeMeasurement.endomorphy) * 7}, plotY=${185 - (2 * latestSomatotypeMeasurement.mesomorphy - (latestSomatotypeMeasurement.ectomorphy + latestSomatotypeMeasurement.endomorphy)) * 7}">
+					<circle th:attr="cx=${plotX}, cy=${plotY}" r="6" fill="#4e73df" stroke="#2e59d9" stroke-width="1.5"/>
+				</th:block>
+			</svg>
+		</div>
 	</div>
 
 	<!-- Clinical Exams -->

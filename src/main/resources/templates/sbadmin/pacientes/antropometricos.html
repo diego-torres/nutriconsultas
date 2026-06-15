@@ -568,6 +568,7 @@
                           </div>
 
                           <div th:insert="~{sbadmin/pacientes/calculation-subtabs :: calculationSubTabsStyle}"></div>
+                          <div th:insert="~{sbadmin/pacientes/somatocarta :: somatocartaStyle}"></div>
                           <div th:insert="~{sbadmin/pacientes/calculation-subtabs :: calculationSubTabsNav}"></div>
                           <div class="tab-content border rounded p-3 bg-white" id="calculationSubTabsContent">
 
@@ -1124,6 +1125,63 @@
                                       <i class="fas fa-copy"></i> Copiar a Formulario
                                     </button>
                                   </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          </div>
+
+                          <!-- Somatotipo Heath-Carter -->
+                          <div class="tab-pane fade" id="calc-somatotype" role="tabpanel" aria-labelledby="calc-somatotype-subtab">
+                          <div class="row">
+                            <div class="col-lg-5">
+                              <div class="card mb-3">
+                                <div class="card-body">
+                                  <h6 class="card-title">Somatotipo Heath-Carter</h6>
+                                  <p class="text-muted small mb-2">
+                                    Método clásico (adultos ≥18 años). Se calcula al guardar con pliegues tríceps,
+                                    subescapular y supraespinal; perímetros brazo contraído y pantorrilla; diámetros
+                                    húmero y fémur; peso y estatura.
+                                  </p>
+                                  <div class="row text-center mb-3">
+                                    <div class="col-4">
+                                      <div class="small text-muted">Endomorfia</div>
+                                      <div class="h5 mb-0 text-primary" id="somatotype-endo-result">-</div>
+                                    </div>
+                                    <div class="col-4">
+                                      <div class="small text-muted">Mesomorfia</div>
+                                      <div class="h5 mb-0 text-primary" id="somatotype-meso-result">-</div>
+                                    </div>
+                                    <div class="col-4">
+                                      <div class="small text-muted">Ectomorfia</div>
+                                      <div class="h5 mb-0 text-primary" id="somatotype-ecto-result">-</div>
+                                    </div>
+                                  </div>
+                                  <div class="alert alert-warning small mb-0 d-none" id="somatotype-missing-alert">
+                                    <strong>Mediciones faltantes:</strong>
+                                    <span id="somatotype-missing-list"></span>
+                                  </div>
+                                  <div class="alert alert-info small mb-0 d-none" id="somatotype-pediatric-alert">
+                                    El somatotipo Heath-Carter solo se calcula en pacientes adultos (≥18 años).
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-lg-7">
+                              <div class="card mb-3">
+                                <div class="card-body text-center">
+                                  <h6 class="card-title">Somatocarta</h6>
+                                  <svg id="somatotype-chart-live" class="somatocarta-svg" viewBox="0 0 220 200"
+                                       xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Somatocarta">
+                                    <polygon points="20,185 200,185 110,15" fill="#f8f9fc" stroke="#858796" stroke-width="1.5"/>
+                                    <text x="8" y="195" font-size="9" fill="#5a5c69">Endo</text>
+                                    <text x="188" y="195" font-size="9" fill="#5a5c69">Meso</text>
+                                    <text x="98" y="12" font-size="9" fill="#5a5c69">Ecto</text>
+                                    <g id="somatotype-chart-point" style="display:none">
+                                      <circle id="somatotype-chart-circle" r="6" fill="#4e73df" stroke="#2e59d9" stroke-width="1.5"/>
+                                      <text id="somatotype-chart-label" font-size="8" fill="#3a3b45"></text>
+                                    </g>
+                                  </svg>
                                 </div>
                               </div>
                             </div>
