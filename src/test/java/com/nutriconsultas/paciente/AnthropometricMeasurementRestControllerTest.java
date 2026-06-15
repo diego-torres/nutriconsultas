@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.test.context.ActiveProfiles;
+
+import com.nutriconsultas.clinical.exam.BodyFatSource;
+import com.nutriconsultas.clinical.exam.LatestBodyFatResult;
 
 import com.nutriconsultas.dataTables.paging.Direction;
 import com.nutriconsultas.dataTables.paging.Order;
@@ -188,6 +193,39 @@ public class AnthropometricMeasurementRestControllerTest {
 		assertThat(result.getBody().get("success")).isEqualTo(false);
 		verify(anthropometricMeasurementService).findById(1L);
 		log.info("Finished testDeleteMeasurementWrongPaciente");
+	}
+
+	@Test
+	public void testGetLatestBodyFatReturnsResult() {
+		final OidcUser principal = org.mockito.Mockito.mock(OidcUser.class);
+		when(principal.getSubject()).thenReturn("user-1");
+		final LatestBodyFatResult latest = new LatestBodyFatResult(24.5, new Date().toInstant(),
+				BodyFatSource.PORCENTAJE);
+		when(anthropometricMeasurementService.findLatestBodyFatForPatient(1L, "user-1"))
+			.thenReturn(Optional.of(latest));
+
+		final ResponseEntity<?> result = restController.getLatestBodyFat(1L, principal);
+
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(result.getBody()).isEqualTo(latest);
+	}
+
+	@Test
+	public void testGetLatestBodyFatReturnsNotFoundWhenMissing() {
+		final OidcUser principal = org.mockito.Mockito.mock(OidcUser.class);
+		when(principal.getSubject()).thenReturn("user-1");
+		when(anthropometricMeasurementService.findLatestBodyFatForPatient(1L, "user-1")).thenReturn(Optional.empty());
+
+		final ResponseEntity<?> result = restController.getLatestBodyFat(1L, principal);
+
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+	}
+
+	@Test
+	public void testGetLatestBodyFatReturnsUnauthorizedWithoutPrincipal() {
+		final ResponseEntity<?> result = restController.getLatestBodyFat(1L, null);
+
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 	}
 
 }

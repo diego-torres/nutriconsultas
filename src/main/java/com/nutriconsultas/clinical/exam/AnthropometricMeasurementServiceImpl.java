@@ -1,6 +1,7 @@
 package com.nutriconsultas.clinical.exam;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -16,6 +17,8 @@ import com.nutriconsultas.paciente.calculation.PhysicalActivityLevel;
 import com.nutriconsultas.util.LogRedaction;
 
 import com.nutriconsultas.paciente.metrics.BodyMetricSource;
+
+import java.time.Instant;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -118,6 +121,37 @@ public class AnthropometricMeasurementServiceImpl implements AnthropometricMeasu
 	public List<AnthropometricMeasurement> findByPacienteId(@NonNull final Long pacienteId) {
 		log.debug("Finding anthropometric measurements for paciente id: {}", pacienteId);
 		return repository.findByPacienteId(pacienteId);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Optional<LatestBodyFatResult> findLatestBodyFatForPatient(@NonNull final Long pacienteId,
+			@NonNull final String userId) {
+		log.debug("Finding latest body fat for paciente id {}", pacienteId);
+		final Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId).orElse(null);
+		if (paciente == null) {
+			return Optional.empty();
+		}
+		return repository.findFirstByPacienteIdOrderByMeasurementDateTimeDescIdDesc(pacienteId)
+			.flatMap(this::resolveLatestBodyFat);
+	}
+
+	private Optional<LatestBodyFatResult> resolveLatestBodyFat(final AnthropometricMeasurement measurement) {
+		final Instant measurementDate = measurement.getMeasurementDateTime() != null
+				? measurement.getMeasurementDateTime().toInstant() : null;
+		if (measurement.getPorcentajeGrasaCorporal() != null) {
+			return Optional.of(new LatestBodyFatResult(measurement.getPorcentajeGrasaCorporal(), measurementDate,
+					BodyFatSource.PORCENTAJE));
+		}
+		if (measurement.getBioimpedance() != null && measurement.getBioimpedance().getBodyFatPercentage() != null) {
+			return Optional.of(new LatestBodyFatResult(measurement.getBioimpedance().getBodyFatPercentage(),
+					measurementDate, BodyFatSource.BIOIMPEDANCE));
+		}
+		if (measurement.getIndiceGrasaCorporal() != null) {
+			return Optional.of(new LatestBodyFatResult(measurement.getIndiceGrasaCorporal(), measurementDate,
+					BodyFatSource.INDICE));
+		}
+		return Optional.empty();
 	}
 
 }

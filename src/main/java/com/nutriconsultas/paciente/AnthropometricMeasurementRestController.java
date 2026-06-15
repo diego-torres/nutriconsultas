@@ -17,12 +17,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+
+import com.nutriconsultas.clinical.exam.LatestBodyFatResult;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurementService;
 import com.nutriconsultas.controller.AbstractGridController;
@@ -173,6 +178,23 @@ public class AnthropometricMeasurementRestController extends AbstractGridControl
 						&& new SimpleDateFormat("dd MMM yyyy HH:mm").format(row.getMeasurementDateTime())
 							.toLowerCase()
 							.contains(lowerValue));
+	}
+
+	@GetMapping("/latest-body-fat")
+	public ResponseEntity<?> getLatestBodyFat(@PathVariable @NonNull final Long id,
+			@AuthenticationPrincipal final OidcUser principal) {
+		final String userId = principal != null ? principal.getSubject() : null;
+		if (userId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "No autenticado"));
+		}
+		final java.util.Optional<LatestBodyFatResult> result = anthropometricMeasurementService
+			.findLatestBodyFatForPatient(id, userId);
+		if (result.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.body(Map.of("error", "No hay porcentaje de grasa disponible en antropométricos"));
+		}
+		log.debug("Returning latest body fat for paciente id {}", id);
+		return ResponseEntity.ok(result.get());
 	}
 
 	@DeleteMapping("/{measurementId}")

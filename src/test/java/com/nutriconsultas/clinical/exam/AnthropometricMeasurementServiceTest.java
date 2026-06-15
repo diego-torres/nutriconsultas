@@ -20,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.clinical.exam.anthropometric.BodyMass;
 import com.nutriconsultas.clinical.exam.anthropometric.Circumferences;
 import com.nutriconsultas.clinical.exam.anthropometric.BodyComposition;
@@ -44,6 +45,9 @@ public class AnthropometricMeasurementServiceTest {
 
 	@Mock
 	private com.nutriconsultas.paciente.metrics.BodyMetricRecordService bodyMetricRecordService;
+
+	@Mock
+	private PacienteRepository pacienteRepository;
 
 	private Paciente paciente;
 
@@ -336,6 +340,47 @@ public class AnthropometricMeasurementServiceTest {
 		assertThat(result).isEmpty();
 		verify(repository).findByPacienteId(999L);
 		log.info("finished testFindByPacienteIdReturnsEmptyList");
+	}
+
+	@Test
+	public void testFindLatestBodyFatForPatientUsesPorcentajeGrasaCorporal() {
+		paciente.setUserId("user-1");
+		when(pacienteRepository.findByIdAndUserId(1L, "user-1")).thenReturn(Optional.of(paciente));
+		when(repository.findFirstByPacienteIdOrderByMeasurementDateTimeDescIdDesc(1L))
+			.thenReturn(Optional.of(measurement));
+
+		final Optional<LatestBodyFatResult> result = service.findLatestBodyFatForPatient(1L, "user-1");
+
+		assertThat(result).isPresent();
+		assertThat(result.get().bodyFatPercentage()).isEqualTo(15.5);
+		assertThat(result.get().source()).isEqualTo(BodyFatSource.PORCENTAJE);
+	}
+
+	@Test
+	public void testFindLatestBodyFatForPatientUsesBioimpedanceWhenPorcentajeMissing() {
+		paciente.setUserId("user-1");
+		measurement.getBodyComposition().setPorcentajeGrasaCorporal(null);
+		final Bioimpedance bioimpedance = new Bioimpedance();
+		bioimpedance.setBodyFatPercentage(22.3);
+		measurement.setBioimpedance(bioimpedance);
+		when(pacienteRepository.findByIdAndUserId(1L, "user-1")).thenReturn(Optional.of(paciente));
+		when(repository.findFirstByPacienteIdOrderByMeasurementDateTimeDescIdDesc(1L))
+			.thenReturn(Optional.of(measurement));
+
+		final Optional<LatestBodyFatResult> result = service.findLatestBodyFatForPatient(1L, "user-1");
+
+		assertThat(result).isPresent();
+		assertThat(result.get().bodyFatPercentage()).isEqualTo(22.3);
+		assertThat(result.get().source()).isEqualTo(BodyFatSource.BIOIMPEDANCE);
+	}
+
+	@Test
+	public void testFindLatestBodyFatForPatientReturnsEmptyWhenPatientNotOwned() {
+		when(pacienteRepository.findByIdAndUserId(1L, "other-user")).thenReturn(Optional.empty());
+
+		final Optional<LatestBodyFatResult> result = service.findLatestBodyFatForPatient(1L, "other-user");
+
+		assertThat(result).isEmpty();
 	}
 
 }
