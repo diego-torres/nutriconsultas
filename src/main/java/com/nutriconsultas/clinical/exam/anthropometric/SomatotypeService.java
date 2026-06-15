@@ -23,10 +23,19 @@ public class SomatotypeService {
 	public SomatotypeResult applyToMeasurement(final AnthropometricMeasurement measurement, final Paciente paciente) {
 		ensureBodyComposition(measurement);
 		final Integer age = calculateAge(paciente != null ? paciente.getDob() : null);
-		final SomatotypeResult result = SomatotypeCalculationService.calculate(measurement.getPeso(),
-				measurement.getEstatura(), getTricepsSkinfold(measurement), getSubscapularSkinfold(measurement),
-				getSupraspinalSkinfold(measurement), getFlexedArmGirth(measurement), getCalfGirth(measurement),
-				getMedialCalfSkinfold(measurement), getHumerusBreadth(measurement), getFemurBreadth(measurement), age);
+		final SomatotypeMeasurements inputs = SomatotypeMeasurements.builder()
+			.weightKg(measurement.getPeso())
+			.heightMeters(measurement.getEstatura())
+			.tricepsSkinfoldMm(getTricepsSkinfold(measurement))
+			.subscapularSkinfoldMm(getSubscapularSkinfold(measurement))
+			.supraspinalSkinfoldMm(getSupraspinalSkinfold(measurement))
+			.flexedArmGirthCm(getFlexedArmGirth(measurement))
+			.calfGirthCm(getCalfGirth(measurement))
+			.medialCalfSkinfoldMm(getMedialCalfSkinfold(measurement))
+			.humerusBreadthCm(getHumerusBreadth(measurement))
+			.femurBreadthCm(getFemurBreadth(measurement))
+			.build();
+		final SomatotypeResult result = SomatotypeCalculationService.calculate(inputs, age);
 
 		if (result.isCalculable()) {
 			persistResult(measurement, result);

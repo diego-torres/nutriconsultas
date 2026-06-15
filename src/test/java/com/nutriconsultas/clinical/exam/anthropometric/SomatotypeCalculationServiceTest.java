@@ -9,10 +9,24 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("test")
 class SomatotypeCalculationServiceTest {
 
+	private static SomatotypeMeasurements referenceMeasurements() {
+		return SomatotypeMeasurements.builder()
+			.weightKg(70.0)
+			.heightMeters(1.75)
+			.tricepsSkinfoldMm(10.0)
+			.subscapularSkinfoldMm(12.0)
+			.supraspinalSkinfoldMm(8.0)
+			.flexedArmGirthCm(30.0)
+			.calfGirthCm(36.0)
+			.medialCalfSkinfoldMm(8.0)
+			.humerusBreadthCm(6.5)
+			.femurBreadthCm(9.5)
+			.build();
+	}
+
 	@Test
 	void calculateReturnsFullSomatotypeWithReferenceInputs() {
-		final SomatotypeResult result = SomatotypeCalculationService.calculate(70.0, 1.75, 10.0, 12.0, 8.0, 30.0, 36.0,
-				8.0, 6.5, 9.5, 30);
+		final SomatotypeResult result = SomatotypeCalculationService.calculate(referenceMeasurements(), 30);
 
 		assertThat(result.isCalculable()).isTrue();
 		assertThat(result.getMissingMeasurements()).isEmpty();
@@ -65,8 +79,8 @@ class SomatotypeCalculationServiceTest {
 
 	@Test
 	void calculateListsMissingMeasurements() {
-		final SomatotypeResult result = SomatotypeCalculationService.calculate(70.0, 1.75, null, 12.0, 8.0, 30.0, 36.0,
-				8.0, 6.5, 9.5, 30);
+		final SomatotypeMeasurements measurements = referenceMeasurements().toBuilder().tricepsSkinfoldMm(null).build();
+		final SomatotypeResult result = SomatotypeCalculationService.calculate(measurements, 30);
 
 		assertThat(result.isCalculable()).isFalse();
 		assertThat(result.getMissingMeasurements()).contains("Pliegue tríceps");
@@ -74,8 +88,19 @@ class SomatotypeCalculationServiceTest {
 
 	@Test
 	void calculateRejectsPediatricPatients() {
-		final SomatotypeResult result = SomatotypeCalculationService.calculate(50.0, 1.50, 8.0, 7.0, 6.0, 22.0, 28.0,
-				6.0, 5.0, 7.5, 12);
+		final SomatotypeMeasurements measurements = SomatotypeMeasurements.builder()
+			.weightKg(50.0)
+			.heightMeters(1.50)
+			.tricepsSkinfoldMm(8.0)
+			.subscapularSkinfoldMm(7.0)
+			.supraspinalSkinfoldMm(6.0)
+			.flexedArmGirthCm(22.0)
+			.calfGirthCm(28.0)
+			.medialCalfSkinfoldMm(6.0)
+			.humerusBreadthCm(5.0)
+			.femurBreadthCm(7.5)
+			.build();
+		final SomatotypeResult result = SomatotypeCalculationService.calculate(measurements, 12);
 
 		assertThat(result.isCalculable()).isFalse();
 		assertThat(result.getMissingMeasurements())
