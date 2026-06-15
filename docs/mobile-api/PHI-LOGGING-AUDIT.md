@@ -1,12 +1,12 @@
 # Mobile API PHI logging audit (#115)
 
-Audit completed **2026-06-15** on branch `mobile-api/115-phi-audit`.
+Audit completed **2026-06-15**; merged to `main` via [PR #168](https://github.com/diego-torres/nutriconsultas/pull/168).
 
 ## Policy
 
 - No patient names, emails, phone numbers, DOB, measurements, message bodies, or raw Auth0 `sub` values in unstructured logs at **INFO** or above.
 - Use `com.nutriconsultas.util.LogRedaction` for all patient-related identifiers in log statements.
-- Defense in depth: `PhiLogTurboFilter` (configured in `logback-spring.xml`) denies INFO+ mobile log lines that match email or unredacted Auth0 sub patterns.
+- Defense in depth: `PhiLogTurboFilter` (configured in `logback-spring.xml`) denies INFO+ mobile log lines that match email or unredacted Auth0 sub patterns. Static audit + checklist cover names/DOB/measures; TurboFilter does not yet mask those patterns (follow-up optional).
 
 ## Checklist
 

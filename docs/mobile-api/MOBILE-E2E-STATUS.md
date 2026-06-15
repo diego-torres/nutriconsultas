@@ -212,4 +212,4 @@ Optional backend script (requires access token from the app):
 
 ---
 
-*Updated 2026-06-15: #115 PHI audit in progress; **NEXT:** #116.*
+*Updated 2026-06-15: #115 PHI audit done (PR #168); **NEXT:** #116.*

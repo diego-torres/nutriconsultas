@@ -10,7 +10,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) | Canonical cross-repo contract — §F8 schema/enum map, per-issue corrected scope |
 | [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) | Endpoint request/response specs (#91–#99) with field mappings |
 
-**Current next issue:** [#116 — Additive: senderDisplayName in message DTOs](https://github.com/diego-torres/nutriconsultas/issues/116) — **NEXT** (additive). #115 PHI audit merged.
+**Current next issue:** [#116 — Additive: senderDisplayName in message DTOs](https://github.com/diego-torres/nutriconsultas/issues/116) — **NEXT** (additive). ~~#115~~ PHI audit done ([PR #168](https://github.com/diego-torres/nutriconsultas/pull/168)).
 
 ---
 
@@ -327,7 +327,7 @@ gh pr create ...
 | **Phase** | Additive (optional) |
 | **Depends on** | #96 |
 | **Blocks** | — |
-| **Just completed** | [#115](https://github.com/diego-torres/nutriconsultas/issues/115) — [PR #168](https://github.com/diego-torres/nutriconsultas/pull/168): PHI log redaction audit (in review) |
+| **Just completed** | [#115](https://github.com/diego-torres/nutriconsultas/issues/115) — [PR #168](https://github.com/diego-torres/nutriconsultas/pull/168): PHI log redaction audit (merged to `main`) |
 | **In scope for #116** | Add `senderDisplayName` from `NutritionistProfile` to message DTOs |
 
 ### Upcoming gates
