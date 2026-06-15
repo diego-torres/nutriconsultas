@@ -14,12 +14,14 @@ class PhysiologicalStressCatalogTest {
 	@Test
 	void defaultLongMultiplierForMajorSurgery() {
 		assertThat(PhysiologicalStressCatalog.defaultMultiplier(PhysiologicalStressType.MAJOR_SURGERY,
-				StressFormulaTable.LONG)).isEqualTo(1.20);
+				StressFormulaTable.LONG))
+			.isEqualTo(1.20);
 	}
 
 	@Test
 	void defaultAspenMultiplierForBurns() {
-		assertThat(PhysiologicalStressCatalog.defaultMultiplier(PhysiologicalStressType.BURNS, StressFormulaTable.ASPEN))
+		assertThat(
+				PhysiologicalStressCatalog.defaultMultiplier(PhysiologicalStressType.BURNS, StressFormulaTable.ASPEN))
 			.isEqualTo(1.80);
 	}
 

@@ -100,8 +100,8 @@ public final class EnergyExpenditureResolver {
 			return result;
 		}
 		final LocalDate referenceDate = resolveReferenceDate(event, measurement);
-		final StressContext stressContext = PhysiologicalStressPreferences.resolveEffective(paciente, event, measurement,
-				referenceDate);
+		final StressContext stressContext = PhysiologicalStressPreferences.resolveEffective(paciente, event,
+				measurement, referenceDate);
 		final Double stressKcal = PhysiologicalStressCalculationService.calculateStressKcal(stressContext, result.bmr(),
 				result.getKcal(), bodyTemperature);
 		final Double finalTotalKcal = PhysiologicalStressCalculationService

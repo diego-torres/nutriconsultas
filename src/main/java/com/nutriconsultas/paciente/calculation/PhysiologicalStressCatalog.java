@@ -24,8 +24,8 @@ public final class PhysiologicalStressCatalog {
 	}
 
 	/**
-	 * Returns the default multiplier for a stress type and reference table, or {@code null}
-	 * when the nutritionist must supply a custom value.
+	 * Returns the default multiplier for a stress type and reference table, or
+	 * {@code null} when the nutritionist must supply a custom value.
 	 */
 	public static Double defaultMultiplier(final PhysiologicalStressType stressType,
 			final StressFormulaTable formulaTable) {
@@ -48,7 +48,8 @@ public final class PhysiologicalStressCatalog {
 	}
 
 	/**
-	 * Suggests stress types based on pathology flags already captured on the patient record.
+	 * Suggests stress types based on pathology flags already captured on the patient
+	 * record.
 	 */
 	public static List<PhysiologicalStressType> suggestFromPathologies(final Paciente paciente) {
 		if (paciente == null) {

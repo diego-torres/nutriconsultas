@@ -14,18 +14,14 @@ public final class DietaNutritionCalculator {
 			return 0.0;
 		}
 		return dieta.getIngestas().stream().mapToDouble(ingesta -> {
-			final double platillos = ingesta.getPlatillos() != null
-					? ingesta.getPlatillos()
-						.stream()
-						.mapToDouble(p -> p.getProteina() != null ? p.getProteina() : 0.0)
-						.sum()
-					: 0.0;
-			final double alimentos = ingesta.getAlimentos() != null
-					? ingesta.getAlimentos()
-						.stream()
-						.mapToDouble(a -> a.getProteina() != null ? a.getProteina() : 0.0)
-						.sum()
-					: 0.0;
+			final double platillos = ingesta.getPlatillos() != null ? ingesta.getPlatillos()
+				.stream()
+				.mapToDouble(p -> p.getProteina() != null ? p.getProteina() : 0.0)
+				.sum() : 0.0;
+			final double alimentos = ingesta.getAlimentos() != null ? ingesta.getAlimentos()
+				.stream()
+				.mapToDouble(a -> a.getProteina() != null ? a.getProteina() : 0.0)
+				.sum() : 0.0;
 			return platillos + alimentos;
 		}).sum();
 	}
@@ -35,18 +31,14 @@ public final class DietaNutritionCalculator {
 			return 0.0;
 		}
 		return dieta.getIngestas().stream().mapToDouble(ingesta -> {
-			final double platillos = ingesta.getPlatillos() != null
-					? ingesta.getPlatillos()
-						.stream()
-						.mapToDouble(p -> p.getLipidos() != null ? p.getLipidos() : 0.0)
-						.sum()
-					: 0.0;
-			final double alimentos = ingesta.getAlimentos() != null
-					? ingesta.getAlimentos()
-						.stream()
-						.mapToDouble(a -> a.getLipidos() != null ? a.getLipidos() : 0.0)
-						.sum()
-					: 0.0;
+			final double platillos = ingesta.getPlatillos() != null ? ingesta.getPlatillos()
+				.stream()
+				.mapToDouble(p -> p.getLipidos() != null ? p.getLipidos() : 0.0)
+				.sum() : 0.0;
+			final double alimentos = ingesta.getAlimentos() != null ? ingesta.getAlimentos()
+				.stream()
+				.mapToDouble(a -> a.getLipidos() != null ? a.getLipidos() : 0.0)
+				.sum() : 0.0;
 			return platillos + alimentos;
 		}).sum();
 	}
@@ -56,18 +48,14 @@ public final class DietaNutritionCalculator {
 			return 0.0;
 		}
 		return dieta.getIngestas().stream().mapToDouble(ingesta -> {
-			final double platillos = ingesta.getPlatillos() != null
-					? ingesta.getPlatillos()
-						.stream()
-						.mapToDouble(p -> p.getHidratosDeCarbono() != null ? p.getHidratosDeCarbono() : 0.0)
-						.sum()
-					: 0.0;
-			final double alimentos = ingesta.getAlimentos() != null
-					? ingesta.getAlimentos()
-						.stream()
-						.mapToDouble(a -> a.getHidratosDeCarbono() != null ? a.getHidratosDeCarbono() : 0.0)
-						.sum()
-					: 0.0;
+			final double platillos = ingesta.getPlatillos() != null ? ingesta.getPlatillos()
+				.stream()
+				.mapToDouble(p -> p.getHidratosDeCarbono() != null ? p.getHidratosDeCarbono() : 0.0)
+				.sum() : 0.0;
+			final double alimentos = ingesta.getAlimentos() != null ? ingesta.getAlimentos()
+				.stream()
+				.mapToDouble(a -> a.getHidratosDeCarbono() != null ? a.getHidratosDeCarbono() : 0.0)
+				.sum() : 0.0;
 			return platillos + alimentos;
 		}).sum();
 	}
