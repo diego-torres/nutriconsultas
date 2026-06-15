@@ -455,6 +455,14 @@
         }
       }
       
+      function formatBodyFatPercent(value) {
+        const num = Number(value);
+        if (Number.isNaN(num)) {
+          return '';
+        }
+        return num.toFixed(2);
+      }
+
       function fillBodyFatFromLatestAnthropometric(pacienteId) {
         const feedback = jQuery('#summaryNotesWizardModal #bodyFatAutofillFeedback');
         feedback.text('');
@@ -467,7 +475,7 @@
         jQuery.get('/rest/pacientes/' + pacienteId + '/antropometricos/latest-body-fat')
           .done(function(data) {
             if (data.bodyFatPercentage != null) {
-              jQuery('#summaryNotesWizardModal #indiceGrasaCorporalInput').val(data.bodyFatPercentage);
+              jQuery('#summaryNotesWizardModal #indiceGrasaCorporalInput').val(formatBodyFatPercent(data.bodyFatPercentage));
               if (data.measurementDate) {
                 const dateStr = new Date(data.measurementDate).toLocaleDateString('es-ES', {
                   year: 'numeric',
@@ -790,7 +798,7 @@
             jQuery('#summaryNotesWizardModal #imcCalculado').val(eventData.imc);
           }
           if (eventData.indiceGrasaCorporal) {
-            jQuery('#summaryNotesWizardModal #indiceGrasaCorporalInput').val(eventData.indiceGrasaCorporal);
+            jQuery('#summaryNotesWizardModal #indiceGrasaCorporalInput').val(formatBodyFatPercent(eventData.indiceGrasaCorporal));
           }
           if (eventData.sistolica) {
             jQuery('#summaryNotesWizardModal input[name="sistolica"]').val(eventData.sistolica);
@@ -899,7 +907,9 @@
           if (formData.peso) summary += 'Peso: ' + formData.peso + ' kg\n';
           if (formData.estatura) summary += 'Estatura: ' + formData.estatura + ' m\n';
           if (formData.imc) summary += 'IMC: ' + formData.imc + '\n';
-          if (formData.indiceGrasaCorporal) summary += 'Porcentaje de grasa corporal: ' + formData.indiceGrasaCorporal + '%\n';
+          if (formData.indiceGrasaCorporal) {
+            summary += 'Porcentaje de grasa corporal: ' + formatBodyFatPercent(formData.indiceGrasaCorporal) + '%\n';
+          }
           if (formData.sistolica || formData.diastolica) {
             summary += 'Presión Arterial: ' + (formData.sistolica || '') + '/' + (formData.diastolica || '') + ' mmHg\n';
           }
@@ -1007,7 +1017,9 @@
         if (peso) formData.peso = parseFloat(peso);
         if (estatura) formData.estatura = parseFloat(estatura);
         if (imc) formData.imc = parseFloat(imc);
-        if (indiceGrasaCorporal) formData.indiceGrasaCorporal = parseFloat(indiceGrasaCorporal);
+        if (indiceGrasaCorporal) {
+          formData.indiceGrasaCorporal = parseFloat(formatBodyFatPercent(indiceGrasaCorporal));
+        }
         if (sistolica) formData.sistolica = parseInt(sistolica);
         if (diastolica) formData.diastolica = parseInt(diastolica);
         if (indiceGlucemico) formData.indiceGlucemico = parseInt(indiceGlucemico);
