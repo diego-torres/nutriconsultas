@@ -61,6 +61,47 @@ class BodyMetricRecordServiceTest {
 	}
 
 	@Test
+	void buildChartResponsePrefersBodyFatPercentageOverIndex() {
+		final BodyMetricRecord record = new BodyMetricRecord();
+		record.setRecordedAt(new Date());
+		record.setBodyFatPercentage(21.0);
+		record.setBodyFatIndex(25.0);
+
+		when(repository.existsByPacienteId(1L)).thenReturn(true);
+		when(repository.findByPacienteIdOrderByRecordedAtAsc(1L)).thenReturn(List.of(record));
+
+		final ChartResponse response = service.buildChartResponse(1L);
+
+		@SuppressWarnings("unchecked")
+		final List<Double> fatData = (List<Double>) response.getData().get("grasaCorporal");
+		assertThat(fatData).containsExactly(21.0);
+	}
+
+	@Test
+	void syncFromAnthropometricPersistsBodyFatPercentage() {
+		final AnthropometricMeasurement measurement = new AnthropometricMeasurement();
+		measurement.setId(10L);
+		measurement.setPaciente(paciente);
+		measurement.setMeasurementDateTime(new Date());
+		measurement.setPorcentajeGrasaCorporal(20.5);
+		measurement.setIndiceGrasaCorporal(20.5);
+
+		when(repository.findBySourceAndSourceId(BodyMetricSource.ANTHROPOMETRIC, 10L)).thenReturn(Optional.empty());
+		when(repository.save(any(BodyMetricRecord.class))).thenAnswer(invocation -> {
+			final BodyMetricRecord saved = invocation.getArgument(0);
+			saved.setId(99L);
+			return saved;
+		});
+
+		service.syncFromAnthropometric(measurement);
+
+		final ArgumentCaptor<BodyMetricRecord> captor = ArgumentCaptor.forClass(BodyMetricRecord.class);
+		verify(repository).save(captor.capture());
+		assertThat(captor.getValue().getBodyFatPercentage()).isEqualTo(20.5);
+		assertThat(captor.getValue().getBodyFatIndex()).isEqualTo(20.5);
+	}
+
+	@Test
 	void syncFromAnthropometricPersistsImcAndNivelPeso() {
 		final AnthropometricMeasurement measurement = new AnthropometricMeasurement();
 		measurement.setId(10L);

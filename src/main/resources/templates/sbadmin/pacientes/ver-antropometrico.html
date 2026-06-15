@@ -125,6 +125,7 @@
                           <div th:replace="~{sbadmin/pacientes/imc-gauge :: imcGauge(${measurement.imc}, ${measurement.nivelPeso})}"></div>
                         </div>
                       </div>
+                      <div th:replace="~{sbadmin/pacientes/body-composition-fields :: bodyCompositionDisplay(${measurement})}"></div>
                       <div class="row" th:if="${measurement.notes != null && !measurement.notes.isEmpty()}">
                         <div class="col-md-12">
                           <p><strong>Notas:</strong></p>

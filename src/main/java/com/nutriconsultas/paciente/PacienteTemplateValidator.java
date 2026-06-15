@@ -41,6 +41,9 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		variables.put("ultimaEstatura", null);
 		variables.put("ultimoImc", null);
 		variables.put("ultimoNivelPeso", null);
+		variables.put("ultimoPorcentajeGrasaCorporal", null);
+		variables.put("ultimoIndiceGrasaCorporal", null);
+		variables.put("ultimoPorcentajeMasaMuscular", null);
 		variables.put("isEligibleForPregnancy", false);
 		variables.put("isUnder18", false);
 		variables.put("suggestedStressTypes", List.of());
@@ -89,6 +92,7 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		paciente.setBulimia(false);
 		paciente.setAnorexia(false);
 		paciente.setPregnancy(false);
+		paciente.setPhysiologicalStressActive(null);
 		return paciente;
 	}
 

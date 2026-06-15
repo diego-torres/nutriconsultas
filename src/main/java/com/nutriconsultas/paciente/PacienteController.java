@@ -69,6 +69,9 @@ public class PacienteController extends AbstractAuthorizedController {
 	private BodyFatCalculatorService bodyFatCalculatorService;
 
 	@Autowired
+	private com.nutriconsultas.clinical.exam.anthropometric.BodyCompositionService bodyCompositionService;
+
+	@Autowired
 	private PacienteDietaService pacienteDietaService;
 
 	@Autowired
@@ -194,9 +197,12 @@ public class PacienteController extends AbstractAuthorizedController {
 			model.addAttribute("ultimaEstatura", latest.getHeight());
 			model.addAttribute("ultimoImc", latest.getImc());
 			model.addAttribute("ultimoNivelPeso", latest.getNivelPeso());
-			model.addAttribute("ultimoIndiceGrasaCorporal",
-					latest.getBodyFatIndex() != null ? latest.getBodyFatIndex() : latest.getBodyFatPercentage());
+			final Double ultimoPorcentajeGrasa = latest.getBodyFatPercentage() != null ? latest.getBodyFatPercentage()
+					: latest.getBodyFatIndex();
+			model.addAttribute("ultimoPorcentajeGrasaCorporal", ultimoPorcentajeGrasa);
+			model.addAttribute("ultimoIndiceGrasaCorporal", ultimoPorcentajeGrasa);
 		});
+		addLatestMuscleMassToModel(id, model);
 		// Calculate age and check if patient is under 18 for growth table display
 		final Integer age = calculateAge(paciente.getDob());
 		final boolean isUnder18 = age != null && age < 18;
@@ -357,8 +363,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		model.addAttribute("paciente", paciente);
 		model.addAttribute("isEligibleForPregnancy", isEligibleForPregnancy(paciente));
 		model.addAttribute("suggestedStressTypes",
-				com.nutriconsultas.paciente.calculation.PhysiologicalStressCatalog
-					.suggestFromPathologies(paciente));
+				com.nutriconsultas.paciente.calculation.PhysiologicalStressCatalog.suggestFromPathologies(paciente));
 		return "sbadmin/pacientes/desarrollo";
 	}
 
@@ -462,7 +467,8 @@ public class PacienteController extends AbstractAuthorizedController {
 			}
 		}
 		model.addAttribute("dietasActivas", dietasActivas);
-		// obtener todas las dietas disponibles para asignar (legacy attribute for dietas template)
+		// obtener todas las dietas disponibles para asignar (legacy attribute for dietas
+		// template)
 		model.addAttribute("dietasDisponibles", getDietasDisponiblesWithCalculatedNutrients());
 		return "sbadmin/pacientes/dietas";
 	}
@@ -516,8 +522,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		}
 		model.addAttribute("consulta", evento);
 		model.addAttribute("suggestedStressTypes",
-				com.nutriconsultas.paciente.calculation.PhysiologicalStressCatalog
-					.suggestFromPathologies(paciente));
+				com.nutriconsultas.paciente.calculation.PhysiologicalStressCatalog.suggestFromPathologies(paciente));
 		return "sbadmin/pacientes/consulta";
 	}
 
@@ -1324,18 +1329,26 @@ public class PacienteController extends AbstractAuthorizedController {
 			final com.nutriconsultas.clinical.exam.AnthropometricMeasurement measurement, final Paciente paciente) {
 		Double imc = null;
 		NivelPeso np = null;
-		Double bodyFatPercentage = null;
 
 		if (measurement.getPeso() != null && measurement.getEstatura() != null) {
 			imc = measurement.getPeso() / Math.pow(measurement.getEstatura(), 2);
 			np = calculateNivelPeso(imc);
-			bodyFatPercentage = calculateBodyFatPercentage(imc, paciente);
-			if (bodyFatPercentage != null) {
-				measurement.setIndiceGrasaCorporal(bodyFatPercentage);
-			}
 		}
 
+		bodyCompositionService.applyToMeasurement(measurement, paciente, imc);
+		final Double bodyFatPercentage = measurement.getPorcentajeGrasaCorporal();
+
 		return new BmiCalculationResult(imc, np, bodyFatPercentage);
+	}
+
+	private void addLatestMuscleMassToModel(final Long pacienteId, final Model model) {
+		anthropometricMeasurementService.findByPacienteId(pacienteId)
+			.stream()
+			.filter(measurement -> measurement.getPorcentajeMasaMuscular() != null)
+			.max(Comparator.comparing(AnthropometricMeasurement::getMeasurementDateTime)
+				.thenComparing(AnthropometricMeasurement::getId, Comparator.nullsLast(Comparator.naturalOrder())))
+			.ifPresent(
+					latest -> model.addAttribute("ultimoPorcentajeMasaMuscular", latest.getPorcentajeMasaMuscular()));
 	}
 
 	/**

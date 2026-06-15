@@ -28,6 +28,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 
@@ -121,6 +122,9 @@ public class PacienteControllerTest {
 		principal = org.mockito.Mockito.mock(OidcUser.class);
 		lenient().when(principal.getSubject()).thenReturn(TEST_USER_ID);
 		lenient().when(bodyMetricRecordService.findLatestByPacienteId(any())).thenReturn(java.util.Optional.empty());
+		final com.nutriconsultas.clinical.exam.anthropometric.BodyCompositionService realBodyCompositionService = new com.nutriconsultas.clinical.exam.anthropometric.BodyCompositionService(
+				new BodyFatCalculatorService());
+		ReflectionTestUtils.setField(controller, "bodyCompositionService", realBodyCompositionService);
 
 		log.info("finished setting up PacienteController test");
 	}
@@ -625,6 +629,7 @@ public class PacienteControllerTest {
 		// Arrange - Use existing paciente (30 years old)
 		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(calendarEventService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
+		when(anthropometricMeasurementService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
@@ -634,8 +639,8 @@ public class PacienteControllerTest {
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
 		verify(model).addAttribute("isUnder18", false);
-		// Should not fetch measurements for patients 18 or older
-		verify(anthropometricMeasurementService, org.mockito.Mockito.never()).findByPacienteId(any());
+		verify(anthropometricMeasurementService).findByPacienteId(1L);
+		verify(model, org.mockito.Mockito.never()).addAttribute(eq("growthMeasurements"), any(List.class));
 		log.info("finished testPerfilPaciente18OrOlder");
 	}
 
@@ -654,6 +659,7 @@ public class PacienteControllerTest {
 		when(pacienteRepository.findByIdAndUserId(4L, TEST_USER_ID))
 			.thenReturn(java.util.Optional.of(exactly18Paciente));
 		when(calendarEventService.findByPacienteId(4L)).thenReturn(new ArrayList<>());
+		when(anthropometricMeasurementService.findByPacienteId(4L)).thenReturn(new ArrayList<>());
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
@@ -664,8 +670,8 @@ public class PacienteControllerTest {
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
 		// Patient exactly 18 should not show growth table (age < 18, not <= 18)
 		verify(model).addAttribute("isUnder18", false);
-		// Should not fetch measurements for patients 18 or older
-		verify(anthropometricMeasurementService, org.mockito.Mockito.never()).findByPacienteId(any());
+		verify(anthropometricMeasurementService).findByPacienteId(4L);
+		verify(model, org.mockito.Mockito.never()).addAttribute(eq("growthMeasurements"), any(List.class));
 		log.info("finished testPerfilPacienteBoundaryCaseExactly18");
 	}
 
@@ -1511,9 +1517,6 @@ public class PacienteControllerTest {
 		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(anthropometricMeasurementService.save(any(AnthropometricMeasurement.class))).thenReturn(measurement);
 		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
-		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
-				any(String.class)))
-			.thenReturn(15.5);
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
@@ -1529,6 +1532,9 @@ public class PacienteControllerTest {
 		verify(pacienteRepository).save(any(Paciente.class));
 		assertThat(measurement.getImc()).isNotNull();
 		assertThat(measurement.getNivelPeso()).isNotNull();
+		assertThat(measurement.getPorcentajeGrasaCorporal()).isNotNull();
+		assertThat(measurement.getIndiceGrasaCorporal()).isEqualTo(measurement.getPorcentajeGrasaCorporal());
+		assertThat(measurement.getPorcentajeMasaMuscular()).isNotNull();
 		assertPacienteBmrMatchesPromedio(70.0, 1.75);
 		log.info("finished testAgregarAntropometricosPaciente");
 	}
@@ -1555,9 +1561,6 @@ public class PacienteControllerTest {
 		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(anthropometricMeasurementService.save(any(AnthropometricMeasurement.class))).thenReturn(measurement);
 		when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
-		when(bodyFatCalculatorService.calculateBodyFatPercentage(any(Double.class), any(Integer.class),
-				any(String.class)))
-			.thenReturn(15.5);
 
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
@@ -1573,6 +1576,7 @@ public class PacienteControllerTest {
 		assertThat(measurement.getBodyMass().getWeight()).isEqualTo(70.0);
 		assertThat(measurement.getCircumferences()).isNotNull();
 		assertThat(measurement.getCircumferences().getWaistCircumference()).isEqualTo(80.0);
+		assertThat(measurement.getPorcentajeGrasaCorporal()).isNotNull();
 		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(anthropometricMeasurementService).save(any(AnthropometricMeasurement.class));
 		verify(pacienteRepository).save(any(Paciente.class));

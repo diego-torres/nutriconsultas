@@ -213,10 +213,10 @@ public class BodyMetricRecordServiceImpl implements BodyMetricRecordService {
 	}
 
 	private Double resolveBodyFatValue(final BodyMetricRecord record) {
-		if (record.getBodyFatIndex() != null) {
-			return record.getBodyFatIndex();
+		if (record.getBodyFatPercentage() != null) {
+			return record.getBodyFatPercentage();
 		}
-		return record.getBodyFatPercentage();
+		return record.getBodyFatIndex();
 	}
 
 	private void refreshPatientSnapshot(@NonNull final Long pacienteId) {
