@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -15,11 +16,13 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventService;
@@ -33,6 +36,7 @@ import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
 import com.nutriconsultas.paciente.PacienteService;
+import com.nutriconsultas.profile.NutritionistProfile;
 import com.nutriconsultas.profile.NutritionistProfileService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -263,6 +267,31 @@ public class PatientReportServiceTest {
 
 		assertThat(pdfBytes).isNotNull();
 		assertThat(pdfBytes.length).isGreaterThan(0);
+	}
+
+	@Test
+	public void testGenerateReportIncludesResolvedNutritionistDisplayName() {
+		final NutritionistProfile profile = new NutritionistProfile();
+		profile.setUserId("user123");
+		profile.setDisplayName("Lic. María García López");
+		profile.setCedulaProfesional("12345678");
+		when(nutritionistProfileService.getOrCreateProfile("user123")).thenReturn(profile);
+
+		when(pacienteService.findByIdAndUserId(1L, "user123")).thenReturn(paciente);
+		when(calendarEventService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
+		when(anthropometricMeasurementService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
+		when(clinicalExamService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
+		when(pacienteDietaRepository.findByPacienteIdOrderByStartDateDesc(1L)).thenReturn(new ArrayList<>());
+		when(templateEngine.process(eq("sbadmin/reports/patient-progress"), any(Context.class)))
+			.thenReturn("<html><body>Test Report</body></html>");
+
+		reportService.generateReport(1L, "user123", null, null);
+
+		final ArgumentCaptor<Context> contextCaptor = ArgumentCaptor.forClass(Context.class);
+		verify(templateEngine).process(eq("sbadmin/reports/patient-progress"), contextCaptor.capture());
+		assertThat(contextCaptor.getValue().getVariable("nutritionistDisplayName"))
+			.isEqualTo("Lic. María García López");
+		assertThat(contextCaptor.getValue().getVariable("nutritionistProfile")).isSameAs(profile);
 	}
 
 }

@@ -133,6 +133,7 @@
 	<!--
 		OPTIONAL MODEL VARIABLES:
 		- nutritionistProfile: NutritionistProfile entity (may be null)
+		- nutritionistDisplayName: resolved nutritionist name (may be null)
 		- logoBase64: Base64 Data URI string (may be null)
 	-->
 	<div class="header">
@@ -141,10 +142,7 @@
 				<td style="vertical-align: bottom;">
 					<h1>Estadísticas de la Clínica</h1>
 					<p>Minutriporcion - Reporte de Estadísticas Generales</p>
-					<p th:if="${nutritionistProfile != null and nutritionistProfile.cedulaProfesional != null
-					        and !#strings.isEmpty(nutritionistProfile.cedulaProfesional)}">
-						Ced. Prof. <span th:text="${nutritionistProfile.cedulaProfesional}">0000000</span>
-					</p>
+					<div th:replace="~{sbadmin/fragments/pdf-nutritionist-credentials :: credentials}"></div>
 					<p th:if="${startDate != null or endDate != null}">
 						Período:
 						<span th:if="${startDate != null}" th:text="${#dates.format(startDate, 'dd/MM/yyyy')}"></span>

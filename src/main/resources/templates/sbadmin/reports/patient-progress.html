@@ -180,6 +180,7 @@
 	<!--
 		OPTIONAL MODEL VARIABLES:
 		- nutritionistProfile: NutritionistProfile entity (may be null)
+		- nutritionistDisplayName: resolved nutritionist name (may be null)
 		- logoBase64: Base64 Data URI string (may be null)
 	-->
 	<div class="header">
@@ -188,10 +189,7 @@
 				<td style="vertical-align: bottom;">
 					<h1>Reporte de Progreso del Paciente</h1>
 					<p>Minutriporcion - Consulta Nutricional</p>
-					<p th:if="${nutritionistProfile != null and nutritionistProfile.cedulaProfesional != null
-					        and !#strings.isEmpty(nutritionistProfile.cedulaProfesional)}">
-						Ced. Prof. <span th:text="${nutritionistProfile.cedulaProfesional}">0000000</span>
-					</p>
+					<div th:replace="~{sbadmin/fragments/pdf-nutritionist-credentials :: credentials}"></div>
 				</td>
 				<td th:if="${logoBase64 != null}" style="text-align: right; vertical-align: bottom; width: 160px;">
 					<img th:src="${logoBase64}" alt="Logo" style="max-height: 70px; max-width: 150px;" />
