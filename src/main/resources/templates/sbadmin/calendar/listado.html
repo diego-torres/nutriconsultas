@@ -739,6 +739,41 @@
           }
         }
 
+        function fillBodyFatFromLatestAnthropometric(pacienteId) {
+          const feedback = $('#summaryNotesWizardModal #bodyFatAutofillFeedback');
+          feedback.text('');
+          if (!pacienteId) {
+            alert('No se encontró el paciente de la cita.');
+            return;
+          }
+          const btn = $('#summaryNotesWizardModal #useLatestBodyFatBtn');
+          btn.prop('disabled', true);
+          $.get('/rest/pacientes/' + pacienteId + '/antropometricos/latest-body-fat')
+            .done(function(data) {
+              if (data.bodyFatPercentage != null) {
+                $('#summaryNotesWizardModal #indiceGrasaCorporalInput').val(data.bodyFatPercentage);
+                if (data.measurementDate) {
+                  const dateStr = new Date(data.measurementDate).toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  });
+                  feedback.text('Medición del ' + dateStr);
+                }
+              }
+            })
+            .fail(function(xhr) {
+              let msg = 'No hay porcentaje de grasa disponible en antropométricos.';
+              if (xhr.responseJSON && xhr.responseJSON.error) {
+                msg = xhr.responseJSON.error;
+              }
+              alert(msg);
+            })
+            .always(function() {
+              btn.prop('disabled', false);
+            });
+        }
+
         function showSummaryNotesWizard(eventId) {
           const props = window.currentEventWizardProps || {};
           const eventData = {
@@ -821,8 +856,13 @@
           wizardHtml += '</div>';
           wizardHtml += '<div class="col-md-6">';
           wizardHtml += '<div class="form-group">';
-          wizardHtml += '<label>Índice de Grasa Corporal (%):</label>';
+          wizardHtml += '<label>Porcentaje de grasa corporal (%):</label>';
+          wizardHtml += '<div class="input-group">';
           wizardHtml += '<input type="number" class="form-control" name="indiceGrasaCorporal" id="indiceGrasaCorporalInput" step="0.01" min="0" max="100" placeholder="Ej: 25.5">';
+          wizardHtml += '<div class="input-group-append">';
+          wizardHtml += '<button type="button" class="btn btn-outline-secondary" id="useLatestBodyFatBtn" title="Usar el último porcentaje de grasa de antropométricos">Usar último registro</button>';
+          wizardHtml += '</div></div>';
+          wizardHtml += '<small id="bodyFatAutofillFeedback" class="form-text text-muted"></small>';
           wizardHtml += '</div>';
           wizardHtml += '</div>';
           wizardHtml += '</div>';
@@ -1019,6 +1059,9 @@
             }
             updateWizardGetPreview();
             updateWizardUI();
+            $('#summaryNotesWizardModal #useLatestBodyFatBtn').off('click').on('click', function() {
+              fillBodyFatFromLatestAnthropometric((window.currentEventWizardProps || {}).pacienteId);
+            });
           });
 
           $('#summaryNotesWizardModal').on('change input', '#wizardActivityLevel, #wizardBmrFormula, #wizardCustomFactor, #pesoInput, #estaturaInput', function() {
@@ -1098,7 +1141,7 @@
             if (formData.peso) summary += 'Peso: ' + formData.peso + ' kg\n';
             if (formData.estatura) summary += 'Estatura: ' + formData.estatura + ' m\n';
             if (formData.imc) summary += 'IMC: ' + formData.imc + '\n';
-            if (formData.indiceGrasaCorporal) summary += 'Índice de Grasa Corporal: ' + formData.indiceGrasaCorporal + '%\n';
+            if (formData.indiceGrasaCorporal) summary += 'Porcentaje de grasa corporal: ' + formData.indiceGrasaCorporal + '%\n';
             if (formData.sistolica || formData.diastolica) {
               summary += 'Presión Arterial: ' + (formData.sistolica || '') + '/' + (formData.diastolica || '') + ' mmHg\n';
             }

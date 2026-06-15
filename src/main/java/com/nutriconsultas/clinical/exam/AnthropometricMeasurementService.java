@@ -1,6 +1,7 @@
 package com.nutriconsultas.clinical.exam;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.lang.NonNull;
 
@@ -15,5 +16,7 @@ public interface AnthropometricMeasurementService {
 	void deleteById(@NonNull Long id);
 
 	List<AnthropometricMeasurement> findByPacienteId(@NonNull Long pacienteId);
+
+	Optional<LatestBodyFatResult> findLatestBodyFatForPatient(@NonNull Long pacienteId, @NonNull String userId);
 
 }
