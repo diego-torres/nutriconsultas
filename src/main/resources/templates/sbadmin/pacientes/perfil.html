@@ -73,6 +73,20 @@
                       </div>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                      <i class="fas fa-percentage fa-lg" style="color: #e67e22;"></i>
+                      <p class="mb-0" th:if="${ultimoPorcentajeGrasaCorporal != null}">
+                        % Grasa: [[(${#numbers.formatDecimal(ultimoPorcentajeGrasaCorporal,1,'COMMA',1,'POINT')})]]%
+                      </p>
+                      <p class="mb-0 text-muted" th:if="${ultimoPorcentajeGrasaCorporal == null}">% Grasa: sin dato</p>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                      <i class="fas fa-dumbbell fa-lg" style="color: #6f42c1;"></i>
+                      <p class="mb-0" th:if="${ultimoPorcentajeMasaMuscular != null}">
+                        % Masa muscular: [[(${#numbers.formatDecimal(ultimoPorcentajeMasaMuscular,1,'COMMA',1,'POINT')})]]%
+                      </p>
+                      <p class="mb-0 text-muted" th:if="${ultimoPorcentajeMasaMuscular == null}">% Masa muscular: sin dato</p>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center p-3">
                       <i class="fas fa-bolt fa-lg" style="color: #ff6b35;"></i>
                       <p class="mb-0" th:if="${paciente.getKcal != null}">
                         GET: [[(${#numbers.formatDecimal(paciente.getKcal,1,'COMMA',0,'POINT')})]] kcal/día
@@ -179,7 +193,7 @@
                             <i class="fas fa-weight"></i> IMC
                           </a>
                           <a class="dropdown-item" href="#" data-chart-type="grasa-corporal">
-                            <i class="fas fa-percentage"></i> Índice de Grasa Corporal
+                            <i class="fas fa-percentage"></i> % Grasa Corporal
                           </a>
                           <a class="dropdown-item" href="#" data-chart-type="get">
                             <i class="fas fa-bolt"></i> GET (kcal/día)
@@ -394,13 +408,13 @@
         ? '<i class="fas fa-weight"></i> IMC'
         : chartType === 'get'
           ? '<i class="fas fa-bolt"></i> GET'
-          : '<i class="fas fa-percentage"></i> Índice de Grasa Corporal';
+          : '<i class="fas fa-percentage"></i> % Grasa Corporal';
       $('#chartTypeDropdown').html(buttonText + ' <i class="fas fa-caret-down"></i>');
       var chartTitle = chartType === 'imc'
         ? 'Indice de Masa Corporal Historico'
         : chartType === 'get'
           ? 'Gasto Energetico Total Historico'
-          : 'Indice de Grasa Corporal Historico';
+          : 'Porcentaje de Grasa Corporal Historico';
       $('#chartTitle').text(chartTitle);
     });
 
@@ -411,7 +425,7 @@
 
       var label = chartType === 'imc' ? 'IMC'
         : chartType === 'get' ? 'GET (kcal/día)'
-        : 'Índice de Grasa Corporal (%)';
+        : '% Grasa Corporal';
       myLineChart.data.datasets[0].label = label;
       myLineChart.update();
     }

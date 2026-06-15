@@ -356,6 +356,8 @@
 					<th>Peso (kg)</th>
 					<th>Estatura (m)</th>
 					<th>IMC</th>
+					<th>% Grasa</th>
+					<th>% Masa muscular</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -365,6 +367,8 @@
 					<td th:text="${measurement.peso != null ? (#numbers.formatDecimal(measurement.peso, 1, 2) + ' kg') : 'N/A'}"></td>
 					<td th:text="${measurement.estatura != null ? (#numbers.formatDecimal(measurement.estatura, 2, 2) + ' m') : 'N/A'}"></td>
 					<td th:text="${measurement.bodyMass != null && measurement.bodyMass.imc != null ? #numbers.formatDecimal(measurement.bodyMass.imc, 1, 2) : 'N/A'}"></td>
+					<td th:text="${measurement.porcentajeGrasaCorporal != null ? (#numbers.formatDecimal(measurement.porcentajeGrasaCorporal, 1, 1) + '%') : 'N/A'}"></td>
+					<td th:text="${measurement.porcentajeMasaMuscular != null ? (#numbers.formatDecimal(measurement.porcentajeMasaMuscular, 1, 1) + '%') : 'N/A'}"></td>
 				</tr>
 			</tbody>
 		</table>

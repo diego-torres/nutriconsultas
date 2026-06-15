@@ -1,0 +1,64 @@
+<!--
+  Body composition inputs for anthropometric body-mass tab.
+  Fragments: bodyCompositionFields (form), bodyCompositionDisplay (read-only view)
+-->
+<div th:fragment="bodyCompositionFields">
+  <hr class="my-3">
+  <h5 class="mb-3">Composición Corporal</h5>
+  <p class="text-muted small mb-3">
+    Opcional. Al guardar se calcula automáticamente si hay peso/estatura, pliegues completos o % grasa de bioimpedancia.
+  </p>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label>% Grasa Corporal</label>
+        <input type="number" step="0.1" th:field="*{bodyComposition.porcentajeGrasaCorporal}" class="form-control"
+               min="0" max="100" placeholder="Ej: 22.5">
+        <span th:if="${#fields.hasErrors('bodyComposition.porcentajeGrasaCorporal')}"
+              th:errors="*{bodyComposition.porcentajeGrasaCorporal}"></span>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label>Índice de Grasa Corporal (%)</label>
+        <input type="number" step="0.01" th:field="*{bodyComposition.indiceGrasaCorporal}" class="form-control"
+               min="0" max="100" placeholder="Ej: 22.50">
+        <span th:if="${#fields.hasErrors('bodyComposition.indiceGrasaCorporal')}"
+              th:errors="*{bodyComposition.indiceGrasaCorporal}"></span>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label>% Masa Muscular</label>
+        <input type="number" step="0.1" th:field="*{bodyComposition.porcentajeMasaMuscular}" class="form-control"
+               min="0" max="100" placeholder="Ej: 45.0">
+        <span th:if="${#fields.hasErrors('bodyComposition.porcentajeMasaMuscular')}"
+              th:errors="*{bodyComposition.porcentajeMasaMuscular}"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div th:fragment="bodyCompositionDisplay(measurement)">
+  <div th:with="fatPct=${measurement.porcentajeGrasaCorporal != null ? measurement.porcentajeGrasaCorporal : (measurement.bioimpedance != null ? measurement.bioimpedance.bodyFatPercentage : null)},
+                fatIdx=${measurement.indiceGrasaCorporal},
+                musclePct=${measurement.porcentajeMasaMuscular != null ? measurement.porcentajeMasaMuscular : null}"
+       th:if="${fatPct != null || fatIdx != null || musclePct != null}">
+    <hr class="my-3">
+    <h5 class="mb-3">Composición Corporal</h5>
+    <div class="row">
+      <div class="col-md-4" th:if="${fatPct != null}">
+        <p><strong>% Grasa Corporal:</strong>
+          <span th:text="${#numbers.formatDecimal(fatPct, 1, 1)} + '%'">-</span></p>
+      </div>
+      <div class="col-md-4" th:if="${fatIdx != null}">
+        <p><strong>Índice de Grasa Corporal:</strong>
+          <span th:text="${#numbers.formatDecimal(fatIdx, 1, 2)} + '%'">-</span></p>
+      </div>
+      <div class="col-md-4" th:if="${musclePct != null}">
+        <p><strong>% Masa Muscular:</strong>
+          <span th:text="${#numbers.formatDecimal(musclePct, 1, 1)} + '%'">-</span></p>
+      </div>
+    </div>
+  </div>
+</div>

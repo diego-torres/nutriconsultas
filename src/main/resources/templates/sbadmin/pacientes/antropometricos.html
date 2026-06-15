@@ -125,6 +125,7 @@
                             </div>
                           </div>
                           <div th:insert="~{sbadmin/pacientes/body-mass-imc-live :: bodyMassImcDisplay}"></div>
+                          <div th:insert="~{sbadmin/pacientes/body-composition-fields :: bodyCompositionFields}"></div>
                           <div class="row">
                             <div class="col-md-12">
                               <div class="form-group">
@@ -138,7 +139,6 @@
                           <input type="hidden" th:field="*{bodyMass.bodyMassValue}">
                           <input type="hidden" th:field="*{bodyMass.imc}">
                           <input type="hidden" th:field="*{bodyMass.nivelPeso}">
-                          <input type="hidden" th:field="*{bodyComposition.indiceGrasaCorporal}">
                         </div>
 
                         <!-- Bioimpedance Tab -->
