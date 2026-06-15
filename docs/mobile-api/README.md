@@ -8,7 +8,7 @@ Canonical cross-repo contracts for the `[Mobile API]` track, vendored into this 
 | `mobile-api-roadmap-v2.md` | Per-endpoint (#91–#99) request/response JSON and field mappings. All endpoints **done**; OpenAPI **#112 done**; PHI audit **#115**; **NEXT:** #116. |
 | `PHI-LOGGING-AUDIT.md` | Completed PHI logging audit checklist for `/rest/mobile/**` (#115). |
 
-**Last synced:** 2026-06-15 (#115 PHI audit in progress; **NEXT:** #116).
+**Last synced:** 2026-06-15 (#115 PHI audit done, PR #168; **NEXT:** #116).
 
 **Provenance / drift:** these are synced copies of the workspace-root originals
 (`/Users/joelmartinez/Documents/Work/ALIGNMENT-SPEC.md` and `mobile-api-roadmap-v2.md`),
