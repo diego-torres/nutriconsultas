@@ -40,6 +40,8 @@ public class SecurityConfig {
 				.authenticated()
 				.requestMatchers("/admin/**")
 				.authenticated()
+				.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+				.authenticated()
 				.anyRequest()
 				.permitAll())
 			.oauth2Login(withDefaults())

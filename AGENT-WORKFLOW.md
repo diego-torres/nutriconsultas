@@ -6,11 +6,11 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 | File | Purpose |
 |------|---------|
-| [`ISSUE.md`](ISSUE.md) | All `[Mobile API]` issues (#91–#99, #107–#116), integration prerequisites (#156, #46), URLs, states, dependencies, and data-contract sources |
+| [`ISSUE.md`](ISSUE.md) | All `[Mobile API]` issues (#91–#99, #107–#116, #132–#141), integration prerequisites (#156, #46), URLs, states, dependencies, and data-contract sources |
 | [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) | Canonical cross-repo contract — §F8 schema/enum map, per-issue corrected scope |
 | [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) | Endpoint request/response specs (#91–#99) with field mappings |
 
-**Current next issue:** [#112 — OpenAPI spec for `/rest/mobile/patient/**`](https://github.com/diego-torres/nutriconsultas/issues/112) — **NEXT** (P1 cross-cutting). All endpoints #91–#99 **done** (PR #153 closes #99).
+**Current next issue:** [#112 — OpenAPI spec for `/rest/mobile/patient/**`](https://github.com/diego-torres/nutriconsultas/issues/112) — **in-progress** ([PR #164](https://github.com/diego-torres/nutriconsultas/pull/164)).
 
 ---
 
@@ -303,11 +303,11 @@ Precise list of what changed. For each technical term, add a one-line plain-Engl
 ```bash
 # Start of session
 git fetch origin && git checkout main && git pull origin main
-gh issue view 110
+gh issue view 112
 cat ISSUE.md
 
 # During work
-git checkout -b mobile-api/110-dto-envelope
+git checkout -b mobile-api/112-openapi
 ./lint.sh && bash scripts/audit-logging.sh && mvn -B verify
 ./dev-start.sh   # run locally when touching security config or startup
 
@@ -323,7 +323,8 @@ gh pr create ...
 | Field | Value |
 |-------|-------|
 | **Next issue** | [#112 — OpenAPI spec for `/rest/mobile/patient/**`](https://github.com/diego-torres/nutriconsultas/issues/112) |
-| **Suggested branch** | `mobile-api/112-openapi` |
+| **Status** | **in-progress** — [PR #164](https://github.com/diego-torres/nutriconsultas/pull/164) |
+| **Branch** | `mobile-api/112-openapi` |
 | **Phase** | Cross-cutting (P1) |
 | **Depends on** | #110, endpoints (#91–#99) |
 | **Blocks** | — |
@@ -337,16 +338,18 @@ gh pr create ...
 | Phase 0 foundation | ~~#107~~ ✓, ~~#109~~ ✓, ~~#110~~ ✓ | **Done** |
 | Auth linkage (tenant) | #108 (tenant config; prod audience deployed #118) | Before full Auth0 tenant hardening |
 | Endpoints | ~~#91–#99~~ ✓ | **Done** (PR #153) |
-| Cross-cutting | ~~#111~~ ✓, **#112** (OpenAPI), #115 (PHI audit) | **#112 is NEXT** |
+| Cross-cutting | ~~#111~~ ✓, **#112** (OpenAPI, in progress), #115 (PHI audit) | **#112 in progress** |
 | Hardening / additive | ~~#113~~ ✓, #116 (senderDisplayName), #114 (nutritionist reply) | With/after owning feature |
-| Schema / Liquibase | **#156** (`Paciente` refactor) → **#46** (Liquibase baseline) → #132 (onboarding) | **#156 before any Liquibase cut** |
+| Schema / Liquibase | **#156** (`Paciente` refactor) → **#46** (Liquibase baseline) → **#132–#141** (invitation onboarding) | **#156 before any Liquibase cut**; invitation epic not active sprint |
 
-### Status snapshot (2026-06-14)
+### Status snapshot (2026-06-15)
 
 **Patient mobile API on `main`:** JWT resource server (#107), DTO envelope (#110), patient linkage (#109), visits (#91/#92), diet plans (#93–#95), messages list/send (#96/#97 with HTTP 201 + rate limit), progress snapshot (#98) + measurements time series (#99, PR #153), localized API errors (#111), Resilience4j write throttling (#113). Dashboard IMC gauge (#106) done for web tablero.
 
-**Next:** #112 OpenAPI spec for `/rest/mobile/patient/**`, then #115 (PHI audit), additive #116 / web #114.
+**Next:** #112 OpenAPI spec (in progress), then #115 (PHI audit), additive #116 / web #114.
 
-**Schema gate (parallel track):** [#156](https://github.com/diego-torres/nutriconsultas/issues/156) `Paciente` decomposition blocks [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46); coordinate [#132](https://github.com/diego-torres/nutriconsultas/issues/132) onboarding columns after #156 Phase B.
+**GitHub drift (close when convenient):** #97 and #111 are **done on `main`** but still **open on GitHub** (implemented in PRs #147, #151).
+
+**Schema gate (parallel track):** [#156](https://github.com/diego-torres/nutriconsultas/issues/156) `Paciente` decomposition blocks [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46); then [#132–#141](https://github.com/diego-torres/nutriconsultas/issues/132) invitation onboarding (see [`ISSUE.md`](ISSUE.md) Phase 2).
 
 See [`ISSUE.md`](ISSUE.md) Data contracts and [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) §F8 for per-endpoint field requirements.

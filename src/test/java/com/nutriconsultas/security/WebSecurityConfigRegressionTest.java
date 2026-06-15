@@ -30,4 +30,9 @@ class WebSecurityConfigRegressionTest {
 		mockMvc.perform(get("/admin/pacientes")).andExpect(status().is3xxRedirection());
 	}
 
+	@Test
+	void openApiDocs_withoutSession_requiresNutritionistLogin() throws Exception {
+		mockMvc.perform(get("/v3/api-docs/mobile")).andExpect(status().is3xxRedirection());
+	}
+
 }

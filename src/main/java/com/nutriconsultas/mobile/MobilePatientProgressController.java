@@ -9,16 +9,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nutriconsultas.mobile.config.MobileOpenApiResponses;
 import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.PatientProgressSnapshotDto;
 import com.nutriconsultas.mobile.dto.ProgressMeasurementsDto;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.util.LogRedaction;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/rest/mobile/patient/progress")
+@Tag(name = "Mobile", description = "Patient mobile API")
 @Slf4j
 public class MobilePatientProgressController extends AbstractMobilePatientController {
 
@@ -31,6 +36,10 @@ public class MobilePatientProgressController extends AbstractMobilePatientContro
 	}
 
 	@GetMapping
+	@Operation(summary = "Get progress snapshot",
+			description = "Returns latest BMI/BMR and related progress snapshot for the patient.")
+	@MobileOpenApiResponses.AuthenticatedPatient
+	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Progress snapshot")
 	public ApiResponse<PatientProgressSnapshotDto> getProgress(@AuthenticationPrincipal final Jwt jwt) {
 		final Paciente paciente = getAuthenticatedPaciente(jwt);
 		if (log.isDebugEnabled()) {
@@ -41,9 +50,20 @@ public class MobilePatientProgressController extends AbstractMobilePatientContro
 	}
 
 	@GetMapping("/measurements")
+	@Operation(summary = "List progress measurements",
+			description = "Returns anthropometric measurement time series for the patient.")
+	@MobileOpenApiResponses.AuthenticatedPatient
+	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",
+			description = "Measurement time series (ASC, max 365 rows)")
+	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400",
+			description = "Invalid date range (from after to)")
 	public ApiResponse<ProgressMeasurementsDto> listMeasurements(@AuthenticationPrincipal final Jwt jwt,
-			@RequestParam(required = false) final Instant from, @RequestParam(required = false) final Instant to,
-			@RequestParam(required = false) final Integer maxRows) {
+			@Parameter(description = "Inclusive start instant (ISO-8601)") @RequestParam(
+					required = false) final Instant from,
+			@Parameter(description = "Inclusive end instant (ISO-8601)") @RequestParam(
+					required = false) final Instant to,
+			@Parameter(description = "Maximum rows (capped at 365)") @RequestParam(
+					required = false) final Integer maxRows) {
 		final Paciente paciente = getAuthenticatedPaciente(jwt);
 		if (log.isDebugEnabled()) {
 			log.debug("Mobile progress measurements request for patient {}",
