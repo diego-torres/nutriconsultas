@@ -182,7 +182,7 @@
                     <div class="col-md-12">
                       <h6>Notas de Resumen</h6>
                       <button type="button" class="btn btn-info mb-3" id="btnShowWizard"
-                              th:attr="data-event-id=${event.id}, data-summary-notes=${event.summaryNotes != null ? event.summaryNotes : ''}"
+                              th:attr="data-event-id=${event.id}, data-paciente-id=${event.paciente.id}, data-summary-notes=${event.summaryNotes != null ? event.summaryNotes : ''}"
                               onclick="showSummaryNotesWizardFromButton(this)">
                         <i class="fas fa-edit"></i> 
                         <span th:text="${event.summaryNotes != null && !event.summaryNotes.isEmpty()} ? 'Editar Notas' : 'Agregar Notas'">Agregar Notas</span>
@@ -227,7 +227,7 @@
     <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
     <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
     
-    <script lang="javascript">
+    <script lang="javascript" th:inline="javascript">
       'use strict';
       
       // Wait for jQuery to be loaded
@@ -373,8 +373,9 @@
       // Function to show summary notes wizard from button
       function showSummaryNotesWizardFromButton(button) {
         const eventId = button.getAttribute('data-event-id');
+        const pacienteId = button.getAttribute('data-paciente-id');
         const currentNotes = button.getAttribute('data-summary-notes') || '';
-        showSummaryNotesWizard(eventId, currentNotes);
+        showSummaryNotesWizard(eventId, currentNotes, pacienteId);
       }
 
       const WIZARD_ACTIVITY_FACTORS = {
@@ -490,8 +491,8 @@
       }
 
       // Function to show summary notes wizard
-      function showSummaryNotesWizard(eventId, currentNotes) {
-        window.wizardPacienteId = /*[[${event.paciente.id}]]*/ null;
+      function showSummaryNotesWizard(eventId, currentNotes, pacienteId) {
+        window.wizardPacienteId = pacienteId ? parseInt(pacienteId, 10) : null;
         // Get event data from the page
         const eventData = {
           peso: /*[[${event.peso}]]*/ null,
