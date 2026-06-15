@@ -327,7 +327,7 @@ gh pr create ...
 | **Phase** | Additive (optional) |
 | **Depends on** | #96 |
 | **Blocks** | — |
-| **Just completed** | [#115](https://github.com/diego-torres/nutriconsultas/issues/115) — PHI log redaction audit: `PhiLogTurboFilter`, `scripts/audit-mobile-logging.sh`, `docs/mobile-api/PHI-LOGGING-AUDIT.md` |
+| **Just completed** | [#115](https://github.com/diego-torres/nutriconsultas/issues/115) — [PR #168](https://github.com/diego-torres/nutriconsultas/pull/168): PHI log redaction audit (in review) |
 | **In scope for #116** | Add `senderDisplayName` from `NutritionistProfile` to message DTOs |
 
 ### Upcoming gates
