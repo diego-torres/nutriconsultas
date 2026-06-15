@@ -212,4 +212,4 @@ Optional backend script (requires access token from the app):
 
 ---
 
-*Updated 2026-06-14: Registry sync — all endpoints #91–#99 on `main` (PR #153); **NEXT:** #112 OpenAPI.*
+*Updated 2026-06-15: #112 OpenAPI merged (PR #164); **NEXT:** #115 PHI audit.*

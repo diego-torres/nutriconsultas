@@ -160,7 +160,7 @@ Add to each a short "Backend dependency" line per the cross-reference table, e.g
 - **Phase 0 DONE:** #107 (PR #117), #109 (PR #142), #110 (DTO envelope).
 - **Endpoints on `main`:** #91–#99 (visits, diet plans + PDF, messages, progress snapshot + measurements time series); #96/#97 messaging with HTTP 201 + Resilience4j 10/min (#113, PR #151).
 - **i18n (#111) DONE** (PR #151): `LocaleContextFilter`, `MobileApiErrorResponses`, localized 403/404/400/429.
-- **Cross-cutting NEXT:** #112 OpenAPI spec for full `/rest/mobile/patient/**` surface.
+- **Cross-cutting NEXT:** #115 PHI log redaction audit. ~~#112~~ OpenAPI spec **done** (PR #164, `docs/api/openapi-mobile.yaml`).
 - `deltaPeso`/`deltaImc` are computed-at-query, not stored.
 - Progress `grasa` ambiguity: prefer `bodyComposition.porcentajeGrasaCorporal` (patient-facing %) over `indiceGrasaCorporal`.
 - Template dietas (seed `system:template-dietas`) have 4 ingestas incl. Colación — contract examples show only 3.

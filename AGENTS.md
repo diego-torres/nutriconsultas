@@ -561,7 +561,7 @@ Issue registry: [`ISSUE.md`](ISSUE.md). Agent workflow: [`AGENT-WORKFLOW.md`](AG
 
 **Done on `main` (2026-06-14):** #107/#109/#110 (JWT + linkage + DTO envelope); endpoints #91–#98; messages #96/#97 with rate limit (#113); localized errors (#111, PR #151); dashboard IMC gauge (#106).
 
-**Next:** [#112](https://github.com/diego-torres/nutriconsultas/issues/112) OpenAPI spec for `/rest/mobile/patient/**`. All endpoints #91–#99 **done** (PR #153). Open cross-cutting: #115 (PHI audit), #116 (`senderDisplayName`), web #114 (nutritionist reply).
+**Next:** [#115](https://github.com/diego-torres/nutriconsultas/issues/115) PHI log redaction audit. ~~#112~~ OpenAPI **done** (PR #164). Open cross-cutting: #116 (`senderDisplayName`), web #114 (nutritionist reply).
 
 **Schema gate (pre-Liquibase):** [#156](https://github.com/diego-torres/nutriconsultas/issues/156) `Paciente` decomposition must land before [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46); mobile `#98`/`#99` DTO contracts unchanged. See [`ISSUE.md`](ISSUE.md) Integration prerequisites.
 
