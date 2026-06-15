@@ -104,27 +104,21 @@ public class DietaServiceImpl implements DietaService {
 		if (term.isEmpty()) {
 			return true;
 		}
-		if (dieta.getNombre() != null && dieta.getNombre().toLowerCase().contains(term)) {
-			return true;
-		}
 		final int kcal = DietaNutritionCalculator.calculateTotalKcal(dieta).intValue();
-		if (String.valueOf(kcal).contains(term)) {
-			return true;
-		}
-		if (dieta.getIngestas() != null) {
-			return dieta.getIngestas()
-				.stream()
-				.anyMatch(ingesta -> ingesta.getNombre() != null
-						&& ingesta.getNombre().toLowerCase().contains(term));
-		}
-		return false;
+		return (dieta.getNombre() != null && dieta.getNombre().toLowerCase().contains(term))
+				|| String.valueOf(kcal).contains(term)
+				|| (dieta.getIngestas() != null && dieta.getIngestas()
+					.stream()
+					.anyMatch(ingesta -> ingesta.getNombre() != null
+							&& ingesta.getNombre().toLowerCase().contains(term)));
 	}
 
 	private Comparator<DietaPickerItemDto> pickerComparator(final Double requerimientoKcal) {
 		if (requerimientoKcal == null) {
 			return Comparator.comparing(DietaPickerItemDto::getNombre, String.CASE_INSENSITIVE_ORDER);
 		}
-		return Comparator.comparingInt((DietaPickerItemDto item) -> caloricFitRank(item.getEnergiaKcal(), requerimientoKcal))
+		return Comparator
+			.comparingInt((DietaPickerItemDto item) -> caloricFitRank(item.getEnergiaKcal(), requerimientoKcal))
 			.thenComparingInt(item -> Math.abs(item.getEnergiaKcal() - requerimientoKcal.intValue()))
 			.thenComparing(DietaPickerItemDto::getNombre, String.CASE_INSENSITIVE_ORDER);
 	}

@@ -6,9 +6,11 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-14 — **#99 done** (PR #153). All endpoints #91–#99 **done** on `main`. **NEXT:** [#112](https://github.com/diego-torres/nutriconsultas/issues/112) OpenAPI spec.
+**Last updated:** 2026-06-15 — #112 OpenAPI spec **in progress** on branch `mobile-api/112-openapi`.
 
-> **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116) plus the directly-related `[Dashboard]` IMC gauge (#106) and **integration prerequisites** that gate schema work (#156). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
+> **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116, #132–#141 invitation onboarding) plus the directly-related `[Dashboard]` IMC gauge (#106) and **integration prerequisites** that gate schema work (#156, #46). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
+
+> **GitHub sync note (2026-06-15):** **#97** and **#111** are **done on `main`** (PRs #147, #151) but remain **open on GitHub** — close them when convenient so remote matches this registry. **#113** is closed on GitHub and **done** here.
 
 ---
 
@@ -72,9 +74,9 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| 111 | Accept-Language filter + MessageSource i18n for REST errors | https://github.com/diego-torres/nutriconsultas/issues/111 | **done** | 110 | Merged PR #151: `LocaleContextFilter`, `MobileApiErrorResponses`, `MobileApiExceptionHandler` (403/404/400/429), localized `PatientLinkageFilter` |
+| 111 | Accept-Language filter + MessageSource i18n for REST errors | https://github.com/diego-torres/nutriconsultas/issues/111 | **done** | 110 | Merged PR #151: `LocaleContextFilter`, `MobileApiErrorResponses`, `MobileApiExceptionHandler` (403/404/400/429). GitHub issue still open — close when convenient. |
 | 115 | PHI log redaction audit for all mobile controllers | https://github.com/diego-torres/nutriconsultas/issues/115 | open | 110 | Audit every `/rest/mobile/**` controller against `util/LogRedaction`; CI gate `scripts/audit-logging.sh`. No names/emails/DOB at INFO. |
-| 112 | OpenAPI spec for `/rest/mobile/patient/**` | https://github.com/diego-torres/nutriconsultas/issues/112 | **NEXT** | 110, endpoints | springdoc spec; mobile reads it as the integration contract. All #91–#99 endpoints landed — document full surface. |
+| 112 | OpenAPI spec for `/rest/mobile/patient/**` | https://github.com/diego-torres/nutriconsultas/issues/112 | **in-progress** | 110, endpoints | springdoc + `docs/api/openapi-mobile.yaml`; branch `mobile-api/112-openapi`. |
 
 ---
 
@@ -95,12 +97,12 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 | **94** | `GET /rest/mobile/patient/diet-plans/{assignmentId}` — structured meal JSON | https://github.com/diego-torres/nutriconsultas/issues/94 | **done** | 93 | Merged PR #143: `DietPlanDetailDto` + ingesta/platillo/alimento tree; `findByIdAndPacienteId` IDOR guard → 404. |
 | **95** | `GET /rest/mobile/patient/diet-plans/{assignmentId}/pdf` — printable PDF | https://github.com/diego-torres/nutriconsultas/issues/95 | **done** | 94 | Merged PR #144: `DietaPdfService.generatePdfForAssignment`, `Content-Disposition`, ownership → 404. |
 
-### Messages — **greenfield** (no entity exists)
+### Messages — `PatientMessage`
 
 | # | Endpoint | URL | State | Backend source |
 |---|----------|-----|-------|----------------|
 | 96 | `GET /rest/mobile/patient/messages` — list thread | https://github.com/diego-torres/nutriconsultas/issues/96 | **done** | Merged PR #146: cursor pagination; contact form → `ContactInquiry`; admin inbox |
-| 97 | `POST /rest/mobile/patient/messages` — send to nutritionist | https://github.com/diego-torres/nutriconsultas/issues/97 | **done** | Merged PR #147 (`senderRole=PATIENT`, validation); PR #151 adds HTTP 201 + #113 rate limit |
+| 97 | `POST /rest/mobile/patient/messages` — send to nutritionist | https://github.com/diego-torres/nutriconsultas/issues/97 | **done** | Merged PR #147 (`senderRole=PATIENT`, validation); PR #151 adds HTTP 201 + #113 rate limit. GitHub issue still open — close when convenient. |
 
 ### Progress — `AnthropometricMeasurement` / `Paciente`
 
@@ -130,7 +132,27 @@ Schema-affecting work must respect mobile DTO contracts (§F8). These issues are
 |---|-------|-----|-------|-----------|--------|-------|
 | **156** | `[Integration]` Paciente domain refactor — incremental decomposition | https://github.com/diego-torres/nutriconsultas/issues/156 | open | [#121](https://github.com/diego-torres/nutriconsultas/issues/121) GET/TDEE | [#46](https://github.com/diego-torres/nutriconsultas/issues/46) Liquibase, [#132](https://github.com/diego-torres/nutriconsultas/issues/132) timing | Phases A–B (projections + `@Embeddable`, no mobile JSON changes); Phase C optional satellite tables. `#98`/`#99` DTO keys stable; `patientAuthSub` immovable. |
 | 46 | Implement Liquibase for database change management | https://github.com/diego-torres/nutriconsultas/issues/46 | open | **156** (Phases A–B min.) | — | First Liquibase baseline must capture post-#156 `Paciente` schema. Until then: `ddl-auto=update` + manual SQL if Phase C. |
-| 132 | Invitation & patient onboarding data model | https://github.com/diego-torres/nutriconsultas/issues/132 | open | #107 | — | Coordinate with #156 — add `Paciente.status` / `Invitation` **after** embeddable decomposition, not onto the monolith mid-refactor. |
+| 132 | Invitation & patient onboarding data model | https://github.com/diego-torres/nutriconsultas/issues/132 | open | #107, **156** (Phase B) | — | `Paciente.status` enum + `Invitation` entity; Liquibase via #46 after #156. |
+
+---
+
+## Phase 2 — Invitation onboarding (P1 · gated by #156 → #46 → #132)
+
+Invite-only patient onboarding replaces manual Afiliación linkage (#109) for new patients. **Not active sprint** — start after #156 Phase B and Liquibase baseline (#46). Issues decomposed from `invitation-system-research.md`.
+
+| # | Title | URL | State | Depends on | Notes |
+|---|-------|-----|-------|-----------|-------|
+| 133 | Invitation token generation & hashing service | https://github.com/diego-torres/nutriconsultas/issues/133 | open | 132 | CSPRNG token; store hash only; constant-time verify; optional signed JWS for Auth0 Action |
+| 134 | `POST /rest/mobile/invitations` — nutritionist creates patient + invitation | https://github.com/diego-torres/nutriconsultas/issues/134 | open | 132, 133 | Nutritionist JWT (not patient); creates `Paciente` + `Invitation` |
+| 135 | `GET /rest/mobile/invitations/{token}/preview` — public rate-limited preview | https://github.com/diego-torres/nutriconsultas/issues/135 | open | 133 | Public; enumeration protection (#141) |
+| 136 | `POST /rest/mobile/invitations/{token}/redeem` — bind Auth0 sub → patient | https://github.com/diego-torres/nutriconsultas/issues/136 | open | 132, 133, 107 | **Authoritative** redeem gate; patient JWT required |
+| 137 | CurrentPatient resolver + onboarding data gate (403 onboarding required) | https://github.com/diego-torres/nutriconsultas/issues/137 | open | 132, 107 | Centralizes `sub → Paciente`; 403 until onboarded |
+| 138 | `PATCH` & `GET /rest/mobile/patient/me` — onboarding profile + status→ACTIVE | https://github.com/diego-torres/nutriconsultas/issues/138 | open | 132, 137 | Patient completes profile; transitions to `ACTIVE` |
+| 139 | `POST /rest/mobile/invitations/{id}/revoke` — nutritionist invalidates invite | https://github.com/diego-torres/nutriconsultas/issues/139 | open | 132, 134 | Nutritionist JWT |
+| 140 | Auth0 Post-Login Action gate — first-login invitation validation | https://github.com/diego-torres/nutriconsultas/issues/140 | open | 133, 136 | **Post-Login** (not Pre-User-Registration — social logins skip PUR); docs + Action script |
+| 141 | Invitation security hardening — rate limits, enumeration protection, no-token logging | https://github.com/diego-torres/nutriconsultas/issues/141 | open | 133, 135, 136 | Relates #115; never log raw tokens |
+
+**Suggested build order (after #132):** #133 → #134/#135 → #136 → #137 → #138 → #139/#140 → #141.
 
 ---
 
@@ -148,6 +170,7 @@ Each mobile feature consumes these backend endpoints. Two-way linking with the m
 | 116 | `senderDisplayName` (optional) | mobile #19 | Read-only (additive) |
 | 114 | nutritionist reply | — (web only; feeds #96) | — |
 | 156 | `Paciente` internal refactor (pre-Liquibase) | — (backend only) | — | No mobile JSON change; `#98`/`#99` regression required per PR |
+| 132–141 | Invitation onboarding | mobile (future) | Auth + profile | Replaces #109 manual linkage for new patients; gated by #156 |
 
 **Common contract for every #91–#99** (ALIGNMENT-SPEC §"CORRECTED SCOPE"):
 - Auth: OAuth2 Resource Server JWT, separate `@Order(1)` `SecurityFilterChain`, stateless.
@@ -156,7 +179,7 @@ Each mobile feature consumes these backend endpoints. Two-way linking with the m
 - i18n: `Accept-Language` (es-MX default) error bodies (#111).
 - PHI-safe logging (`LogRedaction`, #115); no names/emails/DOB at INFO.
 
-**E2E HTTP codes (2026-06-14):**
+**E2E HTTP codes (2026-06-15):**
 - **401** — missing/invalid JWT or wrong `aud` (check mobile `AUTH0_AUDIENCE` = `https://api.nutriconsultas.minutriporcion.com`).
 - **403** — JWT valid, no `Paciente.patientAuthSub` match (#109 linkage required). Localized `ApiResponse` with `error.patient.not.linked` (#111).
 - **404** — linkage OK but resource not found (localized `error.resource.not.found`).

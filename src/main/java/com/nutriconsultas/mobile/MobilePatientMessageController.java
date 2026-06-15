@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nutriconsultas.mobile.config.MobileOpenApiResponses;
 import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.CursorPagedResponse;
 import com.nutriconsultas.mobile.dto.PatientMessageSummaryDto;
@@ -18,11 +19,15 @@ import com.nutriconsultas.mobile.dto.SendPatientMessageRequest;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.util.LogRedaction;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/rest/mobile/patient/messages")
+@Tag(name = "Mobile", description = "Patient mobile API")
 @Slf4j
 public class MobilePatientMessageController extends AbstractMobilePatientController {
 
@@ -35,9 +40,15 @@ public class MobilePatientMessageController extends AbstractMobilePatientControl
 	}
 
 	@GetMapping
+	@Operation(summary = "List messages", description = "Returns cursor-paged messages for the authenticated patient.")
+	@MobileOpenApiResponses.AuthenticatedPatient
+	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",
+			description = "Cursor-paged message summaries")
 	public ApiResponse<CursorPagedResponse<PatientMessageSummaryDto>> listMessages(
-			@AuthenticationPrincipal final Jwt jwt, @RequestParam(required = false) final String cursor,
-			@RequestParam(defaultValue = "20") final int size) {
+			@AuthenticationPrincipal final Jwt jwt,
+			@Parameter(description = "Opaque cursor from a previous page") @RequestParam(
+					required = false) final String cursor,
+			@Parameter(description = "Page size") @RequestParam(defaultValue = "20") final int size) {
 		final Paciente paciente = getAuthenticatedPaciente(jwt);
 		if (log.isDebugEnabled()) {
 			log.debug("Mobile list messages request for patient {}", LogRedaction.redactPaciente(paciente.getId()));
@@ -49,6 +60,10 @@ public class MobilePatientMessageController extends AbstractMobilePatientControl
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
+	@Operation(summary = "Send message", description = "Creates a patient-to-nutritionist message.")
+	@MobileOpenApiResponses.AuthenticatedPatient
+	@MobileOpenApiResponses.WriteEndpoint
+	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Created message summary")
 	public ApiResponse<PatientMessageSummaryDto> sendMessage(@AuthenticationPrincipal final Jwt jwt,
 			@Valid @RequestBody final SendPatientMessageRequest request) {
 		final Paciente paciente = getAuthenticatedPaciente(jwt);

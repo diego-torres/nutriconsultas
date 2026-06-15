@@ -4,8 +4,10 @@ Canonical cross-repo contracts for the `[Mobile API]` track, vendored into this 
 
 | File | What it is |
 |------|-----------|
-| `ALIGNMENT-SPEC.md` | Source-of-truth contract for all agents. §F8 = backend↔mobile field/enum map. Phase 0 + endpoints **#91–#99 done** on `main` (PR #153). **NEXT:** #112 OpenAPI. |
+| `ALIGNMENT-SPEC.md` | Source-of-truth contract for all agents. §F8 = backend↔mobile field/enum map. Phase 0 + endpoints **#91–#99 done** on `main`. **#112 OpenAPI** in progress → `docs/api/openapi-mobile.yaml`. Invitation **#132–#141** deferred (see §F8.6). |
 | `mobile-api-roadmap-v2.md` | Per-endpoint (#91–#99) request/response JSON and field mappings. All endpoints **done**; cross-cutting #112 is next. |
+
+**Last synced:** 2026-06-15 (registry triage with GitHub).
 
 **Provenance / drift:** these are synced copies of the workspace-root originals
 (`/Users/joelmartinez/Documents/Work/ALIGNMENT-SPEC.md` and `mobile-api-roadmap-v2.md`),

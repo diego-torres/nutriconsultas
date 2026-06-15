@@ -1,0 +1,872 @@
+openapi: 3.1.0
+info:
+  title: Minutriporcion Patient Mobile API
+  description: Patient-facing JSON API under /rest/mobile/patient/**. Requires Auth0
+    Bearer JWT (resource server).
+  contact:
+    name: Minutriporcion
+    url: https://minutriporcion.com
+  version: "1.0"
+servers:
+- url: http://localhost
+  description: Generated server url
+security:
+- bearer-jwt: []
+tags:
+- name: Mobile
+  description: Patient mobile API
+paths:
+  /rest/mobile/patient/messages:
+    get:
+      tags:
+      - Mobile
+      summary: List messages
+      description: Returns cursor-paged messages for the authenticated patient.
+      operationId: listMessages
+      parameters:
+      - name: cursor
+        in: query
+        description: Opaque cursor from a previous page
+        required: false
+        schema:
+          type: string
+      - name: size
+        in: query
+        description: Page size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        "200":
+          description: Cursor-paged message summaries
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseCursorPagedResponsePatientMessageSummaryDto"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseCursorPagedResponsePatientMessageSummaryDto"
+        "403":
+          description: Patient account not linked to Auth0 sub
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseCursorPagedResponsePatientMessageSummaryDto"
+    post:
+      tags:
+      - Mobile
+      summary: Send message
+      description: Creates a patient-to-nutritionist message.
+      operationId: sendMessage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendPatientMessageRequest"
+        required: true
+      responses:
+        "201":
+          description: Created message summary
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePatientMessageSummaryDto"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePatientMessageSummaryDto"
+        "403":
+          description: Patient account not linked to Auth0 sub
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePatientMessageSummaryDto"
+        "400":
+          description: Validation failed
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePatientMessageSummaryDto"
+        "429":
+          description: "Rate limit exceeded (Retry-After: 60)"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePatientMessageSummaryDto"
+  /rest/mobile/patient/visits:
+    get:
+      tags:
+      - Mobile
+      summary: List patient visits
+      description: Returns a paged list of visit summaries for the authenticated patient.
+      operationId: listVisits
+      parameters:
+      - name: page
+        in: query
+        description: Zero-based page index
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        description: Page size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      - name: status
+        in: query
+        description: Filter by visit status
+        required: false
+        schema:
+          type: string
+          enum:
+          - SCHEDULED
+          - COMPLETED
+          - CANCELLED
+      - name: from
+        in: query
+        description: Inclusive start instant (ISO-8601)
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        description: Inclusive end instant (ISO-8601)
+        required: false
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          description: Paged visit summaries
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePagedResponseVisitSummaryDto"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePagedResponseVisitSummaryDto"
+        "403":
+          description: Patient account not linked to Auth0 sub
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePagedResponseVisitSummaryDto"
+  /rest/mobile/patient/visits/{visitId}:
+    get:
+      tags:
+      - Mobile
+      summary: Get visit detail
+      description: Returns a single visit owned by the authenticated patient.
+      operationId: getVisitDetail
+      parameters:
+      - name: visitId
+        in: path
+        description: Visit identifier
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Visit detail
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVisitDetailDto"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVisitDetailDto"
+        "403":
+          description: Patient account not linked to Auth0 sub
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVisitDetailDto"
+        "404":
+          description: Resource not found or not owned by patient
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVisitDetailDto"
+  /rest/mobile/patient/progress:
+    get:
+      tags:
+      - Mobile
+      summary: Get progress snapshot
+      description: Returns latest BMI/BMR and related progress snapshot for the patient.
+      operationId: getProgress
+      responses:
+        "200":
+          description: Progress snapshot
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePatientProgressSnapshotDto"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePatientProgressSnapshotDto"
+        "403":
+          description: Patient account not linked to Auth0 sub
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePatientProgressSnapshotDto"
+  /rest/mobile/patient/progress/measurements:
+    get:
+      tags:
+      - Mobile
+      summary: List progress measurements
+      description: Returns anthropometric measurement time series for the patient.
+      operationId: listMeasurements
+      parameters:
+      - name: from
+        in: query
+        description: Inclusive start instant (ISO-8601)
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        description: Inclusive end instant (ISO-8601)
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: maxRows
+        in: query
+        description: Maximum rows (capped at 365)
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: "Measurement time series (ASC, max 365 rows)"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseProgressMeasurementsDto"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseProgressMeasurementsDto"
+        "403":
+          description: Patient account not linked to Auth0 sub
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseProgressMeasurementsDto"
+  /rest/mobile/patient/diet-plans:
+    get:
+      tags:
+      - Mobile
+      summary: List diet plans
+      description: Returns assigned diet plans for the authenticated patient.
+      operationId: listDietPlans
+      parameters:
+      - name: page
+        in: query
+        description: Zero-based page index
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        description: Page size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      - name: activeOnly
+        in: query
+        description: "When true, return only active assignments"
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        "200":
+          description: Paged diet plan summaries
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePagedResponseDietPlanSummaryDto"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePagedResponseDietPlanSummaryDto"
+        "403":
+          description: Patient account not linked to Auth0 sub
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePagedResponseDietPlanSummaryDto"
+  /rest/mobile/patient/diet-plans/{assignmentId}:
+    get:
+      tags:
+      - Mobile
+      summary: Get diet plan detail
+      description: Returns structured meal JSON for an assignment owned by the patient.
+      operationId: getDietPlanDetail
+      parameters:
+      - name: assignmentId
+        in: path
+        description: PacienteDieta assignment identifier
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Diet plan detail with ingestas and platillos
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseDietPlanDetailDto"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseDietPlanDetailDto"
+        "403":
+          description: Patient account not linked to Auth0 sub
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseDietPlanDetailDto"
+        "404":
+          description: Resource not found or not owned by patient
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseDietPlanDetailDto"
+  /rest/mobile/patient/diet-plans/{assignmentId}/pdf:
+    get:
+      tags:
+      - Mobile
+      summary: Download diet plan PDF
+      description: Returns a printable PDF for an assignment owned by the patient.
+      operationId: getDietPlanPdf
+      parameters:
+      - name: assignmentId
+        in: path
+        description: PacienteDieta assignment identifier
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: PDF bytes
+          content:
+            application/pdf: {}
+        "401":
+          description: Missing or invalid JWT
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: byte
+        "403":
+          description: Patient account not linked to Auth0 sub
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: byte
+        "404":
+          description: Resource not found or not owned by patient
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: byte
+components:
+  schemas:
+    SendPatientMessageRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          maxLength: 2000
+          minLength: 0
+      required:
+      - body
+    ApiResponsePatientMessageSummaryDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/PatientMessageSummaryDto"
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    PatientMessageSummaryDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        sentAt:
+          type: string
+          format: date-time
+        senderRole:
+          type: string
+          enum:
+          - PATIENT
+          - NUTRITIONIST
+        body:
+          type: string
+        read:
+          type: boolean
+    ApiResponsePagedResponseVisitSummaryDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/PagedResponseVisitSummaryDto"
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    PagedResponseVisitSummaryDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/VisitSummaryDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        last:
+          type: boolean
+    VisitSummaryDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        eventDateTime:
+          type: string
+          format: date-time
+        title:
+          type: string
+        status:
+          type: string
+          enum:
+          - SCHEDULED
+          - COMPLETED
+          - CANCELLED
+        durationMinutes:
+          type: integer
+          format: int32
+        summaryNotes:
+          type: string
+    ApiResponseVisitDetailDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/VisitDetailDto"
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    VisitDetailDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        eventDateTime:
+          type: string
+          format: date-time
+        title:
+          type: string
+        status:
+          type: string
+          enum:
+          - SCHEDULED
+          - COMPLETED
+          - CANCELLED
+        durationMinutes:
+          type: integer
+          format: int32
+        summaryNotes:
+          type: string
+        description:
+          type: string
+        peso:
+          type: number
+          format: double
+        estatura:
+          type: number
+          format: double
+        imc:
+          type: number
+          format: double
+        indiceGrasaCorporal:
+          type: number
+          format: double
+        nivelPeso:
+          type: string
+          enum:
+          - BAJO
+          - NORMAL
+          - ALTO
+          - SOBREPESO
+        sistolica:
+          type: integer
+          format: int32
+        diastolica:
+          type: integer
+          format: int32
+        pulso:
+          type: integer
+          format: int32
+        indiceGlucemico:
+          type: integer
+          format: int32
+        spo2:
+          type: number
+          format: double
+        temperatura:
+          type: number
+          format: double
+    ApiResponsePatientProgressSnapshotDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/PatientProgressSnapshotDto"
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    PatientProgressSnapshotDto:
+      type: object
+      properties:
+        latestMeasurementAt:
+          type: string
+          format: date-time
+        previousMeasurementAt:
+          type: string
+          format: date-time
+        weightKg:
+          type: number
+          format: double
+        heightM:
+          type: number
+          format: double
+        bmi:
+          type: number
+          format: double
+        nivelPeso:
+          type: string
+          enum:
+          - BAJO
+          - NORMAL
+          - ALTO
+          - SOBREPESO
+        imcLabel:
+          type: string
+        bmr:
+          type: number
+          format: double
+        bodyFatPercentage:
+          type: number
+          format: double
+        deltaPeso:
+          type: number
+          format: double
+        deltaImc:
+          type: number
+          format: double
+        circumferences:
+          $ref: "#/components/schemas/ProgressCircumferenceDto"
+    ProgressCircumferenceDto:
+      type: object
+      properties:
+        waistCm:
+          type: number
+          format: double
+        hipCm:
+          type: number
+          format: double
+    ApiResponseProgressMeasurementsDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/ProgressMeasurementsDto"
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    ProgressMeasurementPointDto:
+      type: object
+      properties:
+        recordedAt:
+          type: string
+          format: date-time
+        weightKg:
+          type: number
+          format: double
+        heightM:
+          type: number
+          format: double
+        bmi:
+          type: number
+          format: double
+        bodyFatPercentage:
+          type: number
+          format: double
+        circumferences:
+          $ref: "#/components/schemas/ProgressCircumferenceDto"
+    ProgressMeasurementsDto:
+      type: object
+      properties:
+        measurements:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgressMeasurementPointDto"
+        count:
+          type: integer
+          format: int32
+        truncated:
+          type: boolean
+    ApiResponseCursorPagedResponsePatientMessageSummaryDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/CursorPagedResponsePatientMessageSummaryDto"
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    CursorPagedResponsePatientMessageSummaryDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/PatientMessageSummaryDto"
+        nextCursor:
+          type: string
+        hasMore:
+          type: boolean
+    ApiResponsePagedResponseDietPlanSummaryDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/PagedResponseDietPlanSummaryDto"
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    DietPlanSummaryDto:
+      type: object
+      properties:
+        assignmentId:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - COMPLETED
+          - CANCELLED
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        notes:
+          type: string
+        dietaName:
+          type: string
+        totalKcal:
+          type: integer
+          format: int32
+        totalProteina:
+          type: number
+          format: double
+        totalGrasas:
+          type: number
+          format: double
+        totalCarbohidratos:
+          type: number
+          format: double
+    PagedResponseDietPlanSummaryDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/DietPlanSummaryDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        last:
+          type: boolean
+    ApiResponseDietPlanDetailDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/DietPlanDetailDto"
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    DietAlimentoDto:
+      type: object
+      properties:
+        nombre:
+          type: string
+        porciones:
+          type: integer
+          format: int32
+        kcal:
+          type: integer
+          format: int32
+        unidad:
+          type: string
+    DietIngestaDto:
+      type: object
+      properties:
+        tipo:
+          type: string
+        totalKcal:
+          type: integer
+          format: int32
+        totalProteina:
+          type: number
+          format: double
+        totalGrasas:
+          type: number
+          format: double
+        totalCarbohidratos:
+          type: number
+          format: double
+        platillos:
+          type: array
+          items:
+            $ref: "#/components/schemas/DietPlatilloDto"
+        alimentos:
+          type: array
+          items:
+            $ref: "#/components/schemas/DietAlimentoDto"
+    DietPlanDetailDto:
+      type: object
+      properties:
+        assignmentId:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - COMPLETED
+          - CANCELLED
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        notes:
+          type: string
+        dietaName:
+          type: string
+        totalKcal:
+          type: integer
+          format: int32
+        totalProteina:
+          type: number
+          format: double
+        totalGrasas:
+          type: number
+          format: double
+        totalCarbohidratos:
+          type: number
+          format: double
+        ingestas:
+          type: array
+          items:
+            $ref: "#/components/schemas/DietIngestaDto"
+    DietPlatilloDto:
+      type: object
+      properties:
+        nombre:
+          type: string
+        porciones:
+          type: integer
+          format: int32
+        kcal:
+          type: integer
+          format: int32
+        recommendations:
+          type: string
+        imageUrl:
+          type: string
+  securitySchemes:
+    bearer-jwt:
+      type: http
+      description: Auth0 access token with audience https://api.nutriconsultas.test/mobile
+      scheme: bearer
+      bearerFormat: JWT
