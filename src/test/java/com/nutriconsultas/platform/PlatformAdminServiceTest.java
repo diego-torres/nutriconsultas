@@ -1,6 +1,7 @@
 package com.nutriconsultas.platform;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -39,6 +40,40 @@ class PlatformAdminServiceTest {
 		final PlatformAdminService service = new PlatformAdminService(new PlatformAdminProperties());
 
 		assertThat(service.isPlatformAdmin(null)).isFalse();
+	}
+
+	@Test
+	void requirePlatformAdmin_throwsForbiddenForNonAdmin() {
+		final PlatformAdminService service = new PlatformAdminService(new PlatformAdminProperties());
+		final OidcUser principal = mock(OidcUser.class);
+		when(principal.getSubject()).thenReturn("auth0|regular-user");
+		when(principal.getEmail()).thenReturn("user@example.com");
+
+		assertThatThrownBy(() -> service.requirePlatformAdmin(principal))
+			.isInstanceOf(org.springframework.web.server.ResponseStatusException.class)
+			.extracting(ex -> ((org.springframework.web.server.ResponseStatusException) ex).getStatusCode().value())
+			.isEqualTo(403);
+	}
+
+	@Test
+	void requirePlatformAdmin_allowsConfiguredAdmin() {
+		final PlatformAdminProperties properties = new PlatformAdminProperties();
+		properties.setAdminUserIds(java.util.List.of("auth0|admin-one"));
+		final PlatformAdminService service = new PlatformAdminService(properties);
+		final OidcUser principal = mock(OidcUser.class);
+		when(principal.getSubject()).thenReturn("auth0|admin-one");
+
+		service.requirePlatformAdmin(principal);
+	}
+
+	@Test
+	void resolveActorUserId_returnsSubjectOrNull() {
+		final PlatformAdminService service = new PlatformAdminService(new PlatformAdminProperties());
+		final OidcUser principal = mock(OidcUser.class);
+		when(principal.getSubject()).thenReturn("auth0|admin-one");
+
+		assertThat(service.resolveActorUserId(principal)).isEqualTo("auth0|admin-one");
+		assertThat(service.resolveActorUserId(null)).isNull();
 	}
 
 }

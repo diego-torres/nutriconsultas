@@ -9,6 +9,7 @@ import com.nutriconsultas.contact.ContactInquiryTemplateValidator;
 import com.nutriconsultas.dieta.DietaTemplateValidator;
 import com.nutriconsultas.paciente.PacienteTemplateValidator;
 import com.nutriconsultas.platillos.PlatilloTemplateValidator;
+import com.nutriconsultas.platform.PlatformAdminTemplateValidator;
 import com.nutriconsultas.profile.ProfileTemplateValidator;
 import com.nutriconsultas.reports.ReportTemplateValidator;
 import com.nutriconsultas.search.SearchTemplateValidator;
@@ -34,6 +35,7 @@ public class TemplateValidatorRegistry {
 		register(new ReportTemplateValidator());
 		register(new SearchTemplateValidator());
 		register(new ProfileTemplateValidator());
+		register(new PlatformAdminTemplateValidator());
 		register(new ContactInquiryTemplateValidator());
 		register(new EternaTemplateValidator());
 		// Default validator should be last (handles "*")
