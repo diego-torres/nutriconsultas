@@ -199,8 +199,8 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#182 — Auth0 role sync](https://github.com/diego-torres/nutriconsultas/issues/182) |
-| **Status** | **in-progress** on `subscription/182-auth0-role-sync` |
+| **Next issue** | [#189 — Payment provider](https://github.com/diego-torres/nutriconsultas/issues/189) or [#186 — Clinic model](https://github.com/diego-torres/nutriconsultas/issues/186) |
+| **Status** | #182 merged (PR #202) |
 | **Early start** | ~~#183~~ done (PR #200) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
