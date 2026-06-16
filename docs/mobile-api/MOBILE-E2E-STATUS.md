@@ -115,15 +115,15 @@ A production patient record is linked for live testing:
 | Field | Value |
 |-------|-------|
 | Paciente ID | `1` |
-| Name | Diego Torres |
-| Email | `diego.torres.fuerte@gmail.com` |
-| Auth0 `sub` (must match JWT) | `google-oauth2\|105777036752849735533` |
+| Name | E2E Test Patient |
+| Email | `e2e-patient@example.com` (Google account used for linkage; do not commit real addresses) |
+| Auth0 `sub` (must match JWT) | `google-oauth2\|<google-user-id>` |
 
 **Important:** Linkage uses the **patient's mobile Auth0 `sub`**, not the nutritionist's web-admin `sub`. The first linkage attempt used the nutritionist sub by mistake; it was corrected on 2026-06-14.
 
 ### Who can test?
 
-Log in on the mobile app with Google account **`diego.torres.fuerte@gmail.com`**. After login, API calls should pass linkage and return data (1 visit and 1 diet assignment exist in prod for this patient).
+Log in on the mobile app with the **Google account linked in Admin → Pacientes → Afiliación** for paciente ID `1`. After login, API calls should pass linkage and return data (1 visit and 1 diet assignment exist in prod for this patient).
 
 To link another tester, ask the nutritionist to use **Admin → Pacientes → Afiliación → Vincular** with the patient's Auth0 `sub`, or contact the backend team.
 
@@ -181,7 +181,7 @@ After login, decode the access token (or use app logs):
 
 - `iss` = `https://dev-imd1udg26uvzvfto.us.auth0.com/`
 - `aud` includes `https://api.nutriconsultas.minutriporcion.com`
-- `sub` = `google-oauth2|105777036752849735533` (for the linked test account)
+- `sub` = `google-oauth2|<google-user-id>` (must match the linked test patient's JWT)
 
 Optional backend script (requires access token from the app):
 
