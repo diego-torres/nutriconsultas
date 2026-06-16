@@ -1,0 +1,8 @@
+package com.nutriconsultas.subscription;
+
+public enum SubscriptionAuditEventType {
+
+	ADMIN_PAYMENT_OVERRIDE, ADMIN_STATE_CHANGE, WEBHOOK_PAYMENT_SUCCEEDED, WEBHOOK_PAYMENT_FAILED, STATE_TRANSITION,
+	INVITATION_REDEEMED
+
+}

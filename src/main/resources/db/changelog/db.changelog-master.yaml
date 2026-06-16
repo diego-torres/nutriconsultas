@@ -5,3 +5,6 @@ databaseChangeLog:
   - include:
       file: changes/002-seed-data.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/003-subscription-schema.yaml
+      relativeToChangelogFile: true

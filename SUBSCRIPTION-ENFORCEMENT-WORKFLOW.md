@@ -199,8 +199,8 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#180 — Plan catalog & subscription schema](https://github.com/diego-torres/nutriconsultas/issues/180) |
-| **Status** | **Blocked** by [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46) |
+| **Next issue** | [#181 — SubscriptionEntitlementService](https://github.com/diego-torres/nutriconsultas/issues/181) |
+| **Status** | **Blocked** by #180 (in progress on `subscription/180-plan-catalog-schema`) |
 | **Early start** | [#183 — Platform admin RBAC](https://github.com/diego-torres/nutriconsultas/issues/183) (no schema) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.

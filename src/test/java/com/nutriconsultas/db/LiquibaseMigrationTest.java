@@ -14,8 +14,7 @@ import org.springframework.test.context.TestPropertySource;
  */
 @SpringBootTest
 @ActiveProfiles("test")
-@TestPropertySource(properties = {
-		"spring.liquibase.change-log=classpath:db/changelog/db.changelog-master.yaml" })
+@TestPropertySource(properties = { "spring.liquibase.change-log=classpath:db/changelog/db.changelog-master.yaml" })
 public class LiquibaseMigrationTest {
 
 	@Autowired
@@ -41,9 +40,19 @@ public class LiquibaseMigrationTest {
 
 	@Test
 	public void testDietaTemplatesSeedLoaded() {
-		final Long count = jdbc.queryForObject(
-				"SELECT COUNT(*) FROM dieta WHERE user_id = 'system:template-dietas'", Long.class);
+		final Long count = jdbc.queryForObject("SELECT COUNT(*) FROM dieta WHERE user_id = 'system:template-dietas'",
+				Long.class);
 		assertThat(count).isNotNull().isEqualTo(20L);
+	}
+
+	@Test
+	public void testSubscriptionSchemaTablesExist() {
+		assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM subscription", Long.class)).isEqualTo(0L);
+		assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM clinic", Long.class)).isEqualTo(0L);
+		assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM clinic_member", Long.class)).isEqualTo(0L);
+		assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM nutritionist_invitation", Long.class)).isEqualTo(0L);
+		assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM clinic_invitation", Long.class)).isEqualTo(0L);
+		assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM subscription_audit_event", Long.class)).isEqualTo(0L);
 	}
 
 }

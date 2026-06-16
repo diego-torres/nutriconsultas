@@ -27,7 +27,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 
 | # | Title | URL | State | Blocks |
 |---|-------|-----|-------|--------|
-| 46 | Implement Liquibase for database change management | https://github.com/diego-torres/nutriconsultas/issues/46 | **NEXT** (mobile track) | #180 subscription schema |
+| 46 | Implement Liquibase for database change management | https://github.com/diego-torres/nutriconsultas/issues/46 | **done** | — |
 
 Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platform admin RBAC) can start before #46.
 
@@ -37,8 +37,8 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| **180** | Plan catalog, subscription schema & Liquibase | https://github.com/diego-torres/nutriconsultas/issues/180 | open | **46** | `PlanTier`, `Subscription`, `Clinic`, invitations — **NEXT** after #46 |
-| 181 | SubscriptionEntitlementService — plan tier resolution | https://github.com/diego-torres/nutriconsultas/issues/181 | open | 180 | Central `hasEntitlement()` |
+| **180** | Plan catalog, subscription schema & Liquibase | https://github.com/diego-torres/nutriconsultas/issues/180 | **in-progress** | **46** | `PlanTier`, `Subscription`, `Clinic`, invitations — branch `subscription/180-plan-catalog-schema` |
+| 181 | SubscriptionEntitlementService — plan tier resolution | https://github.com/diego-torres/nutriconsultas/issues/181 | **NEXT** | 180 | Central `hasEntitlement()` |
 | 182 | Auth0 role sync — nutriologo-* and director-consultorio | https://github.com/diego-torres/nutriconsultas/issues/182 | open | 181, 108 | Management API group assign |
 | 183 | Platform admin RBAC — enforce admin allowlist | https://github.com/diego-torres/nutriconsultas/issues/183 | open | — | Extends `PlatformAdminService`; can start early |
 

@@ -1,0 +1,327 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-subscription-schema
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: subscription
+      changes:
+        - createTable:
+            tableName: subscription
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: plan_tier
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: period_start
+                  type: TIMESTAMP
+              - column:
+                  name: period_end
+                  type: TIMESTAMP
+              - column:
+                  name: payment_exempt
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: grace_period_days
+                  type: INT
+                  defaultValueNumeric: 7
+                  constraints:
+                    nullable: false
+              - column:
+                  name: external_subscription_id
+                  type: VARCHAR(255)
+              - column:
+                  name: external_customer_id
+                  type: VARCHAR(255)
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: clinic
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: director_user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: subscription_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: clinic
+            baseColumnNames: subscription_id
+            referencedTableName: subscription
+            referencedColumnNames: id
+            constraintName: fk_clinic_subscription
+        - createIndex:
+            indexName: idx_clinic_director_user_id
+            tableName: clinic
+            columns:
+              - column:
+                  name: director_user_id
+        - createTable:
+            tableName: clinic_member
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: clinic_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: membership_status
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: invited_by
+                  type: VARCHAR(255)
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: clinic_member
+            baseColumnNames: clinic_id
+            referencedTableName: clinic
+            referencedColumnNames: id
+            constraintName: fk_clinic_member_clinic
+        - addUniqueConstraint:
+            tableName: clinic_member
+            columnNames: clinic_id, user_id
+            constraintName: uk_clinic_member_clinic_user
+        - createIndex:
+            indexName: idx_clinic_member_user_id
+            tableName: clinic_member
+            columns:
+              - column:
+                  name: user_id
+        - createTable:
+            tableName: nutritionist_invitation
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: token_hash
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: plan_tier
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expires_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by_user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: redeemed_at
+                  type: TIMESTAMP
+              - column:
+                  name: redeemed_by_user_id
+                  type: VARCHAR(255)
+        - createIndex:
+            indexName: idx_nutritionist_invitation_email
+            tableName: nutritionist_invitation
+            columns:
+              - column:
+                  name: email
+        - createTable:
+            tableName: clinic_invitation
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: clinic_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: token_hash
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: invited_by_user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expires_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: redeemed_at
+                  type: TIMESTAMP
+              - column:
+                  name: redeemed_by_user_id
+                  type: VARCHAR(255)
+        - addForeignKeyConstraint:
+            baseTableName: clinic_invitation
+            baseColumnNames: clinic_id
+            referencedTableName: clinic
+            referencedColumnNames: id
+            constraintName: fk_clinic_invitation_clinic
+        - createTable:
+            tableName: subscription_audit_event
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: subscription_id
+                  type: BIGINT
+              - column:
+                  name: event_type
+                  type: VARCHAR(40)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: actor_user_id
+                  type: VARCHAR(255)
+              - column:
+                  name: previous_status
+                  type: VARCHAR(30)
+              - column:
+                  name: new_status
+                  type: VARCHAR(30)
+              - column:
+                  name: reason_code
+                  type: VARCHAR(50)
+              - column:
+                  name: details
+                  type: VARCHAR(500)
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: subscription_audit_event
+            baseColumnNames: subscription_id
+            referencedTableName: subscription
+            referencedColumnNames: id
+            constraintName: fk_subscription_audit_subscription
+        - createIndex:
+            indexName: idx_subscription_audit_subscription_id
+            tableName: subscription_audit_event
+            columns:
+              - column:
+                  name: subscription_id
