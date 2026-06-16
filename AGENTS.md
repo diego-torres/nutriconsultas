@@ -559,6 +559,12 @@ public class ExampleRestController {
 
 Issue registry: [`ISSUE.md`](ISSUE.md). Agent workflow: [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md).
 
+## Subscription & access enforcement (tracking)
+
+Issue registry: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Agent workflow: [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md). Design: [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md).
+
+**Epic #180–#190** (2026-06-16): platform admin RBAC, Auth0 role groups (`nutriologo-basico` … `director-consultorio`), paid admin invitations + payment provider, subscription lifecycle (grace, payment override), director clinic invites, patient/nutritionist limits, report/PDF gating. **Gated by #46 Liquibase** for schema work; #183 can start earlier.
+
 **Done on `main` (2026-06-14):** #107/#109/#110 (JWT + linkage + DTO envelope); endpoints #91–#98; messages #96/#97 with rate limit (#113); localized errors (#111, PR #151); dashboard IMC gauge (#106).
 
 **Next:** [#156](https://github.com/diego-torres/nutriconsultas/issues/156) `Paciente` domain refactor. ~~#114~~ nutritionist reply **done**. ~~#116~~ `senderDisplayName` **done** on `main`. ~~#115~~ PHI audit **done** (PR #168). ~~#112~~ OpenAPI **done** (PR #164).

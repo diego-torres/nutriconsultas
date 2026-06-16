@@ -351,4 +351,6 @@ gh pr create ...
 
 **Schema gate (parallel track):** [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46) baseline **NEXT** (post-#156); then [#132–#141](https://github.com/diego-torres/nutriconsultas/issues/132) invitation onboarding (see [`ISSUE.md`](ISSUE.md) Phase 2).
 
+**Subscription track (parallel):** [#180–#190](https://github.com/diego-torres/nutriconsultas/issues/180) subscription enforcement — see [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) and [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md). Schema gated by #46; platform admin RBAC (#183) can start earlier.
+
 See [`ISSUE.md`](ISSUE.md) Data contracts and [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) §F8 for per-endpoint field requirements.
