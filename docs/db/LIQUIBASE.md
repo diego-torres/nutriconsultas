@@ -75,6 +75,63 @@ mvn -Djacoco.skip=true -Dtest=H2SchemaExportTest -Dspring.profiles.active=h2-sch
 
 ## Adding new schema changes
 
-1. Add a new YAML/SQL file under `db/changelog/changes/`.
+1. Add a new YAML/SQL file under `db/changelog/changes/` (incremental changeset — **do not** edit `001-baseline-schema.*` on deployed environments).
 2. Include it from `db.changelog-master.yaml`.
 3. Never rely on `ddl-auto=update` for new columns or tables.
+
+## Entity, schema, and catalog data changes (agent checklist)
+
+Use this whenever JPA entities, relationships, columns, indexes, or **catalog seed** data change.
+
+### Ground rules
+
+| Rule | Why |
+|------|-----|
+| `spring.jpa.hibernate.ddl-auto=none` always | Hibernate must not mutate production or dev PostgreSQL |
+| One forward changeset per logical change | Brownfield DBs replay only new changesets from `databasechangelog` |
+| Never edit merged baseline/seed SQL in place | Existing deployments already marked those changesets ran; add `003-…`, `004-…` instead |
+| PostgreSQL + H2 | CI uses H2 (`db.changelog-test-master.yaml` = baseline only). Full seed runs via `LiquibaseMigrationTest` override or `@SpringBootTest` with master changelog |
+| Local dev: **Java 21** | Liquibase fails on Java 24 (`Unknown change type 'sqlFile'`). Use `JAVA_HOME` for JBR 21 before `./dev-start.sh` |
+
+### Schema change (new table, column, FK, index)
+
+1. Change the `@Entity` / mapping (column names follow Hibernate snake_case defaults unless `@Column(name=…)`).
+2. Add `db/changelog/changes/00N-<slug>.yaml` (or `.sql`) with an **incremental** changeset:
+   - `ALTER TABLE … ADD COLUMN …`, `CREATE TABLE …`, etc.
+   - Use `preConditions` + `onFail: MARK_RAN` when the change may already exist on brownfield DBs (e.g. column added manually during #156 Phase C).
+3. Include the file from `db.changelog-master.yaml` **after** baseline and seed includes.
+4. If tests need the new column/table on H2 slices that only run the test master changelog, either:
+   - add the same DDL to a new H2-safe incremental changeset included in test master, or
+   - rely on `@SpringBootTest` / `LiquibaseMigrationTest` with the full master changelog.
+5. Run `mvn verify` and boot locally against PostgreSQL (`./dev-start.sh`) to confirm Liquibase applies cleanly.
+
+**Do not** regenerate `001-baseline-schema.postgresql.sql` for routine feature work — reserve baseline regeneration for major schema rebases (see below).
+
+### Catalog / reference data (alimentos, platillos, template dietas)
+
+Catalog rows are **not** created by Java `CommandLineRunner` seeders. They load from Liquibase only (`002-seed-data.yaml` and successors).
+
+| Change type | Action |
+|-------------|--------|
+| New catalog rows on empty DB | Add a new changeset with `preConditions` (`COUNT(*) = 0` or row-specific check) + `sqlFile`, or append to seed SQL only if no production DB has run the old changeset yet |
+| Replace entire catalog export | Regenerate `platillos-seed.sql` / `dieta-templates-seed.sql` via `pg_dump` (see above); update `catalog-seed-sequences.*.sql` max IDs |
+| App / tenant data (patients, dietas per user) | **No Liquibase seed** — created at runtime; migrations only for schema |
+
+Template dietas use owner `system:template-dietas`. Do not seed patient PHI via Liquibase.
+
+### Brownfield (existing PostgreSQL)
+
+1. Baseline `001-*` changesets **MARK_RAN** when `paciente` already exists — they do not recreate tables.
+2. Seed changesets **MARK_RAN** when target tables already have rows (`platillo` count > 0, etc.).
+3. New incremental changesets always run on deploy — write idempotent SQL or guard with `preConditions`.
+4. Pre-Phase-C `paciente` layout: run [`postgresql-paciente-phase-c-split.sql`](../manual/postgresql-paciente-phase-c-split.sql) before first Liquibase deploy.
+
+### PR / review checklist
+
+- [ ] Entity mapping and Liquibase DDL agree (name, type, nullability, FK)
+- [ ] New changeset included in `db.changelog-master.yaml`
+- [ ] No `ddl-auto=update` and no new Java startup seeders for catalog data
+- [ ] `LiquibaseMigrationTest` or integration test covers migration if seed/schema affects H2 CI path
+- [ ] `docs/db/LIQUIBASE.md` updated if regeneration procedure changes
+
+See also [`AGENT-WORKFLOW.md`](../../AGENT-WORKFLOW.md) Phase 2–7 Liquibase gates.

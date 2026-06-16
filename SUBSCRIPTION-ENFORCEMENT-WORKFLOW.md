@@ -95,7 +95,7 @@ Phases mirror [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) but context sources diffe
 **Rules**
 
 - One issue per PR; no mobile API drive-by changes.
-- Liquibase changesets for all schema (#46+).
+- **Liquibase:** incremental changesets for all schema (#46+). When `@Entity` or catalog data changes, follow [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) and the Liquibase section in [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) — same PR as entity edits; no `ddl-auto=update`.
 - Enforce entitlements in **service layer** (controllers thin).
 - Director flows never expose platform admin capabilities.
 - Payment webhooks: idempotent, signature-verified, no PHI in payload logs.

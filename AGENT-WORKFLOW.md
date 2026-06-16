@@ -27,7 +27,8 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | **Schema ground truth** | ALIGNMENT-SPEC §F8 field-name map (`nombre→dietaName`, `energia→totalKcal`, `lipidos→totalGrasas`, `hidratosDeCarbono→totalCarbohidratos`, `Ingesta.nombre→tipo`); enums `EventStatus`/`PacienteDietaStatus` (no INACTIVE)/`NivelPeso`. Serialization aliases only — **no DB schema changes** for field renames. |
 | **PHI & logging** | No patient names/emails/DOB in unstructured logs. `LogRedaction` + `PhiLogTurboFilter`; CI runs `scripts/audit-logging.sh` and `scripts/audit-mobile-logging.sh` (#115 done). |
 | **Existing code to reuse** | Visits → `calendar/CalendarEventService`; Diet → `PacienteDietaService` + `dieta/` + PDF (#95); Progress → `BodyMetricRecordService` + anthropometrics (#98/#99); Messages → `PatientMessage` entity + mobile/admin controllers (#96/#97). |
-| **`Paciente` / Liquibase order** | [#156](https://github.com/diego-torres/nutriconsultas/issues/156) (projections + `@Embeddable`, optional satellite tables) must complete **before** [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46). Mobile `#98`/`#99` DTOs stay stable — refactor maps in the service layer only. Do not add #132 onboarding columns to the monolithic entity until #156 Phase B lands. |
+| **Paciente / Liquibase** | ~~#156~~ Phase C done; ~~#46~~ Liquibase baseline on `main` (PR #196). **All entity/schema/catalog changes → incremental Liquibase changesets** ([`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md)). Do not use `ddl-auto=update`. Mobile `#98`/`#99` DTOs stay stable — map in the service layer. |
+| **Liquibase / entities** | Changing `@Entity` fields, tables, FKs, or catalog seed **requires** a new changeset in `db/changelog/changes/` + `db.changelog-master.yaml` include. Never edit merged `001-baseline` or seed SQL in place on brownfield DBs. Local boot: **Java 21** (Liquibase breaks on Java 24). |
 
 ---
 
@@ -68,8 +69,8 @@ flowchart LR
    - **#109 (linkage) gates live E2E** — endpoints can be built and tested with a seeded `patientAuthSub` before #109, but cannot be exercised by a real Auth0 patient until it lands.
    - **#113 (rate limit)** should land with or before **#97** (write endpoint).
    - **#114 (nutritionist reply) is web-only** — do not expose it under `/rest/mobile/**`.
-   - **#46 (Liquibase) is blocked by #156** — do not cut the first Liquibase baseline until `Paciente` decomposition Phases A–B merge (see [`ISSUE.md`](ISSUE.md) Integration prerequisites).
-   - **#132 (onboarding schema)** coordinates with #156 — extend the decomposed `Paciente` model, not the current 44-field monolith.
+   - **#46 (Liquibase)** ✓ — all schema/catalog changes are incremental changesets (see [Liquibase section](#liquibase--entity-schema-and-catalog-data)).
+   - **#132 (onboarding schema)** — extend the decomposed `Paciente` model + Liquibase migration; link issue in PR.
    - If a dependency is still `open`, complete it first or document the blocker in the plan (Phase 2) and stop.
 5. **Update local registry** when remote state drifted (issue closed on GitHub but still `open` here, or vice versa). `ISSUE.md` must match GitHub before proceeding.
 
@@ -103,7 +104,8 @@ flowchart LR
    - Data flow: Controller → Service → Repository, and DTO mapping (entity field → contract key)
    - Security: filter-chain matcher, principal resolution, ownership/IDOR guard
    - Test strategy (`@WebMvcTest` security + slice, `@DataJpaTest`, service unit)
-   - CI impact (new deps in `pom.xml`? Liquibase migration? coverage threshold?) — if schema changes: confirm #156 Phase complete or document why exempt; **#46 Liquibase changesets only after #156**
+   - CI impact (new deps in `pom.xml`? **Liquibase changeset**? coverage threshold?)
+   - **Liquibase (if entity/schema/catalog touched):** files to add, `preConditions` for brownfield, H2 test path (`db.changelog-test-master.yaml` vs full master in `LiquibaseMigrationTest`) — checklist in [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md)
    - Risks, blockers, explicit out-of-scope items
 
 **Do not implement until the plan is acknowledged** (user says "go ahead" or equivalent).
@@ -121,7 +123,7 @@ For each plan step, delegate to the best-fit subagent. Run **independent** steps
 | Step type | Delegate to | Delivers |
 |-----------|-------------|----------|
 | Security filter chain / JWT | `coder` + security review | `MobileSecurityConfig`, resource-server config, principal resolver |
-| Entity / migration | `coder` | `Paciente.patientAuthSub`, #156 embeddables/projections, new message entity; Liquibase changeset **only after #156** (#46) |
+| Entity / migration | `coder` | JPA entity + **incremental Liquibase changeset** (`db/changelog/changes/`, include in master); catalog seed via `sqlFile` only — no Java seeders |
 | DTOs + mappers | `coder` | `mobile/dto/*`, entity→DTO mapping per §F8 |
 | Controller + service | `coder` | `*MobileController`, service method (reuse existing services) |
 | Schema/contract check | `reviewer` / `architect` | DTO matches ALIGNMENT-SPEC §F8 and roadmap JSON |
@@ -134,8 +136,9 @@ For each plan step, delegate to the best-fit subagent. Run **independent** steps
 - **Never reuse `Paciente.userId`** for patient identity — always `patientAuthSub`.
 - **No authoring endpoints** under `/rest/mobile/**` (patient app is read-only except `POST /messages`).
 - Reuse existing services (`CalendarEventService`, `PacienteDietaService`, anthropometric services) — don't duplicate queries.
-- After delegates finish, the **lead agent integrates** — wires the controller, registers the filter chain order, runs the migration, regenerates coverage.
-- **Run the app locally** (`./dev-start.sh` or `mvn spring-boot:run`) and hit the endpoint with a test JWT before committing when the change touches security config or startup.
+- After delegates finish, the **lead agent integrates** — wires the controller, registers the filter chain order, **commits Liquibase changesets with entity changes**, regenerates coverage.
+- **Entity or schema change:** add Liquibase changeset in the same PR as the `@Entity` edit; run `mvn verify` and boot with Java 21 (`./dev-start.sh`).
+- **Run the app locally** (`./dev-start.sh` or `mvn spring-boot:run`) and hit the endpoint with a test JWT before committing when the change touches security config, **Liquibase**, or startup.
 
 **Exit criteria:** In-scope acceptance criteria met; endpoint returns the contract shape for the owning patient and 403/404 for others; no TODO stubs for in-scope work.
 
@@ -153,6 +156,7 @@ For each plan step, delegate to the best-fit subagent. Run **independent** steps
    - Filter chain matches only `/rest/mobile/**` and is ordered before the web chain
    - Principal resolver enforced on every endpoint; ownership/IDOR guard present
    - DTO field names + enums match §F8 exactly (no `nombre` leaking as `nombre` where the contract says `dietaName`)
+   - **Liquibase:** entity columns match changeset DDL; new file included in `db.changelog-master.yaml`; no `ddl-auto=update`; no in-place edits to `001-baseline` / seed SQL on brownfield paths
    - No dead code, no duplicate DTOs, no parallel security config
 3. **Adversarial / reviewer pass** (`reviewer` subagent or critical read-through):
    - Matches issue acceptance criteria verbatim
@@ -176,6 +180,7 @@ For each plan step, delegate to the best-fit subagent. Run **independent** steps
    | Controller + security | `@WebMvcTest` + `spring-security-test` | `src/test/java/.../mobile/` |
    | Service / mapping | JUnit + Mockito | `src/test/.../<feature>` |
    | Repository / query | `@DataJpaTest` | `src/test/.../<feature>` |
+   | Liquibase migration | `LiquibaseMigrationTest` or `@SpringBootTest` + master changelog | `src/test/java/.../db/` |
    | Ownership / IDOR | security test (wrong `sub` → 403/404) | controller test |
 
 3. **Run locally** (full CI parity — `lint.sh` alone does **not** cover everything):
@@ -227,7 +232,7 @@ Before the final commit:
 3. **Validate workflow artifacts are present and updated:**
    - [ ] `ISSUE.md` — issue marked `in-progress` (or `done` when closing); `NEXT` advanced when it merges
    - [ ] `AGENT-WORKFLOW.md` — sprint pointer updated when `NEXT` advances
-   - [ ] Liquibase changeset committed when schema changed — **only after #156** (#46 baseline); until then manual SQL / `ddl-auto=update` per #156 Phase C notes
+   - [ ] **Liquibase changeset** committed in the same PR when any `@Entity`, catalog seed, or schema changed ([`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) checklist)
    - [ ] Mobile registry's "Backend cross-reference" kept in sync when an endpoint's state changes
    - [ ] Tests + any new `pom.xml` deps committed together with feature code
 4. If any Phase 1–6 step was skipped or failed, **go back and fix** — do not open a PR on a broken tree.
@@ -298,6 +303,40 @@ Precise list of what changed. For each technical term, add a one-line plain-Engl
 
 ---
 
+## Liquibase — entity, schema, and catalog data
+
+**Canonical detail:** [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md). Apply this section whenever JPA entities or database-backed catalog data change.
+
+### When Liquibase is required
+
+| Change | Liquibase action |
+|--------|------------------|
+| New/changed `@Entity`, `@Column`, `@Table`, relationship, index | Incremental changeset (`ALTER` / `CREATE`); include in `db.changelog-master.yaml` |
+| New catalog rows (alimentos, platillos, template dietas) | New or updated seed changeset + `preConditions`; no Java startup seeders |
+| Patient/tenant runtime rows | Application code only — schema migration if new columns/tables |
+| Renamed Java field only (same DB column) | Usually **no** migration; document `@Column(name=…)` if needed |
+
+### Agent rules
+
+1. **`ddl-auto=none`** — Hibernate never auto-applies entity diffs.
+2. **Do not edit** `001-baseline-schema.*` or committed seed SQL for brownfield fixes — add `00N-<feature>.yaml` forward.
+3. **`preConditions` + `onFail: MARK_RAN`** when production may already have the column/table (brownfield).
+4. **H2 CI:** default test profile uses `db.changelog-test-master.yaml` (baseline only). Full catalog seed is validated in `LiquibaseMigrationTest`.
+5. **Local boot:** Java **21** required (Java 24 breaks Liquibase service loading).
+6. **Same PR:** entity/mapping changes and Liquibase changeset ship together.
+
+### Verification before PR
+
+```bash
+export JAVA_HOME=<path-to-jdk-21>
+mvn -B verify
+./dev-start.sh   # confirm Liquibase runs against PostgreSQL
+```
+
+PR must include: changeset file(s), `db.changelog-master.yaml` include (if new file), tests if migration affects CI path, and `docs/db/LIQUIBASE.md` update when regeneration procedures change.
+
+---
+
 ## Quick reference
 
 ```bash
@@ -309,7 +348,7 @@ cat ISSUE.md
 # During work
 git checkout -b mobile-api/112-openapi
 ./lint.sh && bash scripts/audit-logging.sh && mvn -B verify
-./dev-start.sh   # run locally when touching security config or startup
+./dev-start.sh   # Java 21 — run locally when touching security, Liquibase, or startup
 
 # End of session
 gh pr create ...
@@ -323,9 +362,9 @@ gh pr create ...
 | Field | Value |
 |-------|-------|
 | **Next issue** | [#132 — Invitation & patient onboarding data model](https://github.com/diego-torres/nutriconsultas/issues/132) |
-| **Status** | **NEXT** (#46 Liquibase on branch `integration/46-liquibase-baseline`, pending PR) |
-| **Phase** | Schema / Liquibase — #46 implementation complete locally |
-| **Just completed** | [#46 Liquibase baseline](https://github.com/diego-torres/nutriconsultas/issues/46) — `liquibase-core`, post-#156 schema baseline, catalog seed via changelogs |
+| **Status** | **NEXT** (gated by #46 PR #196 merge for schema-heavy work) |
+| **Phase** | Invitation / onboarding data model |
+| **Just completed** | [#46 Liquibase baseline](https://github.com/diego-torres/nutriconsultas/issues/46) — PR [#196](https://github.com/diego-torres/nutriconsultas/pull/196); incremental changesets required for all future schema/catalog edits |
 | **In scope for #156** | Phase A ✓ projections. Phase B ✓ body snapshot embeddable. Phase C ✓ LAZY satellite tables + manual SQL. Phase D deferred. |
 
 ### Upcoming gates
@@ -337,15 +376,15 @@ gh pr create ...
 | Endpoints | ~~#91–#99~~ ✓ | **Done** (PR #153) |
 | Cross-cutting | ~~#111~~ ✓, ~~#112~~ ✓ (OpenAPI), ~~#115~~ ✓ (PHI audit) | **Done** |
 | Hardening / additive | ~~#113~~ ✓, ~~#116~~ ✓ (`senderDisplayName`), ~~#114~~ ✓ (nutritionist reply) | **Done** |
-| Schema / Liquibase | ~~**#46**~~ ✓ (branch `integration/46-liquibase-baseline`) → **#132–#141** (invitation onboarding) | #132 **NEXT** |
+| Schema / Liquibase | ~~**#46**~~ ✓ (PR #196) → **#132–#141** (invitation onboarding) | #132 **NEXT** — use incremental changesets per [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) |
 
 ### Status snapshot (2026-06-16)
 
 **Patient mobile API on `main`:** JWT resource server (#107), DTO envelope (#110), patient linkage (#109), visits (#91/#92), diet plans (#93–#95), messages list/send (#96/#97 with HTTP 201 + rate limit), progress snapshot (#98) + measurements time series (#99, PR #153), localized API errors (#111), Resilience4j write throttling (#113), **OpenAPI spec (#112, PR #164)**, **`senderDisplayName` (#116)**, **nutritionist reply (#114)**. Dashboard IMC gauge (#106) done for web tablero.
 
-**Next:** #132 invitation onboarding data model (gated by #46 Liquibase PR merge).
+**Next:** #132 invitation onboarding data model (+ Liquibase migration for new columns/tables).
 
-**In progress:** #46 Liquibase baseline on branch `integration/46-liquibase-baseline`.
+**Schema track:** #46 Liquibase baseline in PR [#196](https://github.com/diego-torres/nutriconsultas/pull/196). All entity/schema/catalog edits → forward changesets ([`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md)).
 
 **Just merged:** #156 Phase C — PR [#178](https://github.com/diego-torres/nutriconsultas/pull/178) (`paciente_medical_history`, `paciente_energy_preferences`).
 

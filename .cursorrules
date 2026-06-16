@@ -272,6 +272,7 @@ Entities that reference `Paciente` (like `CalendarEvent`, `ClinicalExam`, `Anthr
 4. Use `Pageable` for pagination
 5. Prefer JPQL over native SQL queries
 6. Use `@Query` annotation for custom queries
+7. **Liquibase (#46):** `spring.jpa.hibernate.ddl-auto=none`. Any entity/schema/catalog change requires an incremental changeset in `db/changelog/` (see `docs/db/LIQUIBASE.md`). Never edit merged baseline/seed SQL in place; ship changesets in the same PR as `@Entity` edits. Local boot: Java 21.
 
 ### Testing
 1. Use H2 database for tests (configured in test profile)
