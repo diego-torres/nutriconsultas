@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-baseline-schema-postgresql
+      author: nutriconsultas
+      dbms: postgresql
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: paciente
+      changes:
+        - sqlFile:
+            path: 001-baseline-schema.postgresql.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: true
+  - changeSet:
+      id: 001-baseline-schema-h2
+      author: nutriconsultas
+      dbms: h2
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: paciente
+      changes:
+        - sqlFile:
+            path: 001-baseline-schema.h2.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: true
+        - sqlFile:
+            path: 001-baseline-schema.h2-supplement.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: true

@@ -112,6 +112,8 @@ If you prefer to set up the database manually:
    mvn spring-boot:run
    ```
 
+Liquibase applies schema and catalog seed data on startup (`spring.jpa.hibernate.ddl-auto=none`). See [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) for brownfield migration notes and how to add changesets.
+
 ### Database Container Management
 
 **Check if the database container is running:**

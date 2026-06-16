@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -22,13 +23,14 @@ import lombok.extern.slf4j.Slf4j;
  * records (issue #85).
  *
  * <p>
- * Runs after {@link com.nutriconsultas.alimentos.AlimentosInitializer} (order 1) and
- * {@link com.nutriconsultas.platillos.PlatilloSeedInitializer} (order 2). Template diets
+ * Runs after {@link com.nutriconsultas.platillos.PlatilloSeedInitializer} (order 2).
+ * Liquibase loads catalog alimentos and platillo auxiliary rows (issue #46). Template diets
  * use a dedicated {@value #TEMPLATE_DIETA_USER_ID} owner id so they are shared;
  * nutritionists can duplicate them into their account via the existing duplicate API.
  */
 @Component
 @Order(3)
+@ConditionalOnProperty(name = "nutriconsultas.seed.template-dietas.enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 @Slf4j
 public class DietaTemplateSeedInitializer implements CommandLineRunner {

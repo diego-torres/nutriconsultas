@@ -466,7 +466,7 @@ Entities that reference `Paciente` (like `CalendarEvent`, `ClinicalExam`, `Anthr
 1. **JPA Entities**: Use `@Entity`, proper relationships (`@OneToMany`, `@ManyToOne`, etc.)
 2. **Repository**: Use Spring Data JPA repositories
 3. **Transactions**: Use `@Transactional` on service methods
-4. **DDL**: `spring.jpa.hibernate.ddl-auto=update` (development only)
+4. **DDL**: Liquibase changelogs (`docs/db/LIQUIBASE.md`); `spring.jpa.hibernate.ddl-auto=none` in all environments (#46).
 5. **Queries**: Use `@Query` for custom queries, prefer JPQL over native SQL
 6. **Pagination**: Use `Pageable` for large datasets
 

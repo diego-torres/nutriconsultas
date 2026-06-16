@@ -1,0 +1,31 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-seed-alimentos
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - sqlCheck:
+            expectedResult: 0
+            sql: SELECT COUNT(*) FROM alimento
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/data/alimentos-seed.sql
+            splitStatements: true
+            stripComments: true
+  - changeSet:
+      id: 003-seed-platillos-aux
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - or:
+            - not:
+                tableExists:
+                  tableName: seed_platillo
+            - sqlCheck:
+                expectedResult: 0
+                sql: SELECT COUNT(*) FROM seed_platillo
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/data/seed-platillos-aux.sql
+            splitStatements: true
+            stripComments: true
