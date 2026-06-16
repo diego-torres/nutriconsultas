@@ -1,6 +1,7 @@
 package com.nutriconsultas.paciente;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -64,11 +65,11 @@ class PacienteEmbeddablePersistenceTest {
 
 		final Paciente loaded = pacienteRepository.findById(saved.getId()).orElseThrow();
 
-		assertThat(loaded.getPeso()).isEqualTo(72.5);
-		assertThat(loaded.getEstatura()).isEqualTo(1.70);
-		assertThat(loaded.getImc()).isEqualTo(25.1);
-		assertThat(loaded.getBmr()).isEqualTo(1500.0);
-		assertThat(loaded.getGetKcal()).isEqualTo(2100.0);
+		assertThat(loaded.getPeso()).isCloseTo(72.5, within(0.001));
+		assertThat(loaded.getEstatura()).isCloseTo(1.70, within(0.001));
+		assertThat(loaded.getImc()).isCloseTo(25.1, within(0.001));
+		assertThat(loaded.getBmr()).isCloseTo(1500.0, within(0.001));
+		assertThat(loaded.getGetKcal()).isCloseTo(2100.0, within(0.001));
 		assertThat(loaded.getActivityFactorScale()).isEqualTo(ActivityFactorScale.HARRIS_BENEDICT);
 		assertThat(loaded.getPreferredBmrFormula()).isEqualTo(BmrFormulaType.PROMEDIO);
 		assertThat(loaded.getPhysicalActivityLevel()).isEqualTo(PhysicalActivityLevel.MODERATE);

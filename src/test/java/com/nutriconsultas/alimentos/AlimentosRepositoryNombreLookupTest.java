@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 /**
- * Smoke test for deterministic SMAE nome resolution used by platillo seeding (#84).
+ * Smoke test for deterministic SMAE nombre resolution used by platillo catalog (#84).
  */
 @DataJpaTest
 class AlimentosRepositoryNombreLookupTest {

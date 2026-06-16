@@ -6,16 +6,26 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 
 /**
- * Ensures the alimentos seed SQL ships inside the application JAR (classpath) so
- * empty-database initialization works on AWS and other deployments where the process
- * working directory does not contain alimentos.sql.
+ * Ensures catalog seed SQL ships inside the application JAR for Liquibase (#46).
  */
 public class AlimentosSeedSqlResourceTest {
 
 	@Test
 	public void testAlimentosSqlIsOnClasspath() {
-		final ClassPathResource resource = new ClassPathResource("alimentos.sql");
-		assertThat(resource.exists()).as("alimentos.sql must be packaged under src/main/resources").isTrue();
+		final ClassPathResource legacy = new ClassPathResource("alimentos.sql");
+		final ClassPathResource liquibaseSeed = new ClassPathResource("db/changelog/data/alimentos-seed.sql");
+		assertThat(legacy.exists()).as("alimentos.sql must remain packaged for reference tooling").isTrue();
+		assertThat(liquibaseSeed.exists()).as("Liquibase alimentos seed must be on classpath").isTrue();
+	}
+
+	@Test
+	public void testCatalogSeedSqlFilesAreOnClasspath() {
+		assertThat(new ClassPathResource("db/changelog/data/platillos-seed.sql").exists())
+			.as("Liquibase platillos seed must be on classpath")
+			.isTrue();
+		assertThat(new ClassPathResource("db/changelog/data/dieta-templates-seed.sql").exists())
+			.as("Liquibase dieta template seed must be on classpath")
+			.isTrue();
 	}
 
 }

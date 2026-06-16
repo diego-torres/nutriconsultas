@@ -466,9 +466,24 @@ Entities that reference `Paciente` (like `CalendarEvent`, `ClinicalExam`, `Anthr
 1. **JPA Entities**: Use `@Entity`, proper relationships (`@OneToMany`, `@ManyToOne`, etc.)
 2. **Repository**: Use Spring Data JPA repositories
 3. **Transactions**: Use `@Transactional` on service methods
-4. **DDL**: `spring.jpa.hibernate.ddl-auto=update` (development only)
+4. **DDL**: Liquibase changelogs (`docs/db/LIQUIBASE.md`); `spring.jpa.hibernate.ddl-auto=none` in all environments (#46). **Hibernate will not apply entity changes automatically** — every table/column/FK/index change needs an incremental Liquibase changeset.
 5. **Queries**: Use `@Query` for custom queries, prefer JPQL over native SQL
 6. **Pagination**: Use `Pageable` for large datasets
+
+### Liquibase — when entities or data change
+
+**Read [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md)** (entity/schema/catalog checklist). Summary for agents:
+
+| You changed… | You must… |
+|--------------|-----------|
+| `@Entity` field, table, relationship, `@Column` | Add incremental changeset under `db/changelog/changes/`, include in `db.changelog-master.yaml`; do **not** edit `001-baseline-schema.*` on deployed DBs |
+| Catalog reference data (alimentos, platillos, template dietas) | Update or add Liquibase seed `sqlFile` changesets with `preConditions`; no Java `CommandLineRunner` seeders |
+| Patient / tenant runtime data | Schema only via Liquibase; rows created by application code, not seed SQL |
+| Brownfield production | Use `preConditions onFail: MARK_RAN`; assume baseline/seed may already be marked ran |
+
+**Testing:** `mvn verify` (H2); boot PostgreSQL with **Java 21** (`./dev-start.sh`). `@DataJpaTest` uses `db.changelog-test-master.yaml` (baseline only) — use `@SpringBootTest` or `LiquibaseMigrationTest` when full seed is required.
+
+**Never:** `ddl-auto=update`, in-place edits to merged baseline/seed files, or assuming a local entity change propagates without a changeset.
 
 ## Environment Configuration
 
@@ -569,7 +584,7 @@ Issue registry: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Agent workflow
 
 **Next:** [#156](https://github.com/diego-torres/nutriconsultas/issues/156) `Paciente` domain refactor. ~~#114~~ nutritionist reply **done**. ~~#116~~ `senderDisplayName` **done** on `main`. ~~#115~~ PHI audit **done** (PR #168). ~~#112~~ OpenAPI **done** (PR #164).
 
-**Schema gate (pre-Liquibase):** [#156](https://github.com/diego-torres/nutriconsultas/issues/156) `Paciente` decomposition must land before [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46); mobile `#98`/`#99` DTO contracts unchanged. See [`ISSUE.md`](ISSUE.md) Integration prerequisites.
+**Schema gate (post-#46):** [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46) baseline is on `main` (PR #196). All new schema/catalog changes require **incremental Liquibase changesets** — see [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) and [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md). ~~#156~~ Phase C done before baseline.
 
 ## Resources
 
