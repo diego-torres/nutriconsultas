@@ -22,6 +22,7 @@ import lombok.NoArgsConstructor;
 
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.clinical.exam.anthropometric.MetodoObtencionComposicionCorporal;
 
 /**
  * Centralized body metric history for a patient (IMC, grasa corporal, peso/talla).
@@ -77,6 +78,10 @@ public class BodyMetricRecord {
 
 	@Column(precision = 3)
 	private Double bodyFatPercentage;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private MetodoObtencionComposicionCorporal metodoObtencionComposicion;
 
 	@Column(precision = 7)
 	private Double bmr;

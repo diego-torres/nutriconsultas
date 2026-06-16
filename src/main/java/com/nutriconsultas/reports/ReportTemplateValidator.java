@@ -10,6 +10,7 @@ import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.ClinicalExam;
 import com.nutriconsultas.clinical.exam.anthropometric.BodyComposition;
+import com.nutriconsultas.clinical.exam.anthropometric.MetodoObtencionComposicionCorporal;
 import com.nutriconsultas.clinical.exam.anthropometric.BodyMass;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
@@ -151,6 +152,9 @@ public class ReportTemplateValidator extends BaseTemplateValidator {
 		bodyComposition.setEctomorphy(2.8);
 		bodyComposition.setSomatocartaX(-0.4);
 		bodyComposition.setSomatocartaY(3.0);
+		bodyComposition.setPorcentajeGrasaCorporal(22.5);
+		bodyComposition.setPorcentajeMasaMuscular(45.0);
+		bodyComposition.setMetodoObtencion(MetodoObtencionComposicionCorporal.BIOIMPEDANCIA);
 		measurement.setBodyComposition(bodyComposition);
 		measurements.add(measurement);
 		return measurements;

@@ -2,6 +2,8 @@ package com.nutriconsultas.clinical.exam.anthropometric;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -48,5 +50,10 @@ public class BodyComposition {
 	/** Somatocarta Y: 2×mesomorphy - (ectomorphy + endomorphy). */
 	@Column(precision = 4)
 	private Double somatocartaY;
+
+	/** Clinical source for consolidated body fat / muscle values. */
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private MetodoObtencionComposicionCorporal metodoObtencion;
 
 }

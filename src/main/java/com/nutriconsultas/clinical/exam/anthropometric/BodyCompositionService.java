@@ -33,47 +33,72 @@ public class BodyCompositionService {
 	public void applyToMeasurement(final AnthropometricMeasurement measurement, final Paciente paciente,
 			final Double imc) {
 		ensureBodyComposition(measurement);
+		final MetodoObtencionComposicionCorporal clinicalOverride = resolveClinicalOverride(measurement);
 
 		if (measurement.getPorcentajeGrasaCorporal() != null) {
 			syncFatFields(measurement, measurement.getPorcentajeGrasaCorporal());
 			applyMusclePercentageIfAbsent(measurement, measurement.getPorcentajeGrasaCorporal());
+			assignMethodIfAllowed(measurement, MetodoObtencionComposicionCorporal.MANUAL, clinicalOverride);
 			return;
 		}
 
 		if (measurement.getIndiceGrasaCorporal() != null) {
 			syncFatFields(measurement, measurement.getIndiceGrasaCorporal());
 			applyMusclePercentageIfAbsent(measurement, measurement.getIndiceGrasaCorporal());
+			assignMethodIfAllowed(measurement, MetodoObtencionComposicionCorporal.MANUAL, clinicalOverride);
 			return;
 		}
 
-		final Double calculatedFat = resolveCalculatedFatPercentage(measurement, paciente, imc);
-		if (calculatedFat != null) {
-			syncFatFields(measurement, calculatedFat);
-			applyMusclePercentageIfAbsent(measurement, calculatedFat);
+		final ResolvedFatPercentage resolvedFat = resolveCalculatedFatPercentage(measurement, paciente, imc);
+		if (resolvedFat.fatPercentage() != null) {
+			syncFatFields(measurement, resolvedFat.fatPercentage());
+			applyMusclePercentageIfAbsent(measurement, resolvedFat.fatPercentage());
+			assignMethodIfAllowed(measurement, resolvedFat.method(), clinicalOverride);
 		}
 	}
 
-	private Double resolveCalculatedFatPercentage(final AnthropometricMeasurement measurement, final Paciente paciente,
-			final Double imc) {
+	private MetodoObtencionComposicionCorporal resolveClinicalOverride(final AnthropometricMeasurement measurement) {
+		if (measurement.getBodyComposition() == null) {
+			return null;
+		}
+		final MetodoObtencionComposicionCorporal method = measurement.getBodyComposition().getMetodoObtencion();
+		if (method != null && method.isClinicalOverride()) {
+			return method;
+		}
+		return null;
+	}
+
+	private void assignMethodIfAllowed(final AnthropometricMeasurement measurement,
+			final MetodoObtencionComposicionCorporal autoMethod,
+			final MetodoObtencionComposicionCorporal clinicalOverride) {
+		if (clinicalOverride != null) {
+			measurement.getBodyComposition().setMetodoObtencion(clinicalOverride);
+			return;
+		}
+		measurement.getBodyComposition().setMetodoObtencion(autoMethod);
+	}
+
+	private ResolvedFatPercentage resolveCalculatedFatPercentage(final AnthropometricMeasurement measurement,
+			final Paciente paciente, final Double imc) {
 		final Double bioimpedanceFat = resolveBioimpedanceFatPercentage(measurement);
 		if (bioimpedanceFat != null) {
 			log.debug("Using bioimpedance body fat percentage for measurement");
-			return bioimpedanceFat;
+			return new ResolvedFatPercentage(bioimpedanceFat, MetodoObtencionComposicionCorporal.BIOIMPEDANCIA);
 		}
 
 		final Double skinfoldFat = calculateSkinfoldFatPercentage(measurement, paciente);
 		if (skinfoldFat != null) {
 			log.debug("Using Jackson-Pollock skinfold body fat percentage for measurement");
-			return skinfoldFat;
+			return new ResolvedFatPercentage(skinfoldFat, MetodoObtencionComposicionCorporal.PLIEGUES);
 		}
 
 		final Double deurenbergFat = calculateDeurenbergFatPercentage(imc, paciente);
 		if (deurenbergFat != null) {
 			log.debug("Using Deurenberg body fat percentage for measurement");
-			return deurenbergFat;
+			return new ResolvedFatPercentage(deurenbergFat, MetodoObtencionComposicionCorporal.DEURENBERG);
 		}
 
-		return null;
+		return new ResolvedFatPercentage(null, null);
 	}
 
 	private Double resolveBioimpedanceFatPercentage(final AnthropometricMeasurement measurement) {
@@ -148,6 +173,9 @@ public class BodyCompositionService {
 			return null;
 		}
 		return Period.between(birthDate, currentDate).getYears();
+	}
+
+	private record ResolvedFatPercentage(Double fatPercentage, MetodoObtencionComposicionCorporal method) {
 	}
 
 }

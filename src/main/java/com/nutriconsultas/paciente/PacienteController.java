@@ -204,6 +204,7 @@ public class PacienteController extends AbstractAuthorizedController {
 					: latest.getBodyFatIndex();
 			model.addAttribute("ultimoPorcentajeGrasaCorporal", ultimoPorcentajeGrasa);
 			model.addAttribute("ultimoIndiceGrasaCorporal", ultimoPorcentajeGrasa);
+			model.addAttribute("ultimoMetodoObtencionComposicion", latest.getMetodoObtencionComposicion());
 		});
 		addLatestMuscleMassToModel(id, model);
 		// Calculate age and check if patient is under 18 for growth table display
