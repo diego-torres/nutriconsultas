@@ -104,6 +104,18 @@ class PatientMessageServiceTest {
 	}
 
 	@Test
+	void sendAsNutritionist_whenPatientNotOwned_throwsNotFound() {
+		when(pacienteRepository.findByIdAndUserId(1L, USER_ID)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> patientMessageService.sendAsNutritionist(1L, USER_ID, "Respuesta"))
+			.isInstanceOf(ResponseStatusException.class)
+			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+			.isEqualTo(HttpStatus.NOT_FOUND);
+
+		verify(patientMessageRepository, never()).save(any(PatientMessage.class));
+	}
+
+	@Test
 	void markThreadReadByNutritionist_delegatesToRepository() {
 		final Paciente paciente = samplePaciente(1L);
 		when(pacienteRepository.findByIdAndUserId(1L, USER_ID)).thenReturn(Optional.of(paciente));
