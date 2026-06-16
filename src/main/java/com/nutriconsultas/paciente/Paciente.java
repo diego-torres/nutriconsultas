@@ -2,7 +2,10 @@ package com.nutriconsultas.paciente;
 
 import java.util.Date;
 
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,32 +14,24 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
-import com.nutriconsultas.paciente.calculation.ActivityFactorScale;
-import com.nutriconsultas.paciente.calculation.BmrFormulaType;
-import com.nutriconsultas.paciente.calculation.PhysicalActivityLevel;
-import com.nutriconsultas.paciente.calculation.PhysiologicalStressType;
-import com.nutriconsultas.paciente.calculation.StressFormulaTable;
-import com.nutriconsultas.paciente.calculation.StressIncrementMode;
-import com.nutriconsultas.paciente.calculation.TefBase;
-import com.nutriconsultas.paciente.calculation.TefCalculationService;
-import com.nutriconsultas.paciente.calculation.TefMethod;
+import com.nutriconsultas.paciente.embeddable.PacienteBodySnapshot;
+import com.nutriconsultas.paciente.embeddable.PacienteEnergyPreferences;
+import com.nutriconsultas.paciente.embeddable.PacienteMedicalHistory;
 import com.nutriconsultas.paciente.validation.ValidPregnancy;
 
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Delegate;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@SuppressWarnings("PMD.TooManyFields")
 public class Paciente {
 
 	@Id
@@ -83,176 +78,72 @@ public class Paciente {
 
 	private String parentesco;
 
-	@Column(precision = 5)
-	private Double peso;
+	@Embedded
+	@AttributeOverrides({ @AttributeOverride(name = "peso", column = @Column(name = "peso")),
+			@AttributeOverride(name = "estatura", column = @Column(name = "estatura")),
+			@AttributeOverride(name = "imc", column = @Column(name = "imc")),
+			@AttributeOverride(name = "bmr", column = @Column(name = "bmr")),
+			@AttributeOverride(name = "getKcal", column = @Column(name = "get_kcal")),
+			@AttributeOverride(name = "nivelPeso", column = @Column(name = "nivel_peso")),
+			@AttributeOverride(name = "tefKcal", column = @Column(name = "tef_kcal")),
+			@AttributeOverride(name = "totalAdjustedKcal", column = @Column(name = "total_adjusted_kcal")),
+			@AttributeOverride(name = "stressKcal", column = @Column(name = "stress_kcal")),
+			@AttributeOverride(name = "finalTotalKcal", column = @Column(name = "final_total_kcal")) })
+	@Delegate
+	private PacienteBodySnapshot bodySnapshot = new PacienteBodySnapshot();
 
-	@Column(precision = 3)
-	private Double estatura;
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "activityFactorScale", column = @Column(name = "activity_factor_scale")),
+			@AttributeOverride(name = "preferredBmrFormula", column = @Column(name = "preferred_bmr_formula")),
+			@AttributeOverride(name = "physicalActivityLevel", column = @Column(name = "physical_activity_level")),
+			@AttributeOverride(name = "activityFactor", column = @Column(name = "activity_factor")),
+			@AttributeOverride(name = "customFactorSedentary", column = @Column(name = "custom_factor_sedentary")),
+			@AttributeOverride(name = "customFactorLight", column = @Column(name = "custom_factor_light")),
+			@AttributeOverride(name = "customFactorModerate", column = @Column(name = "custom_factor_moderate")),
+			@AttributeOverride(name = "customFactorIntense", column = @Column(name = "custom_factor_intense")),
+			@AttributeOverride(name = "customFactorVeryIntense", column = @Column(name = "custom_factor_very_intense")),
+			@AttributeOverride(name = "physiologicalStressActive",
+					column = @Column(name = "physiological_stress_active")),
+			@AttributeOverride(name = "physiologicalStressType", column = @Column(name = "physiological_stress_type")),
+			@AttributeOverride(name = "stressFormulaTable", column = @Column(name = "stress_formula_table")),
+			@AttributeOverride(name = "stressIncrementMode", column = @Column(name = "stress_increment_mode")),
+			@AttributeOverride(name = "stressFactorValue", column = @Column(name = "stress_factor_value")),
+			@AttributeOverride(name = "stressValidFrom", column = @Column(name = "stress_valid_from")),
+			@AttributeOverride(name = "stressValidUntil", column = @Column(name = "stress_valid_until")),
+			@AttributeOverride(name = "stressFeverTemperature", column = @Column(name = "stress_fever_temperature")),
+			@AttributeOverride(name = "tefMethod", column = @Column(name = "tef_method")),
+			@AttributeOverride(name = "tefBase", column = @Column(name = "tef_base")),
+			@AttributeOverride(name = "tefFixedPercent", column = @Column(name = "tef_fixed_percent")),
+			@AttributeOverride(name = "tefMacroProteinPercent", column = @Column(name = "tef_macro_protein_percent")),
+			@AttributeOverride(name = "tefMacroCarbsPercent", column = @Column(name = "tef_macro_carbs_percent")),
+			@AttributeOverride(name = "tefMacroFatPercent", column = @Column(name = "tef_macro_fat_percent")) })
+	@Delegate
+	private PacienteEnergyPreferences energyPreferences = new PacienteEnergyPreferences();
 
-	@Column(precision = 3)
-	private Double imc;
-
-	/**
-	 * Basal metabolic rate (BMR) in kcal/day.
-	 */
-	@Column(precision = 7)
-	private Double bmr;
-
-	/**
-	 * Total daily energy expenditure (GET) in kcal/day.
-	 */
-	@Column(precision = 7)
-	private Double getKcal;
-
-	/**
-	 * Thermic effect of food (TEF / ETA) in kcal/day.
-	 */
-	@Column(precision = 7)
-	private Double tefKcal;
-
-	/**
-	 * Total adjusted daily energy requirement (GET + TEF) in kcal/day.
-	 */
-	@Column(precision = 7)
-	private Double totalAdjustedKcal;
-
-	/**
-	 * Additional energy from physiological stress in kcal/day.
-	 */
-	@Column(precision = 7)
-	private Double stressKcal;
-
-	/**
-	 * Final daily energy requirement (GET + TEF + stress) in kcal/day.
-	 */
-	@Column(precision = 7)
-	private Double finalTotalKcal;
-
-	private Boolean physiologicalStressActive = false;
-
-	@Enumerated(EnumType.STRING)
-	@Column(length = 40)
-	private PhysiologicalStressType physiologicalStressType;
-
-	@Enumerated(EnumType.STRING)
-	@Column(length = 30)
-	private StressFormulaTable stressFormulaTable = StressFormulaTable.LONG;
-
-	@Enumerated(EnumType.STRING)
-	@Column(length = 30)
-	private StressIncrementMode stressIncrementMode = StressIncrementMode.MULTIPLIER_BMR;
-
-	@Column(precision = 5)
-	private Double stressFactorValue;
-
-	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	@Temporal(TemporalType.DATE)
-	private Date stressValidFrom;
-
-	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	@Temporal(TemporalType.DATE)
-	private Date stressValidUntil;
-
-	@Column(precision = 4)
-	private Double stressFeverTemperature;
-
-	@Enumerated(EnumType.STRING)
-	@Column(length = 30)
-	private TefMethod tefMethod = TefMethod.FIXED;
-
-	@Enumerated(EnumType.STRING)
-	@Column(length = 30)
-	private TefBase tefBase = TefBase.GET;
-
-	@Column(precision = 5)
-	private Double tefFixedPercent = TefCalculationService.DEFAULT_FIXED_TEF_PERCENT;
-
-	@Column(precision = 5)
-	private Double tefMacroProteinPercent;
-
-	@Column(precision = 5)
-	private Double tefMacroCarbsPercent;
-
-	@Column(precision = 5)
-	private Double tefMacroFatPercent;
-
-	@Enumerated(EnumType.STRING)
-	@Column(length = 30)
-	private ActivityFactorScale activityFactorScale = ActivityFactorScale.HARRIS_BENEDICT;
-
-	@Enumerated(EnumType.STRING)
-	@Column(length = 30)
-	private BmrFormulaType preferredBmrFormula = BmrFormulaType.PROMEDIO;
-
-	@Enumerated(EnumType.STRING)
-	@Column(length = 30)
-	private PhysicalActivityLevel physicalActivityLevel;
-
-	@Column(precision = 4)
-	private Double activityFactor;
-
-	@Column(precision = 4)
-	private Double customFactorSedentary;
-
-	@Column(precision = 4)
-	private Double customFactorLight;
-
-	@Column(precision = 4)
-	private Double customFactorModerate;
-
-	@Column(precision = 4)
-	private Double customFactorIntense;
-
-	@Column(precision = 4)
-	private Double customFactorVeryIntense;
-
-	private NivelPeso nivelPeso;
-
-	// ANTECEDENTES
-	@Column(columnDefinition = "TEXT")
-	private String antecedentesPrenatales;
-
-	@Column(columnDefinition = "TEXT")
-	private String antecedentesNatales;
-
-	@Column(columnDefinition = "TEXT")
-	private String antecedentesPatologicosPersonales;
-
-	@Column(columnDefinition = "TEXT")
-	private String antecedentesPatologicosFamiliares;
-
-	@Column(columnDefinition = "TEXT")
-	private String complicaciones;
-
-	@Column(length = 4)
-	private String tipoSanguineo;
-
-	// NUTRICION Y DESARROLLO
-	@Column(columnDefinition = "TEXT")
-	private String historialAlimenticio;
-
-	@Column(columnDefinition = "TEXT")
-	private String desarrolloPsicomotor;
-
-	@Column(columnDefinition = "TEXT")
-	private String alergias;
-
-	// BANDERAS DE PATOLOGIAS COMUNES
-	private Boolean hipertension = false;
-
-	private Boolean diabetes = false;
-
-	private Boolean hipotiroidismo = false;
-
-	private Boolean obesidad = false;
-
-	private Boolean anemia = false;
-
-	private Boolean bulimia = false;
-
-	private Boolean anorexia = false;
-
-	private Boolean enfermedadesHepaticas = false;
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "antecedentesPrenatales", column = @Column(name = "antecedentes_prenatales")),
+			@AttributeOverride(name = "antecedentesNatales", column = @Column(name = "antecedentes_natales")),
+			@AttributeOverride(name = "antecedentesPatologicosPersonales",
+					column = @Column(name = "antecedentes_patologicos_personales")),
+			@AttributeOverride(name = "antecedentesPatologicosFamiliares",
+					column = @Column(name = "antecedentes_patologicos_familiares")),
+			@AttributeOverride(name = "complicaciones", column = @Column(name = "complicaciones")),
+			@AttributeOverride(name = "tipoSanguineo", column = @Column(name = "tipo_sanguineo")),
+			@AttributeOverride(name = "historialAlimenticio", column = @Column(name = "historial_alimenticio")),
+			@AttributeOverride(name = "desarrolloPsicomotor", column = @Column(name = "desarrollo_psicomotor")),
+			@AttributeOverride(name = "alergias", column = @Column(name = "alergias")),
+			@AttributeOverride(name = "hipertension", column = @Column(name = "hipertension")),
+			@AttributeOverride(name = "diabetes", column = @Column(name = "diabetes")),
+			@AttributeOverride(name = "hipotiroidismo", column = @Column(name = "hipotiroidismo")),
+			@AttributeOverride(name = "obesidad", column = @Column(name = "obesidad")),
+			@AttributeOverride(name = "anemia", column = @Column(name = "anemia")),
+			@AttributeOverride(name = "bulimia", column = @Column(name = "bulimia")),
+			@AttributeOverride(name = "anorexia", column = @Column(name = "anorexia")),
+			@AttributeOverride(name = "enfermedadesHepaticas", column = @Column(name = "enfermedades_hepaticas")) })
+	@Delegate
+	private PacienteMedicalHistory medicalHistory = new PacienteMedicalHistory();
 
 	// ESTADO DE EMBARAZO (solo para mujeres entre 12-50 años)
 	@ValidPregnancy
