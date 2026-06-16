@@ -9,6 +9,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.nutriconsultas.paciente.projection.PacienteListView;
 import com.nutriconsultas.util.LogRedaction;
 
 import lombok.extern.slf4j.Slf4j;
@@ -69,6 +70,32 @@ public class PacienteServiceImpl implements PacienteService {
 	public Page<Paciente> findAllByUserId(@NonNull final String userId, final Pageable pageable) {
 		log.info("getting paginated Paciente records for userId {} with pageable {}.", userId, pageable);
 		return repo.findByUserId(userId, pageable);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Page<PacienteListView> findListViewsByUserId(@NonNull final String userId, final Pageable pageable) {
+		log.info("getting paginated Paciente list views for userId {} with pageable {}.", userId, pageable);
+		return repo.findListViewsByUserId(userId, pageable);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<PacienteListView> findListViewsByUserIdAndSearchTerm(@NonNull final String userId,
+			@NonNull final String searchTerm) {
+		log.info("searching Paciente list views for userId {} with search term '{}'.", userId, searchTerm);
+		final String searchPattern = "%" + searchTerm.toLowerCase() + "%";
+		return repo.findListViewsByUserIdAndSearchTerm(userId, searchPattern);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Page<PacienteListView> findListViewsByUserIdAndSearchTerm(@NonNull final String userId,
+			@NonNull final String searchTerm, final Pageable pageable) {
+		log.info("searching paginated Paciente list views for userId {} with search term '{}' and pageable {}.", userId,
+				searchTerm, pageable);
+		final String searchPattern = "%" + searchTerm.toLowerCase() + "%";
+		return repo.findListViewsByUserIdAndSearchTerm(userId, searchPattern, pageable);
 	}
 
 	@Override

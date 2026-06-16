@@ -34,6 +34,7 @@ import com.nutriconsultas.dataTables.paging.Direction;
 import com.nutriconsultas.dataTables.paging.Order;
 import com.nutriconsultas.dataTables.paging.PageArray;
 import com.nutriconsultas.dataTables.paging.PagingRequest;
+import com.nutriconsultas.paciente.projection.PacienteListView;
 import com.nutriconsultas.util.LogRedaction;
 
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/rest/pacientes")
 @Slf4j
-public class PacienteRestController extends AbstractGridController<Paciente> {
+public class PacienteRestController extends AbstractGridController<PacienteListView> {
 
 	@Autowired
 	private PacienteService service;
@@ -119,7 +120,7 @@ public class PacienteRestController extends AbstractGridController<Paciente> {
 		}
 		pagingRequest.setColumns(getColumns());
 		final String nonNullUserId = userId;
-		final com.nutriconsultas.dataTables.paging.Page<Paciente> page = getRows(pagingRequest, nonNullUserId);
+		final com.nutriconsultas.dataTables.paging.Page<PacienteListView> page = getRows(pagingRequest, nonNullUserId);
 		log.debug("page with records: {}", page.getRecordsTotal());
 		final PageArray pageArray = new PageArray();
 		pageArray.setData(page.getData().stream().map(this::toStringList).collect(Collectors.toList()));
@@ -136,28 +137,28 @@ public class PacienteRestController extends AbstractGridController<Paciente> {
 	 * @param userId the user ID to filter by (must not be null)
 	 * @return the page of patients
 	 */
-	protected com.nutriconsultas.dataTables.paging.Page<Paciente> getRows(final PagingRequest pagingRequest,
+	protected com.nutriconsultas.dataTables.paging.Page<PacienteListView> getRows(final PagingRequest pagingRequest,
 			@org.springframework.lang.NonNull final String userId) {
 		log.debug("starting getRows with pagingRequest: {} for userId: {}", pagingRequest, userId);
 		final Pageable pageable = toPageable(pagingRequest);
 		final String searchValue = pagingRequest.getSearch() != null && pagingRequest.getSearch().getValue() != null
 				? pagingRequest.getSearch().getValue().trim() : null;
 
-		final Page<Paciente> springPage;
+		final Page<PacienteListView> springPage;
 		final long totalCount;
 		final long filteredCount;
 
 		if (searchValue != null && !searchValue.isEmpty()) {
-			springPage = service.findAllByUserIdAndSearchTerm(userId, searchValue, pageable);
+			springPage = service.findListViewsByUserIdAndSearchTerm(userId, searchValue, pageable);
 			filteredCount = service.countByUserIdAndSearchTerm(userId, searchValue);
 		}
 		else {
-			springPage = service.findAllByUserId(userId, pageable);
+			springPage = service.findListViewsByUserId(userId, pageable);
 			filteredCount = service.countByUserId(userId);
 		}
 		totalCount = service.countByUserId(userId);
 
-		final com.nutriconsultas.dataTables.paging.Page<Paciente> result = new com.nutriconsultas.dataTables.paging.Page<>(
+		final com.nutriconsultas.dataTables.paging.Page<PacienteListView> result = new com.nutriconsultas.dataTables.paging.Page<>(
 				springPage.getContent());
 		result.setRecordsFiltered((int) filteredCount);
 		result.setRecordsTotal((int) totalCount);
@@ -169,8 +170,8 @@ public class PacienteRestController extends AbstractGridController<Paciente> {
 	}
 
 	@Override
-	protected List<String> toStringList(final Paciente row) {
-		log.debug("converting Paciente row {} to string list.", LogRedaction.redactPaciente(row));
+	protected List<String> toStringList(final PacienteListView row) {
+		log.debug("converting Paciente list view row {} to string list.", LogRedaction.redactPaciente(row.getId()));
 		final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		return Arrays.asList("<a href='/admin/pacientes/" + row.getId() + "'>" + row.getName() + "</a>",
 				row.getDob() != null ? dateFormat.format(row.getDob()) : "", //
@@ -181,30 +182,30 @@ public class PacienteRestController extends AbstractGridController<Paciente> {
 	}
 
 	@Override
-	protected List<Paciente> getData() {
+	protected List<PacienteListView> getData() {
 		log.warn("getData() called without userId filter. This should not happen in production.");
-		return service.findAll();
+		return List.of();
 	}
 
 	/**
-	 * Gets patient data filtered by userId.
+	 * Gets patient list views filtered by userId.
 	 * @param userId the user ID to filter by (must not be null)
-	 * @return list of patients for the user
+	 * @return list of patient list views for the user
 	 */
-	protected List<Paciente> getData(@org.springframework.lang.NonNull final String userId) {
-		log.debug("getting all Paciente records for userId: {}", userId);
-		return service.findAllByUserId(userId);
+	protected List<PacienteListView> getData(@org.springframework.lang.NonNull final String userId) {
+		log.debug("getting Paciente list views for userId: {}", userId);
+		return service.findListViewsByUserId(userId, Pageable.unpaged()).getContent();
 	}
 
 	@Override
-	protected Predicate<Paciente> getPredicate(final String value) {
+	protected Predicate<PacienteListView> getPredicate(final String value) {
 		return row -> row.getName().toLowerCase().contains(value) || row.getName().toLowerCase().startsWith(value)
-				|| row.getResponsibleName().toLowerCase().contains(value)
-				|| row.getResponsibleName().toLowerCase().startsWith(value);
+				|| (row.getResponsibleName() != null && (row.getResponsibleName().toLowerCase().contains(value)
+						|| row.getResponsibleName().toLowerCase().startsWith(value)));
 	}
 
 	@Override
-	protected Comparator<Paciente> getComparator(final String column, final Direction dir) {
+	protected Comparator<PacienteListView> getComparator(final String column, final Direction dir) {
 		log.debug("getting Paciente comparator with column {} and direction {}.", column, dir);
 		return PacienteComparators.getComparator(column, dir);
 	}

@@ -20,7 +20,7 @@ import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.CursorPagedResponse;
 import com.nutriconsultas.mobile.dto.PatientMessageSummaryDto;
 import com.nutriconsultas.mobile.dto.SendPatientMessageRequest;
-import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.projection.PacienteAuthView;
 
 @ExtendWith(MockitoExtension.class)
 class MobilePatientMessageControllerTest {
@@ -38,14 +38,12 @@ class MobilePatientMessageControllerTest {
 
 	@Test
 	void listMessages_returnsApiResponseEnvelope() {
-		final Paciente paciente = new Paciente();
-		paciente.setId(5L);
 		final PatientMessageSummaryDto summary = new PatientMessageSummaryDto(1L, Instant.parse("2026-06-01T12:00:00Z"),
 				MessageSenderRole.PATIENT, "Hola", true, null);
 		final CursorPagedResponse<PatientMessageSummaryDto> page = CursorPagedResponse.of(List.of(summary), null);
 		final Jwt jwt = jwtWithSub(PATIENT_SUB);
 
-		when(patientAuthService.requirePacienteByJwt(jwt)).thenReturn(paciente);
+		when(patientAuthService.requireAuthViewByJwt(jwt)).thenReturn(authView(5L));
 		when(mobilePatientMessageService.listMessages(eq(5L), eq(null), eq(20))).thenReturn(page);
 
 		final ApiResponse<CursorPagedResponse<PatientMessageSummaryDto>> response = controller.listMessages(jwt, null,
@@ -59,14 +57,13 @@ class MobilePatientMessageControllerTest {
 
 	@Test
 	void sendMessage_returnsCreatedMessageInApiResponseEnvelope() {
-		final Paciente paciente = new Paciente();
-		paciente.setId(5L);
+		final PacienteAuthView authView = authView(5L);
 		final PatientMessageSummaryDto sent = new PatientMessageSummaryDto(9L, Instant.parse("2026-06-01T12:00:00Z"),
 				MessageSenderRole.PATIENT, "Hola doctor", true, null);
 		final Jwt jwt = jwtWithSub(PATIENT_SUB);
 
-		when(patientAuthService.requirePacienteByJwt(jwt)).thenReturn(paciente);
-		when(mobilePatientMessageService.sendMessage(paciente, "Hola doctor")).thenReturn(sent);
+		when(patientAuthService.requireAuthViewByJwt(jwt)).thenReturn(authView);
+		when(mobilePatientMessageService.sendMessage(authView, "Hola doctor")).thenReturn(sent);
 
 		final ApiResponse<PatientMessageSummaryDto> response = controller.sendMessage(jwt,
 				new SendPatientMessageRequest("Hola doctor"));
@@ -74,11 +71,30 @@ class MobilePatientMessageControllerTest {
 		assertThat(response.data().id()).isEqualTo(9L);
 		assertThat(response.data().senderRole()).isEqualTo(MessageSenderRole.PATIENT);
 		assertThat(response.data().body()).isEqualTo("Hola doctor");
-		verify(mobilePatientMessageService).sendMessage(paciente, "Hola doctor");
+		verify(mobilePatientMessageService).sendMessage(authView, "Hola doctor");
 	}
 
 	private static Jwt jwtWithSub(final String subject) {
 		return Jwt.withTokenValue("token").header("alg", "none").subject(subject).build();
+	}
+
+	private static PacienteAuthView authView(final Long id) {
+		return new PacienteAuthView() {
+			@Override
+			public Long getId() {
+				return id;
+			}
+
+			@Override
+			public String getPatientAuthSub() {
+				return PATIENT_SUB;
+			}
+
+			@Override
+			public String getUserId() {
+				return "auth0|nutritionist-owner";
+			}
+		};
 	}
 
 }

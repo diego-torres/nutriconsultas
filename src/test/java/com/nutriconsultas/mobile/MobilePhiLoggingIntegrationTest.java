@@ -19,6 +19,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.nutriconsultas.message.PatientMessage;
 import com.nutriconsultas.message.PatientMessageRepository;
 import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.paciente.projection.PacienteAuthView;
+import com.nutriconsultas.profile.NutritionistProfileRepository;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -38,6 +41,12 @@ class MobilePhiLoggingIntegrationTest {
 
 	@Mock
 	private PatientMessageRepository patientMessageRepository;
+
+	@Mock
+	private PacienteRepository pacienteRepository;
+
+	@Mock
+	private NutritionistProfileRepository nutritionistProfileRepository;
 
 	@Mock
 	private PatientWriteRateLimiter patientWriteRateLimiter;
@@ -64,10 +73,25 @@ class MobilePhiLoggingIntegrationTest {
 
 	@Test
 	void sendMessage_doesNotLogMessageBodyOrRawAuthSub() throws Exception {
-		final Paciente paciente = new Paciente();
-		paciente.setId(12L);
-		paciente.setUserId("auth0|nutritionist-owner");
-		paciente.setPatientAuthSub(PATIENT_SUB);
+		final PacienteAuthView authView = new PacienteAuthView() {
+			@Override
+			public Long getId() {
+				return 12L;
+			}
+
+			@Override
+			public String getPatientAuthSub() {
+				return PATIENT_SUB;
+			}
+
+			@Override
+			public String getUserId() {
+				return "auth0|nutritionist-owner";
+			}
+		};
+		final Paciente pacienteRef = new Paciente();
+		pacienteRef.setId(12L);
+		when(pacienteRepository.getReferenceById(12L)).thenReturn(pacienteRef);
 		when(patientWriteRateLimiter.execute(eq(PatientWriteRateLimiter.PATIENT_MESSAGES), eq(PATIENT_SUB),
 				any(Callable.class)))
 			.thenAnswer(invocation -> {
@@ -83,7 +107,7 @@ class MobilePhiLoggingIntegrationTest {
 			return saved;
 		});
 
-		service.sendMessage(paciente, PHI_MESSAGE_BODY);
+		service.sendMessage(authView, PHI_MESSAGE_BODY);
 
 		assertThat(logAppender.list).isNotEmpty();
 		for (final ILoggingEvent event : logAppender.list) {

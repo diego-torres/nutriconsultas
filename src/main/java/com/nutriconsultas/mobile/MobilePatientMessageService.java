@@ -17,6 +17,8 @@ import com.nutriconsultas.message.PatientMessageRepository;
 import com.nutriconsultas.mobile.dto.CursorPagedResponse;
 import com.nutriconsultas.mobile.dto.PatientMessageSummaryDto;
 import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.paciente.projection.PacienteAuthView;
 import com.nutriconsultas.profile.NutritionistBrandingHelper;
 import com.nutriconsultas.profile.NutritionistProfileRepository;
 import com.nutriconsultas.util.LogRedaction;
@@ -35,13 +37,16 @@ public class MobilePatientMessageService {
 
 	private final NutritionistProfileRepository nutritionistProfileRepository;
 
+	private final PacienteRepository pacienteRepository;
+
 	private final PatientWriteRateLimiter patientWriteRateLimiter;
 
 	public MobilePatientMessageService(final PatientMessageRepository patientMessageRepository,
 			final NutritionistProfileRepository nutritionistProfileRepository,
-			final PatientWriteRateLimiter patientWriteRateLimiter) {
+			final PacienteRepository pacienteRepository, final PatientWriteRateLimiter patientWriteRateLimiter) {
 		this.patientMessageRepository = patientMessageRepository;
 		this.nutritionistProfileRepository = nutritionistProfileRepository;
+		this.pacienteRepository = pacienteRepository;
 		this.patientWriteRateLimiter = patientWriteRateLimiter;
 	}
 
@@ -68,15 +73,16 @@ public class MobilePatientMessageService {
 	}
 
 	@Transactional
-	public PatientMessageSummaryDto sendMessage(final Paciente paciente, final String body) {
-		return patientWriteRateLimiter.execute(PatientWriteRateLimiter.PATIENT_MESSAGES, paciente.getPatientAuthSub(),
-				() -> persistPatientMessage(paciente, body));
+	public PatientMessageSummaryDto sendMessage(final PacienteAuthView authView, final String body) {
+		return patientWriteRateLimiter.execute(PatientWriteRateLimiter.PATIENT_MESSAGES, authView.getPatientAuthSub(),
+				() -> persistPatientMessage(authView, body));
 	}
 
-	private PatientMessageSummaryDto persistPatientMessage(final Paciente paciente, final String body) {
+	private PatientMessageSummaryDto persistPatientMessage(final PacienteAuthView authView, final String body) {
 		final PatientMessage message = new PatientMessage();
-		message.setPaciente(paciente);
-		message.setNutritionistUserId(paciente.getUserId());
+		final Paciente pacienteRef = pacienteRepository.getReferenceById(authView.getId());
+		message.setPaciente(pacienteRef);
+		message.setNutritionistUserId(authView.getUserId());
 		message.setSenderRole(MessageSenderRole.PATIENT);
 		message.setBody(body.trim());
 		final PatientMessage saved = patientMessageRepository.save(message);

@@ -13,7 +13,6 @@ import com.nutriconsultas.mobile.config.MobileOpenApiResponses;
 import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.PatientProgressSnapshotDto;
 import com.nutriconsultas.mobile.dto.ProgressMeasurementsDto;
-import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.util.LogRedaction;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,11 +40,11 @@ public class MobilePatientProgressController extends AbstractMobilePatientContro
 	@MobileOpenApiResponses.AuthenticatedPatient
 	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Progress snapshot")
 	public ApiResponse<PatientProgressSnapshotDto> getProgress(@AuthenticationPrincipal final Jwt jwt) {
-		final Paciente paciente = getAuthenticatedPaciente(jwt);
+		final Long pacienteId = getAuthenticatedPacienteId(jwt);
 		if (log.isDebugEnabled()) {
-			log.debug("Mobile progress snapshot request for patient {}", LogRedaction.redactPaciente(paciente.getId()));
+			log.debug("Mobile progress snapshot request for patient {}", LogRedaction.redactPaciente(pacienteId));
 		}
-		final PatientProgressSnapshotDto snapshot = mobilePatientProgressService.getSnapshot(paciente.getId());
+		final PatientProgressSnapshotDto snapshot = mobilePatientProgressService.getSnapshot(pacienteId);
 		return ApiResponse.ok(snapshot);
 	}
 
@@ -64,13 +63,12 @@ public class MobilePatientProgressController extends AbstractMobilePatientContro
 					required = false) final Instant to,
 			@Parameter(description = "Maximum rows (capped at 365)") @RequestParam(
 					required = false) final Integer maxRows) {
-		final Paciente paciente = getAuthenticatedPaciente(jwt);
+		final Long pacienteId = getAuthenticatedPacienteId(jwt);
 		if (log.isDebugEnabled()) {
-			log.debug("Mobile progress measurements request for patient {}",
-					LogRedaction.redactPaciente(paciente.getId()));
+			log.debug("Mobile progress measurements request for patient {}", LogRedaction.redactPaciente(pacienteId));
 		}
-		final ProgressMeasurementsDto measurements = mobilePatientProgressService.listMeasurements(paciente.getId(),
-				from, to, maxRows);
+		final ProgressMeasurementsDto measurements = mobilePatientProgressService.listMeasurements(pacienteId, from, to,
+				maxRows);
 		return ApiResponse.ok(measurements);
 	}
 

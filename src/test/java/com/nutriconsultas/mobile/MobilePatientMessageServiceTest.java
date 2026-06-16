@@ -25,6 +25,8 @@ import com.nutriconsultas.message.PatientMessageRepository;
 import com.nutriconsultas.mobile.dto.CursorPagedResponse;
 import com.nutriconsultas.mobile.dto.PatientMessageSummaryDto;
 import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.paciente.projection.PacienteAuthView;
 import com.nutriconsultas.profile.NutritionistProfile;
 import com.nutriconsultas.profile.NutritionistProfileRepository;
 
@@ -41,6 +43,9 @@ class MobilePatientMessageServiceTest {
 
 	@Mock
 	private NutritionistProfileRepository nutritionistProfileRepository;
+
+	@Mock
+	private PacienteRepository pacienteRepository;
 
 	@Mock
 	private PatientWriteRateLimiter patientWriteRateLimiter;
@@ -111,10 +116,10 @@ class MobilePatientMessageServiceTest {
 
 	@Test
 	void sendMessage_doesNotIncludeSenderDisplayNameForPatientMessages() throws Exception {
-		final Paciente paciente = new Paciente();
-		paciente.setId(5L);
-		paciente.setUserId("auth0|nutritionist-owner");
-		paciente.setPatientAuthSub("auth0|mobile-message-patient");
+		final PacienteAuthView authView = authView(5L, "auth0|nutritionist-owner", "auth0|mobile-message-patient");
+		final Paciente pacienteRef = new Paciente();
+		pacienteRef.setId(5L);
+		when(pacienteRepository.getReferenceById(5L)).thenReturn(pacienteRef);
 		when(patientWriteRateLimiter.execute(eq(PatientWriteRateLimiter.PATIENT_MESSAGES),
 				eq("auth0|mobile-message-patient"), any(Callable.class)))
 			.thenAnswer(invocation -> {
@@ -130,7 +135,7 @@ class MobilePatientMessageServiceTest {
 			return saved;
 		});
 
-		final PatientMessageSummaryDto sent = service.sendMessage(paciente, "  Hola doctor  ");
+		final PatientMessageSummaryDto sent = service.sendMessage(authView, "  Hola doctor  ");
 
 		assertThat(sent.id()).isEqualTo(77L);
 		assertThat(sent.senderRole()).isEqualTo(MessageSenderRole.PATIENT);
@@ -141,7 +146,26 @@ class MobilePatientMessageServiceTest {
 		verify(patientMessageRepository).save(captor.capture());
 		assertThat(captor.getValue().getSenderRole()).isEqualTo(MessageSenderRole.PATIENT);
 		assertThat(captor.getValue().getNutritionistUserId()).isEqualTo("auth0|nutritionist-owner");
-		assertThat(captor.getValue().getPaciente()).isSameAs(paciente);
+		assertThat(captor.getValue().getPaciente()).isSameAs(pacienteRef);
+	}
+
+	private static PacienteAuthView authView(final Long id, final String userId, final String patientAuthSub) {
+		return new PacienteAuthView() {
+			@Override
+			public Long getId() {
+				return id;
+			}
+
+			@Override
+			public String getPatientAuthSub() {
+				return patientAuthSub;
+			}
+
+			@Override
+			public String getUserId() {
+				return userId;
+			}
+		};
 	}
 
 	private static PatientMessage sampleMessage(final Long id, final String body) {

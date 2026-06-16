@@ -17,7 +17,6 @@ import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
 import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
 import com.nutriconsultas.mobile.dto.PagedResponse;
-import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.util.LogRedaction;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,13 +49,13 @@ public class MobilePatientDietPlanController extends AbstractMobilePatientContro
 			@Parameter(description = "Page size") @RequestParam(defaultValue = "20") final int size,
 			@Parameter(description = "When true, return only active assignments") @RequestParam(
 					defaultValue = "false") final boolean activeOnly) {
-		final Paciente paciente = getAuthenticatedPaciente(jwt);
+		final Long pacienteId = getAuthenticatedPacienteId(jwt);
 		if (log.isDebugEnabled()) {
-			log.debug("Mobile list diet plans for patient {} activeOnly={}",
-					LogRedaction.redactPaciente(paciente.getId()), activeOnly);
+			log.debug("Mobile list diet plans for patient {} activeOnly={}", LogRedaction.redactPaciente(pacienteId),
+					activeOnly);
 		}
-		final PagedResponse<DietPlanSummaryDto> plans = mobilePatientDietPlanService.listDietPlans(paciente.getId(),
-				page, size, activeOnly);
+		final PagedResponse<DietPlanSummaryDto> plans = mobilePatientDietPlanService.listDietPlans(pacienteId, page,
+				size, activeOnly);
 		return ApiResponse.ok(plans);
 	}
 
@@ -69,12 +68,12 @@ public class MobilePatientDietPlanController extends AbstractMobilePatientContro
 			description = "Diet plan detail with ingestas and platillos")
 	public ApiResponse<DietPlanDetailDto> getDietPlanDetail(@AuthenticationPrincipal final Jwt jwt,
 			@Parameter(description = "PacienteDieta assignment identifier") @PathVariable final Long assignmentId) {
-		final Paciente paciente = getAuthenticatedPaciente(jwt);
+		final Long pacienteId = getAuthenticatedPacienteId(jwt);
 		if (log.isDebugEnabled()) {
 			log.debug("Mobile get diet plan {} for patient {}", LogRedaction.redactPacienteDieta(assignmentId),
-					LogRedaction.redactPaciente(paciente.getId()));
+					LogRedaction.redactPaciente(pacienteId));
 		}
-		final DietPlanDetailDto plan = mobilePatientDietPlanService.getDietPlanDetail(paciente.getId(), assignmentId);
+		final DietPlanDetailDto plan = mobilePatientDietPlanService.getDietPlanDetail(pacienteId, assignmentId);
 		return ApiResponse.ok(plan);
 	}
 
@@ -87,12 +86,12 @@ public class MobilePatientDietPlanController extends AbstractMobilePatientContro
 			content = @Content(mediaType = MediaType.APPLICATION_PDF_VALUE))
 	public ResponseEntity<byte[]> getDietPlanPdf(@AuthenticationPrincipal final Jwt jwt,
 			@Parameter(description = "PacienteDieta assignment identifier") @PathVariable final Long assignmentId) {
-		final Paciente paciente = getAuthenticatedPaciente(jwt);
+		final Long pacienteId = getAuthenticatedPacienteId(jwt);
 		if (log.isDebugEnabled()) {
 			log.debug("Mobile get diet plan PDF {} for patient {}", LogRedaction.redactPacienteDieta(assignmentId),
-					LogRedaction.redactPaciente(paciente.getId()));
+					LogRedaction.redactPaciente(pacienteId));
 		}
-		final DietPlanPdfResult pdf = mobilePatientDietPlanService.generateDietPlanPdf(paciente.getId(), assignmentId);
+		final DietPlanPdfResult pdf = mobilePatientDietPlanService.generateDietPlanPdf(pacienteId, assignmentId);
 		return ResponseEntity.ok()
 			.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + pdf.filename() + "\"")
 			.contentType(MediaType.APPLICATION_PDF)

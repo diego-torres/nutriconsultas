@@ -78,7 +78,7 @@ public class CalendarController extends AbstractAuthorizedController {
 			log.debug("Preselected patient for new event: {}", LogRedaction.redactPaciente(paciente));
 		}
 		model.addAttribute("event", event);
-		model.addAttribute("pacientes", pacienteRepository.findByUserId(userId));
+		model.addAttribute("pacientes", pacienteRepository.findCalendarViewsByUserId(userId));
 		model.addAttribute("statuses", EventStatus.values());
 		model.addAttribute("pacientePreseleccionado", pacientePreseleccionado);
 		log.debug("Finished nuevo method with model {}", model);
@@ -139,7 +139,7 @@ public class CalendarController extends AbstractAuthorizedController {
 		if (hasErrors) {
 			model.addAttribute("activeMenu", "calendario");
 			model.addAttribute("event", event);
-			model.addAttribute("pacientes", pacienteRepository.findByUserId(userId));
+			model.addAttribute("pacientes", pacienteRepository.findCalendarViewsByUserId(userId));
 			model.addAttribute("statuses", EventStatus.values());
 			model.addAttribute("pacientePreseleccionado", Boolean.TRUE.equals(redirectToHistorial));
 			resultView = "sbadmin/calendar/formulario";
@@ -197,7 +197,7 @@ public class CalendarController extends AbstractAuthorizedController {
 
 		model.addAttribute("activeMenu", "calendario");
 		model.addAttribute("event", event);
-		model.addAttribute("pacientes", pacienteRepository.findByUserId(userId));
+		model.addAttribute("pacientes", pacienteRepository.findCalendarViewsByUserId(userId));
 		model.addAttribute("statuses", EventStatus.values());
 		model.addAttribute("pacientePreseleccionado", false);
 		return "sbadmin/calendar/formulario";
@@ -275,7 +275,7 @@ public class CalendarController extends AbstractAuthorizedController {
 				.forEach(error -> log.error("Error: {} - {}", error.getObjectName(), error.getDefaultMessage()));
 			model.addAttribute("activeMenu", "calendario");
 			model.addAttribute("event", event);
-			model.addAttribute("pacientes", pacienteRepository.findByUserId(userId));
+			model.addAttribute("pacientes", pacienteRepository.findCalendarViewsByUserId(userId));
 			model.addAttribute("statuses", EventStatus.values());
 			model.addAttribute("pacientePreseleccionado", false);
 			return "sbadmin/calendar/formulario";

@@ -4,9 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -16,13 +13,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.paciente.projection.PacienteAuthView;
 
 @ExtendWith(MockitoExtension.class)
 class PatientAuthServiceTest {
 
 	private static final String LINKED_SUB = "auth0|linked-patient";
+
+	private static final String NUTRITIONIST_SUB = "nutritionist-sub";
 
 	@Mock
 	private PacienteRepository pacienteRepository;
@@ -31,28 +30,27 @@ class PatientAuthServiceTest {
 	private PatientAuthService patientAuthService;
 
 	@Test
-	void findByJwt_returnsPacienteWhenPatientAuthSubMatches() {
-		final Paciente paciente = samplePaciente(LINKED_SUB);
-		when(pacienteRepository.findByPatientAuthSub(LINKED_SUB)).thenReturn(Optional.of(paciente));
+	void findAuthViewByJwt_returnsViewWhenPatientAuthSubMatches() {
+		final PacienteAuthView authView = sampleAuthView(LINKED_SUB, 7L);
+		when(pacienteRepository.findAuthViewByPatientAuthSub(LINKED_SUB)).thenReturn(Optional.of(authView));
 
-		final Optional<Paciente> result = patientAuthService.findByJwt(jwtWithSub(LINKED_SUB));
+		final Optional<PacienteAuthView> result = patientAuthService.findAuthViewByJwt(jwtWithSub(LINKED_SUB));
 
-		assertThat(result).contains(paciente);
+		assertThat(result).contains(authView);
 	}
 
 	@Test
-	void requirePacienteByJwt_throwsWhenSubIsUnlinked() {
-		when(pacienteRepository.findByPatientAuthSub("auth0|unknown")).thenReturn(Optional.empty());
+	void requireAuthViewByJwt_throwsWhenSubIsUnlinked() {
+		when(pacienteRepository.findAuthViewByPatientAuthSub("auth0|unknown")).thenReturn(Optional.empty());
 
-		assertThatThrownBy(() -> patientAuthService.requirePacienteByJwt(jwtWithSub("auth0|unknown")))
+		assertThatThrownBy(() -> patientAuthService.requireAuthViewByJwt(jwtWithSub("auth0|unknown")))
 			.isInstanceOf(PatientNotLinkedException.class);
 	}
 
 	@Test
 	void resolvePrincipal_returnsNonPhiIdentifiers() {
-		final Paciente paciente = samplePaciente(LINKED_SUB);
-		paciente.setId(42L);
-		when(pacienteRepository.findByPatientAuthSub(LINKED_SUB)).thenReturn(Optional.of(paciente));
+		final PacienteAuthView authView = sampleAuthView(LINKED_SUB, 42L);
+		when(pacienteRepository.findAuthViewByPatientAuthSub(LINKED_SUB)).thenReturn(Optional.of(authView));
 
 		final PatientPrincipal principal = patientAuthService.resolvePrincipal(jwtWithSub(LINKED_SUB));
 
@@ -68,15 +66,23 @@ class PatientAuthServiceTest {
 			.build();
 	}
 
-	private static Paciente samplePaciente(final String patientAuthSub) {
-		final Paciente paciente = new Paciente();
-		paciente.setName("Test Patient");
-		paciente.setUserId("nutritionist-sub");
-		paciente.setPatientAuthSub(patientAuthSub);
-		final LocalDate dob = LocalDate.now().minusYears(30);
-		paciente.setDob(Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-		paciente.setGender("M");
-		return paciente;
+	private static PacienteAuthView sampleAuthView(final String patientAuthSub, final Long id) {
+		return new PacienteAuthView() {
+			@Override
+			public Long getId() {
+				return id;
+			}
+
+			@Override
+			public String getPatientAuthSub() {
+				return patientAuthSub;
+			}
+
+			@Override
+			public String getUserId() {
+				return NUTRITIONIST_SUB;
+			}
+		};
 	}
 
 }

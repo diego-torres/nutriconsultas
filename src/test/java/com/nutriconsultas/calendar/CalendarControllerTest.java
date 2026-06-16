@@ -33,6 +33,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.paciente.projection.PacienteCalendarView;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -81,9 +82,9 @@ public class CalendarControllerTest {
 		when(calendarEventService.findById(1L)).thenReturn(event);
 		when(calendarEventService.findById(999L)).thenReturn(null);
 
-		List<Paciente> pacientes = new ArrayList<>();
-		pacientes.add(paciente);
-		when(pacienteRepository.findByUserId(TEST_USER_ID)).thenReturn(pacientes);
+		final List<PacienteCalendarView> pacientes = new ArrayList<>();
+		pacientes.add(calendarViewFrom(paciente));
+		when(pacienteRepository.findCalendarViewsByUserId(TEST_USER_ID)).thenReturn(pacientes);
 		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(pacienteRepository.findByIdAndUserId(999L, TEST_USER_ID)).thenReturn(java.util.Optional.empty());
 	}
@@ -842,6 +843,30 @@ public class CalendarControllerTest {
 		assertEquals(1L, persistedEvent.getId(), "ID should be preserved");
 
 		log.info("Finishing testGuardarButtonPersistsAllChanges");
+	}
+
+	private static PacienteCalendarView calendarViewFrom(final Paciente entity) {
+		return new PacienteCalendarView() {
+			@Override
+			public Long getId() {
+				return entity.getId();
+			}
+
+			@Override
+			public String getName() {
+				return entity.getName();
+			}
+
+			@Override
+			public Date getDob() {
+				return entity.getDob();
+			}
+
+			@Override
+			public String getGender() {
+				return entity.getGender();
+			}
+		};
 	}
 
 }
