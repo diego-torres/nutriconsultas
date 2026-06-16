@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
  * <p>
  * Precedence: manual {@code porcentajeGrasaCorporal} / {@code indiceGrasaCorporal},
  * bioimpedance {@code bodyFatPercentage}, Jackson-Pollock skinfolds, Deurenberg estimate.
+ * Bone mass: bioimpedance over manual {@code masaOseaKg} / {@code porcentajeMasaOsea}.
  */
 @Service
 @Slf4j
@@ -34,27 +35,90 @@ public class BodyCompositionService {
 			final Double imc) {
 		ensureBodyComposition(measurement);
 		final MetodoObtencionComposicionCorporal clinicalOverride = resolveClinicalOverride(measurement);
+		final Double resolvedFat = resolveFatPercentage(measurement, paciente, imc, clinicalOverride);
 
+		consolidateBoneMass(measurement);
+
+		if (resolvedFat != null) {
+			applyMusclePercentageIfAbsent(measurement, resolvedFat);
+		}
+	}
+
+	private Double resolveFatPercentage(final AnthropometricMeasurement measurement, final Paciente paciente,
+			final Double imc, final MetodoObtencionComposicionCorporal clinicalOverride) {
 		if (measurement.getPorcentajeGrasaCorporal() != null) {
 			syncFatFields(measurement, measurement.getPorcentajeGrasaCorporal());
-			applyMusclePercentageIfAbsent(measurement, measurement.getPorcentajeGrasaCorporal());
 			assignMethodIfAllowed(measurement, MetodoObtencionComposicionCorporal.MANUAL, clinicalOverride);
-			return;
+			return measurement.getPorcentajeGrasaCorporal();
 		}
 
 		if (measurement.getIndiceGrasaCorporal() != null) {
 			syncFatFields(measurement, measurement.getIndiceGrasaCorporal());
-			applyMusclePercentageIfAbsent(measurement, measurement.getIndiceGrasaCorporal());
 			assignMethodIfAllowed(measurement, MetodoObtencionComposicionCorporal.MANUAL, clinicalOverride);
-			return;
+			return measurement.getIndiceGrasaCorporal();
 		}
 
 		final ResolvedFatPercentage resolvedFat = resolveCalculatedFatPercentage(measurement, paciente, imc);
 		if (resolvedFat.fatPercentage() != null) {
 			syncFatFields(measurement, resolvedFat.fatPercentage());
-			applyMusclePercentageIfAbsent(measurement, resolvedFat.fatPercentage());
 			assignMethodIfAllowed(measurement, resolvedFat.method(), clinicalOverride);
+			return resolvedFat.fatPercentage();
 		}
+
+		return null;
+	}
+
+	private void consolidateBoneMass(final AnthropometricMeasurement measurement) {
+		final Double weight = measurement.getPeso();
+		final ResolvedBoneMass resolved = resolveBoneMass(measurement, weight);
+		if (resolved == null) {
+			return;
+		}
+		measurement.setMasaOseaKg(resolved.masaOseaKg());
+		measurement.setPorcentajeMasaOsea(resolved.porcentajeMasaOsea());
+	}
+
+	private ResolvedBoneMass resolveBoneMass(final AnthropometricMeasurement measurement, final Double weight) {
+		final Bioimpedance bioimpedance = measurement.getBioimpedance();
+		if (bioimpedance != null) {
+			final ResolvedBoneMass fromBio = deriveBoneMass(bioimpedance.getBoneMass(),
+					bioimpedance.getBoneMassPercentage(), weight);
+			if (fromBio != null) {
+				log.debug("Using bioimpedance bone mass for measurement");
+				return fromBio;
+			}
+		}
+
+		return deriveBoneMass(measurement.getMasaOseaKg(), measurement.getPorcentajeMasaOsea(), weight);
+	}
+
+	private ResolvedBoneMass deriveBoneMass(final Double masaOseaKg, final Double porcentajeMasaOsea,
+			final Double weight) {
+		if (masaOseaKg != null && porcentajeMasaOsea != null) {
+			return new ResolvedBoneMass(masaOseaKg, porcentajeMasaOsea);
+		}
+		if (masaOseaKg != null && weight != null && weight > 0) {
+			final double percentage = (masaOseaKg / weight) * 100.0;
+			return new ResolvedBoneMass(masaOseaKg, percentage);
+		}
+		if (porcentajeMasaOsea != null && weight != null && weight > 0) {
+			final double kg = (porcentajeMasaOsea / 100.0) * weight;
+			return new ResolvedBoneMass(kg, porcentajeMasaOsea);
+		}
+		if (masaOseaKg != null) {
+			return new ResolvedBoneMass(masaOseaKg, null);
+		}
+		if (porcentajeMasaOsea != null) {
+			return new ResolvedBoneMass(null, porcentajeMasaOsea);
+		}
+		return null;
+	}
+
+	private Double resolveWaterPercentage(final AnthropometricMeasurement measurement) {
+		if (measurement.getBioimpedance() == null) {
+			return null;
+		}
+		return measurement.getBioimpedance().getTotalBodyWaterPercentage();
 	}
 
 	private MetodoObtencionComposicionCorporal resolveClinicalOverride(final AnthropometricMeasurement measurement) {
@@ -146,7 +210,18 @@ public class BodyCompositionService {
 		if (measurement.getPorcentajeMasaMuscular() != null || fatPercentage == null) {
 			return;
 		}
-		final double muscleMassPercentage = 100.0 - fatPercentage;
+		final Double bonePercentage = measurement.getPorcentajeMasaOsea();
+		final Double waterPercentage = resolveWaterPercentage(measurement);
+		double muscleMassPercentage;
+		if (bonePercentage != null && waterPercentage != null) {
+			muscleMassPercentage = 100.0 - fatPercentage - bonePercentage - waterPercentage;
+		}
+		else if (bonePercentage != null) {
+			muscleMassPercentage = 100.0 - fatPercentage - bonePercentage;
+		}
+		else {
+			muscleMassPercentage = 100.0 - fatPercentage;
+		}
 		final double clamped = Math.max(20.0, Math.min(80.0, muscleMassPercentage));
 		measurement.setPorcentajeMasaMuscular(clamped);
 	}
@@ -176,6 +251,9 @@ public class BodyCompositionService {
 	}
 
 	private record ResolvedFatPercentage(Double fatPercentage, MetodoObtencionComposicionCorporal method) {
+	}
+
+	private record ResolvedBoneMass(Double masaOseaKg, Double porcentajeMasaOsea) {
 	}
 
 }

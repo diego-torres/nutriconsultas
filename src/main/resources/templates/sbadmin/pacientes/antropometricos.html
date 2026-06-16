@@ -216,6 +216,20 @@
                                 <span th:if="${#fields.hasErrors('bioimpedance.skeletalMuscleMass')}" th:errors="*{bioimpedance.skeletalMuscleMass}"></span>
                               </div>
                             </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>Masa Ósea (kg)</label>
+                                <input type="number" step="0.01" th:field="*{bioimpedance.boneMass}" class="form-control">
+                                <span th:if="${#fields.hasErrors('bioimpedance.boneMass')}" th:errors="*{bioimpedance.boneMass}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>% Masa Ósea</label>
+                                <input type="number" step="0.1" th:field="*{bioimpedance.boneMassPercentage}" class="form-control" min="0" max="100">
+                                <span th:if="${#fields.hasErrors('bioimpedance.boneMassPercentage')}" th:errors="*{bioimpedance.boneMassPercentage}"></span>
+                              </div>
+                            </div>
                           </div>
                           <hr class="my-4">
                           <h5 class="mb-3">Agua Corporal</h5>

@@ -671,15 +671,48 @@
       return Math.max(5.0, Math.min(50.0, bodyFatPercentage));
     }
 
-    function calculateMuscleMassPercentage(bodyFatPercentage) {
+    function calculateMuscleMassPercentage(bodyFatPercentage, bonePercentage, waterPercentage) {
       if (bodyFatPercentage === null || bodyFatPercentage === undefined) {
         return null;
       }
-      // Simple approximation: 100% - body fat %
-      // Note: This doesn't account for bone mass, water, etc., but provides a reasonable estimate
-      const muscleMassPercentage = 100 - bodyFatPercentage;
-      // Clamp to reasonable range (20% to 80%)
+      let muscleMassPercentage;
+      if (bonePercentage !== null && bonePercentage !== undefined && waterPercentage !== null && waterPercentage !== undefined) {
+        muscleMassPercentage = 100 - bodyFatPercentage - bonePercentage - waterPercentage;
+      } else if (bonePercentage !== null && bonePercentage !== undefined) {
+        muscleMassPercentage = 100 - bodyFatPercentage - bonePercentage;
+      } else {
+        muscleMassPercentage = 100 - bodyFatPercentage;
+      }
       return Math.max(20.0, Math.min(80.0, muscleMassPercentage));
+    }
+
+    function resolveBonePercentageForCalculation() {
+      const bioBonePctField = document.querySelector('input[name*="bioimpedance.boneMassPercentage"]');
+      if (bioBonePctField && bioBonePctField.value) {
+        return parseFloat(bioBonePctField.value);
+      }
+      const manualBonePctField = document.querySelector('input[name*="bodyComposition.porcentajeMasaOsea"]');
+      if (manualBonePctField && manualBonePctField.value) {
+        return parseFloat(manualBonePctField.value);
+      }
+      const bioBoneKgField = document.querySelector('input[name*="bioimpedance.boneMass"]');
+      const manualBoneKgField = document.querySelector('input[name*="bodyComposition.masaOseaKg"]');
+      const weightField = document.querySelector('input[name*="bodyMass.weight"]');
+      const boneKg = (bioBoneKgField && bioBoneKgField.value) ? parseFloat(bioBoneKgField.value)
+        : ((manualBoneKgField && manualBoneKgField.value) ? parseFloat(manualBoneKgField.value) : null);
+      const weight = (weightField && weightField.value) ? parseFloat(weightField.value) : null;
+      if (boneKg !== null && weight !== null && weight > 0) {
+        return (boneKg / weight) * 100;
+      }
+      return null;
+    }
+
+    function resolveWaterPercentageForCalculation() {
+      const waterPctField = document.querySelector('input[name*="bioimpedance.totalBodyWaterPercentage"]');
+      if (waterPctField && waterPctField.value) {
+        return parseFloat(waterPctField.value);
+      }
+      return null;
     }
 
     // Update Body Composition calculations
@@ -694,7 +727,9 @@
       document.getElementById('body-fat-index-result').textContent = formatNumber(bodyFatPercentage);
       
       // Muscle Mass Percentage
-      const muscleMassPercentage = calculateMuscleMassPercentage(bodyFatPercentage);
+      const bonePercentage = resolveBonePercentageForCalculation();
+      const waterPercentage = resolveWaterPercentageForCalculation();
+      const muscleMassPercentage = calculateMuscleMassPercentage(bodyFatPercentage, bonePercentage, waterPercentage);
       document.getElementById('muscle-mass-percentage-result').textContent = formatNumber(muscleMassPercentage);
       
       // Update Índice de Grasa Corporal in BMI section

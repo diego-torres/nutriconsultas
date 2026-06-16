@@ -207,6 +207,7 @@ public class PacienteController extends AbstractAuthorizedController {
 			model.addAttribute("ultimoMetodoObtencionComposicion", latest.getMetodoObtencionComposicion());
 		});
 		addLatestMuscleMassToModel(id, model);
+		addLatestBoneMassToModel(id, model);
 		// Calculate age and check if patient is under 18 for growth table display
 		final Integer age = calculateAge(paciente.getDob());
 		final boolean isUnder18 = age != null && age < 18;
@@ -1354,6 +1355,18 @@ public class PacienteController extends AbstractAuthorizedController {
 				.thenComparing(AnthropometricMeasurement::getId, Comparator.nullsLast(Comparator.naturalOrder())))
 			.ifPresent(
 					latest -> model.addAttribute("ultimoPorcentajeMasaMuscular", latest.getPorcentajeMasaMuscular()));
+	}
+
+	private void addLatestBoneMassToModel(final Long pacienteId, final Model model) {
+		anthropometricMeasurementService.findByPacienteId(pacienteId)
+			.stream()
+			.filter(measurement -> measurement.getMasaOseaKg() != null || measurement.getPorcentajeMasaOsea() != null)
+			.max(Comparator.comparing(AnthropometricMeasurement::getMeasurementDateTime)
+				.thenComparing(AnthropometricMeasurement::getId, Comparator.nullsLast(Comparator.naturalOrder())))
+			.ifPresent(latest -> {
+				model.addAttribute("ultimaMasaOseaKg", latest.getMasaOseaKg());
+				model.addAttribute("ultimoPorcentajeMasaOsea", latest.getPorcentajeMasaOsea());
+			});
 	}
 
 	/**

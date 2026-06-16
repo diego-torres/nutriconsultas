@@ -31,6 +31,12 @@ public class BodyComposition {
 	@Column(precision = 3)
 	private Double porcentajeMasaMuscular;
 
+	@Column(precision = 5)
+	private Double masaOseaKg;
+
+	@Column(precision = 3)
+	private Double porcentajeMasaOsea;
+
 	/** Heath-Carter endomorphy rating (adults). */
 	@Column(precision = 4)
 	private Double endomorphy;

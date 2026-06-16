@@ -283,6 +283,28 @@ public class AnthropometricMeasurement {
 		bodyComposition.setPorcentajeMasaMuscular(porcentajeMasaMuscular);
 	}
 
+	public Double getMasaOseaKg() {
+		return bodyComposition != null ? bodyComposition.getMasaOseaKg() : null;
+	}
+
+	public void setMasaOseaKg(final Double masaOseaKg) {
+		if (bodyComposition == null) {
+			bodyComposition = new BodyComposition();
+		}
+		bodyComposition.setMasaOseaKg(masaOseaKg);
+	}
+
+	public Double getPorcentajeMasaOsea() {
+		return bodyComposition != null ? bodyComposition.getPorcentajeMasaOsea() : null;
+	}
+
+	public void setPorcentajeMasaOsea(final Double porcentajeMasaOsea) {
+		if (bodyComposition == null) {
+			bodyComposition = new BodyComposition();
+		}
+		bodyComposition.setPorcentajeMasaOsea(porcentajeMasaOsea);
+	}
+
 	public Double getEndomorphy() {
 		return bodyComposition != null ? bodyComposition.getEndomorphy() : null;
 	}
