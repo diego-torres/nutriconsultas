@@ -1,7 +1,5 @@
 package com.nutriconsultas.subscription.payment;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -125,7 +123,7 @@ public class MercadoPagoPaymentProvider implements PaymentProvider {
 			throw ex;
 		}
 		catch (Exception ex) {
-			throw new InvalidPaymentWebhookException("Unable to parse Mercado Pago webhook payload");
+			throw new InvalidPaymentWebhookException("Unable to parse Mercado Pago webhook payload", ex);
 		}
 	}
 

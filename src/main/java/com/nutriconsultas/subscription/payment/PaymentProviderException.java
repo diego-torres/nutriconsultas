@@ -5,6 +5,8 @@ package com.nutriconsultas.subscription.payment;
  */
 public class PaymentProviderException extends RuntimeException {
 
+	private static final long serialVersionUID = 1L;
+
 	public PaymentProviderException(final String message) {
 		super(message);
 	}
