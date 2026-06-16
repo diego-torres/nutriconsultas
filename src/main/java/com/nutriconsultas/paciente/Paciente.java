@@ -13,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Temporal;
@@ -114,9 +115,13 @@ public class Paciente {
 	@ValidPregnancy
 	private Boolean pregnancy = false;
 
+	@PostLoad
 	@PrePersist
 	@PreUpdate
-	void linkSatelliteRows() {
+	void ensureEmbeddedRows() {
+		if (bodySnapshot == null) {
+			bodySnapshot = new PacienteBodySnapshot();
+		}
 		if (energyPreferences == null) {
 			energyPreferences = new PacienteEnergyPreferences();
 		}

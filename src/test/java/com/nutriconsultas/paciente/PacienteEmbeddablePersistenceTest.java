@@ -32,6 +32,19 @@ class PacienteEmbeddablePersistenceTest {
 	private EntityManager entityManager;
 
 	@Test
+	void saveAndLoad_nullBodyMetrics_allowsDelegatedGettersWithoutNpe() {
+		final Paciente saved = pacienteRepository.saveAndFlush(samplePaciente());
+		entityManager.clear();
+
+		final Paciente loaded = pacienteRepository.findById(saved.getId()).orElseThrow();
+
+		assertThat(loaded.getBodySnapshot()).isNotNull();
+		assertThat(loaded.getGetKcal()).isNull();
+		assertThat(loaded.getBmr()).isNull();
+		assertThat(loaded.getPeso()).isNull();
+	}
+
+	@Test
 	void saveAndLoad_preservesEmbeddableFieldsViaDelegatedAccessors() {
 		final Paciente paciente = samplePaciente();
 		paciente.setPeso(72.5);
