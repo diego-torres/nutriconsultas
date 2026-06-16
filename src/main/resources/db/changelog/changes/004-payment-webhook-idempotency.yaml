@@ -1,0 +1,84 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-payment-webhook-idempotency
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: payment_webhook_event
+      changes:
+        - createTable:
+            tableName: payment_webhook_event
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: provider
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: event_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: event_type
+                  type: VARCHAR(80)
+              - column:
+                  name: subscription_id
+                  type: BIGINT
+              - column:
+                  name: processed_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: payment_webhook_event
+            columnNames: provider, event_id
+            constraintName: uk_payment_webhook_provider_event
+        - addForeignKeyConstraint:
+            baseTableName: payment_webhook_event
+            baseColumnNames: subscription_id
+            referencedTableName: subscription
+            referencedColumnNames: id
+            constraintName: fk_payment_webhook_subscription
+        - createIndex:
+            indexName: idx_payment_webhook_subscription_id
+            tableName: payment_webhook_event
+            columns:
+              - column:
+                  name: subscription_id
+  - changeSet:
+      id: 004-nutritionist-invitation-subscription-fk
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: nutritionist_invitation
+              columnName: subscription_id
+      changes:
+        - addColumn:
+            tableName: nutritionist_invitation
+            columns:
+              - column:
+                  name: subscription_id
+                  type: BIGINT
+        - addForeignKeyConstraint:
+            baseTableName: nutritionist_invitation
+            baseColumnNames: subscription_id
+            referencedTableName: subscription
+            referencedColumnNames: id
+            constraintName: fk_nutritionist_invitation_subscription

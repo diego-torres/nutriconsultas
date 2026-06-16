@@ -122,7 +122,19 @@ Preferred: the GitHub Action on `main` (see below) or [scripts/deploy-jar-to-ec2
 
 ### OAuth2 and app secrets on the server
 
-Set `AUTH_*` (including `AUTH_AUDIENCE` for `/rest/mobile/**` JWT validation), `AWS_*`, and optional `PLATFORM_ADMIN_EMAILS` (comma-separated OAuth login emails for the contact-inquiries admin inbox; set via `platform_admin_emails` in gitignored `terraform.tfvars`). Edit `/opt/nutriconsultas/app.env` in an SSM session (or a systemd `EnvironmentFile` drop-in). On instances already running, add missing keys manually and restart the app — `user_data` only runs at first boot. Never commit real secrets to git.
+Set `AUTH_*` (including `AUTH_AUDIENCE` for `/rest/mobile/**` JWT validation), `AWS_*`, optional `PLATFORM_ADMIN_EMAILS` (comma-separated OAuth login emails for the contact-inquiries admin inbox; set via `platform_admin_emails` in gitignored `terraform.tfvars`), and subscription payment variables for Mercado Pago (#189):
+
+| Variable | Purpose |
+|----------|---------|
+| `MERCADOPAGO_ACCESS_TOKEN` | Mercado Pago API access token (checkout + webhook resource fetch). Never commit. |
+| `PAYMENT_WEBHOOK_SECRET` | Mercado Pago webhook signing secret (`x-signature` HMAC). |
+| `PAYMENT_PROVIDER` | Provider id (default `mercadopago`). |
+| `MERCADOPAGO_BACK_URL` | Post-checkout redirect (default `https://minutriporcion.com/admin`). |
+| `PAYMENT_CURRENCY` | Billing currency (default `MXN`). |
+
+Webhook URL to configure in Mercado Pago: `https://<your-domain>/rest/subscription/payment/webhook`. No card data is stored in the application database.
+
+Edit `/opt/nutriconsultas/app.env` in an SSM session (or a systemd `EnvironmentFile` drop-in). On instances already running, add missing keys manually and restart the app — `user_data` only runs at first boot. Never commit real secrets to git.
 
 ## Outputs
 
