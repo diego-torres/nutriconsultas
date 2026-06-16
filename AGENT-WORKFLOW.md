@@ -10,7 +10,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) | Canonical cross-repo contract — §F8 schema/enum map, per-issue corrected scope |
 | [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) | Endpoint request/response specs (#91–#99) with field mappings |
 
-**Current next issue:** [#156 Phase C](https://github.com/diego-torres/nutriconsultas/issues/156) satellite tables on `integration/c-paciente-satellites`, then [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46).
+**Current next issue:** [#46 — Liquibase baseline](https://github.com/diego-torres/nutriconsultas/issues/46). ~~#156~~ Paciente decomposition **done** on `main` (PRs #175/#176/#178).
 
 ---
 
@@ -322,11 +322,11 @@ gh pr create ...
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#156 Phase C](https://github.com/diego-torres/nutriconsultas/issues/156) merge, then [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46) |
-| **Status** | **in-progress** (Phase C on `integration/c-paciente-satellites`) |
-| **Phase** | #156 Phase C — vertical split to `paciente_medical_history` + `paciente_energy_preferences` |
-| **Just completed** | Phases A–B on `main` (PRs #175/#176) |
-| **In scope for #156** | Phase A ✓ projections. Phase B ✓ `@Embeddable` body snapshot. **Phase C:** LAZY `@OneToOne` satellites + `db/manual/postgresql-paciente-phase-c-*.sql` + ER doc. No mobile JSON changes. |
+| **Next issue** | [#46 — Liquibase baseline](https://github.com/diego-torres/nutriconsultas/issues/46) |
+| **Status** | **NEXT** (#156 complete on `main`) |
+| **Phase** | Integration prerequisite — #156 Phases A–C **done** (PRs #175/#176/#178) |
+| **Just completed** | [#156 Phase C](https://github.com/diego-torres/nutriconsultas/issues/156) — satellite tables (PR #178) |
+| **In scope for #156** | Phase A ✓ projections. Phase B ✓ body snapshot embeddable. Phase C ✓ LAZY satellite tables + manual SQL. Phase D deferred. |
 
 ### Upcoming gates
 
@@ -343,9 +343,9 @@ gh pr create ...
 
 **Patient mobile API on `main`:** JWT resource server (#107), DTO envelope (#110), patient linkage (#109), visits (#91/#92), diet plans (#93–#95), messages list/send (#96/#97 with HTTP 201 + rate limit), progress snapshot (#98) + measurements time series (#99, PR #153), localized API errors (#111), Resilience4j write throttling (#113), **OpenAPI spec (#112, PR #164)**, **`senderDisplayName` (#116)**, **nutritionist reply (#114)**. Dashboard IMC gauge (#106) done for web tablero.
 
-**Next:** Merge #156 Phase C (`integration/c-paciente-satellites`), then #46 Liquibase baseline.
+**Next:** #46 Liquibase baseline (post-#156 Phase C schema).
 
-**In progress:** Phase C — `paciente_medical_history` + `paciente_energy_preferences` satellite tables; `mvn verify` green on branch.
+**Just merged:** #156 Phase C — PR [#178](https://github.com/diego-torres/nutriconsultas/pull/178) (`paciente_medical_history`, `paciente_energy_preferences`).
 
 **GitHub drift (close when convenient):** #97 and #111 are **done on `main`** but still **open on GitHub** (implemented in PRs #147, #151).
 

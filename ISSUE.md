@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-16 — #156 Phase C (satellite tables) **in-progress** on `integration/c-paciente-satellites`. Phases A–B **done** on `main` (PRs #175/#176). **NEXT:** merge Phase C → [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46) baseline.
+**Last updated:** 2026-06-16 — #156 **done** on `main` (PRs #175/#176/#178, Phases A–C). **NEXT:** [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46) baseline.
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116, #132–#141 invitation onboarding) plus the directly-related `[Dashboard]` IMC gauge (#106) and **integration prerequisites** that gate schema work (#156, #46). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -49,7 +49,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 | `done` | Merged to `main` |
 | `deferred` | Intentionally paused — decision pending |
 
-Phase 0 (#107, #109, #110) is **done**. Endpoints **#91–#99 are done** on `main`. **#156 Phases A–B done** (PRs #175/#176); **Phase C in-progress** (`integration/c-paciente-satellites`). **NEXT:** merge Phase C, then #46 Liquibase baseline.
+Phase 0 (#107, #109, #110) is **done**. Endpoints **#91–#99 are done** on `main`. **#156 done** on `main` (PRs #175/#176/#178 — projections, embeddables, satellite tables). **NEXT:** #46 Liquibase baseline.
 
 ---
 
@@ -130,8 +130,8 @@ Schema-affecting work must respect mobile DTO contracts (§F8). These issues are
 
 | # | Title | URL | State | Depends on | Blocks | Notes |
 |---|-------|-----|-------|-----------|--------|-------|
-| **156** | `[Integration]` Paciente domain refactor — incremental decomposition | https://github.com/diego-torres/nutriconsultas/issues/156 | **in-progress** | [#121](https://github.com/diego-torres/nutriconsultas/issues/121) GET/TDEE | [#46](https://github.com/diego-torres/nutriconsultas/issues/46) Liquibase | PRs #175/#176 merged (Phases A–B). **Phase C** on `integration/c-paciente-satellites`: `paciente_medical_history` + `paciente_energy_preferences` LAZY `@OneToOne`, manual SQL in `db/manual/`, `PacienteSatelliteLazyLoadTest`. Mobile DTOs unchanged. |
-| 46 | Implement Liquibase for database change management | https://github.com/diego-torres/nutriconsultas/issues/46 | **NEXT** | **156** (Phase C merge) | — | First Liquibase baseline must capture post-Phase C schema ([`paciente-er-phase-c.md`](docs/integration/paciente-er-phase-c.md)). |
+| **156** | `[Integration]` Paciente domain refactor — incremental decomposition | https://github.com/diego-torres/nutriconsultas/issues/156 | **done** | [#121](https://github.com/diego-torres/nutriconsultas/issues/121) GET/TDEE | — (unblocked #46) | Merged PRs [#175](https://github.com/diego-torres/nutriconsultas/pull/175) (projections), [#176](https://github.com/diego-torres/nutriconsultas/pull/176) (embeddables), [#178](https://github.com/diego-torres/nutriconsultas/pull/178) (satellite tables). ER: [`paciente-er-phase-c.md`](docs/integration/paciente-er-phase-c.md). Mobile DTOs unchanged. |
+| 46 | Implement Liquibase for database change management | https://github.com/diego-torres/nutriconsultas/issues/46 | **NEXT** | ~~156~~ ✓ | — | First Liquibase baseline must capture post-Phase C schema. Apply `postgresql-paciente-phase-c-split.sql` on existing PostgreSQL before deploy. |
 | 132 | Invitation & patient onboarding data model | https://github.com/diego-torres/nutriconsultas/issues/132 | open | #107, **156** (Phase B) | — | `Paciente.status` enum + `Invitation` entity; Liquibase via #46 after #156. |
 
 ---
@@ -169,7 +169,7 @@ Each mobile feature consumes these backend endpoints. Two-way linking with the m
 | 107, 108, 109 | Auth / linkage | mobile #5, #7, #13, #22 | Auth |
 | 116 | `senderDisplayName` (optional) | mobile #19 | Read-only (additive) | **done** on `main` |
 | 114 | nutritionist reply | — (web only; feeds #96) | Write (nutritionist) | **done** — `POST /rest/patient-messages/thread/{pacienteId}` + admin widget |
-| 156 | `Paciente` internal refactor (pre-Liquibase) | — (backend only) | — | **in-progress** — Phase C satellites on `integration/c-paciente-satellites`; Phases A–B on `main` |
+| 156 | `Paciente` internal refactor (pre-Liquibase) | — (backend only) | — | **done** — PRs #175/#176/#178 on `main` |
 | 132–141 | Invitation onboarding | mobile (future) | Auth + profile | Replaces #109 manual linkage for new patients; gated by #156 |
 
 **Common contract for every #91–#99** (ALIGNMENT-SPEC §"CORRECTED SCOPE"):
