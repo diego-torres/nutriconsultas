@@ -42,7 +42,7 @@ jobs:
       # Note: Using custom checkstyle rules instead of Spring Java Format validation
       # Spring Java Format is available for explicit use: mvn spring-javaformat:apply
     - name: Run SpotBugs
-      run: mvn -B spotbugs:check
+      run: mvn -B compile spotbugs:check
     - name: Run PMD
       run: mvn -B pmd:check -Pci
     - name: Validate Thymeleaf templates
@@ -60,7 +60,7 @@ jobs:
         retention-days: 7
     - name: Upload SpotBugs results
       uses: actions/upload-artifact@v7
-      if: always()
+      if: always() && hashFiles('target/spotbugsXml.xml') != ''
       with:
         name: spotbugs-results
         path: target/spotbugsXml.xml
