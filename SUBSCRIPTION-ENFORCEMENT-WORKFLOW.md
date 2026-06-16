@@ -199,8 +199,8 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#183 — Platform admin RBAC](https://github.com/diego-torres/nutriconsultas/issues/183) |
-| **Status** | **in-progress** on `subscription/183-platform-admin-rbac` |
-| **Early start** | ~~#183~~ (this sprint) |
+| **Next issue** | [#182 — Auth0 role sync](https://github.com/diego-torres/nutriconsultas/issues/182) |
+| **Status** | **in-progress** on `subscription/182-auth0-role-sync` |
+| **Early start** | ~~#183~~ done (PR #200) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
