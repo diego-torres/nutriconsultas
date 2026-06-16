@@ -41,7 +41,7 @@ class MobilePatientMessageControllerTest {
 		final Paciente paciente = new Paciente();
 		paciente.setId(5L);
 		final PatientMessageSummaryDto summary = new PatientMessageSummaryDto(1L, Instant.parse("2026-06-01T12:00:00Z"),
-				MessageSenderRole.PATIENT, "Hola", true);
+				MessageSenderRole.PATIENT, "Hola", true, null);
 		final CursorPagedResponse<PatientMessageSummaryDto> page = CursorPagedResponse.of(List.of(summary), null);
 		final Jwt jwt = jwtWithSub(PATIENT_SUB);
 
@@ -62,7 +62,7 @@ class MobilePatientMessageControllerTest {
 		final Paciente paciente = new Paciente();
 		paciente.setId(5L);
 		final PatientMessageSummaryDto sent = new PatientMessageSummaryDto(9L, Instant.parse("2026-06-01T12:00:00Z"),
-				MessageSenderRole.PATIENT, "Hola doctor", true);
+				MessageSenderRole.PATIENT, "Hola doctor", true, null);
 		final Jwt jwt = jwtWithSub(PATIENT_SUB);
 
 		when(patientAuthService.requirePacienteByJwt(jwt)).thenReturn(paciente);

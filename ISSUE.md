@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-15 — #115 PHI audit **done** (merged [PR #168](https://github.com/diego-torres/nutriconsultas/pull/168)). **NEXT:** #116.
+**Last updated:** 2026-06-15 — #116 `senderDisplayName` **in-progress** (branch `mobile-api/116-sender-display-name`). **NEXT:** #114.
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116, #132–#141 invitation onboarding) plus the directly-related `[Dashboard]` IMC gauge (#106) and **integration prerequisites** that gate schema work (#156, #46). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -49,7 +49,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 | `done` | Merged to `main` |
 | `deferred` | Intentionally paused — decision pending |
 
-Phase 0 (#107, #109, #110) is **done**. Patient linkage (#109) is **done**. Endpoints **#91–#99 are done** on `main` (PR #153). OpenAPI (#112, PR #164) is **done**. **#115 PHI audit done** (PR #168). **NEXT:** #116.
+Phase 0 (#107, #109, #110) is **done**. Patient linkage (#109) is **done**. Endpoints **#91–#99 are done** on `main` (PR #153). OpenAPI (#112, PR #164) is **done**. **#115 PHI audit done** (PR #168). **#116 in-progress** (branch `mobile-api/116-sender-display-name`). **NEXT:** #114.
 
 ---
 
@@ -118,8 +118,8 @@ No `/rest/mobile/**` endpoint may be integrated until #107 **and** #110 are `don
 | # | Title | URL | State | Notes |
 |---|-------|-----|-------|-------|
 | 113 | Rate limiting on patient write endpoints (Resilience4j) | https://github.com/diego-torres/nutriconsultas/issues/113 | **done** | Merged PR #151: 10/min per `patientAuthSub` on POST #97; 429 + `Retry-After: 60`; localized via #111 |
-| 116 | Additive: `senderDisplayName` in message DTOs from `NutritionistProfile` | https://github.com/diego-torres/nutriconsultas/issues/116 | **NEXT** | Additive to #96 DTO; **non-blocking** for mobile #19. Source `NutritionistProfile.displayName`. |
-| 114 | Nutritionist reply to patient messages | https://github.com/diego-torres/nutriconsultas/issues/114 | open | **Web/backend only** — not a mobile-app endpoint; writes into the same thread #96 reads. |
+| 116 | Additive: `senderDisplayName` in message DTOs from `NutritionistProfile` | https://github.com/diego-torres/nutriconsultas/issues/116 | **in-progress** | Branch `mobile-api/116-sender-display-name`: optional `senderDisplayName` on `PatientMessageSummaryDto` when `senderRole=NUTRITIONIST`; sourced from `NutritionistProfile.displayName`; OpenAPI updated. |
+| 114 | Nutritionist reply to patient messages | https://github.com/diego-torres/nutriconsultas/issues/114 | **NEXT** | **Web/backend only** — not a mobile-app endpoint; writes into the same thread #96 reads. |
 | 106 | `[Dashboard]` IMC gauge with color bands (anthropometric tablero) | https://github.com/diego-torres/nutriconsultas/issues/106 | **done** | Web dashboard; shares `NivelPeso` color-band logic the mobile `ImcGauge` (mobile #21) mirrors. Not a `/rest/mobile/**` endpoint. |
 
 ---
@@ -167,7 +167,7 @@ Each mobile feature consumes these backend endpoints. Two-way linking with the m
 | 96, 97 | Mensajes | mobile #19, #14, #6 | Read + patient send |
 | 98, 99 | Progreso | mobile #16/#20, #15, #8 | Read-only |
 | 107, 108, 109 | Auth / linkage | mobile #5, #7, #13, #22 | Auth |
-| 116 | `senderDisplayName` (optional) | mobile #19 | Read-only (additive) |
+| 116 | `senderDisplayName` (optional) | mobile #19 | Read-only (additive) | **in-progress** — branch `mobile-api/116-sender-display-name` |
 | 114 | nutritionist reply | — (web only; feeds #96) | — |
 | 156 | `Paciente` internal refactor (pre-Liquibase) | — (backend only) | — | No mobile JSON change; `#98`/`#99` regression required per PR |
 | 132–141 | Invitation onboarding | mobile (future) | Auth + profile | Replaces #109 manual linkage for new patients; gated by #156 |

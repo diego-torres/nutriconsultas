@@ -24,6 +24,8 @@ import com.nutriconsultas.message.PatientMessage;
 import com.nutriconsultas.message.PatientMessageRepository;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.profile.NutritionistProfile;
+import com.nutriconsultas.profile.NutritionistProfileRepository;
 
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 
@@ -42,6 +44,9 @@ class MobilePatientMessageIntegrationTest {
 
 	@Autowired
 	private PatientMessageRepository patientMessageRepository;
+
+	@Autowired
+	private NutritionistProfileRepository nutritionistProfileRepository;
 
 	@Autowired
 	private RateLimiterRegistry rateLimiterRegistry;
@@ -66,6 +71,11 @@ class MobilePatientMessageIntegrationTest {
 		message.setReadByPatient(false);
 		message.setReadByNutritionist(true);
 		patientMessageRepository.saveAndFlush(message);
+		final NutritionistProfile profile = nutritionistProfileRepository.findByUserId(linkedPaciente.getUserId())
+			.orElseGet(NutritionistProfile::new);
+		profile.setUserId(linkedPaciente.getUserId());
+		profile.setDisplayName("Lic. Nutri Minutriporcion");
+		nutritionistProfileRepository.saveAndFlush(profile);
 	}
 
 	@Test
@@ -74,6 +84,7 @@ class MobilePatientMessageIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.content").isArray())
 			.andExpect(jsonPath("$.data.content[0].senderRole").value("NUTRITIONIST"))
+			.andExpect(jsonPath("$.data.content[0].senderDisplayName").value("Lic. Nutri Minutriporcion"))
 			.andExpect(jsonPath("$.data.content[0].body").value("Bienvenido a tu consultorio digital"))
 			.andExpect(jsonPath("$.data.content[0].read").value(false))
 			.andExpect(jsonPath("$.timestamp").exists());

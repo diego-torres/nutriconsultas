@@ -25,6 +25,10 @@ import com.nutriconsultas.message.PatientMessageRepository;
 import com.nutriconsultas.mobile.dto.CursorPagedResponse;
 import com.nutriconsultas.mobile.dto.PatientMessageSummaryDto;
 import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.profile.NutritionistProfile;
+import com.nutriconsultas.profile.NutritionistProfileRepository;
+
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class MobilePatientMessageServiceTest {
@@ -36,6 +40,9 @@ class MobilePatientMessageServiceTest {
 	private PatientMessageRepository patientMessageRepository;
 
 	@Mock
+	private NutritionistProfileRepository nutritionistProfileRepository;
+
+	@Mock
 	private PatientWriteRateLimiter patientWriteRateLimiter;
 
 	@Test
@@ -43,6 +50,7 @@ class MobilePatientMessageServiceTest {
 		final PatientMessage message = sampleMessage(42L, "Hola nutrióloga");
 		when(patientMessageRepository.findThreadForPatient(eq(5L), isNull(), org.mockito.ArgumentMatchers.any()))
 			.thenReturn(List.of(message));
+		when(nutritionistProfileRepository.findByUserId("auth0|nutritionist")).thenReturn(Optional.empty());
 
 		final CursorPagedResponse<PatientMessageSummaryDto> page = service.listMessages(5L, null, 20);
 
@@ -65,6 +73,7 @@ class MobilePatientMessageServiceTest {
 				assertThat(pageable.getPageSize()).isEqualTo(3);
 				return List.of(first, second, extra);
 			});
+		when(nutritionistProfileRepository.findByUserId("auth0|nutritionist")).thenReturn(Optional.empty());
 
 		final CursorPagedResponse<PatientMessageSummaryDto> page = service.listMessages(5L, null, 2);
 
@@ -74,7 +83,34 @@ class MobilePatientMessageServiceTest {
 	}
 
 	@Test
-	void sendMessage_persistsPatientMessageWithNutritionistTenant() throws Exception {
+	void listMessages_includesSenderDisplayNameForNutritionistMessages() {
+		final PatientMessage message = sampleMessage(42L, "Hola nutrióloga");
+		final NutritionistProfile profile = new NutritionistProfile();
+		profile.setUserId("auth0|nutritionist");
+		profile.setDisplayName("Lic. Ana López");
+		when(patientMessageRepository.findThreadForPatient(eq(5L), isNull(), org.mockito.ArgumentMatchers.any()))
+			.thenReturn(List.of(message));
+		when(nutritionistProfileRepository.findByUserId("auth0|nutritionist")).thenReturn(Optional.of(profile));
+
+		final CursorPagedResponse<PatientMessageSummaryDto> page = service.listMessages(5L, null, 20);
+
+		assertThat(page.content().get(0).senderDisplayName()).isEqualTo("Lic. Ana López");
+	}
+
+	@Test
+	void listMessages_omitsSenderDisplayNameWhenNoNutritionistProfile() {
+		final PatientMessage message = sampleMessage(42L, "Hola nutrióloga");
+		when(patientMessageRepository.findThreadForPatient(eq(5L), isNull(), org.mockito.ArgumentMatchers.any()))
+			.thenReturn(List.of(message));
+		when(nutritionistProfileRepository.findByUserId("auth0|nutritionist")).thenReturn(Optional.empty());
+
+		final CursorPagedResponse<PatientMessageSummaryDto> page = service.listMessages(5L, null, 20);
+
+		assertThat(page.content().get(0).senderDisplayName()).isNull();
+	}
+
+	@Test
+	void sendMessage_doesNotIncludeSenderDisplayNameForPatientMessages() throws Exception {
 		final Paciente paciente = new Paciente();
 		paciente.setId(5L);
 		paciente.setUserId("auth0|nutritionist-owner");
@@ -100,6 +136,7 @@ class MobilePatientMessageServiceTest {
 		assertThat(sent.senderRole()).isEqualTo(MessageSenderRole.PATIENT);
 		assertThat(sent.body()).isEqualTo("Hola doctor");
 		assertThat(sent.read()).isTrue();
+		assertThat(sent.senderDisplayName()).isNull();
 		final ArgumentCaptor<PatientMessage> captor = ArgumentCaptor.forClass(PatientMessage.class);
 		verify(patientMessageRepository).save(captor.capture());
 		assertThat(captor.getValue().getSenderRole()).isEqualTo(MessageSenderRole.PATIENT);
