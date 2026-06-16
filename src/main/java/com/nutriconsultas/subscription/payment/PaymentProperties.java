@@ -71,10 +71,10 @@ public class PaymentProperties {
 
 	public static BigDecimal monthlyPriceMxn(final PlanTier planTier) {
 		return switch (planTier) {
-			case BASICO -> new BigDecimal("5");
-			case PROFESIONAL -> new BigDecimal("10");
-			case PLUS -> new BigDecimal("30");
-			case CONSULTORIO -> new BigDecimal("45");
+			case BASICO -> new BigDecimal("100");
+			case PROFESIONAL -> new BigDecimal("200");
+			case PLUS -> new BigDecimal("600");
+			case CONSULTORIO -> new BigDecimal("900");
 		};
 	}
 

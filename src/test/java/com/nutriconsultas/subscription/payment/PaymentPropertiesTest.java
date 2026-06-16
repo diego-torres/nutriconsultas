@@ -12,10 +12,10 @@ class PaymentPropertiesTest {
 
 	@Test
 	void monthlyPriceMxnMatchesMarketingPricing() {
-		assertThat(PaymentProperties.monthlyPriceMxn(PlanTier.BASICO)).isEqualByComparingTo(new BigDecimal("5"));
-		assertThat(PaymentProperties.monthlyPriceMxn(PlanTier.PROFESIONAL)).isEqualByComparingTo(new BigDecimal("10"));
-		assertThat(PaymentProperties.monthlyPriceMxn(PlanTier.PLUS)).isEqualByComparingTo(new BigDecimal("30"));
-		assertThat(PaymentProperties.monthlyPriceMxn(PlanTier.CONSULTORIO)).isEqualByComparingTo(new BigDecimal("45"));
+		assertThat(PaymentProperties.monthlyPriceMxn(PlanTier.BASICO)).isEqualByComparingTo(new BigDecimal("100"));
+		assertThat(PaymentProperties.monthlyPriceMxn(PlanTier.PROFESIONAL)).isEqualByComparingTo(new BigDecimal("200"));
+		assertThat(PaymentProperties.monthlyPriceMxn(PlanTier.PLUS)).isEqualByComparingTo(new BigDecimal("600"));
+		assertThat(PaymentProperties.monthlyPriceMxn(PlanTier.CONSULTORIO)).isEqualByComparingTo(new BigDecimal("900"));
 	}
 
 	@Test
