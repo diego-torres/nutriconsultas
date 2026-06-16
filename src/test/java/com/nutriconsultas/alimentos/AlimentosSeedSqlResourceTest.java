@@ -16,6 +16,14 @@ public class AlimentosSeedSqlResourceTest {
 		final ClassPathResource liquibaseSeed = new ClassPathResource("db/changelog/data/alimentos-seed.sql");
 		assertThat(legacy.exists()).as("alimentos.sql must remain packaged for reference tooling").isTrue();
 		assertThat(liquibaseSeed.exists()).as("Liquibase alimentos seed must be on classpath").isTrue();
+	@Test
+	public void testCatalogSeedSqlFilesAreOnClasspath() {
+		assertThat(new ClassPathResource("db/changelog/data/platillos-seed.sql").exists())
+			.as("Liquibase platillos seed must be on classpath")
+			.isTrue();
+		assertThat(new ClassPathResource("db/changelog/data/dieta-templates-seed.sql").exists())
+			.as("Liquibase dieta template seed must be on classpath")
+			.isTrue();
 	}
 
 }

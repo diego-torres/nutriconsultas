@@ -13,19 +13,46 @@ databaseChangeLog:
             splitStatements: true
             stripComments: true
   - changeSet:
-      id: 003-seed-platillos-aux
+      id: 004-seed-platillos
       author: nutriconsultas
       preConditions:
         - onFail: MARK_RAN
-        - or:
-            - not:
-                tableExists:
-                  tableName: seed_platillo
-            - sqlCheck:
-                expectedResult: 0
-                sql: SELECT COUNT(*) FROM seed_platillo
+        - sqlCheck:
+            expectedResult: 0
+            sql: SELECT COUNT(*) FROM platillo
       changes:
         - sqlFile:
-            path: classpath:db/changelog/data/seed-platillos-aux.sql
+            path: classpath:db/changelog/data/platillos-seed.sql
+            splitStatements: true
+            stripComments: true
+  - changeSet:
+      id: 005-seed-dieta-templates
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - sqlCheck:
+            expectedResult: 0
+            sql: SELECT COUNT(*) FROM dieta WHERE user_id = 'system:template-dietas'
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/data/dieta-templates-seed.sql
+            splitStatements: true
+            stripComments: true
+  - changeSet:
+      id: 006-catalog-seed-sequences-postgresql
+      author: nutriconsultas
+      dbms: postgresql
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/data/catalog-seed-sequences.postgresql.sql
+            splitStatements: true
+            stripComments: true
+  - changeSet:
+      id: 006-catalog-seed-sequences-h2
+      author: nutriconsultas
+      dbms: h2
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/data/catalog-seed-sequences.h2.sql
             splitStatements: true
             stripComments: true

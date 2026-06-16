@@ -34,9 +34,16 @@ public class LiquibaseMigrationTest {
 	}
 
 	@Test
-	public void testPlatilloAuxSeedLoaded() {
-		final Long count = jdbc.queryForObject("SELECT COUNT(*) FROM seed_platillo", Long.class);
-		assertThat(count).isNotNull().isGreaterThan(0L);
+	public void testPlatillosSeedLoaded() {
+		final Long count = jdbc.queryForObject("SELECT COUNT(*) FROM platillo", Long.class);
+		assertThat(count).isNotNull().isEqualTo(100L);
+	}
+
+	@Test
+	public void testDietaTemplatesSeedLoaded() {
+		final Long count = jdbc.queryForObject(
+				"SELECT COUNT(*) FROM dieta WHERE user_id = 'system:template-dietas'", Long.class);
+		assertThat(count).isNotNull().isEqualTo(20L);
 	}
 
 }

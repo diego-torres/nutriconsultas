@@ -35,14 +35,10 @@
     <Bug pattern="DM_BOXED_PRIMITIVE_FOR_PARSING"/>
   </Match>
   
-  <!-- Exclude EI_EXPOSE_REP2 for Spring beans (SecurityConfig, PlatilloSeedInitializer) -->
+  <!-- Exclude EI_EXPOSE_REP2 for Spring beans (SecurityConfig) -->
   <!-- Spring beans are managed by the container and safe to store directly -->
   <Match>
     <Class name="com.nutriconsultas.SecurityConfig"/>
-    <Bug pattern="EI_EXPOSE_REP2"/>
-  </Match>
-  <Match>
-    <Class name="com.nutriconsultas.platillos.PlatilloSeedInitializer"/>
     <Bug pattern="EI_EXPOSE_REP2"/>
   </Match>
   
@@ -53,19 +49,11 @@
     <Bug pattern="REC_CATCH_EXCEPTION"/>
   </Match>
   <Match>
-    <Class name="com.nutriconsultas.platillos.PlatilloSeedInitializer"/>
-    <Bug pattern="REC_CATCH_EXCEPTION"/>
-  </Match>
-  <Match>
     <Class name="com.nutriconsultas.calendar.CalendarEventRestController"/>
     <Bug pattern="REC_CATCH_EXCEPTION"/>
   </Match>
   <Match>
     <Class name="com.nutriconsultas.dieta.DietaPdfService"/>
-    <Bug pattern="REC_CATCH_EXCEPTION"/>
-  </Match>
-  <Match>
-    <Class name="com.nutriconsultas.platillos.PlatilloSeedInitializer"/>
     <Bug pattern="REC_CATCH_EXCEPTION"/>
   </Match>
   <Match>
