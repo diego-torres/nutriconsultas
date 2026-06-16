@@ -10,7 +10,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) | Canonical cross-repo contract — §F8 schema/enum map, per-issue corrected scope |
 | [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) | Endpoint request/response specs (#91–#99) with field mappings |
 
-**Current next issue:** [#46 — Liquibase baseline](https://github.com/diego-torres/nutriconsultas/issues/46). ~~#156~~ Paciente decomposition **done** on `main` (PRs #175/#176). ~~#114~~ nutritionist reply **done**. ~~#116~~ `senderDisplayName` **done** on `main`.
+**Current next issue:** [#156 Phase C](https://github.com/diego-torres/nutriconsultas/issues/156) satellite tables on `integration/c-paciente-satellites`, then [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46).
 
 ---
 
@@ -322,13 +322,11 @@ gh pr create ...
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#46 — Liquibase baseline](https://github.com/diego-torres/nutriconsultas/issues/46) |
-| **Status** | **NEXT** (#156 merged to `main`) |
-| **Phase** | Integration prerequisite — #156 Phases A–B **done** (PRs #175/#176) |
-| **Depends on** | #121 |
-| **Blocks** | #46, #132 |
-| **Just completed** | [#156](https://github.com/diego-torres/nutriconsultas/issues/156) — Paciente projections (PR #175) + `@Embeddable` grouping (PR #176) on `main` |
-| **In scope for #156** | Phase A: read projections ✓ (`integration/a-paciente-projections`). Phase B: `@Embeddable` grouping ✓ (`integration/b-paciente-embeddables`, same table, `@Delegate` flat accessors). Phase C optional. No mobile JSON contract changes. |
+| **Next issue** | [#156 Phase C](https://github.com/diego-torres/nutriconsultas/issues/156) merge, then [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46) |
+| **Status** | **in-progress** (Phase C on `integration/c-paciente-satellites`) |
+| **Phase** | #156 Phase C — vertical split to `paciente_medical_history` + `paciente_energy_preferences` |
+| **Just completed** | Phases A–B on `main` (PRs #175/#176) |
+| **In scope for #156** | Phase A ✓ projections. Phase B ✓ `@Embeddable` body snapshot. **Phase C:** LAZY `@OneToOne` satellites + `db/manual/postgresql-paciente-phase-c-*.sql` + ER doc. No mobile JSON changes. |
 
 ### Upcoming gates
 
@@ -345,9 +343,9 @@ gh pr create ...
 
 **Patient mobile API on `main`:** JWT resource server (#107), DTO envelope (#110), patient linkage (#109), visits (#91/#92), diet plans (#93–#95), messages list/send (#96/#97 with HTTP 201 + rate limit), progress snapshot (#98) + measurements time series (#99, PR #153), localized API errors (#111), Resilience4j write throttling (#113), **OpenAPI spec (#112, PR #164)**, **`senderDisplayName` (#116)**, **nutritionist reply (#114)**. Dashboard IMC gauge (#106) done for web tablero.
 
-**Next:** #46 Liquibase baseline (post-#156 `Paciente` schema).
+**Next:** Merge #156 Phase C (`integration/c-paciente-satellites`), then #46 Liquibase baseline.
 
-**Just merged:** #156 Phases A–B on `main` — PR [#175](https://github.com/diego-torres/nutriconsultas/pull/175) (projections) + PR [#176](https://github.com/diego-torres/nutriconsultas/pull/176) (`PacienteBodySnapshot`, `PacienteEnergyPreferences`, `PacienteMedicalHistory`).
+**In progress:** Phase C — `paciente_medical_history` + `paciente_energy_preferences` satellite tables; `mvn verify` green on branch.
 
 **GitHub drift (close when convenient):** #97 and #111 are **done on `main`** but still **open on GitHub** (implemented in PRs #147, #151).
 

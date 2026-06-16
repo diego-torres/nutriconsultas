@@ -17,6 +17,10 @@ import com.nutriconsultas.paciente.calculation.ActivityFactorScale;
 import com.nutriconsultas.paciente.calculation.BmrFormulaType;
 import com.nutriconsultas.paciente.calculation.PhysicalActivityLevel;
 
+/**
+ * Ensures body snapshot embeddable and Phase C satellite rows round-trip through JPA —
+ * #156.
+ */
 @DataJpaTest
 @ActiveProfiles("test")
 class PacienteEmbeddablePersistenceTest {

@@ -4,12 +4,17 @@ import java.util.Date;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotBlank;
@@ -19,9 +24,12 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 import com.nutriconsultas.paciente.embeddable.PacienteBodySnapshot;
-import com.nutriconsultas.paciente.embeddable.PacienteEnergyPreferences;
-import com.nutriconsultas.paciente.embeddable.PacienteMedicalHistory;
+import com.nutriconsultas.paciente.satellite.PacienteEnergyPreferences;
+import com.nutriconsultas.paciente.satellite.PacienteMedicalHistory;
 import com.nutriconsultas.paciente.validation.ValidPregnancy;
+
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -92,61 +100,55 @@ public class Paciente {
 	@Delegate
 	private PacienteBodySnapshot bodySnapshot = new PacienteBodySnapshot();
 
-	@Embedded
-	@AttributeOverrides({
-			@AttributeOverride(name = "activityFactorScale", column = @Column(name = "activity_factor_scale")),
-			@AttributeOverride(name = "preferredBmrFormula", column = @Column(name = "preferred_bmr_formula")),
-			@AttributeOverride(name = "physicalActivityLevel", column = @Column(name = "physical_activity_level")),
-			@AttributeOverride(name = "activityFactor", column = @Column(name = "activity_factor")),
-			@AttributeOverride(name = "customFactorSedentary", column = @Column(name = "custom_factor_sedentary")),
-			@AttributeOverride(name = "customFactorLight", column = @Column(name = "custom_factor_light")),
-			@AttributeOverride(name = "customFactorModerate", column = @Column(name = "custom_factor_moderate")),
-			@AttributeOverride(name = "customFactorIntense", column = @Column(name = "custom_factor_intense")),
-			@AttributeOverride(name = "customFactorVeryIntense", column = @Column(name = "custom_factor_very_intense")),
-			@AttributeOverride(name = "physiologicalStressActive",
-					column = @Column(name = "physiological_stress_active")),
-			@AttributeOverride(name = "physiologicalStressType", column = @Column(name = "physiological_stress_type")),
-			@AttributeOverride(name = "stressFormulaTable", column = @Column(name = "stress_formula_table")),
-			@AttributeOverride(name = "stressIncrementMode", column = @Column(name = "stress_increment_mode")),
-			@AttributeOverride(name = "stressFactorValue", column = @Column(name = "stress_factor_value")),
-			@AttributeOverride(name = "stressValidFrom", column = @Column(name = "stress_valid_from")),
-			@AttributeOverride(name = "stressValidUntil", column = @Column(name = "stress_valid_until")),
-			@AttributeOverride(name = "stressFeverTemperature", column = @Column(name = "stress_fever_temperature")),
-			@AttributeOverride(name = "tefMethod", column = @Column(name = "tef_method")),
-			@AttributeOverride(name = "tefBase", column = @Column(name = "tef_base")),
-			@AttributeOverride(name = "tefFixedPercent", column = @Column(name = "tef_fixed_percent")),
-			@AttributeOverride(name = "tefMacroProteinPercent", column = @Column(name = "tef_macro_protein_percent")),
-			@AttributeOverride(name = "tefMacroCarbsPercent", column = @Column(name = "tef_macro_carbs_percent")),
-			@AttributeOverride(name = "tefMacroFatPercent", column = @Column(name = "tef_macro_fat_percent")) })
-	@Delegate
+	@LazyToOne(LazyToOneOption.NO_PROXY)
+	@OneToOne(mappedBy = "paciente", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	@Delegate(excludes = PacienteEnergyPreferencesDelegateExcludes.class)
 	private PacienteEnergyPreferences energyPreferences = new PacienteEnergyPreferences();
 
-	@Embedded
-	@AttributeOverrides({
-			@AttributeOverride(name = "antecedentesPrenatales", column = @Column(name = "antecedentes_prenatales")),
-			@AttributeOverride(name = "antecedentesNatales", column = @Column(name = "antecedentes_natales")),
-			@AttributeOverride(name = "antecedentesPatologicosPersonales",
-					column = @Column(name = "antecedentes_patologicos_personales")),
-			@AttributeOverride(name = "antecedentesPatologicosFamiliares",
-					column = @Column(name = "antecedentes_patologicos_familiares")),
-			@AttributeOverride(name = "complicaciones", column = @Column(name = "complicaciones")),
-			@AttributeOverride(name = "tipoSanguineo", column = @Column(name = "tipo_sanguineo")),
-			@AttributeOverride(name = "historialAlimenticio", column = @Column(name = "historial_alimenticio")),
-			@AttributeOverride(name = "desarrolloPsicomotor", column = @Column(name = "desarrollo_psicomotor")),
-			@AttributeOverride(name = "alergias", column = @Column(name = "alergias")),
-			@AttributeOverride(name = "hipertension", column = @Column(name = "hipertension")),
-			@AttributeOverride(name = "diabetes", column = @Column(name = "diabetes")),
-			@AttributeOverride(name = "hipotiroidismo", column = @Column(name = "hipotiroidismo")),
-			@AttributeOverride(name = "obesidad", column = @Column(name = "obesidad")),
-			@AttributeOverride(name = "anemia", column = @Column(name = "anemia")),
-			@AttributeOverride(name = "bulimia", column = @Column(name = "bulimia")),
-			@AttributeOverride(name = "anorexia", column = @Column(name = "anorexia")),
-			@AttributeOverride(name = "enfermedadesHepaticas", column = @Column(name = "enfermedades_hepaticas")) })
-	@Delegate
+	@LazyToOne(LazyToOneOption.NO_PROXY)
+	@OneToOne(mappedBy = "paciente", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	@Delegate(excludes = PacienteMedicalHistoryDelegateExcludes.class)
 	private PacienteMedicalHistory medicalHistory = new PacienteMedicalHistory();
 
 	// ESTADO DE EMBARAZO (solo para mujeres entre 12-50 años)
 	@ValidPregnancy
 	private Boolean pregnancy = false;
+
+	@PrePersist
+	@PreUpdate
+	private void linkSatelliteRows() {
+		if (energyPreferences == null) {
+			energyPreferences = new PacienteEnergyPreferences();
+		}
+		if (medicalHistory == null) {
+			medicalHistory = new PacienteMedicalHistory();
+		}
+		energyPreferences.setPaciente(this);
+		medicalHistory.setPaciente(this);
+	}
+
+	private interface PacienteEnergyPreferencesDelegateExcludes {
+
+		Long getId();
+
+		void setId(Long id);
+
+		Paciente getPaciente();
+
+		void setPaciente(Paciente paciente);
+
+	}
+
+	private interface PacienteMedicalHistoryDelegateExcludes {
+
+		Long getId();
+
+		void setId(Long id);
+
+		Paciente getPaciente();
+
+		void setPaciente(Paciente paciente);
+
+	}
 
 }

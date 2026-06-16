@@ -1,16 +1,8 @@
-package com.nutriconsultas.paciente.embeddable;
+package com.nutriconsultas.paciente.satellite;
 
 import java.util.Date;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-
-import org.springframework.format.annotation.DateTimeFormat;
-
+import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.calculation.ActivityFactorScale;
 import com.nutriconsultas.paciente.calculation.BmrFormulaType;
 import com.nutriconsultas.paciente.calculation.PhysicalActivityLevel;
@@ -21,21 +13,41 @@ import com.nutriconsultas.paciente.calculation.TefBase;
 import com.nutriconsultas.paciente.calculation.TefCalculationService;
 import com.nutriconsultas.paciente.calculation.TefMethod;
 
-import lombok.AllArgsConstructor;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
- * Patient energy-expenditure preferences (GET/TDEE, TEF, activity factors, stress) — #156
- * Phase B.
+ * Energy-expenditure preferences (GET/TDEE, TEF, activity, stress) — #156 Phase C
+ * satellite table.
  */
-@Embeddable
+@Entity
+@Table(name = "paciente_energy_preferences")
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class PacienteEnergyPreferences {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@OneToOne(optional = false)
+	@JoinColumn(name = "paciente_id", nullable = false, unique = true)
+	private Paciente paciente;
 
 	@Enumerated(EnumType.STRING)
 	@Column(length = 30)
