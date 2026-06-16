@@ -58,10 +58,19 @@
         <i class="fas fa-fw fa-user-md"></i>
         <span>Mi Perfil</span></a>
     </li>
-    <li class="nav-item" th:if="${platformAdmin}" th:classappend="${activeMenu == 'contact-inquiries' ? 'active' : ''}">
-      <a class="nav-link" th:href="@{/admin/contact-inquiries}">
-        <i class="fas fa-fw fa-envelope"></i>
-        <span>Mensajes de contacto</span></a>
+    <li class="nav-item" th:if="${platformAdmin}" th:classappend="${activeMenu == 'platform' || activeMenu == 'contact-inquiries' ? 'active' : ''}">
+      <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePlatform"
+        aria-expanded="true" aria-controls="collapsePlatform">
+        <i class="fas fa-fw fa-shield-alt"></i>
+        <span>Plataforma</span>
+      </a>
+      <div id="collapsePlatform" class="collapse" aria-labelledby="headingPlatform" data-parent="#accordionSidebar">
+        <div class="bg-white py-2 collapse-inner rounded">
+          <h6 class="collapse-header">Administración:</h6>
+          <a class="collapse-item" th:href="@{/admin/platform}">Panel de plataforma</a>
+          <a class="collapse-item" th:href="@{/admin/platform/contact-inquiries}">Mensajes de contacto</a>
+        </div>
+      </div>
     </li>
 
     <!-- Divider -->

@@ -2,9 +2,11 @@ package com.nutriconsultas.platform;
 
 import java.util.Locale;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class PlatformAdminService {
@@ -24,6 +26,19 @@ public class PlatformAdminService {
 
 	public boolean isPlatformAdminByUserId(final String userId) {
 		return StringUtils.hasText(userId) && platformAdminProperties.getAdminUserIds().contains(userId);
+	}
+
+	public void requirePlatformAdmin(final OidcUser principal) {
+		if (!isPlatformAdmin(principal)) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+		}
+	}
+
+	public String resolveActorUserId(final OidcUser principal) {
+		if (principal == null) {
+			return null;
+		}
+		return principal.getSubject();
 	}
 
 	private boolean isPlatformAdminByEmail(final String email) {

@@ -199,8 +199,8 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#181 — SubscriptionEntitlementService](https://github.com/diego-torres/nutriconsultas/issues/181) |
-| **Status** | **in-progress** on `subscription/181-entitlement-service` |
-| **Early start** | [#183 — Platform admin RBAC](https://github.com/diego-torres/nutriconsultas/issues/183) (no schema) |
+| **Next issue** | [#183 — Platform admin RBAC](https://github.com/diego-torres/nutriconsultas/issues/183) |
+| **Status** | **in-progress** on `subscription/183-platform-admin-rbac` |
+| **Early start** | ~~#183~~ (this sprint) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.

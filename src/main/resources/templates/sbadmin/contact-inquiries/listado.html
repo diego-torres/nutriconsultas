@@ -57,13 +57,13 @@
                       <td th:text="${inquiry.message}">Mensaje</td>
                       <td class="text-nowrap">
                         <form th:if="${!inquiry.readByAdmin}"
-                          th:action="@{/admin/contact-inquiries/{id}/read(id=${inquiry.id})}" method="post"
+                          th:action="@{/admin/platform/contact-inquiries/{id}/read(id=${inquiry.id})}" method="post"
                           class="d-inline">
                           <button type="submit" class="btn btn-sm btn-success" title="Marcar como leído">
                             <i class="fas fa-check"></i>
                           </button>
                         </form>
-                        <form th:action="@{/admin/contact-inquiries/{id}/delete(id=${inquiry.id})}" method="post"
+                        <form th:action="@{/admin/platform/contact-inquiries/{id}/delete(id=${inquiry.id})}" method="post"
                           class="d-inline" onsubmit="return confirm('¿Eliminar este mensaje de contacto?');">
                           <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
                             <i class="fas fa-trash"></i>
