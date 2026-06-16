@@ -116,7 +116,7 @@ public class Paciente {
 
 	@PrePersist
 	@PreUpdate
-	private void linkSatelliteRows() {
+	void linkSatelliteRows() {
 		if (energyPreferences == null) {
 			energyPreferences = new PacienteEnergyPreferences();
 		}
