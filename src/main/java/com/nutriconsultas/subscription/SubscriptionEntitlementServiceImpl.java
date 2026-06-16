@@ -54,28 +54,29 @@ public class SubscriptionEntitlementServiceImpl implements SubscriptionEntitleme
 		if (entitlement == Entitlement.USER_ADMINISTRATION && !access.director()) {
 			return false;
 		}
-		if (subscription.getStatus() == SubscriptionStatus.GRACE
-				&& subscriptionProperties.getGraceDeniedEntitlements().contains(entitlement)) {
-			return false;
-		}
-		return true;
+		return subscription.getStatus() != SubscriptionStatus.GRACE
+				|| !subscriptionProperties.getGraceDeniedEntitlements().contains(entitlement);
 	}
 
 	private Optional<UserAccessContext> resolveAccess(final String userId) {
 		final Optional<ClinicMember> memberOpt = clinicMemberRepository.findByUserIdWithClinicAndSubscription(userId);
-		if (memberOpt.isPresent()) {
-			final ClinicMember member = memberOpt.get();
-			if (member.getMembershipStatus() == MembershipStatus.SUSPENDED) {
-				if (log.isDebugEnabled()) {
-					log.debug("Clinic member suspended; no subscription entitlements for userId={}", userId);
-				}
-				return Optional.empty();
-			}
-			final boolean director = member.getRole() == ClinicMemberRole.DIRECTOR;
-			return Optional.of(new UserAccessContext(member.getClinic().getSubscription(), director));
+		if (memberOpt.isEmpty()) {
+			return clinicRepository.findByDirectorUserIdWithSubscription(userId)
+				.map(clinic -> new UserAccessContext(clinic.getSubscription(), true));
 		}
-		return clinicRepository.findByDirectorUserIdWithSubscription(userId)
-			.map(clinic -> new UserAccessContext(clinic.getSubscription(), true));
+		final ClinicMember member = memberOpt.get();
+		if (member.getMembershipStatus() == MembershipStatus.SUSPENDED) {
+			logSuspendedMember(userId);
+			return Optional.empty();
+		}
+		final boolean director = member.getRole() == ClinicMemberRole.DIRECTOR;
+		return Optional.of(new UserAccessContext(member.getClinic().getSubscription(), director));
+	}
+
+	private void logSuspendedMember(final String userId) {
+		if (log.isDebugEnabled()) {
+			log.debug("Clinic member suspended; no subscription entitlements for userId={}", userId);
+		}
 	}
 
 	private record UserAccessContext(Subscription subscription, boolean director) {
