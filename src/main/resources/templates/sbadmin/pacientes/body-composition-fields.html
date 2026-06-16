@@ -7,6 +7,7 @@
   <h5 class="mb-3">Composición Corporal</h5>
   <p class="text-muted small mb-3">
     Opcional. Al guardar se calcula automáticamente si hay peso/estatura, pliegues completos o % grasa de bioimpedancia.
+    Puede indicar el método clínico (p. ej. DEXA externo) para trazabilidad.
   </p>
   <div class="row">
     <div class="col-md-4">
@@ -37,19 +38,36 @@
       </div>
     </div>
   </div>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="form-group">
+        <label>Método de obtención</label>
+        <select th:field="*{bodyComposition.metodoObtencion}" class="form-control">
+          <option value="">Automático (según datos ingresados)</option>
+          <option th:each="metodo : ${T(com.nutriconsultas.clinical.exam.anthropometric.MetodoObtencionComposicionCorporal).values()}"
+                  th:value="${metodo}" th:text="${metodo.displayName}">Manual</option>
+        </select>
+        <small class="form-text text-muted">DEXA u Otro se conserva al guardar aunque el % se recalcule.</small>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div th:fragment="bodyCompositionDisplay(measurement)">
   <div th:with="fatPct=${measurement.porcentajeGrasaCorporal != null ? measurement.porcentajeGrasaCorporal : (measurement.bioimpedance != null ? measurement.bioimpedance.bodyFatPercentage : null)},
                 fatIdx=${measurement.indiceGrasaCorporal},
-                musclePct=${measurement.porcentajeMasaMuscular != null ? measurement.porcentajeMasaMuscular : null}"
+                musclePct=${measurement.porcentajeMasaMuscular != null ? measurement.porcentajeMasaMuscular : null},
+                metodo=${measurement.metodoObtencion}"
        th:if="${fatPct != null || fatIdx != null || musclePct != null}">
     <hr class="my-3">
     <h5 class="mb-3">Composición Corporal</h5>
     <div class="row">
       <div class="col-md-4" th:if="${fatPct != null}">
         <p><strong>% Grasa Corporal:</strong>
-          <span th:text="${#numbers.formatDecimal(fatPct, 1, 1)} + '%'">-</span></p>
+          <span th:text="${#numbers.formatDecimal(fatPct, 1, 1)} + '%'">-</span>
+          <span th:if="${metodo != null}" class="text-muted small">
+            (<span th:text="${metodo.displayName}">-</span>)
+          </span></p>
       </div>
       <div class="col-md-4" th:if="${fatIdx != null}">
         <p><strong>Índice de Grasa Corporal:</strong>
@@ -58,6 +76,10 @@
       <div class="col-md-4" th:if="${musclePct != null}">
         <p><strong>% Masa Muscular:</strong>
           <span th:text="${#numbers.formatDecimal(musclePct, 1, 1)} + '%'">-</span></p>
+      </div>
+      <div class="col-md-12" th:if="${metodo != null && fatPct == null}">
+        <p><strong>Método de obtención:</strong>
+          <span th:text="${metodo.displayName}">-</span></p>
       </div>
     </div>
   </div>

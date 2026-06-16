@@ -26,6 +26,7 @@ import com.nutriconsultas.clinical.exam.anthropometric.BodyMass;
 import com.nutriconsultas.clinical.exam.anthropometric.Bioimpedance;
 import com.nutriconsultas.clinical.exam.anthropometric.Circumferences;
 import com.nutriconsultas.clinical.exam.anthropometric.Diameters;
+import com.nutriconsultas.clinical.exam.anthropometric.MetodoObtencionComposicionCorporal;
 import com.nutriconsultas.clinical.exam.anthropometric.Skinfolds;
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
@@ -335,6 +336,17 @@ public class AnthropometricMeasurement {
 			bodyComposition = new BodyComposition();
 		}
 		bodyComposition.setSomatocartaY(somatocartaY);
+	}
+
+	public MetodoObtencionComposicionCorporal getMetodoObtencion() {
+		return bodyComposition != null ? bodyComposition.getMetodoObtencion() : null;
+	}
+
+	public void setMetodoObtencion(final MetodoObtencionComposicionCorporal metodoObtencion) {
+		if (bodyComposition == null) {
+			bodyComposition = new BodyComposition();
+		}
+		bodyComposition.setMetodoObtencion(metodoObtencion);
 	}
 
 }

@@ -26,6 +26,7 @@ import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurementRepository;
 import com.nutriconsultas.clinical.exam.ClinicalExamRepository;
 import com.nutriconsultas.clinical.exam.anthropometric.BodyMass;
+import com.nutriconsultas.clinical.exam.anthropometric.MetodoObtencionComposicionCorporal;
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
@@ -85,6 +86,7 @@ class BodyMetricRecordServiceTest {
 		measurement.setMeasurementDateTime(new Date());
 		measurement.setPorcentajeGrasaCorporal(20.5);
 		measurement.setIndiceGrasaCorporal(20.5);
+		measurement.setMetodoObtencion(MetodoObtencionComposicionCorporal.BIOIMPEDANCIA);
 
 		when(repository.findBySourceAndSourceId(BodyMetricSource.ANTHROPOMETRIC, 10L)).thenReturn(Optional.empty());
 		when(repository.save(any(BodyMetricRecord.class))).thenAnswer(invocation -> {
@@ -99,6 +101,8 @@ class BodyMetricRecordServiceTest {
 		verify(repository).save(captor.capture());
 		assertThat(captor.getValue().getBodyFatPercentage()).isEqualTo(20.5);
 		assertThat(captor.getValue().getBodyFatIndex()).isEqualTo(20.5);
+		assertThat(captor.getValue().getMetodoObtencionComposicion())
+			.isEqualTo(MetodoObtencionComposicionCorporal.BIOIMPEDANCIA);
 	}
 
 	@Test

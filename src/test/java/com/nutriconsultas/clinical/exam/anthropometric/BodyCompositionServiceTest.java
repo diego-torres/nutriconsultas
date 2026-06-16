@@ -54,6 +54,7 @@ class BodyCompositionServiceTest {
 		assertThat(measurement.getPorcentajeGrasaCorporal()).isEqualTo(18.5);
 		assertThat(measurement.getIndiceGrasaCorporal()).isEqualTo(18.5);
 		assertThat(measurement.getPorcentajeMasaMuscular()).isEqualTo(80.0);
+		assertThat(measurement.getMetodoObtencion()).isEqualTo(MetodoObtencionComposicionCorporal.MANUAL);
 		verify(bodyFatCalculatorService, never()).calculateBodyFatPercentage(any(), any(), any());
 	}
 
@@ -69,6 +70,7 @@ class BodyCompositionServiceTest {
 		assertThat(measurement.getPorcentajeGrasaCorporal()).isEqualTo(24.0);
 		assertThat(measurement.getIndiceGrasaCorporal()).isEqualTo(24.0);
 		assertThat(measurement.getPorcentajeMasaMuscular()).isEqualTo(76.0);
+		assertThat(measurement.getMetodoObtencion()).isEqualTo(MetodoObtencionComposicionCorporal.BIOIMPEDANCIA);
 		verify(bodyFatCalculatorService, never()).calculateBodyFatPercentage(any(), any(), any());
 	}
 
@@ -86,6 +88,7 @@ class BodyCompositionServiceTest {
 
 		assertThat(measurement.getPorcentajeGrasaCorporal()).isEqualTo(19.0);
 		assertThat(measurement.getPorcentajeMasaMuscular()).isEqualTo(80.0);
+		assertThat(measurement.getMetodoObtencion()).isEqualTo(MetodoObtencionComposicionCorporal.PLIEGUES);
 		verify(bodyFatCalculatorService).calculateBodyFatFromSkinfolds(10.0, 15.0, 12.0, 30, "M");
 		verify(bodyFatCalculatorService, never()).calculateBodyFatPercentage(any(), any(), any());
 	}
@@ -100,6 +103,7 @@ class BodyCompositionServiceTest {
 		assertThat(measurement.getPorcentajeGrasaCorporal()).isEqualTo(16.5);
 		assertThat(measurement.getIndiceGrasaCorporal()).isEqualTo(16.5);
 		assertThat(measurement.getPorcentajeMasaMuscular()).isEqualTo(80.0);
+		assertThat(measurement.getMetodoObtencion()).isEqualTo(MetodoObtencionComposicionCorporal.DEURENBERG);
 		verify(bodyFatCalculatorService).calculateBodyFatPercentage(22.86, 30, "M");
 	}
 
@@ -124,6 +128,33 @@ class BodyCompositionServiceTest {
 		assertThat(measurement.getPorcentajeGrasaCorporal()).isNull();
 		assertThat(measurement.getIndiceGrasaCorporal()).isNull();
 		assertThat(measurement.getPorcentajeMasaMuscular()).isNull();
+		assertThat(measurement.getMetodoObtencion()).isNull();
+	}
+
+	@Test
+	void applyToMeasurementPreservesDexaOverrideWhenBioimpedanceRecalculatesFat() {
+		final AnthropometricMeasurement measurement = createMeasurementWithWeight(70.0, 1.75);
+		final Bioimpedance bioimpedance = new Bioimpedance();
+		bioimpedance.setBodyFatPercentage(24.0);
+		measurement.setBioimpedance(bioimpedance);
+		measurement.setMetodoObtencion(MetodoObtencionComposicionCorporal.DEXA);
+
+		service.applyToMeasurement(measurement, paciente, 22.86);
+
+		assertThat(measurement.getPorcentajeGrasaCorporal()).isEqualTo(24.0);
+		assertThat(measurement.getMetodoObtencion()).isEqualTo(MetodoObtencionComposicionCorporal.DEXA);
+	}
+
+	@Test
+	void applyToMeasurementPreservesOtroOverrideWithManualFatEntry() {
+		final AnthropometricMeasurement measurement = createMeasurementWithWeight(70.0, 1.75);
+		measurement.setPorcentajeGrasaCorporal(21.0);
+		measurement.setMetodoObtencion(MetodoObtencionComposicionCorporal.OTRO);
+
+		service.applyToMeasurement(measurement, paciente, 22.86);
+
+		assertThat(measurement.getPorcentajeGrasaCorporal()).isEqualTo(21.0);
+		assertThat(measurement.getMetodoObtencion()).isEqualTo(MetodoObtencionComposicionCorporal.OTRO);
 	}
 
 	private AnthropometricMeasurement createMeasurementWithWeight(final Double weight, final Double height) {
