@@ -10,7 +10,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) | Canonical cross-repo contract — §F8 schema/enum map, per-issue corrected scope |
 | [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) | Endpoint request/response specs (#91–#99) with field mappings |
 
-**Current next issue:** [#156 — Paciente domain refactor](https://github.com/diego-torres/nutriconsultas/issues/156) — **NEXT** (integration prerequisite). ~~#114~~ nutritionist reply **done**. ~~#116~~ `senderDisplayName` **done** on `main`.
+**Current next issue:** [#156 — Paciente domain refactor](https://github.com/diego-torres/nutriconsultas/issues/156) — **in-progress** (Phase A done on `integration/a-paciente-projections`; **NEXT:** Phase B `@Embeddable`). ~~#114~~ nutritionist reply **done**. ~~#116~~ `senderDisplayName` **done** on `main`.
 
 ---
 
@@ -322,13 +322,13 @@ gh pr create ...
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#156 — Paciente domain refactor](https://github.com/diego-torres/nutriconsultas/issues/156) |
-| **Status** | **NEXT** |
-| **Phase** | Integration prerequisite (blocks #46 Liquibase, #132 onboarding) |
+| **Next issue** | [#156 — Paciente domain refactor](https://github.com/diego-torres/nutriconsultas/issues/156) Phase B |
+| **Status** | **in-progress** (Phase A on branch `integration/a-paciente-projections`) |
+| **Phase** | Integration prerequisite — Phase A read projections **done**; Phase B `@Embeddable` **NEXT** |
 | **Depends on** | #121 |
 | **Blocks** | #46, #132 |
 | **Just completed** | [#114](https://github.com/diego-torres/nutriconsultas/issues/114) — nutritionist reply (admin REST + web widget; `PatientMessageIntegrationTest` round-trip); [#116](https://github.com/diego-torres/nutriconsultas/issues/116) — `senderDisplayName` on `main` |
-| **In scope for #156** | Incremental `Paciente` decomposition (projections + `@Embeddable`); no mobile JSON contract changes |
+| **In scope for #156** | Phase A: read projections ✓ (this branch). **NEXT:** Phase B `@Embeddable` grouping (same table). Phase C optional. No mobile JSON contract changes. |
 
 ### Upcoming gates
 
@@ -345,7 +345,9 @@ gh pr create ...
 
 **Patient mobile API on `main`:** JWT resource server (#107), DTO envelope (#110), patient linkage (#109), visits (#91/#92), diet plans (#93–#95), messages list/send (#96/#97 with HTTP 201 + rate limit), progress snapshot (#98) + measurements time series (#99, PR #153), localized API errors (#111), Resilience4j write throttling (#113), **OpenAPI spec (#112, PR #164)**, **`senderDisplayName` (#116)**, **nutritionist reply (#114)**. Dashboard IMC gauge (#106) done for web tablero.
 
-**Next:** #156 `Paciente` domain refactor (integration prerequisite — blocks Liquibase #46 and onboarding #132).
+**Next:** #156 Phase B — `@Embeddable` grouping (`PacienteEnergyPreferences`, `PacienteMedicalHistory`, `PacienteBodySnapshot`); then #46 Liquibase baseline.
+
+**In progress:** #156 Phase A read projections on branch `integration/a-paciente-projections` (`PacienteListView`, `PacienteAuthView`, `PacienteCalendarView`).
 
 **GitHub drift (close when convenient):** #97 and #111 are **done on `main`** but still **open on GitHub** (implemented in PRs #147, #151).
 

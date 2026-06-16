@@ -39,6 +39,7 @@ import com.nutriconsultas.paciente.BodyFatCalculatorService;
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.paciente.projection.PacienteCalendarView;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,7 +65,7 @@ public class CalendarEventRestControllerTest {
 
 	private Paciente paciente;
 
-	private List<Paciente> pacientes;
+	private List<PacienteCalendarView> pacientes;
 
 	private OidcUser principal;
 
@@ -137,13 +138,13 @@ public class CalendarEventRestControllerTest {
 
 		// Create test pacientes list
 		pacientes = new ArrayList<>();
-		pacientes.add(paciente);
+		pacientes.add(calendarViewFrom(paciente));
 		final Paciente paciente2 = new Paciente();
 		paciente2.setId(2L);
 		paciente2.setName("Maria Garcia");
 		paciente2.setUserId(TEST_USER_ID);
-		pacientes.add(paciente2);
-		lenient().when(pacienteRepository.findByUserId(TEST_USER_ID)).thenReturn(pacientes);
+		pacientes.add(calendarViewFrom(paciente2));
+		lenient().when(pacienteRepository.findCalendarViewsByUserId(TEST_USER_ID)).thenReturn(pacientes);
 
 		log.info("finished setting up calendar event service with {} events", events.size());
 	}
@@ -918,7 +919,7 @@ public class CalendarEventRestControllerTest {
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.size()).isEqualTo(2);
-		verify(pacienteRepository).findByUserId(TEST_USER_ID);
+		verify(pacienteRepository).findCalendarViewsByUserId(TEST_USER_ID);
 
 		// Verify first paciente
 		final Map<String, Object> paciente1 = result.get(0);
@@ -939,7 +940,7 @@ public class CalendarEventRestControllerTest {
 	public void testGetPacientesEmptyList() {
 		log.info("starting testGetPacientesEmptyList");
 		// Arrange
-		when(pacienteRepository.findByUserId(TEST_USER_ID)).thenReturn(new ArrayList<>());
+		when(pacienteRepository.findCalendarViewsByUserId(TEST_USER_ID)).thenReturn(new ArrayList<>());
 
 		// Act
 		final List<Map<String, Object>> result = calendarEventRestController.getPacientes(principal);
@@ -947,7 +948,7 @@ public class CalendarEventRestControllerTest {
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result).isEmpty();
-		verify(pacienteRepository).findByUserId(TEST_USER_ID);
+		verify(pacienteRepository).findCalendarViewsByUserId(TEST_USER_ID);
 		log.info("finished testGetPacientesEmptyList");
 	}
 
@@ -2019,6 +2020,30 @@ public class CalendarEventRestControllerTest {
 		verify(pacienteRepository)
 			.save(org.mockito.ArgumentMatchers.argThat(p -> p.getImc() != null && p.getBmr() == null));
 		log.info("finished updateEvent_withExplicitImcOnly_updatesImcWithoutBmr");
+	}
+
+	private static PacienteCalendarView calendarViewFrom(final Paciente entity) {
+		return new PacienteCalendarView() {
+			@Override
+			public Long getId() {
+				return entity.getId();
+			}
+
+			@Override
+			public String getName() {
+				return entity.getName();
+			}
+
+			@Override
+			public Date getDob() {
+				return entity.getDob();
+			}
+
+			@Override
+			public String getGender() {
+				return entity.getGender();
+			}
+		};
 	}
 
 }

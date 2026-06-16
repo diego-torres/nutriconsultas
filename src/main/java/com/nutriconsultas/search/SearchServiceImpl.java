@@ -15,8 +15,8 @@ import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventRepository;
 import com.nutriconsultas.clinical.exam.ClinicalExam;
 import com.nutriconsultas.clinical.exam.ClinicalExamRepository;
-import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.paciente.projection.PacienteListView;
 import com.nutriconsultas.platillos.Platillo;
 import com.nutriconsultas.platillos.PlatilloRepository;
 
@@ -52,7 +52,8 @@ public class SearchServiceImpl implements SearchService {
 		final int pageNumber = Math.max(1, page);
 
 		// Search Pacientes (filtered by userId)
-		final List<Paciente> allPacientes = pacienteRepository.findByUserIdAndSearchTerm(userId, searchTerm);
+		final List<PacienteListView> allPacientes = pacienteRepository.findListViewsByUserIdAndSearchTerm(userId,
+				searchTerm);
 		final List<SearchResult> allPacienteResults = allPacientes.stream()
 			.map(p -> new SearchResult(SearchResultType.PACIENTE, p.getId(), p.getName(), buildPacienteDescription(p),
 					"/admin/pacientes/" + p.getId()))
@@ -119,7 +120,7 @@ public class SearchServiceImpl implements SearchService {
 		return new PaginatedSearchResults(paginatedResults, totalCount, pageNumber, PAGE_SIZE, totalPages);
 	}
 
-	private String buildPacienteDescription(final Paciente paciente) {
+	private String buildPacienteDescription(final PacienteListView paciente) {
 		final List<String> parts = new ArrayList<>();
 		if (paciente.getEmail() != null && !paciente.getEmail().isEmpty()) {
 			parts.add("Email: " + paciente.getEmail());

@@ -66,7 +66,7 @@ public class PatientAuthLinkageService {
 	}
 
 	private Paciente assignSub(final Paciente paciente, final String patientAuthSub) {
-		pacienteRepository.findByPatientAuthSub(patientAuthSub).ifPresent(existing -> {
+		pacienteRepository.findAuthViewByPatientAuthSub(patientAuthSub).ifPresent(existing -> {
 			if (!existing.getId().equals(paciente.getId())) {
 				throw new PatientAuthSubAlreadyLinkedException();
 			}

@@ -16,7 +16,7 @@ import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.CursorPagedResponse;
 import com.nutriconsultas.mobile.dto.PatientMessageSummaryDto;
 import com.nutriconsultas.mobile.dto.SendPatientMessageRequest;
-import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.projection.PacienteAuthView;
 import com.nutriconsultas.util.LogRedaction;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -49,12 +49,12 @@ public class MobilePatientMessageController extends AbstractMobilePatientControl
 			@Parameter(description = "Opaque cursor from a previous page") @RequestParam(
 					required = false) final String cursor,
 			@Parameter(description = "Page size") @RequestParam(defaultValue = "20") final int size) {
-		final Paciente paciente = getAuthenticatedPaciente(jwt);
+		final Long pacienteId = getAuthenticatedPacienteId(jwt);
 		if (log.isDebugEnabled()) {
-			log.debug("Mobile list messages request for patient {}", LogRedaction.redactPaciente(paciente.getId()));
+			log.debug("Mobile list messages request for patient {}", LogRedaction.redactPaciente(pacienteId));
 		}
 		final CursorPagedResponse<PatientMessageSummaryDto> messages = mobilePatientMessageService
-			.listMessages(paciente.getId(), cursor, size);
+			.listMessages(pacienteId, cursor, size);
 		return ApiResponse.ok(messages);
 	}
 
@@ -66,11 +66,11 @@ public class MobilePatientMessageController extends AbstractMobilePatientControl
 	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Created message summary")
 	public ApiResponse<PatientMessageSummaryDto> sendMessage(@AuthenticationPrincipal final Jwt jwt,
 			@Valid @RequestBody final SendPatientMessageRequest request) {
-		final Paciente paciente = getAuthenticatedPaciente(jwt);
+		final PacienteAuthView authView = getAuthenticatedPacienteAuthView(jwt);
 		if (log.isDebugEnabled()) {
-			log.debug("Mobile send message request for patient {}", LogRedaction.redactPaciente(paciente.getId()));
+			log.debug("Mobile send message request for patient {}", LogRedaction.redactPaciente(authView.getId()));
 		}
-		final PatientMessageSummaryDto sent = mobilePatientMessageService.sendMessage(paciente, request.body());
+		final PatientMessageSummaryDto sent = mobilePatientMessageService.sendMessage(authView, request.body());
 		return ApiResponse.ok(sent);
 	}
 

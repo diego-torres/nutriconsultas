@@ -6,8 +6,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.paciente.projection.PacienteAuthView;
 import com.nutriconsultas.util.LogRedaction;
 
 import lombok.extern.slf4j.Slf4j;
@@ -23,30 +23,25 @@ public class PatientAuthService {
 	}
 
 	@Transactional(readOnly = true)
-	public Optional<Paciente> findByJwt(final Jwt jwt) {
+	public Optional<PacienteAuthView> findAuthViewByJwt(final Jwt jwt) {
 		if (jwt == null || jwt.getSubject() == null) {
 			return Optional.empty();
 		}
-		return pacienteRepository.findByPatientAuthSub(jwt.getSubject());
+		return pacienteRepository.findAuthViewByPatientAuthSub(jwt.getSubject());
 	}
 
 	@Transactional(readOnly = true)
-	public Paciente requirePacienteByJwt(final Jwt jwt) {
-		return findByJwt(jwt).orElseThrow(PatientNotLinkedException::new);
-	}
-
-	@Transactional(readOnly = true)
-	public Paciente requirePacienteById(final Long pacienteId) {
-		return pacienteRepository.findById(pacienteId).orElseThrow(PatientNotLinkedException::new);
+	public PacienteAuthView requireAuthViewByJwt(final Jwt jwt) {
+		return findAuthViewByJwt(jwt).orElseThrow(PatientNotLinkedException::new);
 	}
 
 	@Transactional(readOnly = true)
 	public PatientPrincipal resolvePrincipal(final Jwt jwt) {
-		final Paciente paciente = requirePacienteByJwt(jwt);
+		final PacienteAuthView authView = requireAuthViewByJwt(jwt);
 		if (log.isDebugEnabled()) {
-			log.debug("Resolved mobile patient principal: {}", LogRedaction.redactPaciente(paciente.getId()));
+			log.debug("Resolved mobile patient principal: {}", LogRedaction.redactPaciente(authView.getId()));
 		}
-		return new PatientPrincipal(paciente.getId(), jwt.getSubject());
+		return new PatientPrincipal(authView.getId(), jwt.getSubject());
 	}
 
 }

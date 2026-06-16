@@ -16,7 +16,6 @@ import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.PagedResponse;
 import com.nutriconsultas.mobile.dto.VisitDetailDto;
 import com.nutriconsultas.mobile.dto.VisitSummaryDto;
-import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.util.LogRedaction;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,11 +50,11 @@ public class MobilePatientVisitController extends AbstractMobilePatientControlle
 					required = false) final Instant from,
 			@Parameter(description = "Inclusive end instant (ISO-8601)") @RequestParam(
 					required = false) final Instant to) {
-		final Paciente paciente = getAuthenticatedPaciente(jwt);
+		final Long pacienteId = getAuthenticatedPacienteId(jwt);
 		if (log.isDebugEnabled()) {
-			log.debug("Mobile list visits request for patient {}", LogRedaction.redactPaciente(paciente.getId()));
+			log.debug("Mobile list visits request for patient {}", LogRedaction.redactPaciente(pacienteId));
 		}
-		final PagedResponse<VisitSummaryDto> visits = mobilePatientVisitService.listVisits(paciente.getId(), page, size,
+		final PagedResponse<VisitSummaryDto> visits = mobilePatientVisitService.listVisits(pacienteId, page, size,
 				status, from, to);
 		return ApiResponse.ok(visits);
 	}
@@ -67,12 +66,12 @@ public class MobilePatientVisitController extends AbstractMobilePatientControlle
 	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Visit detail")
 	public ApiResponse<VisitDetailDto> getVisitDetail(@AuthenticationPrincipal final Jwt jwt,
 			@Parameter(description = "Visit identifier") @PathVariable final Long visitId) {
-		final Paciente paciente = getAuthenticatedPaciente(jwt);
+		final Long pacienteId = getAuthenticatedPacienteId(jwt);
 		if (log.isDebugEnabled()) {
 			log.debug("Mobile get visit {} for patient {}", LogRedaction.redactCalendarEvent(visitId),
-					LogRedaction.redactPaciente(paciente.getId()));
+					LogRedaction.redactPaciente(pacienteId));
 		}
-		final VisitDetailDto visit = mobilePatientVisitService.getVisitDetail(paciente.getId(), visitId);
+		final VisitDetailDto visit = mobilePatientVisitService.getVisitDetail(pacienteId, visitId);
 		return ApiResponse.ok(visit);
 	}
 

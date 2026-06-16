@@ -284,7 +284,8 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			log.error("Cannot get pacientes: user ID is null");
 			return List.of();
 		}
-		final List<Paciente> pacientes = pacienteRepository.findByUserId(userId);
+		final List<com.nutriconsultas.paciente.projection.PacienteCalendarView> pacientes = pacienteRepository
+			.findCalendarViewsByUserId(userId);
 		return pacientes.stream().map(p -> {
 			final Map<String, Object> pacienteMap = new HashMap<>();
 			pacienteMap.put("id", p.getId());

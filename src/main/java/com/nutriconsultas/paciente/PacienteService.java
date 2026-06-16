@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 
+import com.nutriconsultas.paciente.projection.PacienteListView;
+
 public interface PacienteService {
 
 	Paciente findById(@NonNull Long id);
@@ -17,6 +19,13 @@ public interface PacienteService {
 	List<Paciente> findAllByUserId(@NonNull String userId);
 
 	Page<Paciente> findAllByUserId(@NonNull String userId, Pageable pageable);
+
+	Page<PacienteListView> findListViewsByUserId(@NonNull String userId, Pageable pageable);
+
+	List<PacienteListView> findListViewsByUserIdAndSearchTerm(@NonNull String userId, @NonNull String searchTerm);
+
+	Page<PacienteListView> findListViewsByUserIdAndSearchTerm(@NonNull String userId, @NonNull String searchTerm,
+			Pageable pageable);
 
 	Page<Paciente> findAllByUserIdAndSearchTerm(@NonNull String userId, @NonNull String searchTerm, Pageable pageable);
 

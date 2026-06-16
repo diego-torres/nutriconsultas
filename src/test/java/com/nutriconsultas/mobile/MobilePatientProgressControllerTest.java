@@ -19,7 +19,7 @@ import com.nutriconsultas.mobile.dto.PatientProgressSnapshotDto;
 import com.nutriconsultas.mobile.dto.ProgressMeasurementPointDto;
 import com.nutriconsultas.mobile.dto.ProgressMeasurementsDto;
 import com.nutriconsultas.paciente.NivelPeso;
-import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.projection.PacienteAuthView;
 
 @ExtendWith(MockitoExtension.class)
 class MobilePatientProgressControllerTest {
@@ -37,14 +37,12 @@ class MobilePatientProgressControllerTest {
 
 	@Test
 	void getProgress_returnsApiResponseEnvelope() {
-		final Paciente paciente = new Paciente();
-		paciente.setId(5L);
 		final PatientProgressSnapshotDto snapshot = new PatientProgressSnapshotDto(
 				Instant.parse("2026-06-01T10:00:00Z"), null, 70.0, 1.70, 24.2, NivelPeso.NORMAL, "Normal", 1500.0, 22.0,
 				null, null, null);
 		final Jwt jwt = Jwt.withTokenValue("token").header("alg", "none").subject(PATIENT_SUB).build();
 
-		when(patientAuthService.requirePacienteByJwt(jwt)).thenReturn(paciente);
+		when(patientAuthService.requireAuthViewByJwt(jwt)).thenReturn(authView(5L));
 		when(mobilePatientProgressService.getSnapshot(5L)).thenReturn(snapshot);
 
 		final ApiResponse<PatientProgressSnapshotDto> response = controller.getProgress(jwt);
@@ -57,14 +55,12 @@ class MobilePatientProgressControllerTest {
 
 	@Test
 	void listMeasurements_returnsApiResponseEnvelope() {
-		final Paciente paciente = new Paciente();
-		paciente.setId(5L);
 		final ProgressMeasurementsDto series = new ProgressMeasurementsDto(List
 			.of(new ProgressMeasurementPointDto(Instant.parse("2026-06-01T10:00:00Z"), 70.0, 1.70, 24.2, 22.0, null)),
 				1, false);
 		final Jwt jwt = Jwt.withTokenValue("token").header("alg", "none").subject(PATIENT_SUB).build();
 
-		when(patientAuthService.requirePacienteByJwt(jwt)).thenReturn(paciente);
+		when(patientAuthService.requireAuthViewByJwt(jwt)).thenReturn(authView(5L));
 		when(mobilePatientProgressService.listMeasurements(5L, null, null, null)).thenReturn(series);
 
 		final ApiResponse<ProgressMeasurementsDto> response = controller.listMeasurements(jwt, null, null, null);
@@ -74,6 +70,25 @@ class MobilePatientProgressControllerTest {
 		assertThat(response.data().measurements().get(0).weightKg()).isEqualTo(70.0);
 		assertThat(response.timestamp()).isNotNull();
 		verify(mobilePatientProgressService).listMeasurements(5L, null, null, null);
+	}
+
+	private static PacienteAuthView authView(final Long id) {
+		return new PacienteAuthView() {
+			@Override
+			public Long getId() {
+				return id;
+			}
+
+			@Override
+			public String getPatientAuthSub() {
+				return PATIENT_SUB;
+			}
+
+			@Override
+			public String getUserId() {
+				return "auth0|nutritionist";
+			}
+		};
 	}
 
 }

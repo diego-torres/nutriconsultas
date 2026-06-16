@@ -21,7 +21,7 @@ import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.PagedResponse;
 import com.nutriconsultas.mobile.dto.VisitDetailDto;
 import com.nutriconsultas.mobile.dto.VisitSummaryDto;
-import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.projection.PacienteAuthView;
 
 @ExtendWith(MockitoExtension.class)
 class MobilePatientVisitControllerTest {
@@ -39,14 +39,12 @@ class MobilePatientVisitControllerTest {
 
 	@Test
 	void listVisits_returnsApiResponseEnvelope() {
-		final Paciente paciente = new Paciente();
-		paciente.setId(5L);
 		final VisitSummaryDto summary = new VisitSummaryDto(1L, null, "Consulta", EventStatus.SCHEDULED, 45, null);
 		final PagedResponse<VisitSummaryDto> page = PagedResponse
 			.of(new PageImpl<>(List.of(summary), PageRequest.of(0, 20), 1));
 		final Jwt jwt = jwtWithSub(PATIENT_SUB);
 
-		when(patientAuthService.requirePacienteByJwt(jwt)).thenReturn(paciente);
+		when(patientAuthService.requireAuthViewByJwt(jwt)).thenReturn(authView(5L, PATIENT_SUB));
 		when(mobilePatientVisitService.listVisits(eq(5L), eq(0), eq(20), eq(null), eq(null), eq(null)))
 			.thenReturn(page);
 
@@ -61,13 +59,11 @@ class MobilePatientVisitControllerTest {
 
 	@Test
 	void getVisitDetail_returnsApiResponseEnvelope() {
-		final Paciente paciente = new Paciente();
-		paciente.setId(5L);
 		final VisitDetailDto detail = new VisitDetailDto(8L, null, "Consulta", EventStatus.SCHEDULED, 45, null,
 				"Descripción", null, null, null, null, null, null, null, null, null, null, null);
 		final Jwt jwt = jwtWithSub(PATIENT_SUB);
 
-		when(patientAuthService.requirePacienteByJwt(jwt)).thenReturn(paciente);
+		when(patientAuthService.requireAuthViewByJwt(jwt)).thenReturn(authView(5L, PATIENT_SUB));
 		when(mobilePatientVisitService.getVisitDetail(5L, 8L)).thenReturn(detail);
 
 		final ApiResponse<VisitDetailDto> response = controller.getVisitDetail(jwt, 8L);
@@ -80,6 +76,25 @@ class MobilePatientVisitControllerTest {
 
 	private static Jwt jwtWithSub(final String subject) {
 		return Jwt.withTokenValue("token").header("alg", "none").subject(subject).build();
+	}
+
+	private static PacienteAuthView authView(final Long id, final String patientAuthSub) {
+		return new PacienteAuthView() {
+			@Override
+			public Long getId() {
+				return id;
+			}
+
+			@Override
+			public String getPatientAuthSub() {
+				return patientAuthSub;
+			}
+
+			@Override
+			public String getUserId() {
+				return "auth0|nutritionist";
+			}
+		};
 	}
 
 }

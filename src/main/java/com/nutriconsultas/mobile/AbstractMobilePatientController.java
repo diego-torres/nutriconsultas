@@ -2,11 +2,12 @@ package com.nutriconsultas.mobile;
 
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.projection.PacienteAuthView;
 
 /**
- * Base controller for patient mobile endpoints. Resolves the authenticated
- * {@link Paciente} from JWT {@code sub} → {@code Paciente.patientAuthSub}.
+ * Base controller for patient mobile endpoints. Resolves the authenticated patient from
+ * JWT {@code sub} → {@code Paciente.patientAuthSub} using a lightweight auth projection
+ * (#156 Phase A).
  */
 public abstract class AbstractMobilePatientController {
 
@@ -16,11 +17,15 @@ public abstract class AbstractMobilePatientController {
 		this.patientAuthService = patientAuthService;
 	}
 
-	protected Paciente getAuthenticatedPaciente(final Jwt jwt) {
+	protected PacienteAuthView getAuthenticatedPacienteAuthView(final Jwt jwt) {
 		if (jwt == null) {
 			throw new PatientNotLinkedException();
 		}
-		return patientAuthService.requirePacienteByJwt(jwt);
+		return patientAuthService.requireAuthViewByJwt(jwt);
+	}
+
+	protected Long getAuthenticatedPacienteId(final Jwt jwt) {
+		return getAuthenticatedPacienteAuthView(jwt).getId();
 	}
 
 }

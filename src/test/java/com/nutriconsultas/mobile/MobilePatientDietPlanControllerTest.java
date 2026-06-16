@@ -1,7 +1,6 @@
 package com.nutriconsultas.mobile;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,8 +22,8 @@ import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
 import com.nutriconsultas.mobile.dto.PagedResponse;
-import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
+import com.nutriconsultas.paciente.projection.PacienteAuthView;
 
 @ExtendWith(MockitoExtension.class)
 class MobilePatientDietPlanControllerTest {
@@ -42,15 +41,13 @@ class MobilePatientDietPlanControllerTest {
 
 	@Test
 	void listDietPlans_returnsApiResponseEnvelope() {
-		final Paciente paciente = new Paciente();
-		paciente.setId(3L);
 		final DietPlanSummaryDto summary = new DietPlanSummaryDto(7L, PacienteDietaStatus.ACTIVE, null, null, null,
 				"Plan A", 2000, 100.0, 70.0, 250.0);
 		final PagedResponse<DietPlanSummaryDto> page = PagedResponse
 			.of(new PageImpl<>(List.of(summary), PageRequest.of(0, 20), 1));
 		final Jwt jwt = jwtWithSub(PATIENT_SUB);
 
-		when(patientAuthService.requirePacienteByJwt(jwt)).thenReturn(paciente);
+		when(patientAuthService.requireAuthViewByJwt(jwt)).thenReturn(authView(3L));
 		when(mobilePatientDietPlanService.listDietPlans(3L, 0, 20, true)).thenReturn(page);
 
 		final ApiResponse<PagedResponse<DietPlanSummaryDto>> response = controller.listDietPlans(jwt, 0, 20, true);
@@ -63,13 +60,11 @@ class MobilePatientDietPlanControllerTest {
 
 	@Test
 	void getDietPlanPdf_returnsPdfResponseWithContentDisposition() {
-		final Paciente paciente = new Paciente();
-		paciente.setId(3L);
 		final Jwt jwt = jwtWithSub(PATIENT_SUB);
 		final byte[] pdfBytes = new byte[] { 37, 80, 68, 70 };
 		final DietPlanPdfResult pdf = new DietPlanPdfResult(pdfBytes, "Plan A.pdf");
 
-		when(patientAuthService.requirePacienteByJwt(jwt)).thenReturn(paciente);
+		when(patientAuthService.requireAuthViewByJwt(jwt)).thenReturn(authView(3L));
 		when(mobilePatientDietPlanService.generateDietPlanPdf(3L, 7L)).thenReturn(pdf);
 
 		final ResponseEntity<byte[]> response = controller.getDietPlanPdf(jwt, 7L);
@@ -84,6 +79,25 @@ class MobilePatientDietPlanControllerTest {
 
 	private static Jwt jwtWithSub(final String subject) {
 		return Jwt.withTokenValue("token").header("alg", "none").subject(subject).build();
+	}
+
+	private static PacienteAuthView authView(final Long id) {
+		return new PacienteAuthView() {
+			@Override
+			public Long getId() {
+				return id;
+			}
+
+			@Override
+			public String getPatientAuthSub() {
+				return PATIENT_SUB;
+			}
+
+			@Override
+			public String getUserId() {
+				return "auth0|nutritionist";
+			}
+		};
 	}
 
 }

@@ -39,6 +39,7 @@ import com.nutriconsultas.dataTables.paging.Order;
 import com.nutriconsultas.dataTables.paging.PageArray;
 import com.nutriconsultas.dataTables.paging.PagingRequest;
 import com.nutriconsultas.dataTables.paging.Search;
+import com.nutriconsultas.paciente.projection.PacienteListView;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -109,7 +110,8 @@ public class PacienteRestControllerTest {
 		// Arrange
 		final Pageable pageable = PageRequest.of(0, 10);
 		final Page<Paciente> springPage = new PageImpl<>(Arrays.asList(paciente1, paciente2), pageable, 2);
-		when(service.findAllByUserId(eq(TEST_USER_ID), any(Pageable.class))).thenReturn(springPage);
+		when(service.findListViewsByUserId(eq(TEST_USER_ID), any(Pageable.class)))
+			.thenReturn(toListViewPage(springPage));
 		when(service.countByUserId(eq(TEST_USER_ID))).thenReturn(2L);
 
 		final PagingRequest pagingRequest = new PagingRequest();
@@ -129,7 +131,7 @@ public class PacienteRestControllerTest {
 		assertThat(result.getDraw()).isEqualTo(1);
 		assertThat(result.getData()).isNotEmpty();
 		assertThat(result.getData().size()).isEqualTo(2);
-		verify(service).findAllByUserId(eq(TEST_USER_ID), any(Pageable.class));
+		verify(service).findListViewsByUserId(eq(TEST_USER_ID), any(Pageable.class));
 		verify(service, times(2)).countByUserId(eq(TEST_USER_ID));
 		log.info("finished testGetPageArray");
 	}
@@ -140,8 +142,8 @@ public class PacienteRestControllerTest {
 		// Arrange
 		final Pageable pageable = PageRequest.of(0, 10);
 		final Page<Paciente> springPage = new PageImpl<>(Arrays.asList(paciente1), pageable, 1);
-		when(service.findAllByUserIdAndSearchTerm(eq(TEST_USER_ID), eq("juan"), any(Pageable.class)))
-			.thenReturn(springPage);
+		when(service.findListViewsByUserIdAndSearchTerm(eq(TEST_USER_ID), eq("juan"), any(Pageable.class)))
+			.thenReturn(toListViewPage(springPage));
 		when(service.countByUserIdAndSearchTerm(eq(TEST_USER_ID), eq("juan"))).thenReturn(1L);
 		when(service.countByUserId(eq(TEST_USER_ID))).thenReturn(2L);
 
@@ -162,7 +164,7 @@ public class PacienteRestControllerTest {
 		assertThat(result.getDraw()).isEqualTo(1);
 		assertThat(result.getData()).isNotEmpty();
 		assertThat(result.getData().size()).isEqualTo(1);
-		verify(service).findAllByUserIdAndSearchTerm(eq(TEST_USER_ID), eq("juan"), any(Pageable.class));
+		verify(service).findListViewsByUserIdAndSearchTerm(eq(TEST_USER_ID), eq("juan"), any(Pageable.class));
 		verify(service).countByUserIdAndSearchTerm(eq(TEST_USER_ID), eq("juan"));
 		verify(service).countByUserId(eq(TEST_USER_ID));
 		log.info("finished testGetPageArrayWithSearch");
@@ -196,7 +198,8 @@ public class PacienteRestControllerTest {
 		// Arrange - Request second page with 1 item per page
 		final Pageable pageable = PageRequest.of(1, 1);
 		final Page<Paciente> springPage = new PageImpl<>(Arrays.asList(paciente2), pageable, 2);
-		when(service.findAllByUserId(eq(TEST_USER_ID), any(Pageable.class))).thenReturn(springPage);
+		when(service.findListViewsByUserId(eq(TEST_USER_ID), any(Pageable.class)))
+			.thenReturn(toListViewPage(springPage));
 		when(service.countByUserId(eq(TEST_USER_ID))).thenReturn(2L);
 
 		final PagingRequest pagingRequest = new PagingRequest();
@@ -214,7 +217,7 @@ public class PacienteRestControllerTest {
 		assertThat(result.getRecordsTotal()).isEqualTo(2);
 		assertThat(result.getRecordsFiltered()).isEqualTo(2);
 		assertThat(result.getData()).hasSize(1);
-		verify(service).findAllByUserId(eq(TEST_USER_ID), any(Pageable.class));
+		verify(service).findListViewsByUserId(eq(TEST_USER_ID), any(Pageable.class));
 		log.info("finished testGetPageArrayWithPagination");
 	}
 
@@ -225,7 +228,8 @@ public class PacienteRestControllerTest {
 		final Pageable pageable = PageRequest.of(0, 10,
 				org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "name"));
 		final Page<Paciente> springPage = new PageImpl<>(Arrays.asList(paciente1, paciente2), pageable, 2);
-		when(service.findAllByUserId(eq(TEST_USER_ID), any(Pageable.class))).thenReturn(springPage);
+		when(service.findListViewsByUserId(eq(TEST_USER_ID), any(Pageable.class)))
+			.thenReturn(toListViewPage(springPage));
 		when(service.countByUserId(eq(TEST_USER_ID))).thenReturn(2L);
 
 		final PagingRequest pagingRequest = new PagingRequest();
@@ -242,7 +246,7 @@ public class PacienteRestControllerTest {
 		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.getRecordsTotal()).isEqualTo(2);
-		verify(service).findAllByUserId(eq(TEST_USER_ID), any(Pageable.class));
+		verify(service).findListViewsByUserId(eq(TEST_USER_ID), any(Pageable.class));
 		log.info("finished testGetPageArrayWithSorting");
 	}
 
@@ -250,7 +254,7 @@ public class PacienteRestControllerTest {
 	public void testToStringList() {
 		log.info("starting testToStringList");
 		// Act
-		final List<String> result = controller.toStringList(paciente1);
+		final List<String> result = controller.toStringList(toListView(paciente1));
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -279,7 +283,7 @@ public class PacienteRestControllerTest {
 		paciente.setResponsibleName(null);
 
 		// Act
-		final List<String> result = controller.toStringList(paciente);
+		final List<String> result = controller.toStringList(toListView(paciente));
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -316,7 +320,8 @@ public class PacienteRestControllerTest {
 		// Arrange
 		final Pageable pageable = PageRequest.of(0, 10);
 		final Page<Paciente> springPage = new PageImpl<>(Arrays.asList(paciente1, paciente2), pageable, 2);
-		when(service.findAllByUserId(eq(TEST_USER_ID), any(Pageable.class))).thenReturn(springPage);
+		when(service.findListViewsByUserId(eq(TEST_USER_ID), any(Pageable.class)))
+			.thenReturn(toListViewPage(springPage));
 		when(service.countByUserId(eq(TEST_USER_ID))).thenReturn(2L);
 
 		final PagingRequest pagingRequest = new PagingRequest();
@@ -328,7 +333,7 @@ public class PacienteRestControllerTest {
 		pagingRequest.setColumns(controller.getColumns());
 
 		// Act
-		final com.nutriconsultas.dataTables.paging.Page<Paciente> result = controller.getRows(pagingRequest,
+		final com.nutriconsultas.dataTables.paging.Page<PacienteListView> result = controller.getRows(pagingRequest,
 				TEST_USER_ID);
 
 		// Assert
@@ -336,7 +341,7 @@ public class PacienteRestControllerTest {
 		assertThat(result.getRecordsTotal()).isEqualTo(2);
 		assertThat(result.getRecordsFiltered()).isEqualTo(2);
 		assertThat(result.getData()).hasSize(2);
-		verify(service).findAllByUserId(eq(TEST_USER_ID), any(Pageable.class));
+		verify(service).findListViewsByUserId(eq(TEST_USER_ID), any(Pageable.class));
 		log.info("finished testGetRows");
 	}
 
@@ -346,8 +351,8 @@ public class PacienteRestControllerTest {
 		// Arrange
 		final Pageable pageable = PageRequest.of(0, 10);
 		final Page<Paciente> springPage = new PageImpl<>(Arrays.asList(paciente1), pageable, 1);
-		when(service.findAllByUserIdAndSearchTerm(eq(TEST_USER_ID), eq("juan"), any(Pageable.class)))
-			.thenReturn(springPage);
+		when(service.findListViewsByUserIdAndSearchTerm(eq(TEST_USER_ID), eq("juan"), any(Pageable.class)))
+			.thenReturn(toListViewPage(springPage));
 		when(service.countByUserIdAndSearchTerm(eq(TEST_USER_ID), eq("juan"))).thenReturn(1L);
 		when(service.countByUserId(eq(TEST_USER_ID))).thenReturn(2L);
 
@@ -360,7 +365,7 @@ public class PacienteRestControllerTest {
 		pagingRequest.setColumns(controller.getColumns());
 
 		// Act
-		final com.nutriconsultas.dataTables.paging.Page<Paciente> result = controller.getRows(pagingRequest,
+		final com.nutriconsultas.dataTables.paging.Page<PacienteListView> result = controller.getRows(pagingRequest,
 				TEST_USER_ID);
 
 		// Assert
@@ -368,7 +373,7 @@ public class PacienteRestControllerTest {
 		assertThat(result.getRecordsTotal()).isEqualTo(2);
 		assertThat(result.getRecordsFiltered()).isEqualTo(1);
 		assertThat(result.getData()).hasSize(1);
-		verify(service).findAllByUserIdAndSearchTerm(eq(TEST_USER_ID), eq("juan"), any(Pageable.class));
+		verify(service).findListViewsByUserIdAndSearchTerm(eq(TEST_USER_ID), eq("juan"), any(Pageable.class));
 		verify(service).countByUserIdAndSearchTerm(eq(TEST_USER_ID), eq("juan"));
 		log.info("finished testGetRowsWithSearch");
 	}
@@ -447,6 +452,49 @@ public class PacienteRestControllerTest {
 				new HashMap<>(java.util.Map.of("bmr", "1650.0")), null);
 
 		assertThat(response.getStatusCode().value()).isEqualTo(401);
+	}
+
+	private static PacienteListView toListView(final Paciente paciente) {
+		return new PacienteListView() {
+			@Override
+			public Long getId() {
+				return paciente.getId();
+			}
+
+			@Override
+			public String getName() {
+				return paciente.getName();
+			}
+
+			@Override
+			public String getEmail() {
+				return paciente.getEmail();
+			}
+
+			@Override
+			public String getPhone() {
+				return paciente.getPhone();
+			}
+
+			@Override
+			public Date getDob() {
+				return paciente.getDob();
+			}
+
+			@Override
+			public String getGender() {
+				return paciente.getGender();
+			}
+
+			@Override
+			public String getResponsibleName() {
+				return paciente.getResponsibleName();
+			}
+		};
+	}
+
+	private static Page<PacienteListView> toListViewPage(final Page<Paciente> springPage) {
+		return springPage.map(PacienteRestControllerTest::toListView);
 	}
 
 }

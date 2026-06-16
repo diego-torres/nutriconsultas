@@ -26,6 +26,7 @@ import com.nutriconsultas.clinical.exam.ClinicalExam;
 import com.nutriconsultas.clinical.exam.ClinicalExamRepository;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.paciente.projection.PacienteListView;
 import com.nutriconsultas.platillos.Platillo;
 import com.nutriconsultas.platillos.PlatilloRepository;
 
@@ -58,6 +59,8 @@ public class SearchServiceTest {
 
 	private Paciente paciente;
 
+	private PacienteListView pacienteListView;
+
 	private Alimento alimento;
 
 	private Platillo platillo;
@@ -77,6 +80,7 @@ public class SearchServiceTest {
 		paciente.setEmail("juan@example.com");
 		paciente.setPhone("1234567890");
 		paciente.setUserId(TEST_USER_ID);
+		pacienteListView = listViewFrom(paciente);
 
 		// Create test alimento
 		alimento = new Alimento();
@@ -115,8 +119,8 @@ public class SearchServiceTest {
 		log.info("starting testSearchWithResults");
 		// Arrange
 		final String query = "Juan";
-		when(pacienteRepository.findByUserIdAndSearchTerm(eq(TEST_USER_ID), any(String.class)))
-			.thenReturn(Arrays.asList(paciente));
+		when(pacienteRepository.findListViewsByUserIdAndSearchTerm(eq(TEST_USER_ID), any(String.class)))
+			.thenReturn(Arrays.asList(pacienteListView));
 		when(alimentosRepository.findByNombreAlimentoContainingIgnoreCase(query)).thenReturn(new ArrayList<>());
 		when(platilloRepository.findByNameContainingIgnoreCase(query)).thenReturn(new ArrayList<>());
 		when(calendarEventRepository.findByUserIdAndSearchTerm(eq(TEST_USER_ID), any(String.class)))
@@ -139,7 +143,7 @@ public class SearchServiceTest {
 		assertThat(result.getClinicalExams().getTotalCount()).isEqualTo(1);
 		assertThat(result.getTotalResults()).isEqualTo(3);
 
-		verify(pacienteRepository).findByUserIdAndSearchTerm(eq(TEST_USER_ID), any(String.class));
+		verify(pacienteRepository).findListViewsByUserIdAndSearchTerm(eq(TEST_USER_ID), any(String.class));
 		verify(alimentosRepository).findByNombreAlimentoContainingIgnoreCase(query);
 		verify(platilloRepository).findByNameContainingIgnoreCase(query);
 		verify(calendarEventRepository).findByUserIdAndSearchTerm(eq(TEST_USER_ID), any(String.class));
@@ -152,7 +156,7 @@ public class SearchServiceTest {
 		log.info("starting testSearchWithNoResults");
 		// Arrange
 		final String query = "Nonexistent";
-		when(pacienteRepository.findByUserIdAndSearchTerm(eq(TEST_USER_ID), any(String.class)))
+		when(pacienteRepository.findListViewsByUserIdAndSearchTerm(eq(TEST_USER_ID), any(String.class)))
 			.thenReturn(new ArrayList<>());
 		when(alimentosRepository.findByNombreAlimentoContainingIgnoreCase(query)).thenReturn(new ArrayList<>());
 		when(platilloRepository.findByNameContainingIgnoreCase(query)).thenReturn(new ArrayList<>());
@@ -181,7 +185,7 @@ public class SearchServiceTest {
 		log.info("starting testSearchAlimentos");
 		// Arrange
 		final String query = "Manzana";
-		when(pacienteRepository.findByUserIdAndSearchTerm(eq(TEST_USER_ID), any(String.class)))
+		when(pacienteRepository.findListViewsByUserIdAndSearchTerm(eq(TEST_USER_ID), any(String.class)))
 			.thenReturn(new ArrayList<>());
 		when(alimentosRepository.findByNombreAlimentoContainingIgnoreCase(query)).thenReturn(Arrays.asList(alimento));
 		when(platilloRepository.findByNameContainingIgnoreCase(query)).thenReturn(new ArrayList<>());
@@ -208,7 +212,7 @@ public class SearchServiceTest {
 		log.info("starting testSearchPlatillos");
 		// Arrange
 		final String query = "Ensalada";
-		when(pacienteRepository.findByUserIdAndSearchTerm(eq(TEST_USER_ID), any(String.class)))
+		when(pacienteRepository.findListViewsByUserIdAndSearchTerm(eq(TEST_USER_ID), any(String.class)))
 			.thenReturn(new ArrayList<>());
 		when(alimentosRepository.findByNombreAlimentoContainingIgnoreCase(query)).thenReturn(new ArrayList<>());
 		when(platilloRepository.findByNameContainingIgnoreCase(query)).thenReturn(Arrays.asList(platillo));
@@ -228,6 +232,45 @@ public class SearchServiceTest {
 		assertThat(result.getPlatillos().getTotalCount()).isEqualTo(1);
 		assertThat(result.getTotalResults()).isEqualTo(1);
 		log.info("finished testSearchPlatillos");
+	}
+
+	private static PacienteListView listViewFrom(final Paciente entity) {
+		return new PacienteListView() {
+			@Override
+			public Long getId() {
+				return entity.getId();
+			}
+
+			@Override
+			public String getName() {
+				return entity.getName();
+			}
+
+			@Override
+			public String getEmail() {
+				return entity.getEmail();
+			}
+
+			@Override
+			public String getPhone() {
+				return entity.getPhone();
+			}
+
+			@Override
+			public Date getDob() {
+				return entity.getDob();
+			}
+
+			@Override
+			public String getGender() {
+				return entity.getGender();
+			}
+
+			@Override
+			public String getResponsibleName() {
+				return entity.getResponsibleName();
+			}
+		};
 	}
 
 }

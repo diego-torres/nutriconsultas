@@ -24,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.nutriconsultas.auth0.Auth0UserLookup;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.paciente.projection.PacienteAuthView;
 
 @ExtendWith(MockitoExtension.class)
 class PatientAuthLinkageServiceTest {
@@ -63,7 +64,7 @@ class PatientAuthLinkageServiceTest {
 
 	@Test
 	void linkBySub_setsPatientAuthSub() {
-		when(pacienteRepository.findByPatientAuthSub(PATIENT_SUB)).thenReturn(Optional.empty());
+		when(pacienteRepository.findAuthViewByPatientAuthSub(PATIENT_SUB)).thenReturn(Optional.empty());
 		when(pacienteRepository.save(any(Paciente.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		final Paciente linked = service.linkBySub(1L, NUTRITIONIST_SUB, PATIENT_SUB);
@@ -76,7 +77,7 @@ class PatientAuthLinkageServiceTest {
 	void linkBySub_whenSubAlreadyUsedByOtherPatient_throws() {
 		final Paciente other = samplePaciente(99L, "other@example.com");
 		other.setPatientAuthSub(PATIENT_SUB);
-		when(pacienteRepository.findByPatientAuthSub(PATIENT_SUB)).thenReturn(Optional.of(other));
+		when(pacienteRepository.findAuthViewByPatientAuthSub(PATIENT_SUB)).thenReturn(Optional.of(authView(other)));
 
 		assertThatThrownBy(() -> service.linkBySub(1L, NUTRITIONIST_SUB, PATIENT_SUB))
 			.isInstanceOf(PatientAuthSubAlreadyLinkedException.class);
@@ -87,7 +88,7 @@ class PatientAuthLinkageServiceTest {
 	void linkByEmail_usesAuth0Lookup() {
 		when(auth0UserLookup.isConfigured()).thenReturn(true);
 		when(auth0UserLookup.findUserIdByEmail("patient@example.com")).thenReturn(Optional.of(PATIENT_SUB));
-		when(pacienteRepository.findByPatientAuthSub(PATIENT_SUB)).thenReturn(Optional.empty());
+		when(pacienteRepository.findAuthViewByPatientAuthSub(PATIENT_SUB)).thenReturn(Optional.empty());
 		when(pacienteRepository.save(any(Paciente.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		final Paciente linked = service.linkByEmail(1L, NUTRITIONIST_SUB);
@@ -143,6 +144,25 @@ class PatientAuthLinkageServiceTest {
 		assertThat(status.isLinked()).isTrue();
 		assertThat(status.getPatientAuthSubRedacted()).contains("…");
 		assertThat(status.getPatientAuthSubRedacted()).doesNotContain(PATIENT_SUB);
+	}
+
+	private static PacienteAuthView authView(final Paciente entity) {
+		return new PacienteAuthView() {
+			@Override
+			public Long getId() {
+				return entity.getId();
+			}
+
+			@Override
+			public String getPatientAuthSub() {
+				return entity.getPatientAuthSub();
+			}
+
+			@Override
+			public String getUserId() {
+				return entity.getUserId();
+			}
+		};
 	}
 
 	private static Paciente samplePaciente(final Long id, final String email) {
