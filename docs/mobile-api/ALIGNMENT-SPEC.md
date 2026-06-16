@@ -160,7 +160,7 @@ Add to each a short "Backend dependency" line per the cross-reference table, e.g
 - **Phase 0 DONE:** #107 (PR #117), #109 (PR #142), #110 (DTO envelope).
 - **Endpoints on `main`:** #91–#99 (visits, diet plans + PDF, messages, progress snapshot + measurements time series); #96/#97 messaging with HTTP 201 + Resilience4j 10/min (#113, PR #151).
 - **i18n (#111) DONE** (PR #151): `LocaleContextFilter`, `MobileApiErrorResponses`, localized 403/404/400/429.
-- **Cross-cutting NEXT:** #116 `senderDisplayName`. ~~#115~~ PHI log redaction audit **done** (PR #168, `docs/mobile-api/PHI-LOGGING-AUDIT.md`). ~~#112~~ OpenAPI spec **done** (PR #164, `docs/api/openapi-mobile.yaml`).
+- **Cross-cutting:** ~~#116~~ `senderDisplayName` **in-progress** (branch `mobile-api/116-sender-display-name`: optional field on `PatientMessageSummaryDto` when `senderRole=NUTRITIONIST`). ~~#115~~ PHI log redaction audit **done** (PR #168, `docs/mobile-api/PHI-LOGGING-AUDIT.md`). ~~#112~~ OpenAPI spec **done** (PR #164, `docs/api/openapi-mobile.yaml`). **NEXT:** #114 nutritionist reply (web).
 - `deltaPeso`/`deltaImc` are computed-at-query, not stored.
 - Progress `grasa` ambiguity: prefer `bodyComposition.porcentajeGrasaCorporal` (patient-facing %) over `indiceGrasaCorporal`.
 - Template dietas (seed `system:template-dietas`) have 4 ingestas incl. Colación — contract examples show only 3.
@@ -168,7 +168,7 @@ Add to each a short "Backend dependency" line per the cross-reference table, e.g
 ### F8.4 — NutritionistProfile (NEW entity, 228bbc3)
 `userId` (unique, nutritionist sub), `displayName`, `cedulaProfesional`, `logoExtension`, `registro`.
 - #95 PDF endpoint now serves branded PDFs transparently (no scope change).
-- Optional additive: `senderDisplayName` in message DTOs (#96) from `NutritionistProfile.displayName` — track as separate issue.
+- **#116 DONE (pending PR):** optional `senderDisplayName` in `PatientMessageSummaryDto` when `senderRole=NUTRITIONIST`; sourced from `NutritionistProfile.displayName` via `NutritionistBrandingHelper`; omitted for patient messages or when profile has no display name.
 
 ### F8.5 — Design source of truth
 Canonical visual design: `mobile/.claude/MiNutriporcion-2/` (light editorial palette per JSX + 01-p-dashboard.png; the dark welcome/login screenshots are an OLD iteration — ignore).

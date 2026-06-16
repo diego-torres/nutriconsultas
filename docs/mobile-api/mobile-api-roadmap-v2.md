@@ -14,7 +14,7 @@
 
 > **State verification (2026-06-11):**
 >
-> - **Backend schema (2026-06-15):** Phase 0 **done** (#107, #109, #110). **All endpoints #91–#99 on `main`**. **#112 OpenAPI done** (PR #164). **#115 PHI audit done** (PR #168). **#96/#97** messaging (POST **201**, Resilience4j **10/min** — #113). **#111** localized errors. **NEXT:** #116 `senderDisplayName`; #106 dashboard IMC gauge **done**.
+> - **Backend schema (2026-06-15):** Phase 0 **done** (#107, #109, #110). **All endpoints #91–#99 on `main`**. **#112 OpenAPI done** (PR #164). **#115 PHI audit done** (PR #168). **#96/#97** messaging (POST **201**, Resilience4j **10/min** — #113). **#111** localized errors. **#116 in-progress** (`senderDisplayName` on `PatientMessageSummaryDto`); **NEXT:** #114; #106 dashboard IMC gauge **done**.
 > - **DTO field-name map (authoritative — ALIGNMENT-SPEC §F8):** `Dieta.nombre→dietaName`, `energia→totalKcal`, `proteina→totalProteina`, `lipidos→totalGrasas`, `hidratosDeCarbono→totalCarbohidratos`; `Ingesta.nombre→tipo`; `PlatilloIngesta.name/portions/energia→nombre/porciones/kcal`, `hidratosDeCarbono→carbohidratos`, `lipidos→grasas` (same for `AlimentoIngesta`). Enums: `EventStatus = SCHEDULED/COMPLETED/CANCELLED`; `PacienteDietaStatus = ACTIVE/COMPLETED/CANCELLED` (no INACTIVE); `NivelPeso = BAJO/NORMAL/ALTO/SOBREPESO` (translate to `imcLabel` server-side). `deltaPeso`/`deltaImc` are computed, not stored.
 > - **Mobile redesign branch state (style/editorial-redesign):** Auth dedup complete — `AuthFlowController` + login/signup/welcome screens canonical; PR #48's `AuthController`/`LoginView` retired (commit 3427612); `flutter analyze` clean, 146/146 tests pass. Canonical design source: `.claude/MiNutriporcion-2/` (light editorial palette; dark welcome/login PNGs are OLD, ignore). Mobile issues #13/#21/#31 done; #32/#33 in flight on branch.
 
@@ -395,8 +395,8 @@ All nine endpoints will return DTOs. Without a shared convention, the Flutter `m
 | **93** | `GET /rest/mobile/patient/diet-plans` | Diet list | No | Add `active` filter param; map status enum to locale string. `PacienteDietaStatus = ACTIVE/COMPLETED/CANCELLED` (no INACTIVE). Field names per ALIGNMENT-SPEC §F8 map (e.g., `nombre→dietaName`, `energia→totalKcal`, `lipidos→totalGrasas`, `hidratosDeCarbono→totalCarbohidratos`). |
 | **94** | `GET /rest/mobile/patient/diet-plans/{assignmentId}` | Diet JSON | No | Strip nutritionist-internal fields before serializing; define DTO tree. Field names per ALIGNMENT-SPEC §F8 map (e.g., `nombre→dietaName`, `energia→totalKcal`, `lipidos→grasas`, `hidratosDeCarbono→carbohidratos`). |
 | **95** | `GET .../diet-plans/{assignmentId}/pdf` | Diet PDF | No | `Content-Disposition: attachment`, ownership check before calling service |
-| **96** | `GET /rest/mobile/patient/messages` | Message thread | Yes | Cursor pagination (not offset); no message body in INFO logs. **Greenfield — no message entity exists yet.** Optional: include `senderDisplayName` from `NutritionistProfile.displayName` (#116, additive). |
-| **97** | `POST /rest/mobile/patient/messages` | Send message | Yes | `senderRole=PATIENT` derived from JWT only; `@Valid`; rate limiter. **Greenfield — no message entity exists yet.** Optional `senderDisplayName` support via #116. |
+| **96** | `GET /rest/mobile/patient/messages` | Message thread | Yes | Cursor pagination (not offset); no message body in INFO logs. Optional `senderDisplayName` from `NutritionistProfile.displayName` when `senderRole=NUTRITIONIST` (#116, in-progress). |
+| **97** | `POST /rest/mobile/patient/messages` | Send message | Yes | `senderRole=PATIENT` derived from JWT only; `@Valid`; rate limiter. Patient messages omit `senderDisplayName` (#116). |
 | **98** | `GET /rest/mobile/patient/progress` | Progress snapshot | No | Aggregate in service layer; delta = latest minus previous measurement. Use `porcentajeGrasaCorporal` for body fat % (recommended over `grasa`); `deltaPeso`/`deltaImc` are computed, not stored. |
 | **99** | `GET /rest/mobile/patient/progress/measurements` | Time series | No | `from`/`to` ISO-8601 params; cap at 365 data points. Use `porcentajeGrasaCorporal` for body fat % series. |
 
@@ -618,14 +618,14 @@ flowchart TD
 
 ### #96 — List messages / FL-7a
 
-- **Backend:** Cursor pagination (`?after=<lastMessageId>&limit=20`); never log body at INFO. Entity: `PatientNutritionistMessage { id, pacienteId, senderRole, body, sentAt, readAt }`. **Greenfield — no message entity exists yet (verified at 228bbc3).** Optional: include `senderDisplayName` from `NutritionistProfile.displayName` via backend #116 (additive, non-blocking).
+- **Backend:** Cursor pagination (`?after=<lastMessageId>&limit=20`); never log body at INFO. Response item: `{ id, sentAt, senderRole, body, read, senderDisplayName? }`. `senderDisplayName` present when `senderRole=NUTRITIONIST` and `NutritionistProfile.displayName` is set (#116).
 - **Flutter:** `MessageController`, `MessagePage` with `ListView.builder` (reverse: true), real-time polling every 30s (Phase 1); push notifications in FL-9.
 
 ---
 
 ### #97 — Send message / FL-7b
 
-- **Backend:** `senderRole=PATIENT` derived from JWT, never from request body. `@Valid` + `@Size(max=2000)`. Rate limit: `@RateLimiter(name="patientMessage")` — 10 messages/minute per patient. **Greenfield — no message entity exists yet (verified at 228bbc3).** Optional `senderDisplayName` response field via #116.
+- **Backend:** `senderRole=PATIENT` derived from JWT, never from request body. `@Valid` + `@Size(max=2000)`. Rate limit: `@RateLimiter(name="patientMessage")` — 10 messages/minute per patient. Response omits `senderDisplayName` for patient-authored messages.
 - **Flutter:** `MessageInputBar` widget, optimistic UI (add to list immediately, revert on error).
 
 ---

@@ -10,7 +10,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) | Canonical cross-repo contract — §F8 schema/enum map, per-issue corrected scope |
 | [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) | Endpoint request/response specs (#91–#99) with field mappings |
 
-**Current next issue:** [#116 — Additive: senderDisplayName in message DTOs](https://github.com/diego-torres/nutriconsultas/issues/116) — **NEXT** (additive). ~~#115~~ PHI audit done ([PR #168](https://github.com/diego-torres/nutriconsultas/pull/168)).
+**Current next issue:** [#114 — Nutritionist reply to patient messages](https://github.com/diego-torres/nutriconsultas/issues/114) — **NEXT** (web/backend). ~~#116~~ `senderDisplayName` in-progress (branch `mobile-api/116-sender-display-name`).
 
 ---
 
@@ -22,7 +22,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | **API surface** | All mobile endpoints live under `/rest/mobile/patient/` as plain JSON (not DataTables-shaped like the admin `*RestController`s). |
 | **Identity (security-critical)** | JWT `sub` → **`Paciente.patientAuthSub`** (#107 ✓ PR #117). **Never `Paciente.userId`** — that is the NUTRITIONIST's Auth0 sub / tenant owner (ALIGNMENT-SPEC §F2). `PatientLinkageFilter` returns **403** if no linked `Paciente`. |
 | **Ownership / IDOR** | Return only the authenticated patient's rows. On an ownership miss prefer **404** (not 403) so existence isn't leaked (esp. #92). Never return cross-tenant data. |
-| **Backend state** | **Phase 0 done** (#107, #109, #110). **All endpoints #91–#99 done** on `main`. **OpenAPI #112 done** (PR #164). **PHI audit #115 done**. **NEXT:** #116 `senderDisplayName`. Requires `AUTH_AUDIENCE` env var. |
+| **Backend state** | **Phase 0 done** (#107, #109, #110). **All endpoints #91–#99 done** on `main`. **OpenAPI #112 done** (PR #164). **PHI audit #115 done**. **#116 in-progress** (`senderDisplayName`, branch `mobile-api/116-sender-display-name`). **NEXT:** #114 (nutritionist reply). Requires `AUTH_AUDIENCE` env var. |
 | **DTO envelope** | `ApiResponse<T>`; lists in `PagedResponse<T>` or `CursorPagedResponse<T>` (messages); ISO-8601 date strings. See #110. |
 | **Schema ground truth** | ALIGNMENT-SPEC §F8 field-name map (`nombre→dietaName`, `energia→totalKcal`, `lipidos→totalGrasas`, `hidratosDeCarbono→totalCarbohidratos`, `Ingesta.nombre→tipo`); enums `EventStatus`/`PacienteDietaStatus` (no INACTIVE)/`NivelPeso`. Serialization aliases only — **no DB schema changes** for field renames. |
 | **PHI & logging** | No patient names/emails/DOB in unstructured logs. `LogRedaction` + `PhiLogTurboFilter`; CI runs `scripts/audit-logging.sh` and `scripts/audit-mobile-logging.sh` (#115 done). |
@@ -322,13 +322,13 @@ gh pr create ...
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#116 — senderDisplayName in message DTOs](https://github.com/diego-torres/nutriconsultas/issues/116) |
+| **Next issue** | [#114 — Nutritionist reply to patient messages](https://github.com/diego-torres/nutriconsultas/issues/114) |
 | **Status** | **NEXT** |
-| **Phase** | Additive (optional) |
+| **Phase** | Web/backend (feeds #96 thread) |
 | **Depends on** | #96 |
 | **Blocks** | — |
-| **Just completed** | [#115](https://github.com/diego-torres/nutriconsultas/issues/115) — [PR #168](https://github.com/diego-torres/nutriconsultas/pull/168): PHI log redaction audit (merged to `main`) |
-| **In scope for #116** | Add `senderDisplayName` from `NutritionistProfile` to message DTOs |
+| **Just completed** | [#116](https://github.com/diego-torres/nutriconsultas/issues/116) — branch `mobile-api/116-sender-display-name`: `senderDisplayName` on `PatientMessageSummaryDto` (pending PR) |
+| **In scope for #114** | Nutritionist web UI + backend to reply in patient message thread |
 
 ### Upcoming gates
 
@@ -338,14 +338,14 @@ gh pr create ...
 | Auth linkage (tenant) | #108 (tenant config; prod audience deployed #118) | Before full Auth0 tenant hardening |
 | Endpoints | ~~#91–#99~~ ✓ | **Done** (PR #153) |
 | Cross-cutting | ~~#111~~ ✓, ~~#112~~ ✓ (OpenAPI), ~~#115~~ ✓ (PHI audit) | **Done** |
-| Hardening / additive | ~~#113~~ ✓, **#116** (senderDisplayName), #114 (nutritionist reply) | **#116 is NEXT** |
+| Hardening / additive | ~~#113~~ ✓, **#116** in-progress (`senderDisplayName`), **#114** (nutritionist reply) | **#114 is NEXT** (after #116 PR merges) |
 | Schema / Liquibase | **#156** (`Paciente` refactor) → **#46** (Liquibase baseline) → **#132–#141** (invitation onboarding) | **#156 before any Liquibase cut**; invitation epic not active sprint |
 
 ### Status snapshot (2026-06-15)
 
 **Patient mobile API on `main`:** JWT resource server (#107), DTO envelope (#110), patient linkage (#109), visits (#91/#92), diet plans (#93–#95), messages list/send (#96/#97 with HTTP 201 + rate limit), progress snapshot (#98) + measurements time series (#99, PR #153), localized API errors (#111), Resilience4j write throttling (#113), **OpenAPI spec (#112, PR #164)**. Dashboard IMC gauge (#106) done for web tablero.
 
-**Next:** #116 `senderDisplayName`, then web #114.
+**Next:** #114 nutritionist reply (web). #116 `senderDisplayName` in-progress on branch `mobile-api/116-sender-display-name`.
 
 **GitHub drift (close when convenient):** #97 and #111 are **done on `main`** but still **open on GitHub** (implemented in PRs #147, #151).
 

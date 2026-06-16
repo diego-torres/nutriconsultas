@@ -458,6 +458,10 @@ components:
           type: string
         read:
           type: boolean
+        senderDisplayName:
+          type: string
+          description: Nutritionist display name when senderRole is NUTRITIONIST; omitted otherwise
+          nullable: true
     ApiResponsePagedResponseVisitSummaryDto:
       type: object
       properties:
