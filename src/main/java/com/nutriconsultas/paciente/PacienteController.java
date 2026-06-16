@@ -206,7 +206,7 @@ public class PacienteController extends AbstractAuthorizedController {
 			model.addAttribute("ultimoIndiceGrasaCorporal", ultimoPorcentajeGrasa);
 			model.addAttribute("ultimoMetodoObtencionComposicion", latest.getMetodoObtencionComposicion());
 		});
-		addLatestMuscleMassToModel(id, model);
+		addLatestCompositionMetricsToModel(id, model);
 		// Calculate age and check if patient is under 18 for growth table display
 		final Integer age = calculateAge(paciente.getDob());
 		final boolean isUnder18 = age != null && age < 18;
@@ -1346,14 +1346,26 @@ public class PacienteController extends AbstractAuthorizedController {
 		return new BmiCalculationResult(imc, np, bodyFatPercentage);
 	}
 
-	private void addLatestMuscleMassToModel(final Long pacienteId, final Model model) {
-		anthropometricMeasurementService.findByPacienteId(pacienteId)
-			.stream()
+	private void addLatestCompositionMetricsToModel(final Long pacienteId, final Model model) {
+		final List<AnthropometricMeasurement> measurements = anthropometricMeasurementService
+			.findByPacienteId(pacienteId);
+		final Comparator<AnthropometricMeasurement> byRecency = Comparator
+			.comparing(AnthropometricMeasurement::getMeasurementDateTime)
+			.thenComparing(AnthropometricMeasurement::getId, Comparator.nullsLast(Comparator.naturalOrder()));
+
+		measurements.stream()
 			.filter(measurement -> measurement.getPorcentajeMasaMuscular() != null)
-			.max(Comparator.comparing(AnthropometricMeasurement::getMeasurementDateTime)
-				.thenComparing(AnthropometricMeasurement::getId, Comparator.nullsLast(Comparator.naturalOrder())))
+			.max(byRecency)
 			.ifPresent(
 					latest -> model.addAttribute("ultimoPorcentajeMasaMuscular", latest.getPorcentajeMasaMuscular()));
+
+		measurements.stream()
+			.filter(measurement -> measurement.getMasaOseaKg() != null || measurement.getPorcentajeMasaOsea() != null)
+			.max(byRecency)
+			.ifPresent(latest -> {
+				model.addAttribute("ultimaMasaOseaKg", latest.getMasaOseaKg());
+				model.addAttribute("ultimoPorcentajeMasaOsea", latest.getPorcentajeMasaOsea());
+			});
 	}
 
 	/**

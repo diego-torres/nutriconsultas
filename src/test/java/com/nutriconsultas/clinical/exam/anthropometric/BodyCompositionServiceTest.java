@@ -157,6 +157,73 @@ class BodyCompositionServiceTest {
 		assertThat(measurement.getMetodoObtencion()).isEqualTo(MetodoObtencionComposicionCorporal.OTRO);
 	}
 
+	@Test
+	void applyToMeasurementConsolidatesBoneMassFromBioimpedance() {
+		final AnthropometricMeasurement measurement = createMeasurementWithWeight(70.0, 1.75);
+		final Bioimpedance bioimpedance = new Bioimpedance();
+		bioimpedance.setBoneMass(2.8);
+		bioimpedance.setBoneMassPercentage(4.0);
+		measurement.setBioimpedance(bioimpedance);
+
+		service.applyToMeasurement(measurement, paciente, 22.86);
+
+		assertThat(measurement.getMasaOseaKg()).isEqualTo(2.8);
+		assertThat(measurement.getPorcentajeMasaOsea()).isEqualTo(4.0);
+	}
+
+	@Test
+	void applyToMeasurementPrefersBioimpedanceBoneMassOverManual() {
+		final AnthropometricMeasurement measurement = createMeasurementWithWeight(70.0, 1.75);
+		measurement.setMasaOseaKg(3.0);
+		measurement.setPorcentajeMasaOsea(5.0);
+		final Bioimpedance bioimpedance = new Bioimpedance();
+		bioimpedance.setBoneMass(2.5);
+		bioimpedance.setBoneMassPercentage(3.6);
+		measurement.setBioimpedance(bioimpedance);
+
+		service.applyToMeasurement(measurement, paciente, 22.86);
+
+		assertThat(measurement.getMasaOseaKg()).isEqualTo(2.5);
+		assertThat(measurement.getPorcentajeMasaOsea()).isEqualTo(3.6);
+	}
+
+	@Test
+	void applyToMeasurementDerivesBoneMassPercentageFromKg() {
+		final AnthropometricMeasurement measurement = createMeasurementWithWeight(70.0, 1.75);
+		measurement.setMasaOseaKg(3.5);
+
+		service.applyToMeasurement(measurement, paciente, 22.86);
+
+		assertThat(measurement.getMasaOseaKg()).isEqualTo(3.5);
+		assertThat(measurement.getPorcentajeMasaOsea()).isEqualTo(5.0);
+	}
+
+	@Test
+	void applyToMeasurementCalculatesMusclePercentageWithBoneAndWater() {
+		final AnthropometricMeasurement measurement = createMeasurementWithWeight(70.0, 1.75);
+		measurement.setPorcentajeGrasaCorporal(24.0);
+		measurement.setMasaOseaKg(2.8);
+		measurement.setPorcentajeMasaOsea(4.0);
+		final Bioimpedance bioimpedance = new Bioimpedance();
+		bioimpedance.setTotalBodyWaterPercentage(55.0);
+		measurement.setBioimpedance(bioimpedance);
+
+		service.applyToMeasurement(measurement, paciente, 22.86);
+
+		assertThat(measurement.getPorcentajeMasaMuscular()).isEqualTo(20.0);
+	}
+
+	@Test
+	void applyToMeasurementCalculatesMusclePercentageWithBoneOnly() {
+		final AnthropometricMeasurement measurement = createMeasurementWithWeight(70.0, 1.75);
+		measurement.setPorcentajeGrasaCorporal(20.0);
+		measurement.setPorcentajeMasaOsea(4.0);
+
+		service.applyToMeasurement(measurement, paciente, 22.86);
+
+		assertThat(measurement.getPorcentajeMasaMuscular()).isEqualTo(76.0);
+	}
+
 	private AnthropometricMeasurement createMeasurementWithWeight(final Double weight, final Double height) {
 		final AnthropometricMeasurement measurement = new AnthropometricMeasurement();
 		final BodyMass bodyMass = new BodyMass();

@@ -154,8 +154,8 @@
                           <p><strong>Ángulo de fase (°):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.phaseAngle, 1, 1)}">-</span></p>
                         </div>
                       </div>
-                      <hr class="my-4" th:if="${measurement.bioimpedance != null && (measurement.bioimpedance.bodyFatPercentage != null || measurement.bioimpedance.fatMass != null || measurement.bioimpedance.fatFreeMass != null || measurement.bioimpedance.skeletalMuscleMass != null)}">
-                      <h5 class="mb-3" th:if="${measurement.bioimpedance != null && (measurement.bioimpedance.bodyFatPercentage != null || measurement.bioimpedance.fatMass != null || measurement.bioimpedance.fatFreeMass != null || measurement.bioimpedance.skeletalMuscleMass != null)}">Composición Corporal</h5>
+                      <hr class="my-4" th:if="${measurement.bioimpedance != null && (measurement.bioimpedance.bodyFatPercentage != null || measurement.bioimpedance.fatMass != null || measurement.bioimpedance.fatFreeMass != null || measurement.bioimpedance.skeletalMuscleMass != null || measurement.bioimpedance.boneMass != null || measurement.bioimpedance.boneMassPercentage != null)}">
+                      <h5 class="mb-3" th:if="${measurement.bioimpedance != null && (measurement.bioimpedance.bodyFatPercentage != null || measurement.bioimpedance.fatMass != null || measurement.bioimpedance.fatFreeMass != null || measurement.bioimpedance.skeletalMuscleMass != null || measurement.bioimpedance.boneMass != null || measurement.bioimpedance.boneMassPercentage != null)}">Composición Corporal</h5>
                       <div class="row">
                         <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.bodyFatPercentage != null}">
                           <p><strong>% Grasa Corporal:</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.bodyFatPercentage, 1, 1)} + '%'">-</span></p>
@@ -168,6 +168,12 @@
                         </div>
                         <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.skeletalMuscleMass != null}">
                           <p><strong>Masa Muscular Esquelética (kg):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.skeletalMuscleMass, 1, 1)}">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.boneMass != null}">
+                          <p><strong>Masa Ósea (kg):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.boneMass, 1, 2)}">-</span></p>
+                        </div>
+                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.boneMassPercentage != null}">
+                          <p><strong>% Masa Ósea:</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.boneMassPercentage, 1, 1)} + '%'">-</span></p>
                         </div>
                       </div>
                       <hr class="my-4" th:if="${measurement.bioimpedance != null && (measurement.bioimpedance.totalBodyWaterLiters != null || measurement.bioimpedance.totalBodyWaterPercentage != null || measurement.bioimpedance.intracellularWater != null || measurement.bioimpedance.extracellularWater != null || measurement.bioimpedance.ecwIcwRatio != null)}">

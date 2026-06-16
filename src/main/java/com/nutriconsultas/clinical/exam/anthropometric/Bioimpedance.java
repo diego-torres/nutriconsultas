@@ -49,6 +49,12 @@ public class Bioimpedance {
 	private Double skeletalMuscleMass; // Masa muscular esquelética (kg)
 
 	@Column(precision = 5)
+	private Double boneMass; // Masa ósea (kg)
+
+	@Column(precision = 3)
+	private Double boneMassPercentage; // Masa ósea (%)
+
+	@Column(precision = 5)
 	private Double totalBodyWaterLiters; // Agua corporal total (L)
 
 	@Column(precision = 3)

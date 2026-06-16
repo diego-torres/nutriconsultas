@@ -154,6 +154,8 @@ public class ReportTemplateValidator extends BaseTemplateValidator {
 		bodyComposition.setSomatocartaY(3.0);
 		bodyComposition.setPorcentajeGrasaCorporal(22.5);
 		bodyComposition.setPorcentajeMasaMuscular(45.0);
+		bodyComposition.setMasaOseaKg(2.8);
+		bodyComposition.setPorcentajeMasaOsea(4.0);
 		bodyComposition.setMetodoObtencion(MetodoObtencionComposicionCorporal.BIOIMPEDANCIA);
 		measurement.setBodyComposition(bodyComposition);
 		measurements.add(measurement);

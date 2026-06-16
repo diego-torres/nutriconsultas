@@ -357,6 +357,7 @@
 					<th>% Grasa</th>
 					<th>Método</th>
 					<th>% Masa muscular</th>
+					<th>Masa ósea</th>
 					<th>Somatotipo</th>
 				</tr>
 			</thead>
@@ -370,6 +371,7 @@
 					<td th:text="${measurement.porcentajeGrasaCorporal != null ? (#numbers.formatDecimal(measurement.porcentajeGrasaCorporal, 1, 1) + '%') : 'N/A'}"></td>
 					<td th:text="${measurement.metodoObtencion != null ? measurement.metodoObtencion.displayName : 'N/A'}"></td>
 					<td th:text="${measurement.porcentajeMasaMuscular != null ? (#numbers.formatDecimal(measurement.porcentajeMasaMuscular, 1, 1) + '%') : 'N/A'}"></td>
+					<td th:text="${measurement.masaOseaKg != null ? (#numbers.formatDecimal(measurement.masaOseaKg, 1, 2) + ' kg' + (measurement.porcentajeMasaOsea != null ? ' (' + #numbers.formatDecimal(measurement.porcentajeMasaOsea, 1, 1) + '%)' : '')) : (measurement.porcentajeMasaOsea != null ? (#numbers.formatDecimal(measurement.porcentajeMasaOsea, 1, 1) + '%') : 'N/A')}"></td>
 					<td th:text="${measurement.endomorphy != null ? (#numbers.formatDecimal(measurement.endomorphy,1,1) + '-' + #numbers.formatDecimal(measurement.mesomorphy,1,1) + '-' + #numbers.formatDecimal(measurement.ectomorphy,1,1)) : 'N/A'}"></td>
 				</tr>
 			</tbody>

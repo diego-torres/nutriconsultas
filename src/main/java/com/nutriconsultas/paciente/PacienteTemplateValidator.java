@@ -45,6 +45,8 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		variables.put("ultimoIndiceGrasaCorporal", null);
 		variables.put("ultimoMetodoObtencionComposicion", null);
 		variables.put("ultimoPorcentajeMasaMuscular", null);
+		variables.put("ultimaMasaOseaKg", null);
+		variables.put("ultimoPorcentajeMasaOsea", null);
 		variables.put("isEligibleForPregnancy", false);
 		variables.put("isUnder18", false);
 		variables.put("suggestedStressTypes", List.of());
