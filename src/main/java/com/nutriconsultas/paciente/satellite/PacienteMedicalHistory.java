@@ -1,22 +1,36 @@
-package com.nutriconsultas.paciente.embeddable;
+package com.nutriconsultas.paciente.satellite;
+
+import com.nutriconsultas.paciente.Paciente;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-
-import lombok.AllArgsConstructor;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Medical history text fields and common pathology flags — #156 Phase B.
+ * Medical history and pathology flags for a patient — #156 Phase C satellite table.
  */
-@Embeddable
+@Entity
+@Table(name = "paciente_medical_history")
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class PacienteMedicalHistory {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@OneToOne(optional = false)
+	@JoinColumn(name = "paciente_id", nullable = false, unique = true)
+	private Paciente paciente;
 
 	@Column(columnDefinition = "TEXT")
 	private String antecedentesPrenatales;
