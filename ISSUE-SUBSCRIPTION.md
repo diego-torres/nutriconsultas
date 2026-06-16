@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-16 — #181 done; #183 in progress on `subscription/183-platform-admin-rbac`.
+**Last updated:** 2026-06-16 — #183 done (PR #200); #182 in progress on `subscription/182-auth0-role-sync`.
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 
@@ -39,8 +39,8 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 |---|-------|-----|-------|-----------|-------|
 | **180** | Plan catalog, subscription schema & Liquibase | https://github.com/diego-torres/nutriconsultas/issues/180 | **done** | **46** | Merged PR #197 |
 | 181 | SubscriptionEntitlementService — plan tier resolution | https://github.com/diego-torres/nutriconsultas/issues/181 | **done** | 180 | Merged PR #199 — central `hasEntitlement()` |
-| 182 | Auth0 role sync — nutriologo-* and director-consultorio | https://github.com/diego-torres/nutriconsultas/issues/182 | open | 181, 108 | Management API group assign |
-| 183 | Platform admin RBAC — enforce admin allowlist | https://github.com/diego-torres/nutriconsultas/issues/183 | **in-progress** | — | Branch `subscription/183-platform-admin-rbac` |
+| 182 | Auth0 role sync — nutriologo-* and director-consultorio | https://github.com/diego-torres/nutriconsultas/issues/182 | **in-progress** | 181, 108 | Branch `subscription/182-auth0-role-sync` |
+| 183 | Platform admin RBAC — enforce admin allowlist | https://github.com/diego-torres/nutriconsultas/issues/183 | **done** | — | Merged PR #200 |
 
 **Suggested order:** #46 → **#180** → #181 → #182; **#183** in parallel when touching admin UI.
 
