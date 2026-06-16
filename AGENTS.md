@@ -561,7 +561,7 @@ Issue registry: [`ISSUE.md`](ISSUE.md). Agent workflow: [`AGENT-WORKFLOW.md`](AG
 
 **Done on `main` (2026-06-14):** #107/#109/#110 (JWT + linkage + DTO envelope); endpoints #91–#98; messages #96/#97 with rate limit (#113); localized errors (#111, PR #151); dashboard IMC gauge (#106).
 
-**Next:** [#114](https://github.com/diego-torres/nutriconsultas/issues/114) nutritionist reply (web). ~~#116~~ `senderDisplayName` **in-progress** (branch `mobile-api/116-sender-display-name`). ~~#115~~ PHI audit **done** (PR #168). ~~#112~~ OpenAPI **done** (PR #164).
+**Next:** [#156](https://github.com/diego-torres/nutriconsultas/issues/156) `Paciente` domain refactor. ~~#114~~ nutritionist reply **done**. ~~#116~~ `senderDisplayName` **done** on `main`. ~~#115~~ PHI audit **done** (PR #168). ~~#112~~ OpenAPI **done** (PR #164).
 
 **Schema gate (pre-Liquibase):** [#156](https://github.com/diego-torres/nutriconsultas/issues/156) `Paciente` decomposition must land before [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46); mobile `#98`/`#99` DTO contracts unchanged. See [`ISSUE.md`](ISSUE.md) Integration prerequisites.
 
