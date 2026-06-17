@@ -109,17 +109,19 @@
   <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
   <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
   <script th:inline="javascript">
-    'use strict';
     var highlightInvitationId = /*[[${highlightInvitationId}]]*/ null;
+  </script>
+  <script>
+    'use strict';
 
     jQuery(document).ready(function ($) {
       var invitationsTable = $('#invitationsGrid').DataTable({
         processing: true,
         serverSide: true,
         scrollX: true,
-        order: [[0, 'desc']],
+        order: [ [0, 'desc'] ],
         pageLength: 25,
-        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+        lengthMenu: [ [10, 25, 50, 100], [10, 25, 50, 100] ],
         language: {
           emptyTable: 'No hay invitaciones',
           lengthMenu: 'Mostrar _MENU_ registros por página',
