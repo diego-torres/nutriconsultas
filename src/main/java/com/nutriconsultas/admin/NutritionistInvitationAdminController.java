@@ -9,8 +9,10 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.nutriconsultas.controller.AbstractPlatformAdminController;
@@ -20,6 +22,7 @@ import com.nutriconsultas.subscription.NutritionistInvitationRepository;
 import com.nutriconsultas.subscription.PlanTier;
 import com.nutriconsultas.subscription.invitation.CreatedNutritionistInvitation;
 import com.nutriconsultas.subscription.invitation.NutritionistInvitationService;
+import com.nutriconsultas.subscription.invitation.PendingNutritionistInvitationException;
 
 import jakarta.validation.Valid;
 
@@ -40,10 +43,12 @@ public class NutritionistInvitationAdminController extends AbstractPlatformAdmin
 	}
 
 	@GetMapping
-	public String list(@AuthenticationPrincipal final OidcUser principal, final Model model) {
+	public String list(@AuthenticationPrincipal final OidcUser principal, final Model model,
+			@RequestParam(required = false) final Long highlight) {
 		requirePlatformAdmin(principal, "invitations.list");
 		final List<NutritionistInvitation> invitations = invitationRepository.findAllByOrderByCreatedAtDesc();
 		model.addAttribute("invitations", invitations);
+		model.addAttribute("highlightInvitationId", highlight);
 		model.addAttribute("activeMenu", "invitations");
 		return "sbadmin/platform/invitations/list";
 	}
@@ -69,10 +74,29 @@ public class NutritionistInvitationAdminController extends AbstractPlatformAdmin
 			model.addAttribute("activeMenu", "invitations");
 			return "sbadmin/platform/invitations/form";
 		}
-		final CreatedNutritionistInvitation created = invitationService.createInvitation(principal, form.getEmail(),
-				form.getPlanTier(), form.isPaymentExempt());
-		redirectAttributes.addFlashAttribute("inviteUrl", created.inviteUrl());
-		redirectAttributes.addFlashAttribute("successMessage", "Invitación creada correctamente.");
+		try {
+			final CreatedNutritionistInvitation created = invitationService.createInvitation(principal, form.getEmail(),
+					form.getPlanTier(), form.isPaymentExempt());
+			redirectAttributes.addFlashAttribute("inviteUrl", created.inviteUrl());
+			redirectAttributes.addFlashAttribute("successMessage", "Invitación creada correctamente.");
+			return "redirect:/admin/platform/invitations";
+		}
+		catch (PendingNutritionistInvitationException ex) {
+			model.addAttribute("planTiers", PlanTier.values());
+			model.addAttribute("activeMenu", "invitations");
+			model.addAttribute("errorMessage",
+					"Ya existe una invitación pendiente para este correo. Cancélela en el listado antes de crear otra.");
+			model.addAttribute("conflictingInvitationId", ex.getExistingInvitationId());
+			return "sbadmin/platform/invitations/form";
+		}
+	}
+
+	@PostMapping("/{id}/cancel")
+	public String cancel(@AuthenticationPrincipal final OidcUser principal, @PathVariable final Long id,
+			final RedirectAttributes redirectAttributes) {
+		requirePlatformAdmin(principal, "invitations.cancel");
+		invitationService.cancelInvitation(principal, id);
+		redirectAttributes.addFlashAttribute("successMessage", "Invitación cancelada correctamente.");
 		return "redirect:/admin/platform/invitations";
 	}
 

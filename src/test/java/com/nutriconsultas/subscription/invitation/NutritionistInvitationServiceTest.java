@@ -109,6 +109,31 @@ class NutritionistInvitationServiceTest {
 	}
 
 	@Test
+	void createInvitationRejectsDuplicatePendingEmail() {
+		final NutritionistInvitation existing = pendingInvitation();
+		when(invitationRepository.findByEmailIgnoreCaseAndStatus(INVITEE_EMAIL, InvitationStatus.PENDING))
+			.thenReturn(Optional.of(existing));
+
+		assertThatThrownBy(() -> invitationService.createInvitation(adminPrincipal, INVITEE_EMAIL, PlanTier.BASICO,
+				false))
+			.isInstanceOf(PendingNutritionistInvitationException.class)
+			.extracting(ex -> ((PendingNutritionistInvitationException) ex).getExistingInvitationId())
+			.isEqualTo(1L);
+	}
+
+	@Test
+	void cancelInvitationMarksPendingAsCancelled() {
+		final NutritionistInvitation invitation = pendingInvitation();
+		when(platformAdminService.resolveActorUserId(adminPrincipal)).thenReturn(ADMIN_USER_ID);
+		when(invitationRepository.findById(1L)).thenReturn(Optional.of(invitation));
+
+		invitationService.cancelInvitation(adminPrincipal, 1L);
+
+		assertThat(invitation.getStatus()).isEqualTo(InvitationStatus.CANCELLED);
+		verify(invitationRepository).save(invitation);
+	}
+
+	@Test
 	void redeemPaymentExemptInvitationActivatesTrial() {
 		final NutritionistInvitation invitation = pendingInvitation();
 		when(invitationRepository.findByTokenHash(InvitationTokenHasher.hashToken(rawToken)))

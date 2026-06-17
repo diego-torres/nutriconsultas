@@ -71,7 +71,7 @@ public class NutritionistInvitationServiceImpl implements NutritionistInvitation
 		}
 		invitationRepository.findByEmailIgnoreCaseAndStatus(normalizedEmail, InvitationStatus.PENDING)
 			.ifPresent(existing -> {
-				throw new ResponseStatusException(HttpStatus.CONFLICT, "A pending invitation already exists for email");
+				throw new PendingNutritionistInvitationException(existing.getId());
 			});
 		final String rawToken = InvitationTokenHasher.generateToken();
 		final NutritionistInvitation invitation = new NutritionistInvitation();
@@ -92,6 +92,27 @@ public class NutritionistInvitationServiceImpl implements NutritionistInvitation
 					planTier, paymentExempt);
 		}
 		return new CreatedNutritionistInvitation(saved.getId(), inviteUrl);
+	}
+
+	@Override
+	@Transactional
+	public void cancelInvitation(final OidcUser adminPrincipal, final Long invitationId) {
+		platformAdminService.requirePlatformAdmin(adminPrincipal);
+		if (invitationId == null) {
+			throw new IllegalArgumentException("invitationId is required");
+		}
+		final NutritionistInvitation invitation = invitationRepository.findById(invitationId)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invitation not found"));
+		if (invitation.getStatus() != InvitationStatus.PENDING) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT,
+					"Solo se pueden cancelar invitaciones pendientes");
+		}
+		invitation.setStatus(InvitationStatus.CANCELLED);
+		invitationRepository.save(invitation);
+		recordInvitationCancelAudit(platformAdminService.resolveActorUserId(adminPrincipal), invitation.getId());
+		if (log.isInfoEnabled()) {
+			log.info("Cancelled nutritionist invitation: invitationId={}", invitation.getId());
+		}
 	}
 
 	@Override
@@ -123,6 +144,9 @@ public class NutritionistInvitationServiceImpl implements NutritionistInvitation
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invitation not found"));
 		if (invitation.getStatus() == InvitationStatus.REDEEMED) {
 			throw new ResponseStatusException(HttpStatus.GONE, "Invitation already redeemed");
+		}
+		if (invitation.getStatus() == InvitationStatus.CANCELLED) {
+			throw new ResponseStatusException(HttpStatus.GONE, "Invitation was cancelled");
 		}
 		if (invitation.getStatus() != InvitationStatus.PENDING) {
 			throw new ResponseStatusException(HttpStatus.GONE, "Invitation is no longer valid");
@@ -157,6 +181,17 @@ public class NutritionistInvitationServiceImpl implements NutritionistInvitation
 		event.setEventType(SubscriptionAuditEventType.INVITATION_REDEEMED);
 		event.setActorUserId(userId);
 		event.setDetails("invitationId=" + invitation.getId());
+		auditEventRepository.save(event);
+	}
+
+	private void recordInvitationCancelAudit(final String actorUserId, final Long invitationId) {
+		if (!StringUtils.hasText(actorUserId)) {
+			return;
+		}
+		final SubscriptionAuditEvent event = new SubscriptionAuditEvent();
+		event.setEventType(SubscriptionAuditEventType.PLATFORM_ADMIN_ACTION);
+		event.setActorUserId(actorUserId);
+		event.setDetails("action=invitation.cancel,invitationId=" + invitationId);
 		auditEventRepository.save(event);
 	}
 

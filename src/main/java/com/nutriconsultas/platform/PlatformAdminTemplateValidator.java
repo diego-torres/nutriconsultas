@@ -20,6 +20,9 @@ public class PlatformAdminTemplateValidator extends BaseTemplateValidator {
 		variables.put("platformAdmin", true);
 		variables.put("activeMenu", "platform");
 		variables.put("invitations", List.of());
+		variables.put("highlightInvitationId", null);
+		variables.put("errorMessage", null);
+		variables.put("conflictingInvitationId", null);
 		variables.put("planTiers", PlanTier.values());
 		variables.put("form", new CreateNutritionistInvitationForm());
 		return variables;

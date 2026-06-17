@@ -25,6 +25,15 @@
             <h1 class="h3 mb-0 text-gray-800">Nueva invitación</h1>
             <a class="btn btn-secondary btn-sm" th:href="@{/admin/platform/invitations}">Volver al listado</a>
           </div>
+          <div th:if="${errorMessage}" class="alert alert-warning" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span th:text="${errorMessage}">Error</span>
+            <span th:if="${conflictingInvitationId != null}">
+              <a class="alert-link" th:href="@{/admin/platform/invitations(highlight=${conflictingInvitationId})}">
+                Ver invitación pendiente
+              </a>
+            </span>
+          </div>
           <div class="card shadow mb-4 col-lg-8">
             <div class="card-body">
               <form th:action="@{/admin/platform/invitations}" th:object="${form}" method="post">

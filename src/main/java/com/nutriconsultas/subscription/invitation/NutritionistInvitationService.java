@@ -12,6 +12,8 @@ public interface NutritionistInvitationService {
 	CreatedNutritionistInvitation createInvitation(OidcUser adminPrincipal, String email, PlanTier planTier,
 			boolean paymentExempt);
 
+	void cancelInvitation(OidcUser adminPrincipal, Long invitationId);
+
 	RedeemNutritionistInvitationResult redeemInvitation(OidcUser principal, String rawToken);
 
 }

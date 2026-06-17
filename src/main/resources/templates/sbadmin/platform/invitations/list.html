@@ -47,19 +47,41 @@
                       <th>Estado</th>
                       <th>Exento de pago</th>
                       <th>Expira</th>
+                      <th>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr th:each="invitation : ${invitations}">
+                    <tr th:each="invitation : ${invitations}"
+                      th:id="${'invitation-' + invitation.id}"
+                      th:classappend="${highlightInvitationId != null && highlightInvitationId == invitation.id} ? 'table-warning' : ''">
                       <td th:text="${#temporals.format(invitation.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
                       <td th:text="${invitation.email}">email@example.com</td>
                       <td th:text="${invitation.planTier}">BASICO</td>
-                      <td th:text="${invitation.status}">PENDING</td>
+                      <td>
+                        <span th:switch="${invitation.status.name()}">
+                          <span th:case="'PENDING'" class="badge badge-warning">Pendiente</span>
+                          <span th:case="'REDEEMED'" class="badge badge-success">Aceptada</span>
+                          <span th:case="'EXPIRED'" class="badge badge-secondary">Expirada</span>
+                          <span th:case="'CANCELLED'" class="badge badge-dark">Cancelada</span>
+                          <span th:case="*" class="badge badge-light" th:text="${invitation.status}">Estado</span>
+                        </span>
+                      </td>
                       <td>
                         <span th:if="${invitation.paymentExempt}" class="badge badge-info">Sí</span>
                         <span th:unless="${invitation.paymentExempt}" class="badge badge-secondary">No</span>
                       </td>
                       <td th:text="${#temporals.format(invitation.expiresAt, 'dd/MM/yyyy HH:mm')}">08/01/2026</td>
+                      <td class="text-nowrap">
+                        <form th:if="${invitation.status.name() == 'PENDING'}"
+                          th:action="@{/admin/platform/invitations/{id}/cancel(id=${invitation.id})}" method="post"
+                          class="d-inline"
+                          onsubmit="return confirm('¿Cancelar esta invitación? El enlace dejará de ser válido.');">
+                          <button type="submit" class="btn btn-sm btn-outline-danger" title="Cancelar invitación">
+                            <i class="fas fa-times"></i> Cancelar
+                          </button>
+                        </form>
+                        <span th:unless="${invitation.status.name() == 'PENDING'}" class="text-muted small">—</span>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
