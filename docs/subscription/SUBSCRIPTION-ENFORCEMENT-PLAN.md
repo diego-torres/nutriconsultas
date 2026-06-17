@@ -189,13 +189,15 @@ Director can `suspend` / `reactivate` members without Auth0 deletion (revoke gro
 
 ## Payment provider integration
 
-**Decision pending** — evaluate Mercado Pago (MX primary) vs Stripe (international). Abstract behind `PaymentProvider` interface:
+**Decision:** **Stripe** for subscription checkout and recurring monthly billing. Abstract behind `PaymentProvider` interface (existing from #189; Mercado Pago implementation to be replaced in #207):
 
 - `createCheckoutSession(invitationId, planTier, billingInterval)`
 - `handleWebhook(payload, signature)`
 - `cancelSubscription(externalId)`
 
 Store `externalSubscriptionId`, `externalCustomerId` on `Subscription`. Webhook idempotency table required.
+
+**Stripe references:** [Subscriptions + Checkout](https://docs.stripe.com/billing/subscriptions/checkout), [Webhooks](https://docs.stripe.com/webhooks).
 
 ---
 
@@ -268,8 +270,8 @@ nutriconsultas.platform.admin-emails=${PLATFORM_ADMIN_EMAILS:}
 
 # New (illustrative)
 nutriconsultas.subscription.grace-period-days=${SUBSCRIPTION_GRACE_PERIOD_DAYS:7}
-nutriconsultas.subscription.payment.provider=${PAYMENT_PROVIDER:mercadopago}
-nutriconsultas.subscription.payment.webhook-secret=${PAYMENT_WEBHOOK_SECRET:}
+nutriconsultas.subscription.payment.provider=${PAYMENT_PROVIDER:stripe}
+nutriconsultas.subscription.payment.webhook-secret=${STRIPE_WEBHOOK_SECRET:}
 ```
 
 ---
@@ -289,7 +291,7 @@ nutriconsultas.subscription.payment.webhook-secret=${PAYMENT_WEBHOOK_SECRET:}
 
 | # | Question | Default proposal |
 |---|----------|------------------|
-| 1 | Payment provider | Mercado Pago for MX launch |
+| 1 | Payment provider | **Stripe** (Checkout + Billing subscriptions) — #207 |
 | 2 | Consultorio patient limit | Clinic-wide unlimited (per landing page) |
 | 3 | Grace write policy | Block new patients + PDF; allow messages |
 | 4 | Auth0 groups vs Roles | Auth0 Roles with RBAC enabled |

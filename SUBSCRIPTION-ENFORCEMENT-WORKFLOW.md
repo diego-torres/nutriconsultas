@@ -200,7 +200,7 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 | Field | Value |
 |-------|-------|
 | **Next issue** | [#185 — Subscription lifecycle](https://github.com/diego-torres/nutriconsultas/issues/185) (after #184 merges) |
-| **Status** | #184 in progress on `subscription/184-admin-invitations` |
+| **Status** | #184 PR #206; payment provider → **Stripe** (#207 code, #208 ops) |
 | **Early start** | ~~#183~~ done (PR #200) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
