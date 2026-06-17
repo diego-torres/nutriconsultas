@@ -3,14 +3,12 @@ package com.nutriconsultas.subscription.lifecycle;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 import org.springframework.stereotype.Component;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.nutriconsultas.subscription.Subscription;
-import com.nutriconsultas.subscription.SubscriptionStatus;
 
 import lombok.extern.slf4j.Slf4j;
 

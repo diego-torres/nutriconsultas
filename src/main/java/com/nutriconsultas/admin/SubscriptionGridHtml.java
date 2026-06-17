@@ -5,7 +5,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 import com.nutriconsultas.subscription.PlanTier;
-import com.nutriconsultas.subscription.Subscription;
 import com.nutriconsultas.subscription.SubscriptionStatus;
 
 public final class SubscriptionGridHtml {
