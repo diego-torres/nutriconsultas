@@ -112,6 +112,7 @@ class SubscriptionEntitlementServiceTest {
 		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID)).thenReturn(Optional.of(member));
 
 		assertThat(service.hasEntitlement(SOLO_ID, Entitlement.PDF_EXPORT)).isFalse();
+		assertThat(service.hasEntitlement(SOLO_ID, Entitlement.CREATE_PATIENT)).isFalse();
 		assertThat(service.hasEntitlement(SOLO_ID, Entitlement.USER_ADMINISTRATION)).isFalse();
 		assertThat(service.hasEntitlement(SOLO_ID, Entitlement.REPORTS_BASIC)).isTrue();
 		assertThat(service.hasEntitlement(SOLO_ID, Entitlement.PRIORITY_SUPPORT)).isTrue();

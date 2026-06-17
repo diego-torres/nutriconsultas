@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <title>Minutriporcion - Facturación</title>
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+</head>
+
+<body id="page-top">
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/sidebar :: sidebar}"></div>
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <div class="container-fluid">
+          <div class="row justify-content-center">
+            <div class="col-lg-8">
+              <div class="card shadow mb-4 border-left-danger">
+                <div class="card-body py-5 text-center">
+                  <i class="fas fa-credit-card fa-3x text-gray-300 mb-3"></i>
+                  <h1 class="h4 text-gray-800 mb-3">Acceso suspendido</h1>
+                  <p class="text-muted mb-4" th:if="${subscriptionStatus != null}">
+                    El estado de su suscripción es <strong th:text="${subscriptionStatus}">SUSPENDED</strong>.
+                    Renueve el pago o contacte a soporte para reactivar su cuenta.
+                  </p>
+                  <p class="text-muted mb-4" th:unless="${subscriptionStatus != null}">
+                    No tiene una suscripción activa. Contacte a soporte si necesita ayuda.
+                  </p>
+                  <a class="btn btn-primary" href="mailto:soporte@minutriporcion.com">
+                    <i class="fas fa-envelope"></i> Contactar soporte
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div th:insert="~{sbadmin/footer :: footer}"></div>
+    </div>
+  </div>
+</body>
+
+</html>

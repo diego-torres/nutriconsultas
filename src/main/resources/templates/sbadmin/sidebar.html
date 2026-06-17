@@ -58,16 +58,16 @@
         <i class="fas fa-fw fa-user-md"></i>
         <span>Mi Perfil</span></a>
     </li>
-    <li class="nav-item" th:if="${platformAdmin}" th:classappend="${activeMenu == 'platform' || activeMenu == 'contact-inquiries' || activeMenu == 'invitations' ? 'active' : ''}">
+    <li class="nav-item" th:if="${platformAdmin}" th:classappend="${activeMenu == 'platform' || activeMenu == 'contact-inquiries' || activeMenu == 'invitations' || activeMenu == 'subscriptions' ? 'active' : ''}">
       <a class="nav-link" href="#" data-toggle="collapse" data-target="#collapsePlatform"
-        th:classappend="${activeMenu == 'platform' || activeMenu == 'contact-inquiries' || activeMenu == 'invitations' ? '' : ' collapsed'}"
-        th:attr="aria-expanded=${activeMenu == 'platform' || activeMenu == 'contact-inquiries' || activeMenu == 'invitations' ? 'true' : 'false'}"
+        th:classappend="${activeMenu == 'platform' || activeMenu == 'contact-inquiries' || activeMenu == 'invitations' || activeMenu == 'subscriptions' ? '' : ' collapsed'}"
+        th:attr="aria-expanded=${activeMenu == 'platform' || activeMenu == 'contact-inquiries' || activeMenu == 'invitations' || activeMenu == 'subscriptions' ? 'true' : 'false'}"
         aria-controls="collapsePlatform">
         <i class="fas fa-fw fa-shield-alt"></i>
         <span>Plataforma</span>
       </a>
       <div id="collapsePlatform" class="collapse"
-        th:classappend="${activeMenu == 'platform' || activeMenu == 'contact-inquiries' || activeMenu == 'invitations' ? ' show' : ''}"
+        th:classappend="${activeMenu == 'platform' || activeMenu == 'contact-inquiries' || activeMenu == 'invitations' || activeMenu == 'subscriptions' ? ' show' : ''}"
         aria-labelledby="headingPlatform" data-parent="#accordionSidebar">
         <div class="bg-white py-2 collapse-inner rounded">
           <h6 class="collapse-header">Administración:</h6>
@@ -75,6 +75,8 @@
             th:classappend="${activeMenu == 'platform' ? ' active' : ''}">Panel de plataforma</a>
           <a class="collapse-item" th:href="@{/admin/platform/invitations}"
             th:classappend="${activeMenu == 'invitations' ? ' active' : ''}">Invitaciones</a>
+          <a class="collapse-item" th:href="@{/admin/platform/subscriptions}"
+            th:classappend="${activeMenu == 'subscriptions' ? ' active' : ''}">Suscripciones</a>
           <a class="collapse-item" th:href="@{/admin/platform/contact-inquiries}"
             th:classappend="${activeMenu == 'contact-inquiries' ? ' active' : ''}">Mensajes de contacto</a>
         </div>
