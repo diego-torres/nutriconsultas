@@ -12,7 +12,7 @@ Canonical cross-repo contracts for the `[Mobile API]` track. Indexed from [`../.
 | [`MOBILE-E2E-STATUS.md`](MOBILE-E2E-STATUS.md) | Live E2E status, Auth0 setup, HTTP code matrix |
 | [`../api/openapi-mobile.yaml`](../api/openapi-mobile.yaml) | OpenAPI 3.1 export (#112, PR #164); regen: `scripts/export-openapi-mobile.sh` |
 
-**Status (2026-06-17):** Phase 0 + endpoints **#91–#99 done** on `main`. Cross-cutting **#111–#116 done**. Integration **#156** + **#46** done. **NEXT:** [#132](https://github.com/diego-torres/nutriconsultas/issues/132) invitation onboarding.
+**Status (2026-06-17):** Phase 0 + endpoints **#91–#99 done** on `main`. Cross-cutting **#111–#116 done**. Integration **#156** + **#46** done. **#132** in-progress (onboarding schema); **NEXT:** [#133](https://github.com/diego-torres/nutriconsultas/issues/133) token hashing.
 
 ## Related registries (same repo)
 

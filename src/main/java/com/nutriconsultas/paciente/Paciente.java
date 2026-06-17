@@ -8,6 +8,8 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -61,6 +63,30 @@ public class Paciente {
 	 */
 	@Column(unique = true, length = 255)
 	private String patientAuthSub;
+
+	/**
+	 * Invite-only onboarding lifecycle (#132). Existing patients default to
+	 * {@link PacienteStatus#ACTIVE}.
+	 */
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false, length = 20)
+	private PacienteStatus status = PacienteStatus.ACTIVE;
+
+	/**
+	 * Human/clinical identifier assigned at invite time. Unique when set; not used for
+	 * auth.
+	 */
+	@Column(name = "assigned_id", unique = true, length = 50)
+	private String assignedId;
+
+	/**
+	 * Optional email pre-fill hint for onboarding UI — never used for auth decisions.
+	 */
+	@Column(name = "email_hint", length = 100)
+	private String emailHint;
+
+	@Column(name = "display_name", length = 100)
+	private String displayName;
 
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@Temporal(TemporalType.DATE)

@@ -132,7 +132,7 @@ Schema-affecting work must respect mobile DTO contracts (§F8). These issues are
 |---|-------|-----|-------|-----------|--------|-------|
 | **156** | `[Integration]` Paciente domain refactor — incremental decomposition | https://github.com/diego-torres/nutriconsultas/issues/156 | **done** | [#121](https://github.com/diego-torres/nutriconsultas/issues/121) GET/TDEE | — (unblocked #46) | Merged PRs [#175](https://github.com/diego-torres/nutriconsultas/pull/175) (projections), [#176](https://github.com/diego-torres/nutriconsultas/pull/176) (embeddables), [#178](https://github.com/diego-torres/nutriconsultas/pull/178) (satellite tables). ER: [`paciente-er-phase-c.md`](docs/integration/paciente-er-phase-c.md). Mobile DTOs unchanged. |
 | 46 | Implement Liquibase for database change management | https://github.com/diego-torres/nutriconsultas/issues/46 | **done** | ~~156~~ ✓ | — | Merged [PR #196](https://github.com/diego-torres/nutriconsultas/pull/196): Liquibase baseline (PG + H2), catalog seed changelogs, `ddl-auto=none`. Docs: [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md). |
-| 132 | Invitation & patient onboarding data model | https://github.com/diego-torres/nutriconsultas/issues/132 | **NEXT** | #107, ~~156~~ ✓, ~~46~~ ✓ | — | `Paciente.status` enum + `Invitation` entity; incremental Liquibase changeset after #46. |
+| 132 | Invitation & patient onboarding data model | https://github.com/diego-torres/nutriconsultas/issues/132 | **in-progress** | #107, ~~156~~ ✓, ~~46~~ ✓ | — | `PacienteStatus` + `PatientInvitation` entity; Liquibase `006-patient-invitation-onboarding.yaml`. |
 
 ---
 
@@ -142,7 +142,7 @@ Invite-only patient onboarding replaces manual Afiliación linkage (#109) for ne
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| 133 | Invitation token generation & hashing service | https://github.com/diego-torres/nutriconsultas/issues/133 | open | 132 | CSPRNG token; store hash only; constant-time verify; optional signed JWS for Auth0 Action |
+| 133 | Invitation token generation & hashing service | https://github.com/diego-torres/nutriconsultas/issues/133 | **NEXT** | 132 | CSPRNG token; store hash only; constant-time verify; optional signed JWS for Auth0 Action |
 | 134 | `POST /rest/mobile/invitations` — nutritionist creates patient + invitation | https://github.com/diego-torres/nutriconsultas/issues/134 | open | 132, 133 | Nutritionist JWT (not patient); creates `Paciente` + `Invitation` |
 | 135 | `GET /rest/mobile/invitations/{token}/preview` — public rate-limited preview | https://github.com/diego-torres/nutriconsultas/issues/135 | open | 133 | Public; enumeration protection (#141) |
 | 136 | `POST /rest/mobile/invitations/{token}/redeem` — bind Auth0 sub → patient | https://github.com/diego-torres/nutriconsultas/issues/136 | open | 132, 133, 107 | **Authoritative** redeem gate; patient JWT required |

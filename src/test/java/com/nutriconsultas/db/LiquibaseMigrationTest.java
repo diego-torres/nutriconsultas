@@ -55,4 +55,13 @@ public class LiquibaseMigrationTest {
 		assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM subscription_audit_event", Long.class)).isEqualTo(0L);
 	}
 
+	@Test
+	public void testPatientInvitationOnboardingSchema() {
+		assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM patient_invitation", Long.class)).isEqualTo(0L);
+		assertThat(jdbc.queryForObject(
+				"SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'PACIENTE' AND COLUMN_NAME = 'STATUS'",
+				Long.class))
+			.isEqualTo(1L);
+	}
+
 }
