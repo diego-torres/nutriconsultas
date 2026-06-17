@@ -80,5 +80,10 @@
     </ul>
 
   </nav>
+  <div th:if="${subscriptionBanner}" class="alert mb-0 rounded-0 text-center"
+    th:classappend="'alert-' + ${subscriptionBanner.alertClass()}" role="alert">
+    <i class="fas fa-exclamation-circle mr-1"></i>
+    <span th:text="${subscriptionBanner.message()}">Mensaje de suscripción</span>
+  </div>
   <!-- End of Topbar -->
 </div>

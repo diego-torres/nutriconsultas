@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-17 — #184 **done** ([PR #206](https://github.com/diego-torres/nutriconsultas/pull/206)). **NEXT:** [#185 lifecycle](https://github.com/diego-torres/nutriconsultas/issues/185) (+ Stripe #207/#208 for production checkout).
+**Last updated:** 2026-06-17 — #185 lifecycle **in-progress** (branch `subscription/185-lifecycle-grace`).
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 
@@ -56,7 +56,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | ~~204~~ | ~~Tramitar integración operativa con Mercado Pago~~ | https://github.com/diego-torres/nutriconsultas/issues/204 | **deferred** | — | Cerrado; reemplazado por #208 |
 | 184 | Admin invitations + payment checkout | https://github.com/diego-torres/nutriconsultas/issues/184 | **done** | 180, 182, 183 | Merged [PR #206](https://github.com/diego-torres/nutriconsultas/pull/206); live checkout blocked on Stripe (#207/#208). GitHub issue still open — close when convenient. |
 | 209 | Invitation email — SES (Terraform) + localhost console sender | https://github.com/diego-torres/nutriconsultas/issues/209 | open | 184 | SES prod; `email.mode=console` for local dev |
-| 185 | Subscription lifecycle — grace, payment override, notifications | https://github.com/diego-torres/nutriconsultas/issues/185 | **NEXT** | 180, ~~184~~ ✓ | ACTIVE→GRACE→SUSPENDED |
+| 185 | Subscription lifecycle — grace, payment override, notifications | https://github.com/diego-torres/nutriconsultas/issues/185 | **in-progress** | 180, ~~184~~ ✓ | Branch `subscription/185-lifecycle-grace` |
 | 210 | Platform admin revoke nutritionist access and allow re-invite | https://github.com/diego-torres/nutriconsultas/issues/210 | open | 184, 182, 185 | Cancel access; new invite same email |
 | 211 | Platform admin change nutritionist subscription plan tier | https://github.com/diego-torres/nutriconsultas/issues/211 | open | 181, 182, 184 | Upgrade/downgrade + Auth0 sync |
 
