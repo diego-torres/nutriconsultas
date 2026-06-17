@@ -7,7 +7,6 @@ import com.nutriconsultas.subscription.PlanTier;
 /**
  * Platform-admin paid onboarding invitations for nutritionists and clinic directors.
  */
-@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface NutritionistInvitationService {
 
 	CreatedNutritionistInvitation createInvitation(OidcUser adminPrincipal, String email, PlanTier planTier,
