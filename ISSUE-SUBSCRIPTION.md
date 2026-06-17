@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-17 — #185 lifecycle **in-progress** (branch `subscription/185-lifecycle-grace`).
+**Last updated:** 2026-06-17 — #183/#184 closed on GitHub; #185 PR [#215](https://github.com/diego-torres/nutriconsultas/pull/215) open.
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 
@@ -40,7 +40,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | **180** | Plan catalog, subscription schema & Liquibase | https://github.com/diego-torres/nutriconsultas/issues/180 | **done** | **46** | Merged PR #197 |
 | 181 | SubscriptionEntitlementService — plan tier resolution | https://github.com/diego-torres/nutriconsultas/issues/181 | **done** | 180 | Merged PR #199 — central `hasEntitlement()` |
 | 182 | Auth0 role sync — nutriologo-* and director-consultorio | https://github.com/diego-torres/nutriconsultas/issues/182 | **done** | 181, 108 | Merged PR #202 |
-| 183 | Platform admin RBAC — enforce admin allowlist | https://github.com/diego-torres/nutriconsultas/issues/183 | **done** | — | Merged PR #200 |
+| 183 | Platform admin RBAC — enforce admin allowlist | https://github.com/diego-torres/nutriconsultas/issues/183 | **done** | — | Merged PR #200; GitHub closed 2026-06-17 |
 
 **Suggested order:** #46 → **#180** → #181 → #182; **#183** in parallel when touching admin UI.
 
@@ -54,9 +54,9 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | 207 | Payment provider integration (Stripe / abstraction) | https://github.com/diego-torres/nutriconsultas/issues/207 | open | 180, 189 | Migrate MP → Stripe |
 | 208 | Tramitar integración operativa con Stripe | https://github.com/diego-torres/nutriconsultas/issues/208 | open | 207 | Cuenta, credenciales, webhooks, test/live |
 | ~~204~~ | ~~Tramitar integración operativa con Mercado Pago~~ | https://github.com/diego-torres/nutriconsultas/issues/204 | **deferred** | — | Cerrado; reemplazado por #208 |
-| 184 | Admin invitations + payment checkout | https://github.com/diego-torres/nutriconsultas/issues/184 | **done** | 180, 182, 183 | Merged [PR #206](https://github.com/diego-torres/nutriconsultas/pull/206); live checkout blocked on Stripe (#207/#208). GitHub issue still open — close when convenient. |
+| 184 | Admin invitations + payment checkout | https://github.com/diego-torres/nutriconsultas/issues/184 | **done** | 180, 182, 183 | Merged [PR #206](https://github.com/diego-torres/nutriconsultas/pull/206); GitHub closed 2026-06-17. Live checkout → Stripe (#207/#208); email delivery → #209 |
 | 209 | Invitation email — SES (Terraform) + localhost console sender | https://github.com/diego-torres/nutriconsultas/issues/209 | open | 184 | SES prod; `email.mode=console` for local dev |
-| 185 | Subscription lifecycle — grace, payment override, notifications | https://github.com/diego-torres/nutriconsultas/issues/185 | **in-progress** | 180, ~~184~~ ✓ | Branch `subscription/185-lifecycle-grace` |
+| 185 | Subscription lifecycle — grace, payment override, notifications | https://github.com/diego-torres/nutriconsultas/issues/185 | **in-progress** | 180, ~~184~~ ✓ | PR [#215](https://github.com/diego-torres/nutriconsultas/pull/215) |
 | 210 | Platform admin revoke nutritionist access and allow re-invite | https://github.com/diego-torres/nutriconsultas/issues/210 | open | 184, 182, 185 | Cancel access; new invite same email |
 | 211 | Platform admin change nutritionist subscription plan tier | https://github.com/diego-torres/nutriconsultas/issues/211 | open | 181, 182, 184 | Upgrade/downgrade + Auth0 sync |
 
