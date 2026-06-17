@@ -9,6 +9,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -57,6 +59,10 @@ public class NutritionistInvitation {
 
 	@Column(name = "redeemed_by_user_id", length = 255)
 	private String redeemedByUserId;
+
+	@ManyToOne
+	@JoinColumn(name = "subscription_id")
+	private Subscription subscription;
 
 	@PrePersist
 	void onCreate() {
