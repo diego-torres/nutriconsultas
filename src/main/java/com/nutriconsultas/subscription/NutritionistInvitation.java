@@ -51,6 +51,9 @@ public class NutritionistInvitation {
 	@Column(name = "created_by_user_id", nullable = false, length = 255)
 	private String createdByUserId;
 
+	@Column(name = "payment_exempt", nullable = false)
+	private boolean paymentExempt;
+
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private Instant createdAt;
 

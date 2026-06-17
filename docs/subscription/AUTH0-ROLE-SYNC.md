@@ -35,7 +35,7 @@ Nutritionist plan tiers map to Auth0 **Roles** (RBAC). The database `subscriptio
    AUTH0_MGMT_DOMAIN=https://YOUR_TENANT.auth0.com/
    ```
 
-   When `AUTH0_MGMT_CLIENT_ID` is empty, role assignment throws `Auth0ManagementNotConfiguredException`. DB and Auth0 updates run in one transaction — if Auth0 sync fails, the plan tier change is rolled back.
+   When `AUTH0_MGMT_CLIENT_ID` is empty, `NoOpAuth0RoleSyncClient` is used and admin role assignment throws `Auth0ManagementNotConfiguredException`. Invitation redeem (#184) provisions subscription/clinic in PostgreSQL even if Auth0 sync fails (warn log only).
 
 ---
 

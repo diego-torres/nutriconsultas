@@ -264,6 +264,7 @@ Entities that reference `Paciente` (like `CalendarEvent`, `ClinicalExam`, `Anthr
    - If a template needs specific mock variables, create a validator extending `BaseTemplateValidator`
    - Register the validator in `TemplateValidatorRegistry`
    - Validators define mock model variables needed for template validation
+10. **Dialogs and confirmations (admin UI)**: Never use native `alert()`, `confirm()`, or `onsubmit="return confirm(...)"`. Use bootstrap-sweetalert (`swal`) from `/sbadmin/vendor/bootstrap-sweetalert/`. Confirmations: `type: 'warning'`, cancel + confirm buttons, Spanish copy, action only when user confirms. Errors/success/validation: `type: 'error'|'success'|'warning'|'info'` with Spanish `title`/`text`. See `sbadmin/platform/invitations/list.html` and `AGENTS.md` Thymeleaf section.
 
 ### Database
 1. Use JPA entities with proper relationships

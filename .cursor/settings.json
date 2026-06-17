@@ -2,6 +2,9 @@
   "plugins": {
     "auth0": {
       "enabled": true
+    },
+    "stripe": {
+      "enabled": true
     }
   }
 }

@@ -13,6 +13,7 @@ import com.nutriconsultas.platform.PlatformAdminTemplateValidator;
 import com.nutriconsultas.profile.ProfileTemplateValidator;
 import com.nutriconsultas.reports.ReportTemplateValidator;
 import com.nutriconsultas.search.SearchTemplateValidator;
+import com.nutriconsultas.subscription.invitation.InvitationRedeemTemplateValidator;
 
 /**
  * Registry for template validators. Manages all available validators and provides a way
@@ -37,6 +38,7 @@ public class TemplateValidatorRegistry {
 		register(new ProfileTemplateValidator());
 		register(new PlatformAdminTemplateValidator());
 		register(new ContactInquiryTemplateValidator());
+		register(new InvitationRedeemTemplateValidator());
 		register(new EternaTemplateValidator());
 		// Default validator should be last (handles "*")
 		register(new DefaultTemplateValidator());

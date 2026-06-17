@@ -13,6 +13,7 @@
     href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
     rel="stylesheet">
   <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+  <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
 </head>
 
 <body id="page-top">
@@ -64,8 +65,8 @@
                           </button>
                         </form>
                         <form th:action="@{/admin/platform/contact-inquiries/{id}/delete(id=${inquiry.id})}" method="post"
-                          class="d-inline" onsubmit="return confirm('¿Eliminar este mensaje de contacto?');">
-                          <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                          class="d-inline delete-contact-inquiry-form">
+                          <button type="button" class="btn btn-sm btn-danger delete-contact-inquiry-btn" title="Eliminar">
                             <i class="fas fa-trash"></i>
                           </button>
                         </form>
@@ -86,6 +87,7 @@
   <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
   <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
   <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
   <script th:src="@{/sbadmin/vendor/datatables/jquery.dataTables.min.js}"></script>
   <script th:src="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.js}"></script>
   <script th:inline="javascript">
@@ -98,6 +100,25 @@
         columnDefs: [
           { orderable: false, targets: [6] }
         ]
+      });
+
+      $(document).on('click', '.delete-contact-inquiry-btn', function () {
+        var $form = $(this).closest('.delete-contact-inquiry-form');
+        swal({
+          title: 'Eliminar mensaje',
+          text: '¿Eliminar este mensaje de contacto? Esta acción no se puede deshacer.',
+          type: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Sí, eliminar',
+          cancelButtonText: 'Cancelar',
+          closeOnConfirm: true
+        }, function (isConfirm) {
+          if (isConfirm) {
+            $form.submit();
+          }
+        });
       });
     });
   </script>

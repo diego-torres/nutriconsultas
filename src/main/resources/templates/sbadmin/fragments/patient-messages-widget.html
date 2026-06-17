@@ -1,4 +1,5 @@
 <div th:fragment="widget">
+  <link rel="stylesheet" th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" />
   <link rel="stylesheet" th:href="@{/sbadmin/css/patient-messages-widget.css}" />
   <div id="patientChatRoot" aria-live="polite">
     <div id="patientChatPanel" hidden>
@@ -34,5 +35,6 @@
       <span id="patientChatBadge" hidden>0</span>
     </button>
   </div>
+  <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
   <script th:src="@{/sbadmin/js/patient-messages-widget.js}" defer></script>
 </div>

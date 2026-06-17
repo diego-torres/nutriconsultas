@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-nutritionist-invitation-payment-exempt
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: nutritionist_invitation
+              columnName: payment_exempt
+      changes:
+        - addColumn:
+            tableName: nutritionist_invitation
+            columns:
+              - column:
+                  name: payment_exempt
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false

@@ -14,8 +14,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
- * Generates {@code src/main/resources/db/changelog/changes/001-baseline-schema.h2.sql} from
- * Hibernate {@code ddl-auto=create} on H2. Run manually when entities change:
+ * Generates {@code src/main/resources/db/changelog/changes/001-baseline-schema.h2.sql}
+ * from Hibernate {@code ddl-auto=create} on H2. Run manually when entities change:
  * {@code mvn -Dtest=H2SchemaExportTest -Dspring.profiles.active=h2-schema-export
  * -Djunit.jupiter.conditions.deactivate=org.junit.jupiter.api.condition.DisabledCondition test}
  */

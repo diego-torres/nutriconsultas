@@ -23,6 +23,7 @@
 
   <!-- Custom styles for this template-->
   <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+  <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
 </head>
 
 <body id="page-top">
@@ -200,6 +201,7 @@
 
     <!-- Custom scripts for all pages-->
     <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
     <script lang="javascript" th:inline="none">
       'use strict';
       (function ($) {
@@ -238,7 +240,12 @@
         // Function to generate patient report directly from table button
         window.generatePatientReportFromTable = function (pacienteId) {
           if (!pacienteId) {
-            alert('Error: ID de paciente no válido');
+            swal({
+              title: 'Error',
+              text: 'ID de paciente no válido.',
+              type: 'error',
+              timer: 4000
+            });
             return;
           }
 
@@ -260,7 +267,12 @@
           event.preventDefault();
           const pacienteId = $('#pacienteSelect').val();
           if (!pacienteId) {
-            alert('Por favor seleccione un paciente');
+            swal({
+              title: 'Seleccione un paciente',
+              text: 'Por favor seleccione un paciente para generar el reporte.',
+              type: 'warning',
+              timer: 4000
+            });
             return;
           }
 
@@ -289,7 +301,12 @@
           event.preventDefault();
           const dietaId = $('#dietaSelect').val();
           if (!dietaId) {
-            alert('Por favor seleccione una dieta');
+            swal({
+              title: 'Seleccione una dieta',
+              text: 'Por favor seleccione una dieta para generar el análisis nutricional.',
+              type: 'warning',
+              timer: 4000
+            });
             return;
           }
 

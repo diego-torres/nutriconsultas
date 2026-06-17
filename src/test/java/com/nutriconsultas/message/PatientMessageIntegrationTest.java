@@ -78,8 +78,8 @@ class PatientMessageIntegrationTest {
 			.andExpect(status().isCreated());
 
 		mockMvc
-			.perform(post("/rest/patient-messages/thread/" + linkedPaciente.getId()).with(oidcLogin()
-				.idToken(token -> token.subject(NUTRITIONIST_SUB).claim("name", "Nutritionist")))
+			.perform(post("/rest/patient-messages/thread/" + linkedPaciente.getId())
+				.with(oidcLogin().idToken(token -> token.subject(NUTRITIONIST_SUB).claim("name", "Nutritionist")))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"body\":\"Claro, revisemos tu plan juntos\"}"))
 			.andExpect(status().isOk())
@@ -99,12 +99,12 @@ class PatientMessageIntegrationTest {
 	@Test
 	void sendMessageForOtherNutritionistPatientReturnsNotFound() throws Exception {
 		final Paciente otherPatient = pacienteRepository.findByPatientAuthSub("auth0|114-other-patient")
-			.orElseGet(() -> pacienteRepository.saveAndFlush(samplePaciente("auth0|114-other-patient",
-					OTHER_NUTRITIONIST_SUB)));
+			.orElseGet(() -> pacienteRepository
+				.saveAndFlush(samplePaciente("auth0|114-other-patient", OTHER_NUTRITIONIST_SUB)));
 
 		mockMvc
-			.perform(post("/rest/patient-messages/thread/" + otherPatient.getId()).with(oidcLogin()
-				.idToken(token -> token.subject(NUTRITIONIST_SUB).claim("name", "Nutritionist")))
+			.perform(post("/rest/patient-messages/thread/" + otherPatient.getId())
+				.with(oidcLogin().idToken(token -> token.subject(NUTRITIONIST_SUB).claim("name", "Nutritionist")))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"body\":\"Hola\"}"))
 			.andExpect(status().isNotFound());

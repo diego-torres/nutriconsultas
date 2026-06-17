@@ -7,12 +7,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.nutriconsultas.subscription.InvitationStatus;
+import com.nutriconsultas.subscription.NutritionistInvitationRepository;
 import com.nutriconsultas.subscription.Subscription;
 import com.nutriconsultas.subscription.SubscriptionAuditEvent;
 import com.nutriconsultas.subscription.SubscriptionAuditEventRepository;
 import com.nutriconsultas.subscription.SubscriptionAuditEventType;
 import com.nutriconsultas.subscription.SubscriptionRepository;
 import com.nutriconsultas.subscription.SubscriptionStatus;
+import com.nutriconsultas.subscription.invitation.SubscriptionProvisioningService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,14 +31,22 @@ public class PaymentWebhookService {
 
 	private final SubscriptionAuditEventRepository auditEventRepository;
 
+	private final NutritionistInvitationRepository invitationRepository;
+
+	private final SubscriptionProvisioningService provisioningService;
+
 	public PaymentWebhookService(final PaymentProvider paymentProvider,
 			final PaymentWebhookEventRepository webhookEventRepository,
 			final SubscriptionRepository subscriptionRepository,
-			final SubscriptionAuditEventRepository auditEventRepository) {
+			final SubscriptionAuditEventRepository auditEventRepository,
+			final NutritionistInvitationRepository invitationRepository,
+			final SubscriptionProvisioningService provisioningService) {
 		this.paymentProvider = paymentProvider;
 		this.webhookEventRepository = webhookEventRepository;
 		this.subscriptionRepository = subscriptionRepository;
 		this.auditEventRepository = auditEventRepository;
+		this.invitationRepository = invitationRepository;
+		this.provisioningService = provisioningService;
 	}
 
 	@Transactional
@@ -86,6 +97,7 @@ public class PaymentWebhookService {
 			recordAudit(subscription, previousStatus, SubscriptionAuditEventType.WEBHOOK_PAYMENT_SUCCEEDED,
 					"Payment provider webhook");
 			subscriptionRepository.save(subscription);
+			provisionPaidInvitationAccess(subscription);
 			return;
 		}
 		if (parsed.action() == PaymentWebhookAction.PAYMENT_FAILED) {
@@ -122,6 +134,14 @@ public class PaymentWebhookService {
 		auditEvent.setReasonCode("PAYMENT_PROVIDER");
 		auditEvent.setDetails(details);
 		auditEventRepository.save(auditEvent);
+	}
+
+	private void provisionPaidInvitationAccess(final Subscription subscription) {
+		invitationRepository.findBySubscriptionId(subscription.getId()).ifPresent(invitation -> {
+			if (invitation.getStatus() == InvitationStatus.REDEEMED) {
+				provisioningService.activatePaidAccess(invitation, subscription);
+			}
+		});
 	}
 
 }

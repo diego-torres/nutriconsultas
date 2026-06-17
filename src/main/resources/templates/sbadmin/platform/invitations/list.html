@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <title>Minutriporcion - Invitaciones</title>
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link th:href="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+  <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
+</head>
+
+<body id="page-top">
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/sidebar :: sidebar}"></div>
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <div class="container-fluid">
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Invitaciones de nutriólogos</h1>
+            <a class="btn btn-primary btn-sm" th:href="@{/admin/platform/invitations/new}">
+              <i class="fas fa-plus"></i> Nueva invitación
+            </a>
+          </div>
+          <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">Éxito</div>
+          <div th:if="${inviteUrl}" class="alert alert-info">
+            <strong>Enlace de invitación (compártelo si el correo no llegó):</strong>
+            <div class="mt-2"><code id="inviteUrlText" th:text="${inviteUrl}">https://...</code></div>
+            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="copyInviteUrlBtn">
+              <i class="fas fa-copy"></i> Copiar enlace
+            </button>
+          </div>
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Invitaciones enviadas</h6>
+            </div>
+            <div class="card-body">
+              <div class="row mb-3">
+                <div class="col-md-3">
+                  <label class="small text-muted mb-1" for="filterEmail">Correo</label>
+                  <input type="text" class="form-control form-control-sm" id="filterEmail"
+                    placeholder="Filtrar por email">
+                </div>
+                <div class="col-md-2">
+                  <label class="small text-muted mb-1" for="filterPlan">Plan</label>
+                  <select class="form-control form-control-sm" id="filterPlan">
+                    <option value="">Todos</option>
+                    <option th:each="tier : ${planTiers}" th:value="${tier}" th:text="${tier}">BASICO</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label class="small text-muted mb-1" for="filterStatus">Estado</label>
+                  <select class="form-control form-control-sm" id="filterStatus">
+                    <option value="">Todos</option>
+                    <option value="PENDING">Pendiente</option>
+                    <option value="REDEEMED">Aceptada</option>
+                    <option value="EXPIRED">Expirada</option>
+                    <option value="CANCELLED">Cancelada</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label class="small text-muted mb-1" for="filterPaymentExempt">Exento de pago</label>
+                  <select class="form-control form-control-sm" id="filterPaymentExempt">
+                    <option value="">Todos</option>
+                    <option value="true">Sí</option>
+                    <option value="false">No</option>
+                  </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" id="clearInvitationFilters">
+                    <i class="fas fa-eraser"></i> Limpiar filtros
+                  </button>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table id="invitationsGrid" class="table table-bordered table-striped" width="100%" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Email</th>
+                      <th>Plan</th>
+                      <th>Estado</th>
+                      <th>Exento de pago</th>
+                      <th>Expira</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div th:insert="~{sbadmin/footer :: footer}"></div>
+    </div>
+  </div>
+  <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/datatables/jquery.dataTables.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.js}"></script>
+  <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
+  <script th:inline="javascript">
+    var highlightInvitationId = /*[[${highlightInvitationId}]]*/ null;
+  </script>
+  <script>
+    'use strict';
+
+    jQuery(document).ready(function ($) {
+      var invitationsTable = $('#invitationsGrid').DataTable({
+        processing: true,
+        serverSide: true,
+        scrollX: true,
+        order: [ [0, 'desc'] ],
+        pageLength: 25,
+        lengthMenu: [ [10, 25, 50, 100], [10, 25, 50, 100] ],
+        language: {
+          emptyTable: 'No hay invitaciones',
+          lengthMenu: 'Mostrar _MENU_ registros por página',
+          zeroRecords: 'No se encontraron invitaciones',
+          info: 'Mostrando _START_ a _END_ de _TOTAL_ invitaciones',
+          infoEmpty: 'No hay invitaciones disponibles',
+          infoFiltered: '(filtrado de _MAX_ invitaciones en total)',
+          loadingRecords: 'Cargando...',
+          search: 'Buscar:',
+          paginate: {
+            first: 'Inicio',
+            last: 'Fin',
+            next: 'Siguiente',
+            previous: 'Anterior'
+          }
+        },
+        ajax: {
+          url: '/rest/platform/invitations/data-table',
+          type: 'POST',
+          dataType: 'json',
+          contentType: 'application/json',
+          data: function (data) {
+            return JSON.stringify(data);
+          }
+        },
+        columnDefs: [
+          { targets: 6, orderable: false, searchable: false }
+        ],
+        drawCallback: function () {
+          if (highlightInvitationId) {
+            var $row = $('#invitation-' + highlightInvitationId).closest('tr');
+            $row.addClass('table-warning');
+          }
+        }
+      });
+
+      function applyColumnFilter(columnIndex, value) {
+        invitationsTable.column(columnIndex).search(value || '').draw();
+      }
+
+      $('#filterEmail').on('keyup change', function () {
+        applyColumnFilter(1, $(this).val());
+      });
+      $('#filterPlan').on('change', function () {
+        applyColumnFilter(2, $(this).val());
+      });
+      $('#filterStatus').on('change', function () {
+        applyColumnFilter(3, $(this).val());
+      });
+      $('#filterPaymentExempt').on('change', function () {
+        applyColumnFilter(4, $(this).val());
+      });
+      $('#clearInvitationFilters').on('click', function () {
+        $('#filterEmail').val('');
+        $('#filterPlan').val('');
+        $('#filterStatus').val('');
+        $('#filterPaymentExempt').val('');
+        invitationsTable.search('');
+        invitationsTable.columns().search('');
+        invitationsTable.draw();
+      });
+
+      $('#copyInviteUrlBtn').on('click', function () {
+        var text = $('#inviteUrlText').text();
+        if (!text) {
+          return;
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () {
+            swal({ title: 'Copiado', text: 'Enlace copiado al portapapeles.', type: 'success', timer: 2000 });
+          });
+        }
+      });
+
+      $(document).on('click', '.regenerate-invitation-link-btn', function () {
+        var $form = $(this).closest('.regenerate-invitation-link-form');
+        swal({
+          title: 'Ver enlace de invitación',
+          text: 'Se generará un enlace nuevo. Cualquier enlace anterior dejará de funcionar.',
+          type: 'info',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Generar enlace',
+          cancelButtonText: 'Cancelar',
+          closeOnConfirm: true
+        }, function (isConfirm) {
+          if (isConfirm) {
+            $form.submit();
+          }
+        });
+      });
+
+      $(document).on('click', '.cancel-invitation-btn', function () {
+        var $form = $(this).closest('.cancel-invitation-form');
+        swal({
+          title: 'Cancelar invitación',
+          text: 'El enlace dejará de ser válido y no podrá aceptarse. ¿Desea continuar?',
+          type: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Sí, cancelar',
+          cancelButtonText: 'No',
+          closeOnConfirm: true
+        }, function (isConfirm) {
+          if (isConfirm) {
+            $form.submit();
+          }
+        });
+      });
+    });
+  </script>
+</body>
+
+</html>
