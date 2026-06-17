@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-17 — payment provider decision: **Stripe** (#207, #208); #204 closed.
+**Last updated:** 2026-06-17 — #209 opened (SES + console invitation email).
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 
@@ -55,6 +55,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | 208 | Tramitar integración operativa con Stripe | https://github.com/diego-torres/nutriconsultas/issues/208 | open | 207 | Cuenta, credenciales, webhooks, test/live |
 | ~~204~~ | ~~Tramitar integración operativa con Mercado Pago~~ | https://github.com/diego-torres/nutriconsultas/issues/204 | **deferred** | — | Cerrado; reemplazado por #208 |
 | 184 | Admin invitations + payment checkout | https://github.com/diego-torres/nutriconsultas/issues/184 | **in-progress** | 180, 182, 183, 207 | PR #206; checkout pending Stripe (#207) |
+| 209 | Invitation email — SES (Terraform) + localhost console sender | https://github.com/diego-torres/nutriconsultas/issues/209 | open | 184 | SES prod; `email.mode=console` for local dev |
 | 185 | Subscription lifecycle — grace, payment override, notifications | https://github.com/diego-torres/nutriconsultas/issues/185 | open | 180, 184 | ACTIVE→GRACE→SUSPENDED |
 
 ---
