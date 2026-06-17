@@ -394,7 +394,7 @@ gh pr create ...
 | **Status** | **NEXT** — [#132](https://github.com/diego-torres/nutriconsultas/issues/132) **in-progress** (schema + Liquibase) |
 | **Phase** | Invitation / onboarding — token service after #132 merges |
 | **Just completed** | Prerequisites ~~#156~~ ✓ and ~~#46~~ ✓ (PR #196) |
-| **In scope for #132** | `PacienteStatus` + `PatientInvitation` entity; Liquibase `006-patient-invitation-onboarding.yaml` |
+| **In scope for #132** | `PacienteStatus` + `PatientInvitation` entity; Liquibase `007-patient-invitation-onboarding.yaml` |
 
 ### Upcoming gates
 

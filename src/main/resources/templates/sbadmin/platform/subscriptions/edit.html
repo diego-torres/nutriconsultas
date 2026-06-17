@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <title>Minutriporcion - Editar suscripción</title>
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+</head>
+
+<body id="page-top">
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/sidebar :: sidebar}"></div>
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <div class="container-fluid">
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Editar suscripción #<span th:text="${subscription.id}">1</span></h1>
+            <a class="btn btn-secondary btn-sm" th:href="@{/admin/platform/subscriptions}">
+              <i class="fas fa-arrow-left"></i> Volver al listado
+            </a>
+          </div>
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Override administrativo</h6>
+            </div>
+            <div class="card-body">
+              <p class="text-muted">Consultorio: <strong th:text="${clinicName}">—</strong> · Plan:
+                <strong th:text="${subscription.planTier}">BASICO</strong></p>
+              <form th:action="@{/admin/platform/subscriptions/{id}(id=${subscription.id})}" th:object="${form}"
+                method="post">
+                <div class="form-group">
+                  <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input" id="paymentExempt" th:field="*{paymentExempt}">
+                    <label class="custom-control-label" for="paymentExempt">Exento de pago (prueba / prórroga
+                      comercial)</label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="periodEndInput">Vigencia hasta</label>
+                  <input type="datetime-local" class="form-control" id="periodEndInput" th:field="*{periodEndInput}">
+                </div>
+                <div class="form-group">
+                  <label for="gracePeriodDays">Días de gracia</label>
+                  <input type="number" class="form-control" id="gracePeriodDays" th:field="*{gracePeriodDays}" min="0"
+                    max="90">
+                </div>
+                <div class="form-group">
+                  <label for="status">Estado</label>
+                  <select class="form-control" id="status" th:field="*{status}">
+                    <option th:each="s : ${subscriptionStatuses}" th:value="${s}" th:text="${s}">ACTIVE</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="reasonCode">Código de motivo <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="reasonCode" th:field="*{reasonCode}"
+                    placeholder="TRIAL_EXTENSION, COMMERCIAL_OVERRIDE, ...">
+                  <small class="text-danger" th:if="${#fields.hasErrors('reasonCode')}" th:errors="*{reasonCode}">Error</small>
+                </div>
+                <div class="form-group">
+                  <label for="details">Detalle (auditoría)</label>
+                  <textarea class="form-control" id="details" th:field="*{details}" rows="3"
+                    maxlength="500"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save"></i> Guardar cambios
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div th:insert="~{sbadmin/footer :: footer}"></div>
+    </div>
+  </div>
+  <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+</body>
+
+</html>

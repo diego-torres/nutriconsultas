@@ -1,0 +1,56 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-subscription-notification-log
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: subscription_notification_log
+      changes:
+        - createTable:
+            tableName: subscription_notification_log
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: subscription_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: notification_type
+                  type: VARCHAR(40)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: period_end_snapshot
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sent_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: subscription_notification_log
+            baseColumnNames: subscription_id
+            referencedTableName: subscription
+            referencedColumnNames: id
+            constraintName: fk_subscription_notification_subscription
+        - addUniqueConstraint:
+            tableName: subscription_notification_log
+            columnNames: subscription_id, notification_type, period_end_snapshot
+            constraintName: uk_subscription_notification
+        - createIndex:
+            indexName: idx_subscription_notification_subscription_id
+            tableName: subscription_notification_log
+            columns:
+              - column:
+                  name: subscription_id

@@ -12,5 +12,8 @@ databaseChangeLog:
       file: changes/005-nutritionist-invitation-payment-exempt.yaml
       relativeToChangelogFile: true
   - include:
-      file: changes/006-patient-invitation-onboarding.yaml
+      file: changes/006-subscription-notification-log.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: changes/007-patient-invitation-onboarding.yaml
       relativeToChangelogFile: true

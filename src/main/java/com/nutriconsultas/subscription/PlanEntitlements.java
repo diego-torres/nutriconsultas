@@ -13,26 +13,27 @@ import java.util.Set;
 public final class PlanEntitlements {
 
 	public static final PlanEntitlements BASICO = new PlanEntitlements(PlanTier.BASICO, "nutriologo-basico", 10, 1,
-			EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.DIET_PLANS, Entitlement.CALENDAR,
-					Entitlement.REPORTS_BASIC));
+			EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.CREATE_PATIENT, Entitlement.DIET_PLANS,
+					Entitlement.CALENDAR, Entitlement.REPORTS_BASIC));
 
 	public static final PlanEntitlements PROFESIONAL = new PlanEntitlements(PlanTier.PROFESIONAL,
 			"nutriologo-profesional", 50, 1,
-			EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.DIET_PLANS, Entitlement.CALENDAR,
-					Entitlement.REPORTS_BASIC, Entitlement.REPORTS_ADVANCED, Entitlement.REPORTS_FULL,
-					Entitlement.PDF_EXPORT, Entitlement.REPORTS_BRANDED));
+			EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.CREATE_PATIENT, Entitlement.DIET_PLANS,
+					Entitlement.CALENDAR, Entitlement.REPORTS_BASIC, Entitlement.REPORTS_ADVANCED,
+					Entitlement.REPORTS_FULL, Entitlement.PDF_EXPORT, Entitlement.REPORTS_BRANDED));
 
 	public static final PlanEntitlements PLUS = new PlanEntitlements(PlanTier.PLUS, "nutriologo-plus", null, 1,
-			EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.DIET_PLANS, Entitlement.CALENDAR,
-					Entitlement.REPORTS_BASIC, Entitlement.REPORTS_ADVANCED, Entitlement.REPORTS_FULL,
-					Entitlement.PDF_EXPORT, Entitlement.REPORTS_BRANDED, Entitlement.PRIORITY_SUPPORT));
+			EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.CREATE_PATIENT, Entitlement.DIET_PLANS,
+					Entitlement.CALENDAR, Entitlement.REPORTS_BASIC, Entitlement.REPORTS_ADVANCED,
+					Entitlement.REPORTS_FULL, Entitlement.PDF_EXPORT, Entitlement.REPORTS_BRANDED,
+					Entitlement.PRIORITY_SUPPORT));
 
 	public static final PlanEntitlements CONSULTORIO = new PlanEntitlements(PlanTier.CONSULTORIO,
 			"director-consultorio", null, 20,
-			EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.DIET_PLANS, Entitlement.CALENDAR,
-					Entitlement.REPORTS_BASIC, Entitlement.REPORTS_ADVANCED, Entitlement.REPORTS_FULL,
-					Entitlement.PDF_EXPORT, Entitlement.REPORTS_BRANDED, Entitlement.PRIORITY_SUPPORT,
-					Entitlement.USER_ADMINISTRATION));
+			EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.CREATE_PATIENT, Entitlement.DIET_PLANS,
+					Entitlement.CALENDAR, Entitlement.REPORTS_BASIC, Entitlement.REPORTS_ADVANCED,
+					Entitlement.REPORTS_FULL, Entitlement.PDF_EXPORT, Entitlement.REPORTS_BRANDED,
+					Entitlement.PRIORITY_SUPPORT, Entitlement.USER_ADMINISTRATION));
 
 	private final PlanTier planTier;
 

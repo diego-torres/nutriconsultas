@@ -1,0 +1,110 @@
+package com.nutriconsultas.admin;
+
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.nutriconsultas.controller.AbstractPlatformAdminController;
+import com.nutriconsultas.platform.PlatformAdminAuthorization;
+import com.nutriconsultas.subscription.Clinic;
+import com.nutriconsultas.subscription.ClinicRepository;
+import com.nutriconsultas.subscription.Subscription;
+import com.nutriconsultas.subscription.SubscriptionRepository;
+import com.nutriconsultas.subscription.SubscriptionStatus;
+import com.nutriconsultas.subscription.lifecycle.AdminSubscriptionOverride;
+import com.nutriconsultas.subscription.lifecycle.SubscriptionLifecycleService;
+
+import jakarta.validation.Valid;
+
+@Controller
+@RequestMapping("/admin/platform/subscriptions")
+public class SubscriptionAdminController extends AbstractPlatformAdminController {
+
+	private static final DateTimeFormatter PERIOD_END_INPUT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
+		.withZone(ZoneId.of("America/Mexico_City"));
+
+	private final SubscriptionRepository subscriptionRepository;
+
+	private final ClinicRepository clinicRepository;
+
+	private final SubscriptionLifecycleService lifecycleService;
+
+	public SubscriptionAdminController(final PlatformAdminAuthorization platformAdminAuthorization,
+			final SubscriptionRepository subscriptionRepository, final ClinicRepository clinicRepository,
+			final SubscriptionLifecycleService lifecycleService) {
+		super(platformAdminAuthorization);
+		this.subscriptionRepository = subscriptionRepository;
+		this.clinicRepository = clinicRepository;
+		this.lifecycleService = lifecycleService;
+	}
+
+	@GetMapping
+	public String list(@AuthenticationPrincipal final OidcUser principal, final Model model) {
+		requirePlatformAdmin(principal, "subscriptions.list");
+		model.addAttribute("subscriptionStatuses", SubscriptionStatus.values());
+		model.addAttribute("activeMenu", "subscriptions");
+		return "sbadmin/platform/subscriptions/list";
+	}
+
+	@GetMapping("/{id}/edit")
+	public String editForm(@AuthenticationPrincipal final OidcUser principal, @PathVariable final Long id,
+			final Model model) {
+		requirePlatformAdmin(principal, "subscriptions.edit");
+		final Subscription subscription = subscriptionRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+		if (!model.containsAttribute("form")) {
+			model.addAttribute("form", toForm(subscription));
+		}
+		model.addAttribute("subscription", subscription);
+		model.addAttribute("clinicName", clinicRepository.findBySubscriptionId(id).map(Clinic::getName).orElse("—"));
+		model.addAttribute("subscriptionStatuses", SubscriptionStatus.values());
+		model.addAttribute("activeMenu", "subscriptions");
+		return "sbadmin/platform/subscriptions/edit";
+	}
+
+	@PostMapping("/{id}")
+	public String update(@AuthenticationPrincipal final OidcUser principal, @PathVariable final Long id,
+			@Valid @ModelAttribute("form") final UpdateSubscriptionForm form, final BindingResult bindingResult,
+			final Model model, final RedirectAttributes redirectAttributes) {
+		requirePlatformAdmin(principal, "subscriptions.edit");
+		if (bindingResult.hasErrors()) {
+			final Subscription subscription = subscriptionRepository.findById(id)
+				.orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+			model.addAttribute("subscription", subscription);
+			model.addAttribute("clinicName",
+					clinicRepository.findBySubscriptionId(id).map(Clinic::getName).orElse("—"));
+			model.addAttribute("subscriptionStatuses", SubscriptionStatus.values());
+			model.addAttribute("activeMenu", "subscriptions");
+			return "sbadmin/platform/subscriptions/edit";
+		}
+		final AdminSubscriptionOverride override = new AdminSubscriptionOverride(form.isPaymentExempt(),
+				form.getPeriodEnd(), form.getGracePeriodDays(), form.getStatus(), form.getReasonCode(),
+				form.getDetails());
+		lifecycleService.applyAdminOverride(principal.getSubject(), id, override);
+		redirectAttributes.addFlashAttribute("successMessage", "Suscripción actualizada correctamente.");
+		return "redirect:/admin/platform/subscriptions";
+	}
+
+	private static UpdateSubscriptionForm toForm(final Subscription subscription) {
+		final UpdateSubscriptionForm form = new UpdateSubscriptionForm();
+		form.setPaymentExempt(subscription.isPaymentExempt());
+		if (subscription.getPeriodEnd() != null) {
+			form.setPeriodEndInput(PERIOD_END_INPUT.format(subscription.getPeriodEnd()));
+		}
+		form.setGracePeriodDays(subscription.getGracePeriodDays());
+		form.setStatus(subscription.getStatus());
+		return form;
+	}
+
+}

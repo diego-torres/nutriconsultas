@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 006-paciente-onboarding-columns
+      id: 007-paciente-onboarding-columns
       author: nutriconsultas
       preConditions:
         - onFail: MARK_RAN
@@ -37,7 +37,7 @@ databaseChangeLog:
               - column:
                   name: status
   - changeSet:
-      id: 006-patient-invitation-table
+      id: 007-patient-invitation-table
       author: nutriconsultas
       preConditions:
         - onFail: MARK_RAN

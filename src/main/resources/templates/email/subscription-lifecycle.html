@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title th:text="${subject}">Notificación de suscripción</title>
+</head>
+<body>
+  <p>Estimado usuario de Minutriporción,</p>
+  <p th:switch="${notificationType.name()}">
+    <span th:case="'EXPIRY_REMINDER_7_DAYS'">
+      Su suscripción del plan <strong th:text="${planTier}">PLAN</strong> vence el
+      <strong th:text="${periodEndFormatted}">fecha</strong> (en 7 días).
+    </span>
+    <span th:case="'EXPIRY_REMINDER_3_DAYS'">
+      Su suscripción del plan <strong th:text="${planTier}">PLAN</strong> vence el
+      <strong th:text="${periodEndFormatted}">fecha</strong> (en 3 días).
+    </span>
+    <span th:case="'EXPIRY_REMINDER_1_DAY'">
+      Su suscripción del plan <strong th:text="${planTier}">PLAN</strong> vence mañana
+      (<strong th:text="${periodEndFormatted}">fecha</strong>).
+    </span>
+    <span th:case="'GRACE_PERIOD_ENTERED'">
+      Su suscripción del plan <strong th:text="${planTier}">PLAN</strong> entró en periodo de gracia.
+      Tiene <strong th:text="${gracePeriodDays}">7</strong> días para renovar antes de la suspensión.
+    </span>
+  </p>
+  <p>Renueve su pago para mantener el acceso completo a la plataforma.</p>
+  <p>— Equipo Minutriporción</p>
+</body>
+</html>

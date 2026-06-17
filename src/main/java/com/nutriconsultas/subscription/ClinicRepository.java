@@ -10,6 +10,8 @@ public interface ClinicRepository extends JpaRepository<Clinic, Long> {
 
 	Optional<Clinic> findByDirectorUserId(String directorUserId);
 
+	Optional<Clinic> findBySubscriptionId(Long subscriptionId);
+
 	@Query("SELECT c FROM Clinic c JOIN FETCH c.subscription WHERE c.directorUserId = :directorUserId")
 	Optional<Clinic> findByDirectorUserIdWithSubscription(@Param("directorUserId") String directorUserId);
 
