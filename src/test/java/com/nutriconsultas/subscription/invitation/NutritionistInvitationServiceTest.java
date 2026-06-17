@@ -119,8 +119,8 @@ class NutritionistInvitationServiceTest {
 		when(invitationRepository.findByEmailIgnoreCaseAndStatus(INVITEE_EMAIL, InvitationStatus.PENDING))
 			.thenReturn(Optional.of(existing));
 
-		assertThatThrownBy(() -> invitationService.createInvitation(adminPrincipal, INVITEE_EMAIL, PlanTier.BASICO,
-				false))
+		assertThatThrownBy(
+				() -> invitationService.createInvitation(adminPrincipal, INVITEE_EMAIL, PlanTier.BASICO, false))
 			.isInstanceOf(PendingNutritionistInvitationException.class)
 			.extracting(ex -> ((PendingNutritionistInvitationException) ex).getExistingInvitationId())
 			.isEqualTo(1L);
@@ -139,8 +139,8 @@ class NutritionistInvitationServiceTest {
 				InvitationStatus.REDEEMED))
 			.thenReturn(Optional.of(redeemed));
 
-		assertThatThrownBy(() -> invitationService.createInvitation(adminPrincipal, INVITEE_EMAIL, PlanTier.BASICO,
-				false))
+		assertThatThrownBy(
+				() -> invitationService.createInvitation(adminPrincipal, INVITEE_EMAIL, PlanTier.BASICO, false))
 			.isInstanceOf(ActiveNutritionistUserException.class)
 			.extracting(ex -> ((ActiveNutritionistUserException) ex).getRedeemedInvitationId())
 			.isEqualTo(1L);

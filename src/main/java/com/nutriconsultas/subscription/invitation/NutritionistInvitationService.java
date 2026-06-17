@@ -15,7 +15,8 @@ public interface NutritionistInvitationService {
 	void cancelInvitation(OidcUser adminPrincipal, Long invitationId);
 
 	/**
-	 * Issues a new redeem URL for a pending invitation (rotates token; previous links stop working).
+	 * Issues a new redeem URL for a pending invitation (rotates token; previous links
+	 * stop working).
 	 */
 	String regenerateInvitationLink(OidcUser adminPrincipal, Long invitationId);
 

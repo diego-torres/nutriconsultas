@@ -37,7 +37,8 @@ public class NutritionistInvitationGridServiceImpl implements NutritionistInvita
 		return invitationRepository.count();
 	}
 
-	private static Specification<NutritionistInvitation> specification(final NutritionistInvitationGridFilters filters) {
+	private static Specification<NutritionistInvitation> specification(
+			final NutritionistInvitationGridFilters filters) {
 		return NutritionistInvitationSpecifications.withFilters(filters);
 	}
 
