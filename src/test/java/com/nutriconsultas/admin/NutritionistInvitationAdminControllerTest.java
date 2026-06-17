@@ -62,8 +62,9 @@ class NutritionistInvitationAdminControllerTest {
 		final CreateNutritionistInvitationForm form = new CreateNutritionistInvitationForm();
 		form.setEmail("nutri@example.com");
 		form.setPlanTier(PlanTier.BASICO);
-		org.mockito.Mockito.when(invitationService.createInvitation(principal, form.getEmail(), form.getPlanTier(),
-				form.isPaymentExempt()))
+		org.mockito.Mockito
+			.when(invitationService.createInvitation(principal, form.getEmail(), form.getPlanTier(),
+					form.isPaymentExempt()))
 			.thenThrow(new PendingNutritionistInvitationException(42L));
 		final ExtendedModelMap model = new ExtendedModelMap();
 		final org.springframework.validation.BeanPropertyBindingResult bindingResult = new org.springframework.validation.BeanPropertyBindingResult(
@@ -83,8 +84,9 @@ class NutritionistInvitationAdminControllerTest {
 		final CreateNutritionistInvitationForm form = new CreateNutritionistInvitationForm();
 		form.setEmail("nutri@example.com");
 		form.setPlanTier(PlanTier.BASICO);
-		org.mockito.Mockito.when(invitationService.createInvitation(principal, form.getEmail(), form.getPlanTier(),
-				form.isPaymentExempt()))
+		org.mockito.Mockito
+			.when(invitationService.createInvitation(principal, form.getEmail(), form.getPlanTier(),
+					form.isPaymentExempt()))
 			.thenThrow(new ActiveNutritionistUserException(99L));
 		final ExtendedModelMap model = new ExtendedModelMap();
 		final org.springframework.validation.BeanPropertyBindingResult bindingResult = new org.springframework.validation.BeanPropertyBindingResult(
@@ -94,8 +96,7 @@ class NutritionistInvitationAdminControllerTest {
 				new org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap());
 
 		assertThat(view).isEqualTo("sbadmin/platform/invitations/form");
-		assertThat(model.get("errorMessage")).asString()
-			.contains("acceso activo");
+		assertThat(model.get("errorMessage")).asString().contains("acceso activo");
 	}
 
 	@Test
@@ -119,7 +120,8 @@ class NutritionistInvitationAdminControllerTest {
 
 		verify(invitationService).regenerateInvitationLink(principal, 3L);
 		assertThat(view).isEqualTo("redirect:/admin/platform/invitations?highlight=3");
-		assertThat(redirectAttributes.getFlashAttributes().get("inviteUrl")).isEqualTo("https://app.test/redeem?token=abc");
+		assertThat(redirectAttributes.getFlashAttributes().get("inviteUrl"))
+			.isEqualTo("https://app.test/redeem?token=abc");
 	}
 
 	private static OidcUser principal(final String subject) {

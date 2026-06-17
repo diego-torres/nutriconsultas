@@ -10,8 +10,7 @@ import com.nutriconsultas.subscription.NutritionistInvitation;
 
 public final class NutritionistInvitationGridHtml {
 
-	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
-		.ofPattern("dd/MM/yyyy HH:mm")
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
 		.withZone(ZoneId.systemDefault());
 
 	private NutritionistInvitationGridHtml() {
@@ -62,7 +61,8 @@ public final class NutritionistInvitationGridHtml {
 				<form action='/admin/platform/invitations/%d/cancel' method='post' class='d-inline cancel-invitation-form'>\
 				<button type='button' class='btn btn-sm btn-outline-danger cancel-invitation-btn' title='Cancelar invitación'>\
 				<i class='fas fa-times'></i> Cancelar</button></form>\
-				""".formatted(id, id);
+				"""
+			.formatted(id, id);
 	}
 
 	public static String escape(final String value) {

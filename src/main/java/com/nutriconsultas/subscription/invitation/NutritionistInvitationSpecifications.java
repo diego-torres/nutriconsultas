@@ -24,10 +24,10 @@ public final class NutritionistInvitationSpecifications {
 			final List<Predicate> predicates = new ArrayList<>();
 			if (StringUtils.hasText(filters.globalSearch())) {
 				final String pattern = "%" + filters.globalSearch().toLowerCase(Locale.ROOT) + "%";
-				predicates.add(criteriaBuilder.or(
-						criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), pattern),
-						criteriaBuilder.like(criteriaBuilder.lower(root.get("planTier").as(String.class)), pattern),
-						criteriaBuilder.like(criteriaBuilder.lower(root.get("status").as(String.class)), pattern)));
+				predicates
+					.add(criteriaBuilder.or(criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), pattern),
+							criteriaBuilder.like(criteriaBuilder.lower(root.get("planTier").as(String.class)), pattern),
+							criteriaBuilder.like(criteriaBuilder.lower(root.get("status").as(String.class)), pattern)));
 			}
 			if (StringUtils.hasText(filters.email())) {
 				final String pattern = "%" + filters.email().toLowerCase(Locale.ROOT) + "%";
@@ -37,8 +37,8 @@ public final class NutritionistInvitationSpecifications {
 				.ifPresent(planTier -> predicates.add(criteriaBuilder.equal(root.get("planTier"), planTier)));
 			parseStatus(filters.status())
 				.ifPresent(status -> predicates.add(criteriaBuilder.equal(root.get("status"), status)));
-			parsePaymentExempt(filters.paymentExempt())
-				.ifPresent(paymentExempt -> predicates.add(criteriaBuilder.equal(root.get("paymentExempt"), paymentExempt)));
+			parsePaymentExempt(filters.paymentExempt()).ifPresent(
+					paymentExempt -> predicates.add(criteriaBuilder.equal(root.get("paymentExempt"), paymentExempt)));
 			if (predicates.isEmpty()) {
 				return criteriaBuilder.conjunction();
 			}
