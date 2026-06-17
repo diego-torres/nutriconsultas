@@ -107,8 +107,7 @@ public class NutritionistInvitationServiceImpl implements NutritionistInvitation
 		final NutritionistInvitation invitation = invitationRepository.findById(invitationId)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invitation not found"));
 		if (invitation.getStatus() != InvitationStatus.PENDING) {
-			throw new ResponseStatusException(HttpStatus.CONFLICT,
-					"Solo se pueden cancelar invitaciones pendientes");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Solo se pueden cancelar invitaciones pendientes");
 		}
 		invitation.setStatus(InvitationStatus.CANCELLED);
 		invitationRepository.save(invitation);
@@ -226,10 +225,7 @@ public class NutritionistInvitationServiceImpl implements NutritionistInvitation
 
 	private boolean hasActiveSubscriptionAccess(final NutritionistInvitation redeemedInvitation) {
 		final Subscription subscription = redeemedInvitation.getSubscription();
-		if (subscription == null) {
-			return false;
-		}
-		return blocksNewInvitation(subscription.getStatus());
+		return subscription != null && blocksNewInvitation(subscription.getStatus());
 	}
 
 	private static boolean blocksNewInvitation(final SubscriptionStatus status) {

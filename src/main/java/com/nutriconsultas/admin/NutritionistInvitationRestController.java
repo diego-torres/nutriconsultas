@@ -98,20 +98,24 @@ public class NutritionistInvitationRestController extends AbstractGridController
 	private Pageable toPageable(final PagingRequest pagingRequest) {
 		final int length = pagingRequest.getLength() > 0 ? pagingRequest.getLength() : 25;
 		final int page = pagingRequest.getStart() / length;
-		Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
-		if (pagingRequest.getOrder() != null && !pagingRequest.getOrder().isEmpty()) {
-			final Order order = pagingRequest.getOrder().get(0);
-			if (order.getColumn() != null && order.getColumn() < pagingRequest.getColumns().size()) {
-				final String columnName = pagingRequest.getColumns().get(order.getColumn()).getData();
-				if (!"actions".equals(columnName)) {
-					final String fieldName = COLUMN_TO_FIELD_MAP.getOrDefault(columnName, columnName);
-					final Sort.Direction direction = order.getDir() == Direction.asc ? Sort.Direction.ASC
-							: Sort.Direction.DESC;
-					sort = Sort.by(direction, fieldName);
-				}
-			}
+		return PageRequest.of(page, length, resolveSort(pagingRequest));
+	}
+
+	private Sort resolveSort(final PagingRequest pagingRequest) {
+		if (pagingRequest.getOrder() == null || pagingRequest.getOrder().isEmpty()) {
+			return Sort.by(Sort.Direction.DESC, "createdAt");
 		}
-		return PageRequest.of(page, length, sort);
+		final Order order = pagingRequest.getOrder().get(0);
+		if (order.getColumn() == null || order.getColumn() >= pagingRequest.getColumns().size()) {
+			return Sort.by(Sort.Direction.DESC, "createdAt");
+		}
+		final String columnName = pagingRequest.getColumns().get(order.getColumn()).getData();
+		if ("actions".equals(columnName)) {
+			return Sort.by(Sort.Direction.DESC, "createdAt");
+		}
+		final String fieldName = COLUMN_TO_FIELD_MAP.getOrDefault(columnName, columnName);
+		final Sort.Direction direction = order.getDir() == Direction.asc ? Sort.Direction.ASC : Sort.Direction.DESC;
+		return Sort.by(direction, fieldName);
 	}
 
 	@Override
@@ -123,8 +127,7 @@ public class NutritionistInvitationRestController extends AbstractGridController
 				row.getPlanTier() != null ? row.getPlanTier().name() : "",
 				NutritionistInvitationGridHtml.statusBadge(row.getStatus()),
 				NutritionistInvitationGridHtml.paymentExemptBadge(row.isPaymentExempt()),
-				NutritionistInvitationGridHtml.formatExpiresAt(row),
-				NutritionistInvitationGridHtml.actionsHtml(row));
+				NutritionistInvitationGridHtml.formatExpiresAt(row), NutritionistInvitationGridHtml.actionsHtml(row));
 	}
 
 	@Override
@@ -145,8 +148,7 @@ public class NutritionistInvitationRestController extends AbstractGridController
 
 	@Override
 	protected List<Column> getColumns() {
-		return Stream
-			.of("createdAt", "email", "planTier", "status", "paymentExempt", "expiresAt", "actions")
+		return Stream.of("createdAt", "email", "planTier", "status", "paymentExempt", "expiresAt", "actions")
 			.map(Column::new)
 			.collect(Collectors.toList());
 	}
