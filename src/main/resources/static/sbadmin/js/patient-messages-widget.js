@@ -194,7 +194,14 @@
       renderThread();
     }).catch(function (err) {
       console.warn('Could not send patient message', err);
-      alert('No se pudo enviar el mensaje. Intenta de nuevo.');
+      if (typeof swal === 'function') {
+        swal({
+          title: 'Error',
+          text: 'No se pudo enviar el mensaje. Intenta de nuevo.',
+          type: 'error',
+          timer: 5000
+        });
+      }
     }).finally(function () {
       input.disabled = false;
       input.focus();

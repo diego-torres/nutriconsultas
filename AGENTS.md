@@ -422,6 +422,14 @@ Entities that reference `Paciente` (like `CalendarEvent`, `ClinicalExam`, `Anthr
 6. **URLs**: Use `@{...}` syntax for URL generation
 7. **Model Attributes**: Access model attributes with `${attributeName}`
 8. **Conditional Rendering**: Use `th:if`, `th:unless`, `th:switch` for conditional logic
+9. **Dialogs and confirmations (admin UI)**: Do **not** use native `alert()`, `confirm()`, or inline `onsubmit="return confirm(...)"`. Use **bootstrap-sweetalert** (`swal`) already vendored under `/sbadmin/vendor/bootstrap-sweetalert/`:
+   - Include `sweetalert.css` in `<head>` and `sweetalert.js` after jQuery on pages that show dialogs.
+   - **Confirm destructive/cancel actions**: `type: 'warning'`, `showCancelButton: true`, `confirmButtonColor: '#d33'`, Spanish `confirmButtonText` / `cancelButtonText`; submit the form or run AJAX only in the `swal(..., function (isConfirm) { ... })` callback when `isConfirm` is true. Prefer `type="button"` + JS over `onsubmit` confirm.
+   - **Validation / info**: `type: 'warning'` or `'info'`, short Spanish `title` + `text`, optional `timer`.
+   - **Errors**: `type: 'error'`, `timer: 5000`.
+   - **Success after AJAX**: `type: 'success'`, `timer: 2000` (see `sbadmin/dietas/listado.html`, `sbadmin/calendar/listado.html`).
+   - **Language**: User-facing dialog strings in **Spanish**; match existing admin tone.
+   - **Reference templates**: `platform/invitations/list.html`, `contact-inquiries/listado.html`, `pacientes/historial.html`.
 
 ### Code Style Guidelines
 1. **Formatting**: Follow Spring Java Format (automatically applied)

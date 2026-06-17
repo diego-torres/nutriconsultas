@@ -22,6 +22,7 @@
 
   <!-- Custom styles for this template-->
   <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+  <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
 
 </head>
 
@@ -171,6 +172,7 @@
 
     <!-- Custom scripts for all pages-->
     <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
 
     <script th:inline="javascript">
       (function () {
@@ -260,18 +262,43 @@
         var unlinkBtn = document.getElementById('mobile-auth-unlink-btn');
         if (unlinkBtn) {
           unlinkBtn.addEventListener('click', function () {
-            if (!window.confirm('¿Desvincular la cuenta móvil de este paciente?')) {
-              return;
-            }
-            fetch(baseUrl, { method: 'DELETE' }).then(function (r) {
-              return r.json().then(function (j) { return { ok: r.ok, body: j }; });
-            }).then(function (res) {
-              if (res.ok && res.body.success) {
-                window.location.reload();
-              } else {
-                showAlert('danger', res.body.error || 'No se pudo desvincular.');
+            swal({
+              title: 'Desvincular cuenta móvil',
+              text: '¿Desvincular la cuenta móvil de este paciente?',
+              type: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#d33',
+              cancelButtonColor: '#6c757d',
+              confirmButtonText: 'Sí, desvincular',
+              cancelButtonText: 'Cancelar',
+              closeOnConfirm: false,
+              showLoaderOnConfirm: true
+            }, function (isConfirm) {
+              if (!isConfirm) {
+                return;
               }
-            }).catch(function () { showAlert('danger', 'Error de red al desvincular.'); });
+              fetch(baseUrl, { method: 'DELETE' }).then(function (r) {
+                return r.json().then(function (j) { return { ok: r.ok, body: j }; });
+              }).then(function (res) {
+                if (res.ok && res.body.success) {
+                  window.location.reload();
+                } else {
+                  swal({
+                    title: 'Error',
+                    text: res.body.error || 'No se pudo desvincular.',
+                    type: 'error',
+                    timer: 5000
+                  });
+                }
+              }).catch(function () {
+                swal({
+                  title: 'Error',
+                  text: 'Error de red al desvincular.',
+                  type: 'error',
+                  timer: 5000
+                });
+              });
+            });
           });
         }
       })();

@@ -16,9 +16,11 @@ import com.nutriconsultas.subscription.InvitationStatus;
 import com.nutriconsultas.subscription.NutritionistInvitation;
 import com.nutriconsultas.subscription.NutritionistInvitationRepository;
 import com.nutriconsultas.subscription.PlanTier;
+import com.nutriconsultas.subscription.Subscription;
 import com.nutriconsultas.subscription.SubscriptionAuditEvent;
 import com.nutriconsultas.subscription.SubscriptionAuditEventRepository;
 import com.nutriconsultas.subscription.SubscriptionAuditEventType;
+import com.nutriconsultas.subscription.SubscriptionStatus;
 import com.nutriconsultas.subscription.payment.BillingInterval;
 import com.nutriconsultas.subscription.payment.CheckoutSession;
 import com.nutriconsultas.subscription.payment.PaymentCheckoutService;
@@ -73,6 +75,7 @@ public class NutritionistInvitationServiceImpl implements NutritionistInvitation
 			.ifPresent(existing -> {
 				throw new PendingNutritionistInvitationException(existing.getId());
 			});
+		rejectIfActiveNutritionist(normalizedEmail);
 		final String rawToken = InvitationTokenHasher.generateToken();
 		final NutritionistInvitation invitation = new NutritionistInvitation();
 		invitation.setEmail(normalizedEmail);
@@ -113,6 +116,34 @@ public class NutritionistInvitationServiceImpl implements NutritionistInvitation
 		if (log.isInfoEnabled()) {
 			log.info("Cancelled nutritionist invitation: invitationId={}", invitation.getId());
 		}
+	}
+
+	@Override
+	@Transactional
+	public String regenerateInvitationLink(final OidcUser adminPrincipal, final Long invitationId) {
+		platformAdminService.requirePlatformAdmin(adminPrincipal);
+		if (invitationId == null) {
+			throw new IllegalArgumentException("invitationId is required");
+		}
+		final NutritionistInvitation invitation = invitationRepository.findById(invitationId)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invitation not found"));
+		if (invitation.getStatus() != InvitationStatus.PENDING) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT,
+					"Solo se puede obtener el enlace de invitaciones pendientes");
+		}
+		final String rawToken = InvitationTokenHasher.generateToken();
+		invitation.setTokenHash(InvitationTokenHasher.hashToken(rawToken));
+		if (Instant.now().isAfter(invitation.getExpiresAt())) {
+			invitation.setExpiresAt(Instant.now().plus(invitationProperties.getExpiryDays(), ChronoUnit.DAYS));
+		}
+		invitationRepository.save(invitation);
+		final String inviteUrl = invitationProperties.buildRedeemUrl(rawToken);
+		recordInvitationLinkRegeneratedAudit(platformAdminService.resolveActorUserId(adminPrincipal),
+				invitation.getId());
+		if (log.isInfoEnabled()) {
+			log.info("Regenerated nutritionist invitation link: invitationId={}", invitation.getId());
+		}
+		return inviteUrl;
 	}
 
 	@Override
@@ -181,6 +212,39 @@ public class NutritionistInvitationServiceImpl implements NutritionistInvitation
 		event.setEventType(SubscriptionAuditEventType.INVITATION_REDEEMED);
 		event.setActorUserId(userId);
 		event.setDetails("invitationId=" + invitation.getId());
+		auditEventRepository.save(event);
+	}
+
+	private void rejectIfActiveNutritionist(final String normalizedEmail) {
+		invitationRepository
+			.findFirstByEmailIgnoreCaseAndStatusOrderByRedeemedAtDesc(normalizedEmail, InvitationStatus.REDEEMED)
+			.filter(this::hasActiveSubscriptionAccess)
+			.ifPresent(redeemed -> {
+				throw new ActiveNutritionistUserException(redeemed.getId());
+			});
+	}
+
+	private boolean hasActiveSubscriptionAccess(final NutritionistInvitation redeemedInvitation) {
+		final Subscription subscription = redeemedInvitation.getSubscription();
+		if (subscription == null) {
+			return false;
+		}
+		return blocksNewInvitation(subscription.getStatus());
+	}
+
+	private static boolean blocksNewInvitation(final SubscriptionStatus status) {
+		return status == SubscriptionStatus.PENDING_PAYMENT || status == SubscriptionStatus.TRIAL
+				|| status == SubscriptionStatus.ACTIVE || status == SubscriptionStatus.GRACE;
+	}
+
+	private void recordInvitationLinkRegeneratedAudit(final String actorUserId, final Long invitationId) {
+		if (!StringUtils.hasText(actorUserId)) {
+			return;
+		}
+		final SubscriptionAuditEvent event = new SubscriptionAuditEvent();
+		event.setEventType(SubscriptionAuditEventType.PLATFORM_ADMIN_ACTION);
+		event.setActorUserId(actorUserId);
+		event.setDetails("action=invitation.regenerate-link,invitationId=" + invitationId);
 		auditEventRepository.save(event);
 	}
 

@@ -467,7 +467,12 @@
         const feedback = jQuery('#summaryNotesWizardModal #bodyFatAutofillFeedback');
         feedback.text('');
         if (!pacienteId) {
-          alert('No se encontró el paciente de la cita.');
+          swal({
+            title: 'Paciente no encontrado',
+            text: 'No se encontró el paciente de la cita.',
+            type: 'warning',
+            timer: 4000
+          });
           return;
         }
         const btn = jQuery('#summaryNotesWizardModal #useLatestBodyFatBtn');
@@ -491,7 +496,12 @@
             if (xhr.responseJSON && xhr.responseJSON.error) {
               msg = xhr.responseJSON.error;
             }
-            alert(msg);
+            swal({
+              title: 'Sin datos',
+              text: msg,
+              type: 'info',
+              timer: 5000
+            });
           })
           .always(function() {
             btn.prop('disabled', false);

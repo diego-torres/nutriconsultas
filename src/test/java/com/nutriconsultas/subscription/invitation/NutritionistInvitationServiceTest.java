@@ -29,7 +29,9 @@ import com.nutriconsultas.subscription.InvitationStatus;
 import com.nutriconsultas.subscription.NutritionistInvitation;
 import com.nutriconsultas.subscription.NutritionistInvitationRepository;
 import com.nutriconsultas.subscription.PlanTier;
+import com.nutriconsultas.subscription.Subscription;
 import com.nutriconsultas.subscription.SubscriptionAuditEventRepository;
+import com.nutriconsultas.subscription.SubscriptionStatus;
 import com.nutriconsultas.subscription.payment.BillingInterval;
 import com.nutriconsultas.subscription.payment.CheckoutSession;
 import com.nutriconsultas.subscription.payment.PaymentCheckoutService;
@@ -89,6 +91,9 @@ class NutritionistInvitationServiceTest {
 			.thenAnswer(invocation -> "https://app.test/redeem?token=" + invocation.getArgument(0));
 		when(invitationRepository.findByEmailIgnoreCaseAndStatus(INVITEE_EMAIL, InvitationStatus.PENDING))
 			.thenReturn(Optional.empty());
+		when(invitationRepository.findFirstByEmailIgnoreCaseAndStatusOrderByRedeemedAtDesc(INVITEE_EMAIL,
+				InvitationStatus.REDEEMED))
+			.thenReturn(Optional.empty());
 		when(invitationRepository.save(any(NutritionistInvitation.class))).thenAnswer(invocation -> {
 			final NutritionistInvitation invitation = invocation.getArgument(0);
 			invitation.setId(1L);
@@ -122,6 +127,54 @@ class NutritionistInvitationServiceTest {
 	}
 
 	@Test
+	void createInvitationRejectsEmailWithActiveRedeemedAccess() {
+		final NutritionistInvitation redeemed = pendingInvitation();
+		redeemed.setStatus(InvitationStatus.REDEEMED);
+		final Subscription subscription = new Subscription();
+		subscription.setStatus(SubscriptionStatus.TRIAL);
+		redeemed.setSubscription(subscription);
+		when(invitationRepository.findByEmailIgnoreCaseAndStatus(INVITEE_EMAIL, InvitationStatus.PENDING))
+			.thenReturn(Optional.empty());
+		when(invitationRepository.findFirstByEmailIgnoreCaseAndStatusOrderByRedeemedAtDesc(INVITEE_EMAIL,
+				InvitationStatus.REDEEMED))
+			.thenReturn(Optional.of(redeemed));
+
+		assertThatThrownBy(() -> invitationService.createInvitation(adminPrincipal, INVITEE_EMAIL, PlanTier.BASICO,
+				false))
+			.isInstanceOf(ActiveNutritionistUserException.class)
+			.extracting(ex -> ((ActiveNutritionistUserException) ex).getRedeemedInvitationId())
+			.isEqualTo(1L);
+	}
+
+	@Test
+	void createInvitationAllowsEmailWithCancelledSubscription() {
+		final NutritionistInvitation redeemed = pendingInvitation();
+		redeemed.setStatus(InvitationStatus.REDEEMED);
+		final Subscription subscription = new Subscription();
+		subscription.setStatus(SubscriptionStatus.CANCELLED);
+		redeemed.setSubscription(subscription);
+		when(platformAdminService.resolveActorUserId(adminPrincipal)).thenReturn(ADMIN_USER_ID);
+		when(invitationProperties.getExpiryDays()).thenReturn(7);
+		when(invitationProperties.buildRedeemUrl(any()))
+			.thenAnswer(invocation -> "https://app.test/redeem?token=" + invocation.getArgument(0));
+		when(invitationRepository.findByEmailIgnoreCaseAndStatus(INVITEE_EMAIL, InvitationStatus.PENDING))
+			.thenReturn(Optional.empty());
+		when(invitationRepository.findFirstByEmailIgnoreCaseAndStatusOrderByRedeemedAtDesc(INVITEE_EMAIL,
+				InvitationStatus.REDEEMED))
+			.thenReturn(Optional.of(redeemed));
+		when(invitationRepository.save(any(NutritionistInvitation.class))).thenAnswer(invocation -> {
+			final NutritionistInvitation invitation = invocation.getArgument(0);
+			invitation.setId(2L);
+			return invitation;
+		});
+
+		final CreatedNutritionistInvitation created = invitationService.createInvitation(adminPrincipal, INVITEE_EMAIL,
+				PlanTier.BASICO, false);
+
+		assertThat(created.invitationId()).isEqualTo(2L);
+	}
+
+	@Test
 	void cancelInvitationMarksPendingAsCancelled() {
 		final NutritionistInvitation invitation = pendingInvitation();
 		when(platformAdminService.resolveActorUserId(adminPrincipal)).thenReturn(ADMIN_USER_ID);
@@ -130,6 +183,22 @@ class NutritionistInvitationServiceTest {
 		invitationService.cancelInvitation(adminPrincipal, 1L);
 
 		assertThat(invitation.getStatus()).isEqualTo(InvitationStatus.CANCELLED);
+		verify(invitationRepository).save(invitation);
+	}
+
+	@Test
+	void regenerateInvitationLinkRotatesTokenForPendingInvitation() {
+		final NutritionistInvitation invitation = pendingInvitation();
+		when(platformAdminService.resolveActorUserId(adminPrincipal)).thenReturn(ADMIN_USER_ID);
+		when(invitationRepository.findById(1L)).thenReturn(Optional.of(invitation));
+		when(invitationProperties.buildRedeemUrl(org.mockito.ArgumentMatchers.anyString()))
+			.thenAnswer(invocation -> "https://app.test/redeem?token=" + invocation.getArgument(0));
+		final String previousHash = invitation.getTokenHash();
+
+		final String inviteUrl = invitationService.regenerateInvitationLink(adminPrincipal, 1L);
+
+		assertThat(invitation.getTokenHash()).isNotEqualTo(previousHash);
+		assertThat(inviteUrl).contains("token=");
 		verify(invitationRepository).save(invitation);
 	}
 

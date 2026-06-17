@@ -1,7 +1,5 @@
 package com.nutriconsultas.admin;
 
-import java.util.List;
-
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
@@ -17,11 +15,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.nutriconsultas.controller.AbstractPlatformAdminController;
 import com.nutriconsultas.platform.PlatformAdminAuthorization;
-import com.nutriconsultas.subscription.NutritionistInvitation;
-import com.nutriconsultas.subscription.NutritionistInvitationRepository;
+import com.nutriconsultas.subscription.InvitationStatus;
 import com.nutriconsultas.subscription.PlanTier;
 import com.nutriconsultas.subscription.invitation.CreatedNutritionistInvitation;
 import com.nutriconsultas.subscription.invitation.NutritionistInvitationService;
+import com.nutriconsultas.subscription.invitation.ActiveNutritionistUserException;
 import com.nutriconsultas.subscription.invitation.PendingNutritionistInvitationException;
 
 import jakarta.validation.Valid;
@@ -32,23 +30,19 @@ public class NutritionistInvitationAdminController extends AbstractPlatformAdmin
 
 	private final NutritionistInvitationService invitationService;
 
-	private final NutritionistInvitationRepository invitationRepository;
-
 	public NutritionistInvitationAdminController(final PlatformAdminAuthorization platformAdminAuthorization,
-			final NutritionistInvitationService invitationService,
-			final NutritionistInvitationRepository invitationRepository) {
+			final NutritionistInvitationService invitationService) {
 		super(platformAdminAuthorization);
 		this.invitationService = invitationService;
-		this.invitationRepository = invitationRepository;
 	}
 
 	@GetMapping
 	public String list(@AuthenticationPrincipal final OidcUser principal, final Model model,
 			@RequestParam(required = false) final Long highlight) {
 		requirePlatformAdmin(principal, "invitations.list");
-		final List<NutritionistInvitation> invitations = invitationRepository.findAllByOrderByCreatedAtDesc();
-		model.addAttribute("invitations", invitations);
 		model.addAttribute("highlightInvitationId", highlight);
+		model.addAttribute("planTiers", PlanTier.values());
+		model.addAttribute("invitationStatuses", InvitationStatus.values());
 		model.addAttribute("activeMenu", "invitations");
 		return "sbadmin/platform/invitations/list";
 	}
@@ -89,6 +83,14 @@ public class NutritionistInvitationAdminController extends AbstractPlatformAdmin
 			model.addAttribute("conflictingInvitationId", ex.getExistingInvitationId());
 			return "sbadmin/platform/invitations/form";
 		}
+		catch (ActiveNutritionistUserException ex) {
+			model.addAttribute("planTiers", PlanTier.values());
+			model.addAttribute("activeMenu", "invitations");
+			model.addAttribute("errorMessage",
+					"Este correo ya tiene acceso activo en la plataforma (invitación aceptada). No se puede enviar otra invitación.");
+			model.addAttribute("conflictingInvitationId", ex.getRedeemedInvitationId());
+			return "sbadmin/platform/invitations/form";
+		}
 	}
 
 	@PostMapping("/{id}/cancel")
@@ -98,6 +100,17 @@ public class NutritionistInvitationAdminController extends AbstractPlatformAdmin
 		invitationService.cancelInvitation(principal, id);
 		redirectAttributes.addFlashAttribute("successMessage", "Invitación cancelada correctamente.");
 		return "redirect:/admin/platform/invitations";
+	}
+
+	@PostMapping("/{id}/regenerate-link")
+	public String regenerateLink(@AuthenticationPrincipal final OidcUser principal, @PathVariable final Long id,
+			final RedirectAttributes redirectAttributes) {
+		requirePlatformAdmin(principal, "invitations.link");
+		final String inviteUrl = invitationService.regenerateInvitationLink(principal, id);
+		redirectAttributes.addFlashAttribute("inviteUrl", inviteUrl);
+		redirectAttributes.addFlashAttribute("successMessage",
+				"Enlace generado. Si compartiste un enlace anterior, ya no es válido.");
+		return "redirect:/admin/platform/invitations?highlight=" + id;
 	}
 
 }
