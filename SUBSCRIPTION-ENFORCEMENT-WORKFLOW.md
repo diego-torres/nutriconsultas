@@ -144,7 +144,7 @@ Before commit:
 1. `git fetch origin && git rebase origin/main`
 2. Re-run verify.
 3. Update [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) in the PR.
-4. If cross-track dependency changes (e.g. #46 merged), update mobile [`ISSUE.md`](ISSUE.md) only if explicitly coupled.
+4. If cross-track dependency changes (e.g. #46 merged), update mobile [`ISSUE.md`](ISSUE.md), [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md), and [`docs/mobile-api/README.md`](docs/mobile-api/README.md) when explicitly coupled.
 
 ---
 

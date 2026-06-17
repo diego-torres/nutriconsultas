@@ -110,6 +110,6 @@ Full matrix: [`SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION
 
 ---
 
-## How to update
+**How to update this file**
 
-Same convention as [`ISSUE.md`](ISSUE.md): mark `in-progress` when PR opens, `done` when merged, advance `NEXT` in [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md).
+Same convention as [`ISSUE.md`](ISSUE.md): mark `in-progress` when PR opens, `done` when merged, advance `NEXT` in [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md). Also update [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) subscription sprint pointer and [`docs/mobile-api/README.md`](docs/mobile-api/README.md) subscription row when status changes.

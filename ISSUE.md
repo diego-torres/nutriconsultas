@@ -3,7 +3,7 @@
 Living index of the GitHub issues that build the **patient mobile API** (`/rest/mobile/patient/**`) on the Spring Boot backend. Update **local and remote** (via a commit on the PR that closes the work) whenever status changes.
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas) (Spring Boot · Java 21 · Maven)
-**Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md)
+**Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Subscription (parallel):** [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
 **Last updated:** 2026-06-17 — #46 Liquibase **done** ([PR #196](https://github.com/diego-torres/nutriconsultas/pull/196)). **NEXT:** [#132 invitation onboarding](https://github.com/diego-torres/nutriconsultas/issues/132).
@@ -196,7 +196,7 @@ Each mobile feature consumes these backend endpoints. Two-way linking with the m
 | 109 | Patient-Auth0 account linkage ... | https://... | in-progress | 107 | ... |
 ```
 
-**After PR merges** — mark `done` and advance `NEXT` to the next unblocked row (Phase 0 order: #109 → #110 → #108 → endpoints):
+**After PR merges** — mark `done` and advance `NEXT` to the next unblocked row; update [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md), [`docs/mobile-api/README.md`](docs/mobile-api/README.md), [`ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) §F8.3, and [`AGENTS.md`](AGENTS.md) in the same PR:
 
 ```text
 | 109 | Patient-Auth0 account linkage ... | https://... | done | 107 | ... |

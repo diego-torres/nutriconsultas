@@ -580,7 +580,7 @@ public class ExampleRestController {
 
 ## Patient mobile API (tracking)
 
-Issue registry: [`ISSUE.md`](ISSUE.md). Agent workflow: [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md).
+Issue registry: [`ISSUE.md`](ISSUE.md). Agent workflow: [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md). Contract docs: [`docs/mobile-api/README.md`](docs/mobile-api/README.md).
 
 ## Subscription & access enforcement (tracking)
 

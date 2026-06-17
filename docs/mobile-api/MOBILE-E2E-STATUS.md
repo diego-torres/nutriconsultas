@@ -203,10 +203,15 @@ Optional backend script (requires access token from the app):
 
 ---
 
-## Backend contacts & references
+- Backend contacts & references
 
 - Mobile API registry: [`ISSUE.md`](../../ISSUE.md)
-- Alignment spec: [`docs/mobile-api/ALIGNMENT-SPEC.md`](ALIGNMENT-SPEC.md) (if present)
+- Agent workflow: [`AGENT-WORKFLOW.md`](../../AGENT-WORKFLOW.md)
+- Contract docs index: [`docs/mobile-api/README.md`](README.md)
+- Alignment spec: [`ALIGNMENT-SPEC.md`](ALIGNMENT-SPEC.md)
+- OpenAPI: [`docs/api/openapi-mobile.yaml`](../api/openapi-mobile.yaml)
+- Liquibase: [`docs/db/LIQUIBASE.md`](../db/LIQUIBASE.md)
+- Subscription (parallel): [`ISSUE-SUBSCRIPTION.md`](../../ISSUE-SUBSCRIPTION.md)
 - E2E setup script: [`scripts/mobile-auth0-e2e-setup.sh`](../../scripts/mobile-auth0-e2e-setup.sh)
 - Related mobile issues: [#22](https://github.com/Escanor4323/nutriconsultas-mobile/issues/22), PR [#61](https://github.com/Escanor4323/nutriconsultas-mobile/pull/61)
 
