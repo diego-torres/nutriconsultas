@@ -38,8 +38,7 @@ class PaymentWebhookControllerTest {
 
 	@Test
 	void webhookReturnsOkWhenProcessed() throws Exception {
-		when(paymentWebhookService.handleWebhook(any(), any()))
-			.thenReturn(PaymentWebhookResult.processed(42L));
+		when(paymentWebhookService.handleWebhook(any(), any())).thenReturn(PaymentWebhookResult.processed(42L));
 
 		mockMvc
 			.perform(post(WEBHOOK_URL).contentType(MediaType.APPLICATION_JSON)
@@ -69,8 +68,7 @@ class PaymentWebhookControllerTest {
 		when(paymentWebhookService.handleWebhook(eq("{\"type\":\"ignored\"}"), any()))
 			.thenReturn(PaymentWebhookResult.ignored());
 
-		mockMvc
-			.perform(post(WEBHOOK_URL).contentType(MediaType.APPLICATION_JSON).content("{\"type\":\"ignored\"}"))
+		mockMvc.perform(post(WEBHOOK_URL).contentType(MediaType.APPLICATION_JSON).content("{\"type\":\"ignored\"}"))
 			.andExpect(status().isAccepted());
 	}
 
