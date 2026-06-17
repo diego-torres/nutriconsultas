@@ -141,7 +141,18 @@ public class SubscriptionProvisioningService {
 			}
 			return;
 		}
-		auth0RoleSyncClient.syncPlanRole(userId, planTier);
+		try {
+			auth0RoleSyncClient.syncPlanRole(userId, planTier);
+		}
+		catch (RuntimeException ex) {
+			if (log.isWarnEnabled()) {
+				log.warn("Auth0 role sync failed; DB subscription access was provisioned: userId={}, planTier={}",
+						userId, planTier);
+			}
+			if (log.isDebugEnabled()) {
+				log.debug("Auth0 role sync failure", ex);
+			}
+		}
 	}
 
 	private void recordProvisioningAudit(final Subscription subscription, final String userId,

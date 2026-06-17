@@ -75,6 +75,33 @@ class SubscriptionProvisioningServiceTest {
 					&& member.getUserId().equals("auth0|user-1")));
 	}
 
+	@Test
+	void activateTrialAccessContinuesWhenAuth0SyncFails() {
+		final NutritionistInvitation invitation = invitation(PlanTier.BASICO, true);
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription("auth0|user-1")).thenReturn(Optional.empty());
+		when(clinicRepository.findByDirectorUserId("auth0|user-1")).thenReturn(Optional.empty());
+		when(subscriptionRepository.save(org.mockito.ArgumentMatchers.any(Subscription.class)))
+			.thenAnswer(invocation -> {
+				final Subscription subscription = invocation.getArgument(0);
+				subscription.setId(5L);
+				return subscription;
+			});
+		when(clinicRepository.save(org.mockito.ArgumentMatchers.any())).thenAnswer(invocation -> {
+			final com.nutriconsultas.subscription.Clinic clinic = invocation.getArgument(0);
+			clinic.setId(9L);
+			return clinic;
+		});
+		when(auth0RoleSyncClient.isConfigured()).thenReturn(true);
+		org.mockito.Mockito.doThrow(new IllegalStateException("Auth0 role sync failed"))
+			.when(auth0RoleSyncClient)
+			.syncPlanRole("auth0|user-1", PlanTier.BASICO);
+
+		provisioningService.activateTrialAccess(invitation, "auth0|user-1");
+
+		assertThat(invitation.getSubscription().getStatus()).isEqualTo(SubscriptionStatus.TRIAL);
+		verify(clinicMemberRepository).save(org.mockito.ArgumentMatchers.any());
+	}
+
 	private static NutritionistInvitation invitation(final PlanTier planTier, final boolean paymentExempt) {
 		final NutritionistInvitation invitation = new NutritionistInvitation();
 		invitation.setId(1L);
