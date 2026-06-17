@@ -17,3 +17,6 @@ databaseChangeLog:
   - include:
       file: changes/006-subscription-notification-log.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/007-patient-invitation-onboarding.yaml
+      relativeToChangelogFile: true

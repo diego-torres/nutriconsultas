@@ -1,0 +1,118 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-paciente-onboarding-columns
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: paciente
+              columnName: status
+      changes:
+        - addColumn:
+            tableName: paciente
+            columns:
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  defaultValue: ACTIVE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: assigned_id
+                  type: VARCHAR(50)
+                  constraints:
+                    unique: true
+                    nullable: true
+              - column:
+                  name: email_hint
+                  type: VARCHAR(100)
+              - column:
+                  name: display_name
+                  type: VARCHAR(100)
+        - createIndex:
+            indexName: idx_paciente_status
+            tableName: paciente
+            columns:
+              - column:
+                  name: status
+  - changeSet:
+      id: 007-patient-invitation-table
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: patient_invitation
+      changes:
+        - createTable:
+            tableName: patient_invitation
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: token_hash
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: paciente_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: nutritionist_user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: redeemed_by_sub
+                  type: VARCHAR(255)
+              - column:
+                  name: expires_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: max_uses
+                  type: INT
+                  defaultValueNumeric: 1
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: redeemed_at
+                  type: TIMESTAMP
+        - addForeignKeyConstraint:
+            baseTableName: patient_invitation
+            baseColumnNames: paciente_id
+            referencedTableName: paciente
+            referencedColumnNames: id
+            constraintName: fk_patient_invitation_paciente
+        - createIndex:
+            indexName: idx_patient_invitation_paciente_id
+            tableName: patient_invitation
+            columns:
+              - column:
+                  name: paciente_id
+        - createIndex:
+            indexName: idx_patient_invitation_nutritionist_user_id
+            tableName: patient_invitation
+            columns:
+              - column:
+                  name: nutritionist_user_id

@@ -25,7 +25,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md) | Agent workflow for subscription enforcement |
 | [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md) | Plan tiers, entitlements, lifecycle, data model |
 
-**Current next issue (mobile):** [#132 — Invitation & patient onboarding data model](https://github.com/diego-torres/nutriconsultas/issues/132). Prerequisites ~~#156~~ and ~~#46~~ (PR [#196](https://github.com/diego-torres/nutriconsultas/pull/196)) **done** on `main`.
+**Current next issue (mobile):** [#133 — Invitation token generation & hashing service](https://github.com/diego-torres/nutriconsultas/issues/133) (after [#132](https://github.com/diego-torres/nutriconsultas/issues/132) in-progress).
 
 **Current next issue (subscription):** [#185 — Subscription lifecycle](https://github.com/diego-torres/nutriconsultas/issues/185). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md).
 
@@ -390,11 +390,11 @@ gh pr create ...
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#132 — Invitation & patient onboarding data model](https://github.com/diego-torres/nutriconsultas/issues/132) |
-| **Status** | **NEXT** — prerequisites ~~#156~~ ✓ and ~~#46~~ ✓ (PR #196) merged |
-| **Phase** | Invitation / onboarding data model |
-| **Just completed** | [#46 Liquibase baseline](https://github.com/diego-torres/nutriconsultas/issues/46) — PR [#196](https://github.com/diego-torres/nutriconsultas/pull/196); [#156](https://github.com/diego-torres/nutriconsultas/issues/156) Phase C — PR [#178](https://github.com/diego-torres/nutriconsultas/pull/178) |
-| **In scope for #132** | `Paciente.status` + `Invitation` entity; first incremental Liquibase changeset post-baseline |
+| **Next issue** | [#133 — Invitation token generation & hashing service](https://github.com/diego-torres/nutriconsultas/issues/133) |
+| **Status** | **NEXT** — [#132](https://github.com/diego-torres/nutriconsultas/issues/132) **in-progress** (schema + Liquibase) |
+| **Phase** | Invitation / onboarding — token service after #132 merges |
+| **Just completed** | Prerequisites ~~#156~~ ✓ and ~~#46~~ ✓ (PR #196) |
+| **In scope for #132** | `PacienteStatus` + `PatientInvitation` entity; Liquibase `007-patient-invitation-onboarding.yaml` |
 
 ### Upcoming gates
 

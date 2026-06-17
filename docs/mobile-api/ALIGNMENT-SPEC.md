@@ -172,7 +172,7 @@ Add to each a short "Backend dependency" line per the cross-reference table, e.g
 
 ### F8.6 — Invitation onboarding gate (#132–#141)
 - **Prerequisites done on `main`:** #156 Paciente decomposition (PRs #175/#176/#178); #46 Liquibase baseline (PR #196). All new schema → incremental changesets per [`docs/db/LIQUIBASE.md`](../db/LIQUIBASE.md).
-- **Active sprint:** #132 data model (`Paciente.status`, `Invitation` entity) then #133–#141 per [`ISSUE.md`](../../ISSUE.md) Phase 2.
+- **Active sprint:** #132 data model (`PacienteStatus`, `PatientInvitation` entity) **in-progress**; then #133–#141 per [`ISSUE.md`](../../ISSUE.md) Phase 2.
 - **Orthogonal:** nutritionist subscription invitations (`NutritionistInvitation` in subscription track) — see [`ISSUE-SUBSCRIPTION.md`](../../ISSUE-SUBSCRIPTION.md); do not conflate with patient `Invitation`.
 
 ### F8.5 — Design source of truth
