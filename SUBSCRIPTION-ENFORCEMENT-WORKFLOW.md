@@ -199,8 +199,8 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#184 — Admin invitations + checkout](https://github.com/diego-torres/nutriconsultas/issues/184) or [#186 — Clinic model](https://github.com/diego-torres/nutriconsultas/issues/186) |
-| **Status** | #189 done on branch `subscription/189-payment-provider` |
+| **Next issue** | [#185 — Subscription lifecycle](https://github.com/diego-torres/nutriconsultas/issues/185) (after #184 merges) |
+| **Status** | #184 in progress on `subscription/184-admin-invitations` |
 | **Early start** | ~~#183~~ done (PR #200) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>Invitación Minutriporción</title>
+</head>
+<body>
+  <p>Hola,</p>
+  <p>
+    Has sido invitado a unirte a Minutriporción con el plan
+    <strong th:text="${planTier}">BASICO</strong>.
+  </p>
+  <p>
+    Para completar tu registro, abre el siguiente enlace (válido por tiempo limitado):
+  </p>
+  <p>
+    <a th:href="${inviteUrl}" th:text="${inviteUrl}">https://example.com/invitation</a>
+  </p>
+  <p>Si no esperabas este mensaje, puedes ignorarlo.</p>
+  <p>— Equipo Minutriporción</p>
+</body>
+</html>

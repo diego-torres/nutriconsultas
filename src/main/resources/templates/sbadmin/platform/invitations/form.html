@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <title>Minutriporcion - Nueva invitación</title>
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+</head>
+
+<body id="page-top">
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/sidebar :: sidebar}"></div>
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <div class="container-fluid">
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Nueva invitación</h1>
+            <a class="btn btn-secondary btn-sm" th:href="@{/admin/platform/invitations}">Volver al listado</a>
+          </div>
+          <div class="card shadow mb-4 col-lg-8">
+            <div class="card-body">
+              <form th:action="@{/admin/platform/invitations}" th:object="${form}" method="post">
+                <div class="form-group">
+                  <label for="email">Correo electrónico</label>
+                  <input type="email" class="form-control" id="email" th:field="*{email}" required>
+                  <div class="text-danger small" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Error</div>
+                </div>
+                <div class="form-group">
+                  <label for="planTier">Plan</label>
+                  <select class="form-control" id="planTier" th:field="*{planTier}" required>
+                    <option th:each="tier : ${planTiers}" th:value="${tier}" th:text="${tier}">BASICO</option>
+                  </select>
+                  <div class="text-danger small" th:if="${#fields.hasErrors('planTier')}" th:errors="*{planTier}">
+                    Error</div>
+                </div>
+                <div class="form-group form-check">
+                  <input type="checkbox" class="form-check-input" id="paymentExempt" th:field="*{paymentExempt}">
+                  <label class="form-check-label" for="paymentExempt">
+                    Exento de pago (acceso en periodo de prueba sin checkout)
+                  </label>
+                </div>
+                <button type="submit" class="btn btn-primary">Crear invitación</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div th:insert="~{sbadmin/footer :: footer}"></div>
+    </div>
+  </div>
+  <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+  <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+</body>
+
+</html>

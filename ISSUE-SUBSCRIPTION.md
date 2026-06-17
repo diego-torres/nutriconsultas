@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-16 — #204 opened (Mercado Pago ops); next #184 or #186.
+**Last updated:** 2026-06-17 — #184 in progress on `subscription/184-admin-invitations`.
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 
@@ -52,7 +52,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 |---|-------|-----|-------|-----------|-------|
 | 189 | Payment provider integration (Mercado Pago / abstraction) | https://github.com/diego-torres/nutriconsultas/issues/189 | **done** | 180 | Mercado Pago + webhook idempotency |
 | 204 | Tramitar integración operativa con Mercado Pago | https://github.com/diego-torres/nutriconsultas/issues/204 | open | 189 | Cuenta, credenciales, webhooks, sandbox/prod |
-| 184 | Admin invitations + payment checkout | https://github.com/diego-torres/nutriconsultas/issues/184 | open | 180, 182, 183, 189 | Paid onboarding flow |
+| 184 | Admin invitations + payment checkout | https://github.com/diego-torres/nutriconsultas/issues/184 | **in-progress** | 180, 182, 183, 189 | Branch `subscription/184-admin-invitations` |
 | 185 | Subscription lifecycle — grace, payment override, notifications | https://github.com/diego-torres/nutriconsultas/issues/185 | open | 180, 184 | ACTIVE→GRACE→SUSPENDED |
 
 ---

@@ -21,6 +21,10 @@ import com.nutriconsultas.subscription.Subscription;
 import com.nutriconsultas.subscription.SubscriptionAuditEventRepository;
 import com.nutriconsultas.subscription.SubscriptionRepository;
 import com.nutriconsultas.subscription.SubscriptionStatus;
+import com.nutriconsultas.subscription.InvitationStatus;
+import com.nutriconsultas.subscription.NutritionistInvitation;
+import com.nutriconsultas.subscription.NutritionistInvitationRepository;
+import com.nutriconsultas.subscription.invitation.SubscriptionProvisioningService;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentWebhookServiceTest {
@@ -38,6 +42,12 @@ class PaymentWebhookServiceTest {
 
 	@Mock
 	private SubscriptionAuditEventRepository auditEventRepository;
+
+	@Mock
+	private NutritionistInvitationRepository invitationRepository;
+
+	@Mock
+	private SubscriptionProvisioningService provisioningService;
 
 	@InjectMocks
 	private PaymentWebhookService paymentWebhookService;
@@ -74,12 +84,14 @@ class PaymentWebhookServiceTest {
 	@Test
 	void handleWebhookActivatesSubscriptionOnPaymentSucceeded() {
 		final Subscription subscription = pendingSubscription("mp-sub-1");
+		final NutritionistInvitation invitation = redeemedInvitation(subscription);
 		when(paymentProvider.getProviderId()).thenReturn(PaymentProperties.PROVIDER_MERCADOPAGO);
 		when(paymentProvider.verifyWebhookSignature(PAYLOAD, headers)).thenReturn(true);
 		when(paymentProvider.parseWebhook(PAYLOAD, headers)).thenReturn(successEvent());
 		when(webhookEventRepository.findByProviderAndEventId(PaymentProperties.PROVIDER_MERCADOPAGO, "evt-1"))
 			.thenReturn(Optional.empty());
 		when(subscriptionRepository.findByExternalSubscriptionId("mp-sub-1")).thenReturn(Optional.of(subscription));
+		when(invitationRepository.findBySubscriptionId(subscription.getId())).thenReturn(Optional.of(invitation));
 
 		final PaymentWebhookResult result = paymentWebhookService.handleWebhook(PAYLOAD, headers);
 
@@ -89,6 +101,7 @@ class PaymentWebhookServiceTest {
 		assertThat(subscription.getPeriodStart()).isNotNull();
 		assertThat(subscription.getPeriodEnd()).isNotNull();
 		verify(subscriptionRepository).save(subscription);
+		verify(provisioningService).activatePaidAccess(invitation, subscription);
 		verify(auditEventRepository).save(any());
 		final ArgumentCaptor<PaymentWebhookEvent> eventCaptor = ArgumentCaptor.forClass(PaymentWebhookEvent.class);
 		verify(webhookEventRepository).save(eventCaptor.capture());
@@ -121,6 +134,15 @@ class PaymentWebhookServiceTest {
 		subscription.setStatus(SubscriptionStatus.PENDING_PAYMENT);
 		subscription.setExternalSubscriptionId(externalSubscriptionId);
 		return subscription;
+	}
+
+	private static NutritionistInvitation redeemedInvitation(final Subscription subscription) {
+		final NutritionistInvitation invitation = new NutritionistInvitation();
+		invitation.setId(7L);
+		invitation.setStatus(InvitationStatus.REDEEMED);
+		invitation.setRedeemedByUserId("auth0|invitee");
+		invitation.setSubscription(subscription);
+		return invitation;
 	}
 
 }
