@@ -144,7 +144,7 @@ Before commit:
 1. `git fetch origin && git rebase origin/main`
 2. Re-run verify.
 3. Update [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) in the PR.
-4. If cross-track dependency changes (e.g. #46 merged), update mobile [`ISSUE.md`](ISSUE.md) only if explicitly coupled.
+4. If cross-track dependency changes (e.g. #46 merged), update mobile [`ISSUE.md`](ISSUE.md), [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md), and [`docs/mobile-api/README.md`](docs/mobile-api/README.md) when explicitly coupled.
 
 ---
 
@@ -199,8 +199,9 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#185 — Subscription lifecycle](https://github.com/diego-torres/nutriconsultas/issues/185) (after #184 merges) |
-| **Status** | #184 PR #206; payment provider → **Stripe** (#207 code, #208 ops) |
+| **Next issue** | [#185 — Subscription lifecycle](https://github.com/diego-torres/nutriconsultas/issues/185) |
+| **Status** | **NEXT** — ~~#184~~ merged (PR #206); Stripe checkout → #207 (code) + #208 (ops) |
+| **Just completed** | [#184 Admin invitations](https://github.com/diego-torres/nutriconsultas/issues/184) — PR [#206](https://github.com/diego-torres/nutriconsultas/pull/206) |
 | **Early start** | ~~#183~~ done (PR #200) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.

@@ -156,11 +156,11 @@ Add to each a short "Backend dependency" line per the cross-reference table, e.g
 - `PacienteDietaStatus`: ACTIVE / COMPLETED / CANCELLED (no INACTIVE exists)
 - `NivelPeso`: BAJO / NORMAL / ALTO / SOBREPESO → service translates to `imcLabel` display string
 
-### F8.3 — Verified gaps (backend, updated 2026-06-14)
+### F8.3 — Verified gaps (backend, updated 2026-06-17)
 - **Phase 0 DONE:** #107 (PR #117), #109 (PR #142), #110 (DTO envelope).
 - **Endpoints on `main`:** #91–#99 (visits, diet plans + PDF, messages, progress snapshot + measurements time series); #96/#97 messaging with HTTP 201 + Resilience4j 10/min (#113, PR #151).
 - **i18n (#111) DONE** (PR #151): `LocaleContextFilter`, `MobileApiErrorResponses`, localized 403/404/400/429.
-- **Cross-cutting:** ~~#116~~ `senderDisplayName` **in-progress** (branch `mobile-api/116-sender-display-name`: optional field on `PatientMessageSummaryDto` when `senderRole=NUTRITIONIST`). ~~#115~~ PHI log redaction audit **done** (PR #168, `docs/mobile-api/PHI-LOGGING-AUDIT.md`). ~~#112~~ OpenAPI spec **done** (PR #164, `docs/api/openapi-mobile.yaml`). **NEXT:** #114 nutritionist reply (web).
+- **Cross-cutting:** ~~#116~~ `senderDisplayName` **done** (PR #173). ~~#114~~ nutritionist reply **done**. ~~#115~~ PHI audit **done** (PR #168). ~~#112~~ OpenAPI **done** (PR #164). **NEXT:** #132 invitation onboarding.
 - `deltaPeso`/`deltaImc` are computed-at-query, not stored.
 - Progress `grasa` ambiguity: prefer `bodyComposition.porcentajeGrasaCorporal` (patient-facing %) over `indiceGrasaCorporal`.
 - Template dietas (seed `system:template-dietas`) have 4 ingestas incl. Colación — contract examples show only 3.
@@ -168,7 +168,12 @@ Add to each a short "Backend dependency" line per the cross-reference table, e.g
 ### F8.4 — NutritionistProfile (NEW entity, 228bbc3)
 `userId` (unique, nutritionist sub), `displayName`, `cedulaProfesional`, `logoExtension`, `registro`.
 - #95 PDF endpoint now serves branded PDFs transparently (no scope change).
-- **#116 DONE (pending PR):** optional `senderDisplayName` in `PatientMessageSummaryDto` when `senderRole=NUTRITIONIST`; sourced from `NutritionistProfile.displayName` via `NutritionistBrandingHelper`; omitted for patient messages or when profile has no display name.
+- **#116 DONE** (PR #173): optional `senderDisplayName` in `PatientMessageSummaryDto` when `senderRole=NUTRITIONIST`; sourced from `NutritionistProfile.displayName` via `NutritionistBrandingHelper`; omitted for patient messages or when profile has no display name.
+
+### F8.6 — Invitation onboarding gate (#132–#141)
+- **Prerequisites done on `main`:** #156 Paciente decomposition (PRs #175/#176/#178); #46 Liquibase baseline (PR #196). All new schema → incremental changesets per [`docs/db/LIQUIBASE.md`](../db/LIQUIBASE.md).
+- **Active sprint:** #132 data model (`Paciente.status`, `Invitation` entity) then #133–#141 per [`ISSUE.md`](../../ISSUE.md) Phase 2.
+- **Orthogonal:** nutritionist subscription invitations (`NutritionistInvitation` in subscription track) — see [`ISSUE-SUBSCRIPTION.md`](../../ISSUE-SUBSCRIPTION.md); do not conflate with patient `Invitation`.
 
 ### F8.5 — Design source of truth
 Canonical visual design: `mobile/.claude/MiNutriporcion-2/` (light editorial palette per JSX + 01-p-dashboard.png; the dark welcome/login screenshots are an OLD iteration — ignore).

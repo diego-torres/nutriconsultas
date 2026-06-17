@@ -3,14 +3,14 @@
 Living index of the GitHub issues that build the **patient mobile API** (`/rest/mobile/patient/**`) on the Spring Boot backend. Update **local and remote** (via a commit on the PR that closes the work) whenever status changes.
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas) (Spring Boot · Java 21 · Maven)
-**Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md)
+**Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Subscription (parallel):** [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-16 — #46 **in-progress** on branch `integration/46-liquibase-baseline`. **NEXT:** [#132 invitation onboarding](https://github.com/diego-torres/nutriconsultas/issues/132) (after #46 merges).
+**Last updated:** 2026-06-17 — #46 Liquibase **done** ([PR #196](https://github.com/diego-torres/nutriconsultas/pull/196)). **NEXT:** [#132 invitation onboarding](https://github.com/diego-torres/nutriconsultas/issues/132).
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116, #132–#141 invitation onboarding) plus the directly-related `[Dashboard]` IMC gauge (#106) and **integration prerequisites** that gate schema work (#156, #46). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
-> **GitHub sync note (2026-06-15):** **#112** closed on GitHub (merged PR #164). **#97** and **#111** are **done on `main`** (PRs #147, #151) but remain **open on GitHub** — close when convenient.
+> **GitHub sync note (2026-06-17):** **#46**, **#115**, **#116**, **#114** closed on GitHub (merged PRs #196, #168, #173, #174). **#97** and **#111** are **done on `main`** (PRs #147, #151) but remain **open on GitHub** — close when convenient. **#183** and **#184** (subscription) merged (PRs #200, #206) but GitHub issues still **open**.
 
 ---
 
@@ -49,7 +49,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 | `done` | Merged to `main` |
 | `deferred` | Intentionally paused — decision pending |
 
-Phase 0 (#107, #109, #110) is **done**. Endpoints **#91–#99 are done** on `main`. **#156 done** on `main`. **#46 in-progress** on `integration/46-liquibase-baseline`. **NEXT:** #132 invitation onboarding (after #46 merges).
+Phase 0 (#107, #109, #110) is **done**. Endpoints **#91–#99 are done** on `main`. Cross-cutting **#111–#116** done. **#156** and **#46** done on `main`. **NEXT:** #132 invitation onboarding.
 
 ---
 
@@ -131,14 +131,14 @@ Schema-affecting work must respect mobile DTO contracts (§F8). These issues are
 | # | Title | URL | State | Depends on | Blocks | Notes |
 |---|-------|-----|-------|-----------|--------|-------|
 | **156** | `[Integration]` Paciente domain refactor — incremental decomposition | https://github.com/diego-torres/nutriconsultas/issues/156 | **done** | [#121](https://github.com/diego-torres/nutriconsultas/issues/121) GET/TDEE | — (unblocked #46) | Merged PRs [#175](https://github.com/diego-torres/nutriconsultas/pull/175) (projections), [#176](https://github.com/diego-torres/nutriconsultas/pull/176) (embeddables), [#178](https://github.com/diego-torres/nutriconsultas/pull/178) (satellite tables). ER: [`paciente-er-phase-c.md`](docs/integration/paciente-er-phase-c.md). Mobile DTOs unchanged. |
-| 46 | Implement Liquibase for database change management | https://github.com/diego-torres/nutriconsultas/issues/46 | **in-progress** | ~~156~~ ✓ | — | Branch `integration/46-liquibase-baseline`: Liquibase baseline (PG + H2), catalog seed changelogs, `ddl-auto=none`. Docs: [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md). Brownfield: `preConditions onFail: MARK_RAN` when `paciente` exists. |
-| 132 | Invitation & patient onboarding data model | https://github.com/diego-torres/nutriconsultas/issues/132 | **NEXT** | #107, **156** ✓, **46** | — | `Paciente.status` enum + `Invitation` entity; Liquibase via #46 after merge. |
+| 46 | Implement Liquibase for database change management | https://github.com/diego-torres/nutriconsultas/issues/46 | **done** | ~~156~~ ✓ | — | Merged [PR #196](https://github.com/diego-torres/nutriconsultas/pull/196): Liquibase baseline (PG + H2), catalog seed changelogs, `ddl-auto=none`. Docs: [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md). |
+| 132 | Invitation & patient onboarding data model | https://github.com/diego-torres/nutriconsultas/issues/132 | **NEXT** | #107, ~~156~~ ✓, ~~46~~ ✓ | — | `Paciente.status` enum + `Invitation` entity; incremental Liquibase changeset after #46. |
 
 ---
 
 ## Phase 2 — Invitation onboarding (P1 · gated by #156 → #46 → #132)
 
-Invite-only patient onboarding replaces manual Afiliación linkage (#109) for new patients. **Not active sprint** — start after #156 Phase B and Liquibase baseline (#46). Issues decomposed from `invitation-system-research.md`.
+Invite-only patient onboarding replaces manual Afiliación linkage (#109) for new patients. **Active sprint** — #156 and #46 prerequisites are **done** on `main`.
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
@@ -196,7 +196,7 @@ Each mobile feature consumes these backend endpoints. Two-way linking with the m
 | 109 | Patient-Auth0 account linkage ... | https://... | in-progress | 107 | ... |
 ```
 
-**After PR merges** — mark `done` and advance `NEXT` to the next unblocked row (Phase 0 order: #109 → #110 → #108 → endpoints):
+**After PR merges** — mark `done` and advance `NEXT` to the next unblocked row; update [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md), [`docs/mobile-api/README.md`](docs/mobile-api/README.md), [`ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) §F8.3, and [`AGENTS.md`](AGENTS.md) in the same PR:
 
 ```text
 | 109 | Patient-Auth0 account linkage ... | https://... | done | 107 | ... |
