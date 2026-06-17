@@ -10,7 +10,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) | Canonical cross-repo contract — §F8 schema/enum map, per-issue corrected scope |
 | [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) | Endpoint request/response specs (#91–#99) with field mappings |
 
-**Current next issue:** [#132 — Invitation & patient onboarding data model](https://github.com/diego-torres/nutriconsultas/issues/132). ~~#46~~ Liquibase baseline **done** on branch `integration/46-liquibase-baseline`.
+**Current next issue:** [#132 — Invitation & patient onboarding data model](https://github.com/diego-torres/nutriconsultas/issues/132). ~~#46~~ Liquibase baseline **done** ([PR #196](https://github.com/diego-torres/nutriconsultas/pull/196)).
 
 ---
 
@@ -22,7 +22,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | **API surface** | All mobile endpoints live under `/rest/mobile/patient/` as plain JSON (not DataTables-shaped like the admin `*RestController`s). |
 | **Identity (security-critical)** | JWT `sub` → **`Paciente.patientAuthSub`** (#107 ✓ PR #117). **Never `Paciente.userId`** — that is the NUTRITIONIST's Auth0 sub / tenant owner (ALIGNMENT-SPEC §F2). `PatientLinkageFilter` returns **403** if no linked `Paciente`. |
 | **Ownership / IDOR** | Return only the authenticated patient's rows. On an ownership miss prefer **404** (not 403) so existence isn't leaked (esp. #92). Never return cross-tenant data. |
-| **Backend state** | **Phase 0 done** (#107, #109, #110). **All endpoints #91–#99 done** on `main`. **OpenAPI #112 done** (PR #164). **PHI audit #115 done**. **#116 `senderDisplayName` done** on `main`. **#114 nutritionist reply done** on `main` (admin REST + web widget). **NEXT:** #156 (`Paciente` decomposition). Requires `AUTH_AUDIENCE` env var. |
+| **Backend state** | **Phase 0 done** (#107, #109, #110). **All endpoints #91–#99 done** on `main`. **Cross-cutting done** (#111–#116). **#156** and **#46** done on `main`. **NEXT:** #132 invitation onboarding. Requires `AUTH_AUDIENCE` env var. |
 | **DTO envelope** | `ApiResponse<T>`; lists in `PagedResponse<T>` or `CursorPagedResponse<T>` (messages); ISO-8601 date strings. See #110. |
 | **Schema ground truth** | ALIGNMENT-SPEC §F8 field-name map (`nombre→dietaName`, `energia→totalKcal`, `lipidos→totalGrasas`, `hidratosDeCarbono→totalCarbohidratos`, `Ingesta.nombre→tipo`); enums `EventStatus`/`PacienteDietaStatus` (no INACTIVE)/`NivelPeso`. Serialization aliases only — **no DB schema changes** for field renames. |
 | **PHI & logging** | No patient names/emails/DOB in unstructured logs. `LogRedaction` + `PhiLogTurboFilter`; CI runs `scripts/audit-logging.sh` and `scripts/audit-mobile-logging.sh` (#115 done). |
@@ -362,10 +362,10 @@ gh pr create ...
 | Field | Value |
 |-------|-------|
 | **Next issue** | [#132 — Invitation & patient onboarding data model](https://github.com/diego-torres/nutriconsultas/issues/132) |
-| **Status** | **NEXT** (gated by #46 PR #196 merge for schema-heavy work) |
+| **Status** | **NEXT** — prerequisites ~~#156~~ ✓ and ~~#46~~ ✓ (PR #196) merged |
 | **Phase** | Invitation / onboarding data model |
-| **Just completed** | [#46 Liquibase baseline](https://github.com/diego-torres/nutriconsultas/issues/46) — PR [#196](https://github.com/diego-torres/nutriconsultas/pull/196); incremental changesets required for all future schema/catalog edits |
-| **In scope for #156** | Phase A ✓ projections. Phase B ✓ body snapshot embeddable. Phase C ✓ LAZY satellite tables + manual SQL. Phase D deferred. |
+| **Just completed** | [#46 Liquibase baseline](https://github.com/diego-torres/nutriconsultas/issues/46) — PR [#196](https://github.com/diego-torres/nutriconsultas/pull/196); [#156](https://github.com/diego-torres/nutriconsultas/issues/156) Phase C — PR [#178](https://github.com/diego-torres/nutriconsultas/pull/178) |
+| **In scope for #132** | `Paciente.status` + `Invitation` entity; first incremental Liquibase changeset post-baseline |
 
 ### Upcoming gates
 
@@ -378,20 +378,16 @@ gh pr create ...
 | Hardening / additive | ~~#113~~ ✓, ~~#116~~ ✓ (`senderDisplayName`), ~~#114~~ ✓ (nutritionist reply) | **Done** |
 | Schema / Liquibase | ~~**#46**~~ ✓ (PR #196) → **#132–#141** (invitation onboarding) | #132 **NEXT** — use incremental changesets per [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) |
 
-### Status snapshot (2026-06-16)
+### Status snapshot (2026-06-17)
 
-**Patient mobile API on `main`:** JWT resource server (#107), DTO envelope (#110), patient linkage (#109), visits (#91/#92), diet plans (#93–#95), messages list/send (#96/#97 with HTTP 201 + rate limit), progress snapshot (#98) + measurements time series (#99, PR #153), localized API errors (#111), Resilience4j write throttling (#113), **OpenAPI spec (#112, PR #164)**, **`senderDisplayName` (#116)**, **nutritionist reply (#114)**. Dashboard IMC gauge (#106) done for web tablero.
+**Patient mobile API on `main`:** Phase 0 + endpoints **#91–#99** done; cross-cutting **#111–#116** done (OpenAPI #112, PHI audit #115, `senderDisplayName` #116, nutritionist reply #114). Dashboard IMC gauge (#106) done for web tablero.
 
 **Next:** #132 invitation onboarding data model (+ Liquibase migration for new columns/tables).
 
-**Schema track:** #46 Liquibase baseline in PR [#196](https://github.com/diego-torres/nutriconsultas/pull/196). All entity/schema/catalog edits → forward changesets ([`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md)).
+**Schema track:** ~~#46~~ Liquibase baseline merged (PR #196). All entity/schema/catalog edits → forward changesets ([`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md)).
 
-**Just merged:** #156 Phase C — PR [#178](https://github.com/diego-torres/nutriconsultas/pull/178) (`paciente_medical_history`, `paciente_energy_preferences`).
+**GitHub drift (close when convenient):** #97, #111 done on `main` but open on GitHub (PRs #147, #151).
 
-**GitHub drift (close when convenient):** #97 and #111 are **done on `main`** but still **open on GitHub** (implemented in PRs #147, #151).
-
-**Schema gate (parallel track):** [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46) baseline **NEXT** (post-#156); then [#132–#141](https://github.com/diego-torres/nutriconsultas/issues/132) invitation onboarding (see [`ISSUE.md`](ISSUE.md) Phase 2).
-
-**Subscription track (parallel):** [#180–#190](https://github.com/diego-torres/nutriconsultas/issues/180) subscription enforcement — see [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) and [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md). Schema gated by #46; platform admin RBAC (#183) can start earlier.
+**Subscription track (parallel):** [#180–#211](https://github.com/diego-torres/nutriconsultas/issues/180) — see [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#46~~ ✓; ~~#183~~ ✓ (PR #200); ~~#184~~ ✓ (PR #206). **NEXT:** #185 lifecycle (+ Stripe #207/#208 for live checkout).
 
 See [`ISSUE.md`](ISSUE.md) Data contracts and [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) §F8 for per-endpoint field requirements.

@@ -586,11 +586,11 @@ Issue registry: [`ISSUE.md`](ISSUE.md). Agent workflow: [`AGENT-WORKFLOW.md`](AG
 
 Issue registry: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Agent workflow: [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md). Design: [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md).
 
-**Epic #180–#190** (2026-06-16): platform admin RBAC, Auth0 role groups (`nutriologo-basico` … `director-consultorio`), paid admin invitations + payment provider, subscription lifecycle (grace, payment override), director clinic invites, patient/nutritionist limits, report/PDF gating. **Gated by #46 Liquibase** for schema work; #183 can start earlier.
+**Epic #180–#211** (2026-06-17): ~~#46~~ Liquibase done; ~~#180–#184~~ done on `main` (PRs #197–#206). **NEXT:** #185 lifecycle (+ Stripe #207/#208). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md).
 
 **Done on `main` (2026-06-14):** #107/#109/#110 (JWT + linkage + DTO envelope); endpoints #91–#98; messages #96/#97 with rate limit (#113); localized errors (#111, PR #151); dashboard IMC gauge (#106).
 
-**Next:** [#156](https://github.com/diego-torres/nutriconsultas/issues/156) `Paciente` domain refactor. ~~#114~~ nutritionist reply **done**. ~~#116~~ `senderDisplayName` **done** on `main`. ~~#115~~ PHI audit **done** (PR #168). ~~#112~~ OpenAPI **done** (PR #164).
+**Next:** [#132](https://github.com/diego-torres/nutriconsultas/issues/132) invitation onboarding. ~~#114~~, ~~#116~~, ~~#115~~, ~~#112~~ **done** on `main`. Subscription track: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) — **NEXT** #185.
 
 **Schema gate (post-#46):** [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46) baseline is on `main` (PR #196). All new schema/catalog changes require **incremental Liquibase changesets** — see [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) and [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md). ~~#156~~ Phase C done before baseline.
 

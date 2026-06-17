@@ -199,8 +199,9 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#185 — Subscription lifecycle](https://github.com/diego-torres/nutriconsultas/issues/185) (after #184 merges) |
-| **Status** | #184 PR #206; payment provider → **Stripe** (#207 code, #208 ops) |
+| **Next issue** | [#185 — Subscription lifecycle](https://github.com/diego-torres/nutriconsultas/issues/185) |
+| **Status** | **NEXT** — ~~#184~~ merged (PR #206); Stripe checkout → #207 (code) + #208 (ops) |
+| **Just completed** | [#184 Admin invitations](https://github.com/diego-torres/nutriconsultas/issues/184) — PR [#206](https://github.com/diego-torres/nutriconsultas/pull/206) |
 | **Early start** | ~~#183~~ done (PR #200) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
