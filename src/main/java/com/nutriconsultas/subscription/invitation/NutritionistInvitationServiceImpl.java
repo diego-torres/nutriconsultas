@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.nutriconsultas.auth0.Auth0RoleSyncClient;
 import com.nutriconsultas.platform.PlatformAdminService;
 import com.nutriconsultas.subscription.InvitationStatus;
 import com.nutriconsultas.subscription.NutritionistInvitation;
@@ -20,6 +21,7 @@ import com.nutriconsultas.subscription.Subscription;
 import com.nutriconsultas.subscription.SubscriptionAuditEvent;
 import com.nutriconsultas.subscription.SubscriptionAuditEventRepository;
 import com.nutriconsultas.subscription.SubscriptionAuditEventType;
+import com.nutriconsultas.subscription.SubscriptionRepository;
 import com.nutriconsultas.subscription.SubscriptionStatus;
 import com.nutriconsultas.subscription.payment.BillingInterval;
 import com.nutriconsultas.subscription.payment.CheckoutSession;
@@ -46,13 +48,18 @@ public class NutritionistInvitationServiceImpl implements NutritionistInvitation
 
 	private final SubscriptionAuditEventRepository auditEventRepository;
 
+	private final SubscriptionRepository subscriptionRepository;
+
+	private final Auth0RoleSyncClient auth0RoleSyncClient;
+
 	public NutritionistInvitationServiceImpl(final PlatformAdminService platformAdminService,
 			final NutritionistInvitationRepository invitationRepository,
 			final NutritionistInvitationProperties invitationProperties,
 			final InvitationEmailSender invitationEmailSender,
 			final SubscriptionProvisioningService provisioningService,
 			final PaymentCheckoutService paymentCheckoutService,
-			final SubscriptionAuditEventRepository auditEventRepository) {
+			final SubscriptionAuditEventRepository auditEventRepository,
+			final SubscriptionRepository subscriptionRepository, final Auth0RoleSyncClient auth0RoleSyncClient) {
 		this.platformAdminService = platformAdminService;
 		this.invitationRepository = invitationRepository;
 		this.invitationProperties = invitationProperties;
@@ -60,6 +67,8 @@ public class NutritionistInvitationServiceImpl implements NutritionistInvitation
 		this.provisioningService = provisioningService;
 		this.paymentCheckoutService = paymentCheckoutService;
 		this.auditEventRepository = auditEventRepository;
+		this.subscriptionRepository = subscriptionRepository;
+		this.auth0RoleSyncClient = auth0RoleSyncClient;
 	}
 
 	@Override
@@ -114,6 +123,44 @@ public class NutritionistInvitationServiceImpl implements NutritionistInvitation
 		recordInvitationCancelAudit(platformAdminService.resolveActorUserId(adminPrincipal), invitation.getId());
 		if (log.isInfoEnabled()) {
 			log.info("Cancelled nutritionist invitation: invitationId={}", invitation.getId());
+		}
+	}
+
+	@Override
+	@Transactional
+	public void revokeNutritionistAccess(final OidcUser adminPrincipal, final Long invitationId, final String reason) {
+		platformAdminService.requirePlatformAdmin(adminPrincipal);
+		if (invitationId == null) {
+			throw new IllegalArgumentException("invitationId is required");
+		}
+		final NutritionistInvitation invitation = invitationRepository.findById(invitationId)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invitation not found"));
+		if (invitation.getStatus() != InvitationStatus.REDEEMED) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT,
+					"Solo se puede revocar acceso de invitaciones aceptadas");
+		}
+		final Subscription subscription = invitation.getSubscription();
+		if (subscription == null) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "La invitación no tiene suscripción asociada");
+		}
+		if (subscription.getStatus() == SubscriptionStatus.CANCELLED) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "El acceso ya fue revocado");
+		}
+		if (!StringUtils.hasText(invitation.getRedeemedByUserId())) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "La invitación no tiene usuario asociado");
+		}
+		final String actorUserId = platformAdminService.resolveActorUserId(adminPrincipal);
+		final String targetUserId = invitation.getRedeemedByUserId();
+		final SubscriptionStatus previousStatus = subscription.getStatus();
+		final String paymentCancelDetail = cancelExternalSubscriptionIfPresent(subscription);
+		subscription.setStatus(SubscriptionStatus.CANCELLED);
+		subscriptionRepository.save(subscription);
+		final String auth0Detail = revokeAuth0RolesIfConfigured(targetUserId);
+		recordAccessRevokeAudit(actorUserId, invitation, subscription, previousStatus, reason, paymentCancelDetail,
+				auth0Detail);
+		if (log.isInfoEnabled()) {
+			log.info("Revoked nutritionist access: invitationId={}, subscriptionId={}, targetUserId={}",
+					invitation.getId(), subscription.getId(), targetUserId);
 		}
 	}
 
@@ -225,12 +272,65 @@ public class NutritionistInvitationServiceImpl implements NutritionistInvitation
 
 	private boolean hasActiveSubscriptionAccess(final NutritionistInvitation redeemedInvitation) {
 		final Subscription subscription = redeemedInvitation.getSubscription();
-		return subscription != null && blocksNewInvitation(subscription.getStatus());
+		return subscription != null && NutritionistInvitationAccessRules.blocksNewInvitation(subscription.getStatus());
 	}
 
-	private static boolean blocksNewInvitation(final SubscriptionStatus status) {
-		return status == SubscriptionStatus.PENDING_PAYMENT || status == SubscriptionStatus.TRIAL
-				|| status == SubscriptionStatus.ACTIVE || status == SubscriptionStatus.GRACE;
+	private String cancelExternalSubscriptionIfPresent(final Subscription subscription) {
+		if (!StringUtils.hasText(subscription.getExternalSubscriptionId())) {
+			return "externalSubscriptionCancelled=skipped";
+		}
+		try {
+			paymentCheckoutService.cancelSubscription(subscription.getExternalSubscriptionId());
+			return "externalSubscriptionCancelled=true";
+		}
+		catch (RuntimeException ex) {
+			if (log.isWarnEnabled()) {
+				log.warn("External subscription cancel failed: subscriptionId={}", subscription.getId());
+			}
+			if (log.isDebugEnabled()) {
+				log.debug("External subscription cancel failure", ex);
+			}
+			return "externalSubscriptionCancelled=false";
+		}
+	}
+
+	private String revokeAuth0RolesIfConfigured(final String targetUserId) {
+		if (!auth0RoleSyncClient.isConfigured()) {
+			return "auth0Revoked=skipped";
+		}
+		try {
+			auth0RoleSyncClient.revokePlanRoles(targetUserId);
+			return "auth0Revoked=true";
+		}
+		catch (RuntimeException ex) {
+			if (log.isWarnEnabled()) {
+				log.warn("Auth0 role revoke failed after subscription cancel: targetUserId present={}",
+						StringUtils.hasText(targetUserId));
+			}
+			if (log.isDebugEnabled()) {
+				log.debug("Auth0 role revoke failure", ex);
+			}
+			return "auth0Revoked=false";
+		}
+	}
+
+	private void recordAccessRevokeAudit(final String actorUserId, final NutritionistInvitation invitation,
+			final Subscription subscription, final SubscriptionStatus previousStatus, final String reason,
+			final String paymentCancelDetail, final String auth0Detail) {
+		if (!StringUtils.hasText(actorUserId)) {
+			return;
+		}
+		final SubscriptionAuditEvent event = new SubscriptionAuditEvent();
+		event.setSubscription(subscription);
+		event.setEventType(SubscriptionAuditEventType.PLATFORM_ADMIN_ACTION);
+		event.setActorUserId(actorUserId);
+		event.setPreviousStatus(previousStatus);
+		event.setNewStatus(SubscriptionStatus.CANCELLED);
+		final String reasonSuffix = StringUtils.hasText(reason) ? ",reason=" + reason.trim() : "";
+		event.setDetails("action=access.revoke,invitationId=" + invitation.getId() + ",targetUserId="
+				+ invitation.getRedeemedByUserId() + ",email=" + invitation.getEmail() + reasonSuffix + ","
+				+ paymentCancelDetail + "," + auth0Detail);
+		auditEventRepository.save(event);
 	}
 
 	private void recordInvitationLinkRegeneratedAudit(final String actorUserId, final Long invitationId) {

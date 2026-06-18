@@ -29,6 +29,7 @@ public class PlatformAdminTemplateValidator extends BaseTemplateValidator {
 		variables.put("subscriptionStatuses", com.nutriconsultas.subscription.SubscriptionStatus.values());
 		variables.put("subscription", createMockSubscription());
 		variables.put("clinicName", "Consultorio demo");
+		variables.put("revocableInvitationId", 1L);
 		variables.put("subscriptionBanner", null);
 		variables.put("subscriptionStatus", com.nutriconsultas.subscription.SubscriptionStatus.SUSPENDED);
 		variables.put("updateSubscriptionForm", new UpdateSubscriptionForm());

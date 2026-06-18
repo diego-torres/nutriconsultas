@@ -233,6 +233,25 @@
           }
         });
       });
+
+      $(document).on('click', '.revoke-access-btn', function () {
+        var $form = $(this).closest('.revoke-access-form');
+        swal({
+          title: 'Revocar acceso',
+          text: 'El nutriólogo perderá acceso a Minutriporcion. Sus datos de pacientes se conservarán. ¿Desea continuar?',
+          type: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Sí, revocar acceso',
+          cancelButtonText: 'No',
+          closeOnConfirm: true
+        }, function (isConfirm) {
+          if (isConfirm) {
+            $form.submit();
+          }
+        });
+      });
     });
   </script>
 </body>

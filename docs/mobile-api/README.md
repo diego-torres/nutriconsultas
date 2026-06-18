@@ -31,6 +31,15 @@ Canonical cross-repo contracts for the `[Mobile API]` track. Indexed from [`../.
 | [`../../SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](../../SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md) | Subscription agent workflow |
 | [`../subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](../subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md) | Plan tiers, entitlements, lifecycle |
 
+## Parallel track (nutritionist web)
+
+| File | What it is |
+|------|-----------|
+| [`../../ISSUE-NUTRITIONIST-WEB.md`](../../ISSUE-NUTRITIONIST-WEB.md) | Patient MPX epic (#221–#223) |
+| [`../paciente/PATIENT-MPX-PLAN.md`](../paciente/PATIENT-MPX-PLAN.md) | Export/import plan |
+
+**Nutritionist web NEXT:** [#221](https://github.com/diego-torres/nutriconsultas/issues/221) export → #222 import → #223 UI.
+
 **Subscription NEXT:** [#210](https://github.com/diego-torres/nutriconsultas/issues/210) / [#211](https://github.com/diego-torres/nutriconsultas/issues/211) admin ops (~~#187~~ PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218), ~~#190~~ PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) on `main`).
 
 ## Provenance / drift

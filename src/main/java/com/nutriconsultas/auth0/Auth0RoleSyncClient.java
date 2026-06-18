@@ -17,4 +17,9 @@ public interface Auth0RoleSyncClient {
 	 */
 	void syncPlanRole(String auth0UserId, PlanTier planTier);
 
+	/**
+	 * Removes all plan-tier Auth0 roles from the user without assigning a replacement.
+	 */
+	void revokePlanRoles(String auth0UserId);
+
 }

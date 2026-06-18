@@ -24,13 +24,17 @@ import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.nutriconsultas.auth0.Auth0RoleSyncClient;
 import com.nutriconsultas.platform.PlatformAdminService;
 import com.nutriconsultas.subscription.InvitationStatus;
 import com.nutriconsultas.subscription.NutritionistInvitation;
 import com.nutriconsultas.subscription.NutritionistInvitationRepository;
 import com.nutriconsultas.subscription.PlanTier;
 import com.nutriconsultas.subscription.Subscription;
+import com.nutriconsultas.subscription.SubscriptionAuditEvent;
 import com.nutriconsultas.subscription.SubscriptionAuditEventRepository;
+import com.nutriconsultas.subscription.SubscriptionAuditEventType;
+import com.nutriconsultas.subscription.SubscriptionRepository;
 import com.nutriconsultas.subscription.SubscriptionStatus;
 import com.nutriconsultas.subscription.payment.BillingInterval;
 import com.nutriconsultas.subscription.payment.CheckoutSession;
@@ -66,6 +70,12 @@ class NutritionistInvitationServiceTest {
 
 	@Mock
 	private SubscriptionAuditEventRepository auditEventRepository;
+
+	@Mock
+	private SubscriptionRepository subscriptionRepository;
+
+	@Mock
+	private Auth0RoleSyncClient auth0RoleSyncClient;
 
 	@InjectMocks
 	private NutritionistInvitationServiceImpl invitationService;
@@ -187,6 +197,60 @@ class NutritionistInvitationServiceTest {
 	}
 
 	@Test
+	void revokeNutritionistAccessCancelsSubscriptionAndRevokesAuth0() {
+		final NutritionistInvitation invitation = redeemedInvitationWithSubscription(SubscriptionStatus.ACTIVE);
+		invitation.getSubscription().setExternalSubscriptionId("mp-sub-1");
+		when(platformAdminService.resolveActorUserId(adminPrincipal)).thenReturn(ADMIN_USER_ID);
+		when(invitationRepository.findById(1L)).thenReturn(Optional.of(invitation));
+		when(auth0RoleSyncClient.isConfigured()).thenReturn(true);
+
+		invitationService.revokeNutritionistAccess(adminPrincipal, 1L, "ADMIN_REVOKE");
+
+		assertThat(invitation.getSubscription().getStatus()).isEqualTo(SubscriptionStatus.CANCELLED);
+		verify(paymentCheckoutService).cancelSubscription("mp-sub-1");
+		verify(auth0RoleSyncClient).revokePlanRoles(INVITEE_USER_ID);
+		verify(subscriptionRepository).save(invitation.getSubscription());
+		final ArgumentCaptor<SubscriptionAuditEvent> auditCaptor = ArgumentCaptor
+			.forClass(SubscriptionAuditEvent.class);
+		verify(auditEventRepository).save(auditCaptor.capture());
+		assertThat(auditCaptor.getValue().getEventType()).isEqualTo(SubscriptionAuditEventType.PLATFORM_ADMIN_ACTION);
+		assertThat(auditCaptor.getValue().getDetails()).contains("action=access.revoke");
+		assertThat(auditCaptor.getValue().getDetails()).contains("reason=ADMIN_REVOKE");
+	}
+
+	@Test
+	void revokeNutritionistAccessAllowsReInviteAfterCancelled() {
+		final NutritionistInvitation redeemed = redeemedInvitationWithSubscription(SubscriptionStatus.CANCELLED);
+		when(platformAdminService.resolveActorUserId(adminPrincipal)).thenReturn(ADMIN_USER_ID);
+		when(invitationProperties.getExpiryDays()).thenReturn(7);
+		when(invitationProperties.buildRedeemUrl(any()))
+			.thenAnswer(invocation -> "https://app.test/redeem?token=" + invocation.getArgument(0));
+		when(invitationRepository.findByEmailIgnoreCaseAndStatus(INVITEE_EMAIL, InvitationStatus.PENDING))
+			.thenReturn(Optional.empty());
+		when(invitationRepository.findFirstByEmailIgnoreCaseAndStatusOrderByRedeemedAtDesc(INVITEE_EMAIL,
+				InvitationStatus.REDEEMED))
+			.thenReturn(Optional.of(redeemed));
+		when(invitationRepository.save(any(NutritionistInvitation.class))).thenAnswer(invocation -> {
+			final NutritionistInvitation invitation = invocation.getArgument(0);
+			invitation.setId(2L);
+			return invitation;
+		});
+
+		final CreatedNutritionistInvitation created = invitationService.createInvitation(adminPrincipal, INVITEE_EMAIL,
+				PlanTier.BASICO, false);
+
+		assertThat(created.invitationId()).isEqualTo(2L);
+	}
+
+	@Test
+	void revokeNutritionistAccessRejectsPendingInvitation() {
+		when(invitationRepository.findById(1L)).thenReturn(Optional.of(pendingInvitation()));
+
+		assertThatThrownBy(() -> invitationService.revokeNutritionistAccess(adminPrincipal, 1L, null))
+			.isInstanceOf(ResponseStatusException.class);
+	}
+
+	@Test
 	void regenerateInvitationLinkRotatesTokenForPendingInvitation() {
 		final NutritionistInvitation invitation = pendingInvitation();
 		when(platformAdminService.resolveActorUserId(adminPrincipal)).thenReturn(ADMIN_USER_ID);
@@ -256,6 +320,19 @@ class NutritionistInvitationServiceTest {
 		invitation.setExpiresAt(Instant.now().plus(2, ChronoUnit.DAYS));
 		invitation.setCreatedByUserId(ADMIN_USER_ID);
 		invitation.setPaymentExempt(true);
+		return invitation;
+	}
+
+	private NutritionistInvitation redeemedInvitationWithSubscription(final SubscriptionStatus status) {
+		final NutritionistInvitation invitation = pendingInvitation();
+		invitation.setStatus(InvitationStatus.REDEEMED);
+		invitation.setRedeemedAt(Instant.now());
+		invitation.setRedeemedByUserId(INVITEE_USER_ID);
+		final Subscription subscription = new Subscription();
+		subscription.setId(10L);
+		subscription.setStatus(status);
+		subscription.setPlanTier(PlanTier.PROFESIONAL);
+		invitation.setSubscription(subscription);
 		return invitation;
 	}
 

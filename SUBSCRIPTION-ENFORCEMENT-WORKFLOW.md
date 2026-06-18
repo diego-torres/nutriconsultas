@@ -199,8 +199,8 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#210 — Platform admin revoke access](https://github.com/diego-torres/nutriconsultas/issues/210) / [#211 — change plan tier](https://github.com/diego-torres/nutriconsultas/issues/211) |
-| **In progress** | — |
+| **Next issue** | [#211 — change plan tier](https://github.com/diego-torres/nutriconsultas/issues/211) (after #210 PR) |
+| **In progress** | [#210 — Platform admin revoke access](https://github.com/diego-torres/nutriconsultas/issues/210) |
 | **Just completed** | [#187 — Gate report tiers and PDF export](https://github.com/diego-torres/nutriconsultas/issues/187) — PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
@@ -212,4 +212,6 @@ See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 | 1 | **#210** / **#211** | Revocar acceso y cambio de plan tier (admin platform; deps satisfechas) |
 | 2 | **#207** / **#208** | Migrar checkout Mercado Pago → Stripe; credenciales y webhooks operativos |
 | 3 | **#186** → **#188** | Modelo consultorio + invitaciones director (habilita `ClinicInvitationService` end-to-end) |
-| 4 | **#209** | Entrega de email de invitación (SES prod / console local) |
+| 4 | **#220** | Limpieza retención 90 días post-revoke + backup S3 + UI mantenimiento (deps: #210) |
+| 5 | **#209** | Entrega de email de invitación (SES prod / console local) |
+| 6 | **#221** → **#223** | MPX export/import pacientes (rotación cupos; [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md)) |

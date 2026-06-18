@@ -13,15 +13,20 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.nutriconsultas.controller.AbstractPlatformAdminController;
 import com.nutriconsultas.platform.PlatformAdminAuthorization;
 import com.nutriconsultas.subscription.Clinic;
 import com.nutriconsultas.subscription.ClinicRepository;
+import com.nutriconsultas.subscription.NutritionistInvitation;
+import com.nutriconsultas.subscription.NutritionistInvitationRepository;
 import com.nutriconsultas.subscription.Subscription;
 import com.nutriconsultas.subscription.SubscriptionRepository;
 import com.nutriconsultas.subscription.SubscriptionStatus;
+import com.nutriconsultas.subscription.invitation.NutritionistInvitationAccessRules;
+import com.nutriconsultas.subscription.invitation.NutritionistInvitationService;
 import com.nutriconsultas.subscription.lifecycle.AdminSubscriptionOverride;
 import com.nutriconsultas.subscription.lifecycle.SubscriptionLifecycleService;
 
@@ -40,13 +45,21 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 
 	private final SubscriptionLifecycleService lifecycleService;
 
+	private final NutritionistInvitationRepository invitationRepository;
+
+	private final NutritionistInvitationService invitationService;
+
 	public SubscriptionAdminController(final PlatformAdminAuthorization platformAdminAuthorization,
 			final SubscriptionRepository subscriptionRepository, final ClinicRepository clinicRepository,
-			final SubscriptionLifecycleService lifecycleService) {
+			final SubscriptionLifecycleService lifecycleService,
+			final NutritionistInvitationRepository invitationRepository,
+			final NutritionistInvitationService invitationService) {
 		super(platformAdminAuthorization);
 		this.subscriptionRepository = subscriptionRepository;
 		this.clinicRepository = clinicRepository;
 		this.lifecycleService = lifecycleService;
+		this.invitationRepository = invitationRepository;
+		this.invitationService = invitationService;
 	}
 
 	@GetMapping
@@ -68,6 +81,7 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 		}
 		model.addAttribute("subscription", subscription);
 		model.addAttribute("clinicName", clinicRepository.findBySubscriptionId(id).map(Clinic::getName).orElse("—"));
+		model.addAttribute("revocableInvitationId", resolveRevocableInvitationId(subscription));
 		model.addAttribute("subscriptionStatuses", SubscriptionStatus.values());
 		model.addAttribute("activeMenu", "subscriptions");
 		return "sbadmin/platform/subscriptions/edit";
@@ -84,6 +98,7 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 			model.addAttribute("subscription", subscription);
 			model.addAttribute("clinicName",
 					clinicRepository.findBySubscriptionId(id).map(Clinic::getName).orElse("—"));
+			model.addAttribute("revocableInvitationId", resolveRevocableInvitationId(subscription));
 			model.addAttribute("subscriptionStatuses", SubscriptionStatus.values());
 			model.addAttribute("activeMenu", "subscriptions");
 			return "sbadmin/platform/subscriptions/edit";
@@ -96,6 +111,23 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 		return "redirect:/admin/platform/subscriptions";
 	}
 
+	@PostMapping("/{id}/revoke-access")
+	public String revokeAccess(@AuthenticationPrincipal final OidcUser principal, @PathVariable final Long id,
+			@RequestParam(required = false) final String reason, final RedirectAttributes redirectAttributes) {
+		requirePlatformAdmin(principal, "subscriptions.revoke");
+		final Subscription subscription = subscriptionRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+		final NutritionistInvitation invitation = invitationRepository.findBySubscriptionId(id)
+			.orElseThrow(() -> new IllegalArgumentException("No invitation linked to subscription"));
+		if (!NutritionistInvitationAccessRules.canRevokeAccess(invitation)) {
+			throw new IllegalArgumentException("Subscription access cannot be revoked");
+		}
+		invitationService.revokeNutritionistAccess(principal, invitation.getId(), reason);
+		redirectAttributes.addFlashAttribute("successMessage",
+				"Acceso revocado para la suscripción #" + subscription.getId() + ".");
+		return "redirect:/admin/platform/subscriptions";
+	}
+
 	private static UpdateSubscriptionForm toForm(final Subscription subscription) {
 		final UpdateSubscriptionForm form = new UpdateSubscriptionForm();
 		form.setPaymentExempt(subscription.isPaymentExempt());
@@ -105,6 +137,13 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 		form.setGracePeriodDays(subscription.getGracePeriodDays());
 		form.setStatus(subscription.getStatus());
 		return form;
+	}
+
+	private Long resolveRevocableInvitationId(final Subscription subscription) {
+		return invitationRepository.findBySubscriptionId(subscription.getId())
+			.filter(NutritionistInvitationAccessRules::canRevokeAccess)
+			.map(NutritionistInvitation::getId)
+			.orElse(null);
 	}
 
 }
