@@ -25,7 +25,9 @@ final class PatientInvitationHumanCode {
 		int secretIndex = 0;
 		for (int index = 0; index < 7; index++) {
 			while (bitCount < 5) {
-				bitBuffer = (bitBuffer << 8) | (secret[secretIndex++] & 0xFF);
+				final int byteValue = secret[secretIndex] & 0xFF;
+				secretIndex++;
+				bitBuffer = (bitBuffer << 8) | byteValue;
 				bitCount += 8;
 			}
 			bitCount -= 5;
@@ -45,7 +47,7 @@ final class PatientInvitationHumanCode {
 				humanCode.trim().toUpperCase().getBytes(StandardCharsets.UTF_8));
 	}
 
-	private static char checksum(final char[] payload) {
+	private static char checksum(final char... payload) {
 		int sum = 0;
 		for (int index = 0; index < 7; index++) {
 			sum += ALPHABET.indexOf(payload[index]);
