@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-18 — ~~#190~~ **done** (PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216)); **NEXT:** #210 / #211 (admin ops) or #207 (Stripe). ~~#187~~ **in-progress** on `subscription/187-report-pdf-gating`.
+**Last updated:** 2026-06-18 — ~~#187~~ **done** (PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218)); **NEXT:** #210 / #211 (admin ops) or #207 (Stripe).
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 
@@ -76,9 +76,9 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
 | 190 | Enforce patient and nutritionist limits per plan | https://github.com/diego-torres/nutriconsultas/issues/190 | **done** | 181, ~~185~~ ✓ | Merged PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) |
-| 187 | Gate report tiers and PDF export by plan | https://github.com/diego-torres/nutriconsultas/issues/187 | **in-progress** | 181, ~~185~~ ✓, ~~190~~ ✓ | Branch `subscription/187-report-pdf-gating` |
+| 187 | Gate report tiers and PDF export by plan | https://github.com/diego-torres/nutriconsultas/issues/187 | **done** | 181, ~~185~~ ✓, ~~190~~ ✓ | Merged PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218) |
 
-**Suggested order:** ~~#187~~ (enforcement — in progress); #210 / #211 (admin ops) and #207 (Stripe) in parallel.
+**Suggested order:** #210 / #211 (admin ops) and #207 (Stripe) in parallel.
 
 ---
 
@@ -92,8 +92,8 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | 3b. Admin revoke access and change plan tier | #210, #211 |
 | 4. Director invites nutritionists; enable/disable access | #186, #188 |
 | 5. Patient & nutritionist limits | #190 — PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) ✓ |
-| 6. Branded / tiered reports | #187 |
-| 7. PDF export by plan | #187 |
+| 6. Branded / tiered reports | #187 — PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218) ✓ |
+| 7. PDF export by plan | #187 — PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218) ✓ |
 
 ---
 

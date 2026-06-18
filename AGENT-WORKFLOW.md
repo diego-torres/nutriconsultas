@@ -27,7 +27,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (mobile):** [#133 — Invitation token generation & hashing service](https://github.com/diego-torres/nutriconsultas/issues/133) (after [#132](https://github.com/diego-torres/nutriconsultas/issues/132) in-progress).
 
-**Current next issue (subscription):** [#187 — Gate report tiers and PDF export](https://github.com/diego-torres/nutriconsultas/issues/187). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md).
+**Current next issue (subscription):** [#210 — Platform admin revoke access](https://github.com/diego-torres/nutriconsultas/issues/210) / [#211 — change plan tier](https://github.com/diego-torres/nutriconsultas/issues/211). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md).
 
 ---
 
@@ -417,6 +417,6 @@ gh pr create ...
 
 **GitHub drift (close when convenient):** #97, #111 done on `main` but open on GitHub (PRs #147, #151).
 
-**Subscription track (parallel):** [#180–#211](https://github.com/diego-torres/nutriconsultas/issues/180) — see [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#185~~ ✓ (PR #215); ~~#190~~ ✓ (PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216)). **NEXT:** #187 report/PDF gating (+ #210/#211, Stripe #207/#208).
+**Subscription track (parallel):** [#180–#211](https://github.com/diego-torres/nutriconsultas/issues/180) — see [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#185~~ ✓ (PR #215); ~~#190~~ ✓ (PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216)); ~~#187~~ ✓ (PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218)). **NEXT:** #210 / #211 (+ Stripe #207/#208).
 
 See [`ISSUE.md`](ISSUE.md) Data contracts, [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) §F8, and [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) for per-endpoint and schema requirements.
