@@ -9,6 +9,11 @@ Nutriconsultas uses [Liquibase](https://www.liquibase.org/) for schema and catal
 | `src/main/resources/db/changelog/db.changelog-master.yaml` | Root changelog |
 | `changes/001-baseline-schema.{postgresql,h2}.sql` | Full schema baseline (post-#156 Phase C) |
 | `changes/002-seed-data.yaml` | Catalog seed: alimentos, platillos, template dietas |
+| `changes/003-subscription-schema.yaml` | Subscription, clinic, invitation tables (#180) |
+| `changes/004-payment-webhook-idempotency.yaml` | Payment webhook idempotency (#189) |
+| `changes/005-nutritionist-invitation-payment-exempt.yaml` | `payment_exempt` on `nutritionist_invitation` (#184) |
+| `changes/006-subscription-notification-log.yaml` | Lifecycle notification log (#185, PR #215) |
+| `changes/007-patient-invitation-onboarding.yaml` | `PacienteStatus` columns + `patient_invitation` table (#132, PR #214) |
 | `data/alimentos-seed.sql` | SMAE alimentos catalog (from `alimentos.sql`) |
 | `data/platillos-seed.sql` | Catalog `platillo` + `ingrediente` rows |
 | `data/dieta-templates-seed.sql` | 20 template `dieta` rows (`system:template-dietas`) and child ingestas |

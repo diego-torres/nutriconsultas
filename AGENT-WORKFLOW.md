@@ -32,7 +32,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | `[Nutritionist Web]` issues (#221–#223 MPX epic), states, dependencies |
 | [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md) | Patient registration export/import plan |
 
-**Current next issue (mobile):** [#133 — Invitation token generation & hashing service](https://github.com/diego-torres/nutriconsultas/issues/133) (after [#132](https://github.com/diego-torres/nutriconsultas/issues/132) in-progress).
+**Current next issue (mobile):** [#133 — Invitation token generation & hashing service](https://github.com/diego-torres/nutriconsultas/issues/133). ~~#132~~ done (PR [#214](https://github.com/diego-torres/nutriconsultas/pull/214)).
 
 **Current next issue (subscription):** [#211 — change plan tier](https://github.com/diego-torres/nutriconsultas/issues/211). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#210~~ merged PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224).
 
@@ -48,7 +48,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | **API surface** | All mobile endpoints live under `/rest/mobile/patient/` as plain JSON (not DataTables-shaped like the admin `*RestController`s). |
 | **Identity (security-critical)** | JWT `sub` → **`Paciente.patientAuthSub`** (#107 ✓ PR #117). **Never `Paciente.userId`** — that is the NUTRITIONIST's Auth0 sub / tenant owner (ALIGNMENT-SPEC §F2). `PatientLinkageFilter` returns **403** if no linked `Paciente`. |
 | **Ownership / IDOR** | Return only the authenticated patient's rows. On an ownership miss prefer **404** (not 403) so existence isn't leaked (esp. #92). Never return cross-tenant data. |
-| **Backend state** | **Phase 0 done** (#107, #109, #110). **All endpoints #91–#99 done** on `main`. **Cross-cutting done** (#111–#116). **#156** and **#46** done on `main`. **NEXT:** #132 invitation onboarding. Requires `AUTH_AUDIENCE` env var. |
+| **Backend state** | **Phase 0 done** (#107, #109, #110). **All endpoints #91–#99 done** on `main`. **Cross-cutting done** (#111–#116). **#156**, **#46**, **#132** done on `main`. **NEXT:** #133 invitation token hashing. Requires `AUTH_AUDIENCE` env var. |
 | **DTO envelope** | `ApiResponse<T>`; lists in `PagedResponse<T>` or `CursorPagedResponse<T>` (messages); ISO-8601 date strings. See #110. |
 | **Schema ground truth** | ALIGNMENT-SPEC §F8 field-name map (`nombre→dietaName`, `energia→totalKcal`, `lipidos→totalGrasas`, `hidratosDeCarbono→totalCarbohidratos`, `Ingesta.nombre→tipo`); enums `EventStatus`/`PacienteDietaStatus` (no INACTIVE)/`NivelPeso`. Serialization aliases only — **no DB schema changes** for field renames. |
 | **PHI & logging** | No patient names/emails/DOB in unstructured logs. `LogRedaction` + `PhiLogTurboFilter`; CI runs `scripts/audit-logging.sh` and `scripts/audit-mobile-logging.sh` (#115 done). |
@@ -98,7 +98,7 @@ flowchart LR
    - **#113 (rate limit)** should land with or before **#97** (write endpoint).
    - **#114 (nutritionist reply) is web-only** — do not expose it under `/rest/mobile/**`.
    - **#46 (Liquibase)** ✓ — all schema/catalog changes are incremental changesets (see [Liquibase section](#liquibase--entity-schema-and-catalog-data)).
-   - **#132 (onboarding schema)** — extend the decomposed `Paciente` model + Liquibase migration; link issue in PR.
+   - **#132 (onboarding schema)** ✓ — `PacienteStatus` + `PatientInvitation` on `main` (PR #214, Liquibase `007`). **NEXT:** #133 token hashing service.
    - If a dependency is still `open`, complete it first or document the blocker in the plan (Phase 2) and stop.
 5. **Update local registry** when remote state drifted (issue closed on GitHub but still `open` here, or vice versa). `ISSUE.md` must match GitHub before proceeding.
 
@@ -384,7 +384,7 @@ cat ISSUE.md
 cat docs/mobile-api/README.md
 
 # During work
-git checkout -b mobile-api/132-invitation-schema
+git checkout -b mobile-api/133-invitation-token-service
 ./lint.sh && bash scripts/audit-logging.sh && bash scripts/audit-mobile-logging.sh && mvn -B verify
 ./dev-start.sh   # Java 21 — run locally when touching security, Liquibase, or startup
 
@@ -400,10 +400,10 @@ gh pr create ...
 | Field | Value |
 |-------|-------|
 | **Next issue** | [#133 — Invitation token generation & hashing service](https://github.com/diego-torres/nutriconsultas/issues/133) |
-| **Status** | **NEXT** — [#132](https://github.com/diego-torres/nutriconsultas/issues/132) **in-progress** (schema + Liquibase) |
-| **Phase** | Invitation / onboarding — token service after #132 merges |
-| **Just completed** | Prerequisites ~~#156~~ ✓ and ~~#46~~ ✓ (PR #196) |
-| **In scope for #132** | `PacienteStatus` + `PatientInvitation` entity; Liquibase `007-patient-invitation-onboarding.yaml` |
+| **Status** | **NEXT** — ~~#132~~ ✓ merged (PR [#214](https://github.com/diego-torres/nutriconsultas/pull/214)) |
+| **Phase** | Invitation / onboarding — CSPRNG + SHA-256 hash + constant-time verify |
+| **Just completed** | [#132 onboarding schema](https://github.com/diego-torres/nutriconsultas/issues/132) — `PacienteStatus`, `PatientInvitation`, Liquibase `007-patient-invitation-onboarding.yaml` |
+| **In scope for #133** | Token generation service; hash-only persistence; reuse pattern from subscription `NutritionistInvitation` |
 
 ### Upcoming gates
 
@@ -414,18 +414,22 @@ gh pr create ...
 | Endpoints | ~~#91–#99~~ ✓ | **Done** (PR #153) |
 | Cross-cutting | ~~#111~~ ✓, ~~#112~~ ✓ (OpenAPI), ~~#115~~ ✓ (PHI audit) | **Done** |
 | Hardening / additive | ~~#113~~ ✓, ~~#116~~ ✓ (`senderDisplayName`), ~~#114~~ ✓ (nutritionist reply) | **Done** |
-| Schema / Liquibase | ~~**#46**~~ ✓ (PR #196) → **#132–#141** (invitation onboarding) | #132 **NEXT** — use incremental changesets per [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) |
+| Schema / Liquibase | ~~**#46**~~ ✓ (PR #196) → ~~**#132**~~ ✓ (PR #214) → **#133–#141** | **#133 NEXT** — incremental changesets per [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) |
 
-### Status snapshot (2026-06-17)
+### Status snapshot (2026-06-18)
 
-**Patient mobile API on `main`:** Phase 0 + endpoints **#91–#99** done; cross-cutting **#111–#116** done (OpenAPI #112, PHI audit #115, `senderDisplayName` #116, nutritionist reply #114). Dashboard IMC gauge (#106) done for web tablero.
+**Patient mobile API on `main`:** Phase 0 + endpoints **#91–#99** done; cross-cutting **#111–#116** done. Onboarding schema **#132 done** (PR #214: `PacienteStatus`, `PatientInvitation`, Liquibase `007`).
 
-**Next:** #132 invitation onboarding data model (+ Liquibase migration for new columns/tables).
+**Next (mobile):** **#133** invitation token generation & hashing → #134–#141 onboarding endpoints.
 
-**Schema track:** ~~#46~~ Liquibase baseline merged (PR #196). All entity/schema/catalog edits → forward changesets ([`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md)).
+**Schema track:** ~~#46~~ Liquibase baseline (PR #196). Changesets **003–007** on `main` (subscription, patient invitation). All new edits → forward changesets only.
 
 **GitHub drift (close when convenient):** #97, #111 done on `main` but open on GitHub (PRs #147, #151).
 
-**Subscription track (parallel):** [#180–#211](https://github.com/diego-torres/nutriconsultas/issues/180) — see [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#185~~ ✓ (PR #215); ~~#190~~ ✓ (PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216)); ~~#187~~ ✓ (PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218)); ~~#210~~ ✓ (PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224)). **NEXT:** #211 (+ Stripe #207/#208).
+**Subscription track (parallel):** see [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#180–#185~~, ~~#187~~ (PR #218), ~~#190~~ (PR #216), ~~#210~~ (PR #224) on `main`. **NEXT:** #211 plan tier change (+ Stripe #207/#208, email #209, retention #220).
+
+**Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) — MPX epic **#221–#223** registered; **NEXT:** #221 export.
+
+**Production (2026-06-18):** ~~#226~~ invitation base URL fix (PR #227) — `APP_BASE_URL` / host remediation on EC2.
 
 See [`ISSUE.md`](ISSUE.md) Data contracts, [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) §F8, and [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) for per-endpoint and schema requirements.
