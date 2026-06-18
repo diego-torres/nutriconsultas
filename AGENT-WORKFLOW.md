@@ -32,7 +32,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | `[Nutritionist Web]` issues (#221–#223 MPX epic), states, dependencies |
 | [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md) | Patient registration export/import plan |
 
-**Current next issue (mobile):** [#133 — Invitation token generation & hashing service](https://github.com/diego-torres/nutriconsultas/issues/133) (after [#132](https://github.com/diego-torres/nutriconsultas/issues/132) in-progress).
+**Current next issue (mobile):** [#133 — Invitation token generation & hashing service](https://github.com/diego-torres/nutriconsultas/issues/133) **in-progress**. ~~#132~~ done (PR [#214](https://github.com/diego-torres/nutriconsultas/pull/214)).
 
 **Current next issue (subscription):** [#207 — Stripe payment provider](https://github.com/diego-torres/nutriconsultas/issues/207). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#211~~ merged PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230).
 
@@ -48,7 +48,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | **API surface** | All mobile endpoints live under `/rest/mobile/patient/` as plain JSON (not DataTables-shaped like the admin `*RestController`s). |
 | **Identity (security-critical)** | JWT `sub` → **`Paciente.patientAuthSub`** (#107 ✓ PR #117). **Never `Paciente.userId`** — that is the NUTRITIONIST's Auth0 sub / tenant owner (ALIGNMENT-SPEC §F2). `PatientLinkageFilter` returns **403** if no linked `Paciente`. |
 | **Ownership / IDOR** | Return only the authenticated patient's rows. On an ownership miss prefer **404** (not 403) so existence isn't leaked (esp. #92). Never return cross-tenant data. |
-| **Backend state** | **Phase 0 done** (#107, #109, #110). **All endpoints #91–#99 done** on `main`. **Cross-cutting done** (#111–#116). **#156** and **#46** done on `main`. **NEXT:** #132 invitation onboarding. Requires `AUTH_AUDIENCE` env var. |
+| **Backend state** | **Phase 0 done** (#107, #109, #110). **All endpoints #91–#99 done** on `main`. **Cross-cutting done** (#111–#116). **#156**, **#46**, **#132** done. **#133 in-progress** (token service). Requires `AUTH_AUDIENCE` env var. |
 | **DTO envelope** | `ApiResponse<T>`; lists in `PagedResponse<T>` or `CursorPagedResponse<T>` (messages); ISO-8601 date strings. See #110. |
 | **Schema ground truth** | ALIGNMENT-SPEC §F8 field-name map (`nombre→dietaName`, `energia→totalKcal`, `lipidos→totalGrasas`, `hidratosDeCarbono→totalCarbohidratos`, `Ingesta.nombre→tipo`); enums `EventStatus`/`PacienteDietaStatus` (no INACTIVE)/`NivelPeso`. Serialization aliases only — **no DB schema changes** for field renames. |
 | **PHI & logging** | No patient names/emails/DOB in unstructured logs. `LogRedaction` + `PhiLogTurboFilter`; CI runs `scripts/audit-logging.sh` and `scripts/audit-mobile-logging.sh` (#115 done). |
@@ -400,10 +400,10 @@ gh pr create ...
 | Field | Value |
 |-------|-------|
 | **Next issue** | [#133 — Invitation token generation & hashing service](https://github.com/diego-torres/nutriconsultas/issues/133) |
-| **Status** | **NEXT** — [#132](https://github.com/diego-torres/nutriconsultas/issues/132) **in-progress** (schema + Liquibase) |
-| **Phase** | Invitation / onboarding — token service after #132 merges |
-| **Just completed** | Prerequisites ~~#156~~ ✓ and ~~#46~~ ✓ (PR #196) |
-| **In scope for #132** | `PacienteStatus` + `PatientInvitation` entity; Liquibase `007-patient-invitation-onboarding.yaml` |
+| **Status** | **in-progress** — ~~#132~~ ✓ (PR #214) |
+| **Phase** | CSPRNG URL token + human code + hash; optional offline JWS for #140 |
+| **Just completed** | [#132 onboarding schema](https://github.com/diego-torres/nutriconsultas/issues/132) — PR #214 |
+| **In scope for #133** | `PatientInvitationTokenService`; reuse `InvitationTokenHasher`; `PATIENT_INVITATION_JWS_SECRET` for optional JWS |
 
 ### Upcoming gates
 
