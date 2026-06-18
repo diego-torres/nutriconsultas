@@ -50,19 +50,34 @@ public final class NutritionistInvitationGridHtml {
 	}
 
 	public static String actionsHtml(final NutritionistInvitation invitation) {
-		if (invitation.getStatus() != InvitationStatus.PENDING) {
+		final StringBuilder actions = new StringBuilder();
+		if (invitation.getStatus() == InvitationStatus.PENDING) {
+			final long id = invitation.getId();
+			actions
+				.append("""
+						<form action='/admin/platform/invitations/%d/regenerate-link' method='post' class='d-inline regenerate-invitation-link-form'>\
+						<button type='button' class='btn btn-sm btn-outline-primary regenerate-invitation-link-btn' title='Generar y ver enlace de invitación'>\
+						<i class='fas fa-link'></i> Enlace</button></form>\
+						<form action='/admin/platform/invitations/%d/cancel' method='post' class='d-inline cancel-invitation-form'>\
+						<button type='button' class='btn btn-sm btn-outline-danger cancel-invitation-btn' title='Cancelar invitación'>\
+						<i class='fas fa-times'></i> Cancelar</button></form>\
+						"""
+					.formatted(id, id));
+		}
+		if (NutritionistInvitationAccessRules.canRevokeAccess(invitation)) {
+			final long id = invitation.getId();
+			actions
+				.append("""
+						<form action='/admin/platform/invitations/%d/revoke-access' method='post' class='d-inline revoke-access-form'>\
+						<button type='button' class='btn btn-sm btn-outline-danger revoke-access-btn' title='Revocar acceso del nutriólogo'>\
+						<i class='fas fa-user-slash'></i> Revocar acceso</button></form>\
+						"""
+					.formatted(id));
+		}
+		if (actions.isEmpty()) {
 			return "<span class=\"text-muted small\">—</span>";
 		}
-		final long id = invitation.getId();
-		return """
-				<form action='/admin/platform/invitations/%d/regenerate-link' method='post' class='d-inline regenerate-invitation-link-form'>\
-				<button type='button' class='btn btn-sm btn-outline-primary regenerate-invitation-link-btn' title='Generar y ver enlace de invitación'>\
-				<i class='fas fa-link'></i> Enlace</button></form>\
-				<form action='/admin/platform/invitations/%d/cancel' method='post' class='d-inline cancel-invitation-form'>\
-				<button type='button' class='btn btn-sm btn-outline-danger cancel-invitation-btn' title='Cancelar invitación'>\
-				<i class='fas fa-times'></i> Cancelar</button></form>\
-				"""
-			.formatted(id, id);
+		return actions.toString();
 	}
 
 	public static String escape(final String value) {

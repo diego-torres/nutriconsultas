@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-18 — ~~#187~~ **done** (PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218)); **NEXT:** #210 / #211 (admin ops) or #207 (Stripe).
+**Last updated:** 2026-06-18 — #210 **in-progress** (revoke access); ~~#187~~ **done** (PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218)); **NEXT:** ~~#210~~ / #211 (admin ops) or #207 (Stripe).
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 
@@ -57,7 +57,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | 184 | Admin invitations + payment checkout | https://github.com/diego-torres/nutriconsultas/issues/184 | **done** | 180, 182, 183 | Merged [PR #206](https://github.com/diego-torres/nutriconsultas/pull/206); GitHub closed 2026-06-17. Live checkout → Stripe (#207/#208); email delivery → #209 |
 | 209 | Invitation email — SES (Terraform) + localhost console sender | https://github.com/diego-torres/nutriconsultas/issues/209 | open | 184 | SES prod; `email.mode=console` for local dev |
 | 185 | Subscription lifecycle — grace, payment override, notifications | https://github.com/diego-torres/nutriconsultas/issues/185 | **done** | 180, ~~184~~ ✓ | Merged PR [#215](https://github.com/diego-torres/nutriconsultas/pull/215) |
-| 210 | Platform admin revoke nutritionist access and allow re-invite | https://github.com/diego-torres/nutriconsultas/issues/210 | open | 184, 182, ~~185~~ ✓ | Cancel access; new invite same email |
+| 210 | Platform admin revoke nutritionist access and allow re-invite | https://github.com/diego-torres/nutriconsultas/issues/210 | **in-progress** | 184, 182, ~~185~~ ✓ | Cancel access; new invite same email |
 | 211 | Platform admin change nutritionist subscription plan tier | https://github.com/diego-torres/nutriconsultas/issues/211 | open | 181, 182, 184 | Upgrade/downgrade + Auth0 sync |
 
 ---

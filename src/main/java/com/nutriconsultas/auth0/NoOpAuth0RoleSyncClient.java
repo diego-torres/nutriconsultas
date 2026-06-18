@@ -20,4 +20,9 @@ public class NoOpAuth0RoleSyncClient implements Auth0RoleSyncClient {
 		throw new Auth0ManagementNotConfiguredException();
 	}
 
+	@Override
+	public void revokePlanRoles(final String auth0UserId) {
+		throw new Auth0ManagementNotConfiguredException();
+	}
+
 }

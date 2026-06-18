@@ -15,6 +15,12 @@ public interface NutritionistInvitationService {
 	void cancelInvitation(OidcUser adminPrincipal, Long invitationId);
 
 	/**
+	 * Revokes app access for a redeemed invitation: cancels subscription, external
+	 * billing, and Auth0 plan roles. Patient data is retained.
+	 */
+	void revokeNutritionistAccess(OidcUser adminPrincipal, Long invitationId, String reason);
+
+	/**
 	 * Issues a new redeem URL for a pending invitation (rotates token; previous links
 	 * stop working).
 	 */

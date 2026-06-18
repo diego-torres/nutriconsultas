@@ -102,6 +102,16 @@ public class NutritionistInvitationAdminController extends AbstractPlatformAdmin
 		return "redirect:/admin/platform/invitations";
 	}
 
+	@PostMapping("/{id}/revoke-access")
+	public String revokeAccess(@AuthenticationPrincipal final OidcUser principal, @PathVariable final Long id,
+			@RequestParam(required = false) final String reason, final RedirectAttributes redirectAttributes) {
+		requirePlatformAdmin(principal, "invitations.revoke");
+		invitationService.revokeNutritionistAccess(principal, id, reason);
+		redirectAttributes.addFlashAttribute("successMessage",
+				"Acceso revocado. Los datos del nutriólogo se conservan; puede enviar una nueva invitación.");
+		return "redirect:/admin/platform/invitations";
+	}
+
 	@PostMapping("/{id}/regenerate-link")
 	public String regenerateLink(@AuthenticationPrincipal final OidcUser principal, @PathVariable final Long id,
 			final RedirectAttributes redirectAttributes) {

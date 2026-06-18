@@ -19,7 +19,14 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.platform.PlatformAdminAuthorization;
 import com.nutriconsultas.subscription.ClinicRepository;
+import com.nutriconsultas.subscription.InvitationStatus;
+import com.nutriconsultas.subscription.NutritionistInvitation;
+import com.nutriconsultas.subscription.NutritionistInvitationRepository;
+import com.nutriconsultas.subscription.PlanTier;
+import com.nutriconsultas.subscription.Subscription;
 import com.nutriconsultas.subscription.SubscriptionRepository;
+import com.nutriconsultas.subscription.SubscriptionStatus;
+import com.nutriconsultas.subscription.invitation.NutritionistInvitationService;
 import com.nutriconsultas.subscription.lifecycle.SubscriptionLifecycleService;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,6 +46,12 @@ class SubscriptionAdminControllerTest {
 
 	@Mock
 	private SubscriptionLifecycleService lifecycleService;
+
+	@Mock
+	private NutritionistInvitationRepository invitationRepository;
+
+	@Mock
+	private NutritionistInvitationService invitationService;
 
 	@Test
 	void list_whenNotPlatformAdmin_throwsForbidden() {
@@ -61,6 +74,27 @@ class SubscriptionAdminControllerTest {
 		verify(platformAdminAuthorization).requirePlatformAdmin(principal, "subscriptions.list");
 		assertThat(view).isEqualTo("sbadmin/platform/subscriptions/list");
 		assertThat(model.getAttribute("activeMenu")).isEqualTo("subscriptions");
+	}
+
+	@Test
+	void revokeAccess_whenPlatformAdmin_delegatesToInvitationService() {
+		final OidcUser principal = principal("auth0|admin");
+		final Subscription subscription = new Subscription();
+		subscription.setId(9L);
+		final NutritionistInvitation invitation = new NutritionistInvitation();
+		invitation.setId(3L);
+		invitation.setStatus(InvitationStatus.REDEEMED);
+		invitation.setSubscription(subscription);
+		subscription.setStatus(SubscriptionStatus.ACTIVE);
+		when(subscriptionRepository.findById(9L)).thenReturn(java.util.Optional.of(subscription));
+		when(invitationRepository.findBySubscriptionId(9L)).thenReturn(java.util.Optional.of(invitation));
+		final org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap redirectAttributes = new org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap();
+
+		final String view = controller.revokeAccess(principal, 9L, "ADMIN", redirectAttributes);
+
+		verify(platformAdminAuthorization).requirePlatformAdmin(principal, "subscriptions.revoke");
+		verify(invitationService).revokeNutritionistAccess(principal, 3L, "ADMIN");
+		assertThat(view).isEqualTo("redirect:/admin/platform/subscriptions");
 	}
 
 	private static OidcUser principal(final String subject) {

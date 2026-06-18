@@ -111,6 +111,18 @@ class NutritionistInvitationAdminControllerTest {
 	}
 
 	@Test
+	void revokeAccess_whenPlatformAdmin_redirectsToList() {
+		final OidcUser principal = principal("auth0|admin");
+		final org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap redirectAttributes = new org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap();
+
+		final String view = controller.revokeAccess(principal, 5L, "motivo", redirectAttributes);
+
+		verify(invitationService).revokeNutritionistAccess(principal, 5L, "motivo");
+		assertThat(view).isEqualTo("redirect:/admin/platform/invitations");
+		assertThat(redirectAttributes.getFlashAttributes().get("successMessage")).asString().contains("revocado");
+	}
+
+	@Test
 	void regenerateLink_whenPlatformAdmin_redirectsWithInviteUrl() {
 		final OidcUser principal = principal("auth0|admin");
 		final org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap redirectAttributes = new org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap();

@@ -64,6 +64,24 @@ public class Auth0RoleSyncClientImpl implements Auth0RoleSyncClient {
 		}
 	}
 
+	@Override
+	public void revokePlanRoles(final String auth0UserId) {
+		if (!isConfigured()) {
+			throw new IllegalStateException("Auth0 Management API is not configured");
+		}
+		if (!StringUtils.hasText(auth0UserId)) {
+			throw new IllegalArgumentException("auth0UserId is required");
+		}
+		final String token = tokenProvider.obtainToken();
+		final String encodedUserId = URLEncoder.encode(auth0UserId, StandardCharsets.UTF_8);
+		for (final PlanTier tier : PlanTier.values()) {
+			removeRoleIfPresent(token, encodedUserId, tier.getRoleSlug());
+		}
+		if (log.isInfoEnabled()) {
+			log.info("Revoked Auth0 plan roles: userId={}", auth0UserId);
+		}
+	}
+
 	private void removeRoleIfPresent(final String token, final String encodedUserId, final String roleSlug) {
 		final String roleId = resolveRoleId(token, roleSlug);
 		if (roleId == null) {
