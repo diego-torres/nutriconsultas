@@ -71,12 +71,12 @@ class PlanEntitlementsTest {
 
 	private static Set<Entitlement> expectedForTier(final PlanTier tier) {
 		return switch (tier) {
-			case BASICO -> EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.CREATE_PATIENT, Entitlement.DIET_PLANS,
-					Entitlement.CALENDAR, Entitlement.REPORTS_BASIC);
-			case PROFESIONAL -> EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.CREATE_PATIENT,
-					Entitlement.DIET_PLANS, Entitlement.CALENDAR, Entitlement.REPORTS_BASIC,
-					Entitlement.REPORTS_ADVANCED, Entitlement.REPORTS_FULL, Entitlement.PDF_EXPORT,
-					Entitlement.REPORTS_BRANDED);
+			case BASICO -> EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.CREATE_PATIENT,
+					Entitlement.DIET_PLANS, Entitlement.CALENDAR, Entitlement.REPORTS_BASIC);
+			case PROFESIONAL ->
+				EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.CREATE_PATIENT, Entitlement.DIET_PLANS,
+						Entitlement.CALENDAR, Entitlement.REPORTS_BASIC, Entitlement.REPORTS_ADVANCED,
+						Entitlement.REPORTS_FULL, Entitlement.PDF_EXPORT, Entitlement.REPORTS_BRANDED);
 			case PLUS -> EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.CREATE_PATIENT, Entitlement.DIET_PLANS,
 					Entitlement.CALENDAR, Entitlement.REPORTS_BASIC, Entitlement.REPORTS_ADVANCED,
 					Entitlement.REPORTS_FULL, Entitlement.PDF_EXPORT, Entitlement.REPORTS_BRANDED,

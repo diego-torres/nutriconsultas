@@ -1,9 +1,11 @@
 package com.nutriconsultas.subscription;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +29,12 @@ class SubscriptionEntitlementServiceTest {
 	@Mock
 	private ClinicRepository clinicRepository;
 
+	@Mock
+	private ClinicInvitationRepository clinicInvitationRepository;
+
+	@Mock
+	private com.nutriconsultas.paciente.PacienteRepository pacienteRepository;
+
 	private SubscriptionProperties subscriptionProperties;
 
 	private SubscriptionEntitlementServiceImpl service;
@@ -35,7 +43,7 @@ class SubscriptionEntitlementServiceTest {
 	void setUp() {
 		subscriptionProperties = new SubscriptionProperties();
 		service = new SubscriptionEntitlementServiceImpl(clinicMemberRepository, clinicRepository,
-				subscriptionProperties);
+				clinicInvitationRepository, pacienteRepository, subscriptionProperties);
 	}
 
 	@Test
@@ -122,7 +130,7 @@ class SubscriptionEntitlementServiceTest {
 	void graceDeniedEntitlementsAreConfigurable() {
 		subscriptionProperties.setGraceDeniedEntitlements(EnumSet.of(Entitlement.REPORTS_FULL));
 		service = new SubscriptionEntitlementServiceImpl(clinicMemberRepository, clinicRepository,
-				subscriptionProperties);
+				clinicInvitationRepository, pacienteRepository, subscriptionProperties);
 
 		final ClinicMember member = activeMember(SOLO_ID, PlanTier.PROFESIONAL);
 		member.getClinic().getSubscription().setStatus(SubscriptionStatus.GRACE);
@@ -157,6 +165,136 @@ class SubscriptionEntitlementServiceTest {
 		when(clinicRepository.findByDirectorUserIdWithSubscription("auth0|unknown")).thenReturn(Optional.empty());
 
 		assertThat(service.hasEntitlement("auth0|unknown", Entitlement.CALENDAR)).isFalse();
+	}
+
+	@Test
+	void assertCanCreatePatientAllowsWhenBelowBasicoCap() {
+		final ClinicMember member = activeMember(SOLO_ID, PlanTier.BASICO);
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID)).thenReturn(Optional.of(member));
+		when(clinicMemberRepository.findUserIdsByClinicIdAndMembershipStatus(1L, MembershipStatus.ACTIVE))
+			.thenReturn(List.of(SOLO_ID));
+		when(pacienteRepository.countByUserIdIn(List.of(SOLO_ID))).thenReturn(9L);
+
+		service.assertCanCreatePatient(SOLO_ID);
+	}
+
+	@Test
+	void assertCanCreatePatientThrowsWhenBasicoCapReached() {
+		final ClinicMember member = activeMember(SOLO_ID, PlanTier.BASICO);
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID)).thenReturn(Optional.of(member));
+		when(clinicMemberRepository.findUserIdsByClinicIdAndMembershipStatus(1L, MembershipStatus.ACTIVE))
+			.thenReturn(List.of(SOLO_ID));
+		when(pacienteRepository.countByUserIdIn(List.of(SOLO_ID))).thenReturn(10L);
+
+		assertThatThrownBy(() -> service.assertCanCreatePatient(SOLO_ID))
+			.isInstanceOf(SubscriptionLimitExceededException.class)
+			.extracting(ex -> ((SubscriptionLimitExceededException) ex).getMessageKey())
+			.isEqualTo(SubscriptionErrorResponses.KEY_PATIENT_LIMIT);
+	}
+
+	@Test
+	void assertCanCreatePatientUsesClinicWidePatientCount() {
+		final ClinicMember member = activeMember(NUTRITIONIST_ID, PlanTier.PROFESIONAL);
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(NUTRITIONIST_ID))
+			.thenReturn(Optional.of(member));
+		when(clinicMemberRepository.findUserIdsByClinicIdAndMembershipStatus(1L, MembershipStatus.ACTIVE))
+			.thenReturn(List.of(DIRECTOR_ID, NUTRITIONIST_ID));
+		when(pacienteRepository.countByUserIdIn(List.of(DIRECTOR_ID, NUTRITIONIST_ID))).thenReturn(49L);
+
+		service.assertCanCreatePatient(NUTRITIONIST_ID);
+	}
+
+	@Test
+	void assertCanCreatePatientAllowsUnlimitedPlusPlan() {
+		final ClinicMember member = activeMember(SOLO_ID, PlanTier.PLUS);
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID)).thenReturn(Optional.of(member));
+
+		service.assertCanCreatePatient(SOLO_ID);
+
+		org.mockito.Mockito.verifyNoInteractions(pacienteRepository);
+	}
+
+	@Test
+	void assertCanCreatePatientSkipsCountForUnlimitedConsultorio() {
+		final ClinicMember member = activeMember(NUTRITIONIST_ID, PlanTier.CONSULTORIO);
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(NUTRITIONIST_ID))
+			.thenReturn(Optional.of(member));
+
+		service.assertCanCreatePatient(NUTRITIONIST_ID);
+
+		org.mockito.Mockito.verifyNoInteractions(pacienteRepository);
+	}
+
+	@Test
+	void assertCanCreatePatientThrowsInGraceState() {
+		final ClinicMember member = activeMember(SOLO_ID, PlanTier.PROFESIONAL);
+		member.getClinic().getSubscription().setStatus(SubscriptionStatus.GRACE);
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID)).thenReturn(Optional.of(member));
+
+		assertThatThrownBy(() -> service.assertCanCreatePatient(SOLO_ID))
+			.isInstanceOf(SubscriptionLimitExceededException.class)
+			.extracting(ex -> ((SubscriptionLimitExceededException) ex).getMessageKey())
+			.isEqualTo(SubscriptionErrorResponses.KEY_CREATE_PATIENT_DENIED);
+	}
+
+	@Test
+	void assertCanInviteNutritionistThrowsForSoloBasicoDirectorWithoutUserAdmin() {
+		final Clinic clinic = clinicWithSubscription(SOLO_ID, PlanTier.BASICO);
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID)).thenReturn(Optional.empty());
+		when(clinicRepository.findByDirectorUserIdWithSubscription(SOLO_ID)).thenReturn(Optional.of(clinic));
+
+		assertThatThrownBy(() -> service.assertCanInviteNutritionist(SOLO_ID))
+			.isInstanceOf(SubscriptionLimitExceededException.class)
+			.extracting(ex -> ((SubscriptionLimitExceededException) ex).getMessageKey())
+			.isEqualTo(SubscriptionErrorResponses.KEY_NUTRITIONIST_INVITE_DENIED);
+	}
+
+	@Test
+	void assertCanInviteNutritionistThrowsWhenSoloPlanSeatFull() {
+		final ClinicMember director = activeMember(DIRECTOR_ID, PlanTier.CONSULTORIO);
+		director.setRole(ClinicMemberRole.DIRECTOR);
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(DIRECTOR_ID))
+			.thenReturn(Optional.of(director));
+		when(clinicRepository.findByDirectorUserIdWithSubscription(DIRECTOR_ID))
+			.thenReturn(Optional.of(director.getClinic()));
+		when(clinicMemberRepository.countByClinicIdAndMembershipStatus(1L, MembershipStatus.ACTIVE)).thenReturn(20L);
+		when(clinicInvitationRepository.countByClinicIdAndStatus(1L, InvitationStatus.PENDING)).thenReturn(0L);
+
+		assertThatThrownBy(() -> service.assertCanInviteNutritionist(DIRECTOR_ID))
+			.isInstanceOf(SubscriptionLimitExceededException.class)
+			.extracting(ex -> ((SubscriptionLimitExceededException) ex).getMessageKey())
+			.isEqualTo(SubscriptionErrorResponses.KEY_NUTRITIONIST_LIMIT);
+	}
+
+	@Test
+	void assertCanInviteNutritionistAllowsConsultorioWithAvailableSeats() {
+		final ClinicMember director = activeMember(DIRECTOR_ID, PlanTier.CONSULTORIO);
+		director.setRole(ClinicMemberRole.DIRECTOR);
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(DIRECTOR_ID))
+			.thenReturn(Optional.of(director));
+		when(clinicRepository.findByDirectorUserIdWithSubscription(DIRECTOR_ID))
+			.thenReturn(Optional.of(director.getClinic()));
+		when(clinicMemberRepository.countByClinicIdAndMembershipStatus(1L, MembershipStatus.ACTIVE)).thenReturn(5L);
+		when(clinicInvitationRepository.countByClinicIdAndStatus(1L, InvitationStatus.PENDING)).thenReturn(2L);
+
+		service.assertCanInviteNutritionist(DIRECTOR_ID);
+	}
+
+	@Test
+	void assertCanInviteNutritionistThrowsWhenConsultorioCapReached() {
+		final ClinicMember director = activeMember(DIRECTOR_ID, PlanTier.CONSULTORIO);
+		director.setRole(ClinicMemberRole.DIRECTOR);
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(DIRECTOR_ID))
+			.thenReturn(Optional.of(director));
+		when(clinicRepository.findByDirectorUserIdWithSubscription(DIRECTOR_ID))
+			.thenReturn(Optional.of(director.getClinic()));
+		when(clinicMemberRepository.countByClinicIdAndMembershipStatus(1L, MembershipStatus.ACTIVE)).thenReturn(18L);
+		when(clinicInvitationRepository.countByClinicIdAndStatus(1L, InvitationStatus.PENDING)).thenReturn(2L);
+
+		assertThatThrownBy(() -> service.assertCanInviteNutritionist(DIRECTOR_ID))
+			.isInstanceOf(SubscriptionLimitExceededException.class)
+			.extracting(ex -> ((SubscriptionLimitExceededException) ex).getMessageKey())
+			.isEqualTo(SubscriptionErrorResponses.KEY_NUTRITIONIST_LIMIT);
 	}
 
 	private static ClinicMember activeMember(final String userId, final PlanTier planTier) {

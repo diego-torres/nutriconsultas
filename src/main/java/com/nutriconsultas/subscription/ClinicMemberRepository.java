@@ -17,4 +17,11 @@ public interface ClinicMemberRepository extends JpaRepository<ClinicMember, Long
 			+ "WHERE cm.userId = :userId")
 	Optional<ClinicMember> findByUserIdWithClinicAndSubscription(@Param("userId") String userId);
 
+	long countByClinicIdAndMembershipStatus(Long clinicId, MembershipStatus membershipStatus);
+
+	@Query("SELECT cm.userId FROM ClinicMember cm WHERE cm.clinic.id = :clinicId "
+			+ "AND cm.membershipStatus = :membershipStatus")
+	List<String> findUserIdsByClinicIdAndMembershipStatus(@Param("clinicId") Long clinicId,
+			@Param("membershipStatus") MembershipStatus membershipStatus);
+
 }

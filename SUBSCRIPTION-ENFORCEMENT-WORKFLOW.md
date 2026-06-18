@@ -199,9 +199,19 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#185 — Subscription lifecycle](https://github.com/diego-torres/nutriconsultas/issues/185) |
-| **Status** | **in-progress** — branch `subscription/185-lifecycle-grace`; Stripe checkout → #207 (code) + #208 (ops) |
-| **Just completed** | [#184 Admin invitations](https://github.com/diego-torres/nutriconsultas/issues/184) — PR [#206](https://github.com/diego-torres/nutriconsultas/pull/206) |
-| **Early start** | ~~#183~~ done (PR #200) |
+| **Next issue** | [#187 — Gate report tiers and PDF export](https://github.com/diego-torres/nutriconsultas/issues/187) |
+| **Status** | **open** — enforcement track; Stripe (#207/#208) and admin ops (#210/#211) can run in parallel |
+| **Just completed** | [#190 Patient & nutritionist limits](https://github.com/diego-torres/nutriconsultas/issues/190) — branch `subscription/190-patient-nutritionist-limits`; [#185 lifecycle](https://github.com/diego-torres/nutriconsultas/issues/185) PR [#215](https://github.com/diego-torres/nutriconsultas/pull/215) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
+
+### Siguientes acciones
+
+| Prioridad | Issue | Acción |
+|-----------|-------|--------|
+| 1 | **#190** | Abrir PR desde `subscription/190-patient-nutritionist-limits`, mergear a `main`, cerrar issue en GitHub |
+| 2 | **#187** | `hasEntitlement()` en reportes HTML y PDF (`PatientReportRestController`, `ReportController`) |
+| 3 | **#210** / **#211** | Revocar acceso y cambio de plan tier (admin platform; deps satisfechas) |
+| 4 | **#207** / **#208** | Migrar checkout Mercado Pago → Stripe; credenciales y webhooks operativos |
+| 5 | **#186** → **#188** | Modelo consultorio + invitaciones director (habilita `ClinicInvitationService` end-to-end) |
+| 6 | **#209** | Entrega de email de invitación (SES prod / console local) |

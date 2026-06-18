@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-17 — #183/#184 closed on GitHub; #185 PR [#215](https://github.com/diego-torres/nutriconsultas/pull/215) open.
+**Last updated:** 2026-06-17 — #185 merged (PR #215); #190 **done** (branch `subscription/190-patient-nutritionist-limits`).
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 
@@ -56,8 +56,8 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | ~~204~~ | ~~Tramitar integración operativa con Mercado Pago~~ | https://github.com/diego-torres/nutriconsultas/issues/204 | **deferred** | — | Cerrado; reemplazado por #208 |
 | 184 | Admin invitations + payment checkout | https://github.com/diego-torres/nutriconsultas/issues/184 | **done** | 180, 182, 183 | Merged [PR #206](https://github.com/diego-torres/nutriconsultas/pull/206); GitHub closed 2026-06-17. Live checkout → Stripe (#207/#208); email delivery → #209 |
 | 209 | Invitation email — SES (Terraform) + localhost console sender | https://github.com/diego-torres/nutriconsultas/issues/209 | open | 184 | SES prod; `email.mode=console` for local dev |
-| 185 | Subscription lifecycle — grace, payment override, notifications | https://github.com/diego-torres/nutriconsultas/issues/185 | **in-progress** | 180, ~~184~~ ✓ | PR [#215](https://github.com/diego-torres/nutriconsultas/pull/215) |
-| 210 | Platform admin revoke nutritionist access and allow re-invite | https://github.com/diego-torres/nutriconsultas/issues/210 | open | 184, 182, 185 | Cancel access; new invite same email |
+| 185 | Subscription lifecycle — grace, payment override, notifications | https://github.com/diego-torres/nutriconsultas/issues/185 | **done** | 180, ~~184~~ ✓ | Merged PR [#215](https://github.com/diego-torres/nutriconsultas/pull/215) |
+| 210 | Platform admin revoke nutritionist access and allow re-invite | https://github.com/diego-torres/nutriconsultas/issues/210 | open | 184, 182, ~~185~~ ✓ | Cancel access; new invite same email |
 | 211 | Platform admin change nutritionist subscription plan tier | https://github.com/diego-torres/nutriconsultas/issues/211 | open | 181, 182, 184 | Upgrade/downgrade + Auth0 sync |
 
 ---
@@ -75,10 +75,10 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| 190 | Enforce patient and nutritionist limits per plan | https://github.com/diego-torres/nutriconsultas/issues/190 | open | 181, 185 | 10 / 50 / unlimited; 20 nutritionists |
-| 187 | Gate report tiers and PDF export by plan | https://github.com/diego-torres/nutriconsultas/issues/187 | open | 181, 185 | Branded PDFs via `NutritionistProfile` |
+| 190 | Enforce patient and nutritionist limits per plan | https://github.com/diego-torres/nutriconsultas/issues/190 | **done** | 181, ~~185~~ ✓ | `assertCanCreatePatient` / `assertCanInviteNutritionist`; branch `subscription/190-patient-nutritionist-limits` |
+| 187 | Gate report tiers and PDF export by plan | https://github.com/diego-torres/nutriconsultas/issues/187 | **NEXT** | 181, ~~185~~ ✓ | Branded PDFs via `NutritionistProfile` |
 
-**Suggested order:** #190 and #187 can run in parallel after #181 + #185.
+**Suggested order:** ~~#190~~ ✓ → **#187** (enforcement); #210 / #211 (admin ops) and #207 (Stripe) in parallel.
 
 ---
 
@@ -91,7 +91,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | 3. Admin paid invitations, payment, grace, payment override | #184, #189, #185 |
 | 3b. Admin revoke access and change plan tier | #210, #211 |
 | 4. Director invites nutritionists; enable/disable access | #186, #188 |
-| 5. Patient & nutritionist limits | #190 |
+| 5. Patient & nutritionist limits | ~~#190~~ ✓ |
 | 6. Branded / tiered reports | #187 |
 | 7. PDF export by plan | #187 |
 
