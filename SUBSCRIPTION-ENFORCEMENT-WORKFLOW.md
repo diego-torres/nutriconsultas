@@ -212,4 +212,5 @@ See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 | 1 | **#210** / **#211** | Revocar acceso y cambio de plan tier (admin platform; deps satisfechas) |
 | 2 | **#207** / **#208** | Migrar checkout Mercado Pago → Stripe; credenciales y webhooks operativos |
 | 3 | **#186** → **#188** | Modelo consultorio + invitaciones director (habilita `ClinicInvitationService` end-to-end) |
-| 4 | **#209** | Entrega de email de invitación (SES prod / console local) |
+| 4 | **#220** | Limpieza retención 90 días post-revoke + backup S3 + UI mantenimiento (deps: #210) |
+| 5 | **#209** | Entrega de email de invitación (SES prod / console local) |
