@@ -131,6 +131,7 @@ Set `AUTH_*` (including `AUTH_AUDIENCE` for `/rest/mobile/**` JWT validation), `
 | `PAYMENT_PROVIDER` | Provider id (target default `stripe`; `mercadopago` legacy until #207 merges). |
 | `STRIPE_SUCCESS_URL` | Post-checkout redirect (default `https://minutriporcion.com/admin`). |
 | `PAYMENT_CURRENCY` | Billing currency (default `MXN`). |
+| `APP_BASE_URL` | Public site URL for invitation redeem links (e.g. `https://minutriporcion.com`). Set automatically from Terraform `public_site_domain` on new app instances; use `ssm-remediate-app-host.sh` or edit `app.env` on brownfield hosts. |
 
 Webhook URL to configure in the [Stripe Dashboard](https://dashboard.stripe.com/webhooks): `https://<your-domain>/rest/subscription/payment/webhook`. No card data is stored in the application database.
 

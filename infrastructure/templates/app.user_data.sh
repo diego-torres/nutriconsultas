@@ -64,6 +64,9 @@ install -d -o root -g nutri -m 750 /opt/nutriconsultas
   echo -n "AUTH0_MGMT_DOMAIN="
   printf '%s' '${auth0_mgmt_domain_b64}' | base64 -d
   echo
+%{ if app_base_url != "" ~}
+  echo "APP_BASE_URL=${app_base_url}"
+%{ endif ~}
 } > /opt/nutriconsultas/app.env
 chown root:nutri /opt/nutriconsultas/app.env
 chmod 640 /opt/nutriconsultas/app.env

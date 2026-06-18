@@ -51,6 +51,7 @@ locals {
   app_nginx_server_names = length(local.app_certbot_hostnames) > 0 ? join(" ", local.app_certbot_hostnames) : "_"
   app_certbot_d_flags    = length(local.app_certbot_hostnames) > 0 ? join(" ", [for h in local.app_certbot_hostnames : "-d ${h}"]) : ""
   app_certbot_enabled    = length(local.app_certbot_hostnames) > 0 && trimspace(var.certbot_admin_email) != ""
+  app_base_url           = trimspace(var.public_site_domain) != "" ? "https://${trimspace(var.public_site_domain)}" : ""
 }
 
 # -----------------------------------------------------------------------------
@@ -263,6 +264,7 @@ resource "aws_instance" "app" {
         certbot_run_flag  = local.app_certbot_enabled ? "1" : "0"
         certbot_d_flags   = local.app_certbot_d_flags
         certbot_email_b64 = base64encode(trimspace(var.certbot_admin_email))
+        app_base_url      = local.app_base_url
       }
     )
   )
