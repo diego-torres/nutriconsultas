@@ -6,10 +6,13 @@ import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
 /**
- * Localized subscription limit and entitlement error messages (#190).
+ * Subscription limit and entitlement error messages in Spanish for the nutritionist web app
+ * (#190).
  */
 @Component
 public final class SubscriptionErrorResponses {
+
+	private static final Locale SPANISH_LOCALE = Locale.forLanguageTag("es-MX");
 
 	public static final String KEY_PATIENT_LIMIT = "error.subscription.patient_limit";
 
@@ -30,7 +33,7 @@ public final class SubscriptionErrorResponses {
 	}
 
 	public String resolve(final SubscriptionLimitExceededException ex) {
-		return resolve(ex, Locale.getDefault());
+		return resolve(ex, SPANISH_LOCALE);
 	}
 
 }

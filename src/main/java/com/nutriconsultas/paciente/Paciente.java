@@ -88,7 +88,9 @@ public class Paciente {
 	@Column(name = "display_name", length = 100)
 	private String displayName;
 
-	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	public static final String DATE_OF_BIRTH_PATTERN = "dd/MM/yyyy";
+
+	@DateTimeFormat(pattern = DATE_OF_BIRTH_PATTERN)
 	@Temporal(TemporalType.DATE)
 	@NotNull(message = "La fecha de nacimiento es requerida")
 	@Column(nullable = false)

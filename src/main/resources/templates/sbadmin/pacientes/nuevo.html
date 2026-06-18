@@ -63,7 +63,9 @@
                       </div>
                       <div class="form-group">
                         <label>Fecha Nac.<span style="color:red;">*</span></label>
-                        <input type="date" th:field="*{dob}" class="form-control" placeholder="04/31/1997" required>
+                        <input type="text" th:field="*{dob}" class="form-control" placeholder="dd/mm/aaaa"
+                          inputmode="numeric" autocomplete="bday" required>
+                        <small class="form-text text-muted">Formato: dd/mm/aaaa</small>
                         <span th:if="${#fields.hasErrors('dob')}" th:errors="*{dob}"></span>
                       </div>
                       <div class="form-group">

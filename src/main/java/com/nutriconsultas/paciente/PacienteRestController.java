@@ -172,7 +172,7 @@ public class PacienteRestController extends AbstractGridController<PacienteListV
 	@Override
 	protected List<String> toStringList(final PacienteListView row) {
 		log.debug("converting Paciente list view row {} to string list.", LogRedaction.redactPaciente(row.getId()));
-		final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		final DateFormat dateFormat = new SimpleDateFormat(Paciente.DATE_OF_BIRTH_PATTERN);
 		return Arrays.asList("<a href='/admin/pacientes/" + row.getId() + "'>" + row.getName() + "</a>",
 				row.getDob() != null ? dateFormat.format(row.getDob()) : "", //
 				row.getEmail(), //
