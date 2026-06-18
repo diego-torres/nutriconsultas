@@ -31,7 +31,7 @@ Canonical cross-repo contracts for the `[Mobile API]` track. Indexed from [`../.
 | [`../../SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](../../SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md) | Subscription agent workflow |
 | [`../subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](../subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md) | Plan tiers, entitlements, lifecycle |
 
-**Subscription NEXT:** [#187](https://github.com/diego-torres/nutriconsultas/issues/187) report/PDF gating (~~#185~~ PR #215, ~~#190~~ PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) on `main`).
+**Subscription NEXT:** [#210](https://github.com/diego-torres/nutriconsultas/issues/210) / [#211](https://github.com/diego-torres/nutriconsultas/issues/211) admin ops (~~#187~~ PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218), ~~#190~~ PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) on `main`).
 
 ## Provenance / drift
 
