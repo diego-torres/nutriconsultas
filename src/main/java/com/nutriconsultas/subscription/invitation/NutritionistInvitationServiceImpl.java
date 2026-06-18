@@ -326,16 +326,10 @@ public class NutritionistInvitationServiceImpl implements NutritionistInvitation
 		event.setActorUserId(actorUserId);
 		event.setPreviousStatus(previousStatus);
 		event.setNewStatus(SubscriptionStatus.CANCELLED);
-		final StringBuilder details = new StringBuilder();
-		details.append("action=access.revoke,invitationId=").append(invitation.getId());
-		details.append(",targetUserId=").append(invitation.getRedeemedByUserId());
-		details.append(",email=").append(invitation.getEmail());
-		if (StringUtils.hasText(reason)) {
-			details.append(",reason=").append(reason.trim());
-		}
-		details.append(',').append(paymentCancelDetail);
-		details.append(',').append(auth0Detail);
-		event.setDetails(details.toString());
+		final String reasonSuffix = StringUtils.hasText(reason) ? ",reason=" + reason.trim() : "";
+		event.setDetails("action=access.revoke,invitationId=" + invitation.getId() + ",targetUserId="
+				+ invitation.getRedeemedByUserId() + ",email=" + invitation.getEmail() + reasonSuffix + ","
+				+ paymentCancelDetail + "," + auth0Detail);
 		auditEventRepository.save(event);
 	}
 
