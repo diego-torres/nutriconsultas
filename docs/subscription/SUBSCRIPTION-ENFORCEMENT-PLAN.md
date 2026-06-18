@@ -125,6 +125,15 @@ Enforcement: central `SubscriptionEntitlementService.hasEntitlement(userId, Enti
 - Use cases: prueba gratuita, prórroga comercial, cuenta interna.
 - Audit: `SubscriptionAuditEvent` (who set, when, reason code).
 
+### Platform admin plan tier change (#211)
+
+- **Who:** platform admins only, from `/admin/platform/subscriptions/{id}/edit`.
+- **States:** `TRIAL`, `ACTIVE`, `GRACE` only (not `PENDING_PAYMENT`, `SUSPENDED`, `CANCELLED`).
+- **Downgrade policy:** **block** when clinic usage exceeds the new plan caps (patient count or active nutritionist seats). Spanish `409` message; no read-only grace on downgrade.
+- **Paid subscriptions (MVP):** admin override only — no proration or new checkout (#207 deferred).
+- **Auth0:** sync role via Management API (#182); non-fatal failure surfaces admin warning; DB `Subscription.planTier` remains authoritative.
+- **Audit:** `PLATFORM_ADMIN_ACTION` with `action=plan.tier.change`, `previousTier`, `newTier`.
+
 ### Billing period
 
 - Monthly vigencia from successful payment webhook (or admin trial start).

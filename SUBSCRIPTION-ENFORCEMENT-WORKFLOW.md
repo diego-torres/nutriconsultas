@@ -200,7 +200,7 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 | Field | Value |
 |-------|-------|
 | **Next issue** | [#211 — change plan tier](https://github.com/diego-torres/nutriconsultas/issues/211) |
-| **In progress** | — |
+| **In progress** | [#211 — change plan tier](https://github.com/diego-torres/nutriconsultas/issues/211) |
 | **Just completed** | [#210 — Platform admin revoke access](https://github.com/diego-torres/nutriconsultas/issues/210) — PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.

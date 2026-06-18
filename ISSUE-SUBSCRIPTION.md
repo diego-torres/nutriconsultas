@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-18 — ~~#210~~ **done** (PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224)); **NEXT:** #211 (change plan tier). Patient MPX **#221–#223:** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
+**Last updated:** 2026-06-18 — #211 **in-progress** (change plan tier); ~~#210~~ **done** (PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224)).
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 
@@ -58,7 +58,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | 209 | Invitation email — SES (Terraform) + localhost console sender | https://github.com/diego-torres/nutriconsultas/issues/209 | open | 184 | SES prod; `email.mode=console` for local dev |
 | 185 | Subscription lifecycle — grace, payment override, notifications | https://github.com/diego-torres/nutriconsultas/issues/185 | **done** | 180, ~~184~~ ✓ | Merged PR [#215](https://github.com/diego-torres/nutriconsultas/pull/215) |
 | 210 | Platform admin revoke nutritionist access and allow re-invite | https://github.com/diego-torres/nutriconsultas/issues/210 | **done** | 184, 182, ~~185~~ ✓ | Merged PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224) |
-| **211** | Platform admin change nutritionist subscription plan tier | https://github.com/diego-torres/nutriconsultas/issues/211 | **NEXT** | 181, 182, 184 | Upgrade/downgrade + Auth0 sync |
+| **211** | Platform admin change nutritionist subscription plan tier | https://github.com/diego-torres/nutriconsultas/issues/211 | **in-progress** | 181, 182, 184 | Upgrade/downgrade + Auth0 sync |
 
 ---
 

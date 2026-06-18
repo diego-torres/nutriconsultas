@@ -11,4 +11,11 @@ public interface NutritionistRoleService {
 
 	void assignRole(OidcUser adminPrincipal, String targetUserId, PlanTier planTier);
 
+	/**
+	 * Changes {@link Subscription#planTier} for an active subscription, syncs Auth0, and
+	 * records a platform-admin audit event. Blocks downgrades when clinic usage exceeds
+	 * the new plan limits.
+	 */
+	PlanTierChangeResult changeSubscriptionPlanTier(OidcUser adminPrincipal, Long subscriptionId, PlanTier newTier);
+
 }

@@ -23,9 +23,11 @@ import com.nutriconsultas.subscription.InvitationStatus;
 import com.nutriconsultas.subscription.NutritionistInvitation;
 import com.nutriconsultas.subscription.NutritionistInvitationRepository;
 import com.nutriconsultas.subscription.PlanTier;
+import com.nutriconsultas.subscription.PlanTierChangeResult;
 import com.nutriconsultas.subscription.Subscription;
 import com.nutriconsultas.subscription.SubscriptionRepository;
 import com.nutriconsultas.subscription.SubscriptionStatus;
+import com.nutriconsultas.subscription.NutritionistRoleService;
 import com.nutriconsultas.subscription.invitation.NutritionistInvitationService;
 import com.nutriconsultas.subscription.lifecycle.SubscriptionLifecycleService;
 
@@ -53,6 +55,9 @@ class SubscriptionAdminControllerTest {
 	@Mock
 	private NutritionistInvitationService invitationService;
 
+	@Mock
+	private NutritionistRoleService nutritionistRoleService;
+
 	@Test
 	void list_whenNotPlatformAdmin_throwsForbidden() {
 		final OidcUser principal = principal("auth0|user");
@@ -74,6 +79,22 @@ class SubscriptionAdminControllerTest {
 		verify(platformAdminAuthorization).requirePlatformAdmin(principal, "subscriptions.list");
 		assertThat(view).isEqualTo("sbadmin/platform/subscriptions/list");
 		assertThat(model.getAttribute("activeMenu")).isEqualTo("subscriptions");
+	}
+
+	@Test
+	void changePlanTier_whenPlatformAdmin_delegatesToRoleService() {
+		final OidcUser principal = principal("auth0|admin");
+		when(nutritionistRoleService.changeSubscriptionPlanTier(principal, 9L, PlanTier.PLUS))
+			.thenReturn(new PlanTierChangeResult(PlanTier.BASICO, PlanTier.PLUS, true));
+		final org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap redirectAttributes = new org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap();
+
+		final String view = controller.changePlanTier(principal, 9L, PlanTier.PLUS, redirectAttributes);
+
+		verify(platformAdminAuthorization).requirePlatformAdmin(principal, "subscriptions.change-plan-tier");
+		verify(nutritionistRoleService).changeSubscriptionPlanTier(principal, 9L, PlanTier.PLUS);
+		assertThat(view).isEqualTo("redirect:/admin/platform/subscriptions/9/edit");
+		assertThat(redirectAttributes.getFlashAttributes().get("successMessage")).asString()
+			.contains("Plan actualizado");
 	}
 
 	@Test

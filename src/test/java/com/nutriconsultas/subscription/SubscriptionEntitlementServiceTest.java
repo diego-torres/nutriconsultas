@@ -350,6 +350,20 @@ class SubscriptionEntitlementServiceTest {
 			.isEqualTo(SubscriptionErrorResponses.KEY_NUTRITIONIST_LIMIT);
 	}
 
+	@Test
+	void hasEntitlementReflectsUpdatedSubscriptionPlanTierImmediately() {
+		final ClinicMember member = activeMember(SOLO_ID, PlanTier.PROFESIONAL);
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID))
+			.thenReturn(Optional.of(member));
+
+		assertThat(service.hasEntitlement(SOLO_ID, Entitlement.PDF_EXPORT)).isTrue();
+
+		member.getClinic().getSubscription().setPlanTier(PlanTier.BASICO);
+
+		assertThat(service.getEffectivePlanTier(SOLO_ID)).contains(PlanTier.BASICO);
+		assertThat(service.hasEntitlement(SOLO_ID, Entitlement.PDF_EXPORT)).isFalse();
+	}
+
 	private static ClinicMember activeMember(final String userId, final PlanTier planTier) {
 		final Clinic clinic = clinicWithSubscription(DIRECTOR_ID, planTier);
 		final ClinicMember member = new ClinicMember();
