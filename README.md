@@ -13,7 +13,7 @@ registro de consultorio de nutrición
 
 **Agent workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Issue registries:** [`ISSUE.md`](ISSUE.md) (mobile) · [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) (subscription) · **Contract docs:** [`docs/mobile-api/README.md`](docs/mobile-api/README.md)
 
-**On `main` (2026-06-17):** Patient mobile API complete through #116; **NEXT:** #132 invitation onboarding. Parallel **subscription** track: #180–#185, #190 done; **NEXT:** #187 report/PDF gating.
+**On `main` (2026-06-18):** Patient mobile API complete through #116; **NEXT:** #132 invitation onboarding. Parallel **subscription** track: #180–#185 on `main`; **#190** PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) pending merge; **NEXT:** #187 report/PDF gating.
 
 ## AWS (production infrastructure)
 
