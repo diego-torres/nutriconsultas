@@ -52,6 +52,9 @@
                 <div class="col-sm-10 offset-sm-1">
 
                   <div class="info-form p-5">
+                    <div th:if="${error}" class="alert alert-danger" role="alert">
+                      <span th:text="${error}">Error</span>
+                    </div>
                     <form th:action="@{/admin/pacientes/nuevo}" th:object="${paciente}" method="POST">
                       <div class="form-group">
                         <label>Nombre<span style="color:red;">*</span></label>

@@ -5,18 +5,24 @@ package com.nutriconsultas.subscription;
  */
 public class SubscriptionLimitExceededException extends RuntimeException {
 
+	private static final long serialVersionUID = 1L;
+
+	private static final Object[] NO_ARGS = new Object[0];
+
 	private final String messageKey;
 
-	private final transient Object[] messageArgs;
+	private final Object[] messageArgs;
 
 	public SubscriptionLimitExceededException(final String messageKey) {
-		this(messageKey, null);
-	}
-
-	public SubscriptionLimitExceededException(final String messageKey, final Object... messageArgs) {
 		super(messageKey);
 		this.messageKey = messageKey;
-		this.messageArgs = messageArgs;
+		this.messageArgs = NO_ARGS;
+	}
+
+	public SubscriptionLimitExceededException(final String messageKey, final Object arg) {
+		super(messageKey);
+		this.messageKey = messageKey;
+		this.messageArgs = new Object[] {arg};
 	}
 
 	public String getMessageKey() {
@@ -24,7 +30,7 @@ public class SubscriptionLimitExceededException extends RuntimeException {
 	}
 
 	public Object[] getMessageArgs() {
-		return messageArgs;
+		return messageArgs.clone();
 	}
 
 }
