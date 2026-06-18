@@ -135,14 +135,11 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 				redirectAttributes.addFlashAttribute("successMessage", "El plan ya es " + planTier + ".");
 			}
 			else {
-				final StringBuilder message = new StringBuilder("Plan actualizado de ").append(result.previousTier())
-					.append(" a ")
-					.append(result.newTier())
-					.append(".");
+				String message = "Plan actualizado de " + result.previousTier() + " a " + result.newTier() + ".";
 				if (!result.auth0SyncSucceeded()) {
-					message.append(" Advertencia: no se pudo sincronizar el rol en Auth0; reintente más tarde.");
+					message += " Advertencia: no se pudo sincronizar el rol en Auth0; reintente más tarde.";
 				}
-				redirectAttributes.addFlashAttribute("successMessage", message.toString());
+				redirectAttributes.addFlashAttribute("successMessage", message);
 			}
 		}
 		catch (ResponseStatusException ex) {
