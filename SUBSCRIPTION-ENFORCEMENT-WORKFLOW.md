@@ -199,9 +199,9 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#187 — Gate report tiers and PDF export](https://github.com/diego-torres/nutriconsultas/issues/187) (after #216 merges) |
-| **In progress** | [#190 Patient & nutritionist limits](https://github.com/diego-torres/nutriconsultas/issues/190) — PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216); merge when CI green |
-| **Just completed** | [#185 Subscription lifecycle](https://github.com/diego-torres/nutriconsultas/issues/185) — PR [#215](https://github.com/diego-torres/nutriconsultas/pull/215) |
+| **Next issue** | [#187 — Gate report tiers and PDF export](https://github.com/diego-torres/nutriconsultas/issues/187) |
+| **In progress** | — |
+| **Just completed** | [#190 Patient & nutritionist limits](https://github.com/diego-torres/nutriconsultas/issues/190) — PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
@@ -209,9 +209,8 @@ See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
 | Prioridad | Issue | Acción |
 |-----------|-------|--------|
-| 1 | **#190** | Mergear PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) a `main` (Closes #190); luego marcar **done** en registries |
-| 2 | **#187** | `hasEntitlement()` en reportes HTML y PDF (`PatientReportRestController`, `ReportController`) |
-| 3 | **#210** / **#211** | Revocar acceso y cambio de plan tier (admin platform; deps satisfechas) |
-| 4 | **#207** / **#208** | Migrar checkout Mercado Pago → Stripe; credenciales y webhooks operativos |
-| 5 | **#186** → **#188** | Modelo consultorio + invitaciones director (habilita `ClinicInvitationService` end-to-end) |
-| 6 | **#209** | Entrega de email de invitación (SES prod / console local) |
+| 1 | **#187** | `hasEntitlement()` en reportes HTML y PDF (`PatientReportRestController`, `ReportController`) |
+| 2 | **#210** / **#211** | Revocar acceso y cambio de plan tier (admin platform; deps satisfechas) |
+| 3 | **#207** / **#208** | Migrar checkout Mercado Pago → Stripe; credenciales y webhooks operativos |
+| 4 | **#186** → **#188** | Modelo consultorio + invitaciones director (habilita `ClinicInvitationService` end-to-end) |
+| 5 | **#209** | Entrega de email de invitación (SES prod / console local) |
