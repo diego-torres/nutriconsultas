@@ -1,5 +1,6 @@
 package com.nutriconsultas.paciente;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,5 +70,8 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 			+ "(LOWER(p.name) LIKE LOWER(:searchTerm) OR LOWER(p.email) LIKE LOWER(:searchTerm) "
 			+ "OR LOWER(p.phone) LIKE LOWER(:searchTerm) OR LOWER(p.responsibleName) LIKE LOWER(:searchTerm))")
 	long countByUserIdAndSearchTerm(@Param("userId") String userId, @Param("searchTerm") String searchTerm);
+
+	@Query("SELECT COUNT(p) FROM Paciente p WHERE p.userId IN :userIds")
+	long countByUserIdIn(@Param("userIds") Collection<String> userIds);
 
 }

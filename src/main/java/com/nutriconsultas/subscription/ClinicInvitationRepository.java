@@ -8,4 +8,6 @@ public interface ClinicInvitationRepository extends JpaRepository<ClinicInvitati
 
 	Optional<ClinicInvitation> findByTokenHash(String tokenHash);
 
+	long countByClinicIdAndStatus(Long clinicId, InvitationStatus status);
+
 }

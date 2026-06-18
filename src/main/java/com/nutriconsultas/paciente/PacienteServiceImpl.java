@@ -2,7 +2,6 @@ package com.nutriconsultas.paciente;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.nutriconsultas.paciente.projection.PacienteListView;
+import com.nutriconsultas.subscription.SubscriptionEntitlementService;
 import com.nutriconsultas.util.LogRedaction;
 
 import lombok.extern.slf4j.Slf4j;
@@ -18,8 +18,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PacienteServiceImpl implements PacienteService {
 
-	@Autowired
-	private PacienteRepository repo;
+	private final PacienteRepository repo;
+
+	private final SubscriptionEntitlementService subscriptionEntitlementService;
+
+	public PacienteServiceImpl(final PacienteRepository repo,
+			final SubscriptionEntitlementService subscriptionEntitlementService) {
+		this.repo = repo;
+		this.subscriptionEntitlementService = subscriptionEntitlementService;
+	}
 
 	@Override
 	public void delete(@NonNull final Long id) {
@@ -37,8 +44,12 @@ public class PacienteServiceImpl implements PacienteService {
 	}
 
 	@Override
+	@Transactional
 	public Paciente save(@NonNull final Paciente paciente) {
 		log.info("saving Paciente {}.", LogRedaction.redactPaciente(paciente));
+		if (paciente.getId() == null && paciente.getUserId() != null) {
+			subscriptionEntitlementService.assertCanCreatePatient(paciente.getUserId());
+		}
 		final Paciente saved = repo.save(paciente);
 		log.info("Paciente saved {}.", LogRedaction.redactPaciente(saved));
 		return saved;

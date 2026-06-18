@@ -39,6 +39,9 @@ public class PacienteServiceTest {
 	@Mock
 	private PacienteRepository repository;
 
+	@Mock
+	private com.nutriconsultas.subscription.SubscriptionEntitlementService subscriptionEntitlementService;
+
 	private Paciente paciente1;
 
 	private Paciente paciente2;
@@ -209,7 +212,23 @@ public class PacienteServiceTest {
 		assertThat(result).isNotNull();
 		assertThat(result).isEqualTo(paciente1);
 		verify(repository).save(paciente1);
+		verify(subscriptionEntitlementService, org.mockito.Mockito.never()).assertCanCreatePatient(TEST_USER_ID);
 		log.info("finished testSave");
+	}
+
+	@Test
+	public void testSaveNewPatientChecksSubscriptionLimit() {
+		final Paciente newPaciente = new Paciente();
+		newPaciente.setName("Nuevo Paciente");
+		newPaciente.setUserId(TEST_USER_ID);
+		newPaciente.setDob(paciente1.getDob());
+		newPaciente.setGender("M");
+		when(repository.save(newPaciente)).thenReturn(newPaciente);
+
+		service.save(newPaciente);
+
+		verify(subscriptionEntitlementService).assertCanCreatePatient(TEST_USER_ID);
+		verify(repository).save(newPaciente);
 	}
 
 	@Test

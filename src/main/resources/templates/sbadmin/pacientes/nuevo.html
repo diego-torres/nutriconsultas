@@ -52,6 +52,9 @@
                 <div class="col-sm-10 offset-sm-1">
 
                   <div class="info-form p-5">
+                    <div th:if="${error}" class="alert alert-danger" role="alert">
+                      <span th:text="${error}">Error</span>
+                    </div>
                     <form th:action="@{/admin/pacientes/nuevo}" th:object="${paciente}" method="POST">
                       <div class="form-group">
                         <label>Nombre<span style="color:red;">*</span></label>
@@ -60,7 +63,9 @@
                       </div>
                       <div class="form-group">
                         <label>Fecha Nac.<span style="color:red;">*</span></label>
-                        <input type="date" th:field="*{dob}" class="form-control" placeholder="04/31/1997" required>
+                        <input type="text" th:field="*{dob}" class="form-control" placeholder="dd/mm/aaaa"
+                          inputmode="numeric" autocomplete="bday" required>
+                        <small class="form-text text-muted">Formato: dd/mm/aaaa</small>
                         <span th:if="${#fields.hasErrors('dob')}" th:errors="*{dob}"></span>
                       </div>
                       <div class="form-group">

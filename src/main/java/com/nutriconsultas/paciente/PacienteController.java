@@ -36,6 +36,8 @@ import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.DietaRepository;
 import com.nutriconsultas.dieta.DietaService;
 import com.nutriconsultas.paciente.calculation.BmrCalculationService;
+import com.nutriconsultas.subscription.SubscriptionErrorResponses;
+import com.nutriconsultas.subscription.SubscriptionLimitExceededException;
 import com.nutriconsultas.util.LogRedaction;
 
 import org.springframework.http.HttpHeaders;
@@ -52,6 +54,12 @@ public class PacienteController extends AbstractAuthorizedController {
 
 	@Autowired
 	private PacienteRepository pacienteRepository;
+
+	@Autowired
+	private PacienteService pacienteService;
+
+	@Autowired
+	private SubscriptionErrorResponses subscriptionErrorResponses;
 
 	@Autowired
 	private CalendarEventService calendarEventService;
@@ -163,8 +171,14 @@ public class PacienteController extends AbstractAuthorizedController {
 		}
 		else {
 			paciente.setUserId(userId);
-			pacienteRepository.save(paciente);
-			resultView = "redirect:/admin/pacientes";
+			try {
+				pacienteService.save(paciente);
+				resultView = "redirect:/admin/pacientes";
+			}
+			catch (SubscriptionLimitExceededException ex) {
+				model.addAttribute("error", subscriptionErrorResponses.resolve(ex));
+				resultView = "sbadmin/pacientes/nuevo";
+			}
 		}
 		return resultView;
 	}
