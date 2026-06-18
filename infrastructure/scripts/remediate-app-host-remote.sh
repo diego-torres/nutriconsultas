@@ -7,6 +7,13 @@ REGION="us-east-1"
 BUCKET="$(aws ssm get-parameter --name /nutriconsultas/deploy/s3_bucket --query Parameter.Value --output text --region "$REGION")"
 KEY="$(aws ssm get-parameter --name /nutriconsultas/deploy/s3_key --query Parameter.Value --output text --region "$REGION")"
 
+APP_BASE_URL="https://minutriporcion.com"
+if grep -q '^APP_BASE_URL=' /opt/nutriconsultas/app.env 2>/dev/null; then
+	sudo sed -i "s|^APP_BASE_URL=.*|APP_BASE_URL=${APP_BASE_URL}|" /opt/nutriconsultas/app.env
+else
+	echo "APP_BASE_URL=${APP_BASE_URL}" | sudo tee -a /opt/nutriconsultas/app.env >/dev/null
+fi
+
 aws s3 cp "s3://${BUCKET}/${KEY}" /tmp/nutriconsultas-web.jar --region "$REGION" --no-progress
 
 sudo install -o nutri -g nutri -m 640 /tmp/nutriconsultas-web.jar /opt/nutriconsultas/app.jar
