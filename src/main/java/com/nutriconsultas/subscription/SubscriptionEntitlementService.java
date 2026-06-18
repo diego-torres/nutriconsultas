@@ -28,4 +28,23 @@ public interface SubscriptionEntitlementService {
 	 */
 	void assertCanInviteNutritionist(@NonNull String directorUserId);
 
+	/**
+	 * Verifies the user may export reports as PDF (entitlement and grace policy).
+	 * @throws SubscriptionLimitExceededException when blocked
+	 */
+	void assertCanExportPdf(@NonNull String userId);
+
+	/**
+	 * Verifies the user may access advanced report analytics (clinic statistics,
+	 * nutrition analysis).
+	 * @throws SubscriptionLimitExceededException when blocked
+	 */
+	void assertCanAccessAdvancedReports(@NonNull String userId);
+
+	/**
+	 * Verifies the user may generate full patient progress reports.
+	 * @throws SubscriptionLimitExceededException when blocked
+	 */
+	void assertCanAccessFullReports(@NonNull String userId);
+
 }

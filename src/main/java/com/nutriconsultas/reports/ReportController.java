@@ -2,7 +2,6 @@ package com.nutriconsultas.reports;
 
 import java.util.Date;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -14,6 +13,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.nutriconsultas.controller.AbstractAuthorizedController;
 import com.nutriconsultas.dieta.DietaRepository;
 import com.nutriconsultas.paciente.PacienteService;
+import com.nutriconsultas.subscription.Entitlement;
+import com.nutriconsultas.subscription.SubscriptionEntitlementService;
+import com.nutriconsultas.subscription.SubscriptionErrorResponses;
+import com.nutriconsultas.subscription.SubscriptionLimitExceededException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,14 +34,26 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ReportController extends AbstractAuthorizedController {
 
-	@Autowired
-	private PacienteService pacienteService;
+	private final PacienteService pacienteService;
 
-	@Autowired
-	private DietaRepository dietaRepository;
+	private final DietaRepository dietaRepository;
 
-	@Autowired
-	private ClinicStatisticsService clinicStatisticsService;
+	private final ClinicStatisticsService clinicStatisticsService;
+
+	private final SubscriptionEntitlementService subscriptionEntitlementService;
+
+	private final SubscriptionErrorResponses subscriptionErrorResponses;
+
+	public ReportController(final PacienteService pacienteService, final DietaRepository dietaRepository,
+			final ClinicStatisticsService clinicStatisticsService,
+			final SubscriptionEntitlementService subscriptionEntitlementService,
+			final SubscriptionErrorResponses subscriptionErrorResponses) {
+		this.pacienteService = pacienteService;
+		this.dietaRepository = dietaRepository;
+		this.clinicStatisticsService = clinicStatisticsService;
+		this.subscriptionEntitlementService = subscriptionEntitlementService;
+		this.subscriptionErrorResponses = subscriptionErrorResponses;
+	}
 
 	/**
 	 * Gets the user ID from the OAuth2 principal.
@@ -53,6 +68,15 @@ public class ReportController extends AbstractAuthorizedController {
 		final String userId = principal.getSubject();
 		log.debug("Retrieved user ID: {}", userId);
 		return userId;
+	}
+
+	private void addReportEntitlementFlags(final Model model, final String userId) {
+		model.addAttribute("canExportPdf",
+				subscriptionEntitlementService.hasEntitlement(userId, Entitlement.PDF_EXPORT));
+		model.addAttribute("canAdvancedReports",
+				subscriptionEntitlementService.hasEntitlement(userId, Entitlement.REPORTS_ADVANCED));
+		model.addAttribute("canFullReports",
+				subscriptionEntitlementService.hasEntitlement(userId, Entitlement.REPORTS_FULL));
 	}
 
 	/**
@@ -71,6 +95,13 @@ public class ReportController extends AbstractAuthorizedController {
 		if (userId == null) {
 			log.error("Cannot display reports: user ID is null");
 			model.addAttribute("error", "No se pudo identificar al usuario");
+			return "sbadmin/reports/listado";
+		}
+
+		addReportEntitlementFlags(model, userId);
+
+		if (!subscriptionEntitlementService.hasEntitlement(userId, Entitlement.REPORTS_BASIC)) {
+			model.addAttribute("error", "Los reportes no están disponibles con tu suscripción actual.");
 			return "sbadmin/reports/listado";
 		}
 
@@ -102,6 +133,14 @@ public class ReportController extends AbstractAuthorizedController {
 		if (userId == null) {
 			log.error("Cannot display clinic statistics: user ID is null");
 			model.addAttribute("error", "No se pudo identificar al usuario");
+			return "sbadmin/reports/estadisticas";
+		}
+
+		addReportEntitlementFlags(model, userId);
+
+		if (!subscriptionEntitlementService.hasEntitlement(userId, Entitlement.REPORTS_ADVANCED)) {
+			model.addAttribute("error", subscriptionErrorResponses.resolve(
+					new SubscriptionLimitExceededException(SubscriptionErrorResponses.KEY_REPORTS_ADVANCED_DENIED)));
 			return "sbadmin/reports/estadisticas";
 		}
 

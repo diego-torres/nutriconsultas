@@ -199,8 +199,8 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#187 — Gate report tiers and PDF export](https://github.com/diego-torres/nutriconsultas/issues/187) |
-| **In progress** | — |
+| **Next issue** | [#210 — Platform admin revoke access](https://github.com/diego-torres/nutriconsultas/issues/210) / [#211 — change plan tier](https://github.com/diego-torres/nutriconsultas/issues/211) (after #187 PR) |
+| **In progress** | [#187 — Gate report tiers and PDF export](https://github.com/diego-torres/nutriconsultas/issues/187) — branch `subscription/187-report-pdf-gating` |
 | **Just completed** | [#190 Patient & nutritionist limits](https://github.com/diego-torres/nutriconsultas/issues/190) — PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
@@ -209,7 +209,7 @@ See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
 | Prioridad | Issue | Acción |
 |-----------|-------|--------|
-| 1 | **#187** | `hasEntitlement()` en reportes HTML y PDF (`PatientReportRestController`, `ReportController`) |
+| 1 | **#187** | ~~`hasEntitlement()` en reportes HTML y PDF~~ — branch `subscription/187-report-pdf-gating` |
 | 2 | **#210** / **#211** | Revocar acceso y cambio de plan tier (admin platform; deps satisfechas) |
 | 3 | **#207** / **#208** | Migrar checkout Mercado Pago → Stripe; credenciales y webhooks operativos |
 | 4 | **#186** → **#188** | Modelo consultorio + invitaciones director (habilita `ClinicInvitationService` end-to-end) |

@@ -168,6 +168,59 @@ class SubscriptionEntitlementServiceTest {
 	}
 
 	@Test
+	void hasEntitlementFalseForBasicoPdfExport() {
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID))
+			.thenReturn(Optional.of(activeMember(SOLO_ID, PlanTier.BASICO)));
+
+		assertThat(service.hasEntitlement(SOLO_ID, Entitlement.PDF_EXPORT)).isFalse();
+		assertThat(service.hasEntitlement(SOLO_ID, Entitlement.REPORTS_ADVANCED)).isFalse();
+		assertThat(service.hasEntitlement(SOLO_ID, Entitlement.REPORTS_FULL)).isFalse();
+		assertThat(service.hasEntitlement(SOLO_ID, Entitlement.REPORTS_BASIC)).isTrue();
+	}
+
+	@Test
+	void assertCanExportPdfThrowsForBasicoPlan() {
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID))
+			.thenReturn(Optional.of(activeMember(SOLO_ID, PlanTier.BASICO)));
+
+		assertThatThrownBy(() -> service.assertCanExportPdf(SOLO_ID))
+			.isInstanceOf(SubscriptionLimitExceededException.class)
+			.extracting(ex -> ((SubscriptionLimitExceededException) ex).getMessageKey())
+			.isEqualTo(SubscriptionErrorResponses.KEY_PDF_EXPORT_DENIED);
+	}
+
+	@Test
+	void assertCanExportPdfThrowsInGraceState() {
+		final ClinicMember member = activeMember(SOLO_ID, PlanTier.PROFESIONAL);
+		member.getClinic().getSubscription().setStatus(SubscriptionStatus.GRACE);
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID)).thenReturn(Optional.of(member));
+
+		assertThatThrownBy(() -> service.assertCanExportPdf(SOLO_ID))
+			.isInstanceOf(SubscriptionLimitExceededException.class)
+			.extracting(ex -> ((SubscriptionLimitExceededException) ex).getMessageKey())
+			.isEqualTo(SubscriptionErrorResponses.KEY_PDF_EXPORT_DENIED);
+	}
+
+	@Test
+	void assertCanAccessAdvancedReportsThrowsForBasicoPlan() {
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID))
+			.thenReturn(Optional.of(activeMember(SOLO_ID, PlanTier.BASICO)));
+
+		assertThatThrownBy(() -> service.assertCanAccessAdvancedReports(SOLO_ID))
+			.isInstanceOf(SubscriptionLimitExceededException.class)
+			.extracting(ex -> ((SubscriptionLimitExceededException) ex).getMessageKey())
+			.isEqualTo(SubscriptionErrorResponses.KEY_REPORTS_ADVANCED_DENIED);
+	}
+
+	@Test
+	void assertCanAccessFullReportsAllowsProfesionalPlan() {
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID))
+			.thenReturn(Optional.of(activeMember(SOLO_ID, PlanTier.PROFESIONAL)));
+
+		service.assertCanAccessFullReports(SOLO_ID);
+	}
+
+	@Test
 	void assertCanCreatePatientAllowsWhenBelowBasicoCap() {
 		final ClinicMember member = activeMember(SOLO_ID, PlanTier.BASICO);
 		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID)).thenReturn(Optional.of(member));

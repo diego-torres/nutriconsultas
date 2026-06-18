@@ -22,7 +22,7 @@ public class SubscriptionLimitExceededException extends RuntimeException {
 	public SubscriptionLimitExceededException(final String messageKey, final Object arg) {
 		super(messageKey);
 		this.messageKey = messageKey;
-		this.messageArgs = new Object[] {arg};
+		this.messageArgs = new Object[] { arg };
 	}
 
 	public String getMessageKey() {
