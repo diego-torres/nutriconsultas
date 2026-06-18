@@ -25,9 +25,18 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md) | Agent workflow for subscription enforcement |
 | [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md) | Plan tiers, entitlements, lifecycle, data model |
 
+**Parallel track (nutritionist web — do not mix into mobile/subscription PRs unless coupled):**
+
+| File | Purpose |
+|------|---------|
+| [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | `[Nutritionist Web]` issues (#221–#223 MPX epic), states, dependencies |
+| [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md) | Patient registration export/import plan |
+
 **Current next issue (mobile):** [#133 — Invitation token generation & hashing service](https://github.com/diego-torres/nutriconsultas/issues/133) (after [#132](https://github.com/diego-torres/nutriconsultas/issues/132) in-progress).
 
 **Current next issue (subscription):** [#210 — Platform admin revoke access](https://github.com/diego-torres/nutriconsultas/issues/210) / [#211 — change plan tier](https://github.com/diego-torres/nutriconsultas/issues/211). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md).
+
+**Current next issue (nutritionist web):** [#221 — Export patient registration to .mpx](https://github.com/diego-torres/nutriconsultas/issues/221) → #222 → #223. See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 
 ---
 
