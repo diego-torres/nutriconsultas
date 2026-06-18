@@ -108,6 +108,30 @@ public class SubscriptionEntitlementServiceImpl implements SubscriptionEntitleme
 		}
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public void assertCanExportPdf(@NonNull final String userId) {
+		if (!hasEntitlement(userId, Entitlement.PDF_EXPORT)) {
+			throw new SubscriptionLimitExceededException(SubscriptionErrorResponses.KEY_PDF_EXPORT_DENIED);
+		}
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public void assertCanAccessAdvancedReports(@NonNull final String userId) {
+		if (!hasEntitlement(userId, Entitlement.REPORTS_ADVANCED)) {
+			throw new SubscriptionLimitExceededException(SubscriptionErrorResponses.KEY_REPORTS_ADVANCED_DENIED);
+		}
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public void assertCanAccessFullReports(@NonNull final String userId) {
+		if (!hasEntitlement(userId, Entitlement.REPORTS_FULL)) {
+			throw new SubscriptionLimitExceededException(SubscriptionErrorResponses.KEY_REPORTS_FULL_DENIED);
+		}
+	}
+
 	private long countPatientsInClinicScope(final Long clinicId) {
 		final List<String> memberUserIds = clinicMemberRepository.findUserIdsByClinicIdAndMembershipStatus(clinicId,
 				MembershipStatus.ACTIVE);

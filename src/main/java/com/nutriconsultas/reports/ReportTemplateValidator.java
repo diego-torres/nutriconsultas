@@ -90,6 +90,11 @@ public class ReportTemplateValidator extends BaseTemplateValidator {
 		variables.put("nutritionistDisplayName", "Lic. María García López");
 		variables.put("logoBase64", null);
 
+		// Report entitlement flags for listado and estadisticas templates (#187)
+		variables.put("canExportPdf", true);
+		variables.put("canAdvancedReports", true);
+		variables.put("canFullReports", true);
+
 		return variables;
 	}
 

@@ -30,6 +30,8 @@ import com.nutriconsultas.paciente.PacienteService;
 import com.nutriconsultas.profile.NutritionistBrandingHelper;
 import com.nutriconsultas.profile.NutritionistProfile;
 import com.nutriconsultas.profile.NutritionistProfileService;
+import com.nutriconsultas.subscription.Entitlement;
+import com.nutriconsultas.subscription.SubscriptionEntitlementService;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -103,6 +105,9 @@ public class PatientReportService {
 	@Autowired
 	private NutritionistProfileService nutritionistProfileService;
 
+	@Autowired
+	private SubscriptionEntitlementService subscriptionEntitlementService;
+
 	/**
 	 * Generates a PDF progress report for a patient.
 	 * @param pacienteId the ID of the patient
@@ -145,10 +150,8 @@ public class PatientReportService {
 		context.setVariable("endDate", endDate);
 		context.setVariable("reportDate", new Date());
 
-		// Inject nutritionist profile branding
-		final NutritionistProfile profile = nutritionistProfileService.getOrCreateProfile(userId);
-		final String logoBase64 = nutritionistProfileService.getLogoAsBase64DataUri(userId);
-		NutritionistBrandingHelper.addBrandingVariables(context, profile, logoBase64);
+		// Inject nutritionist profile branding when plan includes branded reports
+		addBrandingIfAllowed(context, userId);
 
 		// Render Thymeleaf template to HTML
 		final String html = templateEngine.process("sbadmin/reports/patient-progress", context);
@@ -272,10 +275,8 @@ public class PatientReportService {
 		context.setVariable("analysis", analysis);
 		context.setVariable("reportDate", new Date());
 
-		// Inject nutritionist profile branding
-		final NutritionistProfile nutritionAnalysisProfile = nutritionistProfileService.getOrCreateProfile(userId);
-		final String nutritionLogoBase64 = nutritionistProfileService.getLogoAsBase64DataUri(userId);
-		NutritionistBrandingHelper.addBrandingVariables(context, nutritionAnalysisProfile, nutritionLogoBase64);
+		// Inject nutritionist profile branding when plan includes branded reports
+		addBrandingIfAllowed(context, userId);
 
 		// Render Thymeleaf template to HTML
 		final String html = templateEngine.process("sbadmin/reports/nutrition-analysis", context);
@@ -306,16 +307,23 @@ public class PatientReportService {
 		context.setVariable("endDate", endDate);
 		context.setVariable("reportDate", new Date());
 
-		// Inject nutritionist profile branding
-		final NutritionistProfile clinicProfile = nutritionistProfileService.getOrCreateProfile(userId);
-		final String clinicLogoBase64 = nutritionistProfileService.getLogoAsBase64DataUri(userId);
-		NutritionistBrandingHelper.addBrandingVariables(context, clinicProfile, clinicLogoBase64);
+		// Inject nutritionist profile branding when plan includes branded reports
+		addBrandingIfAllowed(context, userId);
 
 		// Render Thymeleaf template to HTML
 		final String html = templateEngine.process("sbadmin/reports/clinic-statistics-pdf", context);
 
 		// Convert HTML to PDF using Flying Saucer
 		return htmlToPdf(html);
+	}
+
+	private void addBrandingIfAllowed(final Context context, final String userId) {
+		if (!subscriptionEntitlementService.hasEntitlement(userId, Entitlement.REPORTS_BRANDED)) {
+			return;
+		}
+		final NutritionistProfile profile = nutritionistProfileService.getOrCreateProfile(userId);
+		final String logoBase64 = nutritionistProfileService.getLogoAsBase64DataUri(userId);
+		NutritionistBrandingHelper.addBrandingVariables(context, profile, logoBase64);
 	}
 
 	private byte[] htmlToPdf(final String html) {

@@ -45,7 +45,7 @@
               <a th:href="@{/admin/reportes}" class="btn btn-secondary btn-sm">
                 <i class="fas fa-arrow-left"></i> Volver a Reportes
               </a>
-              <button type="button" class="btn btn-primary btn-sm" onclick="generatePdfReport()">
+              <button type="button" class="btn btn-primary btn-sm" th:if="${canExportPdf}" onclick="generatePdfReport()">
                 <i class="fas fa-file-pdf"></i> Exportar PDF
               </button>
             </div>

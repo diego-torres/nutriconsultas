@@ -2,7 +2,6 @@ package com.nutriconsultas.reports;
 
 import java.util.Date;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteService;
+import com.nutriconsultas.subscription.SubscriptionEntitlementService;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -36,14 +36,22 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 @Slf4j
 public class PatientReportRestController {
 
-	@Autowired
-	private PatientReportService reportService;
+	private final PatientReportService reportService;
 
-	@Autowired
-	private PacienteService pacienteService;
+	private final PacienteService pacienteService;
 
-	@Autowired
-	private ClinicStatisticsService clinicStatisticsService;
+	private final ClinicStatisticsService clinicStatisticsService;
+
+	private final SubscriptionEntitlementService subscriptionEntitlementService;
+
+	public PatientReportRestController(final PatientReportService reportService, final PacienteService pacienteService,
+			final ClinicStatisticsService clinicStatisticsService,
+			final SubscriptionEntitlementService subscriptionEntitlementService) {
+		this.reportService = reportService;
+		this.pacienteService = pacienteService;
+		this.clinicStatisticsService = clinicStatisticsService;
+		this.subscriptionEntitlementService = subscriptionEntitlementService;
+	}
 
 	/**
 	 * Gets the user ID from the OAuth2 principal.
@@ -119,6 +127,9 @@ public class PatientReportRestController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 
+		subscriptionEntitlementService.assertCanExportPdf(userId);
+		subscriptionEntitlementService.assertCanAccessFullReports(userId);
+
 		try {
 			// Get patient to use name in filename
 			final Paciente paciente = pacienteService.findByIdAndUserId(pacienteId, userId);
@@ -186,6 +197,9 @@ public class PatientReportRestController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 
+		subscriptionEntitlementService.assertCanExportPdf(userId);
+		subscriptionEntitlementService.assertCanAccessAdvancedReports(userId);
+
 		try {
 			final byte[] pdfBytes = reportService.generateNutritionReport(dietaId, userId);
 
@@ -241,6 +255,8 @@ public class PatientReportRestController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 
+		subscriptionEntitlementService.assertCanAccessAdvancedReports(userId);
+
 		try {
 			final ClinicStatistics statistics = clinicStatisticsService.generateStatistics(userId, startDate, endDate);
 			log.info("Successfully generated clinic statistics for user: {}", userId);
@@ -289,6 +305,9 @@ public class PatientReportRestController {
 			log.error("Cannot generate clinic statistics PDF: user ID is null");
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
+
+		subscriptionEntitlementService.assertCanExportPdf(userId);
+		subscriptionEntitlementService.assertCanAccessAdvancedReports(userId);
 
 		try {
 			final byte[] pdfBytes = reportService.generateClinicStatisticsReport(userId, startDate, endDate);

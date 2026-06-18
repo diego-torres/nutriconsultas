@@ -45,8 +45,25 @@
             <h1 class="h3 mb-0 text-gray-800">Reportes</h1>
           </div>
 
+          <div class="row" th:if="${error != null}">
+            <div class="col-12">
+              <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="row" th:if="${canExportPdf != null and !canExportPdf}">
+            <div class="col-12">
+              <div class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle"></i>
+                La exportación PDF y los reportes avanzados requieren el plan Profesional o superior.
+              </div>
+            </div>
+          </div>
+
           <!-- Clinic Statistics Card -->
-          <div class="row">
+          <div class="row" th:if="${canAdvancedReports}">
             <div class="col-12">
               <div class="card shadow mb-4">
                 <div class="card-header py-3">
@@ -63,7 +80,7 @@
           </div>
 
           <!-- Content Row -->
-          <div class="row">
+          <div class="row" th:if="${canExportPdf and canFullReports}">
             <div class="col-12">
               <div class="card shadow mb-4">
                 <div class="card-header py-3">
@@ -101,7 +118,7 @@
           </div>
 
           <!-- Nutrition Analysis Report -->
-          <div class="row">
+          <div class="row" th:if="${canExportPdf and canAdvancedReports}">
             <div class="col-12">
               <div class="card shadow mb-4">
                 <div class="card-header py-3">
@@ -156,6 +173,7 @@
                           <td th:text="${paciente.phone != null ? paciente.phone : 'N/A'}"></td>
                           <td>
                             <button type="button" class="btn btn-sm btn-primary generate-patient-report-btn"
+                              th:if="${canExportPdf and canFullReports}"
                               th:data-paciente-id="${paciente.id}" th:data-paciente-name="${paciente.name}">
                               <i class="fas fa-file-pdf"></i> Generar Reporte
                             </button>

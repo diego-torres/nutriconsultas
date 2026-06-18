@@ -1,8 +1,10 @@
 package com.nutriconsultas.reports;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,6 +23,9 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteService;
+import com.nutriconsultas.subscription.SubscriptionEntitlementService;
+import com.nutriconsultas.subscription.SubscriptionErrorResponses;
+import com.nutriconsultas.subscription.SubscriptionLimitExceededException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,6 +43,12 @@ public class PatientReportRestControllerTest {
 
 	@Mock
 	private PacienteService pacienteService;
+
+	@Mock
+	private ClinicStatisticsService clinicStatisticsService;
+
+	@Mock
+	private SubscriptionEntitlementService subscriptionEntitlementService;
 
 	@Mock
 	private OidcUser principal;
@@ -69,7 +80,21 @@ public class PatientReportRestControllerTest {
 		final var contentType = response.getHeaders().getContentType();
 		assertThat(contentType).isNotNull();
 		assertThat(contentType.toString()).contains("application/pdf");
+		verify(subscriptionEntitlementService).assertCanExportPdf(userId);
+		verify(subscriptionEntitlementService).assertCanAccessFullReports(userId);
 		verify(reportService).generateReport(1L, userId, null, null);
+	}
+
+	@Test
+	public void testGeneratePatientReportDeniedBySubscription() {
+		final String userId = "user123";
+		when(principal.getSubject()).thenReturn(userId);
+		doThrow(new SubscriptionLimitExceededException(SubscriptionErrorResponses.KEY_PDF_EXPORT_DENIED))
+			.when(subscriptionEntitlementService)
+			.assertCanExportPdf(userId);
+
+		assertThatThrownBy(() -> restController.generatePatientReport(1L, null, null, principal))
+			.isInstanceOf(SubscriptionLimitExceededException.class);
 	}
 
 	@Test
@@ -143,7 +168,21 @@ public class PatientReportRestControllerTest {
 		final var contentType = response.getHeaders().getContentType();
 		assertThat(contentType).isNotNull();
 		assertThat(contentType.toString()).contains("application/pdf");
+		verify(subscriptionEntitlementService).assertCanExportPdf(userId);
+		verify(subscriptionEntitlementService).assertCanAccessAdvancedReports(userId);
 		verify(reportService).generateNutritionReport(dietaId, userId);
+	}
+
+	@Test
+	public void testGenerateNutritionReportDeniedBySubscription() {
+		final String userId = "user123";
+		when(principal.getSubject()).thenReturn(userId);
+		doThrow(new SubscriptionLimitExceededException(SubscriptionErrorResponses.KEY_REPORTS_ADVANCED_DENIED))
+			.when(subscriptionEntitlementService)
+			.assertCanAccessAdvancedReports(userId);
+
+		assertThatThrownBy(() -> restController.generateNutritionReport(1L, principal))
+			.isInstanceOf(SubscriptionLimitExceededException.class);
 	}
 
 	@Test
@@ -184,6 +223,30 @@ public class PatientReportRestControllerTest {
 		assertThat(response).isNotNull();
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
 		verify(reportService).generateNutritionReport(dietaId, userId);
+	}
+
+	@Test
+	public void testGetClinicStatisticsDeniedBySubscription() {
+		final String userId = "user123";
+		when(principal.getSubject()).thenReturn(userId);
+		doThrow(new SubscriptionLimitExceededException(SubscriptionErrorResponses.KEY_REPORTS_ADVANCED_DENIED))
+			.when(subscriptionEntitlementService)
+			.assertCanAccessAdvancedReports(userId);
+
+		assertThatThrownBy(() -> restController.getClinicStatistics(null, null, principal))
+			.isInstanceOf(SubscriptionLimitExceededException.class);
+	}
+
+	@Test
+	public void testGenerateClinicStatisticsPdfDeniedInGrace() {
+		final String userId = "user123";
+		when(principal.getSubject()).thenReturn(userId);
+		doThrow(new SubscriptionLimitExceededException(SubscriptionErrorResponses.KEY_PDF_EXPORT_DENIED))
+			.when(subscriptionEntitlementService)
+			.assertCanExportPdf(userId);
+
+		assertThatThrownBy(() -> restController.generateClinicStatisticsPdf(null, null, principal))
+			.isInstanceOf(SubscriptionLimitExceededException.class);
 	}
 
 }
