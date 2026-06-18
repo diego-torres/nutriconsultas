@@ -13,7 +13,7 @@ registro de consultorio de nutrición
 
 **Agent workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Issue registries:** [`ISSUE.md`](ISSUE.md) (mobile) · [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) (subscription) · [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) (nutritionist web) · **Contract docs:** [`docs/mobile-api/README.md`](docs/mobile-api/README.md)
 
-**On `main` (2026-06-18):** Patient mobile API complete through #116; **NEXT:** #132 invitation onboarding. Parallel **subscription** track: #180–#185, ~~#190~~, ~~#187~~ on `main` (PRs [#216](https://github.com/diego-torres/nutriconsultas/pull/216), [#218](https://github.com/diego-torres/nutriconsultas/pull/218)); **NEXT:** #210 / #211.
+**On `main` (2026-06-18):** Patient mobile API through #116; onboarding schema **#132 done** (PR #214). **#133 in-progress** (PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229)). **Subscription:** ~~#180–#185~~, ~~#187~~, ~~#190~~, ~~#210~~ on `main`; **NEXT:** #211. **Nutritionist web:** MPX epic #221–#223; **NEXT:** #221.
 
 ## AWS (production infrastructure)
 

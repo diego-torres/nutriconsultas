@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-19 — ~~#211~~ **done** (PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230)); **NEXT:** #207 (Stripe provider).
+**Last updated:** 2026-06-19 — ~~#211~~ **done** (PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230)); **NEXT:** #207 (Stripe provider). Patient MPX **#221–#223:** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md). Production **#226** fixed (PR [#227](https://github.com/diego-torres/nutriconsultas/pull/227), invitation base URL).
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 

@@ -14,7 +14,7 @@
 
 > **State verification (2026-06-11):**
 >
-> - **Backend schema (2026-06-17):** Phase 0 **done** (#107, #109, #110). **All endpoints #91–#99 on `main`**. Cross-cutting **#111–#116 done** (OpenAPI #112, PHI #115, `senderDisplayName` #116, nutritionist reply #114). **NEXT:** #132 invitation onboarding. #106 dashboard IMC gauge **done**.
+> - **Backend schema (2026-06-18):** Phase 0 **done** (#107, #109, #110). **All endpoints #91–#99 on `main`**. Cross-cutting **#111–#116 done**. Onboarding schema **#132 done** (PR #214). **#133 in-progress** (PR #229 token hashing). #106 dashboard IMC gauge **done**.
 > - **DTO field-name map (authoritative — ALIGNMENT-SPEC §F8):** `Dieta.nombre→dietaName`, `energia→totalKcal`, `proteina→totalProteina`, `lipidos→totalGrasas`, `hidratosDeCarbono→totalCarbohidratos`; `Ingesta.nombre→tipo`; `PlatilloIngesta.name/portions/energia→nombre/porciones/kcal`, `hidratosDeCarbono→carbohidratos`, `lipidos→grasas` (same for `AlimentoIngesta`). Enums: `EventStatus = SCHEDULED/COMPLETED/CANCELLED`; `PacienteDietaStatus = ACTIVE/COMPLETED/CANCELLED` (no INACTIVE); `NivelPeso = BAJO/NORMAL/ALTO/SOBREPESO` (translate to `imcLabel` server-side). `deltaPeso`/`deltaImc` are computed, not stored.
 > - **Mobile redesign branch state (style/editorial-redesign):** Auth dedup complete — `AuthFlowController` + login/signup/welcome screens canonical; PR #48's `AuthController`/`LoginView` retired (commit 3427612); `flutter analyze` clean, 146/146 tests pass. Canonical design source: `.claude/MiNutriporcion-2/` (light editorial palette; dark welcome/login PNGs are OLD, ignore). Mobile issues #13/#21/#31 done; #32/#33 in flight on branch.
 
