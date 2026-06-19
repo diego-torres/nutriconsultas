@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-19 — Bug **#250** (diet platillo link); epics **#232–#242** registered.
+**Last updated:** 2026-06-19 — #221 MPX export in progress; bug **#250** (diet platillo link); epics **#232–#242** registered.
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -36,8 +36,8 @@ Help nutritionists **rotate patient slots** (especially **plan básico** cap via
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| **221** | Export patient registration to .mpx (YAML, no history) | https://github.com/diego-torres/nutriconsultas/issues/221 | **NEXT** | #156, #190 (context) | Defines `mpxVersion: 1`; `docs/paciente/MPX-FORMAT.md` at implement time |
-| 222 | Import patient registration from .mpx file | https://github.com/diego-torres/nutriconsultas/issues/222 | open | **221**, #190 | New `Paciente`; no history restore |
+| **221** | Export patient registration to .mpx (YAML, no history) | https://github.com/diego-torres/nutriconsultas/issues/221 | **in-progress** | #156, #190 (context) | `PacienteMpxExportService`; `docs/paciente/MPX-FORMAT.md` |
+| 222 | Import patient registration from .mpx file | https://github.com/diego-torres/nutriconsultas/issues/222 | **NEXT** | **221**, #190 | New `Paciente`; no history restore |
 | 223 | Patient export and delete actions with pre-delete backup | https://github.com/diego-torres/nutriconsultas/issues/223 | open | **221**, **222**, #190 | SweetAlert; historial loss copy |
 
 **All tiers:** export/import/delete UI is **not** entitlement-gated; basic plan is the primary use case.
