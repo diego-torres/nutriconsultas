@@ -99,7 +99,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 |---|-------|-----|-------|-----------|-------|
 | 220 | Retention cleanup — purge revoked nutritionist data with S3 backup | https://github.com/diego-torres/nutriconsultas/issues/220 | open | 210, 183, 46 | 90 días post-revoke; UI mantenimiento; backup S3; bitácora |
 
-**Suggested order:** #220 after #210 merged (needs `access.revoke` audit + `CANCELLED` state).
+**Suggested order:** #220 after ~~#210~~ ✓ (needs `access.revoke` audit + `CANCELLED` state).
 
 ---
 
