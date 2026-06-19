@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-19 — ~~#211~~ **done** (PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230)); **NEXT:** #207 (Stripe provider). Patient MPX **#221–#223:** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md). Production **#226** fixed (PR [#227](https://github.com/diego-torres/nutriconsultas/pull/227), invitation base URL).
+**Last updated:** 2026-06-19 — ~~#211~~ **done** (PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230)); **NEXT:** #207 (Stripe provider). Public funnel: #243, #244 registered. Patient MPX **#221–#223:** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md). Production **#226** fixed (PR [#227](https://github.com/diego-torres/nutriconsultas/pull/227), invitation base URL).
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 
@@ -82,7 +82,18 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 
 ---
 
-## Phase 4 — Retention & maintenance
+## Phase 4 — Public funnel (marketing → contact → invite)
+
+| # | Title | URL | State | Depends on | Notes |
+|---|-------|-----|-------|-----------|-------|
+| 243 | Production reCAPTCHA keys for minutriporcion.com | https://github.com/diego-torres/nutriconsultas/issues/243 | open | — | Remove "testing purposes only" banner |
+| 244 | Pre-fill contact form when clicking Solicitar Acceso for a plan | https://github.com/diego-torres/nutriconsultas/issues/244 | open | — | Plan slug on `ContactInquiry`; pairs with #184 |
+
+**Suggested order:** #243 → #244 (or parallel). Blocks public booking form (#248) reCAPTCHA reuse.
+
+---
+
+## Phase 5 — Retention & maintenance
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
@@ -106,6 +117,8 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | 5b. Patient slot rotation (export/import `.mpx`) | #221, #222, #223 — [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) |
 | 6. Branded / tiered reports | #187 — PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218) ✓ |
 | 7. PDF export by plan | #187 — PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218) ✓ |
+| 8. Production reCAPTCHA on contact form | #243 |
+| 9. Plan-aware Solicitar acceso CTA | #244 |
 
 ---
 

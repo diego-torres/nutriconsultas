@@ -11,7 +11,7 @@ registro de consultorio de nutrición
 
 ### Patient mobile API
 
-**Agent workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Issue registries:** [`ISSUE.md`](ISSUE.md) (mobile) · [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) (subscription) · [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) (nutritionist web) · **Contract docs:** [`docs/mobile-api/README.md`](docs/mobile-api/README.md)
+**Agent workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Issue registries:** [`ISSUE.md`](ISSUE.md) (mobile) · [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) (subscription) · [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) (nutritionist web) · [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md) (public booking) · **Contract docs:** [`docs/mobile-api/README.md`](docs/mobile-api/README.md)
 
 **On `main` (2026-06-19):** Patient mobile API through #116; onboarding **#132** + token service **#133 done** (PR #229, EC2). **NEXT:** #134. **Subscription:** ~~#180–#185~~, ~~#187~~, ~~#190~~, ~~#210~~, ~~#211~~ on `main`; **NEXT:** #207. **Nutritionist web:** MPX epic #221–#223; **NEXT:** #221.
 

@@ -29,8 +29,14 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 | File | Purpose |
 |------|---------|
-| [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | `[Nutritionist Web]` issues (#221–#223 MPX epic), states, dependencies |
+| [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | `[Nutritionist Web]` issues (#221–#223 MPX; #232–#242 diet/branding/UX), states, dependencies |
 | [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md) | Patient registration export/import plan |
+
+**Parallel track (public booking — future; depends on #246+):**
+
+| File | Purpose |
+|------|---------|
+| [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md) | `[Public Booking]` epic #245–#248 |
 
 **Current next issue (mobile):** [#134 — POST /rest/mobile/invitations](https://github.com/diego-torres/nutriconsultas/issues/134). ~~#133~~ done (PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229)).
 
