@@ -29,10 +29,10 @@ final class PatientInvitationJws {
 	private PatientInvitationJws() {
 	}
 
-	static String sign(final String secret, final long pacienteId, final Instant expiresAt) {
+	static String sign(final String secret, final long pacienteId, final String tokenHash, final Instant expiresAt) {
 		final String header = BASE64_URL
 			.encodeToString("{\"alg\":\"HS256\",\"typ\":\"JWT\"}".getBytes(StandardCharsets.UTF_8));
-		final String payloadJson = buildPayload(pacienteId, expiresAt);
+		final String payloadJson = buildPayload(pacienteId, tokenHash, expiresAt);
 		final String payload = BASE64_URL.encodeToString(payloadJson.getBytes(StandardCharsets.UTF_8));
 		final String signingInput = header + "." + payload;
 		final String signature = BASE64_URL.encodeToString(hmacSha256(secret, signingInput));
@@ -45,6 +45,9 @@ final class PatientInvitationJws {
 		}
 		final String[] parts = compactJws.split("\\.");
 		if (parts.length != 3) {
+			return Optional.empty();
+		}
+		if (!isHs256Header(parts[0])) {
 			return Optional.empty();
 		}
 		final String signingInput = parts[0] + "." + parts[1];
@@ -77,12 +80,23 @@ final class PatientInvitationJws {
 		}
 	}
 
-	private static String buildPayload(final long pacienteId, final Instant expiresAt) {
+	private static String buildPayload(final long pacienteId, final String tokenHash, final Instant expiresAt) {
 		try {
-			return MAPPER.writeValueAsString(new Payload(pacienteId, expiresAt.getEpochSecond()));
+			return MAPPER.writeValueAsString(new Payload(pacienteId, tokenHash, expiresAt.getEpochSecond()));
 		}
 		catch (JsonProcessingException ex) {
 			throw new IllegalStateException("Failed to serialize JWS payload", ex);
+		}
+	}
+
+	private static boolean isHs256Header(final String encodedHeader) {
+		try {
+			final JsonNode header = MAPPER
+				.readTree(new String(BASE64_URL_DECODER.decode(encodedHeader), StandardCharsets.UTF_8));
+			return "HS256".equals(header.path("alg").asText());
+		}
+		catch (IllegalArgumentException | JsonProcessingException ex) {
+			return false;
 		}
 	}
 
@@ -97,7 +111,7 @@ final class PatientInvitationJws {
 		}
 	}
 
-	private record Payload(long patientId, long exp) {
+	private record Payload(long patientId, String tokenHash, long exp) {
 
 	}
 

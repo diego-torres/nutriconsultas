@@ -38,6 +38,23 @@ class PatientInvitationTokenServiceTest {
 	}
 
 	@Test
+	void generate_humanCodeMatchesUrlTokenSecret() {
+		final PatientInvitationTokenBundle bundle = service.generate();
+		final byte[] secret = java.util.Base64.getUrlDecoder().decode(bundle.urlToken());
+
+		assertThat(PatientInvitationHumanCode.matchesSecret(secret, "NUTRI", bundle.humanCode())).isTrue();
+	}
+
+	@Test
+	void verify_rejectsBlankInputs() {
+		final PatientInvitationTokenBundle bundle = service.generate();
+
+		assertThat(service.verify("", bundle.tokenHash())).isFalse();
+		assertThat(service.verify(bundle.urlToken(), "")).isFalse();
+		assertThat(service.verify(null, bundle.tokenHash())).isFalse();
+	}
+
+	@Test
 	void offlineJws_roundTripsPatientId() {
 		final PatientInvitationTokenBundle bundle = service.generate();
 		final Instant expiresAt = Instant.now().plus(7, ChronoUnit.DAYS);

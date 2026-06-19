@@ -45,6 +45,9 @@ public class PatientInvitationTokenServiceImpl implements PatientInvitationToken
 
 	@Override
 	public boolean verify(final String rawUrlToken, final String storedTokenHash) {
+		if (!StringUtils.hasText(rawUrlToken) || !StringUtils.hasText(storedTokenHash)) {
+			return false;
+		}
 		return InvitationTokenHasher.verifyToken(rawUrlToken, storedTokenHash);
 	}
 
@@ -56,7 +59,8 @@ public class PatientInvitationTokenServiceImpl implements PatientInvitationToken
 		if (pacienteId == null || pacienteId < 1L || !StringUtils.hasText(rawUrlToken) || expiresAt == null) {
 			throw new IllegalArgumentException("pacienteId, rawUrlToken, and expiresAt are required");
 		}
-		return Optional.of(PatientInvitationJws.sign(properties.getJwsSecret(), pacienteId, expiresAt));
+		final String tokenHash = InvitationTokenHasher.hashToken(rawUrlToken);
+		return Optional.of(PatientInvitationJws.sign(properties.getJwsSecret(), pacienteId, tokenHash, expiresAt));
 	}
 
 	@Override
