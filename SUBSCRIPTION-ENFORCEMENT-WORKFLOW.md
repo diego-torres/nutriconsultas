@@ -199,9 +199,9 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#211 — change plan tier](https://github.com/diego-torres/nutriconsultas/issues/211) |
-| **In progress** | [#211 — change plan tier](https://github.com/diego-torres/nutriconsultas/issues/211) |
-| **Just completed** | [#210 — Platform admin revoke access](https://github.com/diego-torres/nutriconsultas/issues/210) — PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224) |
+| **Next issue** | [#207 — Stripe payment provider](https://github.com/diego-torres/nutriconsultas/issues/207) |
+| **In progress** | — |
+| **Just completed** | [#211 — change plan tier](https://github.com/diego-torres/nutriconsultas/issues/211) — PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
@@ -209,9 +209,8 @@ See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
 | Prioridad | Issue | Acción |
 |-----------|-------|--------|
-| 1 | **#211** | Cambio de plan tier (admin platform) |
-| 2 | **#207** / **#208** | Migrar checkout Mercado Pago → Stripe; credenciales y webhooks operativos |
-| 3 | **#186** → **#188** | Modelo consultorio + invitaciones director (habilita `ClinicInvitationService` end-to-end) |
-| 4 | **#220** | Limpieza retención 90 días post-revoke + backup S3 + UI mantenimiento (deps: #210) |
-| 5 | **#209** | Entrega de email de invitación (SES prod / console local) |
-| 6 | **#221** → **#223** | MPX export/import pacientes (rotación cupos; [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md)) |
+| 1 | **#207** / **#208** | Migrar checkout Mercado Pago → Stripe; credenciales y webhooks operativos |
+| 2 | **#186** → **#188** | Modelo consultorio + invitaciones director (habilita `ClinicInvitationService` end-to-end) |
+| 3 | **#220** | Limpieza retención 90 días post-revoke + backup S3 + UI mantenimiento (deps: #210) |
+| 4 | **#209** | Entrega de email de invitación (SES prod / console local) |
+| 5 | **#221** → **#223** | MPX export/import pacientes (rotación cupos; [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md)) |

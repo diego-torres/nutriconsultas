@@ -34,7 +34,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (mobile):** [#133 — Invitation token generation & hashing service](https://github.com/diego-torres/nutriconsultas/issues/133) (after [#132](https://github.com/diego-torres/nutriconsultas/issues/132) in-progress).
 
-**Current next issue (subscription):** [#211 — change plan tier](https://github.com/diego-torres/nutriconsultas/issues/211). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#210~~ merged PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224).
+**Current next issue (subscription):** [#207 — Stripe payment provider](https://github.com/diego-torres/nutriconsultas/issues/207). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#211~~ merged PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230).
 
 **Current next issue (nutritionist web):** [#221 — Export patient registration to .mpx](https://github.com/diego-torres/nutriconsultas/issues/221) → #222 → #223. See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 
@@ -426,6 +426,6 @@ gh pr create ...
 
 **GitHub drift (close when convenient):** #97, #111 done on `main` but open on GitHub (PRs #147, #151).
 
-**Subscription track (parallel):** [#180–#211](https://github.com/diego-torres/nutriconsultas/issues/180) — see [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#185~~ ✓ (PR #215); ~~#190~~ ✓ (PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216)); ~~#187~~ ✓ (PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218)); ~~#210~~ ✓ (PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224)). **NEXT:** #211 (+ Stripe #207/#208).
+**Subscription track (parallel):** [#180–#211](https://github.com/diego-torres/nutriconsultas/issues/180) — see [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#185~~ ✓ (PR #215); ~~#190~~ ✓ (PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216)); ~~#187~~ ✓ (PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218)); ~~#210~~ ✓ (PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224)); ~~#211~~ ✓ (PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230)). **NEXT:** #207 (+ #208 Stripe ops).
 
 See [`ISSUE.md`](ISSUE.md) Data contracts, [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) §F8, and [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) for per-endpoint and schema requirements.

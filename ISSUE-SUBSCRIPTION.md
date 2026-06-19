@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-18 — #211 **in-progress** (change plan tier); ~~#210~~ **done** (PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224)).
+**Last updated:** 2026-06-19 — ~~#211~~ **done** (PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230)); **NEXT:** #207 (Stripe provider).
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 
@@ -51,14 +51,14 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
 | 189 | Payment provider integration (Mercado Pago / abstraction) | https://github.com/diego-torres/nutriconsultas/issues/189 | **done** | 180 | MP impl merged; **superseded by Stripe #207** |
-| 207 | Payment provider integration (Stripe / abstraction) | https://github.com/diego-torres/nutriconsultas/issues/207 | open | 180, 189 | Migrate MP → Stripe |
+| **207** | Payment provider integration (Stripe / abstraction) | https://github.com/diego-torres/nutriconsultas/issues/207 | **NEXT** | 180, 189 | Migrate MP → Stripe |
 | 208 | Tramitar integración operativa con Stripe | https://github.com/diego-torres/nutriconsultas/issues/208 | open | 207 | Cuenta, credenciales, webhooks, test/live |
 | ~~204~~ | ~~Tramitar integración operativa con Mercado Pago~~ | https://github.com/diego-torres/nutriconsultas/issues/204 | **deferred** | — | Cerrado; reemplazado por #208 |
 | 184 | Admin invitations + payment checkout | https://github.com/diego-torres/nutriconsultas/issues/184 | **done** | 180, 182, 183 | Merged [PR #206](https://github.com/diego-torres/nutriconsultas/pull/206); GitHub closed 2026-06-17. Live checkout → Stripe (#207/#208); email delivery → #209 |
 | 209 | Invitation email — SES (Terraform) + localhost console sender | https://github.com/diego-torres/nutriconsultas/issues/209 | open | 184 | SES prod; `email.mode=console` for local dev |
 | 185 | Subscription lifecycle — grace, payment override, notifications | https://github.com/diego-torres/nutriconsultas/issues/185 | **done** | 180, ~~184~~ ✓ | Merged PR [#215](https://github.com/diego-torres/nutriconsultas/pull/215) |
 | 210 | Platform admin revoke nutritionist access and allow re-invite | https://github.com/diego-torres/nutriconsultas/issues/210 | **done** | 184, 182, ~~185~~ ✓ | Merged PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224) |
-| **211** | Platform admin change nutritionist subscription plan tier | https://github.com/diego-torres/nutriconsultas/issues/211 | **in-progress** | 181, 182, 184 | Upgrade/downgrade + Auth0 sync |
+| **211** | Platform admin change nutritionist subscription plan tier | https://github.com/diego-torres/nutriconsultas/issues/211 | **done** | 181, 182, 184 | Merged PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230) |
 
 ---
 
@@ -78,7 +78,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | 190 | Enforce patient and nutritionist limits per plan | https://github.com/diego-torres/nutriconsultas/issues/190 | **done** | 181, ~~185~~ ✓ | Merged PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) |
 | 187 | Gate report tiers and PDF export by plan | https://github.com/diego-torres/nutriconsultas/issues/187 | **done** | 181, ~~185~~ ✓, ~~190~~ ✓ | Merged PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218) |
 
-**Suggested order:** #211 (admin ops) and #207 (Stripe) in parallel; #220 unblocked after ~~#210~~ ✓.
+**Suggested order:** ~~#211~~ ✓; **#207** / **#208** (Stripe) in parallel; #220 unblocked after ~~#210~~ ✓.
 
 ---
 
@@ -99,7 +99,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | 1. Platform admin allowlist only | #183 (+ existing `PlatformAdminService`) |
 | 2. Admin assigns nutriologo-* / director-consultorio | #182 |
 | 3. Admin paid invitations, payment, grace, payment override | #184, #189, #185 |
-| 3b. Admin revoke access and change plan tier | ~~#210~~ ✓ PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224), **#211** |
+| 3b. Admin revoke access and change plan tier | ~~#210~~ ✓ PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224), ~~#211~~ ✓ PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230) |
 | 3c. Retention purge + S3 backup after revoke | #220 |
 | 4. Director invites nutritionists; enable/disable access | #186, #188 |
 | 5. Patient & nutritionist limits | #190 — PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) ✓ |

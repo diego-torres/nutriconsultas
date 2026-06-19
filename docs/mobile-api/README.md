@@ -40,7 +40,7 @@ Canonical cross-repo contracts for the `[Mobile API]` track. Indexed from [`../.
 
 **Nutritionist web NEXT:** [#221](https://github.com/diego-torres/nutriconsultas/issues/221) export → #222 import → #223 UI.
 
-**Subscription NEXT:** [#211](https://github.com/diego-torres/nutriconsultas/issues/211) change plan tier (~~#210~~ PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224), ~~#187~~ PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218), ~~#190~~ PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) on `main`).
+**Subscription NEXT:** [#207](https://github.com/diego-torres/nutriconsultas/issues/207) Stripe payment provider (~~#211~~ PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230), ~~#210~~ PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224), ~~#187~~ PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218), ~~#190~~ PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) on `main`).
 
 ## Provenance / drift
 
