@@ -42,6 +42,9 @@ class SubscriptionAdminRestControllerTest {
 	private ClinicRepository clinicRepository;
 
 	@Mock
+	private SubscriptionOwnerResolver ownerResolver;
+
+	@Mock
 	private PlatformAdminAuthorization platformAdminAuthorization;
 
 	@Mock
@@ -76,6 +79,8 @@ class SubscriptionAdminRestControllerTest {
 		final Clinic clinic = new Clinic();
 		clinic.setName("Minutriporción");
 		when(clinicRepository.findBySubscriptionId(2L)).thenReturn(Optional.of(clinic));
+		when(ownerResolver.resolve(2L))
+			.thenReturn(Optional.of(new SubscriptionOwnerView("nutri@example.com", "auth0|owner-1", 6L)));
 		final PagingRequest pagingRequest = new PagingRequest();
 		pagingRequest.setDraw(1);
 		pagingRequest.setStart(0);
@@ -88,8 +93,28 @@ class SubscriptionAdminRestControllerTest {
 		assertThat(pageArray.getRecordsFiltered()).isEqualTo(1);
 		assertThat(pageArray.getData()).hasSize(1);
 		assertThat(pageArray.getData().get(0).get(0)).isEqualTo("2");
-		assertThat(pageArray.getData().get(0).get(1)).isEqualTo("Minutriporción");
-		assertThat(pageArray.getData().get(0).get(2)).isEqualTo("PROFESIONAL");
+		assertThat(pageArray.getData().get(0).get(1)).isEqualTo("nutri@example.com");
+		assertThat(pageArray.getData().get(0).get(2)).isEqualTo("Minutriporción");
+		assertThat(pageArray.getData().get(0).get(3)).isEqualTo("PROFESIONAL");
+	}
+
+	@Test
+	void getPageArray_whenSubscriptionCancelled_showsRevokedLabelInsteadOfEditLink() {
+		final Subscription subscription = new Subscription();
+		subscription.setId(4L);
+		subscription.setPlanTier(PlanTier.BASICO);
+		subscription.setStatus(SubscriptionStatus.CANCELLED);
+		when(gridService.findPage(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(subscription)));
+		when(gridService.countAll()).thenReturn(1L);
+		when(ownerResolver.resolve(4L)).thenReturn(Optional.empty());
+		final PagingRequest pagingRequest = new PagingRequest();
+		pagingRequest.setDraw(1);
+		pagingRequest.setStart(0);
+		pagingRequest.setLength(25);
+
+		final PageArray pageArray = controller.getPageArray(pagingRequest);
+
+		assertThat(pageArray.getData().get(0).get(7)).contains("Revocada");
 	}
 
 }

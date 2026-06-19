@@ -26,6 +26,7 @@
             <h1 class="h3 mb-0 text-gray-800">Suscripciones</h1>
           </div>
           <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">Éxito</div>
+          <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">Error</div>
           <div class="card shadow mb-4">
             <div class="card-header py-3">
               <h6 class="m-0 font-weight-bold text-primary">Estado de suscripciones</h6>
@@ -36,6 +37,7 @@
                   <thead>
                     <tr>
                       <th>ID</th>
+                      <th>Correo titular</th>
                       <th>Consultorio</th>
                       <th>Plan</th>
                       <th>Estado</th>
@@ -99,7 +101,7 @@
           }
         },
         columnDefs: [
-          { targets: 6, orderable: false, searchable: false }
+          { targets: 7, orderable: false, searchable: false }
         ]
       });
     });

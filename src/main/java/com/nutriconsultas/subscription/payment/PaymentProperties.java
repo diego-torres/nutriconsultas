@@ -24,6 +24,8 @@ public class PaymentProperties {
 
 	private String currency = "MXN";
 
+	private boolean stubSimulateCheckout = true;
+
 	public String getProvider() {
 		return provider;
 	}
@@ -62,6 +64,14 @@ public class PaymentProperties {
 
 	public void setCurrency(final String currency) {
 		this.currency = currency;
+	}
+
+	public boolean isStubSimulateCheckout() {
+		return stubSimulateCheckout;
+	}
+
+	public void setStubSimulateCheckout(final boolean stubSimulateCheckout) {
+		this.stubSimulateCheckout = stubSimulateCheckout;
 	}
 
 	public boolean isMercadoPagoConfigured() {

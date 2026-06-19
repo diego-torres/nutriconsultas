@@ -39,6 +39,7 @@ import com.nutriconsultas.subscription.SubscriptionStatus;
 import com.nutriconsultas.subscription.payment.BillingInterval;
 import com.nutriconsultas.subscription.payment.CheckoutSession;
 import com.nutriconsultas.subscription.payment.PaymentCheckoutService;
+import com.nutriconsultas.subscription.payment.PaymentProviderException;
 import com.nutriconsultas.util.InvitationTokenHasher;
 
 @ExtendWith(MockitoExtension.class)
@@ -297,6 +298,21 @@ class NutritionistInvitationServiceTest {
 		assertThat(((RedeemNutritionistInvitationResult.CheckoutRedirect) result).checkoutUrl())
 			.isEqualTo("https://pay.test/checkout");
 		verify(provisioningService).createPendingSubscription(invitation);
+	}
+
+	@Test
+	void redeemPaidInvitation_whenPaymentProviderUnavailable_returnsServiceUnavailable() {
+		final NutritionistInvitation invitation = pendingInvitation();
+		invitation.setPaymentExempt(false);
+		when(invitationRepository.findByTokenHash(InvitationTokenHasher.hashToken(rawToken)))
+			.thenReturn(Optional.of(invitation));
+		when(paymentCheckoutService.createCheckoutSession(1L, PlanTier.PROFESIONAL, BillingInterval.MONTHLY))
+			.thenThrow(new PaymentProviderException("Payment provider is not configured"));
+
+		assertThatThrownBy(() -> invitationService.redeemInvitation(inviteePrincipal, rawToken))
+			.isInstanceOf(ResponseStatusException.class)
+			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode().value())
+			.isEqualTo(503);
 	}
 
 	@Test

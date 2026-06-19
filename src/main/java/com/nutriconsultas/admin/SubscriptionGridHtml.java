@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
+import org.springframework.web.util.HtmlUtils;
+
 import com.nutriconsultas.subscription.PlanTier;
 import com.nutriconsultas.subscription.SubscriptionStatus;
 
@@ -42,9 +44,19 @@ public final class SubscriptionGridHtml {
 		return DISPLAY_FORMAT.format(instant);
 	}
 
-	public static String editLink(final Long subscriptionId) {
+	public static String editLink(final Long subscriptionId, final SubscriptionStatus status) {
+		if (status == SubscriptionStatus.CANCELLED) {
+			return "<span class=\"text-muted small\">Revocada</span>";
+		}
 		return "<a class=\"btn btn-sm btn-primary\" href=\"/admin/platform/subscriptions/" + subscriptionId
 				+ "/edit\"><i class=\"fas fa-edit\"></i> Editar</a>";
+	}
+
+	public static String formatOwnerEmail(final SubscriptionOwnerView owner) {
+		if (owner == null || !owner.hasEmail()) {
+			return "—";
+		}
+		return HtmlUtils.htmlEscape(owner.email());
 	}
 
 }

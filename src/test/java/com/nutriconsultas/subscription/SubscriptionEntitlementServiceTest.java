@@ -2,6 +2,7 @@ package com.nutriconsultas.subscription;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import java.util.EnumSet;
@@ -13,6 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.nutriconsultas.subscription.lifecycle.SubscriptionAccessService;
 
 @ExtendWith(MockitoExtension.class)
 class SubscriptionEntitlementServiceTest {
@@ -35,6 +38,9 @@ class SubscriptionEntitlementServiceTest {
 	@Mock
 	private com.nutriconsultas.paciente.PacienteRepository pacienteRepository;
 
+	@Mock
+	private SubscriptionAccessService subscriptionAccessService;
+
 	private SubscriptionProperties subscriptionProperties;
 
 	private SubscriptionEntitlementServiceImpl service;
@@ -42,8 +48,11 @@ class SubscriptionEntitlementServiceTest {
 	@BeforeEach
 	void setUp() {
 		subscriptionProperties = new SubscriptionProperties();
+		lenient()
+			.when(subscriptionAccessService.findGrantingSubscriptionForUser(org.mockito.ArgumentMatchers.anyString()))
+			.thenReturn(Optional.empty());
 		service = new SubscriptionEntitlementServiceImpl(clinicMemberRepository, clinicRepository,
-				clinicInvitationRepository, pacienteRepository, subscriptionProperties);
+				clinicInvitationRepository, pacienteRepository, subscriptionProperties, subscriptionAccessService);
 	}
 
 	@Test
@@ -130,7 +139,7 @@ class SubscriptionEntitlementServiceTest {
 	void graceDeniedEntitlementsAreConfigurable() {
 		subscriptionProperties.setGraceDeniedEntitlements(EnumSet.of(Entitlement.REPORTS_FULL));
 		service = new SubscriptionEntitlementServiceImpl(clinicMemberRepository, clinicRepository,
-				clinicInvitationRepository, pacienteRepository, subscriptionProperties);
+				clinicInvitationRepository, pacienteRepository, subscriptionProperties, subscriptionAccessService);
 
 		final ClinicMember member = activeMember(SOLO_ID, PlanTier.PROFESIONAL);
 		member.getClinic().getSubscription().setStatus(SubscriptionStatus.GRACE);
@@ -348,6 +357,19 @@ class SubscriptionEntitlementServiceTest {
 			.isInstanceOf(SubscriptionLimitExceededException.class)
 			.extracting(ex -> ((SubscriptionLimitExceededException) ex).getMessageKey())
 			.isEqualTo(SubscriptionErrorResponses.KEY_NUTRITIONIST_LIMIT);
+	}
+
+	@Test
+	void hasEntitlementReflectsUpdatedSubscriptionPlanTierImmediately() {
+		final ClinicMember member = activeMember(SOLO_ID, PlanTier.PROFESIONAL);
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID)).thenReturn(Optional.of(member));
+
+		assertThat(service.hasEntitlement(SOLO_ID, Entitlement.PDF_EXPORT)).isTrue();
+
+		member.getClinic().getSubscription().setPlanTier(PlanTier.BASICO);
+
+		assertThat(service.getEffectivePlanTier(SOLO_ID)).contains(PlanTier.BASICO);
+		assertThat(service.hasEntitlement(SOLO_ID, Entitlement.PDF_EXPORT)).isFalse();
 	}
 
 	private static ClinicMember activeMember(final String userId, final PlanTier planTier) {

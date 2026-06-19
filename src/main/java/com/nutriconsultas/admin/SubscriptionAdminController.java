@@ -22,15 +22,20 @@ import com.nutriconsultas.subscription.Clinic;
 import com.nutriconsultas.subscription.ClinicRepository;
 import com.nutriconsultas.subscription.NutritionistInvitation;
 import com.nutriconsultas.subscription.NutritionistInvitationRepository;
+import com.nutriconsultas.subscription.PlanTier;
+import com.nutriconsultas.subscription.PlanTierChangeResult;
 import com.nutriconsultas.subscription.Subscription;
 import com.nutriconsultas.subscription.SubscriptionRepository;
 import com.nutriconsultas.subscription.SubscriptionStatus;
+import com.nutriconsultas.subscription.NutritionistRoleService;
 import com.nutriconsultas.subscription.invitation.NutritionistInvitationAccessRules;
 import com.nutriconsultas.subscription.invitation.NutritionistInvitationService;
 import com.nutriconsultas.subscription.lifecycle.AdminSubscriptionOverride;
 import com.nutriconsultas.subscription.lifecycle.SubscriptionLifecycleService;
 
 import jakarta.validation.Valid;
+
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller
 @RequestMapping("/admin/platform/subscriptions")
@@ -49,17 +54,24 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 
 	private final NutritionistInvitationService invitationService;
 
+	private final NutritionistRoleService nutritionistRoleService;
+
+	private final SubscriptionOwnerResolver ownerResolver;
+
 	public SubscriptionAdminController(final PlatformAdminAuthorization platformAdminAuthorization,
 			final SubscriptionRepository subscriptionRepository, final ClinicRepository clinicRepository,
 			final SubscriptionLifecycleService lifecycleService,
 			final NutritionistInvitationRepository invitationRepository,
-			final NutritionistInvitationService invitationService) {
+			final NutritionistInvitationService invitationService,
+			final NutritionistRoleService nutritionistRoleService, final SubscriptionOwnerResolver ownerResolver) {
 		super(platformAdminAuthorization);
 		this.subscriptionRepository = subscriptionRepository;
 		this.clinicRepository = clinicRepository;
 		this.lifecycleService = lifecycleService;
 		this.invitationRepository = invitationRepository;
 		this.invitationService = invitationService;
+		this.nutritionistRoleService = nutritionistRoleService;
+		this.ownerResolver = ownerResolver;
 	}
 
 	@GetMapping
@@ -72,16 +84,23 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 
 	@GetMapping("/{id}/edit")
 	public String editForm(@AuthenticationPrincipal final OidcUser principal, @PathVariable final Long id,
-			final Model model) {
+			final Model model, final RedirectAttributes redirectAttributes) {
 		requirePlatformAdmin(principal, "subscriptions.edit");
 		final Subscription subscription = subscriptionRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+		if (!SubscriptionAdminAccessRules.isEditable(subscription)) {
+			redirectAttributes.addFlashAttribute("errorMessage", "Las suscripciones revocadas no pueden editarse.");
+			return "redirect:/admin/platform/subscriptions";
+		}
 		if (!model.containsAttribute("form")) {
 			model.addAttribute("form", toForm(subscription));
 		}
 		model.addAttribute("subscription", subscription);
+		model.addAttribute("subscriptionOwner", ownerResolver.resolve(id).orElse(null));
 		model.addAttribute("clinicName", clinicRepository.findBySubscriptionId(id).map(Clinic::getName).orElse("—"));
 		model.addAttribute("revocableInvitationId", resolveRevocableInvitationId(subscription));
+		model.addAttribute("planTierChangeable", isPlanTierChangeable(subscription));
+		model.addAttribute("planTiers", PlanTier.values());
 		model.addAttribute("subscriptionStatuses", SubscriptionStatus.values());
 		model.addAttribute("activeMenu", "subscriptions");
 		return "sbadmin/platform/subscriptions/edit";
@@ -92,13 +111,20 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 			@Valid @ModelAttribute("form") final UpdateSubscriptionForm form, final BindingResult bindingResult,
 			final Model model, final RedirectAttributes redirectAttributes) {
 		requirePlatformAdmin(principal, "subscriptions.edit");
+		final Subscription subscription = subscriptionRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+		if (!SubscriptionAdminAccessRules.isEditable(subscription)) {
+			redirectAttributes.addFlashAttribute("errorMessage", "Las suscripciones revocadas no pueden editarse.");
+			return "redirect:/admin/platform/subscriptions";
+		}
 		if (bindingResult.hasErrors()) {
-			final Subscription subscription = subscriptionRepository.findById(id)
-				.orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
 			model.addAttribute("subscription", subscription);
+			model.addAttribute("subscriptionOwner", ownerResolver.resolve(id).orElse(null));
 			model.addAttribute("clinicName",
 					clinicRepository.findBySubscriptionId(id).map(Clinic::getName).orElse("—"));
 			model.addAttribute("revocableInvitationId", resolveRevocableInvitationId(subscription));
+			model.addAttribute("planTierChangeable", isPlanTierChangeable(subscription));
+			model.addAttribute("planTiers", PlanTier.values());
 			model.addAttribute("subscriptionStatuses", SubscriptionStatus.values());
 			model.addAttribute("activeMenu", "subscriptions");
 			return "sbadmin/platform/subscriptions/edit";
@@ -109,6 +135,36 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 		lifecycleService.applyAdminOverride(principal.getSubject(), id, override);
 		redirectAttributes.addFlashAttribute("successMessage", "Suscripción actualizada correctamente.");
 		return "redirect:/admin/platform/subscriptions";
+	}
+
+	@PostMapping("/{id}/change-plan-tier")
+	public String changePlanTier(@AuthenticationPrincipal final OidcUser principal, @PathVariable final Long id,
+			@RequestParam final PlanTier planTier, final RedirectAttributes redirectAttributes) {
+		requirePlatformAdmin(principal, "subscriptions.change-plan-tier");
+		final Subscription subscription = subscriptionRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+		if (!SubscriptionAdminAccessRules.isEditable(subscription)) {
+			redirectAttributes.addFlashAttribute("errorMessage", "Las suscripciones revocadas no pueden editarse.");
+			return "redirect:/admin/platform/subscriptions";
+		}
+		try {
+			final PlanTierChangeResult result = nutritionistRoleService.changeSubscriptionPlanTier(principal, id,
+					planTier);
+			if (result.previousTier() == result.newTier()) {
+				redirectAttributes.addFlashAttribute("successMessage", "El plan ya es " + planTier + ".");
+			}
+			else {
+				String message = "Plan actualizado de " + result.previousTier() + " a " + result.newTier() + ".";
+				if (!result.auth0SyncSucceeded()) {
+					message += " Advertencia: no se pudo sincronizar el rol en Auth0; reintente más tarde.";
+				}
+				redirectAttributes.addFlashAttribute("successMessage", message);
+			}
+		}
+		catch (ResponseStatusException ex) {
+			redirectAttributes.addFlashAttribute("errorMessage", ex.getReason());
+		}
+		return "redirect:/admin/platform/subscriptions/" + id + "/edit";
 	}
 
 	@PostMapping("/{id}/revoke-access")
@@ -144,6 +200,12 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 			.filter(NutritionistInvitationAccessRules::canRevokeAccess)
 			.map(NutritionistInvitation::getId)
 			.orElse(null);
+	}
+
+	private static boolean isPlanTierChangeable(final Subscription subscription) {
+		return subscription.getStatus() == SubscriptionStatus.TRIAL
+				|| subscription.getStatus() == SubscriptionStatus.ACTIVE
+				|| subscription.getStatus() == SubscriptionStatus.GRACE;
 	}
 
 }

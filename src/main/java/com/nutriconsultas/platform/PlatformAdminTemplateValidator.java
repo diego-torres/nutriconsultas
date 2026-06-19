@@ -3,6 +3,7 @@ package com.nutriconsultas.platform;
 import java.util.Map;
 
 import com.nutriconsultas.admin.CreateNutritionistInvitationForm;
+import com.nutriconsultas.admin.SubscriptionOwnerView;
 import com.nutriconsultas.admin.UpdateSubscriptionForm;
 import com.nutriconsultas.subscription.InvitationStatus;
 import com.nutriconsultas.subscription.PlanTier;
@@ -30,6 +31,8 @@ public class PlatformAdminTemplateValidator extends BaseTemplateValidator {
 		variables.put("subscription", createMockSubscription());
 		variables.put("clinicName", "Consultorio demo");
 		variables.put("revocableInvitationId", 1L);
+		variables.put("planTierChangeable", true);
+		variables.put("subscriptionOwner", new SubscriptionOwnerView("admin@example.com", "auth0|owner-test", 1L));
 		variables.put("subscriptionBanner", null);
 		variables.put("subscriptionStatus", com.nutriconsultas.subscription.SubscriptionStatus.SUSPENDED);
 		variables.put("updateSubscriptionForm", new UpdateSubscriptionForm());

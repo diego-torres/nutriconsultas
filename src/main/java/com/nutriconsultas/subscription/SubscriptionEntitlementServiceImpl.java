@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.subscription.lifecycle.SubscriptionAccessService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,14 +27,18 @@ public class SubscriptionEntitlementServiceImpl implements SubscriptionEntitleme
 
 	private final SubscriptionProperties subscriptionProperties;
 
+	private final SubscriptionAccessService subscriptionAccessService;
+
 	public SubscriptionEntitlementServiceImpl(final ClinicMemberRepository clinicMemberRepository,
 			final ClinicRepository clinicRepository, final ClinicInvitationRepository clinicInvitationRepository,
-			final PacienteRepository pacienteRepository, final SubscriptionProperties subscriptionProperties) {
+			final PacienteRepository pacienteRepository, final SubscriptionProperties subscriptionProperties,
+			final SubscriptionAccessService subscriptionAccessService) {
 		this.clinicMemberRepository = clinicMemberRepository;
 		this.clinicRepository = clinicRepository;
 		this.clinicInvitationRepository = clinicInvitationRepository;
 		this.pacienteRepository = pacienteRepository;
 		this.subscriptionProperties = subscriptionProperties;
+		this.subscriptionAccessService = subscriptionAccessService;
 	}
 
 	@Override
@@ -96,7 +101,9 @@ public class SubscriptionEntitlementServiceImpl implements SubscriptionEntitleme
 		final Clinic clinic = clinicRepository.findByDirectorUserIdWithSubscription(directorUserId)
 			.orElseThrow(() -> new SubscriptionLimitExceededException(
 					SubscriptionErrorResponses.KEY_NUTRITIONIST_INVITE_DENIED));
-		final PlanEntitlements planEntitlements = PlanEntitlements.forTier(clinic.getSubscription().getPlanTier());
+		final Subscription subscription = subscriptionAccessService.findGrantingSubscriptionForUser(directorUserId)
+			.orElse(clinic.getSubscription());
+		final PlanEntitlements planEntitlements = PlanEntitlements.forTier(subscription.getPlanTier());
 		final int maxNutritionists = planEntitlements.getMaxNutritionists();
 		final long activeMembers = clinicMemberRepository.countByClinicIdAndMembershipStatus(clinic.getId(),
 				MembershipStatus.ACTIVE);
@@ -144,8 +151,11 @@ public class SubscriptionEntitlementServiceImpl implements SubscriptionEntitleme
 	private Optional<UserAccessContext> resolveAccess(final String userId) {
 		final Optional<ClinicMember> memberOpt = clinicMemberRepository.findByUserIdWithClinicAndSubscription(userId);
 		if (memberOpt.isEmpty()) {
-			return clinicRepository.findByDirectorUserIdWithSubscription(userId)
-				.map(clinic -> new UserAccessContext(clinic.getSubscription(), clinic.getId(), true));
+			return clinicRepository.findByDirectorUserIdWithSubscription(userId).flatMap(clinic -> {
+				final Subscription subscription = subscriptionAccessService.findGrantingSubscriptionForUser(userId)
+					.orElse(clinic.getSubscription());
+				return Optional.of(new UserAccessContext(subscription, clinic.getId(), true));
+			});
 		}
 		final ClinicMember member = memberOpt.get();
 		if (member.getMembershipStatus() == MembershipStatus.SUSPENDED) {
@@ -153,8 +163,9 @@ public class SubscriptionEntitlementServiceImpl implements SubscriptionEntitleme
 			return Optional.empty();
 		}
 		final boolean director = member.getRole() == ClinicMemberRole.DIRECTOR;
-		return Optional
-			.of(new UserAccessContext(member.getClinic().getSubscription(), member.getClinic().getId(), director));
+		final Subscription subscription = subscriptionAccessService.findGrantingSubscriptionForUser(userId)
+			.orElse(member.getClinic().getSubscription());
+		return Optional.of(new UserAccessContext(subscription, member.getClinic().getId(), director));
 	}
 
 	private void logSuspendedMember(final String userId) {

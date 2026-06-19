@@ -29,6 +29,53 @@
             </a>
           </div>
           <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">Éxito</div>
+          <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">Error</div>
+          <div class="card shadow mb-4" th:if="${subscriptionOwner != null}">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-secondary">Titular de la suscripción</h6>
+            </div>
+            <div class="card-body">
+              <dl class="row mb-0">
+                <dt class="col-sm-3">Correo</dt>
+                <dd class="col-sm-9" th:text="${subscriptionOwner.hasEmail() ? subscriptionOwner.email() : '—'}">
+                  test@example.com</dd>
+                <dt class="col-sm-3">Usuario (Auth0)</dt>
+                <dd class="col-sm-9">
+                  <code th:if="${subscriptionOwner.hasUserId()}" th:text="${subscriptionOwner.userId()}">auth0|…</code>
+                  <span th:unless="${subscriptionOwner.hasUserId()}" class="text-muted">— (invitación no redimida)</span>
+                </dd>
+                <dt class="col-sm-3" th:if="${subscriptionOwner.invitationId() != null}">Invitación</dt>
+                <dd class="col-sm-9" th:if="${subscriptionOwner.invitationId() != null}">
+                  <a th:href="@{/admin/platform/invitations(highlight=${subscriptionOwner.invitationId()})}">
+                    Ver invitación #<span th:text="${subscriptionOwner.invitationId()}">1</span>
+                  </a>
+                </dd>
+              </dl>
+            </div>
+          </div>
+          <div class="card shadow mb-4" th:if="${planTierChangeable}">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Cambiar plan</h6>
+            </div>
+            <div class="card-body">
+              <p class="text-muted mb-3">Plan actual: <strong th:text="${subscription.planTier}">BASICO</strong>.
+                El cambio aplica de inmediato a los límites y permisos; no requiere nuevo checkout para suscripciones
+                de pago (override administrativo MVP).</p>
+              <form th:action="@{/admin/platform/subscriptions/{id}/change-plan-tier(id=${subscription.id})}"
+                method="post" class="change-plan-tier-form">
+                <div class="form-group">
+                  <label for="newPlanTier">Nuevo plan</label>
+                  <select class="form-control" id="newPlanTier" name="planTier" required>
+                    <option th:each="tier : ${planTiers}" th:value="${tier}" th:text="${tier}"
+                      th:selected="${tier == subscription.planTier}">BASICO</option>
+                  </select>
+                </div>
+                <button type="button" class="btn btn-primary change-plan-tier-btn">
+                  <i class="fas fa-exchange-alt"></i> Cambiar plan
+                </button>
+              </form>
+            </div>
+          </div>
           <div class="card shadow mb-4" th:if="${revocableInvitationId != null}">
             <div class="card-header py-3">
               <h6 class="m-0 font-weight-bold text-danger">Revocar acceso</h6>
@@ -49,8 +96,7 @@
               <h6 class="m-0 font-weight-bold text-primary">Override administrativo</h6>
             </div>
             <div class="card-body">
-              <p class="text-muted">Consultorio: <strong th:text="${clinicName}">—</strong> · Plan:
-                <strong th:text="${subscription.planTier}">BASICO</strong></p>
+              <p class="text-muted">Consultorio: <strong th:text="${clinicName}">—</strong></p>
               <form th:action="@{/admin/platform/subscriptions/{id}(id=${subscription.id})}" th:object="${form}"
                 method="post">
                 <div class="form-group">
@@ -104,6 +150,42 @@
   <script>
     'use strict';
     jQuery(document).ready(function ($) {
+      var currentPlanTier = /*[[${subscription.planTier}]]*/ 'BASICO';
+      var planTierOrder = { BASICO: 0, PROFESIONAL: 1, PLUS: 2, CONSULTORIO: 3 };
+
+      $('.change-plan-tier-btn').on('click', function () {
+        var $form = $(this).closest('.change-plan-tier-form');
+        var newPlanTier = $('#newPlanTier').val();
+        if (newPlanTier === currentPlanTier) {
+          swal({
+            title: 'Sin cambios',
+            text: 'El plan seleccionado es el mismo que el actual.',
+            type: 'info',
+            timer: 2500
+          });
+          return;
+        }
+        var isDowngrade = planTierOrder[newPlanTier] < planTierOrder[currentPlanTier];
+        var text = isDowngrade
+          ? 'Está reduciendo el plan. Si el consultorio supera los límites del nuevo plan, el cambio será rechazado. ¿Desea continuar?'
+          : 'Se actualizarán los permisos y límites del nutriólogo. ¿Desea continuar?';
+        swal({
+          title: 'Cambiar plan',
+          text: text,
+          type: isDowngrade ? 'warning' : 'info',
+          showCancelButton: true,
+          confirmButtonColor: isDowngrade ? '#d33' : '#3085d6',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Sí, cambiar plan',
+          cancelButtonText: 'No',
+          closeOnConfirm: true
+        }, function (isConfirm) {
+          if (isConfirm) {
+            $form.submit();
+          }
+        });
+      });
+
       $('.revoke-subscription-access-btn').on('click', function () {
         var $form = $(this).closest('.revoke-subscription-access-form');
         swal({
