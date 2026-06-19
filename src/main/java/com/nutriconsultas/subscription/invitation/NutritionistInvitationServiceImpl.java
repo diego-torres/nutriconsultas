@@ -218,7 +218,7 @@ public class NutritionistInvitationServiceImpl implements NutritionistInvitation
 		}
 		catch (PaymentProviderException ex) {
 			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
-					"El pago en línea no está configurado. Solicite una invitación exenta de pago al administrador.");
+					"El pago en línea no está configurado. Solicite una invitación exenta de pago al administrador.", ex);
 		}
 	}
 

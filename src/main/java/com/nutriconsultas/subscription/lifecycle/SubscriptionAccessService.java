@@ -48,10 +48,8 @@ public class SubscriptionAccessService {
 
 	@Transactional(readOnly = true)
 	public boolean isAdminAccessBlocked(final String userId) {
-		if (findGrantingSubscriptionForUser(userId).isPresent()) {
-			return false;
-		}
-		return findLinkedSubscription(userId).map(this::isBlockedStatus).orElse(false);
+		return findGrantingSubscriptionForUser(userId).isEmpty()
+				&& findLinkedSubscription(userId).map(this::isBlockedStatus).orElse(false);
 	}
 
 	@Transactional(readOnly = true)
