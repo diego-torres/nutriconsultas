@@ -600,7 +600,7 @@ Issue registry: [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md). Plan: 
 
 **Epic #221–#223** (2026-06-18): export/import patient **registration** to `.mpx` (YAML, no history) + export/delete UI. ~~#221~~ **done** (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254)). **NEXT:** [#222 import](https://github.com/diego-torres/nutriconsultas/issues/222) → #223. Complements #190 patient caps; available all tiers.
 
-**Epics #232–#242** (2026-06-19): diet catalog (#232–#235), branding (#236–#237), diet/platillo UX (#238–#240), patient UX (#241–#242). See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
+**Epics #232–#242** (2026-06-19): diet catalog (#232–#235), branding (#236–#237), diet/platillo UX (#238–#240), patient UX (#241–#242). **Epic #257–#259** (2026-06-19): platillo catalog ownership (lock system rows, creator edit, copy). See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 
 **Bug ~~#250~~** (2026-06-19): diet ingesta platillo name links to wrong catalog platillo — **done** (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)).
 
