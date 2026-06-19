@@ -64,4 +64,19 @@ public class LiquibaseMigrationTest {
 			.isEqualTo(1L);
 	}
 
+	@Test
+	public void testPlatilloIngestaSourcePlatilloIdBackfilled() {
+		assertThat(
+				jdbc.queryForObject(
+						"SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS "
+								+ "WHERE TABLE_NAME = 'PLATILLO_INGESTA' AND COLUMN_NAME = 'SOURCE_PLATILLO_ID'",
+						Long.class))
+			.isEqualTo(1L);
+		assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM platillo_ingesta WHERE source_platillo_id IS NOT NULL",
+				Long.class))
+			.isGreaterThan(0L);
+		assertThat(jdbc.queryForObject("SELECT source_platillo_id FROM platillo_ingesta WHERE id = 32", Long.class))
+			.isEqualTo(97L);
+	}
+
 }

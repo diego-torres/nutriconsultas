@@ -1,0 +1,37 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-platillo-ingesta-source-platillo-id-column
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: platillo_ingesta
+              columnName: source_platillo_id
+      changes:
+        - addColumn:
+            tableName: platillo_ingesta
+            columns:
+              - column:
+                  name: source_platillo_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+  - changeSet:
+      id: 008-platillo-ingesta-source-platillo-id-backfill-postgresql
+      author: nutriconsultas
+      dbms: postgresql
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/data/platillo-ingesta-source-backfill.postgresql.sql
+            splitStatements: true
+            stripComments: true
+  - changeSet:
+      id: 008-platillo-ingesta-source-platillo-id-backfill-h2
+      author: nutriconsultas
+      dbms: h2
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/data/platillo-ingesta-source-backfill.h2.sql
+            splitStatements: true
+            stripComments: true

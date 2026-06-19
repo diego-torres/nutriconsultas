@@ -34,6 +34,12 @@ public class PlatilloIngesta extends AbstractNutrible {
 
 	private String name;
 
+	/**
+	 * Catalog {@link com.nutriconsultas.platillos.Platillo#id} when copied from the
+	 * platillo catalog.
+	 */
+	private Long sourcePlatilloId;
+
 	private Integer portions = 1;
 
 	private String recommendations;

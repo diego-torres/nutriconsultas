@@ -606,9 +606,11 @@
                                 <tbody>
                                   <tr th:each="platillo : ${ingesta.platillos}">
                                     <td>
-                                      <a th:href="@{/admin/platillos/{id}(id=${platillo.id})}" 
+                                      <a th:if="${platillo.sourcePlatilloId != null}"
+                                         th:href="@{/admin/platillos/{id}(id=${platillo.sourcePlatilloId})}"
                                          th:text="${platillo.name}"
                                          title="Ver detalles del platillo"></a>
+                                      <span th:if="${platillo.sourcePlatilloId == null}" th:text="${platillo.name}"></span>
                                     </td>
                                     <td>
                                       <div class="input-group input-group-sm" style="width: 120px;">

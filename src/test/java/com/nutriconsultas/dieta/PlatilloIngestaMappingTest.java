@@ -13,6 +13,7 @@ class PlatilloIngestaMappingTest {
 	@Test
 	void mapPlatilloIngestaCopiesMetadata() {
 		final Platillo platillo = new Platillo();
+		platillo.setId(97L);
 		platillo.setName("Test platillo");
 		platillo.setDescription("Desc");
 		platillo.setEnergia(100);
@@ -20,6 +21,7 @@ class PlatilloIngestaMappingTest {
 
 		final PlatilloIngesta ingesta = PlatilloIngestaMapping.mapPlatilloIngesta(platillo);
 
+		assertThat(ingesta.getSourcePlatilloId()).isEqualTo(97L);
 		assertThat(ingesta.getName()).isEqualTo("Test platillo");
 		assertThat(ingesta.getRecommendations()).isEqualTo("Desc");
 		assertThat(ingesta.getEnergia()).isEqualTo(100);
