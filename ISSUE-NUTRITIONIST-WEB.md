@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-19 — ~~#221~~ **done** (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254), deployed EC2). ~~#250~~ **done** (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)). **NEXT:** [#222 import](https://github.com/diego-torres/nutriconsultas/issues/222). Epics **#232–#242**, **#257–#259** (platillo ownership) registered.
+**Last updated:** 2026-06-19 — ~~#221~~ **done** (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254), deployed EC2). ~~#222~~ **done** (PR [#261](https://github.com/diego-torres/nutriconsultas/pull/261)). ~~#250~~ **done** (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)). **NEXT:** [#223 export/delete UI](https://github.com/diego-torres/nutriconsultas/issues/223). Epics **#232–#242**, **#257–#259** (platillo ownership) registered.
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -37,8 +37,8 @@ Help nutritionists **rotate patient slots** (especially **plan básico** cap via
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
 | **221** | Export patient registration to .mpx (YAML, no history) | https://github.com/diego-torres/nutriconsultas/issues/221 | **done** | #156, #190 (context) | PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254); `GET /admin/pacientes/{id}/export.mpx` |
-| **222** | Import patient registration from .mpx file | https://github.com/diego-torres/nutriconsultas/issues/222 | **NEXT** | **221**, #190 | New `Paciente`; no history restore |
-| 223 | Patient export and delete actions with pre-delete backup | https://github.com/diego-torres/nutriconsultas/issues/223 | open | **221**, **222**, #190 | SweetAlert; historial loss copy |
+| **222** | Import patient registration from .mpx file | https://github.com/diego-torres/nutriconsultas/issues/222 | **done** | **221**, #190 | PR [#261](https://github.com/diego-torres/nutriconsultas/pull/261); `POST /admin/pacientes/importar.mpx` |
+| **223** | Patient export and delete actions with pre-delete backup | https://github.com/diego-torres/nutriconsultas/issues/223 | **NEXT** | **221**, **222**, #190 | SweetAlert; historial loss copy |
 
 **All tiers:** export/import/delete UI is **not** entitlement-gated; basic plan is the primary use case.
 

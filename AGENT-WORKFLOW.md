@@ -42,7 +42,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (subscription):** [#207 — Stripe payment provider](https://github.com/diego-torres/nutriconsultas/issues/207). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#211~~ merged PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230).
 
-**Current next issue (nutritionist web):** [#222 — Import patient registration from .mpx](https://github.com/diego-torres/nutriconsultas/issues/222) → #223. ~~#221~~ done (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254)). ~~#250~~ done (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)). See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
+**Current next issue (nutritionist web):** [#223 — Patient export and delete actions](https://github.com/diego-torres/nutriconsultas/issues/223). ~~#222~~ done (PR [#261](https://github.com/diego-torres/nutriconsultas/pull/261)). ~~#221~~ done (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254)). ~~#250~~ done (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)). See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 
 ---
 
@@ -432,7 +432,7 @@ gh pr create ...
 
 **Subscription track (parallel):** see [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#180–#185~~, ~~#187~~ (PR #218), ~~#190~~ (PR #216), ~~#210~~ (PR #224), ~~#211~~ (PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230)) on `main`. **NEXT:** #207 (+ #208 Stripe ops, email #209, retention #220).
 
-**Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) — MPX epic **#221–#223**; ~~#221~~ done (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254)); **NEXT:** #222 import.
+**Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) — MPX epic **#221–#223**; ~~#221~~ done (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254)); ~~#222~~ done (PR [#261](https://github.com/diego-torres/nutriconsultas/pull/261)); **NEXT:** #223 export/delete UI.
 
 **Production (2026-06-18):** ~~#226~~ invitation base URL fix (PR #227) — `APP_BASE_URL` / host remediation on EC2.
 

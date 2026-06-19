@@ -1,6 +1,7 @@
 package com.nutriconsultas.paciente;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,5 +74,7 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 
 	@Query("SELECT COUNT(p) FROM Paciente p WHERE p.userId IN :userIds")
 	long countByUserIdIn(@Param("userIds") Collection<String> userIds);
+
+	boolean existsByUserIdAndNameIgnoreCaseAndDob(String userId, String name, Date dob);
 
 }
