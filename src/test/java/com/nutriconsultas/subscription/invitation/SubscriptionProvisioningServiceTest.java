@@ -15,10 +15,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.nutriconsultas.auth0.Auth0RoleSyncClient;
+import com.nutriconsultas.subscription.Clinic;
+import com.nutriconsultas.subscription.ClinicMember;
 import com.nutriconsultas.subscription.ClinicMemberRepository;
 import com.nutriconsultas.subscription.ClinicMemberRole;
 import com.nutriconsultas.subscription.ClinicRepository;
 import com.nutriconsultas.subscription.InvitationStatus;
+import com.nutriconsultas.subscription.MembershipStatus;
 import com.nutriconsultas.subscription.NutritionistInvitation;
 import com.nutriconsultas.subscription.PlanTier;
 import com.nutriconsultas.subscription.Subscription;
@@ -51,7 +54,7 @@ class SubscriptionProvisioningServiceTest {
 	void activateTrialAccessCreatesClinicAndSyncsRole() {
 		final NutritionistInvitation invitation = invitation(PlanTier.BASICO, true);
 		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription("auth0|user-1")).thenReturn(Optional.empty());
-		when(clinicRepository.findByDirectorUserId("auth0|user-1")).thenReturn(Optional.empty());
+		when(clinicRepository.findByDirectorUserIdWithSubscription("auth0|user-1")).thenReturn(Optional.empty());
 		when(subscriptionRepository.save(org.mockito.ArgumentMatchers.any(Subscription.class)))
 			.thenAnswer(invocation -> {
 				final Subscription subscription = invocation.getArgument(0);
@@ -76,10 +79,42 @@ class SubscriptionProvisioningServiceTest {
 	}
 
 	@Test
+	void activatePaidAccessRelinksClinicWhenPreviousSubscriptionCancelled() {
+		final Subscription cancelled = new Subscription();
+		cancelled.setId(2L);
+		cancelled.setPlanTier(PlanTier.PROFESIONAL);
+		cancelled.setStatus(SubscriptionStatus.CANCELLED);
+		final Subscription active = new Subscription();
+		active.setId(5L);
+		active.setPlanTier(PlanTier.BASICO);
+		active.setStatus(SubscriptionStatus.ACTIVE);
+		final Clinic clinic = new Clinic();
+		clinic.setId(2L);
+		clinic.setSubscription(cancelled);
+		final ClinicMember member = new ClinicMember();
+		member.setClinic(clinic);
+		member.setUserId("auth0|user-1");
+		member.setRole(ClinicMemberRole.NUTRITIONIST);
+		member.setMembershipStatus(MembershipStatus.ACTIVE);
+		final NutritionistInvitation invitation = invitation(PlanTier.BASICO, false);
+		invitation.setSubscription(active);
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription("auth0|user-1"))
+			.thenReturn(Optional.of(member));
+		when(clinicRepository.save(org.mockito.ArgumentMatchers.any())).thenAnswer(invocation -> invocation.getArgument(0));
+		when(auth0RoleSyncClient.isConfigured()).thenReturn(false);
+
+		provisioningService.activatePaidAccess(invitation, active);
+
+		assertThat(clinic.getSubscription()).isEqualTo(active);
+		verify(clinicRepository).save(clinic);
+		verify(clinicMemberRepository).save(member);
+	}
+
+	@Test
 	void activateTrialAccessContinuesWhenAuth0SyncFails() {
 		final NutritionistInvitation invitation = invitation(PlanTier.BASICO, true);
 		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription("auth0|user-1")).thenReturn(Optional.empty());
-		when(clinicRepository.findByDirectorUserId("auth0|user-1")).thenReturn(Optional.empty());
+		when(clinicRepository.findByDirectorUserIdWithSubscription("auth0|user-1")).thenReturn(Optional.empty());
 		when(subscriptionRepository.save(org.mockito.ArgumentMatchers.any(Subscription.class)))
 			.thenAnswer(invocation -> {
 				final Subscription subscription = invocation.getArgument(0);

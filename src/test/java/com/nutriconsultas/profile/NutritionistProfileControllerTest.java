@@ -5,6 +5,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
+
+import java.time.Instant;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +20,13 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
+
+import com.nutriconsultas.subscription.PlanTier;
+import com.nutriconsultas.subscription.Subscription;
+import com.nutriconsultas.subscription.SubscriptionStatus;
+import com.nutriconsultas.subscription.lifecycle.SubscriptionAccessService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,6 +48,9 @@ public class NutritionistProfileControllerTest {
 	@Mock
 	private NutritionistProfileService profileService;
 
+	@Mock
+	private SubscriptionAccessService subscriptionAccessService;
+
 	private MockMvc mockMvc;
 
 	private NutritionistProfile mockProfile;
@@ -49,6 +63,33 @@ public class NutritionistProfileControllerTest {
 		mockProfile.setUserId("auth0|test123");
 		mockProfile.setCedulaProfesional("12345678");
 		mockProfile.setDisplayName("Dra. Test");
+	}
+
+	@Test
+	public void perfilAddsSubscriptionPlanToModel() {
+		when(profileService.getOrCreateProfile("auth0|test123")).thenReturn(mockProfile);
+		final Subscription subscription = new Subscription();
+		subscription.setPlanTier(PlanTier.BASICO);
+		subscription.setStatus(SubscriptionStatus.ACTIVE);
+		subscription.setPeriodStart(Instant.parse("2026-06-01T12:00:00Z"));
+		subscription.setPeriodEnd(Instant.parse("2026-07-01T12:00:00Z"));
+		when(subscriptionAccessService.findGrantingSubscriptionForUser("auth0|test123"))
+			.thenReturn(Optional.of(subscription));
+
+		final Model model = new ExtendedModelMap();
+		final String view = controller.perfil(org.mockito.Mockito.mock(
+				org.springframework.security.oauth2.core.oidc.user.OidcUser.class, invocation -> {
+					if ("getSubject".equals(invocation.getMethod().getName())) {
+						return "auth0|test123";
+					}
+					return org.mockito.Mockito.RETURNS_DEFAULTS.answer(invocation);
+				}), model);
+
+		assertThat(view).isEqualTo("sbadmin/profile/formulario");
+		assertThat(model.getAttribute("subscriptionPlanLabel")).isEqualTo("Básico");
+		assertThat(model.getAttribute("subscriptionStatus")).isEqualTo(SubscriptionStatus.ACTIVE);
+		assertThat(model.getAttribute("subscriptionPeriodStartLabel")).isEqualTo("01/06/2026");
+		assertThat(model.getAttribute("subscriptionPeriodEndLabel")).isEqualTo("01/07/2026");
 	}
 
 	@Test

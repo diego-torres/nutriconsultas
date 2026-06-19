@@ -2,6 +2,7 @@ package com.nutriconsultas.subscription.invitation;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -106,12 +107,43 @@ public class SubscriptionProvisioningService {
 		subscription.setPeriodEnd(Instant.now().plus(TRIAL_PERIOD_DAYS, ChronoUnit.DAYS));
 	}
 
-	private void provisionClinicAccess(final String userId, final PlanTier planTier, final Subscription subscription,
-			final String invitedByUserId) {
-		if (clinicMemberRepository.findByUserIdWithClinicAndSubscription(userId).isPresent()) {
+	private void relinkClinicIfRevoked(final Clinic clinic, final ClinicMember member, final PlanTier planTier,
+			final Subscription subscription, final String userId) {
+		final Subscription existingSubscription = clinic.getSubscription();
+		if (existingSubscription != null && existingSubscription.getId().equals(subscription.getId())) {
 			return;
 		}
-		if (clinicRepository.findByDirectorUserId(userId).isPresent()) {
+		if (existingSubscription != null && grantsClinicAccess(existingSubscription.getStatus())) {
+			return;
+		}
+		clinic.setSubscription(subscription);
+		clinicRepository.save(clinic);
+		if (member != null) {
+			member.setMembershipStatus(MembershipStatus.ACTIVE);
+			clinicMemberRepository.save(member);
+		}
+		recordProvisioningAudit(subscription, userId, planTier);
+		if (log.isInfoEnabled()) {
+			log.info("Re-linked clinic to new subscription: userId={}, clinicId={}, subscriptionId={}, planTier={}",
+					userId, clinic.getId(), subscription.getId(), planTier);
+		}
+	}
+
+	private static boolean grantsClinicAccess(final SubscriptionStatus status) {
+		return status == SubscriptionStatus.TRIAL || status == SubscriptionStatus.ACTIVE
+				|| status == SubscriptionStatus.GRACE;
+	}
+
+	private void provisionClinicAccess(final String userId, final PlanTier planTier, final Subscription subscription,
+			final String invitedByUserId) {
+		final Optional<ClinicMember> memberOpt = clinicMemberRepository.findByUserIdWithClinicAndSubscription(userId);
+		if (memberOpt.isPresent()) {
+			relinkClinicIfRevoked(memberOpt.get().getClinic(), memberOpt.get(), planTier, subscription, userId);
+			return;
+		}
+		final Optional<Clinic> directorClinic = clinicRepository.findByDirectorUserIdWithSubscription(userId);
+		if (directorClinic.isPresent()) {
+			relinkClinicIfRevoked(directorClinic.get(), null, planTier, subscription, userId);
 			return;
 		}
 		final Clinic clinic = new Clinic();

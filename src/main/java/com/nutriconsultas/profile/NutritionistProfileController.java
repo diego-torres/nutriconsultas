@@ -1,8 +1,10 @@
 package com.nutriconsultas.profile;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.nutriconsultas.controller.AbstractAuthorizedController;
+import com.nutriconsultas.subscription.lifecycle.SubscriptionAccessService;
 import com.nutriconsultas.util.LogRedaction;
 
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +33,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NutritionistProfileController extends AbstractAuthorizedController {
 
-	@Autowired
-	private NutritionistProfileService profileService;
+	private static final DateTimeFormatter VIGENCIA_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+		.withZone(ZoneId.of("America/Mexico_City"));
+
+	private final NutritionistProfileService profileService;
+
+	private final SubscriptionAccessService subscriptionAccessService;
+
+	public NutritionistProfileController(final NutritionistProfileService profileService,
+			final SubscriptionAccessService subscriptionAccessService) {
+		this.profileService = profileService;
+		this.subscriptionAccessService = subscriptionAccessService;
+	}
 
 	/**
 	 * Renders the profile form.
@@ -43,10 +56,7 @@ public class NutritionistProfileController extends AbstractAuthorizedController 
 	public String perfil(@AuthenticationPrincipal final OidcUser principal, final Model model) {
 		log.debug("Loading profile page");
 		model.addAttribute("activeMenu", "perfil");
-		final String userId = principal.getSubject();
-		final NutritionistProfile profile = profileService.getOrCreateProfile(userId);
-		log.info("Loaded profile: {}", LogRedaction.redactNutritionistProfile(profile.getId()));
-		model.addAttribute("profile", profile);
+		populateProfileModel(model, principal.getSubject());
 		return "sbadmin/profile/formulario";
 	}
 
@@ -82,8 +92,7 @@ public class NutritionistProfileController extends AbstractAuthorizedController 
 		String result;
 		if (file.isEmpty()) {
 			log.error("Logo upload failed: file is empty");
-			final NutritionistProfile profile = profileService.getOrCreateProfile(userId);
-			model.addAttribute("profile", profile);
+			populateProfileModel(model, userId);
 			model.addAttribute("errorMessage", "El archivo está vacío");
 			result = "sbadmin/profile/formulario";
 		}
@@ -104,13 +113,31 @@ public class NutritionistProfileController extends AbstractAuthorizedController 
 			}
 			catch (final IOException e) {
 				log.error("Failed to upload logo for user: {}", LogRedaction.redactUserId(userId), e);
-				final NutritionistProfile profile = profileService.getOrCreateProfile(userId);
-				model.addAttribute("profile", profile);
+				populateProfileModel(model, userId);
 				model.addAttribute("errorMessage", "Error al subir el logo");
 				result = "sbadmin/profile/formulario";
 			}
 		}
 		return result;
+	}
+
+	private void populateProfileModel(final Model model, final String userId) {
+		final NutritionistProfile profile = profileService.getOrCreateProfile(userId);
+		log.info("Loaded profile: {}", LogRedaction.redactNutritionistProfile(profile.getId()));
+		model.addAttribute("profile", profile);
+		subscriptionAccessService.findGrantingSubscriptionForUser(userId).ifPresent(subscription -> {
+			model.addAttribute("subscriptionPlanLabel", subscription.getPlanTier().getDisplayName());
+			model.addAttribute("subscriptionStatus", subscription.getStatus());
+			model.addAttribute("subscriptionPeriodStartLabel", formatVigencia(subscription.getPeriodStart()));
+			model.addAttribute("subscriptionPeriodEndLabel", formatVigencia(subscription.getPeriodEnd()));
+		});
+	}
+
+	private static String formatVigencia(final Instant instant) {
+		if (instant == null) {
+			return null;
+		}
+		return VIGENCIA_FORMAT.format(instant);
 	}
 
 }

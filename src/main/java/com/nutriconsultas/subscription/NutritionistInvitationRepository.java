@@ -20,4 +20,7 @@ public interface NutritionistInvitationRepository
 	Optional<NutritionistInvitation> findFirstByEmailIgnoreCaseAndStatusOrderByRedeemedAtDesc(String email,
 			InvitationStatus status);
 
+	Optional<NutritionistInvitation> findFirstByRedeemedByUserIdAndStatusOrderByRedeemedAtDesc(String redeemedByUserId,
+			InvitationStatus status);
+
 }

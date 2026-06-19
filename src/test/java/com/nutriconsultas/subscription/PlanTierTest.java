@@ -55,4 +55,12 @@ class PlanTierTest {
 			.hasMessageContaining("unknown-role");
 	}
 
+	@Test
+	void displayNameReturnsSpanishMarketingLabel() {
+		assertThat(PlanTier.BASICO.getDisplayName()).isEqualTo("Básico");
+		assertThat(PlanTier.PROFESIONAL.getDisplayName()).isEqualTo("Profesional");
+		assertThat(PlanTier.PLUS.getDisplayName()).isEqualTo("Plus");
+		assertThat(PlanTier.CONSULTORIO.getDisplayName()).isEqualTo("Consultorio");
+	}
+
 }

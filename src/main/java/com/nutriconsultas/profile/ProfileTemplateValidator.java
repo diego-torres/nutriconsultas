@@ -2,6 +2,7 @@ package com.nutriconsultas.profile;
 
 import java.util.Map;
 
+import com.nutriconsultas.subscription.SubscriptionStatus;
 import com.nutriconsultas.validation.template.BaseTemplateValidator;
 
 /**
@@ -23,6 +24,10 @@ public class ProfileTemplateValidator extends BaseTemplateValidator {
 		final Map<String, Object> variables = super.createMockModelVariables();
 		final NutritionistProfile mockProfile = createMockProfile();
 		variables.put("profile", mockProfile);
+		variables.put("subscriptionPlanLabel", "Profesional");
+		variables.put("subscriptionStatus", SubscriptionStatus.ACTIVE);
+		variables.put("subscriptionPeriodStartLabel", "01/06/2026");
+		variables.put("subscriptionPeriodEndLabel", "01/07/2026");
 		return variables;
 	}
 

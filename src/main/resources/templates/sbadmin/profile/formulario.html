@@ -51,6 +51,46 @@
             <!-- Content Row -->
             <div class="row">
 
+              <!-- Subscription Plan Card -->
+              <div class="col-12">
+                <div class="card shadow mb-4 border-left-primary">
+                  <div class="card-body py-3">
+                    <div class="row no-gutters align-items-center">
+                      <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                          Plan de suscripción
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" th:if="${subscriptionPlanLabel != null}"
+                          th:text="${subscriptionPlanLabel}">Básico</div>
+                        <div class="text-muted" th:unless="${subscriptionPlanLabel != null}">
+                          No tiene una suscripción activa.
+                        </div>
+                        <div class="text-muted small mt-2" th:if="${subscriptionPlanLabel != null}">
+                          <span th:if="${subscriptionPeriodStartLabel != null && subscriptionPeriodEndLabel != null}">
+                            Vigencia del <strong th:text="${subscriptionPeriodStartLabel}">01/06/2026</strong>
+                            al <strong th:text="${subscriptionPeriodEndLabel}">01/07/2026</strong>
+                          </span>
+                          <span th:if="${subscriptionPeriodStartLabel == null && subscriptionPeriodEndLabel != null}">
+                            Vigente hasta el <strong th:text="${subscriptionPeriodEndLabel}">01/07/2026</strong>
+                          </span>
+                          <span th:if="${subscriptionPeriodStartLabel != null && subscriptionPeriodEndLabel == null}">
+                            Vigencia desde el <strong th:text="${subscriptionPeriodStartLabel}">01/06/2026</strong>
+                          </span>
+                          <span th:if="${subscriptionPeriodStartLabel == null && subscriptionPeriodEndLabel == null}">
+                            Vigencia no definida.
+                          </span>
+                        </div>
+                      </div>
+                      <div class="col-auto" th:if="${subscriptionStatus != null}">
+                        <span class="badge badge-pill"
+                          th:classappend="${subscriptionStatus.name() == 'ACTIVE' || subscriptionStatus.name() == 'TRIAL' ? ' badge-success' : (subscriptionStatus.name() == 'GRACE' ? ' badge-warning' : ' badge-secondary')}"
+                          th:text="${subscriptionStatus.name()}">ACTIVE</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Profile Text Fields Card -->
               <div class="col-xl-6 col-lg-7">
                 <div class="card shadow mb-4">

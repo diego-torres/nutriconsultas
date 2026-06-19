@@ -69,6 +69,15 @@ public enum PlanTier {
 		return entitlements.contains(entitlement);
 	}
 
+	public String getDisplayName() {
+		return switch (this) {
+			case BASICO -> "Básico";
+			case PROFESIONAL -> "Profesional";
+			case PLUS -> "Plus";
+			case CONSULTORIO -> "Consultorio";
+		};
+	}
+
 	public static PlanTier fromRoleSlug(final String roleSlug) {
 		for (final PlanTier tier : values()) {
 			if (tier.roleSlug.equals(roleSlug)) {
