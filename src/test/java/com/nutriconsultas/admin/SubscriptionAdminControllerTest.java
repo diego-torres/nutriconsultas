@@ -58,6 +58,9 @@ class SubscriptionAdminControllerTest {
 	@Mock
 	private NutritionistRoleService nutritionistRoleService;
 
+	@Mock
+	private SubscriptionOwnerResolver ownerResolver;
+
 	@Test
 	void list_whenNotPlatformAdmin_throwsForbidden() {
 		final OidcUser principal = principal("auth0|user");

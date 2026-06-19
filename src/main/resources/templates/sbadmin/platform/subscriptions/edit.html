@@ -30,6 +30,29 @@
           </div>
           <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">Éxito</div>
           <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">Error</div>
+          <div class="card shadow mb-4" th:if="${subscriptionOwner != null}">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-secondary">Titular de la suscripción</h6>
+            </div>
+            <div class="card-body">
+              <dl class="row mb-0">
+                <dt class="col-sm-3">Correo</dt>
+                <dd class="col-sm-9" th:text="${subscriptionOwner.hasEmail() ? subscriptionOwner.email() : '—'}">
+                  test@example.com</dd>
+                <dt class="col-sm-3">Usuario (Auth0)</dt>
+                <dd class="col-sm-9">
+                  <code th:if="${subscriptionOwner.hasUserId()}" th:text="${subscriptionOwner.userId()}">auth0|…</code>
+                  <span th:unless="${subscriptionOwner.hasUserId()}" class="text-muted">— (invitación no redimida)</span>
+                </dd>
+                <dt class="col-sm-3" th:if="${subscriptionOwner.invitationId() != null}">Invitación</dt>
+                <dd class="col-sm-9" th:if="${subscriptionOwner.invitationId() != null}">
+                  <a th:href="@{/admin/platform/invitations(highlight=${subscriptionOwner.invitationId()})}">
+                    Ver invitación #<span th:text="${subscriptionOwner.invitationId()}">1</span>
+                  </a>
+                </dd>
+              </dl>
+            </div>
+          </div>
           <div class="card shadow mb-4" th:if="${planTierChangeable}">
             <div class="card-header py-3">
               <h6 class="m-0 font-weight-bold text-primary">Cambiar plan</h6>

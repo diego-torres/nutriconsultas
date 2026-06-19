@@ -56,12 +56,14 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 
 	private final NutritionistRoleService nutritionistRoleService;
 
+	private final SubscriptionOwnerResolver ownerResolver;
+
 	public SubscriptionAdminController(final PlatformAdminAuthorization platformAdminAuthorization,
 			final SubscriptionRepository subscriptionRepository, final ClinicRepository clinicRepository,
 			final SubscriptionLifecycleService lifecycleService,
 			final NutritionistInvitationRepository invitationRepository,
 			final NutritionistInvitationService invitationService,
-			final NutritionistRoleService nutritionistRoleService) {
+			final NutritionistRoleService nutritionistRoleService, final SubscriptionOwnerResolver ownerResolver) {
 		super(platformAdminAuthorization);
 		this.subscriptionRepository = subscriptionRepository;
 		this.clinicRepository = clinicRepository;
@@ -69,6 +71,7 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 		this.invitationRepository = invitationRepository;
 		this.invitationService = invitationService;
 		this.nutritionistRoleService = nutritionistRoleService;
+		this.ownerResolver = ownerResolver;
 	}
 
 	@GetMapping
@@ -89,6 +92,7 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 			model.addAttribute("form", toForm(subscription));
 		}
 		model.addAttribute("subscription", subscription);
+		model.addAttribute("subscriptionOwner", ownerResolver.resolve(id).orElse(null));
 		model.addAttribute("clinicName", clinicRepository.findBySubscriptionId(id).map(Clinic::getName).orElse("—"));
 		model.addAttribute("revocableInvitationId", resolveRevocableInvitationId(subscription));
 		model.addAttribute("planTierChangeable", isPlanTierChangeable(subscription));
@@ -107,6 +111,7 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 			final Subscription subscription = subscriptionRepository.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
 			model.addAttribute("subscription", subscription);
+			model.addAttribute("subscriptionOwner", ownerResolver.resolve(id).orElse(null));
 			model.addAttribute("clinicName",
 					clinicRepository.findBySubscriptionId(id).map(Clinic::getName).orElse("—"));
 			model.addAttribute("revocableInvitationId", resolveRevocableInvitationId(subscription));

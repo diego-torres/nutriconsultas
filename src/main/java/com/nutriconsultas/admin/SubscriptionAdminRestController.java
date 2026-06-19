@@ -52,12 +52,16 @@ public class SubscriptionAdminRestController extends AbstractGridController<Subs
 
 	private final ClinicRepository clinicRepository;
 
+	private final SubscriptionOwnerResolver ownerResolver;
+
 	private final PlatformAdminAuthorization platformAdminAuthorization;
 
 	public SubscriptionAdminRestController(final SubscriptionGridService gridService,
-			final ClinicRepository clinicRepository, final PlatformAdminAuthorization platformAdminAuthorization) {
+			final ClinicRepository clinicRepository, final SubscriptionOwnerResolver ownerResolver,
+			final PlatformAdminAuthorization platformAdminAuthorization) {
 		this.gridService = gridService;
 		this.clinicRepository = clinicRepository;
+		this.ownerResolver = ownerResolver;
 		this.platformAdminAuthorization = platformAdminAuthorization;
 	}
 
@@ -97,7 +101,8 @@ public class SubscriptionAdminRestController extends AbstractGridController<Subs
 			return Sort.by(Sort.Direction.DESC, "id");
 		}
 		final String columnName = pagingRequest.getColumns().get(order.getColumn()).getData();
-		if ("actions".equals(columnName) || "clinicName".equals(columnName)) {
+		if ("actions".equals(columnName) || "clinicName".equals(columnName) || "ownerEmail".equals(columnName)
+				|| "ownerUserId".equals(columnName)) {
 			return Sort.by(Sort.Direction.DESC, "id");
 		}
 		final String fieldName = COLUMN_TO_FIELD_MAP.getOrDefault(columnName, columnName);
@@ -110,7 +115,9 @@ public class SubscriptionAdminRestController extends AbstractGridController<Subs
 		final String clinicName = clinicRepository.findBySubscriptionId(row.getId())
 			.map(clinic -> clinic.getName())
 			.orElse("—");
-		return Arrays.asList(String.valueOf(row.getId()), clinicName,
+		final SubscriptionOwnerView owner = ownerResolver.resolve(row.getId()).orElse(null);
+		return Arrays.asList(String.valueOf(row.getId()), SubscriptionGridHtml.formatOwnerEmail(owner),
+				SubscriptionGridHtml.formatOwnerUserId(owner), clinicName,
 				SubscriptionGridHtml.planTierLabel(row.getPlanTier()),
 				SubscriptionGridHtml.statusBadge(row.getStatus()),
 				SubscriptionGridHtml.formatInstant(row.getPeriodEnd()),
@@ -135,7 +142,9 @@ public class SubscriptionAdminRestController extends AbstractGridController<Subs
 
 	@Override
 	protected List<Column> getColumns() {
-		return Stream.of("id", "clinicName", "planTier", "status", "periodEnd", "paymentExempt", "actions")
+		return Stream
+			.of("id", "ownerEmail", "ownerUserId", "clinicName", "planTier", "status", "periodEnd", "paymentExempt",
+					"actions")
 			.map(Column::new)
 			.collect(Collectors.toList());
 	}
