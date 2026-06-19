@@ -424,8 +424,6 @@ gh pr create ...
 
 **Schema track:** ~~#46~~ Liquibase baseline (PR #196). Changesets **003–007** on `main` (subscription, patient invitation). All new edits → forward changesets only.
 
-**GitHub drift (close when convenient):** #97, #111 done on `main` but open on GitHub (PRs #147, #151).
-
 **Subscription track (parallel):** see [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#180–#185~~, ~~#187~~ (PR #218), ~~#190~~ (PR #216), ~~#210~~ (PR #224), ~~#211~~ (PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230)) on `main`. **NEXT:** #207 (+ #208 Stripe ops, email #209, retention #220).
 
 **Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) — MPX epic **#221–#223** registered; **NEXT:** #221 export.
