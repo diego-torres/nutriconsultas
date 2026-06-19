@@ -84,10 +84,14 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 
 	@GetMapping("/{id}/edit")
 	public String editForm(@AuthenticationPrincipal final OidcUser principal, @PathVariable final Long id,
-			final Model model) {
+			final Model model, final RedirectAttributes redirectAttributes) {
 		requirePlatformAdmin(principal, "subscriptions.edit");
 		final Subscription subscription = subscriptionRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+		if (!SubscriptionAdminAccessRules.isEditable(subscription)) {
+			redirectAttributes.addFlashAttribute("errorMessage", "Las suscripciones revocadas no pueden editarse.");
+			return "redirect:/admin/platform/subscriptions";
+		}
 		if (!model.containsAttribute("form")) {
 			model.addAttribute("form", toForm(subscription));
 		}
@@ -107,9 +111,13 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 			@Valid @ModelAttribute("form") final UpdateSubscriptionForm form, final BindingResult bindingResult,
 			final Model model, final RedirectAttributes redirectAttributes) {
 		requirePlatformAdmin(principal, "subscriptions.edit");
+		final Subscription subscription = subscriptionRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+		if (!SubscriptionAdminAccessRules.isEditable(subscription)) {
+			redirectAttributes.addFlashAttribute("errorMessage", "Las suscripciones revocadas no pueden editarse.");
+			return "redirect:/admin/platform/subscriptions";
+		}
 		if (bindingResult.hasErrors()) {
-			final Subscription subscription = subscriptionRepository.findById(id)
-				.orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
 			model.addAttribute("subscription", subscription);
 			model.addAttribute("subscriptionOwner", ownerResolver.resolve(id).orElse(null));
 			model.addAttribute("clinicName",
@@ -133,6 +141,12 @@ public class SubscriptionAdminController extends AbstractPlatformAdminController
 	public String changePlanTier(@AuthenticationPrincipal final OidcUser principal, @PathVariable final Long id,
 			@RequestParam final PlanTier planTier, final RedirectAttributes redirectAttributes) {
 		requirePlatformAdmin(principal, "subscriptions.change-plan-tier");
+		final Subscription subscription = subscriptionRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+		if (!SubscriptionAdminAccessRules.isEditable(subscription)) {
+			redirectAttributes.addFlashAttribute("errorMessage", "Las suscripciones revocadas no pueden editarse.");
+			return "redirect:/admin/platform/subscriptions";
+		}
 		try {
 			final PlanTierChangeResult result = nutritionistRoleService.changeSubscriptionPlanTier(principal, id,
 					planTier);

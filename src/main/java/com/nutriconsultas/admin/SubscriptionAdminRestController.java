@@ -101,8 +101,7 @@ public class SubscriptionAdminRestController extends AbstractGridController<Subs
 			return Sort.by(Sort.Direction.DESC, "id");
 		}
 		final String columnName = pagingRequest.getColumns().get(order.getColumn()).getData();
-		if ("actions".equals(columnName) || "clinicName".equals(columnName) || "ownerEmail".equals(columnName)
-				|| "ownerUserId".equals(columnName)) {
+		if ("actions".equals(columnName) || "clinicName".equals(columnName) || "ownerEmail".equals(columnName)) {
 			return Sort.by(Sort.Direction.DESC, "id");
 		}
 		final String fieldName = COLUMN_TO_FIELD_MAP.getOrDefault(columnName, columnName);
@@ -116,13 +115,12 @@ public class SubscriptionAdminRestController extends AbstractGridController<Subs
 			.map(clinic -> clinic.getName())
 			.orElse("—");
 		final SubscriptionOwnerView owner = ownerResolver.resolve(row.getId()).orElse(null);
-		return Arrays.asList(String.valueOf(row.getId()), SubscriptionGridHtml.formatOwnerEmail(owner),
-				SubscriptionGridHtml.formatOwnerUserId(owner), clinicName,
+		return Arrays.asList(String.valueOf(row.getId()), SubscriptionGridHtml.formatOwnerEmail(owner), clinicName,
 				SubscriptionGridHtml.planTierLabel(row.getPlanTier()),
 				SubscriptionGridHtml.statusBadge(row.getStatus()),
 				SubscriptionGridHtml.formatInstant(row.getPeriodEnd()),
 				SubscriptionGridHtml.paymentExemptBadge(row.isPaymentExempt()),
-				SubscriptionGridHtml.editLink(row.getId()));
+				SubscriptionGridHtml.editLink(row.getId(), row.getStatus()));
 	}
 
 	@Override
@@ -143,8 +141,7 @@ public class SubscriptionAdminRestController extends AbstractGridController<Subs
 	@Override
 	protected List<Column> getColumns() {
 		return Stream
-			.of("id", "ownerEmail", "ownerUserId", "clinicName", "planTier", "status", "periodEnd", "paymentExempt",
-					"actions")
+			.of("id", "ownerEmail", "clinicName", "planTier", "status", "periodEnd", "paymentExempt", "actions")
 			.map(Column::new)
 			.collect(Collectors.toList());
 	}

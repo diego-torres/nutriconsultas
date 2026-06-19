@@ -17,8 +17,12 @@ public class NutritionistInvitationRedeemController extends AbstractAuthorizedCo
 
 	private final NutritionistInvitationService invitationService;
 
-	public NutritionistInvitationRedeemController(final NutritionistInvitationService invitationService) {
+	private final NutritionistInvitationDevCheckoutService devCheckoutService;
+
+	public NutritionistInvitationRedeemController(final NutritionistInvitationService invitationService,
+			final NutritionistInvitationDevCheckoutService devCheckoutService) {
 		this.invitationService = invitationService;
+		this.devCheckoutService = devCheckoutService;
 	}
 
 	@GetMapping("/redeem")
@@ -33,6 +37,13 @@ public class NutritionistInvitationRedeemController extends AbstractAuthorizedCo
 		if (result instanceof RedeemNutritionistInvitationResult.CheckoutRedirect checkout) {
 			return "redirect:" + checkout.checkoutUrl();
 		}
+		return "redirect:/admin";
+	}
+
+	@GetMapping("/dev-checkout")
+	public String completeDevCheckout(@RequestParam("invitationId") final Long invitationId,
+			@AuthenticationPrincipal final OidcUser principal) {
+		devCheckoutService.completeStubCheckout(principal, invitationId);
 		return "redirect:/admin";
 	}
 

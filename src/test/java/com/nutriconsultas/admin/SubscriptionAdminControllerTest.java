@@ -85,8 +85,27 @@ class SubscriptionAdminControllerTest {
 	}
 
 	@Test
+	void editForm_whenSubscriptionCancelled_redirectsToList() {
+		final OidcUser principal = principal("auth0|admin");
+		final Subscription subscription = new Subscription();
+		subscription.setId(5L);
+		subscription.setStatus(SubscriptionStatus.CANCELLED);
+		when(subscriptionRepository.findById(5L)).thenReturn(java.util.Optional.of(subscription));
+		final org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap redirectAttributes = new org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap();
+
+		final String view = controller.editForm(principal, 5L, new ExtendedModelMap(), redirectAttributes);
+
+		assertThat(view).isEqualTo("redirect:/admin/platform/subscriptions");
+		assertThat(redirectAttributes.getFlashAttributes().get("errorMessage")).asString().contains("revocadas");
+	}
+
+	@Test
 	void changePlanTier_whenPlatformAdmin_delegatesToRoleService() {
 		final OidcUser principal = principal("auth0|admin");
+		final Subscription subscription = new Subscription();
+		subscription.setId(9L);
+		subscription.setStatus(SubscriptionStatus.ACTIVE);
+		when(subscriptionRepository.findById(9L)).thenReturn(java.util.Optional.of(subscription));
 		when(nutritionistRoleService.changeSubscriptionPlanTier(principal, 9L, PlanTier.PLUS))
 			.thenReturn(new PlanTierChangeResult(PlanTier.BASICO, PlanTier.PLUS, true));
 		final org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap redirectAttributes = new org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap();

@@ -26,6 +26,7 @@ import com.nutriconsultas.subscription.SubscriptionStatus;
 import com.nutriconsultas.subscription.payment.BillingInterval;
 import com.nutriconsultas.subscription.payment.CheckoutSession;
 import com.nutriconsultas.subscription.payment.PaymentCheckoutService;
+import com.nutriconsultas.subscription.payment.PaymentProviderException;
 import com.nutriconsultas.util.InvitationTokenHasher;
 
 import lombok.extern.slf4j.Slf4j;
@@ -210,9 +211,15 @@ public class NutritionistInvitationServiceImpl implements NutritionistInvitation
 		}
 		provisioningService.createPendingSubscription(invitation);
 		invitationRepository.save(invitation);
-		final CheckoutSession checkout = paymentCheckoutService.createCheckoutSession(invitation.getId(),
-				invitation.getPlanTier(), BillingInterval.MONTHLY);
-		return new RedeemNutritionistInvitationResult.CheckoutRedirect(checkout.checkoutUrl());
+		try {
+			final CheckoutSession checkout = paymentCheckoutService.createCheckoutSession(invitation.getId(),
+					invitation.getPlanTier(), BillingInterval.MONTHLY);
+			return new RedeemNutritionistInvitationResult.CheckoutRedirect(checkout.checkoutUrl());
+		}
+		catch (PaymentProviderException ex) {
+			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+					"El pago en línea no está configurado. Solicite una invitación exenta de pago al administrador.");
+		}
 	}
 
 	NutritionistInvitation findValidInvitation(final String rawToken) {
