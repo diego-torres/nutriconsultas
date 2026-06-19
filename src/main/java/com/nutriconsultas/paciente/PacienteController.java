@@ -38,6 +38,8 @@ import com.nutriconsultas.dieta.DietaService;
 import com.nutriconsultas.paciente.calculation.BmrCalculationService;
 import com.nutriconsultas.subscription.SubscriptionErrorResponses;
 import com.nutriconsultas.subscription.SubscriptionLimitExceededException;
+import com.nutriconsultas.paciente.mpx.MpxExportResult;
+import com.nutriconsultas.paciente.mpx.PacienteMpxExportService;
 import com.nutriconsultas.util.LogRedaction;
 
 import org.springframework.http.HttpHeaders;
@@ -99,6 +101,9 @@ public class PacienteController extends AbstractAuthorizedController {
 
 	@Autowired
 	private Auth0UserLookup auth0UserLookup;
+
+	@Autowired
+	private PacienteMpxExportService pacienteMpxExportService;
 
 	/**
 	 * Gets the user ID from the OAuth2 principal.
@@ -914,6 +919,35 @@ public class PacienteController extends AbstractAuthorizedController {
 		log.debug("Cancelando asignación de dieta {}", id);
 		pacienteDietaService.cancelAssignment(id);
 		return String.format("redirect:/admin/pacientes/%d/dietas", pacienteId);
+	}
+
+	/**
+	 * Exports patient registration profile to a portable {@code .mpx} YAML file (#221).
+	 * Clinical history and tenant identifiers are excluded from the payload.
+	 * @param id the patient ID
+	 * @param principal the authenticated nutritionist
+	 * @return YAML attachment or 404 when the patient is not owned by the user
+	 */
+	@GetMapping(path = "/admin/pacientes/{id}/export.mpx")
+	public ResponseEntity<byte[]> exportPacienteMpx(@PathVariable("id") @NonNull final Long id,
+			@AuthenticationPrincipal final OidcUser principal) {
+		log.debug("Exporting MPX registration for paciente {}", id);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		try {
+			final MpxExportResult export = pacienteMpxExportService.exportRegistration(id, userId);
+			return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + export.filename() + "\"")
+				.contentType(MediaType.parseMediaType("application/x-yaml"))
+				.contentLength(export.content().length)
+				.body(export.content());
+		}
+		catch (final IllegalArgumentException ex) {
+			log.warn("MPX export denied for paciente {}: {}", id, ex.getMessage());
+			return ResponseEntity.notFound().build();
+		}
 	}
 
 	/**
