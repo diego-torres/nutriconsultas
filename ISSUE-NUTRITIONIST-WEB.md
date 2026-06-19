@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-19 — Diet management epic **#232–#235**, branding **#236–#237**, diet/platillo UX **#238–#240**, patient UX **#241–#242** registered.
+**Last updated:** 2026-06-19 — Bug **#250** (diet platillo link); epics **#232–#242** registered.
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -113,6 +113,18 @@ System template diets (`userId = system:template-dietas`), grid actions, and own
 |---|-------|-----|-------|-----------|-------|
 | 241 | Patient profile — selectable patient avatars | https://github.com/diego-torres/nutriconsultas/issues/241 | open | #46 | Liquibase `avatarId` on `Paciente` |
 | 242 | Anthropometrics — per-field correction with recalculation | https://github.com/diego-torres/nutriconsultas/issues/242 | open | #161 (context) | Edit icon per field; derived metrics |
+
+---
+
+## Bugs
+
+| # | Title | URL | State | Depends on | Notes |
+|---|-------|-----|-------|-----------|-------|
+| **250** | Diet ingesta platillo link uses `PlatilloIngesta.id` instead of catalog `Platillo.id` | https://github.com/diego-torres/nutriconsultas/issues/250 | **NEXT** | #46 | `formulario.html` href; add `sourcePlatilloId` + Liquibase backfill |
+
+**Repro:** Menú vegetal 02 → Cena → "Frijoles con tortilla" links to `/admin/platillos/32` (wrong catalog row) instead of `/admin/platillos/97`. Name displays correctly; portion REST APIs unaffected.
+
+**Fix sketch:** persist `sourcePlatilloId` on `PlatilloIngesta` in `PlatilloIngestaMapping`; template uses catalog id for `/admin/platillos/{id}` only.
 
 ---
 
