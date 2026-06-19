@@ -15,6 +15,8 @@ public interface BodyMetricRecordRepository extends JpaRepository<BodyMetricReco
 
 	List<BodyMetricRecord> findByPacienteIdOrderByRecordedAtAsc(Long pacienteId);
 
+	void deleteByPacienteId(Long pacienteId);
+
 	Optional<BodyMetricRecord> findFirstByPacienteIdOrderByRecordedAtDescIdDesc(Long pacienteId);
 
 	List<BodyMetricRecord> findTop2ByPacienteIdOrderByRecordedAtDescIdDesc(Long pacienteId);
