@@ -29,7 +29,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 | File | Purpose |
 |------|---------|
-| [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | `[Nutritionist Web]` issues (#221–#223 MPX; #232–#242 epics; bug #250), states, dependencies |
+| [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | `[Nutritionist Web]` issues (#221–#223 MPX; #232–#242 epics; ~~#250~~), states, dependencies |
 | [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md) | Patient registration export/import plan |
 
 **Parallel track (public booking — future; depends on #246+):**
@@ -42,7 +42,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (subscription):** [#207 — Stripe payment provider](https://github.com/diego-torres/nutriconsultas/issues/207). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#211~~ merged PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230).
 
-**Current next issue (nutritionist web):** [#222 — Import patient registration from .mpx](https://github.com/diego-torres/nutriconsultas/issues/222) → #223. ~~#221~~ done (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254)). Bug [#250](https://github.com/diego-torres/nutriconsultas/issues/250) (diet platillo link) when touching diet UX. See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
+**Current next issue (nutritionist web):** [#222 — Import patient registration from .mpx](https://github.com/diego-torres/nutriconsultas/issues/222) → #223. ~~#221~~ done (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254)). ~~#250~~ done (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)). See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 
 ---
 

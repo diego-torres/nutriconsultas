@@ -602,7 +602,7 @@ Issue registry: [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md). Plan: 
 
 **Epics #232–#242** (2026-06-19): diet catalog (#232–#235), branding (#236–#237), diet/platillo UX (#238–#240), patient UX (#241–#242). See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 
-**Bug #250** (2026-06-19): diet ingesta platillo name links to wrong catalog platillo — `PlatilloIngesta.id` vs `Platillo.id`. **NEXT** when fixing diet UX.
+**Bug ~~#250~~** (2026-06-19): diet ingesta platillo name links to wrong catalog platillo — **done** (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)).
 
 ## Public booking (tracking)
 

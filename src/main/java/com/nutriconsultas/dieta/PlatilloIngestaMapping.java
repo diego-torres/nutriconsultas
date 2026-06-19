@@ -14,6 +14,7 @@ public final class PlatilloIngestaMapping {
 
 	public static PlatilloIngesta mapPlatilloIngesta(final Platillo platillo) {
 		final PlatilloIngesta platilloIngesta = new PlatilloIngesta();
+		platilloIngesta.setSourcePlatilloId(platillo.getId());
 		platilloIngesta.setName(platillo.getName());
 		platilloIngesta.setRecommendations(platillo.getDescription());
 		platilloIngesta.setVideoUrl(platillo.getVideoUrl());

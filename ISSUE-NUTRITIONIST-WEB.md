@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-19 — ~~#221~~ **done** (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254), deployed EC2). **NEXT:** [#222 import](https://github.com/diego-torres/nutriconsultas/issues/222). Bug **#250** (diet platillo link); epics **#232–#242** registered.
+**Last updated:** 2026-06-19 — ~~#221~~ **done** (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254), deployed EC2). ~~#250~~ **done** (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)). **NEXT:** [#222 import](https://github.com/diego-torres/nutriconsultas/issues/222). Epics **#232–#242** registered.
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -120,7 +120,7 @@ System template diets (`userId = system:template-dietas`), grid actions, and own
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| **250** | Diet ingesta platillo link uses `PlatilloIngesta.id` instead of catalog `Platillo.id` | https://github.com/diego-torres/nutriconsultas/issues/250 | **NEXT** | #46 | `formulario.html` href; add `sourcePlatilloId` + Liquibase backfill |
+| **250** | Diet ingesta platillo link uses `PlatilloIngesta.id` instead of catalog `Platillo.id` | https://github.com/diego-torres/nutriconsultas/issues/250 | **done** | #46 | PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256); `sourcePlatilloId` + Liquibase backfill |
 
 **Repro:** Menú vegetal 02 → Cena → "Frijoles con tortilla" links to `/admin/platillos/32` (wrong catalog row) instead of `/admin/platillos/97`. Name displays correctly; portion REST APIs unaffected.
 

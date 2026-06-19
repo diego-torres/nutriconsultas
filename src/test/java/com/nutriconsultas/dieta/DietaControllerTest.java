@@ -6,6 +6,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
@@ -362,6 +365,23 @@ public class DietaControllerTest {
 		verify(platilloService, times(1)).findAll();
 
 		log.info("Finishing testEditarDieta");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testEditarDietaPlatilloLinkUsesCatalogId() throws Exception {
+		final PlatilloIngesta platilloIngesta = new PlatilloIngesta();
+		platilloIngesta.setId(32L);
+		platilloIngesta.setSourcePlatilloId(97L);
+		platilloIngesta.setName("Frijoles con tortilla");
+		ingesta.getPlatillos().add(platilloIngesta);
+
+		when(platilloService.findAll()).thenReturn(List.of(platillo));
+
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/1"))
+			.andExpect(status().isOk())
+			.andExpect(content().string(containsString("/admin/platillos/97")))
+			.andExpect(content().string(not(containsString("/admin/platillos/32"))));
 	}
 
 	@Test
