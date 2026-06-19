@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-19 — ~~#221~~ **done** (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254), deployed EC2). ~~#250~~ **done** (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)). **NEXT:** [#222 import](https://github.com/diego-torres/nutriconsultas/issues/222). Epics **#232–#242** registered.
+**Last updated:** 2026-06-19 — ~~#221~~ **done** (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254), deployed EC2). ~~#250~~ **done** (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)). **NEXT:** [#222 import](https://github.com/diego-torres/nutriconsultas/issues/222). Epics **#232–#242**, **#257–#259** (platillo ownership) registered.
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -63,6 +63,26 @@ System template diets (`userId = system:template-dietas`), grid actions, and own
 | 233 | Diet list grid — edit action | https://github.com/diego-torres/nutriconsultas/issues/233 | open | — | Link to `/admin/dietas/{id}` |
 | 234 | Diet list grid — delete action with patient-usage guard | https://github.com/diego-torres/nutriconsultas/issues/234 | open | — | Block if `PacienteDieta` exists; SweetAlert |
 | 235 | Diet list grid — filter all, system, or own diets | https://github.com/diego-torres/nutriconsultas/issues/235 | open | — | Server-side filter on `/rest/dietas` grid |
+
+---
+
+## Epic — Platillo catalog ownership
+
+Lock **system** catalog platillos for nutritionists; **owned** platillos editable by creator; **copy** to fork without mutating shared rows.
+
+| Requirement | Issues |
+|-------------|--------|
+| System platillos read-only for non-admin | #257 |
+| Creator can edit/delete own platillos | #258 |
+| Copy platillo into owned catalog row | #259 |
+
+**Suggested order:** #257 → #258 → #259 (ownership schema before copy).
+
+| # | Title | URL | State | Depends on | Notes |
+|---|-------|-----|-------|-----------|-------|
+| 257 | Lock system catalog platillos for non-admin users | https://github.com/diego-torres/nutriconsultas/issues/257 | open | #183, #46 | `userId` / system sentinel; UI read-only; server guards |
+| 258 | Nutritionist-owned platillos — creator can edit and delete | https://github.com/diego-torres/nutriconsultas/issues/258 | open | **257**, #46 | Multi-tenant like `Dieta.userId`; grid filter own + system |
+| 259 | Copy platillo — duplicate into nutritionist-owned catalog row | https://github.com/diego-torres/nutriconsultas/issues/259 | open | **257**, **258** | SweetAlert optional; clone ingredients; complements #250 `sourcePlatilloId` |
 
 ---
 
@@ -136,7 +156,7 @@ System template diets (`userId = system:template-dietas`), grid actions, and own
 | #109 Mobile linkage | Delete clears `patientAuthSub`; not stored in `.mpx` |
 | #220 Retention purge | Platform admin purge of **revoked** nutritionists — orthogonal to nutritionist-initiated patient delete |
 | #132 Patient invitations | Onboarding `Paciente.status` — import creates `ACTIVE` patient unless product specifies otherwise |
-| #183 Platform admin | System diet edit (#232) |
+| #183 Platform admin | System diet edit (#232); system platillo edit (#257) |
 | #187 Branded PDF | Logo profile (#236) and PDF sizing (#237) |
 | #198 Diet templates | System diets seeded; editable by admin via #232 |
 | #243 / #244 Subscription | reCAPTCHA + Solicitar acceso pre-fill — public funnel, not admin UI |
