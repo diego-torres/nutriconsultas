@@ -42,7 +42,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (subscription):** [#207 — Stripe payment provider](https://github.com/diego-torres/nutriconsultas/issues/207). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#211~~ merged PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230).
 
-**Current next issue (nutritionist web):** [#222 — Import patient registration from .mpx](https://github.com/diego-torres/nutriconsultas/issues/222) → #223. ~~#221~~ done (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254)). ~~#250~~ done (catalog platillo link). See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
+**Current next issue (nutritionist web):** [#222 — Import patient registration from .mpx](https://github.com/diego-torres/nutriconsultas/issues/222) → #223. ~~#221~~ done (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254)). ~~#250~~ done (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)). See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 
 ---
 
