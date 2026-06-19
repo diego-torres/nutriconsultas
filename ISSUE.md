@@ -6,11 +6,11 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Subscription (parallel):** [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) · **Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-18 — ~~#132~~ **done** (PR #214). **#133** **in-progress** (PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229)). **NEXT after merge:** #134/#135.
+**Last updated:** 2026-06-19 — ~~#133~~ **done** (PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229), deployed EC2). **NEXT:** [#134 create invitation](https://github.com/diego-torres/nutriconsultas/issues/134).
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116, #132–#141 invitation onboarding) plus the directly-related `[Dashboard]` IMC gauge (#106) and **integration prerequisites** that gate schema work (#156, #46). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
-> **GitHub sync note (2026-06-18):** **#132** closed (PR #214). **#133** open (in-progress). Subscription **#183–#185**, **#187**, **#190**, **#210** closed. **#97** and **#111** done on `main` but open on GitHub. **#226** closed (PR #227).
+> **GitHub sync note (2026-06-19):** **#133** closed (PR #229). **NEXT:** #134. **#97** and **#111** done on `main` but open on GitHub — close when convenient.
 
 ---
 
@@ -49,7 +49,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 | `done` | Merged to `main` |
 | `deferred` | Intentionally paused — decision pending |
 
-Phase 0 (#107, #109, #110) is **done**. Endpoints **#91–#99 are done** on `main`. Cross-cutting **#111–#116** done. **#156**, **#46**, and **#132** done on `main`. **#133** **in-progress**.
+Phase 0 (#107, #109, #110) is **done**. Endpoints **#91–#99 are done** on `main`. Cross-cutting **#111–#116** done. **#156**, **#46**, **#132**, and **#133** done on `main`. **NEXT:** #134.
 
 ---
 
@@ -136,23 +136,23 @@ Schema-affecting work must respect mobile DTO contracts (§F8). These issues are
 
 ---
 
-## Phase 2 — Invitation onboarding (P1 · ~~#132~~ ✓ → #133–#141)
+## Phase 2 — Invitation onboarding (P1 · ~~#132~~ ✓ ~~#133~~ ✓ → #134–#141)
 
-Invite-only patient onboarding replaces manual Afiliación linkage (#109) for new patients. **Active sprint** — schema **#132 done** (PR #214); **#133 in-progress** (PR #229).
+Invite-only patient onboarding replaces manual Afiliación linkage (#109) for new patients. **Active sprint** — token service **#133 done** (PR #229); **NEXT:** #134 create invitation.
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| 133 | Invitation token generation & hashing service | https://github.com/diego-torres/nutriconsultas/issues/133 | **in-progress** | ~~132~~ ✓ | PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229): CSPRNG + human code + SHA-256 hash; constant-time verify; optional offline JWS (#140) |
-| 134 | `POST /rest/mobile/invitations` — nutritionist creates patient + invitation | https://github.com/diego-torres/nutriconsultas/issues/134 | **NEXT** | ~~132~~ ✓, 133 | Nutritionist JWT (not patient); creates `Paciente` + `Invitation` |
-| 135 | `GET /rest/mobile/invitations/{token}/preview` — public rate-limited preview | https://github.com/diego-torres/nutriconsultas/issues/135 | open | 133 | Public; enumeration protection (#141) |
-| 136 | `POST /rest/mobile/invitations/{token}/redeem` — bind Auth0 sub → patient | https://github.com/diego-torres/nutriconsultas/issues/136 | open | ~~132~~ ✓, 133, 107 | **Authoritative** redeem gate; patient JWT required |
+| 133 | Invitation token generation & hashing service | https://github.com/diego-torres/nutriconsultas/issues/133 | **done** | ~~132~~ ✓ | Merged PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229): `PatientInvitationTokenService`, human code, SHA-256 hash, optional offline JWS (#140) |
+| 134 | `POST /rest/mobile/invitations` — nutritionist creates patient + invitation | https://github.com/diego-torres/nutriconsultas/issues/134 | **NEXT** | ~~132~~ ✓, ~~133~~ ✓ | Nutritionist JWT (not patient); creates `Paciente` + `Invitation` |
+| 135 | `GET /rest/mobile/invitations/{token}/preview` — public rate-limited preview | https://github.com/diego-torres/nutriconsultas/issues/135 | open | ~~133~~ ✓ | Public; enumeration protection (#141) |
+| 136 | `POST /rest/mobile/invitations/{token}/redeem` — bind Auth0 sub → patient | https://github.com/diego-torres/nutriconsultas/issues/136 | open | ~~132~~ ✓, ~~133~~ ✓, 107 | **Authoritative** redeem gate; patient JWT required |
 | 137 | CurrentPatient resolver + onboarding data gate (403 onboarding required) | https://github.com/diego-torres/nutriconsultas/issues/137 | open | ~~132~~ ✓, 107 | Centralizes `sub → Paciente`; 403 until onboarded |
 | 138 | `PATCH` & `GET /rest/mobile/patient/me` — onboarding profile + status→ACTIVE | https://github.com/diego-torres/nutriconsultas/issues/138 | open | ~~132~~ ✓, 137 | Patient completes profile; transitions to `ACTIVE` |
 | 139 | `POST /rest/mobile/invitations/{id}/revoke` — nutritionist invalidates invite | https://github.com/diego-torres/nutriconsultas/issues/139 | open | ~~132~~ ✓, 134 | Nutritionist JWT |
-| 140 | Auth0 Post-Login Action gate — first-login invitation validation | https://github.com/diego-torres/nutriconsultas/issues/140 | open | 133, 136 | **Post-Login** (not Pre-User-Registration — social logins skip PUR); docs + Action script |
-| 141 | Invitation security hardening — rate limits, enumeration protection, no-token logging | https://github.com/diego-torres/nutriconsultas/issues/141 | open | 133, 135, 136 | Relates #115; never log raw tokens |
+| 140 | Auth0 Post-Login Action gate — first-login invitation validation | https://github.com/diego-torres/nutriconsultas/issues/140 | open | ~~133~~ ✓, 136 | **Post-Login** (not Pre-User-Registration — social logins skip PUR); docs + Action script |
+| 141 | Invitation security hardening — rate limits, enumeration protection, no-token logging | https://github.com/diego-torres/nutriconsultas/issues/141 | open | ~~133~~ ✓, 135, 136 | Relates #115; never log raw tokens |
 
-**Suggested build order (after ~~#132~~ ✓):** #133 → #134/#135 → #136 → #137 → #138 → #139/#140 → #141.
+**Suggested build order (after ~~#133~~ ✓):** #134/#135 → #136 → #137 → #138 → #139/#140 → #141.
 
 ---
 
