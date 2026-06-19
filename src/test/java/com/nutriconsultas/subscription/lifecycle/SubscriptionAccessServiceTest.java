@@ -46,7 +46,8 @@ class SubscriptionAccessServiceTest {
 		final Subscription cancelled = subscription(2L, PlanTier.PROFESIONAL, SubscriptionStatus.CANCELLED);
 		stubActiveMemberWithSubscription(cancelled);
 		when(invitationRepository.findFirstByRedeemedByUserIdAndStatusOrderByRedeemedAtDesc(USER_ID,
-				InvitationStatus.REDEEMED)).thenReturn(Optional.empty());
+				InvitationStatus.REDEEMED))
+			.thenReturn(Optional.empty());
 
 		assertThat(subscriptionAccessService.isAdminAccessBlocked(USER_ID)).isTrue();
 	}
@@ -57,7 +58,8 @@ class SubscriptionAccessServiceTest {
 		final Subscription activeBasic = subscription(5L, PlanTier.BASICO, SubscriptionStatus.ACTIVE);
 		stubActiveMemberWithSubscription(cancelled);
 		when(invitationRepository.findFirstByRedeemedByUserIdAndStatusOrderByRedeemedAtDesc(USER_ID,
-				InvitationStatus.REDEEMED)).thenReturn(Optional.of(invitation(activeBasic)));
+				InvitationStatus.REDEEMED))
+			.thenReturn(Optional.of(invitation(activeBasic)));
 
 		assertThat(subscriptionAccessService.isAdminAccessBlocked(USER_ID)).isFalse();
 		assertThat(subscriptionAccessService.findGrantingSubscriptionForUser(USER_ID)).contains(activeBasic);
@@ -69,7 +71,8 @@ class SubscriptionAccessServiceTest {
 		final Subscription activeBasic = subscription(5L, PlanTier.BASICO, SubscriptionStatus.ACTIVE);
 		stubActiveMemberWithSubscription(cancelled);
 		when(invitationRepository.findFirstByRedeemedByUserIdAndStatusOrderByRedeemedAtDesc(USER_ID,
-				InvitationStatus.REDEEMED)).thenReturn(Optional.of(invitation(activeBasic)));
+				InvitationStatus.REDEEMED))
+			.thenReturn(Optional.of(invitation(activeBasic)));
 
 		assertThat(subscriptionAccessService.findSubscriptionForUser(USER_ID)).contains(activeBasic);
 	}

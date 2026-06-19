@@ -143,6 +143,26 @@ patient:
 
 ---
 
+## Import rules (#222)
+
+| Topic | Rule |
+|-------|------|
+| Endpoint | `POST /admin/pacientes/importar.mpx` (multipart field `mpxFile`) |
+| Extension | Must end with `.mpx` |
+| Version | Reject `mpxVersion` other than `1` with Spanish error |
+| Tenant | Always set `userId` from authenticated nutritionist — never from file |
+| New row | Always creates a **new** `Paciente`; never merges into an existing record |
+| Status | Set `PacienteStatus.ACTIVE` |
+| `registro` | Set to server time at import (not restored from file) |
+| Excluded on import | `id`, `userId`, `patientAuthSub`, `assignedId`, `displayName`, `emailHint`, all history entities |
+| Plan cap | `SubscriptionEntitlementService.assertCanCreatePatient(userId)` before save (#190) |
+| Validation | Same Jakarta constraints as manual alta (`@NotBlank` name/gender, `@NotNull` dob, `@ValidPregnancy`) |
+| Duplicate hint | Soft warning (SweetAlert) when same `name` + `dob` already exists for the nutritionist; import still proceeds |
+| Success UX | Redirect to `/admin/pacientes/{id}` with success SweetAlert; duplicate warning shown after success |
+| Errors | Spanish messages; invalid file/version/validation shown via SweetAlert on listado |
+
+---
+
 ## Related
 
 - [`PATIENT-MPX-PLAN.md`](PATIENT-MPX-PLAN.md) — product goals and implementation order

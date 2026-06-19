@@ -100,7 +100,8 @@ class SubscriptionProvisioningServiceTest {
 		invitation.setSubscription(active);
 		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription("auth0|user-1"))
 			.thenReturn(Optional.of(member));
-		when(clinicRepository.save(org.mockito.ArgumentMatchers.any())).thenAnswer(invocation -> invocation.getArgument(0));
+		when(clinicRepository.save(org.mockito.ArgumentMatchers.any()))
+			.thenAnswer(invocation -> invocation.getArgument(0));
 		when(auth0RoleSyncClient.isConfigured()).thenReturn(false);
 
 		provisioningService.activatePaidAccess(invitation, active);

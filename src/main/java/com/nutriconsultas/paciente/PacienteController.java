@@ -21,6 +21,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventService;
@@ -39,7 +42,10 @@ import com.nutriconsultas.paciente.calculation.BmrCalculationService;
 import com.nutriconsultas.subscription.SubscriptionErrorResponses;
 import com.nutriconsultas.subscription.SubscriptionLimitExceededException;
 import com.nutriconsultas.paciente.mpx.MpxExportResult;
+import com.nutriconsultas.paciente.mpx.MpxImportException;
+import com.nutriconsultas.paciente.mpx.MpxImportResult;
 import com.nutriconsultas.paciente.mpx.PacienteMpxExportService;
+import com.nutriconsultas.paciente.mpx.PacienteMpxImportService;
 import com.nutriconsultas.util.LogRedaction;
 
 import org.springframework.http.HttpHeaders;
@@ -105,6 +111,9 @@ public class PacienteController extends AbstractAuthorizedController {
 	@Autowired
 	private PacienteMpxExportService pacienteMpxExportService;
 
+	@Autowired
+	private PacienteMpxImportService pacienteMpxImportService;
+
 	/**
 	 * Gets the user ID from the OAuth2 principal.
 	 * @param principal the OAuth2 principal
@@ -158,6 +167,40 @@ public class PacienteController extends AbstractAuthorizedController {
 		log.debug("Listado de pacientes");
 		model.addAttribute("activeMenu", "pacientes");
 		return "sbadmin/pacientes/listado";
+	}
+
+	/**
+	 * Imports a patient registration profile from an uploaded {@code .mpx} file (#222).
+	 * Creates a new patient for the authenticated nutritionist; clinical history is not
+	 * restored.
+	 */
+	@PostMapping(path = "/admin/pacientes/importar.mpx", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public String importPacienteMpx(@RequestParam("mpxFile") final MultipartFile mpxFile,
+			@AuthenticationPrincipal final OidcUser principal, final RedirectAttributes redirectAttributes) {
+		log.debug("Importing MPX registration");
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			redirectAttributes.addFlashAttribute("importError", "No se pudo identificar al usuario");
+			return "redirect:/admin/pacientes";
+		}
+		try {
+			final MpxImportResult result = pacienteMpxImportService.importRegistration(mpxFile, userId);
+			redirectAttributes.addFlashAttribute("importSuccess", "Paciente importado correctamente");
+			if (result.duplicateWarning()) {
+				redirectAttributes.addFlashAttribute("importDuplicateWarning",
+						"Ya existe un paciente con el mismo nombre y fecha de nacimiento en su lista");
+			}
+			return "redirect:/admin/pacientes/" + result.pacienteId();
+		}
+		catch (final MpxImportException ex) {
+			log.warn("MPX import rejected: {}", ex.getMessage());
+			redirectAttributes.addFlashAttribute("importError", ex.getMessage());
+			return "redirect:/admin/pacientes";
+		}
+		catch (final SubscriptionLimitExceededException ex) {
+			redirectAttributes.addFlashAttribute("importError", subscriptionErrorResponses.resolve(ex));
+			return "redirect:/admin/pacientes";
+		}
 	}
 
 	@PostMapping(path = "/admin/pacientes/nuevo")

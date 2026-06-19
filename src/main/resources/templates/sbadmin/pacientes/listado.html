@@ -23,6 +23,7 @@
 
   <!-- Custom styles for this template-->
   <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+  <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
 </head>
 
 <body id="page-top">
@@ -42,9 +43,36 @@
           <!-- Page Heading -->
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Listado de Pacientes</h1>
-            <a th:href="@{/admin/pacientes/nuevo}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-              <i class="fas fa-user-plus fa-sm text-white-50"></i> Nuevo Paciente
-            </a>
+            <div>
+              <a th:href="@{/admin/pacientes/nuevo}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mr-2">
+                <i class="fas fa-user-plus fa-sm text-white-50"></i> Nuevo Paciente
+              </a>
+            </div>
+          </div>
+
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="card shadow">
+                <div class="card-body">
+                  <h6 class="font-weight-bold text-primary mb-3">
+                    <i class="fas fa-file-import"></i> Importar paciente desde archivo .mpx
+                  </h6>
+                  <form th:action="@{/admin/pacientes/importar.mpx}" method="post" enctype="multipart/form-data"
+                    class="form-inline flex-wrap">
+                    <div class="form-group mr-2 mb-2">
+                      <input type="file" name="mpxFile" class="form-control-file" accept=".mpx" required
+                        aria-label="Archivo MPX">
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-outline-primary mb-2">
+                      <i class="fas fa-upload"></i> Importar
+                    </button>
+                  </form>
+                  <small class="form-text text-muted">
+                    Restaura el perfil de registro exportado previamente. No incluye historial clínico.
+                  </small>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Content Row -->
@@ -94,6 +122,7 @@
 
     <!-- Custom scripts for all pages-->
     <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
     <script lang="javascript">
       'use strict';
       (function ($) {
@@ -127,6 +156,16 @@
             }
           },
         });
+
+        var importError = /*[[${importError}]]*/ null;
+        if (importError && typeof swal !== 'undefined') {
+          swal({
+            title: 'No se pudo importar',
+            text: importError,
+            type: 'error',
+            timer: 5000
+          });
+        }
 
       })(jQuery);
     </script>

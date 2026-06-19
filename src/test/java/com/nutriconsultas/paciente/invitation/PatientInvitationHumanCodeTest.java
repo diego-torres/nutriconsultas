@@ -32,7 +32,8 @@ class PatientInvitationHumanCodeTest {
 		final String code = PatientInvitationHumanCode.format(secret, "NUTRI");
 
 		assertThat(PatientInvitationHumanCode.matchesSecret(secret, "NUTRI", code)).isTrue();
-		assertThat(PatientInvitationHumanCode.matchesSecret(secret, "NUTRI", code.substring(0, code.length() - 1) + "Z"))
+		assertThat(
+				PatientInvitationHumanCode.matchesSecret(secret, "NUTRI", code.substring(0, code.length() - 1) + "Z"))
 			.isFalse();
 	}
 

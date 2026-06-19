@@ -77,13 +77,13 @@ public class NutritionistProfileControllerTest {
 			.thenReturn(Optional.of(subscription));
 
 		final Model model = new ExtendedModelMap();
-		final String view = controller.perfil(org.mockito.Mockito.mock(
-				org.springframework.security.oauth2.core.oidc.user.OidcUser.class, invocation -> {
-					if ("getSubject".equals(invocation.getMethod().getName())) {
-						return "auth0|test123";
-					}
-					return org.mockito.Mockito.RETURNS_DEFAULTS.answer(invocation);
-				}), model);
+		final String view = controller.perfil(org.mockito.Mockito
+			.mock(org.springframework.security.oauth2.core.oidc.user.OidcUser.class, invocation -> {
+				if ("getSubject".equals(invocation.getMethod().getName())) {
+					return "auth0|test123";
+				}
+				return org.mockito.Mockito.RETURNS_DEFAULTS.answer(invocation);
+			}), model);
 
 		assertThat(view).isEqualTo("sbadmin/profile/formulario");
 		assertThat(model.getAttribute("subscriptionPlanLabel")).isEqualTo("Básico");
