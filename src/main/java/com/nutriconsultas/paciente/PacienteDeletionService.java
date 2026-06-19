@@ -5,6 +5,7 @@ import org.springframework.lang.NonNull;
 /**
  * Deletes a nutritionist-owned patient and all in-app clinical history (#223).
  */
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface PacienteDeletionService {
 
 	/**
