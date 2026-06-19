@@ -598,7 +598,7 @@ Issue registry: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Agent workflow
 
 Issue registry: [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md). Plan: [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md).
 
-**Epic #221–#223** (2026-06-18): export/import patient **registration** to `.mpx` (YAML, no history) + export/delete UI. ~~#221~~ **done** (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254)). **NEXT:** [#222 import](https://github.com/diego-torres/nutriconsultas/issues/222) → #223. Complements #190 patient caps; available all tiers.
+**Epic #221–#223** (2026-06-18): export/import patient **registration** to `.mpx` (YAML, no history) + export/delete UI. ~~#221~~ **done** (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254)). ~~#222~~ **done** (PR [#261](https://github.com/diego-torres/nutriconsultas/pull/261)). **NEXT:** [#223 export/delete UI](https://github.com/diego-torres/nutriconsultas/issues/223). Complements #190 patient caps; available all tiers.
 
 **Epics #232–#242** (2026-06-19): diet catalog (#232–#235), branding (#236–#237), diet/platillo UX (#238–#240), patient UX (#241–#242). **Epic #257–#259** (2026-06-19): platillo catalog ownership (lock system rows, creator edit, copy). See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 
