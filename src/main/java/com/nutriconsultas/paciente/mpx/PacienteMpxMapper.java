@@ -1,6 +1,7 @@
 package com.nutriconsultas.paciente.mpx;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -125,7 +126,14 @@ public final class PacienteMpxMapper {
 		if (date == null) {
 			return null;
 		}
-		return ISO_DATE.format(date.toInstant().atZone(ZoneOffset.UTC).toLocalDate());
+		return ISO_DATE.format(toLocalDate(date));
+	}
+
+	private static LocalDate toLocalDate(final Date date) {
+		if (date instanceof java.sql.Date sqlDate) {
+			return sqlDate.toLocalDate();
+		}
+		return date.toInstant().atZone(ZoneOffset.UTC).toLocalDate();
 	}
 
 	private static String formatEnum(final Enum<?> value) {

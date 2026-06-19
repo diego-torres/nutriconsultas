@@ -91,6 +91,17 @@ class PacienteMpxExportServiceTest {
 	}
 
 	@Test
+	void exportRegistration_handlesSqlDateFromDatabase() {
+		paciente.setDob(java.sql.Date.valueOf(LocalDate.of(1985, 3, 20)));
+		when(pacienteRepository.findByIdAndUserId(42L, OWNER_USER_ID)).thenReturn(Optional.of(paciente));
+
+		final MpxExportResult result = service.exportRegistration(42L, OWNER_USER_ID);
+		final String yaml = new String(result.content(), StandardCharsets.UTF_8);
+
+		assertThat(yaml).contains("1985-03-20");
+	}
+
+	@Test
 	void exportRegistration_throwsWhenPatientNotFoundForOwner() {
 		when(pacienteRepository.findByIdAndUserId(99L, OWNER_USER_ID)).thenReturn(Optional.empty());
 
