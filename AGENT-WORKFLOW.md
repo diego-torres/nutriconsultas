@@ -32,7 +32,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | `[Nutritionist Web]` issues (#221–#223 MPX epic), states, dependencies |
 | [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md) | Patient registration export/import plan |
 
-**Current next issue (mobile):** [#133 — Invitation token generation & hashing service](https://github.com/diego-torres/nutriconsultas/issues/133) **in-progress** (PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229)). ~~#132~~ done (PR [#214](https://github.com/diego-torres/nutriconsultas/pull/214)).
+**Current next issue (mobile):** [#134 — POST /rest/mobile/invitations](https://github.com/diego-torres/nutriconsultas/issues/134). ~~#133~~ done (PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229)).
 
 **Current next issue (subscription):** [#207 — Stripe payment provider](https://github.com/diego-torres/nutriconsultas/issues/207). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#211~~ merged PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230).
 
@@ -48,7 +48,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | **API surface** | All mobile endpoints live under `/rest/mobile/patient/` as plain JSON (not DataTables-shaped like the admin `*RestController`s). |
 | **Identity (security-critical)** | JWT `sub` → **`Paciente.patientAuthSub`** (#107 ✓ PR #117). **Never `Paciente.userId`** — that is the NUTRITIONIST's Auth0 sub / tenant owner (ALIGNMENT-SPEC §F2). `PatientLinkageFilter` returns **403** if no linked `Paciente`. |
 | **Ownership / IDOR** | Return only the authenticated patient's rows. On an ownership miss prefer **404** (not 403) so existence isn't leaked (esp. #92). Never return cross-tenant data. |
-| **Backend state** | **Phase 0 done** (#107, #109, #110). **All endpoints #91–#99 done** on `main`. **Cross-cutting done** (#111–#116). **#156**, **#46**, **#132** done. **#133 in-progress** (token service). Requires `AUTH_AUDIENCE` env var. |
+| **Backend state** | **Phase 0 done** (#107, #109, #110). **All endpoints #91–#99 done** on `main`. **Cross-cutting done** (#111–#116). **#156**, **#46**, **#132**, **#133** done. **NEXT:** #134 invitation create. Requires `AUTH_AUDIENCE` env var. |
 | **DTO envelope** | `ApiResponse<T>`; lists in `PagedResponse<T>` or `CursorPagedResponse<T>` (messages); ISO-8601 date strings. See #110. |
 | **Schema ground truth** | ALIGNMENT-SPEC §F8 field-name map (`nombre→dietaName`, `energia→totalKcal`, `lipidos→totalGrasas`, `hidratosDeCarbono→totalCarbohidratos`, `Ingesta.nombre→tipo`); enums `EventStatus`/`PacienteDietaStatus` (no INACTIVE)/`NivelPeso`. Serialization aliases only — **no DB schema changes** for field renames. |
 | **PHI & logging** | No patient names/emails/DOB in unstructured logs. `LogRedaction` + `PhiLogTurboFilter`; CI runs `scripts/audit-logging.sh` and `scripts/audit-mobile-logging.sh` (#115 done). |
@@ -98,7 +98,7 @@ flowchart LR
    - **#113 (rate limit)** should land with or before **#97** (write endpoint).
    - **#114 (nutritionist reply) is web-only** — do not expose it under `/rest/mobile/**`.
    - **#46 (Liquibase)** ✓ — all schema/catalog changes are incremental changesets (see [Liquibase section](#liquibase--entity-schema-and-catalog-data)).
-   - **#132 (onboarding schema)** ✓ — `PacienteStatus` + `PatientInvitation` on `main` (PR #214, Liquibase `007`). **#133 in-progress** (PR #229 token hashing service).
+   - **#133 (token service)** ✓ — `PatientInvitationTokenService` on `main` (PR #229). **NEXT:** #134 create invitation endpoint.
    - If a dependency is still `open`, complete it first or document the blocker in the plan (Phase 2) and stop.
 5. **Update local registry** when remote state drifted (issue closed on GitHub but still `open` here, or vice versa). `ISSUE.md` must match GitHub before proceeding.
 
@@ -379,12 +379,12 @@ PR must include: changeset file(s), `db.changelog-master.yaml` include (if new f
 ```bash
 # Start of session
 git fetch origin && git checkout main && git pull origin main
-gh issue view 133
+gh issue view 134
 cat ISSUE.md
 cat docs/mobile-api/README.md
 
 # During work
-git checkout -b mobile-api/133-invitation-token-service
+git checkout -b mobile-api/134-create-invitation
 ./lint.sh && bash scripts/audit-logging.sh && bash scripts/audit-mobile-logging.sh && mvn -B verify
 ./dev-start.sh   # Java 21 — run locally when touching security, Liquibase, or startup
 
@@ -399,11 +399,11 @@ gh pr create ...
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#133 — Invitation token generation & hashing service](https://github.com/diego-torres/nutriconsultas/issues/133) |
-| **Status** | **in-progress** — PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229); ~~#132~~ ✓ (PR #214) |
-| **Phase** | CSPRNG URL token + human code + hash; optional offline JWS for #140 |
-| **Just completed** | [#132 onboarding schema](https://github.com/diego-torres/nutriconsultas/issues/132) — PR #214 |
-| **In scope for #133** | `PatientInvitationTokenService`; reuse `InvitationTokenHasher`; `PATIENT_INVITATION_JWS_SECRET` for optional JWS |
+| **Next issue** | [#134 — POST /rest/mobile/invitations](https://github.com/diego-torres/nutriconsultas/issues/134) |
+| **Status** | **NEXT** — ~~#133~~ ✓ merged (PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229)) |
+| **Phase** | Nutritionist JWT creates `Paciente` + `PatientInvitation` with token hash |
+| **Just completed** | [#133 token service](https://github.com/diego-torres/nutriconsultas/issues/133) — PR #229, deployed EC2 |
+| **In scope for #134** | `POST /rest/mobile/invitations`; persist hash only; return invite URL + human code |
 
 ### Upcoming gates
 
@@ -414,13 +414,13 @@ gh pr create ...
 | Endpoints | ~~#91–#99~~ ✓ | **Done** (PR #153) |
 | Cross-cutting | ~~#111~~ ✓, ~~#112~~ ✓ (OpenAPI), ~~#115~~ ✓ (PHI audit) | **Done** |
 | Hardening / additive | ~~#113~~ ✓, ~~#116~~ ✓ (`senderDisplayName`), ~~#114~~ ✓ (nutritionist reply) | **Done** |
-| Schema / Liquibase | ~~**#46**~~ ✓ (PR #196) → ~~**#132**~~ ✓ (PR #214) → **#133–#141** | **#133 in-progress** (PR #229) — incremental changesets per [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) |
+| Schema / Liquibase | ~~**#46**~~ ✓ (PR #196) → ~~**#132**~~ ✓ (PR #214) → ~~**#133**~~ ✓ (PR #229) → **#134–#141** | **#134 NEXT** — incremental changesets per [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) |
 
-### Status snapshot (2026-06-18)
+### Status snapshot (2026-06-19)
 
-**Patient mobile API on `main`:** Phase 0 + endpoints **#91–#99** done; cross-cutting **#111–#116** done. Onboarding schema **#132 done** (PR #214: `PacienteStatus`, `PatientInvitation`, Liquibase `007`).
+**Patient mobile API on `main`:** Phase 0 + endpoints **#91–#99** done; cross-cutting **#111–#116** done. Onboarding **#132** + token service **#133 done** (PR #229, deployed EC2).
 
-**In progress (mobile):** **#133** invitation token service — PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229) awaiting review. **NEXT after merge:** #134–#141 onboarding endpoints.
+**Next (mobile):** **#134** nutritionist create invitation → #135 preview → #136 redeem.
 
 **Schema track:** ~~#46~~ Liquibase baseline (PR #196). Changesets **003–007** on `main` (subscription, patient invitation). All new edits → forward changesets only.
 

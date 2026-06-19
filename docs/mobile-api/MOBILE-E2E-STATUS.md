@@ -217,4 +217,4 @@ Optional backend script (requires access token from the app):
 
 ---
 
-*Updated 2026-06-18: ~~#132~~ onboarding schema on `main` (PR #214); **#133 in-progress** (PR #229 token hashing).*
+*Updated 2026-06-19: ~~#133~~ token service on `main` (PR #229, EC2); **NEXT:** #134 create invitation.*
