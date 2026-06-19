@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,13 +34,10 @@ public class PacienteMpxExportService {
 
 	private final Clock clock;
 
-	public PacienteMpxExportService(final PacienteRepository pacienteRepository) {
-		this(pacienteRepository, Clock.systemUTC());
-	}
-
-	PacienteMpxExportService(final PacienteRepository pacienteRepository, final Clock clock) {
+	public PacienteMpxExportService(final PacienteRepository pacienteRepository,
+			@Autowired(required = false) final Clock clock) {
 		this.pacienteRepository = pacienteRepository;
-		this.clock = clock;
+		this.clock = clock != null ? clock : Clock.systemUTC();
 	}
 
 	@Transactional(readOnly = true)
