@@ -600,6 +600,14 @@ Issue registry: [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md). Plan: 
 
 **Epic #221–#223** (2026-06-18): export/import patient **registration** to `.mpx` (YAML, no history) + export/delete UI. **NEXT:** [#221 export](https://github.com/diego-torres/nutriconsultas/issues/221) → #222 → #223. Complements #190 patient caps; available all tiers.
 
+**Epics #232–#242** (2026-06-19): diet catalog (#232–#235), branding (#236–#237), diet/platillo UX (#238–#240), patient UX (#241–#242). See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
+
+**Bug #250** (2026-06-19): diet ingesta platillo name links to wrong catalog platillo — `PlatilloIngesta.id` vs `Platillo.id`. **NEXT** when fixing diet UX.
+
+## Public booking (tracking)
+
+Issue registry: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Epic **#245–#248** (2026-06-19): shareable `/consultas/{id}/agendar-cita` link. **NEXT (when active):** [#246 working hours](https://github.com/diego-torres/nutriconsultas/issues/246) → #247 → #248.
+
 ## Resources
 
 - [Spring Boot Documentation](https://spring.io/projects/spring-boot)
