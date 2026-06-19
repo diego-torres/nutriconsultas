@@ -217,4 +217,4 @@ Optional backend script (requires access token from the app):
 
 ---
 
-*Updated 2026-06-17: mobile cross-cutting done (#111–#116); **NEXT:** #132 invitation onboarding.*
+*Updated 2026-06-18: ~~#132~~ onboarding schema on `main` (PR #214); **#133 in-progress** (PR #229 token hashing).*
