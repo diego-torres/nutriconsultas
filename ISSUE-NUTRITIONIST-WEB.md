@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-20 — Epic **#271–#272** registered (platform admin **create** system catalog platillos/diets). ~~#259~~ **done** (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)). Platillo ownership **#257–#259 complete**. **NEXT:** [#236 show logo on profile](https://github.com/diego-torres/nutriconsultas/issues/236). Epics **#236–#242**, **#271–#272** registered.
+**Last updated:** 2026-06-20 — ~~#236~~ **done** (profile logo preview). Epic **#271–#272** registered (platform admin **create** system catalog platillos/diets). ~~#259~~ **done** (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)). Platillo ownership **#257–#259 complete**. **NEXT:** [#237 PDF logo sizing](https://github.com/diego-torres/nutriconsultas/issues/237). Epics **#237–#242**, **#271–#272** registered.
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -115,8 +115,8 @@ Platform admins can **edit** seeded system rows (#232 diets, #257 platillos) but
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| **236** | Show uploaded logo on nutritionist profile page | https://github.com/diego-torres/nutriconsultas/issues/236 | **NEXT** | #187 (context) | `NutritionistProfile` / S3 preview |
-| 237 | PDF reports — standard logo size (~1.5 × 1.5 in) | https://github.com/diego-torres/nutriconsultas/issues/237 | open | #187 | `DietaPdfService`, Flying Saucer CSS |
+| **236** | Show uploaded logo on nutritionist profile page | https://github.com/diego-torres/nutriconsultas/issues/236 | **done** | #187 (context) | `GET /admin/perfil/logo`; plan-gated preview + upload |
+| **237** | PDF reports — standard logo size (~1.5 × 1.5 in) | https://github.com/diego-torres/nutriconsultas/issues/237 | **NEXT** | #187 | `DietaPdfService`, Flying Saucer CSS |
 
 ---
 

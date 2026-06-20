@@ -38,7 +38,7 @@ Canonical cross-repo contracts for the `[Mobile API]` track. Indexed from [`../.
 | [`../../ISSUE-NUTRITIONIST-WEB.md`](../../ISSUE-NUTRITIONIST-WEB.md) | Patient MPX epic (#221–#223) |
 | [`../paciente/PATIENT-MPX-PLAN.md`](../paciente/PATIENT-MPX-PLAN.md) | Export/import plan |
 
-**Nutritionist web NEXT:** [#236](https://github.com/diego-torres/nutriconsultas/issues/236) show logo on profile. System catalog create [#271](https://github.com/diego-torres/nutriconsultas/issues/271)–[#272](https://github.com/diego-torres/nutriconsultas/issues/272) registered. ~~#259~~ done (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)); platillo ownership ~~#257–#258~~ done; diet catalog ~~#232–#235~~ done; ~~#221–#223~~ MPX epic done.
+**Nutritionist web NEXT:** [#237](https://github.com/diego-torres/nutriconsultas/issues/237) PDF logo sizing. ~~#236~~ profile logo preview done. System catalog create [#271](https://github.com/diego-torres/nutriconsultas/issues/271)–[#272](https://github.com/diego-torres/nutriconsultas/issues/272) registered. ~~#259~~ done (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)); platillo ownership ~~#257–#258~~ done; diet catalog ~~#232–#235~~ done; ~~#221–#223~~ MPX epic done.
 
 **Subscription NEXT:** [#207](https://github.com/diego-torres/nutriconsultas/issues/207) Stripe payment provider (~~#211~~ PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230), ~~#210~~ PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224), ~~#187~~ PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218), ~~#190~~ PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) on `main`).
 
