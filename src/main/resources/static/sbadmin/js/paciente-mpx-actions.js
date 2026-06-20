@@ -8,6 +8,8 @@
     return;
   }
 
+  var SWAL_CLOSE_DELAY_MS = 400;
+
   var HISTORY_WARNING = 'Si elimina este paciente, <strong>perderá todo su historial</strong> en Minutriporcion '
     + '(consultas, dietas asignadas, mediciones, mensajes, etc.). Solo podrá recuperar '
     + '<strong>los datos de registro</strong> si exportó o exporta ahora un archivo <code>.mpx</code> '
@@ -49,6 +51,44 @@
     });
   }
 
+  function openFinalConfirmAfterClose(pacienteId, options) {
+    swal.close();
+    setTimeout(function () {
+      confirmFinalDelete(pacienteId, options);
+    }, SWAL_CLOSE_DELAY_MS);
+  }
+
+  function executeDelete(pacienteId, options) {
+    $.ajax({
+      url: '/rest/pacientes/' + pacienteId,
+      type: 'DELETE',
+      success: function () {
+        swal({
+          title: 'Paciente eliminado',
+          text: 'El paciente y su historial clínico fueron eliminados.',
+          type: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        if (options && options.onDeleted) {
+          options.onDeleted();
+        }
+      },
+      error: function (xhr) {
+        var message = 'Error al eliminar el paciente.';
+        if (xhr.responseJSON && xhr.responseJSON.error) {
+          message = xhr.responseJSON.error;
+        }
+        swal({
+          title: 'No se pudo eliminar',
+          text: message,
+          type: 'error',
+          timer: 5000
+        });
+      }
+    });
+  }
+
   function confirmFinalDelete(pacienteId, options) {
     swal({
       title: 'Confirmar eliminación',
@@ -58,38 +98,13 @@
       confirmButtonColor: '#d33',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
-      closeOnConfirm: false
+      closeOnConfirm: false,
+      showLoaderOnConfirm: true
     }, function (isConfirm) {
       if (!isConfirm) {
         return;
       }
-      $.ajax({
-        url: '/rest/pacientes/' + pacienteId,
-        type: 'DELETE',
-        success: function () {
-          swal({
-            title: 'Paciente eliminado',
-            text: 'El paciente y su historial clínico fueron eliminados.',
-            type: 'success',
-            timer: 2000
-          });
-          if (options && options.onDeleted) {
-            options.onDeleted();
-          }
-        },
-        error: function (xhr) {
-          var message = 'Error al eliminar el paciente.';
-          if (xhr.responseJSON && xhr.responseJSON.error) {
-            message = xhr.responseJSON.error;
-          }
-          swal({
-            title: 'No se pudo eliminar',
-            text: message,
-            type: 'error',
-            timer: 5000
-          });
-        }
-      });
+      executeDelete(pacienteId, options);
     });
   }
 
@@ -105,18 +120,22 @@
       showCancelButton: true,
       confirmButtonText: 'Continuar',
       cancelButtonText: 'Cancelar',
-      closeOnConfirm: false
+      closeOnConfirm: false,
+      showLoaderOnConfirm: true
     }, function (isConfirm) {
       if (!isConfirm) {
         return;
       }
       var exportCheckbox = document.getElementById('mpx-export-before-delete');
       var exportBeforeDelete = exportCheckbox && exportCheckbox.checked;
-      swal.close();
+
       if (exportBeforeDelete) {
         downloadMpx(pacienteId).then(function () {
-          confirmFinalDelete(pacienteId, options);
+          openFinalConfirmAfterClose(pacienteId, options);
         }).catch(function () {
+          if (typeof swal.enableButtons === 'function') {
+            swal.enableButtons();
+          }
           swal({
             title: 'Exportación requerida',
             text: 'No se pudo exportar el archivo .mpx. El paciente no fue eliminado.',
@@ -124,9 +143,9 @@
             timer: 5000
           });
         });
-      } else {
-        confirmFinalDelete(pacienteId, options);
+        return;
       }
+      openFinalConfirmAfterClose(pacienteId, options);
     });
   }
 
