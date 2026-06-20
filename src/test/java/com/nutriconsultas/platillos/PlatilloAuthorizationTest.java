@@ -74,6 +74,29 @@ class PlatilloAuthorizationTest {
 	}
 
 	@Test
+	void canCopy_returnsTrueForSystemCatalog() {
+		platilloAuthorization = new PlatilloAuthorization(platformAdminService, platformAdminAuditService);
+
+		assertThat(platilloAuthorization.canCopy(systemPlatillo(97L), NUTRITIONIST_USER_ID)).isTrue();
+	}
+
+	@Test
+	void canCopy_returnsTrueForOwner() {
+		platilloAuthorization = new PlatilloAuthorization(platformAdminService, platformAdminAuditService);
+
+		assertThat(platilloAuthorization.canCopy(ownedPlatillo(10L, NUTRITIONIST_USER_ID), NUTRITIONIST_USER_ID))
+			.isTrue();
+	}
+
+	@Test
+	void canCopy_returnsFalseForOtherNutritionistOwnedPlatillo() {
+		platilloAuthorization = new PlatilloAuthorization(platformAdminService, platformAdminAuditService);
+
+		assertThat(platilloAuthorization.canCopy(ownedPlatillo(10L, "auth0|other-nutritionist"), NUTRITIONIST_USER_ID))
+			.isFalse();
+	}
+
+	@Test
 	void verifyCanModify_throwsForUnauthorizedUser() {
 		platilloAuthorization = new PlatilloAuthorization(platformAdminService, platformAdminAuditService);
 		final Platillo platillo = systemPlatillo(97L);

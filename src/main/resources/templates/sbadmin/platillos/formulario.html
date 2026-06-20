@@ -377,12 +377,21 @@
               >
                 Modificar alimento
               </h1>
+              <div th:if="${platillo != null && platillo.id != null && platillo.id != 0 && canCopy != null && canCopy}">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-info shadow-sm"
+                  th:attr="onclick='duplicatePlatillo(' + ${platillo.id} + ')'"
+                >
+                  <i class="fas fa-copy fa-sm text-white-50"></i> Copiar platillo
+                </button>
+              </div>
             </div>
 
             <div th:if="${platillo != null && platillo.id != null && platillo.id != 0 && isSystemCatalog != null && isSystemCatalog && isOwner != null && !isOwner}"
                  class="alert alert-info mb-4" role="alert">
               <i class="fas fa-info-circle"></i>
-              <strong>Platillo del catálogo del sistema:</strong> Puedes ver este platillo, pero no puedes modificarlo.
+              <strong>Platillo del catálogo del sistema:</strong> Puedes ver y copiar este platillo, pero no puedes modificarlo.
             </div>
 
             <!-- Content Row -->
@@ -907,6 +916,61 @@
               });
             });
         });
+
+        window.duplicatePlatillo = function (platilloId) {
+          swal({
+            title: 'Copiar Platillo',
+            text: '¿Está seguro que desea copiar este platillo? Se creará una copia editable en su catálogo.',
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, copiar',
+            cancelButtonText: 'Cancelar',
+            closeOnConfirm: false,
+            showLoaderOnConfirm: true
+          }, function (isConfirm) {
+            if (isConfirm) {
+              $.ajax({
+                url: '/rest/platillos/' + platilloId + '/duplicate',
+                type: 'POST',
+                contentType: 'application/json',
+                success: function (data) {
+                  if (data && data.data && data.data.id) {
+                    swal({
+                      title: '¡Éxito!',
+                      text: 'El platillo ha sido copiado correctamente',
+                      type: 'success',
+                      timer: 2000,
+                      showConfirmButton: true
+                    }, function () {
+                      window.location.href = '/admin/platillos/' + data.data.id;
+                    });
+                  } else {
+                    swal({
+                      title: 'Error',
+                      text: 'No se pudo copiar el platillo',
+                      type: 'error',
+                      timer: 5000
+                    });
+                  }
+                },
+                error: function (xhr) {
+                  var message = 'Error al copiar el platillo';
+                  if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                  }
+                  swal({
+                    title: 'Error',
+                    text: message,
+                    type: 'error',
+                    timer: 5000
+                  });
+                }
+              });
+            }
+          });
+        };
 
       })(jQuery);
     </script>

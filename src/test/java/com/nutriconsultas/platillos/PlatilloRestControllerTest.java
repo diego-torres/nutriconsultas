@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -307,6 +308,104 @@ public class PlatilloRestControllerTest {
 			.isInstanceOf(ResponseStatusException.class)
 			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
 			.isEqualTo(HttpStatus.FORBIDDEN);
+	}
+
+	@Test
+	public void testDuplicatePlatilloSuccess() {
+		final Platillo original = new Platillo();
+		original.setId(97L);
+		original.setName("Frijoles con tortilla");
+		original.setUserId(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID);
+
+		final Platillo duplicated = new Platillo();
+		duplicated.setId(100L);
+		duplicated.setName("Frijoles con tortilla (copia)");
+		duplicated.setUserId(TEST_USER_ID);
+
+		when(platilloService.findById(97L)).thenReturn(original);
+		when(platilloAuthorization.canCopy(original, TEST_USER_ID)).thenReturn(true);
+		when(platilloService.duplicatePlatillo(97L, TEST_USER_ID)).thenReturn(duplicated);
+
+		final OidcUser principal = (OidcUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		final ResponseEntity<ApiResponse<Platillo>> response = platilloRestController.duplicatePlatillo(97L, principal);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().getData()).isNotNull();
+		assertThat(response.getBody().getData().getId()).isEqualTo(100L);
+		assertThat(response.getBody().getData().getUserId()).isEqualTo(TEST_USER_ID);
+		verify(platilloService).duplicatePlatillo(97L, TEST_USER_ID);
+	}
+
+	@Test
+	public void testDuplicatePlatilloNotFound() {
+		when(platilloService.findById(999L)).thenReturn(null);
+
+		final OidcUser principal = (OidcUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		final ResponseEntity<ApiResponse<Platillo>> response = platilloRestController.duplicatePlatillo(999L,
+				principal);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		verify(platilloService, never()).duplicatePlatillo(org.mockito.ArgumentMatchers.anyLong(), anyString());
+	}
+
+	@Test
+	public void testDuplicatePlatilloForbiddenForOtherOwner() {
+		final Platillo original = new Platillo();
+		original.setId(5L);
+		original.setUserId("auth0|other-nutritionist");
+
+		when(platilloService.findById(5L)).thenReturn(original);
+		when(platilloAuthorization.canCopy(original, TEST_USER_ID)).thenReturn(false);
+
+		final OidcUser principal = (OidcUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		final ResponseEntity<ApiResponse<Platillo>> response = platilloRestController.duplicatePlatillo(5L, principal);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		verify(platilloService, never()).duplicatePlatillo(org.mockito.ArgumentMatchers.anyLong(), anyString());
+	}
+
+	@Test
+	public void testToStringListIncludesCopyButtonForSystemPlatillo() {
+		final Platillo systemPlatillo = new Platillo();
+		systemPlatillo.setId(97L);
+		systemPlatillo.setName("Frijoles con tortilla");
+		systemPlatillo.setUserId(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID);
+		systemPlatillo.setEnergia(200);
+		systemPlatillo.setProteina(10.0);
+		systemPlatillo.setLipidos(5.0);
+		systemPlatillo.setHidratosDeCarbono(30.0);
+
+		when(platilloService.getPlatillosForCatalogFilter(PlatilloCatalogFilter.TODAS, TEST_USER_ID))
+			.thenReturn(List.of(systemPlatillo));
+		when(platilloAuthorization.canCopy(systemPlatillo, TEST_USER_ID)).thenReturn(true);
+		when(platilloAuthorization.canModify(systemPlatillo, TEST_USER_ID,
+				(OidcUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()))
+			.thenReturn(false);
+
+		final PagingRequest pagingRequest = new PagingRequest();
+		final List<Column> columnList = new ArrayList<>();
+		columnList.add(new Column("acciones", "", true, true, new Search("", "false")));
+		columnList.add(new Column("platillo", "", true, true, new Search("", "false")));
+		columnList.add(new Column("ingestas", "", true, true, new Search("", "false")));
+		columnList.add(new Column("kcal", "", true, true, new Search("", "false")));
+		columnList.add(new Column("prot", "", true, true, new Search("", "false")));
+		columnList.add(new Column("lip", "", true, true, new Search("", "false")));
+		columnList.add(new Column("hc", "", true, true, new Search("", "false")));
+		pagingRequest.setColumns(columnList);
+		pagingRequest.setStart(0);
+		pagingRequest.setLength(10);
+		pagingRequest.setDraw(1);
+		pagingRequest.setOrder(Arrays.asList(new Order(1, Direction.asc)));
+		pagingRequest.setSearch(new Search("", "false"));
+		pagingRequest.setOwnershipFilter("todas");
+
+		final PageArray result = platilloRestController.getPageArray(pagingRequest);
+		final String actions = result.getData().get(0).get(0);
+
+		assertThat(actions).contains("duplicatePlatillo(97)");
+		assertThat(actions).doesNotContain("fa-edit");
+		assertThat(actions).doesNotContain("deletePlatillo");
 	}
 
 }

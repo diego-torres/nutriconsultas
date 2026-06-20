@@ -40,4 +40,6 @@ public interface PlatilloService {
 
 	void savePdf(@NonNull Long id, byte[] bytes);
 
+	Platillo duplicatePlatillo(@NonNull Long id, @NonNull String userId);
+
 }
