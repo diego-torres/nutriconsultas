@@ -29,7 +29,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 | File | Purpose |
 |------|---------|
-| [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | `[Nutritionist Web]` issues (#221–#223 MPX; #232–#242 epics; #257–#259 platillo ownership; ~~#250~~), states, dependencies |
+| [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | `[Nutritionist Web]` issues (#221–#223 MPX; #232–#242 epics; #257–#259 platillo ownership; #271–#272 system catalog create; ~~#250~~), states, dependencies |
 | [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md) | Patient registration export/import plan |
 
 **Parallel track (public booking — future; depends on #246+):**
@@ -432,7 +432,7 @@ gh pr create ...
 
 **Subscription track (parallel):** see [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#180–#185~~, ~~#187~~ (PR #218), ~~#190~~ (PR #216), ~~#210~~ (PR #224), ~~#211~~ (PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230)) on `main`. **NEXT:** #207 (+ #208 Stripe ops, email #209, retention #220).
 
-**Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) — platillo ownership ~~#257–#259~~ done (#259 PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270), `Fixes #259`); **NEXT:** #236 branding logo on profile.
+**Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) — platillo ownership ~~#257–#259~~ done (#259 PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)); system catalog create #271–#272 registered; **NEXT:** #236 branding logo on profile.
 
 **Production (2026-06-18):** ~~#226~~ invitation base URL fix (PR #227) — `APP_BASE_URL` / host remediation on EC2.
 
