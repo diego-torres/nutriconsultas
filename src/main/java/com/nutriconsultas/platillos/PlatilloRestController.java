@@ -343,24 +343,19 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 			return "";
 		}
 		final String userId = principal.getSubject();
-		final StringBuilder actions = new StringBuilder();
-		if (platilloAuthorization.canCopy(row, userId)) {
-			actions.append("<button onclick='duplicatePlatillo(")
-				.append(row.getId())
-				.append(")' class='btn btn-sm btn-info' title='Copiar Platillo'>")
-				.append("<i class='fas fa-copy'></i></button> ");
-		}
-		if (platilloAuthorization.canModify(row, userId, principal)) {
-			actions.append("<a href='/admin/platillos/")
-				.append(row.getId())
-				.append("' class='btn btn-sm btn-warning' title='Editar Platillo'>")
-				.append("<i class='fas fa-edit'></i></a> ");
-			actions.append("<button onclick='deletePlatillo(")
-				.append(row.getId())
-				.append(")' class='btn btn-sm btn-danger' title='Eliminar Platillo'>")
-				.append("<i class='fas fa-trash'></i></button>");
-		}
-		return actions.toString();
+		final String copyButton = platilloAuthorization.canCopy(row, userId)
+				? "<button onclick='duplicatePlatillo(" + row.getId()
+						+ ")' class='btn btn-sm btn-info' title='Copiar Platillo'><i class='fas fa-copy'></i></button> "
+				: "";
+		final String editButton = platilloAuthorization.canModify(row, userId, principal)
+				? "<a href='/admin/platillos/" + row.getId()
+						+ "' class='btn btn-sm btn-warning' title='Editar Platillo'><i class='fas fa-edit'></i></a> "
+				: "";
+		final String deleteButton = platilloAuthorization.canModify(row, userId, principal)
+				? "<button onclick='deletePlatillo(" + row.getId()
+						+ ")' class='btn btn-sm btn-danger' title='Eliminar Platillo'><i class='fas fa-trash'></i></button>"
+				: "";
+		return copyButton + editButton + deleteButton;
 	}
 
 	@Override
