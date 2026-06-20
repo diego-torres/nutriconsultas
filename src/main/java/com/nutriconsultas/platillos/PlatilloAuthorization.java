@@ -38,6 +38,13 @@ public class PlatilloAuthorization {
 				&& PlatilloCatalogConstants.isSystemCatalog(platillo));
 	}
 
+	public boolean canCopy(final Platillo platillo, final String userId) {
+		if (platillo == null || userId == null) {
+			return false;
+		}
+		return PlatilloCatalogConstants.isSystemCatalog(platillo) || Objects.equals(userId, platillo.getUserId());
+	}
+
 	public void verifyCanModify(final Platillo platillo, final String userId, final OidcUser principal) {
 		if (platillo == null) {
 			throw new IllegalArgumentException("Platillo no encontrado");

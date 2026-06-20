@@ -65,6 +65,7 @@ public class PlatilloController extends AbstractAuthorizedController {
 		final String userId = getUserId(principal);
 		final boolean isOwner = platilloAuthorization.canModify(platillo, userId, principal);
 		model.addAttribute("isOwner", isOwner);
+		model.addAttribute("canCopy", platilloAuthorization.canCopy(platillo, userId));
 		model.addAttribute("isSystemCatalog", PlatilloCatalogConstants.isSystemCatalog(platillo));
 	}
 
@@ -76,6 +77,7 @@ public class PlatilloController extends AbstractAuthorizedController {
 		platillo.setId(0L);
 		model.addAttribute("platillo", platillo);
 		model.addAttribute("isOwner", true);
+		model.addAttribute("canCopy", false);
 		model.addAttribute("isSystemCatalog", false);
 		log.debug("Finishing nuevo platillo con valores predeterminados: {}", platillo);
 		return "sbadmin/platillos/formulario";

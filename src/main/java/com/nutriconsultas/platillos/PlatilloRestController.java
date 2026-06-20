@@ -227,6 +227,45 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 		return saved;
 	}
 
+	@PostMapping("{id}/duplicate")
+	public ResponseEntity<ApiResponse<Platillo>> duplicatePlatillo(@PathVariable @NonNull final Long id,
+			@AuthenticationPrincipal final OidcUser principal) {
+		log.info("starting duplicatePlatillo with id {}.", id);
+		if (principal == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		final String userId = principal.getSubject();
+		if (userId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		final Platillo original = service.findById(id);
+		if (original == null) {
+			log.warn("Platillo with id {} not found for duplication", id);
+			return ResponseEntity.notFound().build();
+		}
+		if (!platilloAuthorization.canCopy(original, userId)) {
+			log.warn("User forbidden to duplicate platillo {}", id);
+			return ResponseEntity.status(HttpStatus.FORBIDDEN)
+				.body(buildDuplicateErrorResponse("No tiene permiso para copiar este platillo"));
+		}
+		final Platillo duplicated = service.duplicatePlatillo(id, userId);
+		if (duplicated == null) {
+			log.warn("Failed to duplicate platillo with id {}", id);
+			return ResponseEntity.notFound().build();
+		}
+		log.info("finish duplicatePlatillo with id {}, new platillo id {} owned by user {}.", id, duplicated.getId(),
+				userId);
+		return ResponseEntity.ok(new ApiResponse<>(duplicated));
+	}
+
+	private ApiResponse<Platillo> buildDuplicateErrorResponse(final String message) {
+		final ApiResponse<Platillo> apiResponse = new ApiResponse<>();
+		apiResponse.setStatus(HttpStatus.FORBIDDEN.value());
+		apiResponse.setMessage(message);
+		apiResponse.setData(null);
+		return apiResponse;
+	}
+
 	@DeleteMapping("{id}")
 	public ResponseEntity<ApiResponse<Void>> deletePlatillo(@PathVariable @NonNull final Long id,
 			@AuthenticationPrincipal final OidcUser principal) {
@@ -300,14 +339,23 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 	}
 
 	private String buildActionsColumn(final Platillo row, final OidcUser principal) {
-		if (principal == null || !platilloAuthorization.canModify(row, principal.getSubject(), principal)) {
+		if (principal == null) {
 			return "";
 		}
-		final String editButton = "<a href='/admin/platillos/" + row.getId()
-				+ "' class='btn btn-sm btn-warning' title='Editar Platillo'><i class='fas fa-edit'></i></a> ";
-		final String deleteButton = "<button onclick='deletePlatillo(" + row.getId()
-				+ ")' class='btn btn-sm btn-danger' title='Eliminar Platillo'><i class='fas fa-trash'></i></button>";
-		return editButton + deleteButton;
+		final String userId = principal.getSubject();
+		final String copyButton = platilloAuthorization.canCopy(row, userId)
+				? "<button onclick='duplicatePlatillo(" + row.getId()
+						+ ")' class='btn btn-sm btn-info' title='Copiar Platillo'><i class='fas fa-copy'></i></button> "
+				: "";
+		final String editButton = platilloAuthorization.canModify(row, userId, principal)
+				? "<a href='/admin/platillos/" + row.getId()
+						+ "' class='btn btn-sm btn-warning' title='Editar Platillo'><i class='fas fa-edit'></i></a> "
+				: "";
+		final String deleteButton = platilloAuthorization.canModify(row, userId, principal)
+				? "<button onclick='deletePlatillo(" + row.getId()
+						+ ")' class='btn btn-sm btn-danger' title='Eliminar Platillo'><i class='fas fa-trash'></i></button>"
+				: "";
+		return copyButton + editButton + deleteButton;
 	}
 
 	@Override

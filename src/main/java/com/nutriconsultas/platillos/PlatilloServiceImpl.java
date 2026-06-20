@@ -1,6 +1,7 @@
 package com.nutriconsultas.platillos;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -9,9 +10,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.alimentos.AlimentosRepository;
+import com.nutriconsultas.model.AbstractNutrible;
 
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -202,6 +205,82 @@ public class PlatilloServiceImpl implements PlatilloService {
 		log.info("Starting savePicture with id: {}", id);
 		uploadPictureToS3(id, bytes, fileExtension);
 		log.info("Finish savePicture with id: {}", id);
+	}
+
+	@Override
+	@Transactional
+	public Platillo duplicatePlatillo(@NonNull final Long id, @NonNull final String userId) {
+		log.info("Duplicating platillo with id: {} for user present", id);
+		final Platillo original = platilloRepository.findById(id).orElse(null);
+		if (original == null) {
+			log.warn("Platillo with id {} not found for duplication", id);
+			return null;
+		}
+		if (!PlatilloCatalogConstants.isSystemCatalog(original) && !Objects.equals(userId, original.getUserId())) {
+			log.warn("User not allowed to duplicate platillo {}", id);
+			return null;
+		}
+
+		final Platillo copy = new Platillo();
+		final String originalName = original.getName() != null ? original.getName() : "Platillo";
+		copy.setName(originalName + " (copia)");
+		copy.setUserId(userId);
+		copy.setDescription(original.getDescription());
+		copy.setImageUrl(original.getImageUrl());
+		copy.setVideoUrl(original.getVideoUrl());
+		copy.setPdfUrl(original.getPdfUrl());
+		copy.setIngestasSugeridas(original.getIngestasSugeridas());
+		copyNutrientFields(original, copy);
+
+		final List<Ingrediente> newIngredientes = new ArrayList<>();
+		for (final Ingrediente originalIngrediente : original.getIngredientes()) {
+			final Ingrediente newIngrediente = copyIngrediente(originalIngrediente);
+			newIngrediente.setPlatillo(copy);
+			newIngredientes.add(newIngrediente);
+		}
+		copy.setIngredientes(newIngredientes);
+
+		final Platillo saved = platilloRepository.save(copy);
+		log.info("Successfully duplicated platillo {} to new platillo {}", id, saved.getId());
+		return saved;
+	}
+
+	private Ingrediente copyIngrediente(final Ingrediente original) {
+		final Ingrediente copy = new Ingrediente();
+		copy.setDescription(original.getDescription());
+		copy.setAlimento(original.getAlimento());
+		copy.setUnidad(original.getUnidad());
+		copy.setCantSugerida(original.getCantSugerida());
+		copyNutrientFields(original, copy);
+		return copy;
+	}
+
+	private void copyNutrientFields(final AbstractNutrible source, final AbstractNutrible target) {
+		target.setEnergia(source.getEnergia());
+		target.setProteina(source.getProteina());
+		target.setLipidos(source.getLipidos());
+		target.setHidratosDeCarbono(source.getHidratosDeCarbono());
+		target.setPesoBrutoRedondeado(source.getPesoBrutoRedondeado());
+		target.setPesoNeto(source.getPesoNeto());
+		target.setFibra(source.getFibra());
+		target.setVitA(source.getVitA());
+		target.setAcidoAscorbico(source.getAcidoAscorbico());
+		target.setHierroNoHem(source.getHierroNoHem());
+		target.setPotasio(source.getPotasio());
+		target.setIndiceGlicemico(source.getIndiceGlicemico());
+		target.setCargaGlicemica(source.getCargaGlicemica());
+		target.setAcidoFolico(source.getAcidoFolico());
+		target.setCalcio(source.getCalcio());
+		target.setHierro(source.getHierro());
+		target.setSodio(source.getSodio());
+		target.setAzucarPorEquivalente(source.getAzucarPorEquivalente());
+		target.setSelenio(source.getSelenio());
+		target.setFosforo(source.getFosforo());
+		target.setColesterol(source.getColesterol());
+		target.setAgSaturados(source.getAgSaturados());
+		target.setAgMonoinsaturados(source.getAgMonoinsaturados());
+		target.setAgPoliinsaturados(source.getAgPoliinsaturados());
+		target.setEtanol(source.getEtanol());
 	}
 
 	@Override
