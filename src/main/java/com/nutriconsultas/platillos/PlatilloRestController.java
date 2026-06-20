@@ -2,21 +2,17 @@ package com.nutriconsultas.platillos;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,8 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.controller.AbstractGridController;
 import com.nutriconsultas.dataTables.paging.Column;
-import com.nutriconsultas.dataTables.paging.Direction;
-import com.nutriconsultas.dataTables.paging.Order;
+import com.nutriconsultas.dataTables.paging.Page;
 import com.nutriconsultas.dataTables.paging.PageArray;
 import com.nutriconsultas.dataTables.paging.PagingRequest;
 import com.nutriconsultas.model.ApiResponse;
@@ -47,6 +42,9 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 
 	@Autowired
 	private PlatilloAuthorization platilloAuthorization;
+
+	@Autowired
+	private PlatilloDeletionService platilloDeletionService;
 
 	private String getUserId(final OidcUser principal) {
 		if (principal == null) {
@@ -80,57 +78,17 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 		return platillo;
 	}
 
-	private static final Map<String, String> COLUMN_TO_FIELD_MAP = new HashMap<>();
-
-	static {
-		COLUMN_TO_FIELD_MAP.put("platillo", "name");
-		COLUMN_TO_FIELD_MAP.put("ingestas", "ingestasSugeridas");
-		COLUMN_TO_FIELD_MAP.put("kcal", "energia");
-		COLUMN_TO_FIELD_MAP.put("prot", "proteina");
-		COLUMN_TO_FIELD_MAP.put("lip", "lipidos");
-		COLUMN_TO_FIELD_MAP.put("hc", "hidratosDeCarbono");
-	}
-
-	/**
-	 * Converts a PagingRequest to Spring Data Pageable.
-	 * @param pagingRequest the paging request
-	 * @return Spring Data Pageable
-	 */
-	@NonNull
-	private Pageable toPageable(final PagingRequest pagingRequest) {
-		final int length = pagingRequest.getLength() > 0 ? pagingRequest.getLength() : 10;
-		final int page = pagingRequest.getStart() / length;
-		final int size = length;
-
-		Sort sort = Sort.unsorted();
-		if (pagingRequest.getOrder() != null && !pagingRequest.getOrder().isEmpty()) {
-			final Order order = pagingRequest.getOrder().get(0);
-			if (order.getColumn() != null && order.getColumn() < pagingRequest.getColumns().size()) {
-				final String columnName = pagingRequest.getColumns().get(order.getColumn()).getData();
-				final String fieldName = COLUMN_TO_FIELD_MAP.getOrDefault(columnName, columnName);
-				final Sort.Direction direction = order.getDir() == Direction.asc ? Sort.Direction.ASC
-						: Sort.Direction.DESC;
-				sort = Sort.by(direction, fieldName);
-			}
-		}
-
-		return PageRequest.of(page, size, sort);
-	}
-
-	/**
-	 * Overrides base class method to use server-side pagination.
-	 * @param pagingRequest the paging request
-	 * @return paginated platillo data
-	 */
 	@Override
 	@PostMapping("data-table")
 	public PageArray getPageArray(@RequestBody final PagingRequest pagingRequest) {
 		log.info("starting getPageArray with pagingRequest: {}", pagingRequest);
+		final OidcUser principal = resolveGridPrincipal();
 		pagingRequest.setColumns(getColumns());
-		final com.nutriconsultas.dataTables.paging.Page<Platillo> page = getRows(pagingRequest);
+		final Page<Platillo> page = getRows(pagingRequest, principal);
 		log.debug("page with records: {}", page.getRecordsTotal());
 		final PageArray pageArray = new PageArray();
-		pageArray.setData(page.getData().stream().map(this::toStringList).collect(Collectors.toList()));
+		pageArray
+			.setData(page.getData().stream().map(row -> toStringList(row, principal)).collect(Collectors.toList()));
 		pageArray.setDraw(page.getDraw());
 		pageArray.setRecordsFiltered(page.getRecordsFiltered());
 		pageArray.setRecordsTotal(page.getRecordsTotal());
@@ -138,41 +96,21 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 		return pageArray;
 	}
 
-	/**
-	 * Gets rows using server-side pagination.
-	 * @param pagingRequest the paging request
-	 * @return the page of platillos
-	 */
-	@Override
-	protected com.nutriconsultas.dataTables.paging.Page<Platillo> getRows(final PagingRequest pagingRequest) {
+	protected Page<Platillo> getRows(final PagingRequest pagingRequest, final OidcUser principal) {
 		log.debug("starting getRows with pagingRequest: {}", pagingRequest);
-		final Pageable pageable = toPageable(pagingRequest);
-		final String searchValue = pagingRequest.getSearch() != null && pagingRequest.getSearch().getValue() != null
-				? pagingRequest.getSearch().getValue().trim() : null;
+		final PlatilloCatalogFilter catalogFilter = PlatilloCatalogFilter
+			.fromRequestValue(pagingRequest.getOwnershipFilter());
+		final String userId = principal != null ? principal.getSubject() : null;
+		final List<Platillo> data = service.getPlatillosForCatalogFilter(catalogFilter, userId);
+		return getPage(pagingRequest, data);
+	}
 
-		final Page<Platillo> springPage;
-		final long totalCount;
-		final long filteredCount;
-
-		if (searchValue != null && !searchValue.isEmpty()) {
-			springPage = service.findBySearchTerm(searchValue, pageable);
-			filteredCount = service.countBySearchTerm(searchValue);
+	private OidcUser resolveGridPrincipal() {
+		final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication != null && authentication.getPrincipal() instanceof OidcUser oidcUser) {
+			return oidcUser;
 		}
-		else {
-			springPage = service.findAll(pageable);
-			filteredCount = service.count();
-		}
-		totalCount = service.count();
-
-		final com.nutriconsultas.dataTables.paging.Page<Platillo> result = new com.nutriconsultas.dataTables.paging.Page<>(
-				springPage.getContent());
-		result.setRecordsFiltered((int) filteredCount);
-		result.setRecordsTotal((int) totalCount);
-		result.setDraw(pagingRequest.getDraw());
-
-		log.debug("returning data at getRows: recordsTotal={}, recordsFiltered={}", result.getRecordsTotal(),
-				result.getRecordsFiltered());
-		return result;
+		return null;
 	}
 
 	@PostMapping("{id}/ingredientes/add")
@@ -208,7 +146,6 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 		final OidcUser principal = currentUser();
 		String ingestas = platillo.getIngestasSugeridas();
 
-		// prevent duplicate ingestas
 		ResponseEntity<ApiResponse<Platillo>> result;
 		if (ingestas != null && ingestas.contains(ingesta.getIngesta())) {
 			log.info("finish addIngesta with id {} and ingesta {} - DUPLICATE requested.", id, ingesta);
@@ -260,7 +197,6 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 		return result;
 	}
 
-	// "/rest/platillos/" + $("#id").val() + "/video/add"
 	@PostMapping("{id}/video/add")
 	public ResponseEntity<ApiResponse<Platillo>> addVideo(@PathVariable @NonNull final Long id,
 			@RequestBody @NonNull final VideoFormModel video) {
@@ -275,38 +211,114 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 	}
 
 	@PostMapping("add")
-	public Platillo add(@RequestBody @NonNull final Platillo platillo) {
+	public Platillo add(@RequestBody @NonNull final Platillo platillo,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.info("starting add with platillo {}.", platillo);
+		if (principal == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		final String userId = principal.getSubject();
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		platillo.setUserId(userId);
 		final Platillo saved = service.save(platillo);
 		log.info("finish add with platillo {}.", saved);
 		return saved;
 	}
 
+	@DeleteMapping("{id}")
+	public ResponseEntity<ApiResponse<Void>> deletePlatillo(@PathVariable @NonNull final Long id,
+			@AuthenticationPrincipal final OidcUser principal) {
+		log.info("starting deletePlatillo with id {}.", id);
+		if (principal == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		final String userId = principal.getSubject();
+		if (userId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+
+		final PlatilloDeleteResult result = platilloDeletionService.deletePlatillo(id, userId, principal);
+		return switch (result.getOutcome()) {
+			case DELETED -> {
+				log.info("finish deletePlatillo with id {}.", id);
+				yield ResponseEntity.ok(new ApiResponse<>(null));
+			}
+			case NOT_FOUND -> {
+				log.warn("Platillo with id {} not found for deletion", id);
+				yield ResponseEntity.notFound().build();
+			}
+			case FORBIDDEN -> {
+				log.warn("User {} forbidden to delete platillo {}", userId, id);
+				yield ResponseEntity.status(HttpStatus.FORBIDDEN)
+					.body(buildDeleteErrorResponse(HttpStatus.FORBIDDEN.value(),
+							"No tiene permiso para eliminar este platillo"));
+			}
+			case IN_USE -> {
+				final String message = buildInUseMessage(result.getDietReferenceCount());
+				log.info("Delete blocked for platillo {}: {}", id, message);
+				yield ResponseEntity.status(HttpStatus.CONFLICT)
+					.body(buildDeleteErrorResponse(HttpStatus.CONFLICT.value(), message));
+			}
+		};
+	}
+
+	private ApiResponse<Void> buildDeleteErrorResponse(final int status, final String message) {
+		final ApiResponse<Void> apiResponse = new ApiResponse<>();
+		apiResponse.setStatus(status);
+		apiResponse.setMessage(message);
+		apiResponse.setData(null);
+		return apiResponse;
+	}
+
+	private String buildInUseMessage(final long dietReferenceCount) {
+		return "Este platillo está referenciado en " + dietReferenceCount
+				+ (dietReferenceCount == 1 ? " dieta y no puede eliminarse" : " dieta(s) y no puede eliminarse");
+	}
+
 	@Override
 	protected List<Column> getColumns() {
 		log.debug("getting Platillo columns.");
-		return Arrays.asList(new Column("platillo"), //
-				new Column("ingestas"), //
-				new Column("kcal"), //
-				new Column("prot"), //
-				new Column("lip"), //
-				new Column("hc"));
+		return Stream.of("acciones", "platillo", "ingestas", "kcal", "prot", "lip", "hc")
+			.map(Column::new)
+			.collect(Collectors.toList());
 	}
 
 	@Override
 	protected List<String> toStringList(final Platillo row) {
+		return toStringList(row, null);
+	}
+
+	private List<String> toStringList(final Platillo row, final OidcUser principal) {
 		log.debug("converting Platillo row {} to string list.", row);
-		return Arrays.asList("<a href='/admin/platillos/" + row.getId() + "'>" + row.getName() + "</a>",
+		return Arrays.asList(buildActionsColumn(row, principal),
+				"<a href='/admin/platillos/" + row.getId() + "'>" + row.getName() + "</a>",
 				row.getIngestasSugeridas() == null ? "" : row.getIngestasSugeridas(),
-				row.getEnergia() == null ? "" : row.getEnergia().toString(), String.format("%.1f", row.getProteina()), //
-				String.format("%.1f", row.getLipidos()), //
-				String.format("%.1f", row.getHidratosDeCarbono()));
+				row.getEnergia() == null ? "" : row.getEnergia().toString(), String.format("%.1f", row.getProteina()),
+				String.format("%.1f", row.getLipidos()), String.format("%.1f", row.getHidratosDeCarbono()));
+	}
+
+	private String buildActionsColumn(final Platillo row, final OidcUser principal) {
+		if (principal == null || !platilloAuthorization.canModify(row, principal.getSubject(), principal)) {
+			return "";
+		}
+		final String editButton = "<a href='/admin/platillos/" + row.getId()
+				+ "' class='btn btn-sm btn-warning' title='Editar Platillo'><i class='fas fa-edit'></i></a> ";
+		final String deleteButton = "<button onclick='deletePlatillo(" + row.getId()
+				+ ")' class='btn btn-sm btn-danger' title='Eliminar Platillo'><i class='fas fa-trash'></i></button>";
+		return editButton + deleteButton;
 	}
 
 	@Override
 	protected List<Platillo> getData() {
 		log.warn("getData() called without pagination. This should not happen in production.");
 		return service.findAll();
+	}
+
+	@Override
+	protected Page<Platillo> getRows(final PagingRequest pagingRequest) {
+		return getRows(pagingRequest, resolveGridPrincipal());
 	}
 
 	@Override

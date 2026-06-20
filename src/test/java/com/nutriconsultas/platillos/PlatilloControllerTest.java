@@ -1,12 +1,13 @@
 package com.nutriconsultas.platillos;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
@@ -64,10 +65,14 @@ public class PlatilloControllerTest {
 		platillo.setName("Test Platillo");
 		platillo.setDescription("Test Description");
 		platillo.setIngestasSugeridas("Desayuno,Comida");
+		platillo.setUserId(TEST_USER_ID);
 
 		alimento = new Alimento();
 		alimento.setId(1L);
 		alimento.setNombreAlimento("Test Alimento");
+
+		when(platilloService.findById(1L)).thenReturn(platillo);
+		when(platilloService.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(platillo);
 
 		log.info("finished setting up PlatilloController test");
 	}
@@ -136,33 +141,6 @@ public class PlatilloControllerTest {
 
 	@Test
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
-	public void testSaveNewPlatillo() throws Exception {
-		log.info("Starting testSaveNewPlatillo");
-		Platillo newPlatillo = new Platillo();
-		newPlatillo.setId(0L);
-		newPlatillo.setName("New Platillo");
-		newPlatillo.setDescription("New Description");
-
-		when(platilloService.findById(0L)).thenReturn(null);
-		when(platilloService.save(any(Platillo.class))).thenReturn(newPlatillo);
-
-		mockMvc
-			.perform(MockMvcRequestBuilders.post("/admin/platillos/save")
-				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
-				.param("id", "0")
-				.param("name", "New Platillo")
-				.param("description", "New Description")
-				.with(oidcLogin(TEST_USER_ID))
-				.with(SecurityMockMvcRequestPostProcessors.csrf()))
-			.andExpect(status().is3xxRedirection())
-			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/platillos/0"));
-
-		verify(platilloService).save(any(Platillo.class));
-		log.info("Finishing testSaveNewPlatillo");
-	}
-
-	@Test
-	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	public void testSaveExistingPlatillo() throws Exception {
 		log.info("Starting testSaveExistingPlatillo");
 		when(platilloService.findById(1L)).thenReturn(platillo);
@@ -179,7 +157,7 @@ public class PlatilloControllerTest {
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/platillos/1"));
 
-		verify(platilloService).findById(1L);
+		verify(platilloService).findByIdAndUserId(1L, TEST_USER_ID);
 		verify(platilloService).save(any(Platillo.class));
 		log.info("Finishing testSaveExistingPlatillo");
 	}
@@ -327,6 +305,8 @@ public class PlatilloControllerTest {
 		systemPlatillo.setIngestasSugeridas("Cena");
 
 		when(platilloService.findById(97L)).thenReturn(systemPlatillo);
+		when(platilloService.findByIdAndUserId(97L, TEST_USER_ID)).thenReturn(null);
+		when(platilloService.findByIdAndUserId(97L, PLATFORM_ADMIN_USER_ID)).thenReturn(null);
 		when(alimentoService.findAll()).thenReturn(Arrays.asList(alimento));
 
 		mockMvc.perform(MockMvcRequestBuilders.get("/admin/platillos/97").with(oidcLogin(TEST_USER_ID)))
@@ -345,6 +325,8 @@ public class PlatilloControllerTest {
 		systemPlatillo.setIngestasSugeridas("Cena");
 
 		when(platilloService.findById(97L)).thenReturn(systemPlatillo);
+		when(platilloService.findByIdAndUserId(97L, TEST_USER_ID)).thenReturn(null);
+		when(platilloService.findByIdAndUserId(97L, PLATFORM_ADMIN_USER_ID)).thenReturn(null);
 		when(alimentoService.findAll()).thenReturn(Arrays.asList(alimento));
 
 		mockMvc.perform(MockMvcRequestBuilders.get("/admin/platillos/97").with(oidcLogin(PLATFORM_ADMIN_USER_ID)))
@@ -362,12 +344,78 @@ public class PlatilloControllerTest {
 		systemPlatillo.setUserId(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID);
 
 		when(platilloService.findById(97L)).thenReturn(systemPlatillo);
+		when(platilloService.findByIdAndUserId(97L, TEST_USER_ID)).thenReturn(null);
+		when(platilloService.findByIdAndUserId(97L, PLATFORM_ADMIN_USER_ID)).thenReturn(null);
 
 		try {
 			mockMvc
 				.perform(MockMvcRequestBuilders.post("/admin/platillos/save")
 					.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 					.param("id", "97")
+					.param("name", "Intento no autorizado")
+					.param("description", "Cambio bloqueado")
+					.with(oidcLogin(TEST_USER_ID))
+					.with(SecurityMockMvcRequestPostProcessors.csrf()))
+				.andExpect(status().is5xxServerError());
+		}
+		catch (Exception e) {
+			assertThat(e).hasRootCauseInstanceOf(IllegalArgumentException.class);
+		}
+
+		verify(platilloService, never()).save(any(Platillo.class));
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testEditarOwnedPlatilloShowsEditable() throws Exception {
+		when(platilloService.findById(1L)).thenReturn(platillo);
+		when(alimentoService.findAll()).thenReturn(Arrays.asList(alimento));
+
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/platillos/1").with(oidcLogin(TEST_USER_ID)))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.model().attribute("isOwner", true))
+			.andExpect(MockMvcResultMatchers.model().attribute("isSystemCatalog", false));
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testSaveNewPlatilloSetsUserId() throws Exception {
+		when(platilloService.save(argThat(saved -> TEST_USER_ID.equals(saved.getUserId())))).thenAnswer(invocation -> {
+			final Platillo saved = invocation.getArgument(0);
+			saved.setId(42L);
+			return saved;
+		});
+
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/platillos/save")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("id", "0")
+				.param("name", "New Platillo")
+				.param("description", "New Description")
+				.with(oidcLogin(TEST_USER_ID))
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/platillos/42"));
+
+		verify(platilloService).save(any(Platillo.class));
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testSaveRejectsNonOwnerOnOwnedPlatillo() throws Exception {
+		final Platillo otherPlatillo = new Platillo();
+		otherPlatillo.setId(8L);
+		otherPlatillo.setName("Platillo ajeno");
+		otherPlatillo.setUserId("auth0|other-nutritionist");
+
+		when(platilloService.findById(8L)).thenReturn(otherPlatillo);
+		when(platilloService.findByIdAndUserId(8L, TEST_USER_ID)).thenReturn(null);
+
+		try {
+			mockMvc
+				.perform(MockMvcRequestBuilders.post("/admin/platillos/save")
+					.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+					.param("id", "8")
 					.param("name", "Intento no autorizado")
 					.param("description", "Cambio bloqueado")
 					.with(oidcLogin(TEST_USER_ID))
@@ -390,6 +438,8 @@ public class PlatilloControllerTest {
 		systemPlatillo.setUserId(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID);
 
 		when(platilloService.findById(97L)).thenReturn(systemPlatillo);
+		when(platilloService.findByIdAndUserId(97L, TEST_USER_ID)).thenReturn(null);
+		when(platilloService.findByIdAndUserId(97L, PLATFORM_ADMIN_USER_ID)).thenReturn(null);
 		when(platilloService.save(any(Platillo.class))).thenReturn(systemPlatillo);
 
 		mockMvc

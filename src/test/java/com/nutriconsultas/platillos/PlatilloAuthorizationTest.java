@@ -40,11 +40,19 @@ class PlatilloAuthorizationTest {
 	private PlatilloAuthorization platilloAuthorization;
 
 	@Test
-	void canModify_returnsTrueForNonSystemPlatillo() {
+	void canModify_returnsTrueForOwner() {
 		platilloAuthorization = new PlatilloAuthorization(platformAdminService, platformAdminAuditService);
-		final Platillo platillo = ownedPlatillo(10L, null);
+		final Platillo platillo = ownedPlatillo(10L, NUTRITIONIST_USER_ID);
 
 		assertThat(platilloAuthorization.canModify(platillo, NUTRITIONIST_USER_ID, nutritionistPrincipal)).isTrue();
+	}
+
+	@Test
+	void canModify_returnsFalseForNonOwnerOnOwnedPlatillo() {
+		platilloAuthorization = new PlatilloAuthorization(platformAdminService, platformAdminAuditService);
+		final Platillo platillo = ownedPlatillo(10L, "auth0|other-nutritionist");
+
+		assertThat(platilloAuthorization.canModify(platillo, NUTRITIONIST_USER_ID, nutritionistPrincipal)).isFalse();
 	}
 
 	@Test
@@ -78,9 +86,34 @@ class PlatilloAuthorizationTest {
 	}
 
 	@Test
+	void resolveForMutation_returnsOwnedPlatilloForCreator() {
+		platilloAuthorization = new PlatilloAuthorization(platformAdminService, platformAdminAuditService);
+		final Platillo owned = ownedPlatillo(5L, NUTRITIONIST_USER_ID);
+		when(platilloService.findByIdAndUserId(5L, NUTRITIONIST_USER_ID)).thenReturn(owned);
+
+		final Platillo result = platilloAuthorization.resolveForMutation(5L, NUTRITIONIST_USER_ID,
+				nutritionistPrincipal, platilloService);
+
+		assertThat(result).isSameAs(owned);
+	}
+
+	@Test
+	void resolveForMutation_returnsNullForNonOwnerOnOwnedPlatillo() {
+		platilloAuthorization = new PlatilloAuthorization(platformAdminService, platformAdminAuditService);
+		when(platilloService.findByIdAndUserId(5L, NUTRITIONIST_USER_ID)).thenReturn(null);
+		when(platformAdminService.isPlatformAdmin(nutritionistPrincipal)).thenReturn(false);
+
+		final Platillo result = platilloAuthorization.resolveForMutation(5L, NUTRITIONIST_USER_ID,
+				nutritionistPrincipal, platilloService);
+
+		assertThat(result).isNull();
+	}
+
+	@Test
 	void resolveForMutation_returnsSystemPlatilloForPlatformAdmin() {
 		platilloAuthorization = new PlatilloAuthorization(platformAdminService, platformAdminAuditService);
 		final Platillo system = systemPlatillo(97L);
+		when(platilloService.findByIdAndUserId(97L, PLATFORM_ADMIN_USER_ID)).thenReturn(null);
 		when(platilloService.findById(97L)).thenReturn(system);
 		when(platformAdminService.isPlatformAdmin(platformAdminPrincipal)).thenReturn(true);
 
@@ -93,8 +126,7 @@ class PlatilloAuthorizationTest {
 	@Test
 	void resolveForMutation_returnsNullForNutritionistOnSystemPlatillo() {
 		platilloAuthorization = new PlatilloAuthorization(platformAdminService, platformAdminAuditService);
-		final Platillo system = systemPlatillo(97L);
-		when(platilloService.findById(97L)).thenReturn(system);
+		when(platilloService.findByIdAndUserId(97L, NUTRITIONIST_USER_ID)).thenReturn(null);
 		when(platformAdminService.isPlatformAdmin(nutritionistPrincipal)).thenReturn(false);
 
 		final Platillo result = platilloAuthorization.resolveForMutation(97L, NUTRITIONIST_USER_ID,

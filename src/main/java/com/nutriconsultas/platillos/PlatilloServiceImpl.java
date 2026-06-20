@@ -56,6 +56,40 @@ public class PlatilloServiceImpl implements PlatilloService {
 	}
 
 	@Override
+	public Platillo findByIdAndUserId(@NonNull final Long id, @NonNull final String userId) {
+		log.info("Retrieving platillo with id: {} for userId present", id);
+		return platilloRepository.findByIdAndUserId(id, userId).orElse(null);
+	}
+
+	@Override
+	public List<Platillo> getPlatillosForCatalogFilter(final PlatilloCatalogFilter filter, final String userId) {
+		if (filter == null || filter == PlatilloCatalogFilter.TODAS) {
+			if (userId == null || userId.isBlank()) {
+				log.info("Getting system catalog platillos without userId");
+				return platilloRepository.findByUserId(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID);
+			}
+			log.info("Getting system and owned platillos for catalog filter todas");
+			return platilloRepository.findByUserIdIn(List.of(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID, userId));
+		}
+		if (filter == PlatilloCatalogFilter.SISTEMA) {
+			log.info("Getting system catalog platillos for filter sistema");
+			return platilloRepository.findByUserId(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID);
+		}
+		if (userId == null || userId.isBlank()) {
+			log.warn("Cannot resolve propias platillos without userId");
+			return List.of();
+		}
+		log.info("Getting owned platillos for catalog filter propias");
+		return platilloRepository.findByUserId(userId);
+	}
+
+	@Override
+	public void deletePlatillo(@NonNull final Long id) {
+		log.info("Deleting platillo with id: {}", id);
+		platilloRepository.deleteById(id);
+	}
+
+	@Override
 	public Platillo save(@NonNull final Platillo platillo) {
 		log.info("Saving platillo: {}", platillo);
 		return platilloRepository.save(platillo);

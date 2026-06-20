@@ -122,6 +122,11 @@ public class PlatilloController extends AbstractAuthorizedController {
 			result = "redirect:/admin/platillos";
 		}
 		else if (platilloId == 0L) {
+			final String userId = getUserId(principal);
+			if (userId == null) {
+				throw new IllegalArgumentException("No se pudo identificar al usuario");
+			}
+			platillo.setUserId(userId);
 			service.save(platillo);
 			log.debug("Finishing save with new platillo {}", platillo);
 			result = "redirect:/admin/platillos/" + platillo.getId();
