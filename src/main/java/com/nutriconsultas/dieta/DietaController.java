@@ -47,6 +47,9 @@ public class DietaController extends AbstractAuthorizedController {
 	@Autowired
 	private DietaPdfService dietaPdfService;
 
+	@Autowired
+	private DietaAuthorization dietaAuthorization;
+
 	/**
 	 * Gets the user ID from the OAuth2 principal.
 	 * @param principal the OAuth2 principal
@@ -62,20 +65,17 @@ public class DietaController extends AbstractAuthorizedController {
 		return userId;
 	}
 
-	/**
-	 * Verifies that a diet belongs to the current user.
-	 * @param dieta the diet to verify
-	 * @param userId the current user's ID
-	 * @throws IllegalArgumentException if the diet does not belong to the user
-	 */
-	private void verifyDietOwnership(final Dieta dieta, final String userId) {
+	private Dieta loadDietaForMutation(@NonNull final Long id, @AuthenticationPrincipal final OidcUser principal) {
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		final Dieta dieta = dietaAuthorization.resolveForMutation(id, userId, principal, dietaService);
 		if (dieta == null) {
-			throw new IllegalArgumentException("Dieta no encontrada");
+			throw new IllegalArgumentException("Dieta no encontrada o no tiene permiso para modificarla");
 		}
-		if (dieta.getUserId() == null || !dieta.getUserId().equals(userId)) {
-			LOGGER.warn("User {} attempted to modify diet {} owned by {}", userId, dieta.getId(), dieta.getUserId());
-			throw new IllegalArgumentException("No tiene permiso para modificar esta dieta");
-		}
+		dietaAuthorization.verifyCanModify(dieta, userId, principal);
+		return dieta;
 	}
 
 	@GetMapping(path = "/admin/dietas")
@@ -89,17 +89,10 @@ public class DietaController extends AbstractAuthorizedController {
 	public String saveDieta(@RequestParam @NonNull final Long id, @RequestParam @NonNull final String nombre,
 			final Model model, @AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Guardar dieta with id {}, {}", id, nombre);
-		final String userId = getUserId(principal);
-		if (userId == null) {
-			throw new IllegalArgumentException("No se pudo identificar al usuario");
-		}
-		final Dieta dieta = dietaService.getDietaByIdAndUserId(id, userId);
-		if (dieta == null) {
-			throw new IllegalArgumentException("Dieta no encontrada o no tiene permiso para modificarla");
-		}
-		verifyDietOwnership(dieta, userId);
+		final Dieta dieta = loadDietaForMutation(id, principal);
 		dieta.setNombre(nombre);
 		dietaService.saveDieta(dieta);
+		dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.save");
 		return "redirect:/admin/dietas/" + id;
 	}
 
@@ -116,9 +109,9 @@ public class DietaController extends AbstractAuthorizedController {
 		LOGGER.debug("Dieta encontrada: {}", dieta);
 		model.addAttribute("dieta", dieta);
 
-		// Check ownership and pass to model
+		// Check edit permission and pass to model
 		final String userId = getUserId(principal);
-		final boolean isOwner = Objects.equals(userId, dieta.getUserId());
+		final boolean isOwner = dietaAuthorization.canModify(dieta, userId, principal);
 		model.addAttribute("isOwner", isOwner);
 
 		// Sort the ingestas list by id
@@ -188,20 +181,13 @@ public class DietaController extends AbstractAuthorizedController {
 		LOGGER.debug("Agregar ingesta {} a dieta con id {}", ingesta, id);
 		model.addAttribute("activeMenu", "dietas");
 
-		final String userId = getUserId(principal);
-		if (userId == null) {
-			throw new IllegalArgumentException("No se pudo identificar al usuario");
-		}
-		final Dieta dieta = dietaService.getDietaByIdAndUserId(id, userId);
-		if (dieta == null) {
-			throw new IllegalArgumentException("Dieta no encontrada o no tiene permiso para modificarla");
-		}
-		verifyDietOwnership(dieta, userId);
+		final Dieta dieta = loadDietaForMutation(id, principal);
 
 		String result;
 		if (ingesta.getIngestaId() == 0) {
 			LOGGER.debug("nueva ingesta en dieta, agregar");
 			dietaService.addIngesta(id, ingesta.getIngesta());
+			dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.ingestas.save");
 			result = "redirect:/admin/dietas/" + id;
 		}
 		else {
@@ -213,6 +199,7 @@ public class DietaController extends AbstractAuthorizedController {
 			}
 			else {
 				dietaService.renameIngesta(id, ingestaId, ingesta.getIngesta());
+				dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.ingestas.save");
 				result = "redirect:/admin/dietas/" + id;
 			}
 		}
@@ -224,17 +211,10 @@ public class DietaController extends AbstractAuthorizedController {
 			@ModelAttribute final IngestaFormModel ingestaModel, final Model model,
 			@AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Eliminar ingesta con id {} de dieta con id {}", ingestaModel, id);
-		final String userId = getUserId(principal);
-		if (userId == null) {
-			throw new IllegalArgumentException("No se pudo identificar al usuario");
-		}
-		final Dieta dieta = dietaService.getDietaByIdAndUserId(id, userId);
-		if (dieta == null) {
-			throw new IllegalArgumentException("Dieta no encontrada o no tiene permiso para modificarla");
-		}
-		verifyDietOwnership(dieta, userId);
+		final Dieta dieta = loadDietaForMutation(id, principal);
 		dieta.getIngestas().removeIf(ingesta -> ingesta.getId().equals(ingestaModel.getIngestaId()));
 		dietaService.saveDieta(dieta);
+		dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.ingestas.delete");
 		return "redirect:/admin/dietas/" + id;
 	}
 
@@ -242,15 +222,7 @@ public class DietaController extends AbstractAuthorizedController {
 	public String savePlatillo(@PathVariable @NonNull Long id, @ModelAttribute PlatilloFormModel platilloModel,
 			Model model, @AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Agregar platillo {} a ingesta con id {}", platilloModel, id);
-		final String userId = getUserId(principal);
-		if (userId == null) {
-			throw new IllegalArgumentException("No se pudo identificar al usuario");
-		}
-		Dieta dieta = dietaService.getDietaByIdAndUserId(id, userId);
-		if (dieta == null) {
-			throw new IllegalArgumentException("Dieta no encontrada o no tiene permiso para modificarla");
-		}
-		verifyDietOwnership(dieta, userId);
+		final Dieta dieta = loadDietaForMutation(id, principal);
 		Ingesta ingesta = dieta.getIngestas()
 			.stream()
 			.filter(i -> i.getId().equals(platilloModel.getIngestaPlatillo()))
@@ -278,6 +250,7 @@ public class DietaController extends AbstractAuthorizedController {
 
 				ingesta.getPlatillos().add(platilloIngesta);
 				dietaService.saveDieta(dieta);
+				dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.platillos.save");
 			}
 		}
 		return "redirect:/admin/dietas/" + id;
@@ -287,15 +260,7 @@ public class DietaController extends AbstractAuthorizedController {
 	public String saveAlimento(@PathVariable @NonNull Long id, @ModelAttribute AlimentoFormModel alimentoModel,
 			Model model, @AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Agregar alimento {} a ingesta con id {}", alimentoModel, id);
-		final String userId = getUserId(principal);
-		if (userId == null) {
-			throw new IllegalArgumentException("No se pudo identificar al usuario");
-		}
-		Dieta dieta = dietaService.getDietaByIdAndUserId(id, userId);
-		if (dieta == null) {
-			throw new IllegalArgumentException("Dieta no encontrada o no tiene permiso para modificarla");
-		}
-		verifyDietOwnership(dieta, userId);
+		final Dieta dieta = loadDietaForMutation(id, principal);
 		Ingesta ingesta = dieta.getIngestas()
 			.stream()
 			.filter(i -> i.getId().equals(alimentoModel.getIngestaAlimento()))
@@ -312,6 +277,7 @@ public class DietaController extends AbstractAuthorizedController {
 
 				ingesta.getAlimentos().add(alimentoIngesta);
 				dietaService.saveDieta(dieta);
+				dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.alimentos.save");
 			}
 		}
 		return "redirect:/admin/dietas/" + id;
@@ -321,55 +287,45 @@ public class DietaController extends AbstractAuthorizedController {
 	public String updatePlatilloIngesta(@PathVariable @NonNull Long id, @PathVariable @NonNull Long platilloIngestaId,
 			@RequestParam @NonNull Integer porciones, @AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Actualizar platillo ingesta {} con {} porciones en dieta {}", platilloIngestaId, porciones, id);
-		final String userId = getUserId(principal);
-		if (userId == null) {
-			throw new IllegalArgumentException("No se pudo identificar al usuario");
-		}
-		Dieta dieta = dietaService.getDietaByIdAndUserId(id, userId);
-		if (dieta == null) {
-			throw new IllegalArgumentException("Dieta no encontrada o no tiene permiso para modificarla");
-		}
-		verifyDietOwnership(dieta, userId);
-		if (dieta != null) {
-			dieta.getIngestas()
-				.stream()
-				.flatMap(ingesta -> ingesta.getPlatillos().stream())
-				.filter(platillo -> platillo.getId().equals(platilloIngestaId))
-				.findFirst()
-				.ifPresent(platilloIngesta -> {
-					Integer oldPortions = platilloIngesta.getPortions() != null ? platilloIngesta.getPortions() : 1;
-					Integer newPortions = porciones != null ? porciones : 1;
-					double ratio = newPortions.doubleValue() / oldPortions.doubleValue();
+		final Dieta dieta = loadDietaForMutation(id, principal);
+		dieta.getIngestas()
+			.stream()
+			.flatMap(ingesta -> ingesta.getPlatillos().stream())
+			.filter(platillo -> platillo.getId().equals(platilloIngestaId))
+			.findFirst()
+			.ifPresent(platilloIngesta -> {
+				Integer oldPortions = platilloIngesta.getPortions() != null ? platilloIngesta.getPortions() : 1;
+				Integer newPortions = porciones != null ? porciones : 1;
+				double ratio = newPortions.doubleValue() / oldPortions.doubleValue();
 
-					// Update portions
-					platilloIngesta.setPortions(newPortions);
+				// Update portions
+				platilloIngesta.setPortions(newPortions);
 
-					// Recalculate nutritional values based on portion ratio
-					if (platilloIngesta.getEnergia() != null) {
-						platilloIngesta.setEnergia((int) (platilloIngesta.getEnergia() * ratio));
-					}
-					if (platilloIngesta.getProteina() != null) {
-						platilloIngesta.setProteina(platilloIngesta.getProteina() * ratio);
-					}
-					if (platilloIngesta.getLipidos() != null) {
-						platilloIngesta.setLipidos(platilloIngesta.getLipidos() * ratio);
-					}
-					if (platilloIngesta.getHidratosDeCarbono() != null) {
-						platilloIngesta.setHidratosDeCarbono(platilloIngesta.getHidratosDeCarbono() * ratio);
-					}
-					if (platilloIngesta.getPesoBrutoRedondeado() != null) {
-						platilloIngesta
-							.setPesoBrutoRedondeado((int) (platilloIngesta.getPesoBrutoRedondeado() * ratio));
-					}
-					if (platilloIngesta.getPesoNeto() != null) {
-						platilloIngesta.setPesoNeto((int) (platilloIngesta.getPesoNeto() * ratio));
-					}
-					// Update other nutritional values similarly
-					updatePlatilloIngestaNutritionalValues(platilloIngesta, ratio);
+				// Recalculate nutritional values based on portion ratio
+				if (platilloIngesta.getEnergia() != null) {
+					platilloIngesta.setEnergia((int) (platilloIngesta.getEnergia() * ratio));
+				}
+				if (platilloIngesta.getProteina() != null) {
+					platilloIngesta.setProteina(platilloIngesta.getProteina() * ratio);
+				}
+				if (platilloIngesta.getLipidos() != null) {
+					platilloIngesta.setLipidos(platilloIngesta.getLipidos() * ratio);
+				}
+				if (platilloIngesta.getHidratosDeCarbono() != null) {
+					platilloIngesta.setHidratosDeCarbono(platilloIngesta.getHidratosDeCarbono() * ratio);
+				}
+				if (platilloIngesta.getPesoBrutoRedondeado() != null) {
+					platilloIngesta.setPesoBrutoRedondeado((int) (platilloIngesta.getPesoBrutoRedondeado() * ratio));
+				}
+				if (platilloIngesta.getPesoNeto() != null) {
+					platilloIngesta.setPesoNeto((int) (platilloIngesta.getPesoNeto() * ratio));
+				}
+				// Update other nutritional values similarly
+				updatePlatilloIngestaNutritionalValues(platilloIngesta, ratio);
 
-					dietaService.saveDieta(dieta);
-				});
-		}
+				dietaService.saveDieta(dieta);
+				dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.platillos.update");
+			});
 		return "redirect:/admin/dietas/" + id;
 	}
 
@@ -377,54 +333,45 @@ public class DietaController extends AbstractAuthorizedController {
 	public String updateAlimentoIngesta(@PathVariable @NonNull Long id, @PathVariable @NonNull Long alimentoIngestaId,
 			@RequestParam @NonNull Integer porciones, @AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Actualizar alimento ingesta {} con {} porciones en dieta {}", alimentoIngestaId, porciones, id);
-		final String userId = getUserId(principal);
-		if (userId == null) {
-			throw new IllegalArgumentException("No se pudo identificar al usuario");
-		}
-		Dieta dieta = dietaService.getDietaByIdAndUserId(id, userId);
-		if (dieta == null) {
-			throw new IllegalArgumentException("Dieta no encontrada o no tiene permiso para modificarla");
-		}
-		verifyDietOwnership(dieta, userId);
-		if (dieta != null) {
-			dieta.getIngestas()
-				.stream()
-				.flatMap(ingesta -> ingesta.getAlimentos().stream())
-				.filter(alimento -> alimento.getId().equals(alimentoIngestaId))
-				.findFirst()
-				.ifPresent(alimentoIngesta -> {
-					if (alimentoIngesta.getAlimento() != null) {
-						// Recalculate from original alimento
-						Alimento alimento = alimentoIngesta.getAlimento();
-						Integer newPortions = porciones != null ? porciones : 1;
-						alimentoIngesta.setPortions(newPortions);
+		final Dieta dieta = loadDietaForMutation(id, principal);
+		dieta.getIngestas()
+			.stream()
+			.flatMap(ingesta -> ingesta.getAlimentos().stream())
+			.filter(alimento -> alimento.getId().equals(alimentoIngestaId))
+			.findFirst()
+			.ifPresent(alimentoIngesta -> {
+				if (alimentoIngesta.getAlimento() != null) {
+					// Recalculate from original alimento
+					Alimento alimento = alimentoIngesta.getAlimento();
+					Integer newPortions = porciones != null ? porciones : 1;
+					alimentoIngesta.setPortions(newPortions);
 
-						// Recalculate nutritional values from original alimento
-						if (alimento.getEnergia() != null) {
-							alimentoIngesta.setEnergia((int) (alimento.getEnergia() * newPortions));
-						}
-						if (alimento.getProteina() != null) {
-							alimentoIngesta.setProteina(alimento.getProteina() * newPortions);
-						}
-						if (alimento.getLipidos() != null) {
-							alimentoIngesta.setLipidos(alimento.getLipidos() * newPortions);
-						}
-						if (alimento.getHidratosDeCarbono() != null) {
-							alimentoIngesta.setHidratosDeCarbono(alimento.getHidratosDeCarbono() * newPortions);
-						}
-						if (alimento.getPesoBrutoRedondeado() != null) {
-							alimentoIngesta.setPesoBrutoRedondeado(alimento.getPesoBrutoRedondeado() * newPortions);
-						}
-						if (alimento.getPesoNeto() != null) {
-							alimentoIngesta.setPesoNeto(alimento.getPesoNeto() * newPortions);
-						}
-						// Update other nutritional values
-						updateAlimentoIngestaNutritionalValues(alimentoIngesta, alimento, newPortions);
-
-						dietaService.saveDieta(dieta);
+					// Recalculate nutritional values from original alimento
+					if (alimento.getEnergia() != null) {
+						alimentoIngesta.setEnergia((int) (alimento.getEnergia() * newPortions));
 					}
-				});
-		}
+					if (alimento.getProteina() != null) {
+						alimentoIngesta.setProteina(alimento.getProteina() * newPortions);
+					}
+					if (alimento.getLipidos() != null) {
+						alimentoIngesta.setLipidos(alimento.getLipidos() * newPortions);
+					}
+					if (alimento.getHidratosDeCarbono() != null) {
+						alimentoIngesta.setHidratosDeCarbono(alimento.getHidratosDeCarbono() * newPortions);
+					}
+					if (alimento.getPesoBrutoRedondeado() != null) {
+						alimentoIngesta.setPesoBrutoRedondeado(alimento.getPesoBrutoRedondeado() * newPortions);
+					}
+					if (alimento.getPesoNeto() != null) {
+						alimentoIngesta.setPesoNeto(alimento.getPesoNeto() * newPortions);
+					}
+					// Update other nutritional values
+					updateAlimentoIngestaNutritionalValues(alimentoIngesta, alimento, newPortions);
+
+					dietaService.saveDieta(dieta);
+					dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.alimentos.update");
+				}
+			});
 		return "redirect:/admin/dietas/" + id;
 	}
 

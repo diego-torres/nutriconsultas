@@ -72,6 +72,8 @@ public class DietaControllerTest {
 
 	private static final String OTHER_USER_ID = "other-user-id-456";
 
+	private static final String PLATFORM_ADMIN_USER_ID = "auth0|platform-admin-test";
+
 	@BeforeEach
 	public void setup() {
 		// Create test data
@@ -912,6 +914,98 @@ public class DietaControllerTest {
 		verify(dietaService, never()).saveDieta(any(Dieta.class));
 
 		log.info("Finishing testSavePlatilloRejectsOtherUserDiet");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testSaveDietaAllowsPlatformAdminOnSystemTemplate() throws Exception {
+		final Dieta systemDieta = new Dieta();
+		systemDieta.setId(8L);
+		systemDieta.setNombre("Plantilla: Menú vegetal 02");
+		systemDieta.setUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+		systemDieta.setIngestas(new ArrayList<>());
+
+		when(dietaService.getDietaByIdAndUserId(8L, PLATFORM_ADMIN_USER_ID)).thenReturn(null);
+		when(dietaService.getDieta(8L)).thenReturn(systemDieta);
+		when(dietaService.saveDieta(any(Dieta.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/save")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("id", "8")
+				.param("nombre", "Plantilla actualizada")
+				.with(oidcLogin(PLATFORM_ADMIN_USER_ID))
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/8"));
+
+		verify(dietaService).getDietaByIdAndUserId(8L, PLATFORM_ADMIN_USER_ID);
+		verify(dietaService).getDieta(8L);
+		verify(dietaService).saveDieta(any(Dieta.class));
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testSaveDietaRejectsNutritionistOnSystemTemplate() throws Exception {
+		final Dieta systemDieta = new Dieta();
+		systemDieta.setId(8L);
+		systemDieta.setNombre("Plantilla: Menú vegetal 02");
+		systemDieta.setUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+		systemDieta.setIngestas(new ArrayList<>());
+
+		when(dietaService.getDietaByIdAndUserId(8L, TEST_USER_ID)).thenReturn(null);
+		when(dietaService.getDieta(8L)).thenReturn(systemDieta);
+
+		try {
+			mockMvc
+				.perform(MockMvcRequestBuilders.post("/admin/dietas/save")
+					.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+					.param("id", "8")
+					.param("nombre", "Intento no autorizado")
+					.with(oidcLogin(TEST_USER_ID))
+					.with(SecurityMockMvcRequestPostProcessors.csrf()))
+				.andExpect(status().is5xxServerError());
+		}
+		catch (Exception e) {
+			assertThat(e).hasRootCauseInstanceOf(IllegalArgumentException.class);
+		}
+
+		verify(dietaService).getDietaByIdAndUserId(8L, TEST_USER_ID);
+		verify(dietaService, never()).saveDieta(any(Dieta.class));
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testEditarSystemTemplateShowsEditableForPlatformAdmin() throws Exception {
+		final Dieta systemDieta = new Dieta();
+		systemDieta.setId(8L);
+		systemDieta.setNombre("Plantilla: Menú vegetal 02");
+		systemDieta.setUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+		systemDieta.setIngestas(new ArrayList<>());
+
+		when(dietaService.getDieta(8L)).thenReturn(systemDieta);
+		when(platilloService.findAll()).thenReturn(List.of(platillo));
+
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/8").with(oidcLogin(PLATFORM_ADMIN_USER_ID)))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.model().attribute("isOwner", true));
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testEditarSystemTemplateShowsReadOnlyForNutritionist() throws Exception {
+		final Dieta systemDieta = new Dieta();
+		systemDieta.setId(8L);
+		systemDieta.setNombre("Plantilla: Menú vegetal 02");
+		systemDieta.setUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+		systemDieta.setIngestas(new ArrayList<>());
+
+		when(dietaService.getDieta(8L)).thenReturn(systemDieta);
+		when(platilloService.findAll()).thenReturn(List.of(platillo));
+
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/8").with(oidcLogin(TEST_USER_ID)))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.model().attribute("isOwner", false));
 	}
 
 }
