@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-20 — ~~#258~~ **done** (PR [#269](https://github.com/diego-torres/nutriconsultas/pull/269)). **NEXT:** [#259 copy platillo](https://github.com/diego-torres/nutriconsultas/issues/259) **in-progress** on `feature/259-copy-platillo`. Epics **#236–#242**, **#258–#259** registered.
+**Last updated:** 2026-06-20 — ~~#259~~ **done** (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270), `Fixes #259` — closes on merge). Platillo ownership epic **#257–#259 complete**. **NEXT:** [#236 show logo on profile](https://github.com/diego-torres/nutriconsultas/issues/236). Epics **#236–#242** registered.
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -76,13 +76,13 @@ Lock **system** catalog platillos for nutritionists; **owned** platillos editabl
 | Creator can edit/delete own platillos | #258 |
 | Copy platillo into owned catalog row | #259 |
 
-**Suggested order:** #257 → #258 → #259 (ownership schema before copy).
+**Suggested order:** #257 → #258 → #259 (ownership schema before copy). **Epic complete** (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)).
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
 | **257** | Lock system catalog platillos for non-admin users | https://github.com/diego-torres/nutriconsultas/issues/257 | **done** | #183, #46 | PR [#268](https://github.com/diego-torres/nutriconsultas/pull/268); `PlatilloAuthorization`; `user_id` backfill; UI read-only |
 | **258** | Nutritionist-owned platillos — creator can edit and delete | https://github.com/diego-torres/nutriconsultas/issues/258 | **done** | **257**, #46 | PR [#269](https://github.com/diego-torres/nutriconsultas/pull/269); ownership + catalog filter + delete guard |
-| **259** | Copy platillo — duplicate into nutritionist-owned catalog row | https://github.com/diego-torres/nutriconsultas/issues/259 | **in-progress** | **257**, **258** | Branch `feature/259-copy-platillo`; SweetAlert; clone ingredients |
+| **259** | Copy platillo — duplicate into nutritionist-owned catalog row | https://github.com/diego-torres/nutriconsultas/issues/259 | **done** | **257**, **258** | PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270); `Fixes #259`; duplicate endpoint + SweetAlert UI |
 
 ---
 
@@ -97,7 +97,7 @@ Lock **system** catalog platillos for nutritionists; **owned** platillos editabl
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| 236 | Show uploaded logo on nutritionist profile page | https://github.com/diego-torres/nutriconsultas/issues/236 | open | #187 (context) | `NutritionistProfile` / S3 preview |
+| **236** | Show uploaded logo on nutritionist profile page | https://github.com/diego-torres/nutriconsultas/issues/236 | **NEXT** | #187 (context) | `NutritionistProfile` / S3 preview |
 | 237 | PDF reports — standard logo size (~1.5 × 1.5 in) | https://github.com/diego-torres/nutriconsultas/issues/237 | open | #187 | `DietaPdfService`, Flying Saucer CSS |
 
 ---
