@@ -32,10 +32,8 @@ public class PlatilloAuthorization {
 		if (platillo == null) {
 			return false;
 		}
-		if (!PlatilloCatalogConstants.isSystemCatalog(platillo)) {
-			return true;
-		}
-		return platformAdminService.isPlatformAdmin(principal);
+		return !PlatilloCatalogConstants.isSystemCatalog(platillo)
+				|| platformAdminService.isPlatformAdmin(principal);
 	}
 
 	public void verifyCanModify(final Platillo platillo, final String userId, final OidcUser principal) {
