@@ -273,31 +273,28 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		}
 
 		final DietaDeleteResult result = dietaDeletionService.deleteDieta(dietaId, userId, principal);
-		final ResponseEntity<ApiResponse<Void>> response;
-		switch (result.getOutcome()) {
+		return switch (result.getOutcome()) {
 			case DELETED -> {
 				log.info("finish deleteDieta with dietaId {}.", dietaId);
-				response = ResponseEntity.ok(new ApiResponse<>(null));
+				yield ResponseEntity.ok(new ApiResponse<>(null));
 			}
 			case NOT_FOUND -> {
 				log.warn("Dieta with id {} not found for deletion", dietaId);
-				response = ResponseEntity.notFound().build();
+				yield ResponseEntity.notFound().build();
 			}
 			case FORBIDDEN -> {
 				log.warn("User {} forbidden to delete diet {}", userId, dietaId);
-				response = ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+				yield ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
 					.body(buildDeleteErrorResponse(org.springframework.http.HttpStatus.FORBIDDEN.value(),
 							"No tiene permiso para eliminar esta dieta"));
 			}
 			case IN_USE -> {
 				final String message = buildInUseMessage(result.getAssignedPatientCount());
 				log.info("Delete blocked for diet {}: {}", dietaId, message);
-				response = ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT)
+				yield ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT)
 					.body(buildDeleteErrorResponse(org.springframework.http.HttpStatus.CONFLICT.value(), message));
 			}
-			default -> response = ResponseEntity.internalServerError().build();
-		}
-		return response;
+		};
 	}
 
 	private ApiResponse<Void> buildDeleteErrorResponse(final int status, final String message) {
