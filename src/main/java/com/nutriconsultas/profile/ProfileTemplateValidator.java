@@ -28,6 +28,8 @@ public class ProfileTemplateValidator extends BaseTemplateValidator {
 		variables.put("subscriptionStatus", SubscriptionStatus.ACTIVE);
 		variables.put("subscriptionPeriodStartLabel", "01/06/2026");
 		variables.put("subscriptionPeriodEndLabel", "01/07/2026");
+		variables.put("brandedReportsEnabled", true);
+		variables.put("logoUrl", "/admin/perfil/logo");
 		return variables;
 	}
 
