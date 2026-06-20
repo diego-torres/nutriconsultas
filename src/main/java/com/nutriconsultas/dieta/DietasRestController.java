@@ -37,6 +37,25 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	@Autowired
 	private DietaService dietaService;
 
+	@Autowired
+	private DietaAuthorization dietaAuthorization;
+
+	private Dieta loadDietaForMutation(@NonNull final Long dietaId, final OidcUser principal) {
+		if (principal == null) {
+			return null;
+		}
+		final String userId = principal.getSubject();
+		if (userId == null) {
+			return null;
+		}
+		final Dieta dieta = dietaAuthorization.resolveForMutation(dietaId, userId, principal, dietaService);
+		if (dieta == null) {
+			return null;
+		}
+		dietaAuthorization.verifyCanModify(dieta, userId, principal);
+		return dieta;
+	}
+
 	@GetMapping("picker")
 	public DietaPickerPageDto getPickerPage(@RequestParam(required = false) final String q,
 			@RequestParam(defaultValue = "0") final int page, @RequestParam(defaultValue = "20") final int size,
@@ -72,11 +91,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		if (principal == null) {
 			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
 		}
-		final String userId = principal.getSubject();
-		if (userId == null) {
-			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
-		}
-		final Dieta dieta = dietaService.getDietaByIdAndUserId(dietaId, userId);
+		final Dieta dieta = loadDietaForMutation(dietaId, principal);
 		ResponseEntity<ApiResponse<Dieta>> result;
 		if (dieta != null) {
 			dieta.getIngestas()
@@ -86,12 +101,13 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 				.ifPresent(ingesta -> ingesta.getPlatillos()
 					.removeIf(platillo -> platillo.getId().equals(platilloIngestaId)));
 			final Dieta saved = dietaService.saveDieta(dieta);
+			dietaAuthorization.auditSystemDietMutationIfNeeded(principal, saved, "dietas.platillos.delete");
 			log.info("finish deletePlatilloIngesta with dietaId {}, ingestaId {}, platilloIngestaId {}.", dietaId,
 					ingestaId, platilloIngestaId);
 			result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
 		}
 		else {
-			log.warn("Dieta with id {} not found or user {} does not have permission", dietaId, userId);
+			log.warn("Dieta with id {} not found or user does not have permission", dietaId);
 			result = ResponseEntity.notFound().build();
 		}
 		return result;
@@ -106,11 +122,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		if (principal == null) {
 			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
 		}
-		final String userId = principal.getSubject();
-		if (userId == null) {
-			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
-		}
-		final Dieta dieta = dietaService.getDietaByIdAndUserId(dietaId, userId);
+		final Dieta dieta = loadDietaForMutation(dietaId, principal);
 		ResponseEntity<ApiResponse<Dieta>> result;
 		if (dieta != null) {
 			dieta.getIngestas()
@@ -120,12 +132,13 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 				.ifPresent(ingesta -> ingesta.getAlimentos()
 					.removeIf(alimento -> alimento.getId().equals(alimentoIngestaId)));
 			final Dieta saved = dietaService.saveDieta(dieta);
+			dietaAuthorization.auditSystemDietMutationIfNeeded(principal, saved, "dietas.alimentos.delete");
 			log.info("finish deleteAlimentoIngesta with dietaId {}, ingestaId {}, alimentoIngestaId {}.", dietaId,
 					ingestaId, alimentoIngestaId);
 			result = ResponseEntity.ok(new ApiResponse<Dieta>(saved));
 		}
 		else {
-			log.warn("Dieta with id {} not found or user {} does not have permission", dietaId, userId);
+			log.warn("Dieta with id {} not found or user does not have permission", dietaId);
 			result = ResponseEntity.notFound().build();
 		}
 		return result;
@@ -145,11 +158,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		if (principal == null) {
 			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
 		}
-		final String userId = principal.getSubject();
-		if (userId == null) {
-			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
-		}
-		final Dieta dieta = dietaService.getDietaByIdAndUserId(dietaId, userId);
+		final Dieta dieta = loadDietaForMutation(dietaId, principal);
 		if (dieta == null) {
 			log.warn("Dieta with id {} not found when trying to update platilloIngesta portions", dietaId);
 			return ResponseEntity.notFound().build();
@@ -170,6 +179,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		}
 		dietaService.recalculatePlatilloIngestaNutrients(platilloIngesta, portions);
 		final Dieta saved = dietaService.saveDieta(dieta);
+		dietaAuthorization.auditSystemDietMutationIfNeeded(principal, saved, "dietas.platillos.update");
 		log.info("finish updatePlatilloIngestaPortions with dietaId {}, ingestaId {}, "
 				+ "platilloIngestaId {}, portions {}.", dietaId, ingestaId, platilloIngestaId, portions);
 		return ResponseEntity.ok(new ApiResponse<Dieta>(saved));
@@ -189,11 +199,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		if (principal == null) {
 			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
 		}
-		final String userId = principal.getSubject();
-		if (userId == null) {
-			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
-		}
-		final Dieta dieta = dietaService.getDietaByIdAndUserId(dietaId, userId);
+		final Dieta dieta = loadDietaForMutation(dietaId, principal);
 		if (dieta == null) {
 			log.warn("Dieta with id {} not found when trying to update alimentoIngesta portions", dietaId);
 			return ResponseEntity.notFound().build();
@@ -214,6 +220,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		}
 		dietaService.recalculateAlimentoIngestaNutrients(alimentoIngesta, portions);
 		final Dieta saved = dietaService.saveDieta(dieta);
+		dietaAuthorization.auditSystemDietMutationIfNeeded(principal, saved, "dietas.alimentos.update");
 		log.info("finish updateAlimentoIngestaPortions with dietaId {}, ingestaId {}, "
 				+ "alimentoIngestaId {}, portions {}.", dietaId, ingestaId, alimentoIngestaId, portions);
 		return ResponseEntity.ok(new ApiResponse<Dieta>(saved));

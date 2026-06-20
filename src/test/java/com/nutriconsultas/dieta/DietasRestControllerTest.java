@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.nutriconsultas.dataTables.paging.Direction;
 import com.nutriconsultas.dataTables.paging.Order;
@@ -29,6 +30,8 @@ import com.nutriconsultas.dataTables.paging.PageArray;
 import com.nutriconsultas.dataTables.paging.PagingRequest;
 import com.nutriconsultas.dataTables.paging.Search;
 import com.nutriconsultas.model.ApiResponse;
+import com.nutriconsultas.platform.PlatformAdminAuditService;
+import com.nutriconsultas.platform.PlatformAdminService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,6 +47,14 @@ public class DietasRestControllerTest {
 	@Mock
 	private DietaService dietaService;
 
+	@Mock
+	private PlatformAdminService platformAdminService;
+
+	@Mock
+	private PlatformAdminAuditService platformAdminAuditService;
+
+	private DietaAuthorization dietaAuthorization;
+
 	private Dieta dietaVacia;
 
 	private Dieta dietaConPlatillos;
@@ -58,6 +69,8 @@ public class DietasRestControllerTest {
 
 	private static final String OTHER_USER_ID = "other-user-id-456";
 
+	private static final String PLATFORM_ADMIN_USER_ID = "auth0|platform-admin-test";
+
 	/**
 	 * Creates a mock OidcUser for testing.
 	 * @param userId the user ID (subject)
@@ -71,6 +84,9 @@ public class DietasRestControllerTest {
 
 	@BeforeEach
 	public void setup() {
+		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
+		ReflectionTestUtils.setField(dietasRestController, "dietaAuthorization", dietaAuthorization);
+
 		// Create empty diet
 		dietaVacia = new Dieta();
 		dietaVacia.setId(1L);
@@ -1283,6 +1299,57 @@ public class DietasRestControllerTest {
 		verify(dietaService).duplicateDieta(1L, TEST_USER_ID);
 		verify(dietaService, never()).saveDieta(any(Dieta.class));
 		log.info("Finishing testDuplicateDietaSetsUserIdToCopyingUser");
+	}
+
+	@Test
+	public void testDeletePlatilloIngestaAllowsPlatformAdminOnSystemTemplate() {
+		final Dieta systemDieta = new Dieta();
+		systemDieta.setId(8L);
+		systemDieta.setNombre("Plantilla: Menú vegetal 02");
+		systemDieta.setUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+		systemDieta.setIngestas(new ArrayList<>());
+
+		final Ingesta ingesta = new Ingesta();
+		ingesta.setId(10L);
+		ingesta.setNombre("Desayuno");
+		ingesta.setDieta(systemDieta);
+		ingesta.setPlatillos(new ArrayList<>());
+
+		final PlatilloIngesta platillo = new PlatilloIngesta();
+		platillo.setId(20L);
+		platillo.setName("Platillo sistema");
+		platillo.setIngesta(ingesta);
+		ingesta.getPlatillos().add(platillo);
+		systemDieta.getIngestas().add(ingesta);
+
+		when(dietaService.getDietaByIdAndUserId(8L, PLATFORM_ADMIN_USER_ID)).thenReturn(null);
+		when(platformAdminService.isPlatformAdmin(org.mockito.ArgumentMatchers.any(OidcUser.class))).thenReturn(true);
+		when(dietaService.getDieta(8L)).thenReturn(systemDieta);
+		when(dietaService.saveDieta(any(Dieta.class))).thenReturn(systemDieta);
+		when(platformAdminService.resolveActorUserId(org.mockito.ArgumentMatchers.any(OidcUser.class)))
+			.thenReturn(PLATFORM_ADMIN_USER_ID);
+
+		final OidcUser principal = createMockOidcUser(PLATFORM_ADMIN_USER_ID);
+		final ResponseEntity<ApiResponse<Dieta>> response = dietasRestController.deletePlatilloIngesta(8L, 10L, 20L,
+				principal);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		verify(dietaService).getDieta(8L);
+		verify(dietaService).saveDieta(any(Dieta.class));
+		verify(platformAdminAuditService).recordAction(PLATFORM_ADMIN_USER_ID, "dietas.platillos.delete:dietaId=8");
+	}
+
+	@Test
+	public void testDeletePlatilloIngestaRejectsNutritionistOnSystemTemplate() {
+		when(dietaService.getDietaByIdAndUserId(8L, TEST_USER_ID)).thenReturn(null);
+		when(platformAdminService.isPlatformAdmin(org.mockito.ArgumentMatchers.any(OidcUser.class))).thenReturn(false);
+
+		final OidcUser principal = createMockOidcUser(TEST_USER_ID);
+		final ResponseEntity<ApiResponse<Dieta>> response = dietasRestController.deletePlatilloIngesta(8L, 10L, 20L,
+				principal);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		verify(dietaService, never()).saveDieta(any(Dieta.class));
 	}
 
 }
