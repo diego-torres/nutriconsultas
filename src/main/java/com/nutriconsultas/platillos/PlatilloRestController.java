@@ -25,7 +25,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.controller.AbstractGridController;
 import com.nutriconsultas.dataTables.paging.Column;
-import com.nutriconsultas.dataTables.paging.Direction;
 import com.nutriconsultas.dataTables.paging.Page;
 import com.nutriconsultas.dataTables.paging.PageArray;
 import com.nutriconsultas.dataTables.paging.PagingRequest;
