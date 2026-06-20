@@ -44,6 +44,9 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	@Autowired
 	private DietaAuthorization dietaAuthorization;
 
+	@Autowired
+	private DietaDeletionService dietaDeletionService;
+
 	private Dieta loadDietaForMutation(@NonNull final Long dietaId, final OidcUser principal) {
 		if (principal == null) {
 			return null;
@@ -257,6 +260,59 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		return ResponseEntity.ok(new ApiResponse<Dieta>(duplicatedDieta));
 	}
 
+	@DeleteMapping("{dietaId}")
+	public ResponseEntity<ApiResponse<Void>> deleteDieta(@PathVariable @NonNull final Long dietaId,
+			@AuthenticationPrincipal final OidcUser principal) {
+		log.info("starting deleteDieta with dietaId {}.", dietaId);
+		if (principal == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		final String userId = principal.getSubject();
+		if (userId == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+
+		final DietaDeleteResult result = dietaDeletionService.deleteDieta(dietaId, userId, principal);
+		final ResponseEntity<ApiResponse<Void>> response;
+		switch (result.getOutcome()) {
+			case DELETED -> {
+				log.info("finish deleteDieta with dietaId {}.", dietaId);
+				response = ResponseEntity.ok(new ApiResponse<>(null));
+			}
+			case NOT_FOUND -> {
+				log.warn("Dieta with id {} not found for deletion", dietaId);
+				response = ResponseEntity.notFound().build();
+			}
+			case FORBIDDEN -> {
+				log.warn("User {} forbidden to delete diet {}", userId, dietaId);
+				response = ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+					.body(buildDeleteErrorResponse(org.springframework.http.HttpStatus.FORBIDDEN.value(),
+							"No tiene permiso para eliminar esta dieta"));
+			}
+			case IN_USE -> {
+				final String message = buildInUseMessage(result.getAssignedPatientCount());
+				log.info("Delete blocked for diet {}: {}", dietaId, message);
+				response = ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT)
+					.body(buildDeleteErrorResponse(org.springframework.http.HttpStatus.CONFLICT.value(), message));
+			}
+			default -> response = ResponseEntity.internalServerError().build();
+		}
+		return response;
+	}
+
+	private ApiResponse<Void> buildDeleteErrorResponse(final int status, final String message) {
+		final ApiResponse<Void> apiResponse = new ApiResponse<>();
+		apiResponse.setStatus(status);
+		apiResponse.setMessage(message);
+		apiResponse.setData(null);
+		return apiResponse;
+	}
+
+	private String buildInUseMessage(final long assignedPatientCount) {
+		return "Esta dieta está asignada a " + assignedPatientCount + (assignedPatientCount == 1
+				? " paciente y no puede eliminarse" : " paciente(s) y no puede eliminarse");
+	}
+
 	@Override
 	@PostMapping("data-table")
 	public PageArray getPageArray(@RequestBody final PagingRequest pagingRequest) {
@@ -309,11 +365,15 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 					? "<a href='/admin/dietas/" + row.getId()
 							+ "' class='btn btn-sm btn-warning' title='Editar Dieta'><i class='fas fa-edit'></i></a> "
 					: "";
+		final String deleteButton = principal != null && dietaAuthorization
+			.canModify(row, principal.getSubject(), principal) ? "<button onclick='deleteDieta(" + row.getId()
+					+ ")' class='btn btn-sm btn-danger' title='Eliminar Dieta'><i class='fas fa-trash'></i></button> "
+					: "";
 		final String printButton = "<a href='/admin/dietas/" + row.getId()
 				+ "/print' class='btn btn-sm btn-primary' target='_blank' title='Imprimir PDF'><i class='fas fa-file-pdf'></i></a> ";
 		final String duplicateButton = "<button onclick='duplicateDieta(" + row.getId()
 				+ ")' class='btn btn-sm btn-info' title='Duplicar Dieta'><i class='fas fa-copy'></i></button>";
-		return editButton + printButton + duplicateButton;
+		return editButton + deleteButton + printButton + duplicateButton;
 	}
 
 	private String getIngestas(final Dieta row) {

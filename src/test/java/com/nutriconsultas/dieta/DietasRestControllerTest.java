@@ -56,6 +56,9 @@ public class DietasRestControllerTest {
 	@Mock
 	private PlatformAdminAuditService platformAdminAuditService;
 
+	@Mock
+	private DietaDeletionService dietaDeletionService;
+
 	private DietaAuthorization dietaAuthorization;
 
 	private Dieta dietaVacia;
@@ -1369,6 +1372,9 @@ public class DietasRestControllerTest {
 		assertThat(actions).contains("class='btn btn-sm btn-warning'");
 		assertThat(actions).contains("title='Editar Dieta'");
 		assertThat(actions).contains("fa-edit");
+		assertThat(actions).contains("deleteDieta(1)");
+		assertThat(actions).contains("title='Eliminar Dieta'");
+		assertThat(actions).contains("fa-trash");
 		assertThat(actions).contains("fa-file-pdf");
 		assertThat(actions).contains("duplicateDieta(1)");
 	}
@@ -1389,6 +1395,8 @@ public class DietasRestControllerTest {
 
 		assertThat(actions).doesNotContain("fa-edit");
 		assertThat(actions).doesNotContain("title='Editar Dieta'");
+		assertThat(actions).doesNotContain("deleteDieta(8)");
+		assertThat(actions).doesNotContain("fa-trash");
 		assertThat(actions).contains("fa-file-pdf");
 		assertThat(actions).contains("duplicateDieta(8)");
 	}
@@ -1410,6 +1418,62 @@ public class DietasRestControllerTest {
 		assertThat(actions).contains("href='/admin/dietas/8'");
 		assertThat(actions).contains("fa-edit");
 		assertThat(actions).contains("title='Editar Dieta'");
+		assertThat(actions).contains("deleteDieta(8)");
+	}
+
+	@Test
+	public void testDeleteDietaReturnsOkWhenDeleted() {
+		final OidcUser principal = createMockOidcUser(TEST_USER_ID);
+		when(dietaDeletionService.deleteDieta(1L, TEST_USER_ID, principal)).thenReturn(DietaDeleteResult.deleted());
+
+		final ResponseEntity<ApiResponse<Void>> response = dietasRestController.deleteDieta(1L, principal);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		verify(dietaDeletionService).deleteDieta(1L, TEST_USER_ID, principal);
+	}
+
+	@Test
+	public void testDeleteDietaReturnsConflictWhenAssignedToPatients() {
+		final OidcUser principal = createMockOidcUser(TEST_USER_ID);
+		when(dietaDeletionService.deleteDieta(1L, TEST_USER_ID, principal)).thenReturn(DietaDeleteResult.inUse(3L));
+
+		final ResponseEntity<ApiResponse<Void>> response = dietasRestController.deleteDieta(1L, principal);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().getMessage())
+			.isEqualTo("Esta dieta está asignada a 3 paciente(s) y no puede eliminarse");
+	}
+
+	@Test
+	public void testDeleteDietaReturnsForbiddenForOtherTenant() {
+		final OidcUser principal = createMockOidcUser(TEST_USER_ID);
+		when(dietaDeletionService.deleteDieta(1L, TEST_USER_ID, principal)).thenReturn(DietaDeleteResult.forbidden());
+
+		final ResponseEntity<ApiResponse<Void>> response = dietasRestController.deleteDieta(1L, principal);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().getMessage()).isEqualTo("No tiene permiso para eliminar esta dieta");
+	}
+
+	@Test
+	public void testDeleteDietaReturnsNotFoundWhenMissing() {
+		final OidcUser principal = createMockOidcUser(TEST_USER_ID);
+		when(dietaDeletionService.deleteDieta(99L, TEST_USER_ID, principal)).thenReturn(DietaDeleteResult.notFound());
+
+		final ResponseEntity<ApiResponse<Void>> response = dietasRestController.deleteDieta(99L, principal);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+	}
+
+	@Test
+	public void testDeleteDietaReturnsUnauthorizedWhenPrincipalMissing() {
+		final ResponseEntity<ApiResponse<Void>> response = dietasRestController.deleteDieta(1L, null);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+		verify(dietaDeletionService, never()).deleteDieta(org.mockito.ArgumentMatchers.anyLong(),
+				org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.any());
 	}
 
 	@Test

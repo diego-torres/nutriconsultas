@@ -231,6 +231,51 @@
               }
             });
           };
+
+          window.deleteDieta = function (dietaId) {
+            swal({
+              title: 'Eliminar Dieta',
+              text: '¿Está seguro que desea eliminar esta dieta? Esta acción no se puede deshacer.',
+              type: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#d33',
+              cancelButtonColor: '#3085d6',
+              confirmButtonText: 'Sí, eliminar',
+              cancelButtonText: 'Cancelar',
+              closeOnConfirm: false,
+              showLoaderOnConfirm: true
+            }, function (isConfirm) {
+              if (isConfirm) {
+                $.ajax({
+                  url: '/rest/dietas/' + dietaId,
+                  type: 'DELETE',
+                  success: function () {
+                    swal({
+                      title: '¡Eliminada!',
+                      text: 'La dieta ha sido eliminada correctamente',
+                      type: 'success',
+                      timer: 2000,
+                      showConfirmButton: true
+                    }, function () {
+                      $('#mainGrid').DataTable().ajax.reload(null, false);
+                    });
+                  },
+                  error: function (xhr) {
+                    var message = 'Error al eliminar la dieta';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                      message = xhr.responseJSON.message;
+                    }
+                    swal({
+                      title: xhr.status === 409 ? 'No se puede eliminar' : 'Error',
+                      text: message,
+                      type: xhr.status === 409 ? 'warning' : 'error',
+                      timer: xhr.status === 409 ? null : 5000
+                    });
+                  }
+                });
+              }
+            });
+          };
         });
       }
       

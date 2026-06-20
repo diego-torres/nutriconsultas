@@ -37,6 +37,12 @@ public interface PacienteDietaRepository extends JpaRepository<PacienteDieta, Lo
 	@Query("SELECT COUNT(pd) FROM PacienteDieta pd WHERE pd.paciente.userId = :userId AND pd.status = :status")
 	long countByUserIdAndStatus(@Param("userId") String userId, @Param("status") PacienteDietaStatus status);
 
+	@Query("SELECT COUNT(pd) FROM PacienteDieta pd WHERE pd.dieta.id = :dietaId")
+	long countByDietaId(@Param("dietaId") Long dietaId);
+
+	@Query("SELECT COUNT(pd) FROM PacienteDieta pd WHERE pd.dieta.id = :dietaId AND pd.paciente.userId = :userId")
+	long countByDietaIdAndPacienteUserId(@Param("dietaId") Long dietaId, @Param("userId") String userId);
+
 	@Query("SELECT pd FROM PacienteDieta pd WHERE pd.paciente.userId = :userId "
 			+ "AND pd.startDate >= :startDate AND pd.startDate <= :endDate")
 	List<PacienteDieta> findByUserIdAndDateRange(@Param("userId") String userId, @Param("startDate") Date startDate,
