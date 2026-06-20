@@ -10,7 +10,9 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.nutriconsultas.controller.AbstractGridController;
 import com.nutriconsultas.dataTables.paging.Column;
 import com.nutriconsultas.dataTables.paging.Direction;
+import com.nutriconsultas.dataTables.paging.PageArray;
+import com.nutriconsultas.dataTables.paging.PagingRequest;
 import com.nutriconsultas.model.ApiResponse;
 
 import lombok.extern.slf4j.Slf4j;
@@ -254,6 +258,32 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	}
 
 	@Override
+	@PostMapping("data-table")
+	public PageArray getPageArray(@RequestBody final PagingRequest pagingRequest) {
+		log.info("starting getPageArray with pagingRequest: {}", pagingRequest);
+		final OidcUser principal = resolveGridPrincipal();
+		pagingRequest.setColumns(getColumns());
+		final com.nutriconsultas.dataTables.paging.Page<Dieta> page = getRows(pagingRequest);
+		log.debug("page with records: {}", page.getRecordsTotal());
+		final PageArray pageArray = new PageArray();
+		pageArray
+			.setData(page.getData().stream().map(row -> toStringList(row, principal)).collect(Collectors.toList()));
+		pageArray.setDraw(page.getDraw());
+		pageArray.setRecordsFiltered(page.getRecordsFiltered());
+		pageArray.setRecordsTotal(page.getRecordsTotal());
+		log.info("returning data at getPageArray: {}", pageArray.getRecordsTotal());
+		return pageArray;
+	}
+
+	private OidcUser resolveGridPrincipal() {
+		final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication != null && authentication.getPrincipal() instanceof OidcUser oidcUser) {
+			return oidcUser;
+		}
+		return null;
+	}
+
+	@Override
 	protected List<Column> getColumns() {
 		return Stream.of("acciones", "dieta", "ingestas", "dist", "kcal", "prot", "lip", "hc")
 			.map(Column::new)
@@ -262,16 +292,28 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 
 	@Override
 	protected List<String> toStringList(final Dieta row) {
+		return toStringList(row, null);
+	}
+
+	private List<String> toStringList(final Dieta row, final OidcUser principal) {
 		log.debug("converting Dieta row {} to string list.", row);
-		final String printButton = "<a href='/admin/dietas/" + row.getId()
-				+ "/print' class='btn btn-sm btn-primary' target='_blank' title='Imprimir PDF'><i class='fas fa-file-pdf'></i></a>";
-		final String duplicateButton = "<button onclick='duplicateDieta(" + row.getId()
-				+ ")' class='btn btn-sm btn-info' title='Duplicar Dieta'><i class='fas fa-copy'></i></button>";
-		// Note: Ownership indicator will be added in the template if needed
-		return Arrays.asList(printButton + " " + duplicateButton,
+		return Arrays.asList(buildActionsColumn(row, principal),
 				"<a href='/admin/dietas/" + row.getId() + "'>" + row.getNombre() + "</a>", getIngestas(row),
 				getDist(row), String.format("%.1f", getKCal(row)), String.format("%.1f", getTotalProteina(row)),
 				String.format("%.1f", getTotalLipidos(row)), String.format("%.1f", getTotalHidratosDeCarbono(row)));
+	}
+
+	private String buildActionsColumn(final Dieta row, final OidcUser principal) {
+		final String editButton = principal != null && dietaAuthorization
+			.canModify(row, principal.getSubject(), principal)
+					? "<a href='/admin/dietas/" + row.getId()
+							+ "' class='btn btn-sm btn-warning' title='Editar Dieta'><i class='fas fa-edit'></i></a> "
+					: "";
+		final String printButton = "<a href='/admin/dietas/" + row.getId()
+				+ "/print' class='btn btn-sm btn-primary' target='_blank' title='Imprimir PDF'><i class='fas fa-file-pdf'></i></a> ";
+		final String duplicateButton = "<button onclick='duplicateDieta(" + row.getId()
+				+ ")' class='btn btn-sm btn-info' title='Duplicar Dieta'><i class='fas fa-copy'></i></button>";
+		return editButton + printButton + duplicateButton;
 	}
 
 	private String getIngestas(final Dieta row) {

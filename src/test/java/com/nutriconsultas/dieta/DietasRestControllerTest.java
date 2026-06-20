@@ -20,6 +20,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -1350,6 +1353,95 @@ public class DietasRestControllerTest {
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 		verify(dietaService, never()).saveDieta(any(Dieta.class));
+	}
+
+	@Test
+	public void testBuildActionsColumnIncludesEditButtonForOwnedDiet() throws Exception {
+		dietaVacia.setUserId(TEST_USER_ID);
+		final OidcUser principal = createMockOidcUser(TEST_USER_ID);
+
+		final Method buildActionsMethod = DietasRestController.class.getDeclaredMethod("buildActionsColumn",
+				Dieta.class, OidcUser.class);
+		buildActionsMethod.setAccessible(true);
+		final String actions = (String) buildActionsMethod.invoke(dietasRestController, dietaVacia, principal);
+
+		assertThat(actions).contains("href='/admin/dietas/1'");
+		assertThat(actions).contains("class='btn btn-sm btn-warning'");
+		assertThat(actions).contains("title='Editar Dieta'");
+		assertThat(actions).contains("fa-edit");
+		assertThat(actions).contains("fa-file-pdf");
+		assertThat(actions).contains("duplicateDieta(1)");
+	}
+
+	@Test
+	public void testBuildActionsColumnOmitsEditButtonForSystemDietWhenNotAdmin() throws Exception {
+		final Dieta systemDieta = new Dieta();
+		systemDieta.setId(8L);
+		systemDieta.setNombre("Plantilla sistema");
+		systemDieta.setUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+		when(platformAdminService.isPlatformAdmin(org.mockito.ArgumentMatchers.any(OidcUser.class))).thenReturn(false);
+
+		final OidcUser principal = createMockOidcUser(TEST_USER_ID);
+		final Method buildActionsMethod = DietasRestController.class.getDeclaredMethod("buildActionsColumn",
+				Dieta.class, OidcUser.class);
+		buildActionsMethod.setAccessible(true);
+		final String actions = (String) buildActionsMethod.invoke(dietasRestController, systemDieta, principal);
+
+		assertThat(actions).doesNotContain("fa-edit");
+		assertThat(actions).doesNotContain("title='Editar Dieta'");
+		assertThat(actions).contains("fa-file-pdf");
+		assertThat(actions).contains("duplicateDieta(8)");
+	}
+
+	@Test
+	public void testBuildActionsColumnIncludesEditButtonForSystemDietWhenPlatformAdmin() throws Exception {
+		final Dieta systemDieta = new Dieta();
+		systemDieta.setId(8L);
+		systemDieta.setNombre("Plantilla sistema");
+		systemDieta.setUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+		when(platformAdminService.isPlatformAdmin(org.mockito.ArgumentMatchers.any(OidcUser.class))).thenReturn(true);
+
+		final OidcUser principal = createMockOidcUser(PLATFORM_ADMIN_USER_ID);
+		final Method buildActionsMethod = DietasRestController.class.getDeclaredMethod("buildActionsColumn",
+				Dieta.class, OidcUser.class);
+		buildActionsMethod.setAccessible(true);
+		final String actions = (String) buildActionsMethod.invoke(dietasRestController, systemDieta, principal);
+
+		assertThat(actions).contains("href='/admin/dietas/8'");
+		assertThat(actions).contains("fa-edit");
+		assertThat(actions).contains("title='Editar Dieta'");
+	}
+
+	@Test
+	public void testGetPageArrayIncludesEditButtonForOwnedDiet() {
+		dietaVacia.setUserId(TEST_USER_ID);
+		when(dietaService.getDietas()).thenReturn(Arrays.asList(dietaVacia));
+
+		final OidcUser principal = createMockOidcUser(TEST_USER_ID);
+		final Authentication authentication = org.mockito.Mockito.mock(Authentication.class);
+		org.mockito.Mockito.when(authentication.getPrincipal()).thenReturn(principal);
+		final SecurityContext securityContext = org.mockito.Mockito.mock(SecurityContext.class);
+		org.mockito.Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
+		SecurityContextHolder.setContext(securityContext);
+
+		try {
+			final PagingRequest pagingRequest = new PagingRequest();
+			pagingRequest.setStart(0);
+			pagingRequest.setLength(10);
+			pagingRequest.setDraw(1);
+			pagingRequest.setOrder(Arrays.asList(new Order(1, Direction.asc)));
+			pagingRequest.setSearch(new Search("", "false"));
+
+			final PageArray result = dietasRestController.getPageArray(pagingRequest);
+
+			assertThat(result.getData()).isNotEmpty();
+			final List<String> firstRow = (List<String>) result.getData().get(0);
+			assertThat(firstRow.get(0)).contains("fa-edit");
+			assertThat(firstRow.get(0)).contains("href='/admin/dietas/1'");
+		}
+		finally {
+			SecurityContextHolder.clearContext();
+		}
 	}
 
 }
