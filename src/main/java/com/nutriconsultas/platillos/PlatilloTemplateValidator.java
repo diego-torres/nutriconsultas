@@ -46,6 +46,7 @@ public class PlatilloTemplateValidator extends BaseTemplateValidator {
 		variables.put("isOwner", true);
 		variables.put("canCopy", false);
 		variables.put("isSystemCatalog", false);
+		variables.put("errorMessage", null);
 
 		return variables;
 	}
