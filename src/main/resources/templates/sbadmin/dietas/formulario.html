@@ -28,6 +28,64 @@
     <!-- <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet" /> -->
     <link th:href="@{/sbadmin/css/sb-admin-2.css}" rel="stylesheet" />
     <link th:href="@{/sbadmin/vendor/select2/select2.min.css}" rel="stylesheet" />
+    <style>
+      .dieta-summary-row .card {
+        height: 100%;
+      }
+      .dieta-summary-row .chart-pie {
+        height: 12rem;
+      }
+      @media (min-width: 992px) {
+        .dieta-summary-row .chart-pie {
+          height: 14rem;
+        }
+      }
+      .dieta-editor-row .dieta-ingestas-card {
+        min-height: calc(100vh - 22rem);
+      }
+      .dieta-editor-row .dieta-ingestas-card > .card-body {
+        display: flex;
+        flex-direction: column;
+        min-height: inherit;
+        padding-bottom: 0.75rem;
+      }
+      .dieta-editor-row .dieta-ingestas-card .tab-content {
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+      .dieta-editor-row .dieta-ingestas-card .ingesta-items-scroll {
+        max-height: calc(100vh - 26rem);
+        overflow-y: auto;
+      }
+      .dieta-name-toolbar .form-control {
+        max-width: 100%;
+      }
+      .ingesta-item-card {
+        background-color: #fff;
+      }
+      .ingesta-item-card + .ingesta-item-card {
+        margin-top: 0.5rem;
+      }
+      .ingesta-item-header .ingesta-item-name {
+        font-weight: 600;
+        line-height: 1.35;
+        word-break: break-word;
+      }
+      .ingesta-item-details .detail-label {
+        color: #858796;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+      }
+      .ingesta-item-details .detail-value {
+        font-weight: 600;
+      }
+      .ingesta-items-empty {
+        color: #858796;
+        font-style: italic;
+        padding: 1rem 0.25rem;
+      }
+    </style>
   </head>
   <body id="page-top">
     <!-- Page Wrapper -->
@@ -414,102 +472,158 @@
               <i class="fas fa-info-circle"></i> 
               <strong>Dieta de otro usuario:</strong> Puedes ver y copiar esta dieta, pero no puedes modificarla.
             </div>
-            <!-- Content Row -->
-            <div class="row">
-              <!-- Pie chart column -->
-              <div class="col-lg-4">
-                <!-- pie chart card -->
-                <div th:if="${hasDistribucion != null && hasDistribucion}" class="card shadow mb-4">
-                  <!-- Card Header - Dropdown -->
-                  <div
-                      class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                      <h6 class="m-0 font-weight-bold text-primary">Distribuci&oacute;n cal&oacute;rica</h6>
+            <!-- Summary row: caloric chart + macronutrients table -->
+            <div class="row mb-3 dieta-summary-row align-items-stretch">
+              <div th:if="${hasDistribucion != null && hasDistribucion}" class="col-lg-6 mb-3 mb-lg-0">
+                <div class="card shadow h-100">
+                  <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Distribuci&oacute;n cal&oacute;rica</h6>
                   </div>
-                  <!-- Card Body -->
-                  <div class="card-body">
-                      <div class="chart-pie pt-4 pb-2">
-                          <canvas id="myPieChart" 
-                                  th:data-proteina="${distribucionProteina != null ? distribucionProteina : 0}"
-                                  th:data-lipido="${distribucionLipido != null ? distribucionLipido : 0}"
-                                  th:data-hidrato="${distribucionHidratoCarbono != null ? distribucionHidratoCarbono : 0}"></canvas>
-                      </div>
-                      <div class="mt-4 text-center small">
-                          <span class="mr-2">
-                              <i class="fas fa-circle text-primary"></i> Prote&iacute;nas
-                          </span>
-                          <span class="mr-2">
-                              <i class="fas fa-circle text-success"></i> L&iacute;pidos
-                          </span>
-                          <span class="mr-2">
-                              <i class="fas fa-circle text-info"></i> Hidratos de Carbono
-                          </span>
-                      </div>
-                  </div>
-              
-                </div>
-                <div th:unless="${hasDistribucion != null && hasDistribucion}" class="card shadow mb-4">
-                  <div class="card-body text-center">
-                    <div class="img-wrapper">
-                      <img th:src="@{/sbadmin/img/plato.webp}"
-                        class="img-fluid"
-                      alt="Plato del buen comer" />
+                  <div class="card-body d-flex flex-column">
+                    <div class="chart-pie pt-2 pb-2 flex-grow-1">
+                      <canvas id="myPieChart"
+                              th:data-proteina="${distribucionProteina != null ? distribucionProteina : 0}"
+                              th:data-lipido="${distribucionLipido != null ? distribucionLipido : 0}"
+                              th:data-hidrato="${distribucionHidratoCarbono != null ? distribucionHidratoCarbono : 0}"></canvas>
+                    </div>
+                    <div class="mt-2 text-center small">
+                      <span class="mr-2">
+                        <i class="fas fa-circle text-primary"></i> Prote&iacute;nas
+                      </span>
+                      <span class="mr-2">
+                        <i class="fas fa-circle text-success"></i> L&iacute;pidos
+                      </span>
+                      <span class="mr-2">
+                        <i class="fas fa-circle text-info"></i> Hidratos de Carbono
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="col-lg-8">
+              <div th:if="${hasDistribucion != null && hasDistribucion}" class="col-lg-6">
+                <div class="card shadow h-100">
+                  <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Macronutrientes</h6>
+                  </div>
+                  <div class="card-body p-0 d-flex flex-column">
+                    <div class="table-responsive flex-grow-1">
+                      <table id="macroSummaryTable" class="table table-sm table-bordered mb-0 h-100">
+                        <thead class="thead-light">
+                          <tr>
+                            <th>Nutriente</th>
+                            <th class="text-right">Gramos</th>
+                            <th class="text-right">kcal</th>
+                            <th class="text-right">%</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td><i class="fas fa-dumbbell text-primary mr-1"></i> Prote&iacute;nas</td>
+                            <td id="macroProteinaGramos" class="text-right"
+                                th:text="${#numbers.formatDecimal(totalProteina, 1, 2) + ' g'}">0.0 g</td>
+                            <td id="macroProteinaKcal" class="text-right"
+                                th:text="${#numbers.formatDecimal(totalProteina * 4, 1, 0) + ' kcal'}">0 kcal</td>
+                            <td id="macroProteinaPct" class="text-right"
+                                th:text="${#numbers.formatDecimal(distribucionProteina, 1, 1) + ' %'}">0.0 %</td>
+                          </tr>
+                          <tr>
+                            <td><i class="fas fa-heart text-success mr-1"></i> L&iacute;pidos</td>
+                            <td id="macroLipidosGramos" class="text-right"
+                                th:text="${#numbers.formatDecimal(totalLipidos, 1, 2) + ' g'}">0.0 g</td>
+                            <td id="macroLipidosKcal" class="text-right"
+                                th:text="${#numbers.formatDecimal(totalLipidos * 9, 1, 0) + ' kcal'}">0 kcal</td>
+                            <td id="macroLipidosPct" class="text-right"
+                                th:text="${#numbers.formatDecimal(distribucionLipido, 1, 1) + ' %'}">0.0 %</td>
+                          </tr>
+                          <tr>
+                            <td><i class="fas fa-atom text-info mr-1"></i> Hidratos de Carbono</td>
+                            <td id="macroHidratosGramos" class="text-right"
+                                th:text="${#numbers.formatDecimal(totalHidratosDeCarbono, 1, 2) + ' g'}">0.0 g</td>
+                            <td id="macroHidratosKcal" class="text-right"
+                                th:text="${#numbers.formatDecimal(totalHidratosDeCarbono * 4, 1, 0) + ' kcal'}">0 kcal</td>
+                            <td id="macroHidratosPct" class="text-right"
+                                th:text="${#numbers.formatDecimal(distribucionHidratoCarbono, 1, 1) + ' %'}">0.0 %</td>
+                          </tr>
+                        </tbody>
+                        <tfoot class="font-weight-bold">
+                          <tr>
+                            <td><i class="fas fa-bolt text-warning mr-1"></i> Total</td>
+                            <td class="text-right text-muted">&mdash;</td>
+                            <td id="macroTotalKcal" class="text-right"
+                                th:text="${totalEnergia + ' kcal'}">0 kcal</td>
+                            <td class="text-right">100 %</td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div th:unless="${hasDistribucion != null && hasDistribucion}" class="col-12">
+                <div class="card shadow mb-0">
+                  <div class="card-body text-center py-3">
+                    <div class="img-wrapper">
+                      <img th:src="@{/sbadmin/img/plato.webp}"
+                        class="img-fluid"
+                        style="max-height: 8rem;"
+                        alt="Plato del buen comer" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Editor row: diet name + ingestas (full width) -->
+            <div class="row dieta-editor-row">
+              <div class="col-12">
                 <form th:action="@{/admin/dietas/save}" th:object="${dieta}" method="post">
                   <input type="hidden" th:field="*{id}" />
-                  <div class="card mb-4">
-                    <div class="card-body">
-                      <div class="row">
-                        <div class="col-sm-3">
-                          <p class="mb-0">Nombre de la dieta</p>
+                  <div class="card mb-3">
+                    <div class="card-body py-3 dieta-name-toolbar">
+                      <div class="row align-items-center">
+                        <div class="col-lg-2 col-md-3">
+                          <p class="mb-lg-0 mb-2 font-weight-bold text-gray-800">Nombre de la dieta</p>
                         </div>
-                        <div class="col-sm-9">
-                          <input
-                            type="text"
-                            class="form-control"
-                            th:field="*{nombre}"
-                            placeholder="Nombre de la dieta"
-                            th:readonly="${isOwner != null && !isOwner}"
-                            th:disabled="${isOwner != null && !isOwner}"
-                          />
+                        <div class="col-lg-8 col-md-9">
+                          <div class="input-group">
+                            <input
+                              type="text"
+                              class="form-control"
+                              th:field="*{nombre}"
+                              placeholder="Nombre de la dieta"
+                              th:readonly="${isOwner != null && !isOwner}"
+                              th:disabled="${isOwner != null && !isOwner}"
+                            />
+                            <div class="input-group-append">
+                              <button
+                                type="submit"
+                                class="btn btn-primary"
+                                th:text="${dieta == null || dieta.id == null || dieta.id == 0 ? 'Guardar' : 'Cambiar Nombre'}"
+                                th:disabled="${isOwner != null && !isOwner && dieta != null && dieta.id != null && dieta.id != 0}"
+                              >
+                                Guardar
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <!-- submit button -->
-                    <hr />
-                    <div class="row">
-                      <div class="col-sm-3"></div>
-                      <div class="col-sm-9">
-                        <!-- buton to add ingesta -->
-                        <button
-                          type="button"
-                          class="btn btn-success"
-                          data-toggle="modal"
-                          data-target="#ingestaModal"
-                          th:disabled="${isOwner != null && !isOwner}">
-                          <i class="fas fa-plus"></i> Agregar ingesta
-                        </button>
-                        <button
-                          type="submit"
-                          class="btn btn-primary"
-                          th:text="${dieta == null || dieta.id == null || dieta.id == 0 ? 'Guardar' : 'Cambiar Nombre'}"
-                          th:disabled="${isOwner != null && !isOwner && dieta != null && dieta.id != null && dieta.id != 0}"
-                        >
-                          Guardar
-                        </button>
+                      <div class="row mt-2">
+                        <div class="col-lg-2 col-md-3 d-none d-md-block"></div>
+                        <div class="col-lg-8 col-md-9">
+                          <button
+                            type="button"
+                            class="btn btn-success"
+                            data-toggle="modal"
+                            data-target="#ingestaModal"
+                            th:disabled="${isOwner != null && !isOwner}">
+                            <i class="fas fa-plus"></i> Agregar ingesta
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </form>
-                <!-- row for tabular control -->
-                <div class="row">
-                  <!-- column for tabular control -->
-                  <div class="col-md-12">
-                    <!-- card tht contains a tabular control for each ingesta -->
-                    <div class="card mb-4 mb-md-0">
-                      <div class="card-body">
+                <div class="card shadow mb-4 dieta-ingestas-card">
+                  <div class="card-body">
                         <ul class="nav nav-tabs" id="ingestaTab" role="tablist">
                           <li th:each="ingesta : ${ingestas}" class="nav-item">
                             <a 
@@ -533,230 +647,256 @@
                             role="tabpanel" 
                             th:aria-labelledby="'ingesta-tab-' + ${ingesta.id}">
                             <!-- ingesta action buttons -->
-                            <div
-                              class="d-sm-flex align-items-center mb-4"
-                              style="margin-top:15px">
-                              <!-- add platillo button -->
-                              <button 
-                                type="button" 
-                                class="btn btn-success" 
-                                data-toggle="modal" 
+                            <div class="d-flex flex-wrap align-items-center mb-3 mt-3">
+                              <button
+                                type="button"
+                                class="btn btn-success btn-sm mb-1 mr-2"
+                                data-toggle="modal"
                                 data-target="#platilloModal"
                                 th:attr="data-ingesta=${ingesta.id}"
                                 th:disabled="${isOwner != null && !isOwner}">
-                                <i class="fas fa-plus"></i> Agregar platillo</button>
-                              
-                              <!-- add alimento button -->
-                              <button 
-                                type="button" 
-                                class="btn btn-warning" 
-                                data-toggle="modal" 
+                                <i class="fas fa-plus"></i> Agregar platillo
+                              </button>
+                              <button
+                                type="button"
+                                class="btn btn-warning btn-sm mb-1 mr-2"
+                                data-toggle="modal"
                                 data-target="#alimentoModal"
                                 th:attr="data-ingesta=${ingesta.id}"
-                                th:disabled="${isOwner != null && !isOwner}"
-                                style="margin-left:15px">
-                                <i class="fas fa-plus"></i> Agregar alimento</button>
-                              
-                              <!-- cambiar nombre de ingesta button -->
-                              <button 
-                                type="button" 
-                                class="btn btn-primary" 
+                                th:disabled="${isOwner != null && !isOwner}">
+                                <i class="fas fa-plus"></i> Agregar alimento
+                              </button>
+                              <button
+                                type="button"
+                                class="btn btn-primary btn-sm mb-1 mr-2"
                                 th:attr="data-ingesta=${ingesta.id},data-nombre=${ingesta.nombre}"
-                                data-toggle="modal" 
-                                data-target="#ingestaModal" 
-                                th:disabled="${isOwner != null && !isOwner}"
-                                style="margin-left:15px">
-                                <i class="fas fa-edit"></i> Cambiar nombre</button>
-
-                              <!-- remove ingesta button -->
-                              <button 
-                                type="button" 
-                                class="btn btn-danger" 
+                                data-toggle="modal"
+                                data-target="#ingestaModal"
+                                th:disabled="${isOwner != null && !isOwner}">
+                                <i class="fas fa-edit"></i> Cambiar nombre
+                              </button>
+                              <button
+                                type="button"
+                                class="btn btn-danger btn-sm mb-1"
                                 th:attr="data-ingesta=${ingesta.id}"
-                                data-toggle="modal" 
-                                data-target="#deleteIngestaModal" 
-                                th:disabled="${isOwner != null && !isOwner}"
-                                style="margin-left:15px">
-                                <i class="fas fa-trash"></i> Eliminar ingesta</button>
+                                data-toggle="modal"
+                                data-target="#deleteIngestaModal"
+                                th:disabled="${isOwner != null && !isOwner}">
+                                <i class="fas fa-trash"></i> Eliminar ingesta
+                              </button>
                             </div>
-                            <!-- remove ingesta button -->
-                            <div
-                              class="d-sm-flex align-items-center justify-content-between mb-4">
-                              
-                            </div>
-                            <!-- table for platillos -->
-                            <div class="table-responsive">
-                              <table
-                                class="table table-bordered"
-                                id="dataTable"
-                                width="100%"
-                                cellspacing="0"
-                              >
-                                <thead>
-                                  <tr>
-                                    <th>Nombre</th>
-                                    <th>Porciones</th>
-                                    <th>Calor&iacute;as</th>
-                                    <th>Prote&iacute;nas</th>
-                                    <th>L&iacute;pidos</th>
-                                    <th>Hidratos de Carbono</th>
-                                    <th style="width: 12%;">Acciones</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr th:each="platillo : ${ingesta.platillos}">
-                                    <td>
-                                      <a th:if="${platillo.sourcePlatilloId != null}"
-                                         th:href="@{/admin/platillos/{id}(id=${platillo.sourcePlatilloId})}"
-                                         th:text="${platillo.name}"
-                                         title="Ver detalles del platillo"></a>
-                                      <span th:if="${platillo.sourcePlatilloId == null}" th:text="${platillo.name}"></span>
-                                    </td>
-                                    <td>
-                                      <div class="input-group input-group-sm" style="width: 120px;">
-                                        <div class="input-group-prepend">
-                                          <button 
-                                            type="button" 
-                                            class="btn btn-outline-secondary btn-sm decrease-portion" 
-                                            th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id},data-porciones=${platillo.portions}"
-                                            th:disabled="${isOwner != null && !isOwner}"
-                                            title="Disminuir porciones">
-                                            <i class="fas fa-minus"></i>
-                                          </button>
-                                        </div>
-                                        <input 
-                                          type="number" 
-                                          class="form-control form-control-sm text-center portion-input" 
-                                          th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id},value=${platillo.portions}"
-                                          min="1" 
-                                          max="10" 
-                                          readonly
-                                          style="background-color: #fff;" />
-                                        <div class="input-group-append">
-                                          <button 
-                                            type="button" 
-                                            class="btn btn-outline-secondary btn-sm increase-portion" 
-                                            th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id},data-porciones=${platillo.portions}"
-                                            th:disabled="${isOwner != null && !isOwner}"
-                                            title="Aumentar porciones">
-                                            <i class="fas fa-plus"></i>
-                                          </button>
-                                        </div>
+                            <div class="ingesta-items-scroll">
+                              <p th:if="${#lists.isEmpty(ingesta.platillos) && #lists.isEmpty(ingesta.alimentos)}"
+                                 class="ingesta-items-empty mb-0">
+                                No hay platillos ni alimentos en esta ingesta.
+                              </p>
+                              <div th:each="platillo : ${ingesta.platillos}"
+                                   class="ingesta-item-card border rounded p-3">
+                                <div class="ingesta-item-header d-flex justify-content-between align-items-start">
+                                  <div class="ingesta-item-name pr-2">
+                                    <span class="badge badge-info mr-1">Platillo</span>
+                                    <a th:if="${platillo.sourcePlatilloId != null}"
+                                       th:href="@{/admin/platillos/{id}(id=${platillo.sourcePlatilloId})}"
+                                       th:text="${platillo.name}"
+                                       title="Ver detalles del platillo"></a>
+                                    <span th:if="${platillo.sourcePlatilloId == null}" th:text="${platillo.name}"></span>
+                                  </div>
+                                  <div class="ingesta-item-actions flex-shrink-0">
+                                    <button
+                                      type="button"
+                                      class="btn btn-primary btn-sm"
+                                      th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id},data-porciones=${platillo.portions}"
+                                      data-toggle="modal"
+                                      data-target="#editPlatilloModal"
+                                      th:disabled="${isOwner != null && !isOwner}"
+                                      title="Modificar">
+                                      <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      class="btn btn-danger btn-sm ml-1"
+                                      th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id}"
+                                      data-toggle="modal"
+                                      data-target="#deletePlatilloModal"
+                                      th:disabled="${isOwner != null && !isOwner}"
+                                      title="Eliminar">
+                                      <i class="fas fa-trash"></i>
+                                    </button>
+                                  </div>
+                                </div>
+                                <div class="ingesta-item-details row mt-3">
+                                  <div class="col-6 col-md-3 mb-2 mb-md-0">
+                                    <span class="detail-label d-block">Porciones</span>
+                                    <div class="input-group input-group-sm mt-1" style="max-width: 8.5rem;">
+                                      <div class="input-group-prepend">
+                                        <button
+                                          type="button"
+                                          class="btn btn-outline-secondary btn-sm decrease-portion"
+                                          th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id},data-porciones=${platillo.portions}"
+                                          th:disabled="${isOwner != null && !isOwner}"
+                                          title="Disminuir porciones">
+                                          <i class="fas fa-minus"></i>
+                                        </button>
                                       </div>
-                                    </td>
-                                    <td class="nutrient-value" th:attr="data-value=${platillo.energia}" th:text="${#numbers.formatDecimal(platillo.energia, 1, 2)}"></td>
-                                    <td class="nutrient-value" th:attr="data-value=${platillo.proteina}" th:text="${#numbers.formatDecimal(platillo.proteina, 1, 2)}"></td>
-                                    <td class="nutrient-value" th:attr="data-value=${platillo.lipidos}" th:text="${#numbers.formatDecimal(platillo.lipidos, 1, 2)}"></td>
-                                    <td class="nutrient-value" th:attr="data-value=${platillo.hidratosDeCarbono}" th:text="${#numbers.formatDecimal(platillo.hidratosDeCarbono, 1, 2)}"></td>
-                                    <td style="white-space: nowrap;">
-                                      <button 
-                                        type="button" 
-                                        class="btn btn-primary btn-sm" 
-                                        th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id},data-porciones=${platillo.portions}" 
-                                        data-toggle="modal" 
-                                        data-target="#editPlatilloModal"
-                                        th:disabled="${isOwner != null && !isOwner}"
-                                        title="Modificar">
-                                        <i class="fas fa-edit"></i>
-                                      </button>
-                                      <button 
-                                        type="button" 
-                                        class="btn btn-danger btn-sm" 
-                                        th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id}" 
-                                        data-toggle="modal" 
-                                        data-target="#deletePlatilloModal"
-                                        th:disabled="${isOwner != null && !isOwner}"
-                                        title="Eliminar"
-                                        style="margin-left:5px">
-                                        <i class="fas fa-trash"></i>
-                                      </button>
-                                    </td>
-                                  </tr>
-                                  <tr th:each="alimento : ${ingesta.alimentos}">
-                                    <td>
-                                      <a th:if="${alimento.alimento != null && alimento.alimento.id != null}" 
-                                         th:href="@{/admin/alimentos/{id}(id=${alimento.alimento.id})}" 
-                                         th:text="${alimento.name}"
-                                         title="Ver detalles del alimento"></a>
-                                      <span th:unless="${alimento.alimento != null && alimento.alimento.id != null}" 
-                                            th:text="${alimento.name}"></span>
-                                    </td>
-                                    <td>
-                                      <div class="input-group input-group-sm" style="width: 120px;">
-                                        <div class="input-group-prepend">
-                                          <button 
-                                            type="button" 
-                                            class="btn btn-outline-secondary btn-sm decrease-portion" 
-                                            th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-porciones=${alimento.portions}"
-                                            th:disabled="${isOwner != null && !isOwner}"
-                                            title="Disminuir porciones">
-                                            <i class="fas fa-minus"></i>
-                                          </button>
-                                        </div>
-                                        <input 
-                                          type="number" 
-                                          class="form-control form-control-sm text-center portion-input" 
-                                          th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},value=${alimento.portions}"
-                                          min="1" 
-                                          max="10" 
-                                          readonly
-                                          style="background-color: #fff;" />
-                                        <div class="input-group-append">
-                                          <button 
-                                            type="button" 
-                                            class="btn btn-outline-secondary btn-sm increase-portion" 
-                                            th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-porciones=${alimento.portions}"
-                                            th:disabled="${isOwner != null && !isOwner}"
-                                            title="Aumentar porciones">
-                                            <i class="fas fa-plus"></i>
-                                          </button>
-                                        </div>
+                                      <input
+                                        type="number"
+                                        class="form-control form-control-sm text-center portion-input"
+                                        th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id},value=${platillo.portions}"
+                                        min="1"
+                                        max="10"
+                                        readonly
+                                        style="background-color: #fff;" />
+                                      <div class="input-group-append">
+                                        <button
+                                          type="button"
+                                          class="btn btn-outline-secondary btn-sm increase-portion"
+                                          th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id},data-porciones=${platillo.portions}"
+                                          th:disabled="${isOwner != null && !isOwner}"
+                                          title="Aumentar porciones">
+                                          <i class="fas fa-plus"></i>
+                                        </button>
                                       </div>
-                                    </td>
-                                    <td class="nutrient-value" th:attr="data-value=${alimento.energia}" th:text="${#numbers.formatDecimal(alimento.energia, 1, 2)}"></td>
-                                    <td class="nutrient-value" th:attr="data-value=${alimento.proteina}" th:text="${#numbers.formatDecimal(alimento.proteina, 1, 2)}"></td>
-                                    <td class="nutrient-value" th:attr="data-value=${alimento.lipidos}" th:text="${#numbers.formatDecimal(alimento.lipidos, 1, 2)}"></td>
-                                    <td class="nutrient-value" th:attr="data-value=${alimento.hidratosDeCarbono}" th:text="${#numbers.formatDecimal(alimento.hidratosDeCarbono, 1, 2)}"></td>
-                                    <td style="white-space: nowrap;">
-                                      <button 
-                                        type="button" 
-                                        class="btn btn-primary btn-sm" 
-                                        th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-porciones=${alimento.portions}" 
-                                        data-toggle="modal" 
-                                        data-target="#editAlimentoModal"
-                                        th:disabled="${isOwner != null && !isOwner}"
-                                        title="Modificar">
-                                        <i class="fas fa-edit"></i>
-                                      </button>
-                                      <button 
-                                        type="button" 
-                                        class="btn btn-danger btn-sm" 
-                                        th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id}" 
-                                        data-toggle="modal" 
-                                        data-target="#deleteAlimentoModal"
-                                        th:disabled="${isOwner != null && !isOwner}"
-                                        title="Eliminar"
-                                        style="margin-left:5px">
-                                        <i class="fas fa-trash"></i>
-                                      </button>
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
+                                    </div>
+                                  </div>
+                                  <div class="col-6 col-md-2 mb-2 mb-md-0">
+                                    <span class="detail-label d-block">Calor&iacute;as</span>
+                                    <span class="detail-value nutrient-value d-block mt-1"
+                                          data-nutrient="energia"
+                                          th:attr="data-value=${platillo.energia}"
+                                          th:text="${#numbers.formatDecimal(platillo.energia, 1, 2)}">0.00</span>
+                                  </div>
+                                  <div class="col-6 col-md-2 mb-2 mb-md-0">
+                                    <span class="detail-label d-block">Prote&iacute;nas</span>
+                                    <span class="detail-value nutrient-value d-block mt-1"
+                                          data-nutrient="proteina"
+                                          th:attr="data-value=${platillo.proteina}"
+                                          th:text="${#numbers.formatDecimal(platillo.proteina, 1, 2)}">0.00</span>
+                                  </div>
+                                  <div class="col-6 col-md-2 mb-2 mb-md-0">
+                                    <span class="detail-label d-block">L&iacute;pidos</span>
+                                    <span class="detail-value nutrient-value d-block mt-1"
+                                          data-nutrient="lipidos"
+                                          th:attr="data-value=${platillo.lipidos}"
+                                          th:text="${#numbers.formatDecimal(platillo.lipidos, 1, 2)}">0.00</span>
+                                  </div>
+                                  <div class="col-6 col-md-3 mb-2 mb-md-0">
+                                    <span class="detail-label d-block">Hidratos de Carbono</span>
+                                    <span class="detail-value nutrient-value d-block mt-1"
+                                          data-nutrient="hidratosDeCarbono"
+                                          th:attr="data-value=${platillo.hidratosDeCarbono}"
+                                          th:text="${#numbers.formatDecimal(platillo.hidratosDeCarbono, 1, 2)}">0.00</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div th:each="alimento : ${ingesta.alimentos}"
+                                   class="ingesta-item-card border rounded p-3">
+                                <div class="ingesta-item-header d-flex justify-content-between align-items-start">
+                                  <div class="ingesta-item-name pr-2">
+                                    <span class="badge badge-warning mr-1">Alimento</span>
+                                    <a th:if="${alimento.alimento != null && alimento.alimento.id != null}"
+                                       th:href="@{/admin/alimentos/{id}(id=${alimento.alimento.id})}"
+                                       th:text="${alimento.name}"
+                                       title="Ver detalles del alimento"></a>
+                                    <span th:unless="${alimento.alimento != null && alimento.alimento.id != null}"
+                                          th:text="${alimento.name}"></span>
+                                  </div>
+                                  <div class="ingesta-item-actions flex-shrink-0">
+                                    <button
+                                      type="button"
+                                      class="btn btn-primary btn-sm"
+                                      th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-porciones=${alimento.portions}"
+                                      data-toggle="modal"
+                                      data-target="#editAlimentoModal"
+                                      th:disabled="${isOwner != null && !isOwner}"
+                                      title="Modificar">
+                                      <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      class="btn btn-danger btn-sm ml-1"
+                                      th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id}"
+                                      data-toggle="modal"
+                                      data-target="#deleteAlimentoModal"
+                                      th:disabled="${isOwner != null && !isOwner}"
+                                      title="Eliminar">
+                                      <i class="fas fa-trash"></i>
+                                    </button>
+                                  </div>
+                                </div>
+                                <div class="ingesta-item-details row mt-3">
+                                  <div class="col-6 col-md-3 mb-2 mb-md-0">
+                                    <span class="detail-label d-block">Porciones</span>
+                                    <div class="input-group input-group-sm mt-1" style="max-width: 8.5rem;">
+                                      <div class="input-group-prepend">
+                                        <button
+                                          type="button"
+                                          class="btn btn-outline-secondary btn-sm decrease-portion"
+                                          th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-porciones=${alimento.portions}"
+                                          th:disabled="${isOwner != null && !isOwner}"
+                                          title="Disminuir porciones">
+                                          <i class="fas fa-minus"></i>
+                                        </button>
+                                      </div>
+                                      <input
+                                        type="number"
+                                        class="form-control form-control-sm text-center portion-input"
+                                        th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},value=${alimento.portions}"
+                                        min="1"
+                                        max="10"
+                                        readonly
+                                        style="background-color: #fff;" />
+                                      <div class="input-group-append">
+                                        <button
+                                          type="button"
+                                          class="btn btn-outline-secondary btn-sm increase-portion"
+                                          th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-porciones=${alimento.portions}"
+                                          th:disabled="${isOwner != null && !isOwner}"
+                                          title="Aumentar porciones">
+                                          <i class="fas fa-plus"></i>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="col-6 col-md-2 mb-2 mb-md-0">
+                                    <span class="detail-label d-block">Calor&iacute;as</span>
+                                    <span class="detail-value nutrient-value d-block mt-1"
+                                          data-nutrient="energia"
+                                          th:attr="data-value=${alimento.energia}"
+                                          th:text="${#numbers.formatDecimal(alimento.energia, 1, 2)}">0.00</span>
+                                  </div>
+                                  <div class="col-6 col-md-2 mb-2 mb-md-0">
+                                    <span class="detail-label d-block">Prote&iacute;nas</span>
+                                    <span class="detail-value nutrient-value d-block mt-1"
+                                          data-nutrient="proteina"
+                                          th:attr="data-value=${alimento.proteina}"
+                                          th:text="${#numbers.formatDecimal(alimento.proteina, 1, 2)}">0.00</span>
+                                  </div>
+                                  <div class="col-6 col-md-2 mb-2 mb-md-0">
+                                    <span class="detail-label d-block">L&iacute;pidos</span>
+                                    <span class="detail-value nutrient-value d-block mt-1"
+                                          data-nutrient="lipidos"
+                                          th:attr="data-value=${alimento.lipidos}"
+                                          th:text="${#numbers.formatDecimal(alimento.lipidos, 1, 2)}">0.00</span>
+                                  </div>
+                                  <div class="col-6 col-md-3 mb-2 mb-md-0">
+                                    <span class="detail-label d-block">Hidratos de Carbono</span>
+                                    <span class="detail-value nutrient-value d-block mt-1"
+                                          data-nutrient="hidratosDeCarbono"
+                                          th:attr="data-value=${alimento.hidratosDeCarbono}"
+                                          th:text="${#numbers.formatDecimal(alimento.hidratosDeCarbono, 1, 2)}">0.00</span>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                            <!-- end table-responsive -->
+                            <!-- end ingesta-items-scroll -->
                           </div>
                           <!-- end tab pane -->
                         </div>
                         <!-- end tab content per ingesta -->
-                      </div>
-                      <!-- end card body -->
-                    </div>
-                    <!-- end card for tabular control -->
                   </div>
-                  <!-- end column for tabular control -->
+                  <!-- end card body -->
                 </div>
-                <!-- end row for tabular control -->
+                <!-- end dieta-ingestas-card -->
               </div>
             </div>
           </div>
@@ -1127,14 +1267,26 @@
             }
           });
 
+          function updateNutrientValues(itemCard, itemData) {
+            itemCard.find('.nutrient-value').each(function() {
+              var cell = $(this);
+              var nutrientKey = cell.data('nutrient');
+              var nutrientValue = itemData[nutrientKey];
+              if (nutrientValue !== null && nutrientValue !== undefined) {
+                cell.attr('data-value', nutrientValue);
+                cell.text(parseFloat(nutrientValue).toFixed(2));
+              }
+            });
+          }
+
           // Function to update platillo portions via AJAX
           function updatePlatilloPortions(dietaId, ingestaId, platilloId, newPortions, button) {
-            var row = button.closest('tr');
-            var portionInput = row.find('.portion-input[data-platillo="' + platilloId + '"]');
+            var itemCard = button.closest('.ingesta-item-card');
+            var portionInput = itemCard.find('.portion-input[data-platillo="' + platilloId + '"]');
             
             // Disable buttons during update
             button.prop('disabled', true);
-            row.find('.decrease-portion, .increase-portion').prop('disabled', true);
+            itemCard.find('.decrease-portion, .increase-portion').prop('disabled', true);
             
             $.ajax({
               url: '/rest/dietas/' + dietaId + '/ingestas/' + ingestaId + '/platillos/' + platilloId + '/portions',
@@ -1161,31 +1313,8 @@
                   if (updatedPlatillo) {
                     // Update portion input and buttons
                     portionInput.val(updatedPlatillo.portions);
-                    row.find('.decrease-portion, .increase-portion').data('porciones', updatedPlatillo.portions);
-                    
-                    // Update nutrient values
-                    row.find('td.nutrient-value').each(function(index) {
-                      var cell = $(this);
-                      var nutrientValue = null;
-                      switch(index) {
-                        case 0: // energia
-                          nutrientValue = updatedPlatillo.energia;
-                          break;
-                        case 1: // proteina
-                          nutrientValue = updatedPlatillo.proteina;
-                          break;
-                        case 2: // lipidos
-                          nutrientValue = updatedPlatillo.lipidos;
-                          break;
-                        case 3: // hidratosDeCarbono
-                          nutrientValue = updatedPlatillo.hidratosDeCarbono;
-                          break;
-                      }
-                      if (nutrientValue !== null) {
-                        cell.attr('data-value', nutrientValue);
-                        cell.text(parseFloat(nutrientValue).toFixed(2));
-                      }
-                    });
+                    itemCard.find('.decrease-portion, .increase-portion').data('porciones', updatedPlatillo.portions);
+                    updateNutrientValues(itemCard, updatedPlatillo);
                     
                     // Update pie chart if it exists
                     updatePieChart(dieta);
@@ -1194,17 +1323,17 @@
                   } else {
                     // If we can't find the updated item, update portion number and show warning
                     portionInput.val(newPortions);
-                    row.find('.decrease-portion, .increase-portion').data('porciones', newPortions);
+                    itemCard.find('.decrease-portion, .increase-portion').data('porciones', newPortions);
                     showToast('Actualizado', 'Las porciones han sido actualizadas. Algunos valores pueden necesitar recarga.', 'warning');
                   }
                 } else {
                   // If response structure is unexpected, update portion number and show warning
                   portionInput.val(newPortions);
-                  row.find('.decrease-portion, .increase-portion').data('porciones', newPortions);
+                  itemCard.find('.decrease-portion, .increase-portion').data('porciones', newPortions);
                   showToast('Actualizado', 'Las porciones han sido actualizadas. Algunos valores pueden necesitar recarga.', 'warning');
                 }
                 // Re-enable buttons
-                row.find('.decrease-portion, .increase-portion').prop('disabled', false);
+                itemCard.find('.decrease-portion, .increase-portion').prop('disabled', false);
               },
               error: function (error) {
                 var errorMessage = error.responseJSON && error.responseJSON.message 
@@ -1212,19 +1341,19 @@
                   : 'Error al actualizar las porciones.';
                 showToast('Error', errorMessage, 'error');
                 // Re-enable buttons
-                row.find('.decrease-portion, .increase-portion').prop('disabled', false);
+                itemCard.find('.decrease-portion, .increase-portion').prop('disabled', false);
               }
             });
           }
 
           // Function to update alimento portions via AJAX
           function updateAlimentoPortions(dietaId, ingestaId, alimentoId, newPortions, button) {
-            var row = button.closest('tr');
-            var portionInput = row.find('.portion-input[data-alimento="' + alimentoId + '"]');
+            var itemCard = button.closest('.ingesta-item-card');
+            var portionInput = itemCard.find('.portion-input[data-alimento="' + alimentoId + '"]');
             
             // Disable buttons during update
             button.prop('disabled', true);
-            row.find('.decrease-portion, .increase-portion').prop('disabled', true);
+            itemCard.find('.decrease-portion, .increase-portion').prop('disabled', true);
             
             $.ajax({
               url: '/rest/dietas/' + dietaId + '/ingestas/' + ingestaId + '/alimentos/' + alimentoId + '/portions',
@@ -1251,31 +1380,8 @@
                   if (updatedAlimento) {
                     // Update portion input and buttons
                     portionInput.val(updatedAlimento.portions);
-                    row.find('.decrease-portion, .increase-portion').data('porciones', updatedAlimento.portions);
-                    
-                    // Update nutrient values
-                    row.find('td.nutrient-value').each(function(index) {
-                      var cell = $(this);
-                      var nutrientValue = null;
-                      switch(index) {
-                        case 0: // energia
-                          nutrientValue = updatedAlimento.energia;
-                          break;
-                        case 1: // proteina
-                          nutrientValue = updatedAlimento.proteina;
-                          break;
-                        case 2: // lipidos
-                          nutrientValue = updatedAlimento.lipidos;
-                          break;
-                        case 3: // hidratosDeCarbono
-                          nutrientValue = updatedAlimento.hidratosDeCarbono;
-                          break;
-                      }
-                      if (nutrientValue !== null) {
-                        cell.attr('data-value', nutrientValue);
-                        cell.text(parseFloat(nutrientValue).toFixed(2));
-                      }
-                    });
+                    itemCard.find('.decrease-portion, .increase-portion').data('porciones', updatedAlimento.portions);
+                    updateNutrientValues(itemCard, updatedAlimento);
                     
                     // Update pie chart if it exists
                     updatePieChart(dieta);
@@ -1284,17 +1390,17 @@
                   } else {
                     // If we can't find the updated item, update portion number and show warning
                     portionInput.val(newPortions);
-                    row.find('.decrease-portion, .increase-portion').data('porciones', newPortions);
+                    itemCard.find('.decrease-portion, .increase-portion').data('porciones', newPortions);
                     showToast('Actualizado', 'Las porciones han sido actualizadas. Algunos valores pueden necesitar recarga.', 'warning');
                   }
                 } else {
                   // If response structure is unexpected, update portion number and show warning
                   portionInput.val(newPortions);
-                  row.find('.decrease-portion, .increase-portion').data('porciones', newPortions);
+                  itemCard.find('.decrease-portion, .increase-portion').data('porciones', newPortions);
                   showToast('Actualizado', 'Las porciones han sido actualizadas. Algunos valores pueden necesitar recarga.', 'warning');
                 }
                 // Re-enable buttons
-                row.find('.decrease-portion, .increase-portion').prop('disabled', false);
+                itemCard.find('.decrease-portion, .increase-portion').prop('disabled', false);
               },
               error: function (error) {
                 var errorMessage = error.responseJSON && error.responseJSON.message 
@@ -1302,12 +1408,12 @@
                   : 'Error al actualizar las porciones.';
                 showToast('Error', errorMessage, 'error');
                 // Re-enable buttons
-                row.find('.decrease-portion, .increase-portion').prop('disabled', false);
+                itemCard.find('.decrease-portion, .increase-portion').prop('disabled', false);
               }
             });
           }
 
-          // Function to update pie chart with new dieta data
+          // Function to update pie chart and macro summary table with new dieta data
           function updatePieChart(dieta) {
             var ctx = document.getElementById('myPieChart');
             if (ctx && typeof Chart !== 'undefined' && window.myPieChart) {
@@ -1348,8 +1454,42 @@
                   distribucionHidratoCarbono
                 ];
                 window.myPieChart.update();
+                updateMacroSummaryTable(
+                  totalProteina,
+                  totalLipidos,
+                  totalHidratosDeCarbono,
+                  kCal,
+                  distribucionProteina,
+                  distribucionLipido,
+                  distribucionHidratoCarbono
+                );
               }
             }
+          }
+
+          function updateMacroSummaryTable(
+            totalProteina,
+            totalLipidos,
+            totalHidratosDeCarbono,
+            kCal,
+            distribucionProteina,
+            distribucionLipido,
+            distribucionHidratoCarbono
+          ) {
+            var table = document.getElementById('macroSummaryTable');
+            if (!table) {
+              return;
+            }
+            document.getElementById('macroProteinaGramos').textContent = totalProteina.toFixed(2) + ' g';
+            document.getElementById('macroProteinaKcal').textContent = Math.round(totalProteina * 4) + ' kcal';
+            document.getElementById('macroProteinaPct').textContent = distribucionProteina.toFixed(1) + ' %';
+            document.getElementById('macroLipidosGramos').textContent = totalLipidos.toFixed(2) + ' g';
+            document.getElementById('macroLipidosKcal').textContent = Math.round(totalLipidos * 9) + ' kcal';
+            document.getElementById('macroLipidosPct').textContent = distribucionLipido.toFixed(1) + ' %';
+            document.getElementById('macroHidratosGramos').textContent = totalHidratosDeCarbono.toFixed(2) + ' g';
+            document.getElementById('macroHidratosKcal').textContent = Math.round(totalHidratosDeCarbono * 4) + ' kcal';
+            document.getElementById('macroHidratosPct').textContent = distribucionHidratoCarbono.toFixed(1) + ' %';
+            document.getElementById('macroTotalKcal').textContent = Math.round(kCal) + ' kcal';
           }
 
           // Function to duplicate dieta

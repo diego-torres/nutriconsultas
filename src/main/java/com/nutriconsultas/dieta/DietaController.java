@@ -129,12 +129,19 @@ public class DietaController extends AbstractAuthorizedController {
 
 		model.addAttribute("alimentos", alimentoService.findAll());
 
-		// Calculate distribution percentages for pie chart
+		// Calculate distribution percentages for pie chart and macro summary table
+		final Double totalProteina = getTotalProteina(dieta);
+		final Double totalLipidos = getTotalLipidos(dieta);
+		final Double totalHidratosDeCarbono = getTotalHidratosDeCarbono(dieta);
 		final Double kCal = getKCal(dieta);
 		if (kCal != null && kCal > 0.01) {
-			final Double distProteina = getTotalProteina(dieta) * 4 / kCal * 100;
-			final Double distLipido = getTotalLipidos(dieta) * 9 / kCal * 100;
-			final Double distHidratoCarbono = getTotalHidratosDeCarbono(dieta) * 4 / kCal * 100;
+			final Double distProteina = totalProteina * 4 / kCal * 100;
+			final Double distLipido = totalLipidos * 9 / kCal * 100;
+			final Double distHidratoCarbono = totalHidratosDeCarbono * 4 / kCal * 100;
+			model.addAttribute("totalProteina", totalProteina);
+			model.addAttribute("totalLipidos", totalLipidos);
+			model.addAttribute("totalHidratosDeCarbono", totalHidratosDeCarbono);
+			model.addAttribute("totalEnergia", kCal.intValue());
 			model.addAttribute("distribucionProteina", distProteina);
 			model.addAttribute("distribucionLipido", distLipido);
 			model.addAttribute("distribucionHidratoCarbono", distHidratoCarbono);
