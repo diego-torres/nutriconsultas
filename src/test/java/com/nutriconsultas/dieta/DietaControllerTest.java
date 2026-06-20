@@ -371,6 +371,31 @@ public class DietaControllerTest {
 
 	@Test
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testEditarDietaWithMacroSummaryAttributes() throws Exception {
+		final PlatilloIngesta platilloIngesta = new PlatilloIngesta();
+		platilloIngesta.setId(10L);
+		platilloIngesta.setSourcePlatilloId(1L);
+		platilloIngesta.setName("Pollo con arroz");
+		platilloIngesta.setProteina(30.0);
+		platilloIngesta.setLipidos(15.0);
+		platilloIngesta.setHidratosDeCarbono(50.0);
+		ingesta.getPlatillos().add(platilloIngesta);
+
+		when(platilloService.findAll()).thenReturn(List.of(platillo));
+
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/1"))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.model().attribute("hasDistribucion", true))
+			.andExpect(MockMvcResultMatchers.model().attribute("totalProteina", 30.0))
+			.andExpect(MockMvcResultMatchers.model().attribute("totalLipidos", 15.0))
+			.andExpect(MockMvcResultMatchers.model().attribute("totalHidratosDeCarbono", 50.0))
+			.andExpect(MockMvcResultMatchers.model().attribute("totalEnergia", 455))
+			.andExpect(content().string(containsString("macroSummaryTable")))
+			.andExpect(content().string(containsString("Macronutrientes")));
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	public void testEditarDietaPlatilloLinkUsesCatalogId() throws Exception {
 		final PlatilloIngesta platilloIngesta = new PlatilloIngesta();
 		platilloIngesta.setId(32L);

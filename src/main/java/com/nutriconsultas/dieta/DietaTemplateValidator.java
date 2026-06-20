@@ -228,6 +228,10 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 			final double distProteina = totalProteina * 4 / kCal * 100;
 			final double distLipido = totalLipidos * 9 / kCal * 100;
 			final double distHidratoCarbono = totalHidratosDeCarbono * 4 / kCal * 100;
+			variables.put("totalProteina", totalProteina);
+			variables.put("totalLipidos", totalLipidos);
+			variables.put("totalHidratosDeCarbono", totalHidratosDeCarbono);
+			variables.put("totalEnergia", (int) Math.round(kCal));
 			variables.put("distribucionProteina", distProteina);
 			variables.put("distribucionLipido", distLipido);
 			variables.put("distribucionHidratoCarbono", distHidratoCarbono);

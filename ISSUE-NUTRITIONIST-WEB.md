@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-20 — ~~#237~~ **done** (PR [#278](https://github.com/diego-torres/nutriconsultas/pull/278)). ~~#275~~ **done** (PR [#276](https://github.com/diego-torres/nutriconsultas/pull/276)). ~~#236~~ **done** (PR [#274](https://github.com/diego-torres/nutriconsultas/pull/274)). Epic **#271–#272** registered (platform admin **create** system catalog platillos/diets). ~~#259~~ **done** (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)). Platillo ownership **#257–#259 complete**. **NEXT:** [#238 diet macro table](https://github.com/diego-torres/nutriconsultas/issues/238). Epics **#238–#242**, **#271–#272** registered.
+**Last updated:** 2026-06-20 — ~~#238~~ **done** (PR [#279](https://github.com/diego-torres/nutriconsultas/pull/279)). ~~#237~~ **done** (PR [#278](https://github.com/diego-torres/nutriconsultas/pull/278)). ~~#275~~ **done** (PR [#276](https://github.com/diego-torres/nutriconsultas/pull/276)). ~~#236~~ **done** (PR [#274](https://github.com/diego-torres/nutriconsultas/pull/274)). Epic **#271–#272** registered (platform admin **create** system catalog platillos/diets). ~~#259~~ **done** (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)). Platillo ownership **#257–#259 complete**. **NEXT:** [#239 add-ingredient weight recalc](https://github.com/diego-torres/nutriconsultas/issues/239). Epics **#239–#242**, **#271–#272** registered.
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -133,7 +133,7 @@ Platform admins can **edit** seeded system rows (#232 diets, #257 platillos) but
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| 238 | Diet detail — macronutrients table below caloric distribution | https://github.com/diego-torres/nutriconsultas/issues/238 | open | — | Match platillo macro table style |
+| **238** | Diet detail — macronutrients table below caloric distribution | https://github.com/diego-torres/nutriconsultas/issues/238 | **done** | — | PR [#279](https://github.com/diego-torres/nutriconsultas/pull/279); macro table + layout |
 | 239 | Add-ingredient dialog — recalculate weight from portion quantity | https://github.com/diego-torres/nutriconsultas/issues/239 | open | — | Platillo + dietas modals |
 | 240 | Round ingredient fractions to ½, ¼, or ⅓ in UI and meal-plan PDFs | https://github.com/diego-torres/nutriconsultas/issues/240 | open | — | Extend `AbstractFraccionable` |
 | **275** | Platillo image upload — raise size limit and show user-facing error | https://github.com/diego-torres/nutriconsultas/issues/275 | **done** | — | PR [#276](https://github.com/diego-torres/nutriconsultas/pull/276); 10MB limit; `AdminMultipartExceptionHandler` |
