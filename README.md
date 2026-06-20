@@ -13,7 +13,7 @@ registro de consultorio de nutrición
 
 **Agent workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Issue registries:** [`ISSUE.md`](ISSUE.md) (mobile) · [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) (subscription) · [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) (nutritionist web) · [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md) (public booking) · **Contract docs:** [`docs/mobile-api/README.md`](docs/mobile-api/README.md)
 
-**On `main` (2026-06-20):** Mobile **NEXT:** #134. Subscription **NEXT:** #207. Nutritionist web **NEXT:** #236; platillo ownership ~~#257–#259~~ done (#259 PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270), `Fixes #259`); diet catalog ~~#232–#235~~ done; epics #236–#242. Public booking #245–#248 (deferred).
+**On `main` (2026-06-20):** Mobile **NEXT:** #134. Subscription **NEXT:** #207. Nutritionist web **NEXT:** #236; platillo ownership ~~#257–#259~~ done; system catalog create #271–#272 registered; diet catalog ~~#232–#235~~ done; epics #236–#242. Public booking #245–#248 (deferred).
 
 ## AWS (production infrastructure)
 

@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-20 — ~~#259~~ **done** (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270), `Fixes #259` — closes on merge). Platillo ownership epic **#257–#259 complete**. **NEXT:** [#236 show logo on profile](https://github.com/diego-torres/nutriconsultas/issues/236). Epics **#236–#242** registered.
+**Last updated:** 2026-06-20 — Epic **#271–#272** registered (platform admin **create** system catalog platillos/diets). ~~#259~~ **done** (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)). Platillo ownership **#257–#259 complete**. **NEXT:** [#236 show logo on profile](https://github.com/diego-torres/nutriconsultas/issues/236). Epics **#236–#242**, **#271–#272** registered.
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -86,6 +86,24 @@ Lock **system** catalog platillos for nutritionists; **owned** platillos editabl
 
 ---
 
+## Epic — System catalog authoring (platform admin create)
+
+Platform admins can **edit** seeded system rows (#232 diets, #257 platillos) but **create** paths still assign the OAuth `sub` as owner. New issues cover admin-only creation of shared catalog entries without Liquibase deploys.
+
+| Requirement | Issues |
+|-------------|--------|
+| Platform admin create system catalog platillo | #271 |
+| Platform admin create system template diet | #272 |
+
+**Suggested order:** #271 + #272 parallel (after #257 and #232 respectively).
+
+| # | Title | URL | State | Depends on | Notes |
+|---|-------|-----|-------|-----------|-------|
+| **271** | Platform admin — create system catalog platillo | https://github.com/diego-torres/nutriconsultas/issues/271 | open | #183, **257** | `PlatilloController` / REST add → `system:catalog-platillos` |
+| **272** | Platform admin — create system template diet | https://github.com/diego-torres/nutriconsultas/issues/272 | open | #183, **232** | `POST /rest/dietas/add` → `system:template-dietas` |
+
+---
+
 ## Epic — Nutritionist branding (profile & PDF)
 
 | Requirement | Issues |
@@ -156,9 +174,9 @@ Lock **system** catalog platillos for nutritionists; **owned** platillos editabl
 | #109 Mobile linkage | Delete clears `patientAuthSub`; not stored in `.mpx` |
 | #220 Retention purge | Platform admin purge of **revoked** nutritionists — orthogonal to nutritionist-initiated patient delete |
 | #132 Patient invitations | Onboarding `Paciente.status` — import creates `ACTIVE` patient unless product specifies otherwise |
-| #183 Platform admin | System diet edit (#232); ~~system platillo edit (#257)~~ |
+| #183 Platform admin | System diet edit (#232), create (#272); system platillo edit (#257), create (#271) |
 | #187 Branded PDF | Logo profile (#236) and PDF sizing (#237) |
-| #198 Diet templates | System diets seeded; editable by admin via #232 |
+| #198 Diet templates | System diets seeded; editable (#232) and creatable (#272) by admin |
 | #243 / #244 Subscription | reCAPTCHA + Solicitar acceso pre-fill — public funnel, not admin UI |
 | #245–#248 Public booking | Nutritionist hours in profile (#246) — separate track |
 
