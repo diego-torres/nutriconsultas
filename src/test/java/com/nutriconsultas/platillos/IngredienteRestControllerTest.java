@@ -1,19 +1,33 @@
 package com.nutriconsultas.platillos;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.time.Instant;
+import java.util.Collections;
 
 import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.dataTables.paging.Column;
@@ -26,6 +40,7 @@ import com.nutriconsultas.dataTables.paging.Search;
 import lombok.extern.slf4j.Slf4j;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @Slf4j
 @ActiveProfiles("test")
 public class IngredienteRestControllerTest {
@@ -35,6 +50,9 @@ public class IngredienteRestControllerTest {
 
 	@Mock
 	private PlatilloService platilloService;
+
+	@Mock
+	private PlatilloAuthorization platilloAuthorization;
 
 	private Platillo platillo;
 
@@ -62,12 +80,33 @@ public class IngredienteRestControllerTest {
 		platillo.setName("Test Platillo");
 		platillo.setIngredientes(Arrays.asList(ingrediente));
 
+		final OidcIdToken idToken = OidcIdToken.withTokenValue("test-token")
+			.subject("test-user-id-123")
+			.claim("name", "Test User")
+			.issuedAt(Instant.now())
+			.expiresAt(Instant.now().plusSeconds(3600))
+			.build();
+		final DefaultOidcUser oidcUser = new DefaultOidcUser(Collections.emptyList(), idToken);
+		SecurityContextHolder.getContext().setAuthentication(new TestingAuthenticationToken(oidcUser, null));
+
+		when(platilloAuthorization.resolveForMutation(any(), any(), any(), eq(platilloService)))
+			.thenAnswer(invocation -> platilloService.findById(invocation.getArgument(0)));
+		doNothing().when(platilloAuthorization).verifyCanModify(any(), any(), any());
+		doNothing().when(platilloAuthorization).auditSystemPlatilloMutationIfNeeded(any(), any(), anyString());
+		when(platilloAuthorization.canModify(any(), any(), any())).thenReturn(true);
+
 		log.info("finished setting up IngredienteRestController test");
+	}
+
+	@AfterEach
+	public void tearDown() {
+		SecurityContextHolder.clearContext();
 	}
 
 	@Test
 	public void testDelete() {
 		log.info("Starting testDelete");
+		when(platilloService.findById(1L)).thenReturn(platillo);
 		// Act
 		ingredienteRestController.delete(1L, 1L);
 
@@ -219,7 +258,6 @@ public class IngredienteRestControllerTest {
 	@Test
 	public void testGetPageArrayWithNoMatch() {
 		log.info("Starting testGetPageArrayWithNoMatch");
-		// Arrange
 		when(platilloService.findById(1L)).thenReturn(platillo);
 
 		PagingRequest pagingRequest = new PagingRequest();
@@ -230,15 +268,22 @@ public class IngredienteRestControllerTest {
 		pagingRequest.setSearch(new Search("NonExistent", "false"));
 		pagingRequest.setColumns(ingredienteRestController.getColumns());
 
-		// Act
 		PageArray result = ingredienteRestController.getPageArray(pagingRequest, 1L);
 
-		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.getRecordsTotal()).isEqualTo(1);
 		assertThat(result.getRecordsFiltered()).isEqualTo(0);
 		assertThat(result.getData()).isEmpty();
 		log.info("Finishing testGetPageArrayWithNoMatch");
+	}
+
+	@Test
+	public void testToStringListHidesDeleteWhenReadOnly() {
+		final List<String> editable = ingredienteRestController.toStringList(ingrediente, true);
+		final List<String> readOnly = ingredienteRestController.toStringList(ingrediente, false);
+
+		assertThat(editable.get(4)).contains("delete-btn");
+		assertThat(readOnly.get(4)).isEmpty();
 	}
 
 }

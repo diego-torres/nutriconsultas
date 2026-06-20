@@ -2,7 +2,9 @@ package com.nutriconsultas.platillos;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -14,18 +16,31 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.Instant;
+import java.util.Collections;
 
 import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.dataTables.paging.Column;
@@ -40,6 +55,7 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @Slf4j
 @ActiveProfiles("test")
 @SuppressWarnings("null")
@@ -51,11 +67,35 @@ public class PlatilloRestControllerTest {
 	@Mock
 	private PlatilloService platilloService;
 
+	@Mock
+	private PlatilloAuthorization platilloAuthorization;
+
 	private List<Platillo> allPlatillos;
+
+	private Platillo platillo;
+
+	private static final String TEST_USER_ID = "test-user-id-123";
 
 	@BeforeEach
 	public void setup() {
 		log.info("setting up platillo service");
+		platillo = new Platillo();
+		platillo.setId(1L);
+		platillo.setName("Test platillo");
+
+		final OidcIdToken idToken = OidcIdToken.withTokenValue("test-token")
+			.subject(TEST_USER_ID)
+			.claim("name", "Test User")
+			.issuedAt(Instant.now())
+			.expiresAt(Instant.now().plusSeconds(3600))
+			.build();
+		final DefaultOidcUser oidcUser = new DefaultOidcUser(Collections.emptyList(), idToken);
+		SecurityContextHolder.getContext().setAuthentication(new TestingAuthenticationToken(oidcUser, null));
+
+		when(platilloAuthorization.resolveForMutation(any(), any(), any(), eq(platilloService)))
+			.thenAnswer(invocation -> platilloService.findById(invocation.getArgument(0)));
+		doNothing().when(platilloAuthorization).verifyCanModify(any(), any(), any());
+		doNothing().when(platilloAuthorization).auditSystemPlatilloMutationIfNeeded(any(), any(), anyString());
 		// Read CSV file from classpath and convert to list of Platillo
 		try (Reader reader = new InputStreamReader(getClass().getResourceAsStream("/platillos.csv"))) {
 			log.debug("reading platillos from csv file");
@@ -70,6 +110,11 @@ public class PlatilloRestControllerTest {
 			allPlatillos = new ArrayList<>();
 		}
 		log.info("finished setting up platillo service");
+	}
+
+	@AfterEach
+	public void tearDown() {
+		SecurityContextHolder.clearContext();
 	}
 
 	@Test
@@ -246,7 +291,7 @@ public class PlatilloRestControllerTest {
 
 		log.debug("Ingrediente to add: {}", ingrediente);
 
-		// Mock the save method
+		when(platilloService.findById(1L)).thenReturn(platillo);
 		when(platilloService.addIngrediente(1L, 1L, "1", 100)).thenReturn(ingredienteResult);
 
 		// Act
@@ -256,6 +301,27 @@ public class PlatilloRestControllerTest {
 		assertThat(result).isNotNull();
 		assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
 		assertThat(result.getBody().getData()).isEqualTo(ingredienteResult);
+	}
+
+	@Test
+	public void testAddIngredienteForbiddenOnSystemCatalog() {
+		final Platillo systemPlatillo = new Platillo();
+		systemPlatillo.setId(97L);
+		systemPlatillo.setUserId(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID);
+		when(platilloService.findById(97L)).thenReturn(systemPlatillo);
+		when(platilloAuthorization.resolveForMutation(eq(97L), eq(TEST_USER_ID), any(), eq(platilloService)))
+			.thenReturn(null);
+
+		final IngredienteFormModel ingrediente = new IngredienteFormModel();
+		ingrediente.setAlimentoId(1L);
+		ingrediente.setCantidad("1");
+		ingrediente.setPeso(100);
+
+		org.assertj.core.api.Assertions
+			.assertThatThrownBy(() -> platilloRestController.addIngrediente(97L, ingrediente))
+			.isInstanceOf(ResponseStatusException.class)
+			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+			.isEqualTo(HttpStatus.FORBIDDEN);
 	}
 
 }

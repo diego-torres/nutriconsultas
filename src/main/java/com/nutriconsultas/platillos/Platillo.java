@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.nutriconsultas.model.AbstractNutrible;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -41,6 +42,9 @@ public class Platillo extends AbstractNutrible {
 	private String pdfUrl;
 
 	private String ingestasSugeridas;
+
+	@Column(length = 255)
+	private String userId;
 
 	@OneToMany(mappedBy = "platillo", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = Ingrediente.class,
 			fetch = FetchType.LAZY)

@@ -8,6 +8,8 @@ import java.util.List;
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +35,39 @@ public class PlatilloController extends AbstractAuthorizedController {
 	@Autowired
 	private AlimentoService alimentoService;
 
+	@Autowired
+	private PlatilloAuthorization platilloAuthorization;
+
+	private String getUserId(@AuthenticationPrincipal final OidcUser principal) {
+		if (principal == null) {
+			log.warn("OAuth2 principal is null, cannot get user ID");
+			return null;
+		}
+		return principal.getSubject();
+	}
+
+	private Platillo loadPlatilloForMutation(@NonNull final Long id,
+			@AuthenticationPrincipal final OidcUser principal) {
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		final Platillo platillo = platilloAuthorization.resolveForMutation(id, userId, principal, service);
+		if (platillo == null) {
+			throw new IllegalArgumentException("Platillo no encontrado o no tiene permiso para modificarlo");
+		}
+		platilloAuthorization.verifyCanModify(platillo, userId, principal);
+		return platillo;
+	}
+
+	private void addEditPermissions(final Platillo platillo, final Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
+		final String userId = getUserId(principal);
+		final boolean isOwner = platilloAuthorization.canModify(platillo, userId, principal);
+		model.addAttribute("isOwner", isOwner);
+		model.addAttribute("isSystemCatalog", PlatilloCatalogConstants.isSystemCatalog(platillo));
+	}
+
 	@GetMapping(path = "/admin/platillos/nuevo")
 	public String nuevo(final Model model) {
 		log.debug("Starting nuevo");
@@ -40,6 +75,8 @@ public class PlatilloController extends AbstractAuthorizedController {
 		final Platillo platillo = new Platillo();
 		platillo.setId(0L);
 		model.addAttribute("platillo", platillo);
+		model.addAttribute("isOwner", true);
+		model.addAttribute("isSystemCatalog", false);
 		log.debug("Finishing nuevo platillo con valores predeterminados: {}", platillo);
 		return "sbadmin/platillos/formulario";
 	}
@@ -53,11 +90,16 @@ public class PlatilloController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/platillos/{id}")
-	public String editar(@PathVariable @NonNull final Long id, final Model model) {
+	public String editar(@PathVariable @NonNull final Long id, final Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Starting editar with id {}", id);
 		model.addAttribute("activeMenu", "platillos");
 		final Platillo platillo = service.findById(id);
+		if (platillo == null) {
+			throw new IllegalArgumentException("Platillo no encontrado");
+		}
 		model.addAttribute("platillo", platillo);
+		addEditPermissions(platillo, model, principal);
 		List<String> ingestas = new ArrayList<>();
 		if (platillo.getIngestasSugeridas() != null && !platillo.getIngestasSugeridas().isEmpty()) {
 			ingestas = Arrays.asList(platillo.getIngestasSugeridas().split(","));
@@ -69,7 +111,8 @@ public class PlatilloController extends AbstractAuthorizedController {
 	}
 
 	@PostMapping("/admin/platillos/save")
-	public String save(@ModelAttribute @NonNull final Platillo platillo) {
+	public String save(@ModelAttribute @NonNull final Platillo platillo,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Starting save with platillo {}", platillo);
 
 		final Long platilloId = platillo.getId();
@@ -78,16 +121,17 @@ public class PlatilloController extends AbstractAuthorizedController {
 			log.error("Platillo ID is null, cannot save");
 			result = "redirect:/admin/platillos";
 		}
+		else if (platilloId == 0L) {
+			service.save(platillo);
+			log.debug("Finishing save with new platillo {}", platillo);
+			result = "redirect:/admin/platillos/" + platillo.getId();
+		}
 		else {
-			final Platillo dbPlatillo = service.findById(platilloId);
-			if (dbPlatillo != null) {
-				dbPlatillo.setName(platillo.getName());
-				dbPlatillo.setDescription(platillo.getDescription());
-				service.save(dbPlatillo);
-			}
-			else {
-				service.save(platillo);
-			}
+			final Platillo dbPlatillo = loadPlatilloForMutation(platilloId, principal);
+			dbPlatillo.setName(platillo.getName());
+			dbPlatillo.setDescription(platillo.getDescription());
+			service.save(dbPlatillo);
+			platilloAuthorization.auditSystemPlatilloMutationIfNeeded(principal, dbPlatillo, "platillos.save");
 			log.debug("Finishing save with platillo {}", platillo);
 			result = "redirect:/admin/platillos/" + platillo.getId();
 		}
@@ -96,7 +140,8 @@ public class PlatilloController extends AbstractAuthorizedController {
 
 	@PostMapping("/admin/platillos/{id}/picture")
 	public String uploadPicture(@PathVariable @NonNull final Long id,
-			@RequestParam("imgPlatillo") final MultipartFile file, final Model model) {
+			@RequestParam("imgPlatillo") final MultipartFile file, final Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Starting uploadPicture with id {}", id);
 		model.addAttribute("activeMenu", "platillos");
 
@@ -105,6 +150,7 @@ public class PlatilloController extends AbstractAuthorizedController {
 			log.error("Failed to upload picture because the file is empty");
 			final Platillo platillo = service.findById(id);
 			model.addAttribute("platillo", platillo);
+			addEditPermissions(platillo, model, principal);
 			model.addAttribute("errorMessage", "The file is empty");
 			if (platillo != null && platillo.getIngestasSugeridas() != null
 					&& !platillo.getIngestasSugeridas().isEmpty()) {
@@ -115,8 +161,8 @@ public class PlatilloController extends AbstractAuthorizedController {
 		}
 		else {
 			try {
+				loadPlatilloForMutation(id, principal);
 				final byte[] bytes = file.getBytes();
-				// Assuming you have a method in PlatilloService to handle picture saving
 				final String fileName = file.getOriginalFilename();
 				String fileExtension = "";
 				if (fileName != null) {
@@ -130,6 +176,8 @@ public class PlatilloController extends AbstractAuthorizedController {
 					fileExtension = "";
 				}
 				service.savePicture(id, bytes, fileExtension);
+				final Platillo platillo = service.findById(id);
+				platilloAuthorization.auditSystemPlatilloMutationIfNeeded(principal, platillo, "platillos.picture");
 				log.debug("Successfully uploaded picture for platillo with id {}", id);
 				result = "redirect:/admin/platillos/" + id;
 			}
@@ -137,6 +185,7 @@ public class PlatilloController extends AbstractAuthorizedController {
 				log.error("Failed to upload picture for platillo with id {}", id, e);
 				final Platillo platillo = service.findById(id);
 				model.addAttribute("platillo", platillo);
+				addEditPermissions(platillo, model, principal);
 				model.addAttribute("errorMessage", "Failed to upload picture");
 				if (platillo != null && platillo.getIngestasSugeridas() != null
 						&& !platillo.getIngestasSugeridas().isEmpty()) {
@@ -158,7 +207,7 @@ public class PlatilloController extends AbstractAuthorizedController {
 
 	@PostMapping("/admin/platillos/{id}/pdf")
 	public String uploadPdf(@PathVariable @NonNull final Long id, @RequestParam("pdfPlatillo") final MultipartFile file,
-			final Model model) {
+			final Model model, @AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Starting uploadPdf with id {}", id);
 		model.addAttribute("activeMenu", "platillos");
 
@@ -167,6 +216,7 @@ public class PlatilloController extends AbstractAuthorizedController {
 			log.error("Failed to upload pdf because the file is empty");
 			final Platillo platillo = service.findById(id);
 			model.addAttribute("platillo", platillo);
+			addEditPermissions(platillo, model, principal);
 			model.addAttribute("errorMessage", "The file is empty");
 			if (platillo != null && platillo.getIngestasSugeridas() != null
 					&& !platillo.getIngestasSugeridas().isEmpty()) {
@@ -177,8 +227,11 @@ public class PlatilloController extends AbstractAuthorizedController {
 		}
 		else {
 			try {
+				loadPlatilloForMutation(id, principal);
 				final byte[] bytes = file.getBytes();
 				service.savePdf(id, bytes);
+				final Platillo platillo = service.findById(id);
+				platilloAuthorization.auditSystemPlatilloMutationIfNeeded(principal, platillo, "platillos.pdf");
 				log.debug("Successfully uploaded pdf for platillo with id {}", id);
 				result = "redirect:/admin/platillos/" + id;
 			}
@@ -186,6 +239,7 @@ public class PlatilloController extends AbstractAuthorizedController {
 				log.error("Failed to upload pdf for platillo with id {}", id, e);
 				final Platillo platillo = service.findById(id);
 				model.addAttribute("platillo", platillo);
+				addEditPermissions(platillo, model, principal);
 				model.addAttribute("errorMessage", "Failed to upload pdf");
 				if (platillo != null && platillo.getIngestasSugeridas() != null
 						&& !platillo.getIngestasSugeridas().isEmpty()) {

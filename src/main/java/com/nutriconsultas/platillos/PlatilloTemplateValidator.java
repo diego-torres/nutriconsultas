@@ -43,6 +43,9 @@ public class PlatilloTemplateValidator extends BaseTemplateValidator {
 		// Mock list of ingestas
 		variables.put("ingestas", java.util.Collections.emptyList());
 
+		variables.put("isOwner", true);
+		variables.put("isSystemCatalog", false);
+
 		return variables;
 	}
 

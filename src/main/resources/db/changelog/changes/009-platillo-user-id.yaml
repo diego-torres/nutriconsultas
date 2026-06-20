@@ -1,0 +1,25 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-platillo-user-id-column
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: platillo
+              columnName: user_id
+      changes:
+        - addColumn:
+            tableName: platillo
+            columns:
+              - column:
+                  name: user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+  - changeSet:
+      id: 009-platillo-user-id-backfill-system-catalog
+      author: nutriconsultas
+      changes:
+        - sql:
+            sql: UPDATE platillo SET user_id = 'system:catalog-platillos' WHERE user_id IS NULL

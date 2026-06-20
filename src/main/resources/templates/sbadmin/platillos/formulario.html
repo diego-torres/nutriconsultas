@@ -379,6 +379,12 @@
               </h1>
             </div>
 
+            <div th:if="${platillo != null && platillo.id != null && platillo.id != 0 && isSystemCatalog != null && isSystemCatalog && isOwner != null && !isOwner}"
+                 class="alert alert-info mb-4" role="alert">
+              <i class="fas fa-info-circle"></i>
+              <strong>Platillo del catálogo del sistema:</strong> Puedes ver este platillo, pero no puedes modificarlo.
+            </div>
+
             <!-- Content Row -->
             <div class="row">
               <div class="col-lg-4">
@@ -401,6 +407,7 @@
                           class="btn btn-primary"
                           data-toggle="modal"
                           data-target="#addImageModal"
+                          th:disabled="${isOwner != null && !isOwner}"
                         >
                           <i class="fas fa-upload"></i>
                           Cambiar Imagen
@@ -415,12 +422,13 @@
                       <span
                         th:each="ingesta : ${ingestas}"
                         th:text="${ingesta}"
-                        class="label label-info label-ingesta"></span>
+                        th:class="${isOwner != null && !isOwner} ? 'label label-info' : 'label label-info label-ingesta'"></span>
                       <a
                         href="#"
                         class="btn btn-primary btn-sm ml-2"
                         data-toggle="modal"
-                        data-target="#addIngestaModal">
+                        data-target="#addIngestaModal"
+                        th:disabled="${isOwner != null && !isOwner}">
                         <i class="fas fa-plus"></i> Ingesta Sugerida
                       </a>
                     </div>
@@ -471,6 +479,8 @@
                             class="form-control"
                             autocomplete="nombre-platillo"
                             required
+                            th:readonly="${isOwner != null && !isOwner}"
+                            th:disabled="${isOwner != null && !isOwner}"
                           />
                         </div>
                       </div>
@@ -485,6 +495,8 @@
                             type="text"
                             th:field="*{description}"
                             class="form-control"
+                            th:readonly="${isOwner != null && !isOwner}"
+                            th:disabled="${isOwner != null && !isOwner}"
                           />
                         </div>
                       </div>
@@ -497,6 +509,7 @@
                             type="submit"
                             class="btn btn-primary"
                             th:text="${platillo.id == null || platillo.id == 0 ? 'Guardar' : 'Actualizar'}"
+                            th:disabled="${isOwner != null && !isOwner && platillo != null && platillo.id != null && platillo.id != 0}"
                           >
                             Guardar
                           </button>
@@ -557,6 +570,7 @@
                                 class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
                                 data-toggle="modal"
                                 data-target="#addIngredientModal"
+                                th:disabled="${isOwner != null && !isOwner}"
                               >
                                 <i class="fas fa-plus fa-sm text-white-50"></i>
                                 Agregar Ingrediente
@@ -593,7 +607,8 @@
                                     <span><i class="fas fa-book fa-lg"></i>&nbsp;&nbsp;&nbsp;</span>
                                     <p th:if="${platillo.pdfUrl == null || platillo.pdfUrl == '' }" class="mb-0">No hay archivo PDF con instrucciones</p>
                                     <a target="_blank" th:unless="${platillo.pdfUrl == null || platillo.pdfUrl == '' }" class="mb-0" th:href="${platillo.pdfUrl}"> Instrucciones en PDF</a>
-                                    &nbsp;&nbsp;&nbsp;<a href="#" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addPdfModal">
+                                    &nbsp;&nbsp;&nbsp;<a href="#" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addPdfModal"
+                                      th:style="${isOwner != null && !isOwner} ? 'pointer-events: none; opacity: 0.65;' : ''">
                                       <i class="fas fa-upload"></i>
                                       Subir
                                     </a>
@@ -603,7 +618,8 @@
                                     <!-- display proteina formatted to 2 decimal places -->
                                     <p th:if="${platillo.videoUrl == null || platillo.videoUrl == '' }" class="mb-0">No hay video con instrucciones</p>
                                     <a target="_blank" th:unless="${platillo.videoUrl == null || platillo.videoUrl == '' }" class="mb-0" th:href="${platillo.videoUrl}"> Instrucciones en video</a>
-                                    &nbsp;&nbsp;&nbsp;<a href="#" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addVideoModal">
+                                    &nbsp;&nbsp;&nbsp;<a href="#" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addVideoModal"
+                                      th:style="${isOwner != null && !isOwner} ? 'pointer-events: none; opacity: 0.65;' : ''">
                                       <i class="fas fa-upload"></i>
                                       Subir
                                     </a>
