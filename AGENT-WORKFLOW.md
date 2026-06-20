@@ -42,7 +42,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (subscription):** [#207 — Stripe payment provider](https://github.com/diego-torres/nutriconsultas/issues/207). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#211~~ merged PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230).
 
-**Current next issue (nutritionist web):** [#257 — Lock system catalog platillos](https://github.com/diego-torres/nutriconsultas/issues/257). ~~#235~~ done (PR [#267](https://github.com/diego-torres/nutriconsultas/pull/267)). ~~#234~~ done (PR [#265](https://github.com/diego-torres/nutriconsultas/pull/265)). ~~#233~~ done (PR [#264](https://github.com/diego-torres/nutriconsultas/pull/264)). ~~#232~~ done (PR [#263](https://github.com/diego-torres/nutriconsultas/pull/263)). ~~#223~~ done (PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262)). ~~#222~~ done (PR [#261](https://github.com/diego-torres/nutriconsultas/pull/261)). ~~#221~~ done (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254)). ~~#250~~ done (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)). See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
+**Current next issue (nutritionist web):** [#258 — Nutritionist-owned platillos](https://github.com/diego-torres/nutriconsultas/issues/258). ~~#257~~ done (PR [#268](https://github.com/diego-torres/nutriconsultas/pull/268)). ~~#235~~ done (PR [#267](https://github.com/diego-torres/nutriconsultas/pull/267)). ~~#234~~ done (PR [#265](https://github.com/diego-torres/nutriconsultas/pull/265)). ~~#233~~ done (PR [#264](https://github.com/diego-torres/nutriconsultas/pull/264)). ~~#232~~ done (PR [#263](https://github.com/diego-torres/nutriconsultas/pull/263)). ~~#223~~ done (PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262)). ~~#222~~ done (PR [#261](https://github.com/diego-torres/nutriconsultas/pull/261)). ~~#221~~ done (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254)). ~~#250~~ done (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)). See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 
 ---
 
@@ -432,7 +432,7 @@ gh pr create ...
 
 **Subscription track (parallel):** see [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#180–#185~~, ~~#187~~ (PR #218), ~~#190~~ (PR #216), ~~#210~~ (PR #224), ~~#211~~ (PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230)) on `main`. **NEXT:** #207 (+ #208 Stripe ops, email #209, retention #220).
 
-**Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) — MPX epic ~~#221–#223~~ done (PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262)); diet catalog ~~#232–#235~~ done (PR [#267](https://github.com/diego-torres/nutriconsultas/pull/267)); **NEXT:** #257 lock system platillos.
+**Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) — MPX epic ~~#221–#223~~ done (PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262)); diet catalog ~~#232–#235~~ done (PR [#267](https://github.com/diego-torres/nutriconsultas/pull/267)); ~~#257~~ done (PR [#268](https://github.com/diego-torres/nutriconsultas/pull/268)); **NEXT:** #258 nutritionist-owned platillos.
 
 **Production (2026-06-18):** ~~#226~~ invitation base URL fix (PR #227) — `APP_BASE_URL` / host remediation on EC2.
 

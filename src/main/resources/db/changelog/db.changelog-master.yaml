@@ -23,3 +23,6 @@ databaseChangeLog:
   - include:
       file: changes/008-platillo-ingesta-source-platillo-id.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/009-platillo-user-id.yaml
+      relativeToChangelogFile: true

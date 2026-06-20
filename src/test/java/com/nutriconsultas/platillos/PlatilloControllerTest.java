@@ -3,8 +3,10 @@ package com.nutriconsultas.platillos;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
@@ -49,6 +51,10 @@ public class PlatilloControllerTest {
 
 	private Alimento alimento;
 
+	private static final String TEST_USER_ID = "test-user-id-123";
+
+	private static final String PLATFORM_ADMIN_USER_ID = "auth0|platform-admin-test";
+
 	@BeforeEach
 	public void setup() {
 		log.info("setting up PlatilloController test");
@@ -64,6 +70,13 @@ public class PlatilloControllerTest {
 		alimento.setNombreAlimento("Test Alimento");
 
 		log.info("finished setting up PlatilloController test");
+	}
+
+	private SecurityMockMvcRequestPostProcessors.OidcLoginRequestPostProcessor oidcLogin(final String userId) {
+		return SecurityMockMvcRequestPostProcessors.oidcLogin()
+			.idToken(token -> token.subject(userId)
+				.claim("name", "Test User")
+				.claim("picture", "https://example.com/picture.jpg"));
 	}
 
 	@Test
@@ -96,7 +109,7 @@ public class PlatilloControllerTest {
 		when(platilloService.findById(1L)).thenReturn(platillo);
 		when(alimentoService.findAll()).thenReturn(Arrays.asList(alimento));
 
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/platillos/1"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/platillos/1").with(oidcLogin(TEST_USER_ID)))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/platillos/formulario"))
 			.andExpect(MockMvcResultMatchers.model().attribute("activeMenu", "platillos"))
@@ -114,7 +127,7 @@ public class PlatilloControllerTest {
 		when(platilloService.findById(1L)).thenReturn(platillo);
 		when(alimentoService.findAll()).thenReturn(new ArrayList<>());
 
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/platillos/1"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/platillos/1").with(oidcLogin(TEST_USER_ID)))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/platillos/formulario"))
 			.andExpect(MockMvcResultMatchers.model().attribute("activeMenu", "platillos"));
@@ -139,6 +152,7 @@ public class PlatilloControllerTest {
 				.param("id", "0")
 				.param("name", "New Platillo")
 				.param("description", "New Description")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/platillos/0"));
@@ -160,6 +174,7 @@ public class PlatilloControllerTest {
 				.param("id", "1")
 				.param("name", "Updated Platillo")
 				.param("description", "Updated Description")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/platillos/1"));
@@ -177,6 +192,7 @@ public class PlatilloControllerTest {
 			.perform(MockMvcRequestBuilders.post("/admin/platillos/save")
 				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.param("name", "Test Platillo")
+				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/platillos"));
@@ -192,6 +208,7 @@ public class PlatilloControllerTest {
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/admin/platillos/1/picture")
 			.file("imgPlatillo", imageBytes)
+			.with(oidcLogin(TEST_USER_ID))
 			.with(SecurityMockMvcRequestPostProcessors.csrf())
 			.with(request -> {
 				request.setMethod("POST");
@@ -213,6 +230,7 @@ public class PlatilloControllerTest {
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/admin/platillos/1/picture")
 			.file("imgPlatillo", new byte[0])
+			.with(oidcLogin(TEST_USER_ID))
 			.with(SecurityMockMvcRequestPostProcessors.csrf())
 			.with(request -> {
 				request.setMethod("POST");
@@ -249,6 +267,7 @@ public class PlatilloControllerTest {
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/admin/platillos/1/pdf")
 			.file("pdfPlatillo", pdfBytes)
+			.with(oidcLogin(TEST_USER_ID))
 			.with(SecurityMockMvcRequestPostProcessors.csrf())
 			.with(request -> {
 				request.setMethod("POST");
@@ -270,6 +289,7 @@ public class PlatilloControllerTest {
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/admin/platillos/1/pdf")
 			.file("pdfPlatillo", new byte[0])
+			.with(oidcLogin(TEST_USER_ID))
 			.with(SecurityMockMvcRequestPostProcessors.csrf())
 			.with(request -> {
 				request.setMethod("POST");
@@ -295,6 +315,95 @@ public class PlatilloControllerTest {
 
 		verify(platilloService).getPicture(1L, "instrucciones.pdf");
 		log.info("Finishing testGetPdf");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testEditarSystemCatalogShowsReadOnlyForNutritionist() throws Exception {
+		final Platillo systemPlatillo = new Platillo();
+		systemPlatillo.setId(97L);
+		systemPlatillo.setName("Frijoles con tortilla");
+		systemPlatillo.setUserId(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID);
+		systemPlatillo.setIngestasSugeridas("Cena");
+
+		when(platilloService.findById(97L)).thenReturn(systemPlatillo);
+		when(alimentoService.findAll()).thenReturn(Arrays.asList(alimento));
+
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/platillos/97").with(oidcLogin(TEST_USER_ID)))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.model().attribute("isOwner", false))
+			.andExpect(MockMvcResultMatchers.model().attribute("isSystemCatalog", true));
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testEditarSystemCatalogShowsEditableForPlatformAdmin() throws Exception {
+		final Platillo systemPlatillo = new Platillo();
+		systemPlatillo.setId(97L);
+		systemPlatillo.setName("Frijoles con tortilla");
+		systemPlatillo.setUserId(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID);
+		systemPlatillo.setIngestasSugeridas("Cena");
+
+		when(platilloService.findById(97L)).thenReturn(systemPlatillo);
+		when(alimentoService.findAll()).thenReturn(Arrays.asList(alimento));
+
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/platillos/97").with(oidcLogin(PLATFORM_ADMIN_USER_ID)))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.model().attribute("isOwner", true))
+			.andExpect(MockMvcResultMatchers.model().attribute("isSystemCatalog", true));
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testSaveRejectsNutritionistOnSystemCatalog() throws Exception {
+		final Platillo systemPlatillo = new Platillo();
+		systemPlatillo.setId(97L);
+		systemPlatillo.setName("Frijoles con tortilla");
+		systemPlatillo.setUserId(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID);
+
+		when(platilloService.findById(97L)).thenReturn(systemPlatillo);
+
+		try {
+			mockMvc
+				.perform(MockMvcRequestBuilders.post("/admin/platillos/save")
+					.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+					.param("id", "97")
+					.param("name", "Intento no autorizado")
+					.param("description", "Cambio bloqueado")
+					.with(oidcLogin(TEST_USER_ID))
+					.with(SecurityMockMvcRequestPostProcessors.csrf()))
+				.andExpect(status().is5xxServerError());
+		}
+		catch (Exception e) {
+			assertThat(e).hasRootCauseInstanceOf(IllegalArgumentException.class);
+		}
+
+		verify(platilloService, never()).save(any(Platillo.class));
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testSaveAllowsPlatformAdminOnSystemCatalog() throws Exception {
+		final Platillo systemPlatillo = new Platillo();
+		systemPlatillo.setId(97L);
+		systemPlatillo.setName("Frijoles con tortilla");
+		systemPlatillo.setUserId(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID);
+
+		when(platilloService.findById(97L)).thenReturn(systemPlatillo);
+		when(platilloService.save(any(Platillo.class))).thenReturn(systemPlatillo);
+
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/platillos/save")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("id", "97")
+				.param("name", "Frijoles con tortilla actualizado")
+				.param("description", "Actualizado por admin")
+				.with(oidcLogin(PLATFORM_ADMIN_USER_ID))
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/platillos/97"));
+
+		verify(platilloService).save(any(Platillo.class));
 	}
 
 }
