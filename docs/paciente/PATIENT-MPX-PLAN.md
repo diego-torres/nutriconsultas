@@ -1,7 +1,7 @@
 # Patient registration export/import (`.mpx`)
 
 **Product:** Minutriporcion / nutriconsultas — nutritionist web app  
-**Status:** Planning (2026-06-18)  
+**Status:** Done on `main` (2026-06-20) — MPX epic ~~#221–#223~~ (PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262))  
 **Track:** `[Nutritionist Web]` — see [`ISSUE-NUTRITIONIST-WEB.md`](../../ISSUE-NUTRITIONIST-WEB.md)  
 **Issues:** [#221](https://github.com/diego-torres/nutriconsultas/issues/221) export · [#222](https://github.com/diego-torres/nutriconsultas/issues/222) import · [#223](https://github.com/diego-torres/nutriconsultas/issues/223) UI
 
