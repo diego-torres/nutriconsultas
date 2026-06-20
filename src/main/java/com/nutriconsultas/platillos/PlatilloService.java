@@ -21,7 +21,13 @@ public interface PlatilloService {
 
 	Platillo findById(@NonNull Long id);
 
+	Platillo findByIdAndUserId(@NonNull Long id, @NonNull String userId);
+
+	List<Platillo> getPlatillosForCatalogFilter(PlatilloCatalogFilter filter, String userId);
+
 	Platillo save(@NonNull Platillo platillo);
+
+	void deletePlatillo(@NonNull Long id);
 
 	void deleteIngrediente(@NonNull Long id, @NonNull Long ingredienteId);
 

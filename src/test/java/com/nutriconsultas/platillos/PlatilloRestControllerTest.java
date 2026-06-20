@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,10 +24,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.TestingAuthenticationToken;
@@ -69,6 +64,9 @@ public class PlatilloRestControllerTest {
 
 	@Mock
 	private PlatilloAuthorization platilloAuthorization;
+
+	@Mock
+	private PlatilloDeletionService platilloDeletionService;
 
 	private List<Platillo> allPlatillos;
 
@@ -120,34 +118,33 @@ public class PlatilloRestControllerTest {
 	@Test
 	public void testAdd() {
 		log.info("Starting testAdd");
-		// Arrange
-		Platillo platillo = new Platillo();
-		platillo.setName("Test platillo");
-		log.debug("Platillo to add: {}", platillo);
+		final Platillo newPlatillo = new Platillo();
+		newPlatillo.setName("Test platillo");
+		log.debug("Platillo to add: {}", newPlatillo);
 
-		// Mock the save method
-		when(platilloService.save(any(Platillo.class))).thenReturn(platillo);
+		when(platilloService.save(any(Platillo.class))).thenAnswer(invocation -> {
+			final Platillo saved = invocation.getArgument(0);
+			saved.setId(42L);
+			return saved;
+		});
 
-		// Act
-		Platillo result = platilloRestController.add(platillo);
+		final OidcUser principal = (OidcUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		final Platillo result = platilloRestController.add(newPlatillo, principal);
 
-		// Assert
 		assertThat(result).isNotNull();
-		assertThat(result.getName()).isEqualTo(platillo.getName());
+		assertThat(result.getName()).isEqualTo(newPlatillo.getName());
+		assertThat(result.getUserId()).isEqualTo(TEST_USER_ID);
 	}
 
 	@Test
 	public void testArray() {
 		log.info("starting testArray");
-		// Arrange
-		final Pageable pageable = PageRequest.of(0, 10);
-		final Page<Platillo> springPage = new PageImpl<>(allPlatillos.subList(0, Math.min(10, allPlatillos.size())),
-				pageable, allPlatillos.size());
-		when(platilloService.findAll(any(Pageable.class))).thenReturn(springPage);
-		when(platilloService.count()).thenReturn((long) allPlatillos.size());
+		when(platilloService.getPlatillosForCatalogFilter(PlatilloCatalogFilter.TODAS, TEST_USER_ID))
+			.thenReturn(allPlatillos);
 
 		PagingRequest pagingRequest = new PagingRequest();
 		List<Column> columnList = new ArrayList<>();
+		columnList.add(new Column("acciones", "", true, true, new Search("", "false")));
 		columnList.add(new Column("platillo", "", true, true, new Search("", "false")));
 		columnList.add(new Column("ingestas", "", true, true, new Search("", "false")));
 		columnList.add(new Column("kcal", "", true, true, new Search("", "false")));
@@ -159,43 +156,38 @@ public class PlatilloRestControllerTest {
 		pagingRequest.setStart(0);
 		pagingRequest.setLength(10);
 		pagingRequest.setDraw(1);
-		pagingRequest.setOrder(Arrays.asList(new Order(0, Direction.asc)));
+		pagingRequest.setOrder(Arrays.asList(new Order(1, Direction.asc)));
 		pagingRequest.setSearch(new Search("", "false"));
+		pagingRequest.setOwnershipFilter("todas");
 		log.debug("arrange paging request {}.", pagingRequest);
 
-		// Act
 		PageArray result = platilloRestController.getPageArray(pagingRequest);
 
-		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.getRecordsTotal()).isEqualTo(allPlatillos.size());
 		assertThat(result.getRecordsFiltered()).isEqualTo(allPlatillos.size());
 		assertThat(result.getDraw()).isEqualTo(1);
 		assertThat(result.getData()).isNotEmpty();
 		assertThat(result.getData().size()).isEqualTo(Math.min(10, allPlatillos.size()));
-		verify(platilloService).findAll(any(Pageable.class));
-		verify(platilloService, times(2)).count();
+		verify(platilloService).getPlatillosForCatalogFilter(PlatilloCatalogFilter.TODAS, TEST_USER_ID);
 		log.info("finished testArray with records {}", result.getRecordsTotal());
 	}
 
 	@Test
 	public void testArrayWithSearch() {
 		log.info("starting testArrayWithSearch");
-		// Arrange - Find platillos matching search term
 		final String searchTerm = "test";
 		final List<Platillo> filteredPlatillos = allPlatillos.stream()
 			.filter(p -> (p.getName() != null && p.getName().toLowerCase().contains(searchTerm))
 					|| (p.getIngestasSugeridas() != null
 							&& p.getIngestasSugeridas().toLowerCase().contains(searchTerm)))
 			.toList();
-		final Pageable pageable = PageRequest.of(0, 10);
-		final Page<Platillo> springPage = new PageImpl<>(filteredPlatillos, pageable, filteredPlatillos.size());
-		when(platilloService.findBySearchTerm(eq(searchTerm), any(Pageable.class))).thenReturn(springPage);
-		when(platilloService.countBySearchTerm(eq(searchTerm))).thenReturn((long) filteredPlatillos.size());
-		when(platilloService.count()).thenReturn((long) allPlatillos.size());
+		when(platilloService.getPlatillosForCatalogFilter(PlatilloCatalogFilter.TODAS, TEST_USER_ID))
+			.thenReturn(allPlatillos);
 
 		PagingRequest pagingRequest = new PagingRequest();
 		List<Column> columnList = new ArrayList<>();
+		columnList.add(new Column("acciones", "", true, true, new Search("", "false")));
 		columnList.add(new Column("platillo", "", true, true, new Search("", "false")));
 		columnList.add(new Column("ingestas", "", true, true, new Search("", "false")));
 		columnList.add(new Column("kcal", "", true, true, new Search("", "false")));
@@ -206,36 +198,30 @@ public class PlatilloRestControllerTest {
 		pagingRequest.setStart(0);
 		pagingRequest.setLength(10);
 		pagingRequest.setDraw(1);
-		pagingRequest.setOrder(Arrays.asList(new Order(0, Direction.asc)));
+		pagingRequest.setOrder(Arrays.asList(new Order(1, Direction.asc)));
 		pagingRequest.setSearch(new Search(searchTerm, "false"));
+		pagingRequest.setOwnershipFilter("todas");
 		log.debug("arrange paging request {}.", pagingRequest);
 
-		// Act
 		PageArray result = platilloRestController.getPageArray(pagingRequest);
 
-		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.getRecordsTotal()).isEqualTo(allPlatillos.size());
 		assertThat(result.getRecordsFiltered()).isEqualTo(filteredPlatillos.size());
 		assertThat(result.getDraw()).isEqualTo(1);
-		verify(platilloService).findBySearchTerm(eq(searchTerm), any(Pageable.class));
-		verify(platilloService).countBySearchTerm(eq(searchTerm));
-		verify(platilloService).count();
+		verify(platilloService).getPlatillosForCatalogFilter(PlatilloCatalogFilter.TODAS, TEST_USER_ID);
 		log.info("finished testArrayWithSearch with records {}", result.getRecordsTotal());
 	}
 
 	@Test
 	public void testArrayNoOrder() {
 		log.info("starting testArrayNoOrder");
-		// Arrange
-		final Pageable pageable = PageRequest.of(0, 10);
-		final Page<Platillo> springPage = new PageImpl<>(allPlatillos.subList(0, Math.min(10, allPlatillos.size())),
-				pageable, allPlatillos.size());
-		when(platilloService.findAll(any(Pageable.class))).thenReturn(springPage);
-		when(platilloService.count()).thenReturn((long) allPlatillos.size());
+		when(platilloService.getPlatillosForCatalogFilter(PlatilloCatalogFilter.TODAS, TEST_USER_ID))
+			.thenReturn(allPlatillos);
 
 		PagingRequest pagingRequest = new PagingRequest();
 		List<Column> columnList = new ArrayList<>();
+		columnList.add(new Column("acciones", "", true, true, new Search("", "false")));
 		columnList.add(new Column("platillo", "", true, true, new Search("", "false")));
 		columnList.add(new Column("ingestas", "", true, true, new Search("", "false")));
 		columnList.add(new Column("kcal", "", true, true, new Search("", "false")));
@@ -247,11 +233,10 @@ public class PlatilloRestControllerTest {
 		pagingRequest.setLength(10);
 		pagingRequest.setDraw(1);
 		pagingRequest.setSearch(new Search("", "false"));
+		pagingRequest.setOwnershipFilter("todas");
 
-		// Act
 		PageArray result = platilloRestController.getPageArray(pagingRequest);
 
-		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.getRecordsTotal()).isEqualTo(allPlatillos.size());
 		assertThat(result.getRecordsFiltered()).isEqualTo(allPlatillos.size());

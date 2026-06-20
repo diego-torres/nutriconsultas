@@ -1,5 +1,7 @@
 package com.nutriconsultas.platillos;
 
+import java.util.Objects;
+
 import org.springframework.lang.NonNull;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Component;
@@ -10,8 +12,8 @@ import com.nutriconsultas.platform.PlatformAdminService;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Platillo mutation access: non-system platillos remain editable until nutritionist
- * ownership (#258); platform admins may edit system catalog rows
+ * Platillo mutation access: nutritionists may edit their own platillos; platform admins
+ * may also edit system catalog rows
  * ({@link PlatilloCatalogConstants#SYSTEM_CATALOG_USER_ID}).
  */
 @Component
@@ -29,11 +31,11 @@ public class PlatilloAuthorization {
 	}
 
 	public boolean canModify(final Platillo platillo, final String userId, final OidcUser principal) {
-		if (platillo == null) {
+		if (platillo == null || userId == null) {
 			return false;
 		}
-		return !PlatilloCatalogConstants.isSystemCatalog(platillo)
-				|| platformAdminService.isPlatformAdmin(principal);
+		return Objects.equals(userId, platillo.getUserId()) || (platformAdminService.isPlatformAdmin(principal)
+				&& PlatilloCatalogConstants.isSystemCatalog(platillo));
 	}
 
 	public void verifyCanModify(final Platillo platillo, final String userId, final OidcUser principal) {
@@ -42,19 +44,24 @@ public class PlatilloAuthorization {
 		}
 		if (!canModify(platillo, userId, principal)) {
 			if (log.isWarnEnabled()) {
-				log.warn("User {} attempted to modify system platillo {}", userId, platillo.getId());
+				log.warn("User {} attempted to modify platillo {} owned by {}", userId, platillo.getId(),
+						platillo.getUserId());
 			}
 			throw new IllegalArgumentException("No tiene permiso para modificar este platillo");
 		}
 	}
 
-	public Platillo resolveForMutation(@NonNull final Long id, final String userId, final OidcUser principal,
+	public Platillo resolveForMutation(@NonNull final Long id, @NonNull final String userId, final OidcUser principal,
 			final PlatilloService platilloService) {
-		final Platillo platillo = platilloService.findById(id);
-		if (platillo == null) {
+		final Platillo owned = platilloService.findByIdAndUserId(id, userId);
+		if (owned != null) {
+			return owned;
+		}
+		if (!platformAdminService.isPlatformAdmin(principal)) {
 			return null;
 		}
-		if (canModify(platillo, userId, principal)) {
+		final Platillo platillo = platilloService.findById(id);
+		if (platillo != null && PlatilloCatalogConstants.isSystemCatalog(platillo)) {
 			return platillo;
 		}
 		return null;

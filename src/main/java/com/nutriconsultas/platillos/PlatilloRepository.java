@@ -1,5 +1,6 @@
 package com.nutriconsultas.platillos;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +18,12 @@ import jakarta.transaction.Transactional;
 public interface PlatilloRepository extends JpaRepository<Platillo, Long> {
 
 	Optional<Platillo> findFirstByNameIgnoreCaseOrderByIdAsc(String name);
+
+	Optional<Platillo> findByIdAndUserId(Long id, String userId);
+
+	List<Platillo> findByUserId(String userId);
+
+	List<Platillo> findByUserIdIn(Collection<String> userIds);
 
 	@Modifying
 	@Transactional
