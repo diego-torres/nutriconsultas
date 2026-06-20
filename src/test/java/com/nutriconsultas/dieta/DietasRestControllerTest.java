@@ -2,6 +2,7 @@ package com.nutriconsultas.dieta;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -286,7 +287,7 @@ public class DietasRestControllerTest {
 
 		// Arrange
 		List<Dieta> dietas = Arrays.asList(dietaVacia);
-		when(dietaService.getDietas()).thenReturn(dietas);
+		when(dietaService.getDietasForCatalogFilter(eq(DietaCatalogFilter.TODAS), eq(null))).thenReturn(dietas);
 
 		PagingRequest pagingRequest = new PagingRequest();
 		pagingRequest.setStart(0);
@@ -324,7 +325,7 @@ public class DietasRestControllerTest {
 
 		// Arrange
 		List<Dieta> dietas = Arrays.asList(dietaConPlatillos);
-		when(dietaService.getDietas()).thenReturn(dietas);
+		when(dietaService.getDietasForCatalogFilter(eq(DietaCatalogFilter.TODAS), eq(null))).thenReturn(dietas);
 
 		PagingRequest pagingRequest = new PagingRequest();
 		pagingRequest.setStart(0);
@@ -1479,7 +1480,8 @@ public class DietasRestControllerTest {
 	@Test
 	public void testGetPageArrayIncludesEditButtonForOwnedDiet() {
 		dietaVacia.setUserId(TEST_USER_ID);
-		when(dietaService.getDietas()).thenReturn(Arrays.asList(dietaVacia));
+		when(dietaService.getDietasForCatalogFilter(eq(DietaCatalogFilter.TODAS), eq(TEST_USER_ID)))
+			.thenReturn(Arrays.asList(dietaVacia));
 
 		final OidcUser principal = createMockOidcUser(TEST_USER_ID);
 		final Authentication authentication = org.mockito.Mockito.mock(Authentication.class);
@@ -1502,6 +1504,79 @@ public class DietasRestControllerTest {
 			final List<String> firstRow = (List<String>) result.getData().get(0);
 			assertThat(firstRow.get(0)).contains("fa-edit");
 			assertThat(firstRow.get(0)).contains("href='/admin/dietas/1'");
+		}
+		finally {
+			SecurityContextHolder.clearContext();
+		}
+	}
+
+	@Test
+	public void testGetPageArraySistemaFilterReturnsOnlySystemDietas() {
+		final Dieta systemDieta = new Dieta();
+		systemDieta.setId(8L);
+		systemDieta.setNombre("Plantilla sistema");
+		systemDieta.setUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+		systemDieta.setIngestas(new ArrayList<>());
+
+		when(dietaService.getDietasForCatalogFilter(eq(DietaCatalogFilter.SISTEMA), eq(TEST_USER_ID)))
+			.thenReturn(List.of(systemDieta));
+
+		final OidcUser principal = createMockOidcUser(TEST_USER_ID);
+		final Authentication authentication = org.mockito.Mockito.mock(Authentication.class);
+		org.mockito.Mockito.when(authentication.getPrincipal()).thenReturn(principal);
+		final SecurityContext securityContext = org.mockito.Mockito.mock(SecurityContext.class);
+		org.mockito.Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
+		SecurityContextHolder.setContext(securityContext);
+
+		try {
+			final PagingRequest pagingRequest = new PagingRequest();
+			pagingRequest.setStart(0);
+			pagingRequest.setLength(10);
+			pagingRequest.setDraw(1);
+			pagingRequest.setOwnershipFilter("sistema");
+			pagingRequest.setOrder(Arrays.asList(new Order(1, Direction.asc)));
+			pagingRequest.setSearch(new Search("", "false"));
+
+			final PageArray result = dietasRestController.getPageArray(pagingRequest);
+
+			assertThat(result.getRecordsTotal()).isEqualTo(1);
+			assertThat(result.getData()).hasSize(1);
+			final List<String> firstRow = (List<String>) result.getData().get(0);
+			assertThat(firstRow.get(1)).contains("Plantilla sistema");
+			verify(dietaService).getDietasForCatalogFilter(DietaCatalogFilter.SISTEMA, TEST_USER_ID);
+		}
+		finally {
+			SecurityContextHolder.clearContext();
+		}
+	}
+
+	@Test
+	public void testGetPageArrayPropiasFilterReturnsOnlyOwnedDietas() {
+		dietaVacia.setUserId(TEST_USER_ID);
+		when(dietaService.getDietasForCatalogFilter(eq(DietaCatalogFilter.PROPIAS), eq(TEST_USER_ID)))
+			.thenReturn(List.of(dietaVacia));
+
+		final OidcUser principal = createMockOidcUser(TEST_USER_ID);
+		final Authentication authentication = org.mockito.Mockito.mock(Authentication.class);
+		org.mockito.Mockito.when(authentication.getPrincipal()).thenReturn(principal);
+		final SecurityContext securityContext = org.mockito.Mockito.mock(SecurityContext.class);
+		org.mockito.Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
+		SecurityContextHolder.setContext(securityContext);
+
+		try {
+			final PagingRequest pagingRequest = new PagingRequest();
+			pagingRequest.setStart(0);
+			pagingRequest.setLength(10);
+			pagingRequest.setDraw(1);
+			pagingRequest.setOwnershipFilter("propias");
+			pagingRequest.setOrder(Arrays.asList(new Order(1, Direction.asc)));
+			pagingRequest.setSearch(new Search("", "false"));
+
+			final PageArray result = dietasRestController.getPageArray(pagingRequest);
+
+			assertThat(result.getRecordsTotal()).isEqualTo(1);
+			assertThat(result.getData()).hasSize(1);
+			verify(dietaService).getDietasForCatalogFilter(DietaCatalogFilter.PROPIAS, TEST_USER_ID);
 		}
 		finally {
 			SecurityContextHolder.clearContext();

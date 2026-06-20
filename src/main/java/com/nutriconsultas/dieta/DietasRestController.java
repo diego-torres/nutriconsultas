@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.nutriconsultas.controller.AbstractGridController;
 import com.nutriconsultas.dataTables.paging.Column;
 import com.nutriconsultas.dataTables.paging.Direction;
+import com.nutriconsultas.dataTables.paging.Page;
 import com.nutriconsultas.dataTables.paging.PageArray;
 import com.nutriconsultas.dataTables.paging.PagingRequest;
 import com.nutriconsultas.model.ApiResponse;
@@ -316,7 +317,7 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		log.info("starting getPageArray with pagingRequest: {}", pagingRequest);
 		final OidcUser principal = resolveGridPrincipal();
 		pagingRequest.setColumns(getColumns());
-		final com.nutriconsultas.dataTables.paging.Page<Dieta> page = getRows(pagingRequest);
+		final Page<Dieta> page = getRows(pagingRequest, principal);
 		log.debug("page with records: {}", page.getRecordsTotal());
 		final PageArray pageArray = new PageArray();
 		pageArray
@@ -326,6 +327,15 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		pageArray.setRecordsTotal(page.getRecordsTotal());
 		log.info("returning data at getPageArray: {}", pageArray.getRecordsTotal());
 		return pageArray;
+	}
+
+	protected Page<Dieta> getRows(final PagingRequest pagingRequest, final OidcUser principal) {
+		log.debug("starting getRows with pagingRequest: {}", pagingRequest);
+		final DietaCatalogFilter catalogFilter = DietaCatalogFilter
+			.fromRequestValue(pagingRequest.getOwnershipFilter());
+		final String userId = principal != null ? principal.getSubject() : null;
+		final List<Dieta> data = dietaService.getDietasForCatalogFilter(catalogFilter, userId);
+		return getPage(pagingRequest, data);
 	}
 
 	private OidcUser resolveGridPrincipal() {
@@ -441,6 +451,11 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	protected List<Dieta> getData() {
 		log.debug("getting all Dieta records.");
 		return dietaService.getDietas();
+	}
+
+	@Override
+	protected Page<Dieta> getRows(final PagingRequest pagingRequest) {
+		return getRows(pagingRequest, resolveGridPrincipal());
 	}
 
 	@Override

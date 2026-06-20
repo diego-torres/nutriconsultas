@@ -18,6 +18,8 @@ public interface DietaService {
 
 	List<Dieta> getDietas();
 
+	List<Dieta> getDietasForCatalogFilter(DietaCatalogFilter filter, String userId);
+
 	DietaPickerPageDto findPickerPage(String search, int page, int size, Double requerimientoKcal);
 
 	void addIngesta(@NonNull Long id, String nombreIngesta);
