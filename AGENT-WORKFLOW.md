@@ -42,7 +42,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (subscription):** [#207 — Stripe payment provider](https://github.com/diego-torres/nutriconsultas/issues/207). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#211~~ merged PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230).
 
-**Current next issue (nutritionist web):** [#237 — PDF reports standard logo size](https://github.com/diego-torres/nutriconsultas/issues/237). ~~#236~~ done (`Fixes #236`). ~~#259~~ done (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270), `Fixes #259`). ~~#258~~ done (PR [#269](https://github.com/diego-torres/nutriconsultas/pull/269)). ~~#257~~ done (PR [#268](https://github.com/diego-torres/nutriconsultas/pull/268)). See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
+**Current next issue (nutritionist web):** [#237 — PDF reports standard logo size](https://github.com/diego-torres/nutriconsultas/issues/237). ~~#236~~ done (PR [#274](https://github.com/diego-torres/nutriconsultas/pull/274), `Fixes #236`). ~~#259~~ done (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270), `Fixes #259`). ~~#258~~ done (PR [#269](https://github.com/diego-torres/nutriconsultas/pull/269)). ~~#257~~ done (PR [#268](https://github.com/diego-torres/nutriconsultas/pull/268)). See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 
 ---
 
@@ -432,7 +432,7 @@ gh pr create ...
 
 **Subscription track (parallel):** see [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#180–#185~~, ~~#187~~ (PR #218), ~~#190~~ (PR #216), ~~#210~~ (PR #224), ~~#211~~ (PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230)) on `main`. **NEXT:** #207 (+ #208 Stripe ops, email #209, retention #220).
 
-**Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) — ~~#236~~ profile logo preview done; platillo ownership ~~#257–#259~~ done (#259 PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)); system catalog create #271–#272 registered; **NEXT:** #237 PDF logo sizing.
+**Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) — ~~#236~~ done (PR [#274](https://github.com/diego-torres/nutriconsultas/pull/274)); platillo ownership ~~#257–#259~~ done (#259 PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)); system catalog create #271–#272 registered; **NEXT:** #237 PDF logo sizing.
 
 **Production (2026-06-18):** ~~#226~~ invitation base URL fix (PR #227) — `APP_BASE_URL` / host remediation on EC2.
 
