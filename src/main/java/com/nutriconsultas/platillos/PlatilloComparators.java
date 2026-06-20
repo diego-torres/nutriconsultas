@@ -43,9 +43,10 @@ public final class PlatilloComparators {
 				Comparator.comparingDouble(Platillo::getHidratosDeCarbono).reversed());
 	}
 
-	public static Comparator<Platillo> getComparator(String name, Direction dir) {
+	public static Comparator<Platillo> getComparator(final String name, final Direction dir) {
 		log.debug("comparator request name: {}, dir: {}", name, dir);
-		return MAP.get(new ComparatorKey(name, dir));
+		final Comparator<Platillo> comparator = MAP.get(new ComparatorKey(name, dir));
+		return comparator != null ? comparator : (o1, o2) -> 0;
 	}
 
 	private PlatilloComparators() {
