@@ -1,5 +1,7 @@
 package com.nutriconsultas.profile;
 
+import java.util.Map;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -27,16 +29,6 @@ public final class NutritionistBrandingHelper {
 	}
 
 	/**
-	 * Inline CSS for PDF logo images: fits within {@link #PDF_LOGO_MAX_SIZE} while
-	 * preserving aspect ratio (Flying Saucer compatible).
-	 * @return CSS declaration string for {@code <img>} style attribute
-	 */
-	public static String getPdfLogoImgStyle() {
-		return "max-width: " + PDF_LOGO_MAX_SIZE + "; max-height: " + PDF_LOGO_MAX_SIZE
-				+ "; width: auto; height: auto;";
-	}
-
-	/**
 	 * Adds nutritionist profile, logo, and resolved display name to a Thymeleaf context.
 	 * @param context the Thymeleaf context
 	 * @param profile the nutritionist profile (may be null)
@@ -48,6 +40,43 @@ public final class NutritionistBrandingHelper {
 		context.setVariable("nutritionistProfile", profile);
 		context.setVariable("logoBase64", logoBase64);
 		context.setVariable("nutritionistDisplayName", resolveDisplayName(profile, oauthDisplayName));
+		addPdfLogoDimensionVariables(context, logoBase64);
+	}
+
+	/**
+	 * Adds {@code pdfLogoWidthPt}, {@code pdfLogoHeightPt}, and {@code pdfLogoStyle} for
+	 * PDF templates. Flying Saucer requires explicit point dimensions (not
+	 * {@code max-width}).
+	 * @param context the Thymeleaf context
+	 * @param logoBase64 the logo as a Base64 data URI (may be null)
+	 */
+	public static void addPdfLogoDimensionVariables(final Context context, final String logoBase64) {
+		putPdfLogoDimensionVariables(logoBase64, (key, value) -> context.setVariable(key, value),
+				key -> context.removeVariable(key));
+	}
+
+	/**
+	 * Adds PDF logo dimension variables to a mock model map (template validators).
+	 * @param variables the model variable map
+	 * @param logoBase64 the logo as a Base64 data URI (may be null)
+	 */
+	public static void addPdfLogoDimensionVariables(final Map<String, Object> variables, final String logoBase64) {
+		putPdfLogoDimensionVariables(logoBase64, variables::put, variables::remove);
+	}
+
+	private static void putPdfLogoDimensionVariables(final String logoBase64,
+			final java.util.function.BiConsumer<String, Object> setter,
+			final java.util.function.Consumer<String> remover) {
+		final PdfLogoDimensions.DisplaySize size = PdfLogoDimensions.computeFromDataUri(logoBase64);
+		if (size == null) {
+			remover.accept("pdfLogoWidthPt");
+			remover.accept("pdfLogoHeightPt");
+			remover.accept("pdfLogoStyle");
+			return;
+		}
+		setter.accept("pdfLogoWidthPt", size.widthPt());
+		setter.accept("pdfLogoHeightPt", size.heightPt());
+		setter.accept("pdfLogoStyle", PdfLogoDimensions.toInlineStyle(size));
 	}
 
 	/**

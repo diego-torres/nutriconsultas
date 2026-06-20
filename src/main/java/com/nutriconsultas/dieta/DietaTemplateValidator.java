@@ -267,6 +267,8 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		variables.put("nutritionistProfile", mockProfile);
 		variables.put("nutritionistDisplayName", "Lic. María García López");
 		variables.put("logoBase64", NutritionistBrandingHelper.MOCK_LOGO_DATA_URI);
+		NutritionistBrandingHelper.addPdfLogoDimensionVariables(variables,
+				NutritionistBrandingHelper.MOCK_LOGO_DATA_URI);
 	}
 
 	/**
