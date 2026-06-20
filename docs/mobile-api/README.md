@@ -38,7 +38,7 @@ Canonical cross-repo contracts for the `[Mobile API]` track. Indexed from [`../.
 | [`../../ISSUE-NUTRITIONIST-WEB.md`](../../ISSUE-NUTRITIONIST-WEB.md) | Patient MPX epic (#221–#223) |
 | [`../paciente/PATIENT-MPX-PLAN.md`](../paciente/PATIENT-MPX-PLAN.md) | Export/import plan |
 
-**Nutritionist web NEXT:** [#223](https://github.com/diego-torres/nutriconsultas/issues/223) export/delete UI. ~~#221~~ export · ~~#222~~ import done (PR [#261](https://github.com/diego-torres/nutriconsultas/pull/261)).
+**Nutritionist web NEXT:** [#232](https://github.com/diego-torres/nutriconsultas/issues/232) diet catalog (system diet edit). ~~#221–#223~~ MPX epic done (PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262)).
 
 **Subscription NEXT:** [#207](https://github.com/diego-torres/nutriconsultas/issues/207) Stripe payment provider (~~#211~~ PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230), ~~#210~~ PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224), ~~#187~~ PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218), ~~#190~~ PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) on `main`).
 

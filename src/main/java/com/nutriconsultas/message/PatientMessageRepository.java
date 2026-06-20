@@ -55,4 +55,8 @@ public interface PatientMessageRepository extends JpaRepository<PatientMessage, 
 			""")
 	int markReadByNutritionist(@Param("pacienteId") Long pacienteId, @Param("userId") String userId);
 
+	@Modifying(clearAutomatically = true)
+	@Query("DELETE FROM PatientMessage m WHERE m.paciente.id = :pacienteId")
+	void deleteByPacienteId(@Param("pacienteId") Long pacienteId);
+
 }

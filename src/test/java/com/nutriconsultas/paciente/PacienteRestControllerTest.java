@@ -258,7 +258,7 @@ public class PacienteRestControllerTest {
 
 		// Assert
 		assertThat(result).isNotNull();
-		assertThat(result.size()).isEqualTo(6);
+		assertThat(result.size()).isEqualTo(7);
 		assertThat(result.get(0)).contains("Juan Perez");
 		assertThat(result.get(0)).contains("/admin/pacientes/1");
 		assertThat(result.get(1)).isNotEmpty(); // Date formatted
@@ -266,6 +266,8 @@ public class PacienteRestControllerTest {
 		assertThat(result.get(3)).isEqualTo("1234567890");
 		assertThat(result.get(4)).isEqualTo("M");
 		assertThat(result.get(5)).isEqualTo("Maria Perez");
+		assertThat(result.get(6)).contains("paciente-export-btn");
+		assertThat(result.get(6)).contains("paciente-delete-btn");
 		log.info("finished testToStringList");
 	}
 
@@ -287,12 +289,13 @@ public class PacienteRestControllerTest {
 
 		// Assert
 		assertThat(result).isNotNull();
-		assertThat(result.size()).isEqualTo(6);
+		assertThat(result.size()).isEqualTo(7);
 		assertThat(result.get(1)).isEmpty(); // Null date
 		assertThat(result.get(2)).isNull(); // Null email
 		assertThat(result.get(3)).isNull(); // Null phone
 		assertThat(result.get(4)).isNull(); // Null gender
 		assertThat(result.get(5)).isNull(); // Null responsibleName
+		assertThat(result.get(6)).contains("paciente-delete-btn");
 		log.info("finished testToStringListWithNullValues");
 	}
 
@@ -304,13 +307,14 @@ public class PacienteRestControllerTest {
 
 		// Assert
 		assertThat(result).isNotNull();
-		assertThat(result.size()).isEqualTo(6);
+		assertThat(result.size()).isEqualTo(7);
 		assertThat(result.get(0).getData()).isEqualTo("nombre");
 		assertThat(result.get(1).getData()).isEqualTo("dob");
 		assertThat(result.get(2).getData()).isEqualTo("email");
 		assertThat(result.get(3).getData()).isEqualTo("phone");
 		assertThat(result.get(4).getData()).isEqualTo("gender");
 		assertThat(result.get(5).getData()).isEqualTo("responsible");
+		assertThat(result.get(6).getData()).isEqualTo("acciones");
 		log.info("finished testGetColumns");
 	}
 

@@ -22,6 +22,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,6 +47,9 @@ public class PacienteRestController extends AbstractGridController<PacienteListV
 
 	@Autowired
 	private PacienteService service;
+
+	@Autowired
+	private PacienteDeletionService pacienteDeletionService;
 
 	private static final Map<String, String> COLUMN_TO_FIELD_MAP = new HashMap<>();
 
@@ -178,7 +182,14 @@ public class PacienteRestController extends AbstractGridController<PacienteListV
 				row.getEmail(), //
 				row.getPhone(), //
 				row.getGender(), //
-				row.getResponsibleName());
+				row.getResponsibleName(), buildPacienteActions(row.getId()));
+	}
+
+	private String buildPacienteActions(final Long pacienteId) {
+		return "<button type='button' class='btn action-btn btn-outline-primary btn-sm paciente-export-btn' "
+				+ "data-id='" + pacienteId + "' title='Exportar registro'><i class='fas fa-download'></i></button> "
+				+ "<button type='button' class='btn action-btn btn-danger btn-sm paciente-delete-btn' data-id='"
+				+ pacienteId + "' title='Eliminar paciente'><i class='fas fa-trash'></i></button>";
 	}
 
 	@Override
@@ -213,7 +224,7 @@ public class PacienteRestController extends AbstractGridController<PacienteListV
 	@Override
 	protected List<Column> getColumns() {
 		log.debug("getting Paciente columns.");
-		return Stream.of("nombre", "dob", "email", "phone", "gender", "responsible")
+		return Stream.of("nombre", "dob", "email", "phone", "gender", "responsible", "acciones")
 			.map(Column::new)
 			.collect(Collectors.toList());
 	}
@@ -269,6 +280,32 @@ public class PacienteRestController extends AbstractGridController<PacienteListV
 			log.error("Error assigning BMR to patient {}", id, e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(java.util.Map.of("success", false, "error", e.getMessage()));
+		}
+	}
+
+	/**
+	 * Deletes a patient and all in-app clinical history for the authenticated
+	 * nutritionist (#223).
+	 */
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Map<String, Object>> deletePaciente(@PathVariable @NonNull final Long id,
+			@AuthenticationPrincipal final OidcUser principal) {
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				.body(Map.of("success", false, "error", "Not authenticated"));
+		}
+		try {
+			pacienteDeletionService.deletePatientWithHistory(id, userId);
+			return ResponseEntity.ok(Map.of("success", true, "message", "Paciente eliminado correctamente"));
+		}
+		catch (final IllegalArgumentException ex) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("success", false, "error", ex.getMessage()));
+		}
+		catch (final Exception ex) {
+			log.error("Error deleting patient {}", id, ex);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(Map.of("success", false, "error", "Error al eliminar el paciente"));
 		}
 	}
 
