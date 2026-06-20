@@ -304,22 +304,16 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	}
 
 	private String buildActionsColumn(final Dieta row, final OidcUser principal) {
-		final StringBuilder actions = new StringBuilder();
-		if (principal != null && dietaAuthorization.canModify(row, principal.getSubject(), principal)) {
-			actions.append("<a href='/admin/dietas/")
-				.append(row.getId())
-				.append("' class='btn btn-sm btn-warning' title='Editar Dieta'>")
-				.append("<i class='fas fa-edit'></i></a> ");
-		}
-		actions.append("<a href='/admin/dietas/")
-			.append(row.getId())
-			.append("/print' class='btn btn-sm btn-primary' target='_blank' title='Imprimir PDF'>")
-			.append("<i class='fas fa-file-pdf'></i></a> ");
-		actions.append("<button onclick='duplicateDieta(")
-			.append(row.getId())
-			.append(")' class='btn btn-sm btn-info' title='Duplicar Dieta'>")
-			.append("<i class='fas fa-copy'></i></button>");
-		return actions.toString();
+		final String editButton = principal != null && dietaAuthorization
+			.canModify(row, principal.getSubject(), principal)
+					? "<a href='/admin/dietas/" + row.getId()
+							+ "' class='btn btn-sm btn-warning' title='Editar Dieta'><i class='fas fa-edit'></i></a> "
+					: "";
+		final String printButton = "<a href='/admin/dietas/" + row.getId()
+				+ "/print' class='btn btn-sm btn-primary' target='_blank' title='Imprimir PDF'><i class='fas fa-file-pdf'></i></a> ";
+		final String duplicateButton = "<button onclick='duplicateDieta(" + row.getId()
+				+ ")' class='btn btn-sm btn-info' title='Duplicar Dieta'><i class='fas fa-copy'></i></button>";
+		return editButton + printButton + duplicateButton;
 	}
 
 	private String getIngestas(final Dieta row) {
