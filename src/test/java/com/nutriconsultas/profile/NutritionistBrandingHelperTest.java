@@ -48,6 +48,13 @@ public class NutritionistBrandingHelperTest {
 		assertThat(NutritionistBrandingHelper.resolveOAuthDisplayName(null)).isNull();
 	}
 
+	@Test
+	public void pdfLogoMaxSizeIsOneAndHalfInches() {
+		assertThat(NutritionistBrandingHelper.PDF_LOGO_MAX_SIZE).isEqualTo("1.5in");
+		assertThat(NutritionistBrandingHelper.PDF_LOGO_CELL_WIDTH).isEqualTo("1.6in");
+		assertThat(PdfLogoDimensions.MAX_SIZE_PT).isEqualTo(108.0);
+	}
+
 	private OidcUser createOidcUser(final String name, final String subject) {
 		final Map<String, Object> claims = new HashMap<>();
 		claims.put("sub", subject);

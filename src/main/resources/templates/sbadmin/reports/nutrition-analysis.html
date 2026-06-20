@@ -145,6 +145,7 @@
 			font-style: italic;
 		}
 	</style>
+	<style th:replace="~{sbadmin/fragments/pdf-nutritionist-logo :: logoStyles}"></style>
 </head>
 <body>
 	<!--
@@ -167,9 +168,7 @@
 						<span th:text="${#dates.format(reportDate, 'dd/MM/yyyy HH:mm')}"></span>
 					</p>
 				</td>
-				<td th:if="${logoBase64 != null}" style="text-align: right; vertical-align: bottom; width: 160px;">
-					<img th:src="${logoBase64}" alt="Logo" style="max-height: 70px; max-width: 150px;" />
-				</td>
+				<td th:replace="~{sbadmin/fragments/pdf-nutritionist-logo :: logoCell}"></td>
 			</tr>
 		</table>
 	</div>

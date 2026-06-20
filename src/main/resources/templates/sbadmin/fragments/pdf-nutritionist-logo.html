@@ -1,0 +1,23 @@
+<!--
+  PDF header logo: constrained to a ~1.5 × 1.5 in box with aspect ratio preserved.
+
+  Required model variables:
+  - logoBase64: Base64 data URI (may be null — logoCell is omitted when null)
+  - pdfLogoStyle: inline width/height in pt (set by NutritionistBrandingHelper)
+
+  Fragments:
+  - logoStyles: CSS rules for .pdf-logo-cell (include in template <head>)
+  - logoCell: table cell with the logo image (place inside header <tr>)
+-->
+<style th:fragment="logoStyles">
+	.pdf-logo-cell {
+		text-align: right;
+		vertical-align: bottom;
+		width: 1.6in;
+	}
+</style>
+<td th:fragment="logoCell"
+	th:if="${logoBase64 != null}"
+	class="pdf-logo-cell">
+	<img th:src="${logoBase64}" alt="Logo" th:style="${pdfLogoStyle}" />
+</td>
