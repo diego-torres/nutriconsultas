@@ -33,10 +33,8 @@ public class DietaAuthorization {
 		if (dieta == null || userId == null) {
 			return false;
 		}
-		if (Objects.equals(userId, dieta.getUserId())) {
-			return true;
-		}
-		return platformAdminService.isPlatformAdmin(principal) && DietaCatalogConstants.isSystemTemplate(dieta);
+		return Objects.equals(userId, dieta.getUserId())
+				|| (platformAdminService.isPlatformAdmin(principal) && DietaCatalogConstants.isSystemTemplate(dieta));
 	}
 
 	public void verifyCanModify(final Dieta dieta, final String userId, final OidcUser principal) {
