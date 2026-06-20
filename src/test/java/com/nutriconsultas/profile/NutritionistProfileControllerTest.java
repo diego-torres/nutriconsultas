@@ -16,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,9 +24,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 
+import com.nutriconsultas.subscription.Entitlement;
 import com.nutriconsultas.subscription.PlanTier;
 import com.nutriconsultas.subscription.Subscription;
 import com.nutriconsultas.subscription.SubscriptionStatus;
+import com.nutriconsultas.subscription.SubscriptionEntitlementService;
 import com.nutriconsultas.subscription.lifecycle.SubscriptionAccessService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +54,9 @@ public class NutritionistProfileControllerTest {
 	@Mock
 	private SubscriptionAccessService subscriptionAccessService;
 
+	@Mock
+	private SubscriptionEntitlementService subscriptionEntitlementService;
+
 	private MockMvc mockMvc;
 
 	private NutritionistProfile mockProfile;
@@ -68,6 +74,8 @@ public class NutritionistProfileControllerTest {
 	@Test
 	public void perfilAddsSubscriptionPlanToModel() {
 		when(profileService.getOrCreateProfile("auth0|test123")).thenReturn(mockProfile);
+		when(subscriptionEntitlementService.hasEntitlement("auth0|test123", Entitlement.REPORTS_BRANDED))
+			.thenReturn(false);
 		final Subscription subscription = new Subscription();
 		subscription.setPlanTier(PlanTier.BASICO);
 		subscription.setStatus(SubscriptionStatus.ACTIVE);
@@ -90,6 +98,68 @@ public class NutritionistProfileControllerTest {
 		assertThat(model.getAttribute("subscriptionStatus")).isEqualTo(SubscriptionStatus.ACTIVE);
 		assertThat(model.getAttribute("subscriptionPeriodStartLabel")).isEqualTo("01/06/2026");
 		assertThat(model.getAttribute("subscriptionPeriodEndLabel")).isEqualTo("01/07/2026");
+		assertThat(model.getAttribute("brandedReportsEnabled")).isEqualTo(false);
+		assertThat(model.getAttribute("logoUrl")).isNull();
+	}
+
+	@Test
+	public void perfilAddsLogoUrlWhenBrandedReportsEnabledAndLogoPresent() {
+		mockProfile.setLogoExtension("png");
+		when(profileService.getOrCreateProfile("auth0|test123")).thenReturn(mockProfile);
+		when(subscriptionEntitlementService.hasEntitlement("auth0|test123", Entitlement.REPORTS_BRANDED))
+			.thenReturn(true);
+		when(subscriptionAccessService.findGrantingSubscriptionForUser("auth0|test123")).thenReturn(Optional.empty());
+
+		final Model model = new ExtendedModelMap();
+		final String view = controller.perfil(org.mockito.Mockito
+			.mock(org.springframework.security.oauth2.core.oidc.user.OidcUser.class, invocation -> {
+				if ("getSubject".equals(invocation.getMethod().getName())) {
+					return "auth0|test123";
+				}
+				return org.mockito.Mockito.RETURNS_DEFAULTS.answer(invocation);
+			}), model);
+
+		assertThat(view).isEqualTo("sbadmin/profile/formulario");
+		assertThat(model.getAttribute("brandedReportsEnabled")).isEqualTo(true);
+		assertThat(model.getAttribute("logoUrl")).isEqualTo("/admin/perfil/logo");
+	}
+
+	@Test
+	public void getLogoReturnsForbiddenWhenBrandedReportsNotEntitled() {
+		when(subscriptionEntitlementService.hasEntitlement("auth0|test123", Entitlement.REPORTS_BRANDED))
+			.thenReturn(false);
+
+		final ResponseEntity<byte[]> response = controller.getLogo(org.mockito.Mockito
+			.mock(org.springframework.security.oauth2.core.oidc.user.OidcUser.class, invocation -> {
+				if ("getSubject".equals(invocation.getMethod().getName())) {
+					return "auth0|test123";
+				}
+				return org.mockito.Mockito.RETURNS_DEFAULTS.answer(invocation);
+			}));
+
+		assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.FORBIDDEN);
+	}
+
+	@Test
+	public void getLogoReturnsLogoBytesWhenEntitledAndLogoPresent() {
+		mockProfile.setLogoExtension("png");
+		final byte[] logoBytes = "fake-logo".getBytes();
+		when(subscriptionEntitlementService.hasEntitlement("auth0|test123", Entitlement.REPORTS_BRANDED))
+			.thenReturn(true);
+		when(profileService.getOrCreateProfile("auth0|test123")).thenReturn(mockProfile);
+		when(profileService.getLogo("auth0|test123")).thenReturn(logoBytes);
+
+		final ResponseEntity<byte[]> response = controller.getLogo(org.mockito.Mockito
+			.mock(org.springframework.security.oauth2.core.oidc.user.OidcUser.class, invocation -> {
+				if ("getSubject".equals(invocation.getMethod().getName())) {
+					return "auth0|test123";
+				}
+				return org.mockito.Mockito.RETURNS_DEFAULTS.answer(invocation);
+			}));
+
+		assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
+		assertThat(response.getBody()).isEqualTo(logoBytes);
+		assertThat(response.getHeaders().getContentType()).isEqualTo(org.springframework.http.MediaType.IMAGE_PNG);
 	}
 
 	@Test

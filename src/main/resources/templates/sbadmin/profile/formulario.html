@@ -166,7 +166,30 @@
                       El logo aparecerá en la esquina superior derecha de los PDFs generados.
                       Se recomienda formato PNG con fondo transparente.
                     </p>
-                    <form th:action="@{/admin/perfil/logo}" method="post" enctype="multipart/form-data">
+
+                    <div th:if="${brandedReportsEnabled}" id="logoPreviewContainer" class="mb-4">
+                      <div class="border rounded bg-light p-3 d-inline-block">
+                        <img th:if="${logoUrl != null}"
+                          id="logoPreviewImage"
+                          th:src="@{/admin/perfil/logo}"
+                          alt="Logo de la clínica"
+                          class="img-fluid"
+                          style="max-height: 120px; max-width: 220px;"
+                        />
+                        <div th:unless="${logoUrl != null}" id="logoPlaceholder" class="text-muted py-4 px-3">
+                          <i class="fas fa-image fa-3x mb-2 d-block"></i>
+                          <span>Aún no has subido un logo.</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div th:unless="${brandedReportsEnabled}" class="alert alert-info small text-left mb-4">
+                      La personalización con logo en PDFs está incluida en los planes
+                      <strong>Profesional</strong>, <strong>Plus</strong> y <strong>Consultorio</strong>.
+                    </div>
+
+                    <form th:if="${brandedReportsEnabled}"
+                      th:action="@{/admin/perfil/logo}" method="post" enctype="multipart/form-data">
                       <div class="form-group custom-file mb-3">
                         <input
                           type="file"
@@ -209,10 +232,34 @@
     <script lang="javascript">
       'use strict';
       (function ($) {
-        // Show filename in custom file input label
-        $('#logoFile').on('change', function () {
+        var $logoFile = $('#logoFile');
+        if ($logoFile.length === 0) {
+          return;
+        }
+
+        $logoFile.on('change', function () {
           var fileName = $(this).val().split('\\').pop();
           $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
+
+          var file = this.files && this.files[0];
+          if (!file || !file.type.match(/^image\//)) {
+            return;
+          }
+
+          var reader = new FileReader();
+          reader.onload = function (event) {
+            var $previewImage = $('#logoPreviewImage');
+            var $placeholder = $('#logoPlaceholder');
+            if ($previewImage.length === 0) {
+              $placeholder.replaceWith(
+                '<img id="logoPreviewImage" alt="Logo de la clínica" class="img-fluid"'
+                  + ' style="max-height: 120px; max-width: 220px;" />'
+              );
+              $previewImage = $('#logoPreviewImage');
+            }
+            $previewImage.attr('src', event.target.result).show();
+          };
+          reader.readAsDataURL(file);
         });
       })(jQuery);
     </script>
