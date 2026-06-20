@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.nutriconsultas.profile.NutritionistBrandingHelper;
 import com.nutriconsultas.profile.NutritionistProfile;
 import com.nutriconsultas.validation.template.BaseTemplateValidator;
 
@@ -265,7 +266,7 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		mockProfile.setCedulaProfesional("12345678");
 		variables.put("nutritionistProfile", mockProfile);
 		variables.put("nutritionistDisplayName", "Lic. María García López");
-		variables.put("logoBase64", null);
+		variables.put("logoBase64", NutritionistBrandingHelper.MOCK_LOGO_DATA_URI);
 	}
 
 	/**

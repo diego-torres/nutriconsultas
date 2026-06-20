@@ -175,6 +175,7 @@
 			padding: 10px;
 		}
 	</style>
+	<style th:replace="~{sbadmin/fragments/pdf-nutritionist-logo :: logoStyles}"></style>
 </head>
 <body>
 	<!--
@@ -191,9 +192,7 @@
 					<p>Minutriporcion - Consulta Nutricional</p>
 					<div th:replace="~{sbadmin/fragments/pdf-nutritionist-credentials :: credentials}"></div>
 				</td>
-				<td th:if="${logoBase64 != null}" style="text-align: right; vertical-align: bottom; width: 160px;">
-					<img th:src="${logoBase64}" alt="Logo" style="max-height: 70px; max-width: 150px;" />
-				</td>
+				<td th:replace="~{sbadmin/fragments/pdf-nutritionist-logo :: logoCell}"></td>
 			</tr>
 		</table>
 		<p th:if="${startDate != null or endDate != null}" class="date-range">

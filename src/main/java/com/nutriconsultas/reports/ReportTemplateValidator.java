@@ -15,6 +15,7 @@ import com.nutriconsultas.clinical.exam.anthropometric.BodyMass;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
+import com.nutriconsultas.profile.NutritionistBrandingHelper;
 import com.nutriconsultas.profile.NutritionistProfile;
 import com.nutriconsultas.validation.template.BaseTemplateValidator;
 
@@ -88,7 +89,7 @@ public class ReportTemplateValidator extends BaseTemplateValidator {
 		mockProfile.setCedulaProfesional("12345678");
 		variables.put("nutritionistProfile", mockProfile);
 		variables.put("nutritionistDisplayName", "Lic. María García López");
-		variables.put("logoBase64", null);
+		variables.put("logoBase64", NutritionistBrandingHelper.MOCK_LOGO_DATA_URI);
 
 		// Report entitlement flags for listado and estadisticas templates (#187)
 		variables.put("canExportPdf", true);
