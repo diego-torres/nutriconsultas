@@ -38,7 +38,7 @@ Canonical cross-repo contracts for the `[Mobile API]` track. Indexed from [`../.
 | [`../../ISSUE-NUTRITIONIST-WEB.md`](../../ISSUE-NUTRITIONIST-WEB.md) | Patient MPX epic (#221–#223) |
 | [`../paciente/PATIENT-MPX-PLAN.md`](../paciente/PATIENT-MPX-PLAN.md) | Export/import plan |
 
-**Nutritionist web NEXT:** [#234](https://github.com/diego-torres/nutriconsultas/issues/234) diet grid delete action. ~~#233~~ done (PR [#264](https://github.com/diego-torres/nutriconsultas/pull/264)); ~~#232~~ done (PR [#263](https://github.com/diego-torres/nutriconsultas/pull/263)); ~~#221–#223~~ MPX epic done (PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262)).
+**Nutritionist web NEXT:** [#257](https://github.com/diego-torres/nutriconsultas/issues/257) lock system catalog platillos. Diet catalog ~~#232–#235~~ done (PR [#267](https://github.com/diego-torres/nutriconsultas/pull/267)); ~~#221–#223~~ MPX epic done (PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262)).
 
 **Subscription NEXT:** [#207](https://github.com/diego-torres/nutriconsultas/issues/207) Stripe payment provider (~~#211~~ PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230), ~~#210~~ PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224), ~~#187~~ PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218), ~~#190~~ PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) on `main`).
 

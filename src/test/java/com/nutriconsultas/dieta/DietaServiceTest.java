@@ -7,6 +7,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -402,6 +404,52 @@ public class DietaServiceTest {
 		verify(dietaRepository).findByIdAndUserId(1L, OTHER_USER_ID);
 		verify(dietaRepository, never()).delete(any(Dieta.class));
 		log.info("Finishing testDeleteDietaByIdAndUserIdWrongUser");
+	}
+
+	@Test
+	public void testGetDietasForCatalogFilterTodasReturnsAll() {
+		final Dieta systemDieta = new Dieta();
+		systemDieta.setId(8L);
+		systemDieta.setUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+		final List<Dieta> allDietas = Arrays.asList(originalDieta, systemDieta);
+		when(dietaRepository.findAll()).thenReturn(allDietas);
+
+		final List<Dieta> result = dietaService.getDietasForCatalogFilter(DietaCatalogFilter.TODAS, TEST_USER_ID);
+
+		assertThat(result).hasSize(2);
+		verify(dietaRepository).findAll();
+	}
+
+	@Test
+	public void testGetDietasForCatalogFilterSistemaReturnsSystemTemplates() {
+		final Dieta systemDieta = new Dieta();
+		systemDieta.setId(8L);
+		systemDieta.setUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+		when(dietaRepository.findByUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID))
+			.thenReturn(List.of(systemDieta));
+
+		final List<Dieta> result = dietaService.getDietasForCatalogFilter(DietaCatalogFilter.SISTEMA, TEST_USER_ID);
+
+		assertThat(result).containsExactly(systemDieta);
+		verify(dietaRepository).findByUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+	}
+
+	@Test
+	public void testGetDietasForCatalogFilterPropiasReturnsOwnedDietas() {
+		when(dietaRepository.findByUserId(TEST_USER_ID)).thenReturn(List.of(originalDieta));
+
+		final List<Dieta> result = dietaService.getDietasForCatalogFilter(DietaCatalogFilter.PROPIAS, TEST_USER_ID);
+
+		assertThat(result).containsExactly(originalDieta);
+		verify(dietaRepository).findByUserId(TEST_USER_ID);
+	}
+
+	@Test
+	public void testGetDietasForCatalogFilterPropiasWithoutUserIdReturnsEmpty() {
+		final List<Dieta> result = dietaService.getDietasForCatalogFilter(DietaCatalogFilter.PROPIAS, null);
+
+		assertThat(result).isEmpty();
+		verify(dietaRepository, never()).findByUserId(any());
 	}
 
 }

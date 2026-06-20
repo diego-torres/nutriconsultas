@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-20 — ~~#221~~ **done** (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254), deployed EC2). ~~#222~~ **done** (PR [#261](https://github.com/diego-torres/nutriconsultas/pull/261)). ~~#250~~ **done** (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)). ~~#223~~ **done** (PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262)). ~~#232~~ **done** (PR [#263](https://github.com/diego-torres/nutriconsultas/pull/263)). ~~#233~~ **done** (PR [#264](https://github.com/diego-torres/nutriconsultas/pull/264)). ~~#234~~ **done** (PR [#265](https://github.com/diego-torres/nutriconsultas/pull/265)). **NEXT:** [#235 diet grid filter](https://github.com/diego-torres/nutriconsultas/issues/235). Epics **#232–#242**, **#257–#259** (platillo ownership) registered.
+**Last updated:** 2026-06-20 — ~~#221~~ **done** (PR [#254](https://github.com/diego-torres/nutriconsultas/pull/254), deployed EC2). ~~#222~~ **done** (PR [#261](https://github.com/diego-torres/nutriconsultas/pull/261)). ~~#250~~ **done** (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)). ~~#223~~ **done** (PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262)). ~~#232~~ **done** (PR [#263](https://github.com/diego-torres/nutriconsultas/pull/263)). ~~#233~~ **done** (PR [#264](https://github.com/diego-torres/nutriconsultas/pull/264)). ~~#234~~ **done** (PR [#265](https://github.com/diego-torres/nutriconsultas/pull/265)). ~~#235~~ **done** (PR [#267](https://github.com/diego-torres/nutriconsultas/pull/267)). **NEXT:** [#257 lock system platillos](https://github.com/diego-torres/nutriconsultas/issues/257). Epics **#236–#242**, **#257–#259** registered.
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -55,14 +55,14 @@ System template diets (`userId = system:template-dietas`), grid actions, and own
 | Grid: delete with patient-assignment guard | #234 |
 | Grid: filter todas / sistema / propias | #235 |
 
-**Suggested order:** #232 → #233 + #234 + #235 (parallel after #232).
+**Suggested order:** #232 → #233 + #234 + #235 (parallel after #232). **Epic complete** after #235.
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
 | **232** | Platform admins can edit system template diets | https://github.com/diego-torres/nutriconsultas/issues/232 | **done** | #183 | PR [#263](https://github.com/diego-torres/nutriconsultas/pull/263); `DietaAuthorization` |
 | **233** | Diet list grid — edit action | https://github.com/diego-torres/nutriconsultas/issues/233 | **done** | — | PR [#264](https://github.com/diego-torres/nutriconsultas/pull/264); `DietaAuthorization.canModify` |
 | **234** | Diet list grid — delete action with patient-usage guard | https://github.com/diego-torres/nutriconsultas/issues/234 | **done** | — | PR [#265](https://github.com/diego-torres/nutriconsultas/pull/265); `DietaDeletionService` |
-| 235 | Diet list grid — filter all, system, or own diets | https://github.com/diego-torres/nutriconsultas/issues/235 | open | — | Server-side filter on `/rest/dietas` grid |
+| **235** | Diet list grid — filter all, system, or own diets | https://github.com/diego-torres/nutriconsultas/issues/235 | **done** | — | PR [#267](https://github.com/diego-torres/nutriconsultas/pull/267); `ownershipFilter`; default **todas** |
 
 ---
 

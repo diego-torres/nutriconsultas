@@ -77,6 +77,15 @@
             <!-- NEW PACIENTE FORM -->
             <div class="col-12">
               <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-wrap align-items-center justify-content-between">
+                  <h6 class="m-0 font-weight-bold text-primary">Catálogo de dietas</h6>
+                  <div class="btn-group btn-group-sm mt-2 mt-md-0" role="group" aria-label="Filtrar dietas"
+                    id="dietaCatalogFilter">
+                    <button type="button" class="btn btn-primary active" data-filter="todas">Todas</button>
+                    <button type="button" class="btn btn-outline-primary" data-filter="sistema">De sistema</button>
+                    <button type="button" class="btn btn-outline-primary" data-filter="propias">Mis dietas</button>
+                  </div>
+                </div>
                 <table id="mainGrid" class="table table-striped table-bordered dt-responsive nowrap"
                     style="width: 100%;">
                     <thead>
@@ -132,7 +141,8 @@
         }
         
         jQuery(document).ready(function($) {
-          $('#mainGrid').DataTable({
+          var dietaCatalogFilter = 'todas';
+          var mainGrid = $('#mainGrid').DataTable({
             "processing": true,
             "serverSide": true,
             "scrollX": true,
@@ -161,9 +171,21 @@
               "dataType": "json",
               "contentType": "application/json",
               "data": function (d) {
+                d.ownershipFilter = dietaCatalogFilter;
                 return JSON.stringify(d);
               }
             },
+          });
+
+          $('#dietaCatalogFilter button').click(function () {
+            var filter = $(this).data('filter');
+            if (filter === dietaCatalogFilter) {
+              return;
+            }
+            dietaCatalogFilter = filter;
+            $('#dietaCatalogFilter button').removeClass('active btn-primary').addClass('btn-outline-primary');
+            $(this).removeClass('btn-outline-primary').addClass('active btn-primary');
+            mainGrid.ajax.reload();
           });
 
           $('#addDietaButton').click(function () {
@@ -257,7 +279,7 @@
                       timer: 2000,
                       showConfirmButton: true
                     }, function () {
-                      $('#mainGrid').DataTable().ajax.reload(null, false);
+                      mainGrid.ajax.reload(null, false);
                     });
                   },
                   error: function (xhr) {

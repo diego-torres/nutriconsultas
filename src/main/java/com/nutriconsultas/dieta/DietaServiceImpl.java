@@ -58,6 +58,25 @@ public class DietaServiceImpl implements DietaService {
 		return dietaRepository.findAll();
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public List<Dieta> getDietasForCatalogFilter(final DietaCatalogFilter filter, final String userId) {
+		if (filter == null || filter == DietaCatalogFilter.TODAS) {
+			log.info("Getting all dietas for catalog filter todas");
+			return dietaRepository.findAll();
+		}
+		if (filter == DietaCatalogFilter.SISTEMA) {
+			log.info("Getting system template dietas for catalog filter sistema");
+			return dietaRepository.findByUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+		}
+		if (userId == null || userId.isBlank()) {
+			log.warn("Cannot resolve propias dietas without userId");
+			return List.of();
+		}
+		log.info("Getting owned dietas for catalog filter propias, userId present");
+		return dietaRepository.findByUserId(userId);
+	}
+
 	private static final int PICKER_MAX_PAGE_SIZE = 50;
 
 	@Override

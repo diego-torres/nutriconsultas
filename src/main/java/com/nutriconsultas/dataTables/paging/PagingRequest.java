@@ -23,4 +23,9 @@ public class PagingRequest {
 
 	private Search search;
 
+	/**
+	 * Optional catalog ownership filter (e.g. dietas grid: todas, sistema, propias).
+	 */
+	private String ownershipFilter;
+
 }

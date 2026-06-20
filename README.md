@@ -13,7 +13,7 @@ registro de consultorio de nutrición
 
 **Agent workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Issue registries:** [`ISSUE.md`](ISSUE.md) (mobile) · [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) (subscription) · [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) (nutritionist web) · [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md) (public booking) · **Contract docs:** [`docs/mobile-api/README.md`](docs/mobile-api/README.md)
 
-**On `main` (2026-06-20):** Mobile **NEXT:** #134. Subscription **NEXT:** #207. Nutritionist web **NEXT:** #234; ~~#233~~ done (PR [#264](https://github.com/diego-torres/nutriconsultas/pull/264)); ~~#232~~ done (PR [#263](https://github.com/diego-torres/nutriconsultas/pull/263)); ~~#223~~ done (PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262)); epics #232–#242; platillo ownership #257–#259; ~~#250~~ done (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)). Public booking #245–#248 (deferred).
+**On `main` (2026-06-20):** Mobile **NEXT:** #134. Subscription **NEXT:** #207. Nutritionist web **NEXT:** #257; diet catalog ~~#232–#235~~ done (PR [#267](https://github.com/diego-torres/nutriconsultas/pull/267)); ~~#223~~ done (PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262)); epics #236–#242; platillo ownership #257–#259; ~~#250~~ done (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)). Public booking #245–#248 (deferred).
 
 ## AWS (production infrastructure)
 
