@@ -606,7 +606,7 @@ Issue registry: [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md). Plan: 
 
 ## Public booking (tracking)
 
-Issue registry: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Epic **#245–#248** (2026-06-19): shareable `/consultas/{id}/agendar-cita` link. ~~#246~~ **done**; ~~#247~~ **done** (PR [#295](https://github.com/diego-torres/nutriconsultas/pull/295)); ~~#248~~ **done** (PR [#298](https://github.com/diego-torres/nutriconsultas/pull/298)). **NEXT:** [#297 copy public booking link](https://github.com/diego-torres/nutriconsultas/issues/297) **in-progress** (`issue-297-copy-booking-link`).
+Issue registry: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Epic **#245–#248**, **#297** (2026-06-19): shareable `/consultas/{id}/agendar-cita` link. ~~#246~~ **done**; ~~#247~~ **done** (PR [#295](https://github.com/diego-torres/nutriconsultas/pull/295)); ~~#248~~ **done** (PR [#298](https://github.com/diego-torres/nutriconsultas/pull/298)); ~~#297~~ **done** (PR [#299](https://github.com/diego-torres/nutriconsultas/pull/299)). Epic **#245** child issues complete.
 
 ## Resources
 

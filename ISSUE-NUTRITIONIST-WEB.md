@@ -221,7 +221,7 @@ Inline **cantidad** editing on the catalog platillo form (`/admin/platillos/{id}
 | #280 / #281 Diet nutrients | Full nutrient modal (#280); in-row platillo edit on ingesta grid (#281) — refresh dieta rollup |
 | ~~#285~~ Platillo form | Inline cantidad edit on catalog `#ingredientesGrid` + diet ingesta grid — branch `issue-285-platillo-inline-cantidad` |
 | ~~#243~~ / #244 Subscription | reCAPTCHA **done**; Solicitar acceso pre-fill — public funnel, not admin UI |
-| #245–#248 Public booking | ~~#246~~, ~~#247~~, ~~#248~~ done; **NEXT** #297 (copy booking link) — separate track |
+| #245–#248 Public booking | ~~#246~~, ~~#247~~, ~~#248~~, ~~#297~~ **done** — separate track; epic **#245** open |
 
 ---
 
