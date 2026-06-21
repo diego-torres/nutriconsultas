@@ -51,11 +51,6 @@
       }
       .dieta-editor-row .dieta-ingestas-card .tab-content {
         flex: 1 1 auto;
-        min-height: 0;
-      }
-      .dieta-editor-row .dieta-ingestas-card .ingesta-items-scroll {
-        max-height: calc(100vh - 26rem);
-        overflow-y: auto;
       }
       .dieta-name-toolbar .form-control {
         max-width: 100%;
@@ -182,16 +177,42 @@
                       <option th:each="alimento : ${alimentos}" th:value="${alimento.id}" th:text="${alimento.nombreAlimento}"></option>
                     </select>
                   </div>
-                  <div class="form-group">
-                    <label for="porciones">Porciones</label>
+                  <div class="form-group" id="alimentoPorcionesGroup">
+                    <label for="alimentoPorciones">Porciones</label>
                     <input
                       type="number"
                       class="form-control"
-                      id="porciones"
+                      id="alimentoPorciones"
                       value="1"
                       min="1"
                       max="3"
                       name="porciones" />
+                  </div>
+                  <div id="alimentoPortionDetails" style="display: none">
+                    <div class="form-group">
+                      <label for="alimentoCantidad">Cantidad</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="alimentoCantidad"
+                        placeholder="Cantidad" />
+                    </div>
+                    <div class="form-group">
+                      <label for="alimentoUnidad">Unidad</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="alimentoUnidad"
+                        disabled="true" />
+                    </div>
+                    <div class="form-group">
+                      <label for="alimentoPeso">Peso (g)</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="alimentoPeso"
+                        placeholder="Peso" />
+                    </div>
                   </div>
                   <div class="form-group">
                     <label for="tipoPorcion">Tipo de porci&oacute;n</label>
@@ -928,6 +949,7 @@
 
     <script th:src="@{/sbadmin/vendor/select2/select2.min.js}"></script>
     <script th:src="@{/sbadmin/js/select2.js}"></script>
+    <script th:src="@{/sbadmin/js/ingredient-weight-recalc.js}"></script>
     <script lang="javascript">
       'use strict';
       (function ($) {
@@ -1174,15 +1196,99 @@
           });
 
           // Set up the alimento modal
+          var selectedAlimentoReference = null;
+
+          function toggleAlimentoPortionFields() {
+            var isPorcion = $('#tipoPorcion').val() === 'porcion';
+            $('#alimentoPorcionesGroup').toggle(!isPorcion);
+            $('#alimentoPortionDetails').toggle(isPorcion);
+            if (isPorcion) {
+              loadSelectedAlimentoForDiet();
+            }
+          }
+
+          function loadSelectedAlimentoForDiet() {
+            var alimentoId = $('#alimento').val();
+            if (!alimentoId) {
+              selectedAlimentoReference = null;
+              $('#alimentoCantidad').val('');
+              $('#alimentoUnidad').val('');
+              $('#alimentoPeso').val('');
+              return;
+            }
+            $.ajax({
+              url: '/rest/alimentos/' + alimentoId,
+              type: 'GET',
+              success: function (response) {
+                selectedAlimentoReference = {
+                  cantSugerida: response.cantSugerida,
+                  pesoNeto: response.pesoNeto
+                };
+                $('#alimentoCantidad').val(response.fractionalCantSugerida);
+                $('#alimentoUnidad').val(response.unidad);
+                $('#alimentoPeso').val(response.pesoNeto);
+                syncAlimentoPorcionesFromCantidad();
+              }
+            });
+          }
+
+          function recalculateAlimentoPesoFromCantidad() {
+            if (!selectedAlimentoReference || !window.IngredientWeightRecalc) {
+              return;
+            }
+            var recalculatedPeso = window.IngredientWeightRecalc.recalculatePesoFromQuantityInput(
+              selectedAlimentoReference.cantSugerida,
+              selectedAlimentoReference.pesoNeto,
+              $('#alimentoCantidad').val()
+            );
+            if (recalculatedPeso != null) {
+              $('#alimentoPeso').val(recalculatedPeso);
+            }
+            syncAlimentoPorcionesFromCantidad();
+          }
+
+          function syncAlimentoPorcionesFromCantidad() {
+            if ($('#tipoPorcion').val() !== 'porcion' || !selectedAlimentoReference
+                || !window.IngredientWeightRecalc) {
+              return;
+            }
+            var parsedCantidad = window.IngredientWeightRecalc.parseFractionalQuantity(
+              $('#alimentoCantidad').val()
+            );
+            if (parsedCantidad == null || !selectedAlimentoReference.cantSugerida) {
+              return;
+            }
+            var porciones = Math.round(parsedCantidad / selectedAlimentoReference.cantSugerida);
+            porciones = Math.max(1, Math.min(3, porciones));
+            $('#alimentoPorciones').val(porciones);
+          }
+
           $('#alimentoModal').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget);
             var ingesta = button.data('ingesta');
             var modal = $(this);
             modal.find('#ingestaAlimento').val(ingesta);
-            // Reset form
+            selectedAlimentoReference = null;
             modal.find('#alimento').val('').trigger('change');
-            modal.find('#porciones').val('1');
+            modal.find('#alimentoPorciones').val('1');
             modal.find('#tipoPorcion').val('gramos');
+            $('#alimentoCantidad').val('');
+            $('#alimentoUnidad').val('');
+            $('#alimentoPeso').val('');
+            toggleAlimentoPortionFields();
+          });
+
+          $('#tipoPorcion').on('change', toggleAlimentoPortionFields);
+          $('#alimento').on('change', function () {
+            if ($('#tipoPorcion').val() === 'porcion') {
+              loadSelectedAlimentoForDiet();
+            }
+          });
+          $('#alimentoCantidad').on('input change', recalculateAlimentoPesoFromCantidad);
+          $('#alimentoModal form').on('submit', function () {
+            if ($('#tipoPorcion').val() === 'porcion') {
+              syncAlimentoPorcionesFromCantidad();
+            }
           });
 
           // Set up the edit platillo modal

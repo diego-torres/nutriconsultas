@@ -678,9 +678,35 @@
     <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
     <script th:src="@{/sbadmin/vendor/select2/select2.min.js}"></script>
     <script th:src="@{/sbadmin/js/select2.js}"></script>
+    <script th:src="@{/sbadmin/js/ingredient-weight-recalc.js}"></script>
     <script lang="javascript">
       'use strict';
       (function ($) {
+        var selectedAlimentoReference = null;
+
+        function applyAlimentoDefaults(response) {
+          selectedAlimentoReference = {
+            cantSugerida: response.cantSugerida,
+            pesoNeto: response.pesoNeto
+          };
+          $("#cantidad").val(response.fractionalCantSugerida);
+          $("#peso").val(response.pesoNeto);
+          $("#unidad").val(response.unidad);
+        }
+
+        function recalculatePesoFromCantidad() {
+          if (!selectedAlimentoReference || !window.IngredientWeightRecalc) {
+            return;
+          }
+          var recalculatedPeso = window.IngredientWeightRecalc.recalculatePesoFromQuantityInput(
+            selectedAlimentoReference.cantSugerida,
+            selectedAlimentoReference.pesoNeto,
+            $("#cantidad").val()
+          );
+          if (recalculatedPeso != null) {
+            $("#peso").val(recalculatedPeso);
+          }
+        }
         // initialize select2
         $("#selIngrediente").select2({
           dropdownParent: $("#addIngredientModal"),
@@ -739,9 +765,7 @@
               type: "GET",
               success: function (response) {
                 console.debug(response);
-                $("#cantidad").val(response.fractionalCantSugerida);
-                $("#peso").val(response.pesoNeto);
-                $("#unidad").val(response.unidad);
+                applyAlimentoDefaults(response);
                 $("#ingredientesLoader").hide();
                 $("#ingredientesContent").show();
                 // enable add button
@@ -750,8 +774,12 @@
             });
           }
         });
+        $("#cantidad").on("input change", function () {
+          recalculatePesoFromCantidad();
+        });
         // reset form on modal close
         $("#addIngredientModal").on("hidden.bs.modal", function () {
+          selectedAlimentoReference = null;
           $("#ingredientesContent").hide();
           $("#selIngrediente").val("");
           $("#selIngrediente").trigger("change");

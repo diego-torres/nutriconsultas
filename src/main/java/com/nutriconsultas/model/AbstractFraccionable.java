@@ -79,4 +79,14 @@ public abstract class AbstractFraccionable extends AbstractNutrible {
 		}
 	}
 
+	/**
+	 * Net weight (g) per one reference portion unit ({@code pesoNeto / cantSugerida}).
+	 */
+	public Double getPesoUnitario() {
+		if (cantSugerida == null || cantSugerida == 0 || getPesoNeto() == null) {
+			return null;
+		}
+		return getPesoNeto().doubleValue() / cantSugerida;
+	}
+
 }

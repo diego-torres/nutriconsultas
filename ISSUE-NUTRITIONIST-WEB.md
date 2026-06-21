@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-20 — ~~#238~~ **done** (PR [#279](https://github.com/diego-torres/nutriconsultas/pull/279)). ~~#237~~ **done** (PR [#278](https://github.com/diego-torres/nutriconsultas/pull/278)). ~~#275~~ **done** (PR [#276](https://github.com/diego-torres/nutriconsultas/pull/276)). ~~#236~~ **done** (PR [#274](https://github.com/diego-torres/nutriconsultas/pull/274)). Epic **#271–#272** registered (platform admin **create** system catalog platillos/diets). ~~#259~~ **done** (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)). Platillo ownership **#257–#259 complete**. **NEXT:** [#239 add-ingredient weight recalc](https://github.com/diego-torres/nutriconsultas/issues/239). Epics **#239–#242**, **#271–#272** registered.
+**Last updated:** 2026-06-20 — ~~#239~~ **done** (`issue-239-ingredient-weight-recalc`, bd07fb4). Epic **#280–#281** registered (diet full nutrients modal; in-row platillo ingredient edit). ~~#238~~ **done** (PR [#279](https://github.com/diego-torres/nutriconsultas/pull/279)). ~~#237~~ **done** (PR [#278](https://github.com/diego-torres/nutriconsultas/pull/278)). ~~#275~~ **done** (PR [#276](https://github.com/diego-torres/nutriconsultas/pull/276)). ~~#236~~ **done** (PR [#274](https://github.com/diego-torres/nutriconsultas/pull/274)). Epic **#271–#272** registered (platform admin **create** system catalog platillos/diets). ~~#259~~ **done** (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)). Platillo ownership **#257–#259 complete**. **NEXT:** [#240 round ingredient fractions](https://github.com/diego-torres/nutriconsultas/issues/240). Epics **#239–#242**, **#271–#272**, **#280–#281** registered.
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -129,14 +129,32 @@ Platform admins can **edit** seeded system rows (#232 diets, #257 platillos) but
 | Round fractions to ½, ¼, ⅓ in platillo table & PDFs | #240 |
 | Platillo image upload size limit + user-facing oversize error | #275 |
 
-**Suggested order:** #238 independent; #239 → #240. ~~#275~~ **done** (PR [#276](https://github.com/diego-torres/nutriconsultas/pull/276)).
+**Suggested order:** #238 independent; ~~#239~~ **done** → #240. ~~#275~~ **done** (PR [#276](https://github.com/diego-torres/nutriconsultas/pull/276)).
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
 | **238** | Diet detail — macronutrients table below caloric distribution | https://github.com/diego-torres/nutriconsultas/issues/238 | **done** | — | PR [#279](https://github.com/diego-torres/nutriconsultas/pull/279); macro table + layout |
-| 239 | Add-ingredient dialog — recalculate weight from portion quantity | https://github.com/diego-torres/nutriconsultas/issues/239 | open | — | Platillo + dietas modals |
+| **239** | Add-ingredient dialog — recalculate weight from portion quantity | https://github.com/diego-torres/nutriconsultas/issues/239 | **done** | — | `issue-239-ingredient-weight-recalc` (bd07fb4); platillo + dietas modals; ingesta card scroll |
 | 240 | Round ingredient fractions to ½, ¼, or ⅓ in UI and meal-plan PDFs | https://github.com/diego-torres/nutriconsultas/issues/240 | open | — | Extend `AbstractFraccionable` |
 | **275** | Platillo image upload — raise size limit and show user-facing error | https://github.com/diego-torres/nutriconsultas/issues/275 | **done** | — | PR [#276](https://github.com/diego-torres/nutriconsultas/pull/276); 10MB limit; `AdminMultipartExceptionHandler` |
+
+---
+
+## Epic — Diet detail nutrients & ingesta platillo editing
+
+Full nutrient visibility and inline platillo customization on the diet form without leaving the ingesta grid.
+
+| Requirement | Issues |
+|-------------|--------|
+| Full nutrients modal from macronutrients table | #280 |
+| In-row platillo ingredient editor + diet nutrient refresh | #281 |
+
+**Suggested order:** #280 independent; #281 after **#239** (weight recalc in sub-row add-ingredient dialog). #281 should refresh macro table (#238) and full-nutrient modal (#280) when both exist.
+
+| # | Title | URL | State | Depends on | Notes |
+|---|-------|-----|-------|-----------|-------|
+| **280** | Diet detail — full nutrients modal from macronutrients table | https://github.com/diego-torres/nutriconsultas/issues/280 | open | **238** | Roll up all `AbstractNutrible` fields from ingestas; modal from macro table |
+| **281** | Diet ingesta grid — in-row platillo ingredient editing with nutrient refresh | https://github.com/diego-torres/nutriconsultas/issues/281 | open | **238**, **239** | Sub-row editor on `PlatilloIngesta` snapshot; recalc dieta totals |
 
 ---
 
@@ -184,6 +202,7 @@ Platform admins can **edit** seeded system rows (#232 diets, #257 platillos) but
 | #183 Platform admin | System diet edit (#232), create (#272); system platillo edit (#257), create (#271) |
 | #187 Branded PDF | Logo profile (#236) and PDF sizing (#237) |
 | #198 Diet templates | System diets seeded; editable (#232) and creatable (#272) by admin |
+| #280 / #281 Diet nutrients | Full nutrient modal (#280); in-row platillo edit on ingesta grid (#281) — refresh dieta rollup |
 | #243 / #244 Subscription | reCAPTCHA + Solicitar acceso pre-fill — public funnel, not admin UI |
 | #245–#248 Public booking | Nutritionist hours in profile (#246) — separate track |
 
