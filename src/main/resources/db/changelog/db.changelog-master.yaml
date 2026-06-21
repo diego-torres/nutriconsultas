@@ -41,3 +41,6 @@ databaseChangeLog:
   - include:
       file: changes/014-nutritionist-availability.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/015-nutritionist-availability-block.yaml
+      relativeToChangelogFile: true

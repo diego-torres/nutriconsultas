@@ -111,6 +111,19 @@
       border-color: #4e73df;
       color: #fff;
     }
+    .availability-block-event {
+      opacity: 0.85;
+      background-image: repeating-linear-gradient(
+        -45deg,
+        rgba(255, 255, 255, 0.15),
+        rgba(255, 255, 255, 0.15) 6px,
+        transparent 6px,
+        transparent 12px
+      ) !important;
+    }
+    .availability-block-event .fc-event-title {
+      font-weight: 600;
+    }
   </style>
 </head>
 
@@ -131,9 +144,14 @@
           <!-- Page Heading -->
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Calendario de Citas</h1>
-            <a th:href="@{/admin/calendario/nuevo}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-              <i class="fas fa-plus fa-sm text-white-50"></i> Nueva Cita
-            </a>
+            <div>
+              <button type="button" id="btnMarcarAusencia" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm mr-2">
+                <i class="fas fa-ban fa-sm"></i> Marcar ausencia
+              </button>
+              <a th:href="@{/admin/calendario/nuevo}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-plus fa-sm text-white-50"></i> Nueva Cita
+              </a>
+            </div>
           </div>
 
           <!-- Content Row -->
@@ -225,6 +243,70 @@
             </div>
           </div>
 
+          <!-- Modal para marcar ausencia / bloqueo -->
+          <div class="modal fade" id="nuevaAusenciaModal" tabindex="-1" role="dialog" aria-labelledby="nuevaAusenciaModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="nuevaAusenciaModalLabel">Marcar ausencia</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <form id="nuevaAusenciaForm">
+                  <div class="modal-body">
+                    <div class="form-group">
+                      <label for="bloqueoTituloInput">Motivo<span style="color:red;">*</span></label>
+                      <input type="text" class="form-control" id="bloqueoTituloInput" name="title"
+                        placeholder="Vacaciones, conferencia, día libre..." required maxlength="200">
+                    </div>
+                    <div class="form-group form-check">
+                      <input type="checkbox" class="form-check-input" id="bloqueoDiaCompletoInput" name="allDay">
+                      <label class="form-check-label" for="bloqueoDiaCompletoInput">Día completo</label>
+                    </div>
+                    <div class="form-group" id="bloqueoInicioGroup">
+                      <label for="bloqueoInicioInput">Inicio<span style="color:red;">*</span></label>
+                      <input type="datetime-local" class="form-control" id="bloqueoInicioInput" name="startDateTime" required>
+                    </div>
+                    <div class="form-group" id="bloqueoFinGroup">
+                      <label for="bloqueoFinInput">Fin<span style="color:red;">*</span></label>
+                      <input type="datetime-local" class="form-control" id="bloqueoFinInput" name="endDateTime" required>
+                    </div>
+                    <p class="small text-muted mb-0">Los bloqueos impiden reservas públicas y reducen horarios disponibles al agendar citas.</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-secondary">Guardar bloqueo</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal detalle bloqueo -->
+          <div class="modal fade" id="bloqueoDetalleModal" tabindex="-1" role="dialog" aria-labelledby="bloqueoDetalleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="bloqueoDetalleModalLabel">Bloqueo de disponibilidad</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <p><strong>Motivo:</strong> <span id="bloqueoDetalleTitulo"></span></p>
+                  <p><strong>Inicio:</strong> <span id="bloqueoDetalleInicio"></span></p>
+                  <p><strong>Fin:</strong> <span id="bloqueoDetalleFin"></span></p>
+                  <p class="mb-0"><strong>Tipo:</strong> <span id="bloqueoDetalleTipo"></span></p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                  <button type="button" class="btn btn-danger" id="btnEliminarBloqueo">Eliminar bloqueo</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
         <!-- End of Main Content -->
 
@@ -265,6 +347,55 @@
         jQuery(document).ready(function($) {
 
           let calendar;
+          let selectedBlockId = null;
+
+          function formatDateTimeLocal(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
+          }
+
+          function formatDisplayDateTime(value) {
+            if (!value) {
+              return '';
+            }
+            const date = new Date(value);
+            return date.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+          }
+
+          function toggleBloqueoAllDayInputs() {
+            const allDay = $('#bloqueoDiaCompletoInput').is(':checked');
+            if (allDay) {
+              $('#bloqueoInicioInput').attr('type', 'date');
+              $('#bloqueoFinInput').attr('type', 'date');
+            } else {
+              $('#bloqueoInicioInput').attr('type', 'datetime-local');
+              $('#bloqueoFinInput').attr('type', 'datetime-local');
+            }
+          }
+
+          function buildBlockPayload() {
+            const allDay = $('#bloqueoDiaCompletoInput').is(':checked');
+            const title = $('#bloqueoTituloInput').val();
+            let startValue = $('#bloqueoInicioInput').val();
+            let endValue = $('#bloqueoFinInput').val();
+            if (allDay) {
+              startValue = startValue + 'T00:00:00';
+              endValue = endValue + 'T00:00:00';
+            } else {
+              startValue = startValue.length === 16 ? startValue + ':00' : startValue;
+              endValue = endValue.length === 16 ? endValue + ':00' : endValue;
+            }
+            return {
+              title: title,
+              allDay: allDay,
+              startDateTime: startValue,
+              endDateTime: endValue
+            };
+          }
 
           const calendarEl = document.getElementById('calendar');
           if (!calendarEl) {
@@ -289,20 +420,16 @@
           events: function(fetchInfo, successCallback, failureCallback) {
             const start = fetchInfo.start.toISOString();
             const end = fetchInfo.end.toISOString();
-            $.ajax({
-              url: '/rest/calendario/events',
-              type: 'GET',
-              data: {
-                start: start,
-                end: end
-              },
-              success: function(data) {
-                successCallback(data);
-              },
-              error: function(xhr, status, error) {
-                console.error('Error loading calendar events:', error);
-                failureCallback();
-              }
+            $.when(
+              $.ajax({ url: '/rest/calendario/events', type: 'GET', data: { start: start, end: end } }),
+              $.ajax({ url: '/rest/calendario/blocks', type: 'GET', data: { start: start, end: end } })
+            ).done(function(eventsResponse, blocksResponse) {
+              const appointments = eventsResponse[0] || [];
+              const blocks = blocksResponse[0] || [];
+              successCallback(appointments.concat(blocks));
+            }).fail(function(xhr, status, error) {
+              console.error('Error loading calendar events:', error);
+              failureCallback();
             });
           },
           dateClick: function(info) {
@@ -397,7 +524,15 @@
           selectMirror: true,
           eventClick: function(info) {
             info.jsEvent.preventDefault();
-            // Navigate to event detail page
+            if (info.event.extendedProps && info.event.extendedProps.type === 'BLOCK') {
+              selectedBlockId = info.event.extendedProps.blockId;
+              $('#bloqueoDetalleTitulo').text(info.event.title || 'Ausencia');
+              $('#bloqueoDetalleInicio').text(formatDisplayDateTime(info.event.start));
+              $('#bloqueoDetalleFin').text(formatDisplayDateTime(info.event.end));
+              $('#bloqueoDetalleTipo').text(info.event.allDay ? 'Día completo' : 'Rango horario');
+              $('#bloqueoDetalleModal').modal('show');
+              return;
+            }
             const eventId = info.event.id;
             window.location.href = '/admin/calendario/' + eventId;
           },
@@ -427,6 +562,89 @@
         });
 
         calendar.render();
+
+        $('#btnMarcarAusencia').on('click', function() {
+          $('#nuevaAusenciaForm')[0].reset();
+          $('#bloqueoTituloInput').val('No disponible');
+          toggleBloqueoAllDayInputs();
+          $('#nuevaAusenciaModal').modal('show');
+        });
+
+        $('#bloqueoDiaCompletoInput').on('change', toggleBloqueoAllDayInputs);
+
+        $('#nuevaAusenciaModal').on('hidden.bs.modal', function() {
+          $('#nuevaAusenciaForm')[0].reset();
+          toggleBloqueoAllDayInputs();
+        });
+
+        $('#nuevaAusenciaForm').on('submit', function(e) {
+          e.preventDefault();
+          const payload = buildBlockPayload();
+          if (!payload.title || !payload.startDateTime || !payload.endDateTime) {
+            swal({ title: 'Campos requeridos', text: 'Complete motivo, inicio y fin.', type: 'warning', timer: 4000 });
+            return;
+          }
+          const submitButton = $(this).find('button[type="submit"]');
+          submitButton.prop('disabled', true).text('Guardando...');
+          $.ajax({
+            url: '/rest/calendario/blocks',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            success: function(response) {
+              if (response.success) {
+                calendar.refetchEvents();
+                $('#nuevaAusenciaModal').modal('hide');
+                swal({ title: 'Bloqueo guardado', text: 'La ausencia se aplicó al calendario.', type: 'success', timer: 2000 });
+              } else {
+                swal({ title: 'Error', text: response.error || 'No se pudo guardar el bloqueo.', type: 'error', timer: 5000 });
+              }
+            },
+            error: function(xhr) {
+              const message = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'Error al guardar el bloqueo.';
+              swal({ title: 'Error', text: message, type: 'error', timer: 5000 });
+            },
+            complete: function() {
+              submitButton.prop('disabled', false).text('Guardar bloqueo');
+            }
+          });
+        });
+
+        $('#btnEliminarBloqueo').on('click', function() {
+          if (!selectedBlockId) {
+            return;
+          }
+          swal({
+            title: '¿Eliminar bloqueo?',
+            text: 'Este horario volverá a estar disponible para reservas.',
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+          }, function(isConfirm) {
+            if (!isConfirm) {
+              return;
+            }
+            $.ajax({
+              url: '/rest/calendario/blocks/' + selectedBlockId,
+              type: 'DELETE',
+              success: function(response) {
+                if (response.success) {
+                  $('#bloqueoDetalleModal').modal('hide');
+                  calendar.refetchEvents();
+                  swal({ title: 'Bloqueo eliminado', type: 'success', timer: 2000 });
+                } else {
+                  swal({ title: 'Error', text: response.error || 'No se pudo eliminar.', type: 'error', timer: 5000 });
+                }
+              },
+              error: function(xhr) {
+                const message = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'Error al eliminar el bloqueo.';
+                swal({ title: 'Error', text: message, type: 'error', timer: 5000 });
+              }
+            });
+          });
+        });
 
         // Cargar lista de pacientes al abrir el modal
         $('#nuevaCitaModal').on('show.bs.modal', function() {

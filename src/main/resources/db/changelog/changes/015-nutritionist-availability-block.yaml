@@ -1,0 +1,54 @@
+databaseChangeLog:
+  - changeSet:
+      id: 015-nutritionist-availability-block
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: nutritionist_availability_block
+      changes:
+        - createTable:
+            tableName: nutritionist_availability_block
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: VARCHAR(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: all_day
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_date_time
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_date_time
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+        - createIndex:
+            indexName: idx_nab_user_id_start
+            tableName: nutritionist_availability_block
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: start_date_time
