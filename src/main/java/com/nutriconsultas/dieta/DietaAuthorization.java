@@ -75,4 +75,17 @@ public class DietaAuthorization {
 		platformAdminAuditService.recordAction(actorUserId, action + ":dietaId=" + dieta.getId());
 	}
 
+	/**
+	 * Resolves the owner {@code userId} for a newly created diet. Platform admins create
+	 * system template rows; all other users create owned rows. Client-supplied
+	 * {@code userId} values are ignored — callers must use this method instead of
+	 * trusting request data.
+	 */
+	public String resolveCreateUserId(final OidcUser principal, @NonNull final String oauthUserId) {
+		if (platformAdminService.isPlatformAdmin(principal)) {
+			return DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID;
+		}
+		return oauthUserId;
+	}
+
 }

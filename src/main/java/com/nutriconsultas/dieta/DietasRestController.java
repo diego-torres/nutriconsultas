@@ -79,14 +79,15 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 			throw new IllegalArgumentException("No se pudo identificar al usuario");
 		}
 		final String userId = principal.getSubject();
-		dieta.setUserId(userId);
+		dieta.setUserId(dietaAuthorization.resolveCreateUserId(principal, userId));
 		final List<Ingesta> ingestas = Stream.of("Desayuno", "Comida", "Cena")
 			.map(Ingesta::new)
 			.collect(Collectors.toList());
 		ingestas.forEach(i -> i.setDieta(dieta));
 		dieta.setIngestas(ingestas);
 		final Dieta savedDieta = dietaService.saveDieta(dieta);
-		log.info("finish addDieta with dieta {}.", dieta);
+		dietaAuthorization.auditSystemDietMutationIfNeeded(principal, savedDieta, "dietas.create");
+		log.info("finish addDieta with dieta {}.", savedDieta);
 		return savedDieta;
 	}
 

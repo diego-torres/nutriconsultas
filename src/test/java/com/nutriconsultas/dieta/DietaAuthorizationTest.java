@@ -147,6 +147,24 @@ class DietaAuthorizationTest {
 				org.mockito.ArgumentMatchers.anyString());
 	}
 
+	@Test
+	void resolveCreateUserId_returnsSystemTemplateUserIdForPlatformAdmin() {
+		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
+		when(platformAdminService.isPlatformAdmin(platformAdminPrincipal)).thenReturn(true);
+
+		assertThat(dietaAuthorization.resolveCreateUserId(platformAdminPrincipal, PLATFORM_ADMIN_USER_ID))
+			.isEqualTo(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+	}
+
+	@Test
+	void resolveCreateUserId_returnsOAuthUserIdForNutritionist() {
+		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
+		when(platformAdminService.isPlatformAdmin(nutritionistPrincipal)).thenReturn(false);
+
+		assertThat(dietaAuthorization.resolveCreateUserId(nutritionistPrincipal, NUTRITIONIST_USER_ID))
+			.isEqualTo(NUTRITIONIST_USER_ID);
+	}
+
 	private static Dieta ownedDiet(final Long id, final String userId) {
 		final Dieta dieta = new Dieta();
 		dieta.setId(id);
