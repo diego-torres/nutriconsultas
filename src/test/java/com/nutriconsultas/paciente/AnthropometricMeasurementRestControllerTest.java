@@ -25,6 +25,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.nutriconsultas.clinical.exam.BodyFatSource;
 import com.nutriconsultas.clinical.exam.LatestBodyFatResult;
+import com.nutriconsultas.clinical.exam.anthropometric.AnthropometricDerivedFieldsDto;
+import com.nutriconsultas.clinical.exam.anthropometric.AnthropometricFieldUpdateRequest;
 
 import com.nutriconsultas.dataTables.paging.Direction;
 import com.nutriconsultas.dataTables.paging.Order;
@@ -224,6 +226,37 @@ public class AnthropometricMeasurementRestControllerTest {
 	@Test
 	public void testGetLatestBodyFatReturnsUnauthorizedWithoutPrincipal() {
 		final ResponseEntity<?> result = restController.getLatestBodyFat(1L, null);
+
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+	}
+
+	@Test
+	public void testUpdateFieldSuccess() {
+		final OidcUser principal = org.mockito.Mockito.mock(OidcUser.class);
+		when(principal.getSubject()).thenReturn("user-1");
+		final AnthropometricFieldUpdateRequest request = new AnthropometricFieldUpdateRequest();
+		request.setFieldKey("bodyMass.weight");
+		request.setValue(72.0);
+		request.setConfirmDerivedRecalc(true);
+		final AnthropometricDerivedFieldsDto derived = new AnthropometricDerivedFieldsDto(72.0, 23.5,
+				com.nutriconsultas.paciente.NivelPeso.NORMAL, null, null, null, null, null, null, null, null, null,
+				null, new Date());
+		when(anthropometricMeasurementService.updateCorrectableField(1L, 1L, "user-1", request)).thenReturn(derived);
+
+		final ResponseEntity<Map<String, Object>> result = restController.updateField(1L, 1L, request, principal);
+
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(result.getBody()).containsEntry("success", true);
+		assertThat(result.getBody().get("data")).isEqualTo(derived);
+	}
+
+	@Test
+	public void testUpdateFieldUnauthorizedWithoutPrincipal() {
+		final AnthropometricFieldUpdateRequest request = new AnthropometricFieldUpdateRequest();
+		request.setFieldKey("bodyMass.weight");
+		request.setValue(72.0);
+
+		final ResponseEntity<Map<String, Object>> result = restController.updateField(1L, 1L, request, null);
 
 		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 	}

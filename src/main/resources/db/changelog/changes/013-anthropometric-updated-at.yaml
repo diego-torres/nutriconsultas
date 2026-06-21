@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: 013-anthropometric-updated-at
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: anthropometric_measurement
+              columnName: updated_at
+      changes:
+        - addColumn:
+            tableName: anthropometric_measurement
+            columns:
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: true

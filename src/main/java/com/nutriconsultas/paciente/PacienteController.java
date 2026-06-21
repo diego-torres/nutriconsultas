@@ -29,6 +29,7 @@ import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventService;
 import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
+import com.nutriconsultas.clinical.exam.anthropometric.AnthropometricFieldCatalog;
 import com.nutriconsultas.clinical.exam.ClinicalExam;
 import com.nutriconsultas.clinical.exam.ClinicalExamService;
 import com.nutriconsultas.auth0.Auth0UserLookup;
@@ -796,6 +797,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		final Boolean isMale = measurement.getPaciente().getGender() != null
 				&& "M".equals(measurement.getPaciente().getGender());
 		model.addAttribute("patientIsMale", isMale);
+		model.addAttribute("editableFields", AnthropometricFieldCatalog.allDefinitions());
 		return "sbadmin/pacientes/ver-antropometrico";
 	}
 

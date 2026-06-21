@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-21 — ~~#241~~ **done** (PR [#291](https://github.com/diego-torres/nutriconsultas/pull/291)). **NEXT:** #242. ~~#272~~ **done** (PR [#289](https://github.com/diego-torres/nutriconsultas/pull/289)). ~~#271~~ **done** (PR [#288](https://github.com/diego-torres/nutriconsultas/pull/288)).
+**Last updated:** 2026-06-21 — ~~#242~~ **done** (branch `issue-242-anthropometric-field-edit`). ~~#241~~ **done** (PR [#291](https://github.com/diego-torres/nutriconsultas/pull/291)). Patient UX epic **complete** (#241–#242). ~~#272~~ **done** (PR [#289](https://github.com/diego-torres/nutriconsultas/pull/289)). ~~#271~~ **done** (PR [#288](https://github.com/diego-torres/nutriconsultas/pull/288)).
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -181,12 +181,12 @@ Inline **cantidad** editing on the catalog platillo form (`/admin/platillos/{id}
 | Selectable patient avatars | #241 |
 | Per-field anthropometric correction + recalc | #242 |
 
-**Suggested order:** parallel.
+**Suggested order:** parallel. **Epic complete** after #242.
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
 | 241 | Patient profile — selectable patient avatars | https://github.com/diego-torres/nutriconsultas/issues/241 | **done** | #46 | PR [#291](https://github.com/diego-torres/nutriconsultas/pull/291); `avatar_id` + 20 PNG avatars |
-| 242 | Anthropometrics — per-field correction with recalculation | https://github.com/diego-torres/nutriconsultas/issues/242 | open | #161 (context) | Edit icon per field; derived metrics |
+| 242 | Anthropometrics — per-field correction with recalculation | https://github.com/diego-torres/nutriconsultas/issues/242 | **done** | #161 (context) | Branch `issue-242-anthropometric-field-edit`; PUT `/rest/pacientes/{id}/antropometricos/{mid}/fields`; SweetAlert confirm |
 
 ---
 

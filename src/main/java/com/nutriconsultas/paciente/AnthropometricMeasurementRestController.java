@@ -20,9 +20,15 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
+
+import com.nutriconsultas.clinical.exam.anthropometric.AnthropometricDerivedFieldsDto;
+import com.nutriconsultas.clinical.exam.anthropometric.AnthropometricFieldUpdateRequest;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -195,6 +201,39 @@ public class AnthropometricMeasurementRestController extends AbstractGridControl
 		}
 		log.debug("Returning latest body fat for paciente id {}", id);
 		return ResponseEntity.ok(result.get());
+	}
+
+	@PutMapping("/{measurementId}/fields")
+	public ResponseEntity<Map<String, Object>> updateField(@PathVariable @NonNull final Long id,
+			@PathVariable @NonNull final Long measurementId,
+			@Valid @RequestBody final AnthropometricFieldUpdateRequest request,
+			@AuthenticationPrincipal final OidcUser principal) {
+		final String userId = principal != null ? principal.getSubject() : null;
+		if (userId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				.body(Map.of("success", false, "error", "No autenticado"));
+		}
+		try {
+			final AnthropometricDerivedFieldsDto derived = anthropometricMeasurementService.updateCorrectableField(id,
+					measurementId, userId, request);
+			final Map<String, Object> response = new HashMap<>();
+			response.put("success", true);
+			response.put("data", derived);
+			return ResponseEntity.ok(response);
+		}
+		catch (final IllegalStateException ex) {
+			return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(Map.of("success", false, "error", ex.getMessage(), "requiresConfirmation", true));
+		}
+		catch (final IllegalArgumentException ex) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(Map.of("success", false, "error", ex.getMessage()));
+		}
+		catch (final Exception ex) {
+			log.error("Error updating anthropometric field for measurement {}", measurementId, ex);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(Map.of("success", false, "error", "Error al actualizar el campo"));
+		}
 	}
 
 	@DeleteMapping("/{measurementId}")

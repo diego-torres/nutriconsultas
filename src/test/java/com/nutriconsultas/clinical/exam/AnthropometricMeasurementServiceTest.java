@@ -1,11 +1,13 @@
 package com.nutriconsultas.clinical.exam;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +23,9 @@ import org.springframework.test.context.ActiveProfiles;
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.clinical.exam.anthropometric.AnthropometricDerivedFieldsDto;
+import com.nutriconsultas.clinical.exam.anthropometric.AnthropometricFieldUpdateRequest;
+import com.nutriconsultas.clinical.exam.anthropometric.AnthropometricRecalcGroup;
 import com.nutriconsultas.clinical.exam.anthropometric.BodyMass;
 import com.nutriconsultas.clinical.exam.anthropometric.Circumferences;
 import com.nutriconsultas.clinical.exam.anthropometric.BodyComposition;
@@ -48,6 +53,9 @@ public class AnthropometricMeasurementServiceTest {
 
 	@Mock
 	private PacienteRepository pacienteRepository;
+
+	@Mock
+	private com.nutriconsultas.clinical.exam.anthropometric.AnthropometricRecalculationService recalculationService;
 
 	private Paciente paciente;
 
@@ -381,6 +389,67 @@ public class AnthropometricMeasurementServiceTest {
 		final Optional<LatestBodyFatResult> result = service.findLatestBodyFatForPatient(1L, "other-user");
 
 		assertThat(result).isEmpty();
+	}
+
+	@Test
+	public void testUpdateCorrectableFieldUpdatesWeightAndRecalculates() {
+		paciente.setUserId("user-1");
+		measurement.setPaciente(paciente);
+		when(pacienteRepository.findByIdAndUserId(1L, "user-1")).thenReturn(Optional.of(paciente));
+		when(repository.findById(1L)).thenReturn(Optional.of(measurement));
+		when(recalculationService.groupsForField(any()))
+			.thenReturn(EnumSet.of(AnthropometricRecalcGroup.BMI, AnthropometricRecalcGroup.COMPOSITION,
+					AnthropometricRecalcGroup.ENERGY, AnthropometricRecalcGroup.PATIENT_SNAPSHOT));
+		when(recalculationService.applyRecalcGroups(any(), any(), any())).thenReturn(new AnthropometricDerivedFieldsDto(
+				72.0, 23.5, NivelPeso.NORMAL, null, null, null, null, null, null, null, null, null, null, new Date()));
+		when(recalculationService.toDerivedFields(any(), any())).thenReturn(new AnthropometricDerivedFieldsDto(72.0,
+				23.5, NivelPeso.NORMAL, null, null, null, null, null, null, null, null, null, null, new Date()));
+		when(repository.save(any(AnthropometricMeasurement.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		final AnthropometricFieldUpdateRequest request = new AnthropometricFieldUpdateRequest();
+		request.setFieldKey("bodyMass.weight");
+		request.setValue(72.0);
+		request.setConfirmDerivedRecalc(true);
+
+		final AnthropometricDerivedFieldsDto result = service.updateCorrectableField(1L, 1L, "user-1", request);
+
+		assertThat(result.fieldValue()).isEqualTo(72.0);
+		assertThat(measurement.getPeso()).isEqualTo(72.0);
+		assertThat(measurement.getUpdatedAt()).isNotNull();
+		verify(bodyMetricRecordService).syncFromAnthropometric(measurement);
+	}
+
+	@Test
+	public void testUpdateCorrectableFieldRejectsUnauthorizedUser() {
+		paciente.setUserId("owner-user");
+		measurement.setPaciente(paciente);
+		when(pacienteRepository.findByIdAndUserId(1L, "other-user")).thenReturn(Optional.empty());
+
+		final AnthropometricFieldUpdateRequest request = new AnthropometricFieldUpdateRequest();
+		request.setFieldKey("bodyMass.weight");
+		request.setValue(72.0);
+		request.setConfirmDerivedRecalc(true);
+
+		assertThatThrownBy(() -> service.updateCorrectableField(1L, 1L, "other-user", request))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("Paciente no encontrado");
+	}
+
+	@Test
+	public void testUpdateCorrectableFieldRequiresConfirmationWhenConfigured() {
+		paciente.setUserId("user-1");
+		measurement.setPaciente(paciente);
+		when(pacienteRepository.findByIdAndUserId(1L, "user-1")).thenReturn(Optional.of(paciente));
+		when(repository.findById(1L)).thenReturn(Optional.of(measurement));
+
+		final AnthropometricFieldUpdateRequest request = new AnthropometricFieldUpdateRequest();
+		request.setFieldKey("bodyMass.weight");
+		request.setValue(72.0);
+		request.setConfirmDerivedRecalc(false);
+
+		assertThatThrownBy(() -> service.updateCorrectableField(1L, 1L, "user-1", request))
+			.isInstanceOf(IllegalStateException.class)
+			.hasMessageContaining("confirmación");
 	}
 
 }
