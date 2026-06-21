@@ -211,6 +211,43 @@
                 </div>
               </div>
 
+              <!-- Public booking link (#297) -->
+              <div class="col-12">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                      <i class="fas fa-link"></i> Enlace público de agendamiento
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <p class="text-muted small mb-3">
+                      Comparte este enlace con tus pacientes para que agenden citas en línea según tu horario
+                      configurado.
+                    </p>
+                    <div th:if="${publicBookingLinkEnabled}">
+                      <label for="publicBookingUrlText" class="sr-only">Enlace de agendamiento</label>
+                      <div class="input-group">
+                        <input type="text"
+                          class="form-control"
+                          id="publicBookingUrlText"
+                          readonly
+                          th:value="${publicBookingUrl}" />
+                        <div class="input-group-append">
+                          <button type="button" id="copyPublicBookingUrlBtn" class="btn btn-primary">
+                            <i class="fas fa-copy"></i> Copiar enlace
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div th:unless="${publicBookingLinkEnabled}" class="alert alert-info mb-0" role="status">
+                      <span th:text="${publicBookingLinkDisabledMessage}">
+                        Necesitas una suscripción activa para compartir tu enlace de agendamiento.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Public booking: working hours (#246) -->
               <div class="col-12">
                 <div class="card shadow mb-4">
@@ -390,6 +427,27 @@
         });
 
         loadAvailability();
+      })(jQuery);
+    </script>
+    <script lang="javascript">
+      'use strict';
+      (function ($) {
+        $('#copyPublicBookingUrlBtn').on('click', function () {
+          var text = $('#publicBookingUrlText').val();
+          if (!text) {
+            return;
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () {
+              swal({
+                title: 'Copiado',
+                text: 'Enlace de agendamiento copiado al portapapeles.',
+                type: 'success',
+                timer: 2000
+              });
+            });
+          }
+        });
       })(jQuery);
     </script>
     <script lang="javascript">
