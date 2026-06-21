@@ -175,6 +175,46 @@ Add to each a short "Backend dependency" line per the cross-reference table, e.g
 - **Active sprint:** ~~#132~~ ~~#133~~ **done** (PRs #214, #229); **NEXT:** #134–#141 per [`ISSUE.md`](../../ISSUE.md) Phase 2.
 - **Orthogonal:** nutritionist subscription invitations (`NutritionistInvitation` in subscription track) — see [`ISSUE-SUBSCRIPTION.md`](../../ISSUE-SUBSCRIPTION.md); do not conflate with patient `Invitation`.
 
+#### F8.6.1 — Token contract (AUTHORITATIVE; verified against `main` #133 code, 2026-06-21)
+
+Source: `util/InvitationTokenHasher`, `paciente/invitation/PatientInvitationHumanCode`, `PatientInvitationJws`, `PatientInvitationProperties`.
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| URL token entropy | 256 bits (32 bytes, `SecureRandom`) | `InvitationTokenHasher.generateToken()` |
+| URL token encoding | Base64url, **no padding** (43 chars) | sent in deep link; **never persisted raw** |
+| Stored value | SHA-256 hex, lowercase, 64 chars | hash only; compared via `MessageDigest.isEqual` (constant-time) |
+| Human code alphabet | Crockford base32 `0123456789ABCDEFGHJKMNPQRSTVWXYZ` | derived from the **same** secret as the URL token |
+| Human code format | `{PREFIX}-XXXX-XXXX` — 7 payload chars + 1 mod-32 checksum (8 total, shown as two groups of 4) | default `PREFIX` = `NUTRI` |
+| Default TTL | **14 days** | `nutriconsultas.patient.invitation.expiry-days` (env `PATIENT_INVITATION_EXPIRY_DAYS`) |
+| `maxUses` | **1** (single-use, bound to first redeeming `sub`) | `PatientInvitation.maxUses`; do not implement multi-use without a spec revision |
+
+#### F8.6.2 — Offline JWS (optional; HS256, for Auth0 Post-Login Action #140)
+
+- Algorithm `HS256`, compact serialization. Secret env `PATIENT_INVITATION_JWS_SECRET` — empty disables the JWS helpers entirely.
+- Payload fields (exact camelCase keys): `patientId` (long, `PatientInvitation.paciente.id`), `tokenHash` (SHA-256 hex — the JWS **binds** the token hash, not the raw token), `exp` (epoch seconds).
+- The DB redeem gate (#136) is the **authoritative** single-use enforcement point; offline JWS verification never substitutes for it. Rotating the secret invalidates outstanding JWS but not DB-backed invitations.
+
+#### F8.6.3 — Canonical error codes for #134–#141 (envelope `ApiResponse<T>` + localized message)
+
+| HTTP | Condition | Rule |
+|------|-----------|------|
+| 400 | malformed token (bad length/encoding) | `invitation.invalid` |
+| 404 | token absent **OR** expired **OR** revoked | single generic response — **never distinguish** (enumeration protection, #141) |
+| 409 | redeem by a different `sub` than the first redeemer | single-use breach |
+| 422 | patient not in `INVITED` status at redeem | status guard |
+| 429 | rate limit on `preview`/`redeem` | reuse #113 Resilience4j (`Retry-After`) |
+
+#### F8.6.4 — DoD controls every #134–#141 PR must satisfy (drift guard)
+
+These exit criteria live in the workflow but were not per-row in [`ISSUE.md`](../../ISSUE.md); enforce them here:
+- **IDOR test required** — esp. #136 redeem (patient JWT cannot redeem another patient's invite) and #139 revoke (nutritionist cannot revoke another tenant's invite). Ownership miss → 404, not 403.
+- **PHI/no-token logging** — raw `urlToken` and `humanCode` must never appear at any log level; extend the #115 `PhiLogTurboFilter` redaction list. #134/#136 write patient name/email/`patientAuthSub`.
+- **Liquibase same-PR** — #134 (create `Paciente`+`Invitation`), #136 (`patientAuthSub`+status), #138 (profile fields) ship their changeset in the same PR; no `ddl-auto=update`.
+- **OpenAPI regen** — every endpoint PR (#134+) regenerates [`openapi-mobile.yaml`](../api/openapi-mobile.yaml) (#112).
+- **`REVOKED` gating** — `CurrentPatient` resolver (#137) must return 403 for `PacienteStatus.REVOKED`, not only for non-onboarded states.
+- **#140 social cleanup decision** — #140 is not done until the social-user cleanup strategy (scheduled Management-API delete vs. leave-blocked) is chosen and documented under `docs/`.
+
 ### F8.5 — Design source of truth
 Canonical visual design: `mobile/.claude/MiNutriporcion-2/` (light editorial palette per JSX + 01-p-dashboard.png; the dark welcome/login screenshots are an OLD iteration — ignore).
 Mobile branch `style/editorial-redesign` implements it; auth dedup done (AuthFlowController canonical, PR #48's AuthController/LoginView retired). UI field inventory: `mobile/docs/schema-planning.md` §10.
