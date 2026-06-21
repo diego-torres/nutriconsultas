@@ -135,6 +135,16 @@ Set `AUTH_*` (including `AUTH_AUDIENCE` for `/rest/mobile/**` JWT validation), `
 
 Webhook URL to configure in the [Stripe Dashboard](https://dashboard.stripe.com/webhooks): `https://<your-domain>/rest/subscription/payment/webhook`. No card data is stored in the application database.
 
+**reCAPTCHA (#243)** — public contact form and future public booking use Google reCAPTCHA v2 (checkbox). Set in gitignored `terraform.tfvars` as `recaptcha_site_key` / `recaptcha_secret_key`, or export `TF_VAR_recaptcha_site_key` / `TF_VAR_recaptcha_secret_key` before `terraform apply` (written to `RECAPTCHA_*` in `app.env` on first boot). On a running app host:
+
+```bash
+export AWS_PROFILE=minutriporcion AWS_DEFAULT_REGION=us-east-1
+export RECAPTCHA_SITE_KEY='6L...' RECAPTCHA_SECRET_KEY='6L...'
+bash infrastructure/scripts/ssm-update-recaptcha-keys.sh
+```
+
+Local dev: copy `.env.example` to `.env` (Google test keys are fine). Production must use keys registered for `minutriporcion.com` at [Google reCAPTCHA admin](https://www.google.com/recaptcha/admin).
+
 Edit `/opt/nutriconsultas/app.env` in an SSM session (or a systemd `EnvironmentFile` drop-in). On instances already running, add missing keys manually and restart the app — `user_data` only runs at first boot. Never commit real secrets to git.
 
 ## Outputs
