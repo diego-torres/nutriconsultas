@@ -68,6 +68,9 @@ class PublicBookingServiceTest {
 	@Mock
 	private CalendarEventService calendarEventService;
 
+	@Mock
+	private PublicBookingConfirmationEmailSender confirmationEmailSender;
+
 	private NutritionistProfile profile;
 
 	private AvailabilityScheduleDto schedule;
@@ -141,6 +144,38 @@ class PublicBookingServiceTest {
 		verify(calendarEventService).save(captor.capture());
 		assertThat(captor.getValue().getStatus()).isEqualTo(EventStatus.SCHEDULED);
 		assertThat(captor.getValue().getPaciente().getId()).isEqualTo(5L);
+	}
+
+	@Test
+	void bookSendsConfirmationEmailAfterSuccessfulBooking() {
+		final LocalDate eligible = LocalDate.now(ZoneId.of(schedule.getTimezone())).plusDays(2);
+		when(bookingAvailabilitySlotService.getAvailableSlotStarts(USER_ID, eligible))
+			.thenReturn(List.of(LocalTime.of(10, 0)));
+		when(pacienteRepository.findFirstByUserIdAndEmailIgnoreCase(eq(USER_ID), eq("paciente@example.com")))
+			.thenReturn(Optional.empty());
+		final Paciente savedPatient = new Paciente();
+		savedPatient.setId(5L);
+		when(pacienteService.save(any(Paciente.class))).thenReturn(savedPatient);
+		when(calendarEventService.save(any(CalendarEvent.class))).thenAnswer(invocation -> {
+			final CalendarEvent event = invocation.getArgument(0);
+			event.setId(99L);
+			return event;
+		});
+
+		final PublicBookingRequestDto request = new PublicBookingRequestDto();
+		request.setPatientName("Paciente Test");
+		request.setPatientEmail("paciente@example.com");
+		request.setDate(eligible.toString());
+		request.setTime("10:00");
+
+		service.book(PUBLIC_ID, request);
+
+		final ArgumentCaptor<PublicBookingConfirmationEmailDetails> detailsCaptor = ArgumentCaptor
+			.forClass(PublicBookingConfirmationEmailDetails.class);
+		verify(confirmationEmailSender).sendConfirmation(eq("paciente@example.com"), detailsCaptor.capture());
+		assertThat(detailsCaptor.getValue().patientName()).isEqualTo("Paciente Test");
+		assertThat(detailsCaptor.getValue().nutritionistDisplayName()).isEqualTo("Dra. Ejemplo");
+		assertThat(detailsCaptor.getValue().appointmentTimeFormatted()).isEqualTo("10:00");
 	}
 
 	@Test

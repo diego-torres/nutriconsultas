@@ -34,6 +34,8 @@ public class PublicBookingServiceImpl implements PublicBookingService {
 
 	private static final DateTimeFormatter SLOT_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
+	private static final DateTimeFormatter APPOINTMENT_DATE_DISPLAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
 	private static final String DEFAULT_DISPLAY_NAME = "Consulta nutricional";
 
 	private static final String ADVANCE_NOTICE = "Las citas requieren al menos 2 días de anticipación.";
@@ -52,12 +54,15 @@ public class PublicBookingServiceImpl implements PublicBookingService {
 
 	private final CalendarEventService calendarEventService;
 
+	private final PublicBookingConfirmationEmailSender confirmationEmailSender;
+
 	public PublicBookingServiceImpl(final NutritionistProfileRepository profileRepository,
 			final SubscriptionAccessService subscriptionAccessService,
 			final NutritionistAvailabilityService availabilityService,
 			final BookingAvailabilitySlotService bookingAvailabilitySlotService,
 			final PacienteRepository pacienteRepository, final PacienteService pacienteService,
-			final CalendarEventService calendarEventService) {
+			final CalendarEventService calendarEventService,
+			final PublicBookingConfirmationEmailSender confirmationEmailSender) {
 		this.profileRepository = profileRepository;
 		this.subscriptionAccessService = subscriptionAccessService;
 		this.availabilityService = availabilityService;
@@ -65,6 +70,7 @@ public class PublicBookingServiceImpl implements PublicBookingService {
 		this.pacienteRepository = pacienteRepository;
 		this.pacienteService = pacienteService;
 		this.calendarEventService = calendarEventService;
+		this.confirmationEmailSender = confirmationEmailSender;
 	}
 
 	@Override
@@ -127,7 +133,16 @@ public class PublicBookingServiceImpl implements PublicBookingService {
 		final CalendarEvent saved = calendarEventService.save(event);
 		log.info("Public booking created event id={} for nutritionist userId={}", saved.getId(),
 				LogRedaction.redactUserId(userId));
+		sendConfirmationEmail(request, profile, date, time);
 		return new PublicBookingConfirmation(saved.getId(), date.toString(), SLOT_TIME_FORMAT.format(time));
+	}
+
+	private void sendConfirmationEmail(final PublicBookingRequestDto request, final NutritionistProfile profile,
+			final LocalDate date, final LocalTime time) {
+		final PublicBookingConfirmationEmailDetails details = new PublicBookingConfirmationEmailDetails(
+				request.getPatientName().trim(), resolveDisplayName(profile), date.format(APPOINTMENT_DATE_DISPLAY),
+				SLOT_TIME_FORMAT.format(time));
+		confirmationEmailSender.sendConfirmation(request.getPatientEmail().trim(), details);
 	}
 
 	private NutritionistProfile resolveActiveProfile(final String publicBookingId) {
