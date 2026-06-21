@@ -153,14 +153,7 @@ public class PublicBookingServiceImpl implements PublicBookingService {
 			}
 			return paciente;
 		}
-		final Paciente paciente = new Paciente();
-		paciente.setUserId(userId);
-		paciente.setName(request.getPatientName().trim());
-		paciente.setEmail(email);
-		if (StringUtils.hasText(request.getPatientPhone())) {
-			paciente.setPhone(request.getPatientPhone().trim());
-		}
-		return pacienteService.save(paciente);
+		return pacienteService.save(PublicBookingPatientFactory.buildProspect(userId, request));
 	}
 
 	private static String resolveDisplayName(final NutritionistProfile profile) {
