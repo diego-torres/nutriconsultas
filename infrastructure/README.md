@@ -130,6 +130,8 @@ Set `AUTH_*` (including `AUTH_AUDIENCE` for `/rest/mobile/**` JWT validation), `
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret (`Stripe-Signature` HMAC). |
 | `PAYMENT_PROVIDER` | Provider id (target default `stripe`; `mercadopago` legacy until #207 merges). |
 | `STRIPE_SUCCESS_URL` | Post-checkout redirect (default `https://minutriporcion.com/admin`). |
+| `STRIPE_CANCEL_URL` | Checkout cancel redirect (default `https://minutriporcion.com/admin`). |
+| `STRIPE_PRICE_BASICO` / `_PROFESIONAL` / `_PLUS` / `_CONSULTORIO` | Optional Stripe Price IDs per plan; omit to use inline `price_data` at checkout (#207). |
 | `PAYMENT_CURRENCY` | Billing currency (default `MXN`). |
 | `APP_BASE_URL` | Public site URL for invitation redeem links (e.g. `https://minutriporcion.com`). Set automatically from Terraform `public_site_domain` on new app instances; use `ssm-remediate-app-host.sh` or edit `app.env` on brownfield hosts. |
 

@@ -30,4 +30,26 @@ class PaymentPropertiesTest {
 		assertThat(properties.isMercadoPagoConfigured()).isTrue();
 	}
 
+	@Test
+	void isStripeConfiguredRequiresSecretKeyAndProvider() {
+		final PaymentProperties properties = new PaymentProperties();
+		properties.setProvider(PaymentProperties.PROVIDER_STRIPE);
+		properties.setStripeSecretKey("");
+
+		assertThat(properties.isStripeConfigured()).isFalse();
+
+		properties.setStripeSecretKey("sk_test_123");
+		assertThat(properties.isStripeConfigured()).isTrue();
+		assertThat(properties.isLivePaymentProviderConfigured()).isTrue();
+	}
+
+	@Test
+	void resolveStripePriceIdReturnsConfiguredValuePerTier() {
+		final PaymentProperties properties = new PaymentProperties();
+		properties.setStripePriceIdBasico("price_basico");
+
+		assertThat(properties.resolveStripePriceId(PlanTier.BASICO)).isEqualTo("price_basico");
+		assertThat(properties.resolveStripePriceId(PlanTier.PLUS)).isEmpty();
+	}
+
 }

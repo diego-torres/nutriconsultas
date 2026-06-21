@@ -586,7 +586,7 @@ Issue registry: [`ISSUE.md`](ISSUE.md). Agent workflow: [`AGENT-WORKFLOW.md`](AG
 
 Issue registry: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Agent workflow: [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md). Design: [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md).
 
-**Epic #180–#211** (2026-06-19): ~~#46~~ Liquibase done; ~~#180–#185~~, ~~#190~~, ~~#187~~, ~~#210~~, ~~#211~~ on `main` (PRs [#216](https://github.com/diego-torres/nutriconsultas/pull/216), [#218](https://github.com/diego-torres/nutriconsultas/pull/218), [#224](https://github.com/diego-torres/nutriconsultas/pull/224), [#230](https://github.com/diego-torres/nutriconsultas/pull/230)). Public funnel: ~~#243~~ reCAPTCHA **done** (branch `issue-243-recaptcha-production`). **NEXT:** #207 (+ #208 Stripe ops). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md).
+**Epic #180–#211** (2026-06-19): ~~#46~~ Liquibase done; ~~#180–#185~~, ~~#190~~, ~~#187~~, ~~#210~~, ~~#211~~ on `main`. Public funnel: ~~#243~~ reCAPTCHA **done**. **NEXT:** #207 **in-progress** (`issue-207-stripe-payment-provider`, Stripe Checkout + webhooks); then #208 Stripe ops. See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md).
 
 **Done on `main` (2026-06-14):** #107/#109/#110 (JWT + linkage + DTO envelope); endpoints #91–#98; messages #96/#97 with rate limit (#113); localized errors (#111, PR #151); dashboard IMC gauge (#106).
 

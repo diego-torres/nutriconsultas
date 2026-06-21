@@ -8,11 +8,12 @@ import com.nutriconsultas.subscription.NutritionistInvitationRepository;
 import com.nutriconsultas.subscription.PlanTier;
 
 /**
- * Fallback provider used when Mercado Pago credentials are not configured. Can simulate
- * checkout locally when {@link PaymentProperties#isStubSimulateCheckout()} is enabled.
+ * Fallback provider used when Stripe or Mercado Pago credentials are not configured. Can
+ * simulate checkout locally when {@link PaymentProperties#isStubSimulateCheckout()} is
+ * enabled.
  */
 @Component
-@ConditionalOnMissingBean(MercadoPagoPaymentProvider.class)
+@ConditionalOnMissingBean({ StripePaymentProvider.class, MercadoPagoPaymentProvider.class })
 public class StubPaymentProvider implements PaymentProvider {
 
 	private static final String STUB_EXTERNAL_ID_PREFIX = "stub-sub-";

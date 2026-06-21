@@ -199,7 +199,7 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#207 — Stripe payment provider](https://github.com/diego-torres/nutriconsultas/issues/207) |
+| **Next issue** | [#207 — Stripe payment provider](https://github.com/diego-torres/nutriconsultas/issues/207) **in-progress** (`issue-207-stripe-payment-provider`) |
 | **In progress** | — |
 | **Just completed** | [#211 — change plan tier](https://github.com/diego-torres/nutriconsultas/issues/211) — PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230) |
 
