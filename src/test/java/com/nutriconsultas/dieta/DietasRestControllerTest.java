@@ -1159,12 +1159,6 @@ public class DietasRestControllerTest {
 		newDieta.setNombre("Nueva Dieta");
 		newDieta.setIngestas(new ArrayList<>());
 
-		Dieta savedDieta = new Dieta();
-		savedDieta.setId(1L);
-		savedDieta.setNombre("Nueva Dieta");
-		savedDieta.setUserId(TEST_USER_ID);
-		savedDieta.setIngestas(new ArrayList<>());
-
 		when(dietaService.saveDieta(any(Dieta.class))).thenAnswer(invocation -> {
 			Dieta dieta = invocation.getArgument(0);
 			dieta.setId(1L);
@@ -1174,6 +1168,7 @@ public class DietasRestControllerTest {
 		// Create mock OidcUser
 		OidcUser principal = org.mockito.Mockito.mock(OidcUser.class);
 		org.mockito.Mockito.when(principal.getSubject()).thenReturn(TEST_USER_ID);
+		when(platformAdminService.isPlatformAdmin(principal)).thenReturn(false);
 
 		// Act
 		Dieta result = dietasRestController.addDieta(newDieta, principal);
@@ -1185,6 +1180,50 @@ public class DietasRestControllerTest {
 		verify(dietaService).saveDieta(dietaCaptor.capture());
 		assertThat(dietaCaptor.getValue().getUserId()).isEqualTo(TEST_USER_ID);
 		log.info("Finishing testAddDietaSetsUserId");
+	}
+
+	@Test
+	public void testAddDietaAsPlatformAdminSetsSystemUserId() {
+		Dieta newDieta = new Dieta();
+		newDieta.setNombre("Plantilla: Menú nuevo");
+		newDieta.setIngestas(new ArrayList<>());
+
+		when(platformAdminService.isPlatformAdmin(org.mockito.ArgumentMatchers.any(OidcUser.class))).thenReturn(true);
+		when(platformAdminService.resolveActorUserId(org.mockito.ArgumentMatchers.any(OidcUser.class)))
+			.thenReturn(PLATFORM_ADMIN_USER_ID);
+		when(dietaService.saveDieta(any(Dieta.class))).thenAnswer(invocation -> {
+			Dieta dieta = invocation.getArgument(0);
+			dieta.setId(99L);
+			return dieta;
+		});
+
+		final OidcUser principal = createMockOidcUser(PLATFORM_ADMIN_USER_ID);
+		final Dieta result = dietasRestController.addDieta(newDieta, principal);
+
+		assertThat(result.getUserId()).isEqualTo(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+		verify(platformAdminAuditService).recordAction(PLATFORM_ADMIN_USER_ID, "dietas.create:dietaId=99");
+	}
+
+	@Test
+	public void testAddDietaIgnoresClientSuppliedSystemUserId() {
+		Dieta newDieta = new Dieta();
+		newDieta.setNombre("Spoofed Dieta");
+		newDieta.setUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+		newDieta.setIngestas(new ArrayList<>());
+
+		when(platformAdminService.isPlatformAdmin(org.mockito.ArgumentMatchers.any(OidcUser.class))).thenReturn(false);
+		when(dietaService.saveDieta(any(Dieta.class))).thenAnswer(invocation -> {
+			Dieta dieta = invocation.getArgument(0);
+			dieta.setId(43L);
+			return dieta;
+		});
+
+		final OidcUser principal = createMockOidcUser(TEST_USER_ID);
+		final Dieta result = dietasRestController.addDieta(newDieta, principal);
+
+		assertThat(result.getUserId()).isEqualTo(TEST_USER_ID);
+		verify(platformAdminAuditService, never()).recordAction(org.mockito.ArgumentMatchers.anyString(),
+				org.mockito.ArgumentMatchers.anyString());
 	}
 
 	@Test
