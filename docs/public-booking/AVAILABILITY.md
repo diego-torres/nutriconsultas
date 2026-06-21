@@ -38,7 +38,7 @@ Authenticated preview: `GET /rest/profile/availability/slots?date=YYYY-MM-DD` (s
 | `GET /consultas/{publicBookingId}/agendar-cita` | Public | Thymeleaf slot picker + booking form |
 | `GET /rest/public/booking/{publicBookingId}/context` | Public | Display name, timezone, advance days |
 | `GET /rest/public/booking/{publicBookingId}/slots?date=` | Public | Available slots (respects 2-day advance) |
-| `POST /rest/public/booking/{publicBookingId}/book` | Public | Create patient (if needed) + `CalendarEvent`; reCAPTCHA + rate limit; confirmation email (#302) |
+| `POST /rest/public/booking/{publicBookingId}/book` | Public | Create patient (if needed) + `CalendarEvent`; reCAPTCHA + rate limit; confirmation email (~~#302~~) |
 
 New patients from public booking get `PacienteStatus.ONBOARDING` with placeholder DOB/gender until the nutritionist completes the profile (~~#300~~).
 
