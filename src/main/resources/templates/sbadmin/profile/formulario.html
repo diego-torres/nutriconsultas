@@ -17,6 +17,7 @@
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet" />
 
     <!-- Custom styles -->
+    <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet" />
     <link th:href="@{/sbadmin/css/sb-admin-2.css}" rel="stylesheet" />
   </head>
 
@@ -210,6 +211,63 @@
                 </div>
               </div>
 
+              <!-- Public booking: working hours (#246) -->
+              <div class="col-12">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3 d-flex align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                      <i class="fas fa-calendar-check"></i> Horario para citas en línea
+                    </h6>
+                    <small class="text-muted">Zona horaria: America/Mexico_City</small>
+                  </div>
+                  <div class="card-body">
+                    <p class="text-muted small">
+                      Define tu horario habitual de consulta. Se usará para generar espacios disponibles
+                      en tu enlace público de agendamiento.
+                    </p>
+                    <div id="availabilityAlert" class="alert d-none" role="alert"></div>
+                    <div class="form-row mb-3">
+                      <div class="form-group col-md-4">
+                        <label for="slotDurationMinutes">Duración de cada cita</label>
+                        <select id="slotDurationMinutes" class="form-control">
+                          <option value="15">15 minutos</option>
+                          <option value="30">30 minutos</option>
+                          <option value="45">45 minutos</option>
+                          <option value="60" selected>60 minutos</option>
+                          <option value="90">90 minutos</option>
+                          <option value="120">120 minutos</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="table-responsive">
+                      <table class="table table-sm table-bordered mb-0" id="workingHoursTable">
+                        <thead class="thead-light">
+                          <tr>
+                            <th style="width: 8rem;">Día</th>
+                            <th style="width: 6rem;" class="text-center">Activo</th>
+                            <th style="width: 10rem;">Inicio</th>
+                            <th style="width: 10rem;">Fin</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr data-day="1"><td>Lunes</td><td class="text-center"><input type="checkbox" class="day-enabled" checked /></td><td><input type="time" class="form-control form-control-sm day-start" value="09:00" /></td><td><input type="time" class="form-control form-control-sm day-end" value="17:00" /></td></tr>
+                          <tr data-day="2"><td>Martes</td><td class="text-center"><input type="checkbox" class="day-enabled" checked /></td><td><input type="time" class="form-control form-control-sm day-start" value="09:00" /></td><td><input type="time" class="form-control form-control-sm day-end" value="17:00" /></td></tr>
+                          <tr data-day="3"><td>Miércoles</td><td class="text-center"><input type="checkbox" class="day-enabled" checked /></td><td><input type="time" class="form-control form-control-sm day-start" value="09:00" /></td><td><input type="time" class="form-control form-control-sm day-end" value="17:00" /></td></tr>
+                          <tr data-day="4"><td>Jueves</td><td class="text-center"><input type="checkbox" class="day-enabled" checked /></td><td><input type="time" class="form-control form-control-sm day-start" value="09:00" /></td><td><input type="time" class="form-control form-control-sm day-end" value="17:00" /></td></tr>
+                          <tr data-day="5"><td>Viernes</td><td class="text-center"><input type="checkbox" class="day-enabled" checked /></td><td><input type="time" class="form-control form-control-sm day-start" value="09:00" /></td><td><input type="time" class="form-control form-control-sm day-end" value="17:00" /></td></tr>
+                          <tr data-day="6"><td>Sábado</td><td class="text-center"><input type="checkbox" class="day-enabled" /></td><td><input type="time" class="form-control form-control-sm day-start" value="09:00" disabled /></td><td><input type="time" class="form-control form-control-sm day-end" value="13:00" disabled /></td></tr>
+                          <tr data-day="7"><td>Domingo</td><td class="text-center"><input type="checkbox" class="day-enabled" /></td><td><input type="time" class="form-control form-control-sm day-start" value="09:00" disabled /></td><td><input type="time" class="form-control form-control-sm day-end" value="13:00" disabled /></td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <hr />
+                    <button type="button" id="btnSaveAvailability" class="btn btn-primary">
+                      <i class="fas fa-save"></i> Guardar horario
+                    </button>
+                  </div>
+                </div>
+              </div>
+
             </div>
             <!-- /.row -->
 
@@ -229,6 +287,111 @@
     <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
     <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
     <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+    <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
+    <script lang="javascript">
+      'use strict';
+      (function ($) {
+        var DEFAULT_TIMEZONE = 'America/Mexico_City';
+
+        function showAvailabilityAlert(type, message) {
+          var $alert = $('#availabilityAlert');
+          $alert.removeClass('d-none alert-success alert-danger alert-warning')
+            .addClass('alert-' + type)
+            .text(message);
+        }
+
+        function toggleDayRow($row, enabled) {
+          $row.find('.day-start, .day-end').prop('disabled', !enabled);
+        }
+
+        function normalizeTime(value) {
+          if (!value) {
+            return '';
+          }
+          return value.length >= 5 ? value.substring(0, 5) : value;
+        }
+
+        function applyScheduleToTable(schedule) {
+          $('#slotDurationMinutes').val(String(schedule.slotDurationMinutes || 60));
+          var intervalsByDay = {};
+          (schedule.intervals || []).forEach(function (interval) {
+            intervalsByDay[interval.dayOfWeek] = interval;
+          });
+          $('#workingHoursTable tbody tr').each(function () {
+            var $row = $(this);
+            var day = parseInt($row.data('day'), 10);
+            var interval = intervalsByDay[day];
+            var enabled = !!interval;
+            $row.find('.day-enabled').prop('checked', enabled);
+            if (interval) {
+              $row.find('.day-start').val(normalizeTime(interval.startTime));
+              $row.find('.day-end').val(normalizeTime(interval.endTime));
+            }
+            toggleDayRow($row, enabled);
+          });
+        }
+
+        function collectSchedulePayload() {
+          var intervals = [];
+          $('#workingHoursTable tbody tr').each(function () {
+            var $row = $(this);
+            if (!$row.find('.day-enabled').is(':checked')) {
+              return;
+            }
+            intervals.push({
+              dayOfWeek: parseInt($row.data('day'), 10),
+              startTime: $row.find('.day-start').val(),
+              endTime: $row.find('.day-end').val()
+            });
+          });
+          return {
+            slotDurationMinutes: parseInt($('#slotDurationMinutes').val(), 10),
+            timezone: DEFAULT_TIMEZONE,
+            intervals: intervals
+          };
+        }
+
+        function loadAvailability() {
+          $.getJSON('/rest/profile/availability')
+            .done(function (schedule) {
+              applyScheduleToTable(schedule);
+            })
+            .fail(function () {
+              showAvailabilityAlert('warning', 'No se pudo cargar tu horario guardado.');
+            });
+        }
+
+        $('#workingHoursTable').on('change', '.day-enabled', function () {
+          var $row = $(this).closest('tr');
+          toggleDayRow($row, $(this).is(':checked'));
+        });
+
+        $('#btnSaveAvailability').on('click', function () {
+          var payload = collectSchedulePayload();
+          $.ajax({
+            url: '/rest/profile/availability',
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(payload)
+          }).done(function () {
+            swal({
+              title: 'Horario guardado',
+              text: 'Tu disponibilidad para citas en línea se actualizó correctamente.',
+              type: 'success',
+              timer: 2000
+            });
+          }).fail(function (xhr) {
+            var message = 'No se pudo guardar el horario.';
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+              message = xhr.responseJSON.error;
+            }
+            swal({ title: 'Error', text: message, type: 'error', timer: 5000 });
+          });
+        });
+
+        loadAvailability();
+      })(jQuery);
+    </script>
     <script lang="javascript">
       'use strict';
       (function ($) {

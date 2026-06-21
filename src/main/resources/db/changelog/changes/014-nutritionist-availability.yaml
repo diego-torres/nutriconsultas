@@ -1,0 +1,83 @@
+databaseChangeLog:
+  - changeSet:
+      id: 014-nutritionist-availability-settings
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: nutritionist_availability_settings
+      changes:
+        - createTable:
+            tableName: nutritionist_availability_settings
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: slot_duration_minutes
+                  type: INT
+                  defaultValueNumeric: 60
+                  constraints:
+                    nullable: false
+              - column:
+                  name: timezone
+                  type: VARCHAR(64)
+                  defaultValue: America/Mexico_City
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: 014-nutritionist-working-hours-interval
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: nutritionist_working_hours_interval
+      changes:
+        - createTable:
+            tableName: nutritionist_working_hours_interval
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: day_of_week
+                  type: SMALLINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_time
+                  type: TIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_time
+                  type: TIME
+                  constraints:
+                    nullable: false
+        - createIndex:
+            indexName: idx_nwhi_user_id
+            tableName: nutritionist_working_hours_interval
+            columns:
+              - column:
+                  name: user_id

@@ -35,3 +35,6 @@ databaseChangeLog:
   - include:
       file: changes/013-anthropometric-updated-at.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/014-nutritionist-availability.yaml
+      relativeToChangelogFile: true
