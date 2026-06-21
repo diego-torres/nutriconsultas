@@ -80,6 +80,16 @@
         font-style: italic;
         padding: 1rem 0.25rem;
       }
+      .platillo-ingredientes-panel {
+        border-top: 1px solid #e3e6f0;
+        padding-top: 0.75rem;
+      }
+      .toggle-platillo-ingredientes .fa-chevron-down {
+        transition: transform 0.2s ease;
+      }
+      .toggle-platillo-ingredientes.expanded .fa-chevron-down {
+        transform: rotate(180deg);
+      }
     </style>
   </head>
   <body id="page-top">
@@ -433,6 +443,66 @@
           </div>
         </div>
 
+        <!-- Platillo ingesta ingredient modal (add / edit snapshot) -->
+        <div
+          class="modal fade"
+          id="platilloIngestaIngredientModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="platilloIngestaIngredientModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="platilloIngestaIngredientModalLabel">Agregar ingrediente</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <input type="hidden" id="platilloIngredienteContextDieta" />
+                <input type="hidden" id="platilloIngredienteContextIngesta" />
+                <input type="hidden" id="platilloIngredienteContextPlatillo" />
+                <input type="hidden" id="platilloIngredienteEditId" />
+                <div class="form-group" id="platilloIngredienteAlimentoGroup">
+                  <label for="platilloIngredienteAlimento">Alimento</label>
+                  <select
+                    id="platilloIngredienteAlimento"
+                    class="form-control js-example-basic-single"
+                    style="width: 100%">
+                    <option value="">Selecciona un alimento</option>
+                    <option
+                      th:each="alimento : ${alimentos}"
+                      th:value="${alimento.id}"
+                      th:text="${alimento.nombreAlimento}"></option>
+                  </select>
+                </div>
+                <div id="platilloIngredienteLoader" class="circle-loader" style="display: none"></div>
+                <div id="platilloIngredienteFields" style="display: none">
+                  <div class="form-group">
+                    <label for="platilloIngredienteCantidad">Cantidad</label>
+                    <input type="text" class="form-control" id="platilloIngredienteCantidad" />
+                  </div>
+                  <div class="form-group">
+                    <label for="platilloIngredienteUnidad">Unidad</label>
+                    <input type="text" class="form-control" id="platilloIngredienteUnidad" disabled="true" />
+                  </div>
+                  <div class="form-group">
+                    <label for="platilloIngredientePeso">Peso (g)</label>
+                    <input type="number" class="form-control" id="platilloIngredientePeso" />
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" id="savePlatilloIngredienteButton" class="btn btn-success" disabled="true">
+                  Guardar
+                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Edit alimento modal -->
         <div
           class="modal fade"
@@ -773,7 +843,8 @@
                                 No hay platillos ni alimentos en esta ingesta.
                               </p>
                               <div th:each="platillo : ${ingesta.platillos}"
-                                   class="ingesta-item-card border rounded p-3">
+                                   class="ingesta-item-card border rounded p-3"
+                                   th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id}">
                                 <div class="ingesta-item-header d-flex justify-content-between align-items-start">
                                   <div class="ingesta-item-name pr-2">
                                     <span class="badge badge-info mr-1">Platillo</span>
@@ -784,6 +855,14 @@
                                     <span th:if="${platillo.sourcePlatilloId == null}" th:text="${platillo.name}"></span>
                                   </div>
                                   <div class="ingesta-item-actions flex-shrink-0">
+                                    <button
+                                      type="button"
+                                      class="btn btn-outline-secondary btn-sm toggle-platillo-ingredientes mr-1"
+                                      th:attr="data-target='#platillo-ingredientes-panel-' + ${platillo.id},data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id}"
+                                      th:disabled="${isOwner != null && !isOwner}"
+                                      title="Ver ingredientes">
+                                      <i class="fas fa-chevron-down"></i>
+                                    </button>
                                     <button
                                       type="button"
                                       class="btn btn-primary btn-sm"
@@ -867,6 +946,35 @@
                                           data-nutrient="hidratosDeCarbono"
                                           th:attr="data-value=${platillo.hidratosDeCarbono}"
                                           th:text="${#numbers.formatDecimal(platillo.hidratosDeCarbono, 1, 2)}">0.00</span>
+                                  </div>
+                                </div>
+                                <div class="platillo-ingredientes-panel collapse"
+                                     th:id="'platillo-ingredientes-panel-' + ${platillo.id}">
+                                  <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="font-weight-bold text-muted small text-uppercase">Ingredientes</span>
+                                    <button
+                                      type="button"
+                                      class="btn btn-success btn-sm add-platillo-ingrediente-btn"
+                                      th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id}"
+                                      th:disabled="${isOwner != null && !isOwner}">
+                                      <i class="fas fa-plus"></i> Agregar
+                                    </button>
+                                  </div>
+                                  <div class="table-responsive">
+                                    <table
+                                      class="table table-sm table-bordered mb-0 platillo-ingredientes-table w-100"
+                                      th:id="'platillo-ingredientes-' + ${platillo.id}">
+                                      <thead class="thead-light">
+                                        <tr>
+                                          <th>Ingrediente</th>
+                                          <th>Cantidad</th>
+                                          <th>Unidad</th>
+                                          <th>Peso</th>
+                                          <th>Acciones</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody></tbody>
+                                    </table>
                                   </div>
                                 </div>
                               </div>
@@ -1011,7 +1119,7 @@
     <script th:src="@{/sbadmin/vendor/select2/select2.min.js}"></script>
     <script th:src="@{/sbadmin/js/select2.js}"></script>
     <script th:src="@{/sbadmin/js/ingredient-weight-recalc.js}"></script>
-    <script lang="javascript">
+    <script lang="javascript" th:inline="none">
       'use strict';
       (function ($) {
         // Helper function to show toast notifications
@@ -1065,6 +1173,308 @@
             allowClear: true,
             dropdownParent: '#alimentoModal',
             width:'resolve'
+          });
+
+          var platilloIngredienteTables = {};
+          var platilloIngredienteAlimentoReference = null;
+          var platilloIngredienteModalMode = 'add';
+
+          $('#platilloIngredienteAlimento').select2({
+            placeholder: 'Selecciona un alimento',
+            allowClear: true,
+            dropdownParent: '#platilloIngestaIngredientModal',
+            width: 'resolve'
+          });
+
+          function buildPlatilloIngredienteRestBase(dietaId, ingestaId, platilloId) {
+            return '/rest/dietas/' + dietaId + '/ingestas/' + ingestaId + '/platillos/' + platilloId + '/ingredientes';
+          }
+
+          function findUpdatedPlatilloIngesta(dieta, ingestaId, platilloId) {
+            var updatedPlatillo = null;
+            if (dieta && dieta.ingestas && Array.isArray(dieta.ingestas)) {
+              dieta.ingestas.forEach(function(ingesta) {
+                if (ingesta.id === ingestaId && ingesta.platillos && Array.isArray(ingesta.platillos)) {
+                  ingesta.platillos.forEach(function(platillo) {
+                    if (platillo.id === platilloId) {
+                      updatedPlatillo = platillo;
+                    }
+                  });
+                }
+              });
+            }
+            return updatedPlatillo;
+          }
+
+          function refreshAfterPlatilloIngredientMutation(dieta, dietaId, ingestaId, platilloId) {
+            var itemCard = $('.ingesta-item-card[data-platillo="' + platilloId + '"]');
+            var updatedPlatillo = findUpdatedPlatilloIngesta(dieta, ingestaId, platilloId);
+            if (updatedPlatillo && itemCard.length) {
+              updateNutrientValues(itemCard, updatedPlatillo);
+            }
+            updatePieChart(dieta);
+            if (platilloIngredienteTables[platilloId]) {
+              platilloIngredienteTables[platilloId].ajax.reload(null, false);
+            }
+          }
+
+          function initPlatilloIngredienteTable(dietaId, ingestaId, platilloId) {
+            if (platilloIngredienteTables[platilloId]) {
+              return platilloIngredienteTables[platilloId];
+            }
+            var tableSelector = '#platillo-ingredientes-' + platilloId;
+            platilloIngredienteTables[platilloId] = $(tableSelector).DataTable({
+              processing: true,
+              serverSide: true,
+              searching: false,
+              paging: false,
+              info: false,
+              ordering: true,
+              order: [ [0, 'asc'] ],
+              ajax: {
+                url: buildPlatilloIngredienteRestBase(dietaId, ingestaId, platilloId) + '/data-table',
+                type: 'POST',
+                contentType: 'application/json',
+                dataType: 'json',
+                data: function(d) {
+                  d.length = 100;
+                  return JSON.stringify(d);
+                }
+              },
+              columns: [
+                { data: 0, orderable: true },
+                { data: 1, orderable: true },
+                { data: 2, orderable: true },
+                { data: 3, orderable: true },
+                { data: 4, orderable: false }
+              ],
+              columnDefs: [
+                { targets: 4, className: 'text-nowrap' }
+              ]
+            });
+            return platilloIngredienteTables[platilloId];
+          }
+
+          function resetPlatilloIngredienteModal() {
+            platilloIngredienteAlimentoReference = null;
+            platilloIngredienteModalMode = 'add';
+            $('#platilloIngredienteEditId').val('');
+            $('#platilloIngredienteAlimentoGroup').show();
+            $('#platilloIngredienteAlimento').val('').trigger('change');
+            $('#platilloIngredienteFields').hide();
+            $('#platilloIngredienteLoader').hide();
+            $('#platilloIngredienteCantidad').val('');
+            $('#platilloIngredienteUnidad').val('');
+            $('#platilloIngredientePeso').val('');
+            $('#savePlatilloIngredienteButton').prop('disabled', true);
+            $('#platilloIngestaIngredientModalLabel').text('Agregar ingrediente');
+          }
+
+          function applyPlatilloIngredienteAlimentoDefaults(alimento) {
+            platilloIngredienteAlimentoReference = {
+              cantSugerida: alimento.cantSugerida,
+              pesoNeto: alimento.pesoNeto
+            };
+            $('#platilloIngredienteCantidad').val(alimento.fractionalCantSugerida);
+            $('#platilloIngredienteUnidad').val(alimento.unidad);
+            $('#platilloIngredientePeso').val(alimento.pesoNeto);
+            $('#platilloIngredienteFields').show();
+            $('#savePlatilloIngredienteButton').prop('disabled', false);
+          }
+
+          function recalculatePlatilloIngredientePesoFromCantidad() {
+            if (!platilloIngredienteAlimentoReference || !window.IngredientWeightRecalc) {
+              return;
+            }
+            var recalculated = IngredientWeightRecalc.recalculatePesoFromQuantityInput(
+              platilloIngredienteAlimentoReference.cantSugerida,
+              platilloIngredienteAlimentoReference.pesoNeto,
+              document.getElementById('platilloIngredienteCantidad')
+            );
+            if (recalculated !== null && recalculated !== undefined) {
+              $('#platilloIngredientePeso').val(recalculated);
+            }
+          }
+
+          $(document).on('click', '.toggle-platillo-ingredientes', function() {
+            var targetSelector = $(this).data('target');
+            $(targetSelector).collapse('toggle');
+          });
+
+          $(document).on('shown.bs.collapse', '.platillo-ingredientes-panel', function() {
+            var panel = $(this);
+            var card = panel.closest('.ingesta-item-card');
+            var toggle = card.find('.toggle-platillo-ingredientes');
+            toggle.addClass('expanded');
+            initPlatilloIngredienteTable(card.data('dieta'), card.data('ingesta'), card.data('platillo'));
+          });
+
+          $(document).on('hidden.bs.collapse', '.platillo-ingredientes-panel', function() {
+            var toggle = $(this).closest('.ingesta-item-card').find('.toggle-platillo-ingredientes');
+            toggle.removeClass('expanded');
+          });
+
+          $(document).on('click', '.add-platillo-ingrediente-btn', function() {
+            resetPlatilloIngredienteModal();
+            platilloIngredienteModalMode = 'add';
+            $('#platilloIngredienteContextDieta').val($(this).data('dieta'));
+            $('#platilloIngredienteContextIngesta').val($(this).data('ingesta'));
+            $('#platilloIngredienteContextPlatillo').val($(this).data('platillo'));
+            $('#platilloIngestaIngredientModal').modal('show');
+          });
+
+          $('#platilloIngredienteAlimento').on('change', function() {
+            var alimentoId = $(this).val();
+            if (!alimentoId) {
+              platilloIngredienteAlimentoReference = null;
+              $('#platilloIngredienteFields').hide();
+              $('#savePlatilloIngredienteButton').prop('disabled', true);
+              return;
+            }
+            $('#platilloIngredienteLoader').show();
+            $('#platilloIngredienteFields').hide();
+            $.ajax({
+              url: '/rest/alimentos/' + alimentoId,
+              type: 'GET',
+              success: function(response) {
+                applyPlatilloIngredienteAlimentoDefaults(response);
+                $('#platilloIngredienteLoader').hide();
+              },
+              error: function() {
+                $('#platilloIngredienteLoader').hide();
+                showToast('Error', 'No se pudo cargar el alimento seleccionado.', 'error');
+              }
+            });
+          });
+
+          $('#platilloIngredienteCantidad').on('input change', function() {
+            recalculatePlatilloIngredientePesoFromCantidad();
+          });
+
+          $('#platilloIngestaIngredientModal').on('hidden.bs.modal', function() {
+            resetPlatilloIngredienteModal();
+          });
+
+          $(document).on('click', '.edit-ingrediente-btn', function() {
+            var button = $(this);
+            var card = button.closest('.ingesta-item-card');
+            resetPlatilloIngredienteModal();
+            platilloIngredienteModalMode = 'edit';
+            $('#platilloIngredienteContextDieta').val(card.data('dieta'));
+            $('#platilloIngredienteContextIngesta').val(card.data('ingesta'));
+            $('#platilloIngredienteContextPlatillo').val(card.data('platillo'));
+            $('#platilloIngredienteEditId').val(button.data('id'));
+            $('#platilloIngredienteAlimentoGroup').hide();
+            $('#platilloIngredienteCantidad').val(button.data('cantidad'));
+            $('#platilloIngredientePeso').val(button.data('peso'));
+            $('#platilloIngredienteFields').show();
+            $('#savePlatilloIngredienteButton').prop('disabled', false);
+            $('#platilloIngestaIngredientModalLabel').text('Editar ingrediente');
+            platilloIngredienteAlimentoReference = null;
+            $.ajax({
+              url: '/rest/alimentos/' + button.data('alimento-id'),
+              type: 'GET',
+              success: function(response) {
+                platilloIngredienteAlimentoReference = {
+                  cantSugerida: response.cantSugerida,
+                  pesoNeto: response.pesoNeto
+                };
+                $('#platilloIngredienteUnidad').val(response.unidad);
+              }
+            });
+            $('#platilloIngestaIngredientModal').modal('show');
+          });
+
+          $(document).on('click', '.delete-ingrediente-btn', function() {
+            var button = $(this);
+            var card = button.closest('.ingesta-item-card');
+            var dietaId = card.data('dieta');
+            var ingestaId = card.data('ingesta');
+            var platilloId = card.data('platillo');
+            var ingredienteId = button.data('id');
+            swal({
+              title: 'Eliminar ingrediente',
+              text: '¿Está seguro que desea eliminar este ingrediente del platillo en la dieta?',
+              type: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#d33',
+              cancelButtonColor: '#6c757d',
+              confirmButtonText: 'Sí, eliminar',
+              cancelButtonText: 'Cancelar',
+              closeOnConfirm: false,
+              showLoaderOnConfirm: true
+            }, function(isConfirm) {
+              if (!isConfirm) {
+                return;
+              }
+              $.ajax({
+                url: buildPlatilloIngredienteRestBase(dietaId, ingestaId, platilloId) + '/' + ingredienteId,
+                type: 'DELETE',
+                dataType: 'json',
+                success: function(response) {
+                  swal({
+                    title: 'Eliminado',
+                    text: 'El ingrediente ha sido eliminado.',
+                    type: 'success',
+                    timer: 2000
+                  });
+                  if (response && response.data) {
+                    refreshAfterPlatilloIngredientMutation(response.data, dietaId, ingestaId, platilloId);
+                  }
+                },
+                error: function(error) {
+                  swal({
+                    title: 'Error',
+                    text: error.responseJSON && error.responseJSON.message
+                      ? error.responseJSON.message
+                      : 'No se pudo eliminar el ingrediente.',
+                    type: 'error',
+                    timer: 5000
+                  });
+                }
+              });
+            });
+          });
+
+          $('#savePlatilloIngredienteButton').on('click', function() {
+            var dietaId = $('#platilloIngredienteContextDieta').val();
+            var ingestaId = $('#platilloIngredienteContextIngesta').val();
+            var platilloId = $('#platilloIngredienteContextPlatillo').val();
+            var cantidad = $('#platilloIngredienteCantidad').val();
+            var peso = parseInt($('#platilloIngredientePeso').val(), 10);
+            var payload = { cantidad: cantidad, peso: peso };
+            var url = buildPlatilloIngredienteRestBase(dietaId, ingestaId, platilloId);
+            var method = 'POST';
+            if (platilloIngredienteModalMode === 'add') {
+              payload.alimentoId = $('#platilloIngredienteAlimento').val();
+              url += '/add';
+            } else {
+              url += '/' + $('#platilloIngredienteEditId').val();
+              method = 'PUT';
+            }
+            $('#savePlatilloIngredienteButton').prop('disabled', true);
+            $.ajax({
+              url: url,
+              type: method,
+              contentType: 'application/json',
+              data: JSON.stringify(payload),
+              dataType: 'json',
+              success: function(response) {
+                $('#platilloIngestaIngredientModal').modal('hide');
+                showToast('Guardado', 'Los ingredientes del platillo han sido actualizados.', 'success');
+                if (response && response.data) {
+                  refreshAfterPlatilloIngredientMutation(response.data, dietaId, ingestaId, platilloId);
+                }
+              },
+              error: function(error) {
+                showToast('Error', error.responseJSON && error.responseJSON.message
+                  ? error.responseJSON.message
+                  : 'No se pudo guardar el ingrediente.', 'error');
+              },
+              complete: function() {
+                $('#savePlatilloIngredienteButton').prop('disabled', false);
+              }
+            });
           });
 
           // Set up the pie chart

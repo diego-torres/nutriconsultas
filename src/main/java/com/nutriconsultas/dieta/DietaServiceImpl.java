@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.nutriconsultas.alimentos.Alimento;
+import com.nutriconsultas.alimentos.AlimentosRepository;
+import com.nutriconsultas.util.IngredienteFromAlimentoCalculator;
+import com.nutriconsultas.util.NutrientSummarizer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,6 +24,9 @@ public class DietaServiceImpl implements DietaService {
 
 	@Autowired
 	private DietaRepository dietaRepository;
+
+	@Autowired
+	private AlimentosRepository alimentosRepository;
 
 	@Override
 	public Dieta getDieta(@NonNull final Long id) {
@@ -365,6 +371,61 @@ public class DietaServiceImpl implements DietaService {
 		if (platilloIngesta.getEtanol() != null) {
 			platilloIngesta.setEtanol(platilloIngesta.getEtanol() * ratio);
 		}
+	}
+
+	@Override
+	public IngredientePlatilloIngesta addIngredientePlatilloIngesta(@NonNull final PlatilloIngesta platilloIngesta,
+			@NonNull final Long alimentoId, @NonNull final String cantidad, @NonNull final Integer peso) {
+		log.info("Adding ingredient alimentoId {} to PlatilloIngesta {}", alimentoId, platilloIngesta.getId());
+		final Alimento alimento = alimentosRepository.findById(alimentoId).orElse(null);
+		if (alimento == null) {
+			log.warn("Alimento with id {} not found", alimentoId);
+			return null;
+		}
+		final IngredientePlatilloIngesta ingrediente = new IngredientePlatilloIngesta();
+		IngredienteFromAlimentoCalculator.populateFromAlimento(ingrediente, alimento, cantidad, peso);
+		ingrediente.setPlatillo(platilloIngesta);
+		platilloIngesta.getIngredientes().add(ingrediente);
+		recalculatePlatilloIngestaFromIngredientes(platilloIngesta);
+		return ingrediente;
+	}
+
+	@Override
+	public void deleteIngredientePlatilloIngesta(@NonNull final PlatilloIngesta platilloIngesta,
+			@NonNull final Long ingredienteId) {
+		log.info("Deleting ingredient {} from PlatilloIngesta {}", ingredienteId, platilloIngesta.getId());
+		platilloIngesta.getIngredientes().removeIf(ing -> ing.getId().equals(ingredienteId));
+		recalculatePlatilloIngestaFromIngredientes(platilloIngesta);
+	}
+
+	@Override
+	public void updateIngredientePlatilloIngesta(@NonNull final PlatilloIngesta platilloIngesta,
+			@NonNull final Long ingredienteId, @NonNull final String cantidad, @NonNull final Integer peso) {
+		log.info("Updating ingredient {} on PlatilloIngesta {}", ingredienteId, platilloIngesta.getId());
+		final IngredientePlatilloIngesta ingrediente = platilloIngesta.getIngredientes()
+			.stream()
+			.filter(ing -> ing.getId().equals(ingredienteId))
+			.findFirst()
+			.orElse(null);
+		if (ingrediente == null || ingrediente.getAlimento() == null) {
+			log.warn("IngredientePlatilloIngesta {} not found on platillo ingesta {}", ingredienteId,
+					platilloIngesta.getId());
+			return;
+		}
+		IngredienteFromAlimentoCalculator.populateFromAlimento(ingrediente, ingrediente.getAlimento(), cantidad, peso);
+		recalculatePlatilloIngestaFromIngredientes(platilloIngesta);
+	}
+
+	@Override
+	public void recalculatePlatilloIngestaFromIngredientes(@NonNull final PlatilloIngesta platilloIngesta) {
+		log.info("Recalculating PlatilloIngesta {} nutrients from ingredientes", platilloIngesta.getId());
+		final PlatilloIngesta baseTotals = new PlatilloIngesta();
+		NutrientSummarizer.resetNutrients(baseTotals);
+		for (final IngredientePlatilloIngesta ingrediente : platilloIngesta.getIngredientes()) {
+			NutrientSummarizer.addNutrients(baseTotals, ingrediente);
+		}
+		final int portions = platilloIngesta.getPortions() != null ? platilloIngesta.getPortions() : 1;
+		NutrientSummarizer.copyScaled(baseTotals, platilloIngesta, portions);
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.nutriconsultas.alimentos.Alimento;
+import com.nutriconsultas.alimentos.AlimentosRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,6 +36,9 @@ public class DietaServiceTest {
 
 	@Mock
 	private DietaRepository dietaRepository;
+
+	@Mock
+	private AlimentosRepository alimentosRepository;
 
 	private Dieta originalDieta;
 
@@ -450,6 +455,81 @@ public class DietaServiceTest {
 
 		assertThat(result).isEmpty();
 		verify(dietaRepository, never()).findByUserId(any());
+	}
+
+	@Test
+	public void testRecalculatePlatilloIngestaFromIngredientesAppliesPortionsMultiplier() {
+		final PlatilloIngesta platillo = new PlatilloIngesta();
+		platillo.setPortions(2);
+		platillo.setIngredientes(new ArrayList<>());
+
+		final IngredientePlatilloIngesta ing1 = new IngredientePlatilloIngesta();
+		ing1.setProteina(10.0);
+		ing1.setEnergia(100);
+		ing1.setPlatillo(platillo);
+
+		final IngredientePlatilloIngesta ing2 = new IngredientePlatilloIngesta();
+		ing2.setProteina(5.0);
+		ing2.setEnergia(50);
+		ing2.setPlatillo(platillo);
+
+		platillo.getIngredientes().add(ing1);
+		platillo.getIngredientes().add(ing2);
+
+		dietaService.recalculatePlatilloIngestaFromIngredientes(platillo);
+
+		assertThat(platillo.getProteina()).isEqualTo(30.0);
+		assertThat(platillo.getEnergia()).isEqualTo(300);
+	}
+
+	@Test
+	public void testDeleteIngredientePlatilloIngestaRecalculatesTotals() {
+		final PlatilloIngesta platillo = new PlatilloIngesta();
+		platillo.setPortions(1);
+		platillo.setIngredientes(new ArrayList<>());
+
+		final IngredientePlatilloIngesta ing1 = new IngredientePlatilloIngesta();
+		ing1.setId(1L);
+		ing1.setProteina(10.0);
+		ing1.setPlatillo(platillo);
+
+		final IngredientePlatilloIngesta ing2 = new IngredientePlatilloIngesta();
+		ing2.setId(2L);
+		ing2.setProteina(5.0);
+		ing2.setPlatillo(platillo);
+
+		platillo.getIngredientes().add(ing1);
+		platillo.getIngredientes().add(ing2);
+
+		dietaService.deleteIngredientePlatilloIngesta(platillo, 1L);
+
+		assertThat(platillo.getIngredientes()).hasSize(1);
+		assertThat(platillo.getProteina()).isEqualTo(5.0);
+	}
+
+	@Test
+	public void testAddIngredientePlatilloIngestaAddsSnapshotRow() {
+		final Alimento alimento = new Alimento();
+		alimento.setId(99L);
+		alimento.setNombreAlimento("Lenteja");
+		alimento.setCantSugerida(1.0);
+		alimento.setUnidad("taza");
+		alimento.setPesoNeto(80);
+		alimento.setProteina(4.0);
+		alimento.setEnergia(90);
+
+		when(alimentosRepository.findById(99L)).thenReturn(Optional.of(alimento));
+
+		final PlatilloIngesta platillo = new PlatilloIngesta();
+		platillo.setPortions(1);
+		platillo.setIngredientes(new ArrayList<>());
+
+		final IngredientePlatilloIngesta result = dietaService.addIngredientePlatilloIngesta(platillo, 99L, "1", 80);
+
+		assertThat(result).isNotNull();
+		assertThat(platillo.getIngredientes()).hasSize(1);
+		assertThat(platillo.getProteina()).isEqualTo(4.0);
+		assertThat(platillo.getEnergia()).isEqualTo(90);
 	}
 
 }
