@@ -22,4 +22,25 @@ Public slot APIs (#248) must convert `LocalDate` + slot start `LocalTime` using 
 
 ## Slot generation
 
-`BookingSlotGenerator.generateSlotStarts(intervals, slotDurationMinutes)` produces sorted slot start times that fit entirely within configured intervals. Used by unit tests now; public booking (#248) will subtract calendar events and absence blocks (#247).
+`BookingSlotGenerator.generateSlotStarts(intervals, slotDurationMinutes)` produces sorted slot start times that fit entirely within configured intervals.
+
+`BookingAvailabilitySlotService.getAvailableSlotStarts(userId, date)` applies working hours, then subtracts:
+
+- `nutritionist_availability_block` rows for that nutritionist (#247)
+- `CalendarEvent` rows with status `SCHEDULED` for that nutritionist's patients
+
+Authenticated preview: `GET /rest/profile/availability/slots?date=YYYY-MM-DD` (same slot list public booking #248 will expose per nutritionist).
+
+## Absence blocks (#247)
+
+| Table | Purpose |
+|-------|---------|
+| `nutritionist_availability_block` | Full-day or time-range unavailability per OAuth `user_id` |
+
+REST (authenticated, calendar UI):
+
+- `GET /rest/calendario/blocks?start=&end=` — FullCalendar feed (merged client-side with appointments)
+- `POST /rest/calendario/blocks` — create block
+- `DELETE /rest/calendario/blocks/{id}` — remove block (SweetAlert confirm in UI)
+
+Admin UI: `/admin/calendario` → **Marcar ausencia**; blocked intervals render in gray with striped styling.

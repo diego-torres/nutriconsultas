@@ -29,6 +29,9 @@ class NutritionistAvailabilityRestControllerTest {
 	private NutritionistAvailabilityService availabilityService;
 
 	@Mock
+	private BookingAvailabilitySlotService bookingAvailabilitySlotService;
+
+	@Mock
 	private OidcUser principal;
 
 	private AvailabilityScheduleDto schedule;
@@ -73,6 +76,19 @@ class NutritionistAvailabilityRestControllerTest {
 		@SuppressWarnings("unchecked")
 		final Map<String, Object> body = (Map<String, Object>) response.getBody();
 		assertThat(body).containsEntry("success", false);
+	}
+
+	@Test
+	void getAvailableSlotsReturnsFormattedTimes() {
+		when(principal.getSubject()).thenReturn("auth0|user1");
+		when(bookingAvailabilitySlotService.getAvailableSlotStarts("auth0|user1", java.time.LocalDate.of(2026, 6, 22)))
+			.thenReturn(List.of(LocalTime.of(9, 0), LocalTime.of(10, 0)));
+
+		final ResponseEntity<Map<String, Object>> response = controller.getAvailableSlots(principal, "2026-06-22");
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).containsEntry("date", "2026-06-22");
+		assertThat(response.getBody().get("slots")).isEqualTo(List.of("09:00", "10:00"));
 	}
 
 }

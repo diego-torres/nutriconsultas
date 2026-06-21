@@ -12,20 +12,35 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/rest/profile/availability")
 @Slf4j
 public class NutritionistAvailabilityRestController {
 
+	private static final DateTimeFormatter SLOT_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
+
 	private final NutritionistAvailabilityService availabilityService;
 
-	public NutritionistAvailabilityRestController(final NutritionistAvailabilityService availabilityService) {
+	private final BookingAvailabilitySlotService bookingAvailabilitySlotService;
+
+	public NutritionistAvailabilityRestController(final NutritionistAvailabilityService availabilityService,
+			final BookingAvailabilitySlotService bookingAvailabilitySlotService) {
 		this.availabilityService = availabilityService;
+		this.bookingAvailabilitySlotService = bookingAvailabilitySlotService;
 	}
 
 	@GetMapping
@@ -52,6 +67,27 @@ public class NutritionistAvailabilityRestController {
 		catch (final IllegalArgumentException ex) {
 			log.debug("Availability validation failed for user request");
 			return validationErrorResponse(ex.getMessage());
+		}
+	}
+
+	@GetMapping("/slots")
+	public ResponseEntity<Map<String, Object>> getAvailableSlots(@AuthenticationPrincipal final OidcUser principal,
+			@RequestParam final String date) {
+		if (principal == null || principal.getSubject() == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		try {
+			final LocalDate parsedDate = LocalDate.parse(date);
+			final List<LocalTime> slots = bookingAvailabilitySlotService.getAvailableSlotStarts(principal.getSubject(),
+					parsedDate);
+			final Map<String, Object> body = new HashMap<>();
+			body.put("date", parsedDate.toString());
+			body.put("slots", slots.stream().map(SLOT_TIME_FORMAT::format).collect(Collectors.toList()));
+			return ResponseEntity.ok(body);
+		}
+		catch (final Exception ex) {
+			log.debug("Invalid slot query date");
+			return validationErrorResponse("Fecha no válida");
 		}
 	}
 

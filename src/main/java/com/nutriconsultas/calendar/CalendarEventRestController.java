@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nutriconsultas.booking.BookingAvailabilitySlotService;
 import com.nutriconsultas.controller.AbstractGridController;
 import com.nutriconsultas.dataTables.paging.Column;
 import com.nutriconsultas.dataTables.paging.Direction;
@@ -63,6 +64,9 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 
 	@Autowired
 	private BodyFatCalculatorService bodyFatCalculatorService;
+
+	@Autowired
+	private BookingAvailabilitySlotService bookingAvailabilitySlotService;
 
 	@Override
 	protected List<String> toStringList(final CalendarEvent row) {
@@ -295,11 +299,18 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 	}
 
 	@GetMapping("/next-available-time")
-	public Map<String, Object> getNextAvailableTime(@RequestParam final String date) {
+	public Map<String, Object> getNextAvailableTime(@RequestParam final String date,
+			@AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Finding next available time for date: {}", date);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			final Map<String, Object> errorResult = new HashMap<>();
+			errorResult.put("available", false);
+			errorResult.put("error", "User not authenticated");
+			return errorResult;
+		}
 		LocalDate parsedLocalDate;
 		try {
-			// Parse date string (format: YYYY-MM-DD)
 			parsedLocalDate = LocalDate.parse(date);
 		}
 		catch (final java.time.format.DateTimeParseException e) {
@@ -310,88 +321,39 @@ public class CalendarEventRestController extends AbstractGridController<Calendar
 			return errorResult;
 		}
 
-		LocalDateTime candidateTime = parsedLocalDate.atTime(8, 0);
-
-		// Check if the requested date is in the past (before today)
-		// For past dates, do not attempt to calculate available time
-		// This allows saving unplanned historical consultation records
 		final LocalDate today = LocalDate.now();
-		final LocalDate requestedDate = parsedLocalDate;
-
-		// If the requested date is in the past, return the date with default time
-		// without calculating availability (for historical records)
-		// No availability calculation is performed for past dates
-		if (requestedDate.isBefore(today)) {
+		if (parsedLocalDate.isBefore(today)) {
 			log.debug("Date {} is in the past, returning default time without availability check", date);
+			final LocalDateTime candidateTime = parsedLocalDate.atTime(8, 0);
 			final Map<String, Object> result = new HashMap<>();
 			result.put("available", true);
 			result.put("dateTime",
 					formatDateForCalendar(Date.from(candidateTime.atZone(ZoneId.systemDefault()).toInstant())));
 			result.put("isPastDate", true);
-			return result; // Exit early - do not attempt to calculate available time
-		}
-		final LocalDateTime endOfDay = parsedLocalDate.atTime(17, 0);
-
-		// Get all events for this date
-		final LocalDateTime startOfDay = parsedLocalDate.atStartOfDay();
-		final LocalDateTime nextDay = parsedLocalDate.plusDays(1).atStartOfDay();
-
-		final Date startDate = Date.from(startOfDay.atZone(ZoneId.systemDefault()).toInstant());
-		final Date endDate = Date.from(nextDay.atZone(ZoneId.systemDefault()).toInstant());
-		final List<CalendarEvent> events = service.findEventsBetweenDates(startDate != null ? startDate : new Date(0),
-				endDate != null ? endDate : new Date(Long.MAX_VALUE));
-
-		// If the requested date is today, start from current time if it's after 8 AM
-		final LocalDateTime nowWithTime = LocalDateTime.now();
-		if (requestedDate.equals(today)) {
-			// It's today, check if current time is after 8 AM
-			if (nowWithTime.toLocalTime().isAfter(LocalTime.of(8, 0))) {
-				// Current time is after 8 AM, start from current time
-				candidateTime = nowWithTime.truncatedTo(ChronoUnit.SECONDS);
-				// Round up to next hour
-				if (candidateTime.getMinute() > 0) {
-					candidateTime = candidateTime.plusHours(1).withMinute(0).withSecond(0);
-				}
-			}
-			// Otherwise, candidateTime is already set to 8:00 AM, which is fine
+			return result;
 		}
 
-		// Find next available hour
-		while (!candidateTime.isAfter(endOfDay)) {
-			final LocalDateTime candidateEnd = candidateTime.plusHours(1);
-
-			// Check if this hour is available (no overlapping events)
-			boolean isAvailable = true;
-			for (final CalendarEvent event : events) {
-				if (event.getEventDateTime() == null) {
-					continue;
-				}
-				final LocalDateTime eventStart = event.getEventDateTime()
-					.toInstant()
-					.atZone(ZoneId.systemDefault())
-					.toLocalDateTime();
-				final int durationMinutes = event.getDurationMinutes() != null ? event.getDurationMinutes() : 60;
-				final LocalDateTime eventEnd = eventStart.plusMinutes(durationMinutes);
-
-				// Check for overlap
-				if (candidateTime.isBefore(eventEnd) && candidateEnd.isAfter(eventStart)) {
-					isAvailable = false;
-					break;
+		LocalDateTime notBefore = parsedLocalDate.atTime(8, 0);
+		if (parsedLocalDate.equals(today)) {
+			final LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+			if (now.toLocalTime().isAfter(LocalTime.of(8, 0))) {
+				notBefore = now;
+				if (notBefore.getMinute() > 0 || notBefore.getSecond() > 0) {
+					notBefore = notBefore.plusHours(1).withMinute(0).withSecond(0).withNano(0);
 				}
 			}
-
-			if (isAvailable) {
-				final Map<String, Object> result = new HashMap<>();
-				result.put("available", true);
-				result.put("dateTime",
-						formatDateForCalendar(Date.from(candidateTime.atZone(ZoneId.systemDefault()).toInstant())));
-				return result;
-			}
-
-			candidateTime = candidateTime.plusHours(1);
 		}
 
-		// No available time found
+		final LocalDateTime nextStart = bookingAvailabilitySlotService.findNextAvailableStart(userId, parsedLocalDate,
+				notBefore);
+		if (nextStart != null) {
+			final Map<String, Object> result = new HashMap<>();
+			result.put("available", true);
+			result.put("dateTime",
+					formatDateForCalendar(Date.from(nextStart.atZone(ZoneId.systemDefault()).toInstant())));
+			return result;
+		}
+
 		final Map<String, Object> result = new HashMap<>();
 		result.put("available", false);
 		return result;

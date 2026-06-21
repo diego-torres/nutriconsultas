@@ -40,6 +40,10 @@ import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.paciente.projection.PacienteCalendarView;
+import com.nutriconsultas.booking.BookingAvailabilitySlotService;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -60,6 +64,9 @@ public class CalendarEventRestControllerTest {
 
 	@Mock
 	private BodyFatCalculatorService bodyFatCalculatorService;
+
+	@Mock
+	private BookingAvailabilitySlotService bookingAvailabilitySlotService;
 
 	private List<CalendarEvent> events;
 
@@ -955,114 +962,63 @@ public class CalendarEventRestControllerTest {
 	@Test
 	public void testGetNextAvailableTimeWithNoEvents() {
 		log.info("starting testGetNextAvailableTimeWithNoEvents");
-		// Arrange - Use a future date
 		final Calendar futureCal = Calendar.getInstance();
-		futureCal.add(Calendar.DAY_OF_MONTH, 7); // 7 days from now
+		futureCal.add(Calendar.DAY_OF_MONTH, 7);
 		final String dateStr = String.format("%04d-%02d-%02d", futureCal.get(Calendar.YEAR),
 				futureCal.get(Calendar.MONTH) + 1, futureCal.get(Calendar.DAY_OF_MONTH));
-		// NOSONAR - Mockito matcher
-		when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(new ArrayList<>());
+		final LocalDate parsedDate = LocalDate.parse(dateStr);
+		when(bookingAvailabilitySlotService.findNextAvailableStart(org.mockito.ArgumentMatchers.eq(TEST_USER_ID),
+				org.mockito.ArgumentMatchers.eq(parsedDate), any(LocalDateTime.class)))
+			.thenReturn(parsedDate.atTime(8, 0));
 
-		// Act
-		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr);
+		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr, principal);
 
-		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.get("available")).isEqualTo(true);
 		assertThat(result).containsKey("dateTime");
-		verify(service).findEventsBetweenDates(any(Date.class), any(Date.class));
+		verify(bookingAvailabilitySlotService).findNextAvailableStart(org.mockito.ArgumentMatchers.eq(TEST_USER_ID),
+				org.mockito.ArgumentMatchers.eq(parsedDate), any(LocalDateTime.class));
 		log.info("finished testGetNextAvailableTimeWithNoEvents");
 	}
 
 	@Test
 	public void testGetNextAvailableTimeWithEvents() {
 		log.info("starting testGetNextAvailableTimeWithEvents");
-		// Arrange - Use a future date
 		final Calendar futureCal = Calendar.getInstance();
-		futureCal.add(Calendar.DAY_OF_MONTH, 7); // 7 days from now
-		futureCal.set(Calendar.HOUR_OF_DAY, 0);
-		futureCal.set(Calendar.MINUTE, 0);
-		futureCal.set(Calendar.SECOND, 0);
-		futureCal.set(Calendar.MILLISECOND, 0);
+		futureCal.add(Calendar.DAY_OF_MONTH, 7);
 		final String dateStr = String.format("%04d-%02d-%02d", futureCal.get(Calendar.YEAR),
 				futureCal.get(Calendar.MONTH) + 1, futureCal.get(Calendar.DAY_OF_MONTH));
-		final List<CalendarEvent> existingEvents = new ArrayList<>();
+		final LocalDate parsedDate = LocalDate.parse(dateStr);
+		when(bookingAvailabilitySlotService.findNextAvailableStart(org.mockito.ArgumentMatchers.eq(TEST_USER_ID),
+				org.mockito.ArgumentMatchers.eq(parsedDate), any(LocalDateTime.class)))
+			.thenReturn(parsedDate.atTime(8, 0));
 
-		// Create an event at 9 AM (8-9 AM should be available)
-		final Calendar cal = Calendar.getInstance();
-		cal.setTime(futureCal.getTime());
-		cal.set(Calendar.HOUR_OF_DAY, 9);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
+		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr, principal);
 
-		final CalendarEvent event9AM = new CalendarEvent();
-		event9AM.setId(1L);
-		event9AM.setTitle("Event at 9 AM");
-		event9AM.setEventDateTime(cal.getTime());
-		event9AM.setDurationMinutes(60);
-		event9AM.setStatus(EventStatus.SCHEDULED);
-		existingEvents.add(event9AM);
-
-		// NOSONAR - Mockito matcher
-		when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(existingEvents);
-
-		// Act
-		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr);
-
-		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.get("available")).isEqualTo(true);
-		assertThat(result).containsKey("dateTime");
-		// Should return 8 AM as it's the first available hour
 		final String dateTime = (String) result.get("dateTime");
 		assertThat(dateTime).contains("08:00:00");
-		verify(service).findEventsBetweenDates(any(Date.class), any(Date.class));
 		log.info("finished testGetNextAvailableTimeWithEvents");
 	}
 
 	@Test
 	public void testGetNextAvailableTimeWithFullDay() {
 		log.info("starting testGetNextAvailableTimeWithFullDay");
-		// Arrange - Use a future date and create events for every hour from 8 AM to 5 PM
 		final Calendar futureCal = Calendar.getInstance();
-		futureCal.add(Calendar.DAY_OF_MONTH, 7); // 7 days from now
-		futureCal.set(Calendar.HOUR_OF_DAY, 0);
-		futureCal.set(Calendar.MINUTE, 0);
-		futureCal.set(Calendar.SECOND, 0);
-		futureCal.set(Calendar.MILLISECOND, 0);
+		futureCal.add(Calendar.DAY_OF_MONTH, 7);
 		final String dateStr = String.format("%04d-%02d-%02d", futureCal.get(Calendar.YEAR),
 				futureCal.get(Calendar.MONTH) + 1, futureCal.get(Calendar.DAY_OF_MONTH));
-		final List<CalendarEvent> existingEvents = new ArrayList<>();
+		final LocalDate parsedDate = LocalDate.parse(dateStr);
+		when(bookingAvailabilitySlotService.findNextAvailableStart(org.mockito.ArgumentMatchers.eq(TEST_USER_ID),
+				org.mockito.ArgumentMatchers.eq(parsedDate), any(LocalDateTime.class)))
+			.thenReturn(null);
 
-		for (int hour = 8; hour <= 17; hour++) {
-			final Calendar cal = Calendar.getInstance();
-			cal.setTime(futureCal.getTime());
-			cal.set(Calendar.HOUR_OF_DAY, hour);
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
+		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr, principal);
 
-			final CalendarEvent event = new CalendarEvent();
-			event.setId((long) hour);
-			event.setTitle("Event at " + hour + " AM");
-			event.setEventDateTime(cal.getTime());
-			event.setDurationMinutes(60);
-			event.setStatus(EventStatus.SCHEDULED);
-			existingEvents.add(event);
-		}
-
-		// NOSONAR - Mockito matcher
-		when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(existingEvents);
-
-		// Act
-		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr);
-
-		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.get("available")).isEqualTo(false);
 		assertThat(result).doesNotContainKey("dateTime");
-		verify(service).findEventsBetweenDates(any(Date.class), any(Date.class));
 		log.info("finished testGetNextAvailableTimeWithFullDay");
 	}
 
@@ -1073,7 +1029,7 @@ public class CalendarEventRestControllerTest {
 		final String invalidDateStr = "invalid-date";
 
 		// Act
-		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(invalidDateStr);
+		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(invalidDateStr, principal);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -1086,112 +1042,41 @@ public class CalendarEventRestControllerTest {
 	@Test
 	public void testGetNextAvailableTimeWithPartialDay() {
 		log.info("starting testGetNextAvailableTimeWithPartialDay");
-		// Arrange - Use a future date and create events at 8 AM, 10 AM, 12 PM (9 AM, 11
-		// AM should be available)
 		final Calendar futureCal = Calendar.getInstance();
-		futureCal.add(Calendar.DAY_OF_MONTH, 7); // 7 days from now
-		futureCal.set(Calendar.HOUR_OF_DAY, 0);
-		futureCal.set(Calendar.MINUTE, 0);
-		futureCal.set(Calendar.SECOND, 0);
-		futureCal.set(Calendar.MILLISECOND, 0);
+		futureCal.add(Calendar.DAY_OF_MONTH, 7);
 		final String dateStr = String.format("%04d-%02d-%02d", futureCal.get(Calendar.YEAR),
 				futureCal.get(Calendar.MONTH) + 1, futureCal.get(Calendar.DAY_OF_MONTH));
-		final List<CalendarEvent> existingEvents = new ArrayList<>();
+		final LocalDate parsedDate = LocalDate.parse(dateStr);
+		when(bookingAvailabilitySlotService.findNextAvailableStart(org.mockito.ArgumentMatchers.eq(TEST_USER_ID),
+				org.mockito.ArgumentMatchers.eq(parsedDate), any(LocalDateTime.class)))
+			.thenReturn(parsedDate.atTime(9, 0));
 
-		final int[] hours = { 8, 10, 12 };
-		for (final int hour : hours) {
-			final Calendar cal = Calendar.getInstance();
-			cal.setTime(futureCal.getTime());
-			cal.set(Calendar.HOUR_OF_DAY, hour);
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
+		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr, principal);
 
-			final CalendarEvent event = new CalendarEvent();
-			event.setId((long) hour);
-			event.setTitle("Event at " + hour + " AM");
-			event.setEventDateTime(cal.getTime());
-			event.setDurationMinutes(60);
-			event.setStatus(EventStatus.SCHEDULED);
-			existingEvents.add(event);
-		}
-
-		// NOSONAR - Mockito matcher
-		when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(existingEvents);
-
-		// Act
-		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr);
-
-		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.get("available")).isEqualTo(true);
-		assertThat(result).containsKey("dateTime");
-		// Should return 9 AM as it's the first available hour
 		final String dateTime = (String) result.get("dateTime");
 		assertThat(dateTime).contains("09:00:00");
-		verify(service).findEventsBetweenDates(any(Date.class), any(Date.class));
 		log.info("finished testGetNextAvailableTimeWithPartialDay");
 	}
 
 	@Test
 	public void testGetNextAvailableTimeWithOverlappingEvents() {
 		log.info("starting testGetNextAvailableTimeWithOverlappingEvents");
-		// Arrange - Use a future date and create overlapping events
 		final Calendar futureCal = Calendar.getInstance();
-		futureCal.add(Calendar.DAY_OF_MONTH, 7); // 7 days from now
-		futureCal.set(Calendar.HOUR_OF_DAY, 0);
-		futureCal.set(Calendar.MINUTE, 0);
-		futureCal.set(Calendar.SECOND, 0);
-		futureCal.set(Calendar.MILLISECOND, 0);
+		futureCal.add(Calendar.DAY_OF_MONTH, 7);
 		final String dateStr = String.format("%04d-%02d-%02d", futureCal.get(Calendar.YEAR),
 				futureCal.get(Calendar.MONTH) + 1, futureCal.get(Calendar.DAY_OF_MONTH));
-		final List<CalendarEvent> existingEvents = new ArrayList<>();
+		final LocalDate parsedDate = LocalDate.parse(dateStr);
+		when(bookingAvailabilitySlotService.findNextAvailableStart(org.mockito.ArgumentMatchers.eq(TEST_USER_ID),
+				org.mockito.ArgumentMatchers.eq(parsedDate), any(LocalDateTime.class)))
+			.thenReturn(parsedDate.atTime(10, 30));
 
-		// Event from 8:00 to 9:30
-		final Calendar cal1 = Calendar.getInstance();
-		cal1.setTime(futureCal.getTime());
-		cal1.set(Calendar.HOUR_OF_DAY, 8);
-		cal1.set(Calendar.MINUTE, 0);
-		cal1.set(Calendar.SECOND, 0);
-		cal1.set(Calendar.MILLISECOND, 0);
-		final CalendarEvent event1 = new CalendarEvent();
-		event1.setId(1L);
-		event1.setTitle("Event 1");
-		event1.setEventDateTime(cal1.getTime());
-		event1.setDurationMinutes(90); // 1.5 hours
-		event1.setStatus(EventStatus.SCHEDULED);
-		existingEvents.add(event1);
+		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr, principal);
 
-		// Event from 9:30 to 10:30
-		final Calendar cal2 = Calendar.getInstance();
-		cal2.setTime(futureCal.getTime());
-		cal2.set(Calendar.HOUR_OF_DAY, 9);
-		cal2.set(Calendar.MINUTE, 30);
-		cal2.set(Calendar.SECOND, 0);
-		cal2.set(Calendar.MILLISECOND, 0);
-		final CalendarEvent event2 = new CalendarEvent();
-		event2.setId(2L);
-		event2.setTitle("Event 2");
-		event2.setEventDateTime(cal2.getTime());
-		event2.setDurationMinutes(60);
-		event2.setStatus(EventStatus.SCHEDULED);
-		existingEvents.add(event2);
-
-		// NOSONAR - Mockito matcher
-		when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(existingEvents);
-
-		// Act
-		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr);
-
-		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.get("available")).isEqualTo(true);
-		assertThat(result).containsKey("dateTime");
-		// Should return 10:30 or later as 8-10:30 is blocked
-		final String dateTime = (String) result.get("dateTime");
-		// Verify it's after 10:30
-		assertThat(dateTime).isNotNull();
-		verify(service).findEventsBetweenDates(any(Date.class), any(Date.class));
+		assertThat((String) result.get("dateTime")).contains("10:30:00");
 		log.info("finished testGetNextAvailableTimeWithOverlappingEvents");
 	}
 
@@ -1209,7 +1094,7 @@ public class CalendarEventRestControllerTest {
 				pastCal.get(Calendar.MONTH) + 1, pastCal.get(Calendar.DAY_OF_MONTH));
 
 		// Act
-		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr);
+		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr, principal);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -1219,9 +1104,8 @@ public class CalendarEventRestControllerTest {
 		// Should return default time (8:00 AM) without calculating availability
 		final String dateTime = (String) result.get("dateTime");
 		assertThat(dateTime).contains("08:00:00");
-		// Verify that findEventsBetweenDates was NOT called (no availability calculation)
-		// NOSONAR - Mockito matcher
-		verify(service, never()).findEventsBetweenDates(any(Date.class), any(Date.class));
+		// Verify that slot lookup was NOT called for past dates
+		verify(bookingAvailabilitySlotService, never()).findNextAvailableStart(any(), any(), any());
 		log.info("finished testGetNextAvailableTimeWithPastDate");
 	}
 
@@ -1239,7 +1123,7 @@ public class CalendarEventRestControllerTest {
 				pastCal.get(Calendar.MONTH) + 1, pastCal.get(Calendar.DAY_OF_MONTH));
 
 		// Act
-		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr);
+		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr, principal);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -1253,9 +1137,7 @@ public class CalendarEventRestControllerTest {
 		final String expectedDatePart = String.format("%04d-%02d-%02d", pastCal.get(Calendar.YEAR),
 				pastCal.get(Calendar.MONTH) + 1, pastCal.get(Calendar.DAY_OF_MONTH));
 		assertThat(dateTime).startsWith(expectedDatePart);
-		// Verify that findEventsBetweenDates was NOT called (no availability calculation)
-		// NOSONAR - Mockito matcher
-		verify(service, never()).findEventsBetweenDates(any(Date.class), any(Date.class));
+		verify(bookingAvailabilitySlotService, never()).findNextAvailableStart(any(), any(), any());
 		log.info("finished testGetNextAvailableTimeWithPastDateMultipleDaysAgo");
 	}
 
@@ -1290,11 +1172,9 @@ public class CalendarEventRestControllerTest {
 			event.setStatus(EventStatus.SCHEDULED);
 			blockingEvents.add(event);
 		}
-		// NOSONAR - Mockito matcher
-		lenient().when(service.findEventsBetweenDates(any(Date.class), any(Date.class))).thenReturn(blockingEvents);
 
 		// Act
-		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr);
+		final Map<String, Object> result = calendarEventRestController.getNextAvailableTime(dateStr, principal);
 
 		// Assert
 		assertThat(result).isNotNull();
@@ -1304,10 +1184,7 @@ public class CalendarEventRestControllerTest {
 		// Should return default time (8:00 AM) even though events would block it
 		final String dateTime = (String) result.get("dateTime");
 		assertThat(dateTime).contains("08:00:00");
-		// Verify that findEventsBetweenDates was NOT called (no availability calculation
-		// for past dates)
-		// NOSONAR - Mockito matcher
-		verify(service, never()).findEventsBetweenDates(any(Date.class), any(Date.class));
+		verify(bookingAvailabilitySlotService, never()).findNextAvailableStart(any(), any(), any());
 		log.info("finished testGetNextAvailableTimeWithPastDateDoesNotCheckAvailability");
 	}
 
