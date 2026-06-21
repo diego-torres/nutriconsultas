@@ -70,7 +70,7 @@ public class PlatilloController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/platillos/nuevo")
-	public String nuevo(final Model model) {
+	public String nuevo(final Model model, @AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Starting nuevo");
 		model.addAttribute("activeMenu", "platillos");
 		final Platillo platillo = new Platillo();
@@ -78,7 +78,10 @@ public class PlatilloController extends AbstractAuthorizedController {
 		model.addAttribute("platillo", platillo);
 		model.addAttribute("isOwner", true);
 		model.addAttribute("canCopy", false);
-		model.addAttribute("isSystemCatalog", false);
+		final String userId = getUserId(principal);
+		final boolean createsAsSystemCatalog = userId != null && PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID
+			.equals(platilloAuthorization.resolveCreateUserId(principal, userId));
+		model.addAttribute("isSystemCatalog", createsAsSystemCatalog);
 		log.debug("Finishing nuevo platillo con valores predeterminados: {}", platillo);
 		return "sbadmin/platillos/formulario";
 	}
@@ -128,8 +131,9 @@ public class PlatilloController extends AbstractAuthorizedController {
 			if (userId == null) {
 				throw new IllegalArgumentException("No se pudo identificar al usuario");
 			}
-			platillo.setUserId(userId);
+			platillo.setUserId(platilloAuthorization.resolveCreateUserId(principal, userId));
 			service.save(platillo);
+			platilloAuthorization.auditSystemPlatilloMutationIfNeeded(principal, platillo, "platillos.create");
 			log.debug("Finishing save with new platillo {}", platillo);
 			result = "redirect:/admin/platillos/" + platillo.getId();
 		}

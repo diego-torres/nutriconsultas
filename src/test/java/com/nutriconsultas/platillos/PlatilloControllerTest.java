@@ -402,6 +402,63 @@ public class PlatilloControllerTest {
 
 	@Test
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testSaveNewPlatilloAsPlatformAdminSetsSystemUserId() throws Exception {
+		when(platilloService
+			.save(argThat(saved -> PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID.equals(saved.getUserId()))))
+			.thenAnswer(invocation -> {
+				final Platillo saved = invocation.getArgument(0);
+				saved.setId(100L);
+				return saved;
+			});
+
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/platillos/save")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("id", "0")
+				.param("name", "System Catalog Platillo")
+				.param("description", "Shared catalog entry")
+				.with(oidcLogin(PLATFORM_ADMIN_USER_ID))
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/platillos/100"));
+
+		verify(platilloService).save(any(Platillo.class));
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testSaveNewPlatilloIgnoresClientSuppliedSystemUserId() throws Exception {
+		when(platilloService.save(argThat(saved -> TEST_USER_ID.equals(saved.getUserId())))).thenAnswer(invocation -> {
+			final Platillo saved = invocation.getArgument(0);
+			saved.setId(43L);
+			return saved;
+		});
+
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/platillos/save")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("id", "0")
+				.param("name", "Spoofed Platillo")
+				.param("userId", PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID)
+				.with(oidcLogin(TEST_USER_ID))
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/platillos/43"));
+
+		verify(platilloService).save(any(Platillo.class));
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testNuevoAsPlatformAdminShowsSystemCatalog() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/platillos/nuevo").with(oidcLogin(PLATFORM_ADMIN_USER_ID)))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.model().attribute("isSystemCatalog", true))
+			.andExpect(MockMvcResultMatchers.model().attribute("isOwner", true));
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	public void testSaveRejectsNonOwnerOnOwnedPlatillo() throws Exception {
 		final Platillo otherPlatillo = new Platillo();
 		otherPlatillo.setId(8L);

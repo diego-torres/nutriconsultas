@@ -181,6 +181,24 @@ class PlatilloAuthorizationTest {
 				org.mockito.ArgumentMatchers.anyString());
 	}
 
+	@Test
+	void resolveCreateUserId_returnsSystemCatalogUserIdForPlatformAdmin() {
+		platilloAuthorization = new PlatilloAuthorization(platformAdminService, platformAdminAuditService);
+		when(platformAdminService.isPlatformAdmin(platformAdminPrincipal)).thenReturn(true);
+
+		assertThat(platilloAuthorization.resolveCreateUserId(platformAdminPrincipal, PLATFORM_ADMIN_USER_ID))
+			.isEqualTo(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID);
+	}
+
+	@Test
+	void resolveCreateUserId_returnsOAuthUserIdForNutritionist() {
+		platilloAuthorization = new PlatilloAuthorization(platformAdminService, platformAdminAuditService);
+		when(platformAdminService.isPlatformAdmin(nutritionistPrincipal)).thenReturn(false);
+
+		assertThat(platilloAuthorization.resolveCreateUserId(nutritionistPrincipal, NUTRITIONIST_USER_ID))
+			.isEqualTo(NUTRITIONIST_USER_ID);
+	}
+
 	private static Platillo ownedPlatillo(final Long id, final String userId) {
 		final Platillo platillo = new Platillo();
 		platillo.setId(id);

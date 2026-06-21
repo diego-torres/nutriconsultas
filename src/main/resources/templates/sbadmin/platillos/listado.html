@@ -45,6 +45,9 @@
               </button>
             </div>
             <div class="modal-body">
+              <div th:if="${platformAdmin}" class="alert alert-info py-2 mb-3" role="alert">
+                <small><i class="fas fa-info-circle"></i> Se agregará al catálogo del sistema (visible para todos los nutricionistas).</small>
+              </div>
               <div class="form-group row">
                 <label for="nombrePlatillo" class="col-sm-3 col-form-label">Nombre</label>
                 <div class="col-sm-9">

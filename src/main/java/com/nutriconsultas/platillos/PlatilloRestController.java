@@ -221,8 +221,9 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 		if (userId == null) {
 			throw new IllegalArgumentException("No se pudo identificar al usuario");
 		}
-		platillo.setUserId(userId);
+		platillo.setUserId(platilloAuthorization.resolveCreateUserId(principal, userId));
 		final Platillo saved = service.save(platillo);
+		platilloAuthorization.auditSystemPlatilloMutationIfNeeded(principal, saved, "platillos.create");
 		log.info("finish add with platillo {}.", saved);
 		return saved;
 	}
