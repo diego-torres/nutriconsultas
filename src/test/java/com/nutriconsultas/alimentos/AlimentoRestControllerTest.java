@@ -451,4 +451,19 @@ public class AlimentoRestControllerTest {
 		log.info("finished testArrayFiltering with records {}", result.getRecordsTotal());
 	}
 
+	@Test
+	void get_returnsAlimentoWithPesoUnitario() {
+		final Alimento alimento = allAlimentos.get(0);
+		when(alimentoService.findById(alimento.getId())).thenReturn(alimento);
+
+		final Alimento result = alimentoRestController.get(alimento.getId());
+
+		assertThat(result).isNotNull();
+		if (alimento.getCantSugerida() != null && alimento.getCantSugerida() != 0 && alimento.getPesoNeto() != null) {
+			assertThat(result.getPesoUnitario())
+				.isEqualTo(alimento.getPesoNeto().doubleValue() / alimento.getCantSugerida());
+		}
+		verify(alimentoService).findById(alimento.getId());
+	}
+
 }
