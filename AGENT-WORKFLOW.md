@@ -32,14 +32,14 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | `[Nutritionist Web]` issues (#221–#223 MPX; #232–#242 epics; #257–#259 platillo ownership; #271–#272 system catalog create; #280–#281 diet nutrients & ingesta platillo edit; ~~#285~~ platillo inline cantidad; ~~#241~~ ~~#242~~ patient UX; ~~#250~~), states, dependencies |
 | [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md) | Patient registration export/import plan |
 
-**Parallel track (public booking — child issues complete):**
+**Parallel track (public booking — v1 complete):**
 
 | File | Purpose |
 |------|---------|
 | [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md) | `[Public Booking]` epic #245–#248 |
 | [`docs/public-booking/AVAILABILITY.md`](docs/public-booking/AVAILABILITY.md) | Working hours model, timezone, REST (#246) |
 
-**Current next issue (public booking):** None — ~~#302~~ **done** (PR [#303](https://github.com/diego-torres/nutriconsultas/pull/303)); ~~#246~~, ~~#247~~, ~~#248~~, ~~#297~~, ~~#300~~ done. Epic [#245](https://github.com/diego-torres/nutriconsultas/issues/245) open for follow-ups. See [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md).
+**Current next issue (public booking):** None — epic ~~#245~~ **done**; ~~#246~~, ~~#247~~, ~~#248~~, ~~#297~~, ~~#300~~, ~~#302~~ done. Deferred follow-ups need new issues. See [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md).
 
 **Current next issue (mobile):** [#134 — POST /rest/mobile/invitations](https://github.com/diego-torres/nutriconsultas/issues/134). ~~#133~~ done (PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229)).
 
