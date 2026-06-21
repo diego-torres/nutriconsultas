@@ -30,6 +30,9 @@ public class ProfileTemplateValidator extends BaseTemplateValidator {
 		variables.put("subscriptionPeriodEndLabel", "01/07/2026");
 		variables.put("brandedReportsEnabled", true);
 		variables.put("logoUrl", "/admin/perfil/logo");
+		variables.put("publicBookingLinkEnabled", true);
+		variables.put("publicBookingUrl",
+				"https://minutriporcion.com/consultas/11111111-2222-4333-8444-555555555555/agendar-cita");
 		return variables;
 	}
 
@@ -40,6 +43,7 @@ public class ProfileTemplateValidator extends BaseTemplateValidator {
 		profile.setDisplayName("Dra. Prueba Validación");
 		profile.setCedulaProfesional("12345678");
 		profile.setLogoExtension("png");
+		profile.setPublicBookingId("11111111-2222-4333-8444-555555555555");
 		return profile;
 	}
 

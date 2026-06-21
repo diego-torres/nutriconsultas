@@ -39,7 +39,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md) | `[Public Booking]` epic #245–#248 |
 | [`docs/public-booking/AVAILABILITY.md`](docs/public-booking/AVAILABILITY.md) | Working hours model, timezone, REST (#246) |
 
-**Current next issue (public booking):** [#297 — display and copy public booking link](https://github.com/diego-torres/nutriconsultas/issues/297). ~~#246~~, ~~#247~~, ~~#248~~ done (~~#247~~ PR [#295](https://github.com/diego-torres/nutriconsultas/pull/295); ~~#248~~ `issue-248-public-booking`, `ef67600`). See [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md).
+**Current next issue (public booking):** [#297 — display and copy public booking link](https://github.com/diego-torres/nutriconsultas/issues/297) **in-progress** (`issue-297-copy-booking-link`). ~~#246~~, ~~#247~~, ~~#248~~ done. See [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md).
 
 **Current next issue (mobile):** [#134 — POST /rest/mobile/invitations](https://github.com/diego-torres/nutriconsultas/issues/134). ~~#133~~ done (PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229)).
 

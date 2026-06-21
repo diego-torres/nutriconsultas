@@ -5,6 +5,8 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
+import java.util.Optional;
+
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,20 +15,25 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.nutriconsultas.controller.AbstractAuthorizedController;
 import com.nutriconsultas.subscription.Entitlement;
+import com.nutriconsultas.subscription.Subscription;
 import com.nutriconsultas.subscription.SubscriptionEntitlementService;
 import com.nutriconsultas.subscription.lifecycle.SubscriptionAccessService;
 import com.nutriconsultas.util.LogRedaction;
 
 import lombok.extern.slf4j.Slf4j;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Controller for managing the nutritionist's professional profile.
@@ -64,10 +71,11 @@ public class NutritionistProfileController extends AbstractAuthorizedController 
 	 * @return the Thymeleaf template name
 	 */
 	@GetMapping("/admin/perfil")
-	public String perfil(@AuthenticationPrincipal final OidcUser principal, final Model model) {
+	public String perfil(@AuthenticationPrincipal final OidcUser principal, final Model model,
+			final HttpServletRequest request) {
 		log.debug("Loading profile page");
 		model.addAttribute("activeMenu", "perfil");
-		populateProfileModel(model, principal.getSubject());
+		populateProfileModel(model, principal.getSubject(), request);
 		return "sbadmin/profile/formulario";
 	}
 
@@ -121,20 +129,20 @@ public class NutritionistProfileController extends AbstractAuthorizedController 
 	 */
 	@PostMapping("/admin/perfil/logo")
 	public String uploadLogo(@RequestParam("logoFile") final MultipartFile file,
-			@AuthenticationPrincipal final OidcUser principal, final Model model) {
+			@AuthenticationPrincipal final OidcUser principal, final Model model, final HttpServletRequest request) {
 		log.debug("Uploading logo");
 		model.addAttribute("activeMenu", "perfil");
 		final String userId = principal.getSubject();
 		String result;
 		if (!subscriptionEntitlementService.hasEntitlement(userId, Entitlement.REPORTS_BRANDED)) {
-			populateProfileModel(model, userId);
+			populateProfileModel(model, userId, request);
 			model.addAttribute("errorMessage",
 					"La personalización con logo está disponible en los planes Profesional y superiores.");
 			result = "sbadmin/profile/formulario";
 		}
 		else if (file.isEmpty()) {
 			log.error("Logo upload failed: file is empty");
-			populateProfileModel(model, userId);
+			populateProfileModel(model, userId, request);
 			model.addAttribute("errorMessage", "El archivo está vacío");
 			result = "sbadmin/profile/formulario";
 		}
@@ -155,7 +163,7 @@ public class NutritionistProfileController extends AbstractAuthorizedController 
 			}
 			catch (final IOException e) {
 				log.error("Failed to upload logo for user: {}", LogRedaction.redactUserId(userId), e);
-				populateProfileModel(model, userId);
+				populateProfileModel(model, userId, request);
 				model.addAttribute("errorMessage", "Error al subir el logo");
 				result = "sbadmin/profile/formulario";
 			}
@@ -163,7 +171,7 @@ public class NutritionistProfileController extends AbstractAuthorizedController 
 		return result;
 	}
 
-	private void populateProfileModel(final Model model, final String userId) {
+	private void populateProfileModel(final Model model, final String userId, final HttpServletRequest request) {
 		final NutritionistProfile profile = profileService.getOrCreateProfile(userId);
 		log.info("Loaded profile: {}", LogRedaction.redactNutritionistProfile(profile.getId()));
 		model.addAttribute("profile", profile);
@@ -173,12 +181,41 @@ public class NutritionistProfileController extends AbstractAuthorizedController 
 		if (brandedReportsEnabled && profile.getLogoExtension() != null && !profile.getLogoExtension().isBlank()) {
 			model.addAttribute("logoUrl", "/admin/perfil/logo");
 		}
-		subscriptionAccessService.findGrantingSubscriptionForUser(userId).ifPresent(subscription -> {
+		final Optional<Subscription> grantingSubscription = subscriptionAccessService
+			.findGrantingSubscriptionForUser(userId);
+		populatePublicBookingLink(model, profile, grantingSubscription, request);
+		grantingSubscription.ifPresent(subscription -> {
 			model.addAttribute("subscriptionPlanLabel", subscription.getPlanTier().getDisplayName());
 			model.addAttribute("subscriptionStatus", subscription.getStatus());
 			model.addAttribute("subscriptionPeriodStartLabel", formatVigencia(subscription.getPeriodStart()));
 			model.addAttribute("subscriptionPeriodEndLabel", formatVigencia(subscription.getPeriodEnd()));
 		});
+	}
+
+	private void populatePublicBookingLink(final Model model, final NutritionistProfile profile,
+			final Optional<Subscription> grantingSubscription, final HttpServletRequest request) {
+		if (grantingSubscription.isEmpty()) {
+			model.addAttribute("publicBookingLinkEnabled", false);
+			model.addAttribute("publicBookingLinkDisabledMessage",
+					"Necesitas una suscripción activa para compartir tu enlace de agendamiento.");
+			return;
+		}
+		if (!StringUtils.hasText(profile.getPublicBookingId())) {
+			model.addAttribute("publicBookingLinkEnabled", false);
+			model.addAttribute("publicBookingLinkDisabledMessage",
+					"Tu enlace de agendamiento aún no está disponible. Guarda tu perfil e inténtalo de nuevo.");
+			return;
+		}
+		model.addAttribute("publicBookingLinkEnabled", true);
+		model.addAttribute("publicBookingUrl", buildPublicBookingUrl(request, profile.getPublicBookingId()));
+	}
+
+	static String buildPublicBookingUrl(final HttpServletRequest request, final String publicBookingId) {
+		return ServletUriComponentsBuilder.fromRequest(request)
+			.replacePath("/consultas/{publicBookingId}/agendar-cita")
+			.replaceQuery(null)
+			.buildAndExpand(publicBookingId)
+			.toUriString();
 	}
 
 	private static String resolveLogoMediaType(final String extension) {

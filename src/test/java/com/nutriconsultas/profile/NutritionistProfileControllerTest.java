@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -69,6 +70,7 @@ public class NutritionistProfileControllerTest {
 		mockProfile.setUserId("auth0|test123");
 		mockProfile.setCedulaProfesional("12345678");
 		mockProfile.setDisplayName("Dra. Test");
+		mockProfile.setPublicBookingId("11111111-2222-4333-8444-555555555555");
 	}
 
 	@Test
@@ -85,13 +87,14 @@ public class NutritionistProfileControllerTest {
 			.thenReturn(Optional.of(subscription));
 
 		final Model model = new ExtendedModelMap();
+		final MockHttpServletRequest request = bookingProfileRequest("http", "localhost", 3000);
 		final String view = controller.perfil(org.mockito.Mockito
 			.mock(org.springframework.security.oauth2.core.oidc.user.OidcUser.class, invocation -> {
 				if ("getSubject".equals(invocation.getMethod().getName())) {
 					return "auth0|test123";
 				}
 				return org.mockito.Mockito.RETURNS_DEFAULTS.answer(invocation);
-			}), model);
+			}), model, request);
 
 		assertThat(view).isEqualTo("sbadmin/profile/formulario");
 		assertThat(model.getAttribute("subscriptionPlanLabel")).isEqualTo("Básico");
@@ -100,6 +103,31 @@ public class NutritionistProfileControllerTest {
 		assertThat(model.getAttribute("subscriptionPeriodEndLabel")).isEqualTo("01/07/2026");
 		assertThat(model.getAttribute("brandedReportsEnabled")).isEqualTo(false);
 		assertThat(model.getAttribute("logoUrl")).isNull();
+		assertThat(model.getAttribute("publicBookingLinkEnabled")).isEqualTo(true);
+		assertThat(model.getAttribute("publicBookingUrl"))
+			.isEqualTo("http://localhost:3000/consultas/11111111-2222-4333-8444-555555555555/agendar-cita");
+	}
+
+	@Test
+	public void perfilHidesPublicBookingUrlWhenSubscriptionInactive() {
+		when(profileService.getOrCreateProfile("auth0|test123")).thenReturn(mockProfile);
+		when(subscriptionEntitlementService.hasEntitlement("auth0|test123", Entitlement.REPORTS_BRANDED))
+			.thenReturn(false);
+		when(subscriptionAccessService.findGrantingSubscriptionForUser("auth0|test123")).thenReturn(Optional.empty());
+
+		final Model model = new ExtendedModelMap();
+		final MockHttpServletRequest request = new MockHttpServletRequest();
+		final String view = controller.perfil(org.mockito.Mockito
+			.mock(org.springframework.security.oauth2.core.oidc.user.OidcUser.class, invocation -> {
+				if ("getSubject".equals(invocation.getMethod().getName())) {
+					return "auth0|test123";
+				}
+				return org.mockito.Mockito.RETURNS_DEFAULTS.answer(invocation);
+			}), model, request);
+
+		assertThat(view).isEqualTo("sbadmin/profile/formulario");
+		assertThat(model.getAttribute("publicBookingLinkEnabled")).isEqualTo(false);
+		assertThat(model.getAttribute("publicBookingUrl")).isNull();
 	}
 
 	@Test
@@ -111,13 +139,14 @@ public class NutritionistProfileControllerTest {
 		when(subscriptionAccessService.findGrantingSubscriptionForUser("auth0|test123")).thenReturn(Optional.empty());
 
 		final Model model = new ExtendedModelMap();
+		final MockHttpServletRequest request = new MockHttpServletRequest();
 		final String view = controller.perfil(org.mockito.Mockito
 			.mock(org.springframework.security.oauth2.core.oidc.user.OidcUser.class, invocation -> {
 				if ("getSubject".equals(invocation.getMethod().getName())) {
 					return "auth0|test123";
 				}
 				return org.mockito.Mockito.RETURNS_DEFAULTS.answer(invocation);
-			}), model);
+			}), model, request);
 
 		assertThat(view).isEqualTo("sbadmin/profile/formulario");
 		assertThat(model.getAttribute("brandedReportsEnabled")).isEqualTo(true);
@@ -160,6 +189,24 @@ public class NutritionistProfileControllerTest {
 		assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
 		assertThat(response.getBody()).isEqualTo(logoBytes);
 		assertThat(response.getHeaders().getContentType()).isEqualTo(org.springframework.http.MediaType.IMAGE_PNG);
+	}
+
+	@Test
+	public void buildPublicBookingUrlUsesOpaquePublicId() {
+		final MockHttpServletRequest request = bookingProfileRequest("https", "minutriporcion.com", 443);
+		final String url = NutritionistProfileController.buildPublicBookingUrl(request,
+				"11111111-2222-4333-8444-555555555555");
+		assertThat(url)
+			.isEqualTo("https://minutriporcion.com/consultas/11111111-2222-4333-8444-555555555555/agendar-cita");
+	}
+
+	private static MockHttpServletRequest bookingProfileRequest(final String scheme, final String serverName,
+			final int serverPort) {
+		final MockHttpServletRequest request = new MockHttpServletRequest("GET", "/admin/perfil");
+		request.setScheme(scheme);
+		request.setServerName(serverName);
+		request.setServerPort(serverPort);
+		return request;
 	}
 
 	@Test
