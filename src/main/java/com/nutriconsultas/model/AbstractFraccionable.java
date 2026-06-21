@@ -10,73 +10,103 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public abstract class AbstractFraccionable extends AbstractNutrible {
 
+	private static final double MATCH_EPSILON = 1.0E-9;
+
+	private static final StandardFraction[] STANDARD_FRACTIONS = { new StandardFraction(0.0, "", 0),
+			new StandardFraction(0.25, "1/4", 4), new StandardFraction(1.0 / 3.0, "1/3", 3),
+			new StandardFraction(0.5, "1/2", 2), new StandardFraction(2.0 / 3.0, "2/3", 3),
+			new StandardFraction(0.75, "3/4", 4) };
+
 	@Column(precision = 5)
 	protected Double cantSugerida;
 
+	/**
+	 * Returns a human-friendly fractional quantity rounded to the nearest standard
+	 * cooking fraction among wholes, halves, quarters, and thirds.
+	 */
 	public String getFractionalCantSugerida() {
-		if (cantSugerida == null) {
-			return "";
-		}
-		final Integer intPart = cantSugerida.intValue();
-		// convert the fractional part to a fraction
-		final Double fractionalPart = cantSugerida - intPart;
-		final Double tolerance = 1.0E-6;
-		Double h1 = 1d;
-		Double h2 = 0d;
-		Double k1 = 0d;
-		Double k2 = 1d;
-		Double b = fractionalPart;
-		do {
-			final Double a = Math.floor(b);
-			final Double aux = h1;
-			h1 = a * h1 + h2;
-			h2 = aux;
-			final Double aux2 = k1;
-			k1 = a * k1 + k2;
-			k2 = aux2;
-			b = 1 / (b - a);
-		}
-		while (Math.abs(fractionalPart - h1 / k1) > fractionalPart * tolerance);
-
-		return intPart > 0 ? intPart + " " : "" + h1.intValue() + "/" + k1.intValue();
+		return getRoundedFractionalCantSugerida();
 	}
 
 	/**
-	 * Returns a rounded fractional quantity rounded to the nearest 0.25 increment. This
-	 * produces clean fractions like 1/4, 1/2, 3/4, 1, 1 1/4, etc., avoiding awkward
-	 * fractions like 6/23.
+	 * Returns a rounded fractional quantity using the nearest value among {@code n},
+	 * {@code n + 1/4}, {@code n + 1/3}, {@code n + 1/2}, {@code n + 2/3}, and
+	 * {@code n + 3/4}.
 	 * @return formatted string with rounded fractional quantity
 	 */
 	public String getRoundedFractionalCantSugerida() {
 		if (cantSugerida == null) {
 			return "";
 		}
-		// Round to nearest 0.25 (1/4) increment
-		final Double rounded = Math.round(cantSugerida * 4.0) / 4.0;
-		final Integer intPart = rounded.intValue();
-		final Double fractionalPart = rounded - intPart;
+		final int baseInt = (int) Math.floor(cantSugerida);
+		double bestDiff = Double.MAX_VALUE;
+		int bestIntPart = 0;
+		StandardFraction bestFraction = STANDARD_FRACTIONS[0];
 
-		// Convert fractional part to clean fraction (only 0, 1/4, 1/2, or 3/4)
-		if (Math.abs(fractionalPart) < 0.01) {
-			// No fraction, just the integer part
+		for (int intPart = baseInt; intPart <= baseInt + 1; intPart++) {
+			for (final StandardFraction fraction : STANDARD_FRACTIONS) {
+				final double candidate = intPart + fraction.value();
+				final double diff = Math.abs(cantSugerida - candidate);
+				if (isBetterFractionMatch(diff, bestDiff, fraction, bestFraction)) {
+					bestDiff = diff;
+					bestIntPart = intPart;
+					bestFraction = fraction;
+				}
+			}
+		}
+
+		return formatRoundedQuantity(bestIntPart, bestFraction.label());
+	}
+
+	/**
+	 * Whether ingredient quantity should be shown as rounded grams
+	 * ({@code pesoBrutoRedondeado}) instead of a cooking fraction. Applies to gram units
+	 * and very small taza portions.
+	 */
+	public boolean shouldDisplayWeightInGrams(final String unidad) {
+		if (unidad == null || getPesoBrutoRedondeado() == null) {
+			return false;
+		}
+		if ("g".equals(unidad)) {
+			return true;
+		}
+		return "taza".equals(unidad) && cantSugerida != null && cantSugerida < 0.25;
+	}
+
+	/**
+	 * Quantity string for UI and PDF: grams when
+	 * {@link #shouldDisplayWeightInGrams(String)} applies, otherwise the nearest standard
+	 * cooking fraction.
+	 */
+	public String getDisplayCantSugerida(final String unidad) {
+		if (shouldDisplayWeightInGrams(unidad)) {
+			return String.valueOf(getPesoBrutoRedondeado());
+		}
+		return getRoundedFractionalCantSugerida();
+	}
+
+	private static boolean isBetterFractionMatch(final double diff, final double bestDiff,
+			final StandardFraction candidate, final StandardFraction currentBest) {
+		if (diff + MATCH_EPSILON < bestDiff) {
+			return true;
+		}
+		if (Math.abs(diff - bestDiff) > MATCH_EPSILON) {
+			return false;
+		}
+		if (candidate.denominatorRank() != currentBest.denominatorRank()) {
+			return candidate.denominatorRank() < currentBest.denominatorRank();
+		}
+		return candidate.value() < currentBest.value();
+	}
+
+	private static String formatRoundedQuantity(final int intPart, final String fractionLabel) {
+		if (fractionLabel.isEmpty()) {
 			return intPart > 0 ? String.valueOf(intPart) : "";
 		}
-		else if (Math.abs(fractionalPart - 0.25) < 0.01) {
-			// 1/4
-			return intPart > 0 ? intPart + " 1/4" : "1/4";
+		if (intPart > 0) {
+			return intPart + " " + fractionLabel;
 		}
-		else if (Math.abs(fractionalPart - 0.5) < 0.01) {
-			// 1/2
-			return intPart > 0 ? intPart + " 1/2" : "1/2";
-		}
-		else if (Math.abs(fractionalPart - 0.75) < 0.01) {
-			// 3/4
-			return intPart > 0 ? intPart + " 3/4" : "3/4";
-		}
-		else {
-			// Fallback (shouldn't happen with rounding, but just in case)
-			return intPart > 0 ? String.valueOf(intPart) : "";
-		}
+		return fractionLabel;
 	}
 
 	/**
@@ -87,6 +117,9 @@ public abstract class AbstractFraccionable extends AbstractNutrible {
 			return null;
 		}
 		return getPesoNeto().doubleValue() / cantSugerida;
+	}
+
+	private record StandardFraction(double value, String label, int denominatorRank) {
 	}
 
 }

@@ -105,7 +105,7 @@ public class IngredienteRestController extends AbstractGridItemController<Ingred
 		log.debug("converting Ingrediente row {} to string list.", row);
 		final String actions = canModify ? "<a href='#'' class='btn action-btn btn-danger btn-sm delete-btn' data-id='"
 				+ row.getId() + "'><i class='fas fa-trash fa-sm fa-fw'></i> </a>" : "";
-		return Arrays.asList(row.getAlimento().getNombreAlimento(), row.getFractionalCantSugerida(), //
+		return Arrays.asList(row.getAlimento().getNombreAlimento(), row.getDisplayCantSugerida(row.getUnidad()), //
 				row.getUnidad(), //
 				row.getPesoNeto().toString(), //
 				actions);

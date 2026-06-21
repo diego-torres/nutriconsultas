@@ -262,9 +262,9 @@
 					<div th:if="${platillo.recommendations != null && !platillo.recommendations.isEmpty()}" class="recommendations" th:text="${'Recomendaciones: ' + platillo.recommendations}"></div>
 					<div th:if="${platillo.ingredientes != null && !platillo.ingredientes.isEmpty()}">
 						<p style="margin-top: 5px; margin-bottom: 5px;"><strong>Ingredientes:</strong></p>
-						<div th:each="ingrediente : ${platillo.ingredientes}" class="ingrediente-item" th:with="showInGrams=${ingrediente.cantSugerida != null && ingrediente.unidad != null && ingrediente.unidad.equals('taza') && ingrediente.cantSugerida < 0.25 && ingrediente.pesoBrutoRedondeado != null}">
+						<div th:each="ingrediente : ${platillo.ingredientes}" class="ingrediente-item" th:with="showInGrams=${ingrediente.shouldDisplayWeightInGrams(ingrediente.unidad)}">
 							<span th:text="${(ingrediente.alimento != null && ingrediente.alimento.nombreAlimento != null) ? ingrediente.alimento.nombreAlimento : (ingrediente.description != null ? ingrediente.description : '')}"></span>
-							<!-- Show in grams if less than 0.25 taza, otherwise show rounded fractional quantity (rounded to nearest 0.25) -->
+							<!-- Show in grams for g units or very small taza portions; otherwise cooking fractions -->
 							<span th:if="${showInGrams}" th:text="${' - ' + ingrediente.pesoBrutoRedondeado + ' g'}"></span>
 							<span th:if="${ingrediente.cantSugerida != null && !showInGrams}" th:text="${' - ' + ingrediente.getRoundedFractionalCantSugerida()}"></span>
 							<span th:if="${ingrediente.unidad != null && !showInGrams}" th:text="${' ' + ingrediente.unidad}"></span>
