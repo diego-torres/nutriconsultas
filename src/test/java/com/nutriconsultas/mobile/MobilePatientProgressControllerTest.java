@@ -39,7 +39,7 @@ class MobilePatientProgressControllerTest {
 	void getProgress_returnsApiResponseEnvelope() {
 		final PatientProgressSnapshotDto snapshot = new PatientProgressSnapshotDto(
 				Instant.parse("2026-06-01T10:00:00Z"), null, 70.0, 1.70, 24.2, NivelPeso.NORMAL, "Normal", 1500.0, 22.0,
-				null, null, null);
+				null, null, null, "avatar_1", "/sbadmin/img/paciente-avatars/avatar_1.png");
 		final Jwt jwt = Jwt.withTokenValue("token").header("alg", "none").subject(PATIENT_SUB).build();
 
 		when(patientAuthService.requireAuthViewByJwt(jwt)).thenReturn(authView(5L));

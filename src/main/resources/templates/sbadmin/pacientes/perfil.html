@@ -45,8 +45,15 @@
             <div class="col-lg-4">
               <div class="card mb-4">
                 <div class="card-body text-center">
-                  <img th:src="${paciente != null && paciente.gender == 'M' ? '/sbadmin/img/ava3.webp' : '/sbadmin/img/ava5.webp'}"
+                  <img id="pacienteAvatarImage"
+                    th:src="${avatarImageUrl != null ? avatarImageUrl : '/sbadmin/img/paciente-avatars/avatar_1.png'}"
                     alt="avatar" class="rounded-circle img-fluid" style="width: 150px;">
+                  <div class="mt-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-toggle="modal"
+                      data-target="#avatarPickerModal">
+                      <i class="fas fa-user-circle"></i> Cambiar avatar
+                    </button>
+                  </div>
                   <h5 class="my-3">[[(${paciente != null ? paciente.name : ''})]]</h5>
                   <p class="text-muted mb-1"><i class="fas fa-envelope"></i> [[(${paciente != null ? paciente.email : ''})]]</p>
                   <p class="text-muted mb-4"><i class="fas fa-phone"></i> [[(${paciente != null ? paciente.phone : ''})]]</p>
@@ -299,6 +306,76 @@
   </div>
   <!-- End of Page Wrapper -->
 
+  <!-- Avatar picker modal -->
+  <div class="modal fade" id="avatarPickerModal" tabindex="-1" role="dialog" aria-labelledby="avatarPickerModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="avatarPickerModalLabel">Elegir avatar</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body avatar-picker-body">
+          <h6 class="text-muted mb-3">Adultos</h6>
+          <div class="row" th:if="${avatarOptions != null}">
+            <div class="col-4 col-sm-3 col-md-2 mb-3 text-center"
+              th:each="option : ${avatarOptions}"
+              th:if="${#strings.startsWith(option.id, 'avatar_')}">
+              <button type="button"
+                class="btn btn-link p-0 avatar-option-btn w-100"
+                th:attr="data-avatar-id=${option.id},data-avatar-url=${option.imagePath}"
+                th:classappend="${selectedAvatarId != null && selectedAvatarId == option.id} ? ' avatar-option-selected' : ''">
+                <img th:src="${option.imagePath}" th:alt="${option.label}"
+                  class="rounded-circle img-fluid border avatar-option-image"
+                  style="width: 96px; height: 96px; object-fit: cover;">
+                <div class="small text-muted mt-1" th:text="${option.label}">Avatar</div>
+              </button>
+            </div>
+          </div>
+          <h6 class="text-muted mb-3 mt-2">Niños</h6>
+          <div class="row" th:if="${avatarOptions != null}">
+            <div class="col-4 col-sm-3 col-md-2 mb-3 text-center"
+              th:each="option : ${avatarOptions}"
+              th:if="${#strings.startsWith(option.id, 'kid_avatar_')}">
+              <button type="button"
+                class="btn btn-link p-0 avatar-option-btn w-100"
+                th:attr="data-avatar-id=${option.id},data-avatar-url=${option.imagePath}"
+                th:classappend="${selectedAvatarId != null && selectedAvatarId == option.id} ? ' avatar-option-selected' : ''">
+                <img th:src="${option.imagePath}" th:alt="${option.label}"
+                  class="rounded-circle img-fluid border avatar-option-image"
+                  style="width: 96px; height: 96px; object-fit: cover;">
+                <div class="small text-muted mt-1" th:text="${option.label}">Avatar</div>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .avatar-picker-body {
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    .avatar-option-btn {
+      border: none;
+      background: transparent;
+    }
+    .avatar-option-selected .avatar-option-image {
+      border-color: #4e73df !important;
+      border-width: 3px !important;
+    }
+    .avatar-option-image {
+      border: 2px solid #e3e6f0;
+    }
+  </style>
+
   <script th:inline="javascript">
     window.PATIENT_CHAT_CONTEXT = {
       pacienteId: /*[[${paciente.id}]]*/ 0,
@@ -483,6 +560,7 @@
     (function () {
       var importSuccess = /*[[${importSuccess}]]*/ null;
       var importDuplicateWarning = /*[[${importDuplicateWarning}]]*/ null;
+      var pacienteId = /*[[${paciente != null ? paciente.id : null}]]*/ null;
       if (typeof swal === 'undefined') {
         return;
       }
@@ -504,7 +582,6 @@
         }, importSuccess ? 2600 : 0);
       }
       if (window.PacienteMpxActions) {
-        var pacienteId = /*[[${paciente != null ? paciente.id : null}]]*/ null;
         PacienteMpxActions.bind({
           onDeleted: function () {
             window.location.href = '/admin/pacientes';
@@ -517,6 +594,43 @@
           }
         });
       }
+      $('.avatar-option-btn').on('click', function () {
+        if (typeof swal === 'undefined' || !pacienteId) {
+          return;
+        }
+        var avatarId = $(this).data('avatar-id');
+        var avatarUrl = $(this).data('avatar-url');
+        $.ajax({
+          url: '/rest/pacientes/' + pacienteId + '/avatar',
+          type: 'PUT',
+          contentType: 'application/json',
+          data: JSON.stringify({ avatarId: avatarId }),
+          success: function () {
+            $('#pacienteAvatarImage').attr('src', avatarUrl);
+            $('.avatar-option-btn').removeClass('avatar-option-selected');
+            $('.avatar-option-btn[data-avatar-id="' + avatarId + '"]').addClass('avatar-option-selected');
+            $('#avatarPickerModal').modal('hide');
+            swal({
+              title: 'Avatar actualizado',
+              text: 'El avatar del paciente se guardó correctamente.',
+              type: 'success',
+              timer: 2000
+            });
+          },
+          error: function (xhr) {
+            var message = 'No se pudo guardar el avatar';
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+              message = xhr.responseJSON.error;
+            }
+            swal({
+              title: 'Error',
+              text: message,
+              type: 'error',
+              timer: 5000
+            });
+          }
+        });
+      });
     })();
   </script>
 

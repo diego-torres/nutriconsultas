@@ -1,0 +1,51 @@
+databaseChangeLog:
+  - changeSet:
+      id: 012-paciente-avatar-id-filename-keys
+      author: nutriconsultas
+      changes:
+        - sql:
+            dbms: postgresql
+            sql: |
+              UPDATE paciente SET avatar_id = 'avatar_1' WHERE avatar_id = 'avatar01';
+              UPDATE paciente SET avatar_id = 'avatar_2' WHERE avatar_id = 'avatar02';
+              UPDATE paciente SET avatar_id = 'avatar_3' WHERE avatar_id = 'avatar03';
+              UPDATE paciente SET avatar_id = 'avatar_4' WHERE avatar_id = 'avatar04';
+              UPDATE paciente SET avatar_id = 'avatar_5' WHERE avatar_id = 'avatar05';
+              UPDATE paciente SET avatar_id = 'avatar_6' WHERE avatar_id = 'avatar06';
+              UPDATE paciente SET avatar_id = 'avatar_7' WHERE avatar_id = 'avatar07';
+              UPDATE paciente SET avatar_id = 'avatar_8' WHERE avatar_id = 'avatar08';
+              UPDATE paciente SET avatar_id = 'avatar_9' WHERE avatar_id = 'avatar09';
+              UPDATE paciente SET avatar_id = 'avatar_10' WHERE avatar_id = 'avatar10';
+              UPDATE paciente SET avatar_id = 'kid_avatar_1' WHERE avatar_id = 'avatar11';
+              UPDATE paciente SET avatar_id = 'kid_avatar_2' WHERE avatar_id = 'avatar12';
+              UPDATE paciente SET avatar_id = 'kid_avatar_3' WHERE avatar_id = 'avatar13';
+              UPDATE paciente SET avatar_id = 'kid_avatar_4' WHERE avatar_id = 'avatar14';
+              UPDATE paciente SET avatar_id = 'kid_avatar_5' WHERE avatar_id = 'avatar15';
+              UPDATE paciente SET avatar_id = 'kid_avatar_6' WHERE avatar_id = 'avatar16';
+              UPDATE paciente SET avatar_id = 'kid_avatar_7' WHERE avatar_id = 'avatar17';
+              UPDATE paciente SET avatar_id = 'kid_avatar_8' WHERE avatar_id = 'avatar18';
+              UPDATE paciente SET avatar_id = 'kid_avatar_9' WHERE avatar_id = 'avatar19';
+              UPDATE paciente SET avatar_id = 'kid_avatar_10' WHERE avatar_id = 'avatar20';
+        - sql:
+            dbms: h2
+            sql: |
+              UPDATE paciente SET avatar_id = 'avatar_1' WHERE avatar_id = 'avatar01';
+              UPDATE paciente SET avatar_id = 'avatar_2' WHERE avatar_id = 'avatar02';
+              UPDATE paciente SET avatar_id = 'avatar_3' WHERE avatar_id = 'avatar03';
+              UPDATE paciente SET avatar_id = 'avatar_4' WHERE avatar_id = 'avatar04';
+              UPDATE paciente SET avatar_id = 'avatar_5' WHERE avatar_id = 'avatar05';
+              UPDATE paciente SET avatar_id = 'avatar_6' WHERE avatar_id = 'avatar06';
+              UPDATE paciente SET avatar_id = 'avatar_7' WHERE avatar_id = 'avatar07';
+              UPDATE paciente SET avatar_id = 'avatar_8' WHERE avatar_id = 'avatar08';
+              UPDATE paciente SET avatar_id = 'avatar_9' WHERE avatar_id = 'avatar09';
+              UPDATE paciente SET avatar_id = 'avatar_10' WHERE avatar_id = 'avatar10';
+              UPDATE paciente SET avatar_id = 'kid_avatar_1' WHERE avatar_id = 'avatar11';
+              UPDATE paciente SET avatar_id = 'kid_avatar_2' WHERE avatar_id = 'avatar12';
+              UPDATE paciente SET avatar_id = 'kid_avatar_3' WHERE avatar_id = 'avatar13';
+              UPDATE paciente SET avatar_id = 'kid_avatar_4' WHERE avatar_id = 'avatar14';
+              UPDATE paciente SET avatar_id = 'kid_avatar_5' WHERE avatar_id = 'avatar15';
+              UPDATE paciente SET avatar_id = 'kid_avatar_6' WHERE avatar_id = 'avatar16';
+              UPDATE paciente SET avatar_id = 'kid_avatar_7' WHERE avatar_id = 'avatar17';
+              UPDATE paciente SET avatar_id = 'kid_avatar_8' WHERE avatar_id = 'avatar18';
+              UPDATE paciente SET avatar_id = 'kid_avatar_9' WHERE avatar_id = 'avatar19';
+              UPDATE paciente SET avatar_id = 'kid_avatar_10' WHERE avatar_id = 'avatar20';

@@ -1,0 +1,21 @@
+databaseChangeLog:
+  - changeSet:
+      id: 011-paciente-avatar-id-normalize
+      author: nutriconsultas
+      changes:
+        - sql:
+            dbms: postgresql
+            sql: |
+              UPDATE paciente SET avatar_id = 'avatar01' WHERE avatar_id = 'ava3';
+              UPDATE paciente SET avatar_id = 'avatar06' WHERE avatar_id = 'ava5';
+              UPDATE paciente SET avatar_id = 'avatar03' WHERE avatar_id = 'profile1';
+              UPDATE paciente SET avatar_id = 'avatar08' WHERE avatar_id = 'profile2';
+              UPDATE paciente SET avatar_id = 'avatar10' WHERE avatar_id = 'profile3';
+        - sql:
+            dbms: h2
+            sql: |
+              UPDATE paciente SET avatar_id = 'avatar01' WHERE avatar_id = 'ava3';
+              UPDATE paciente SET avatar_id = 'avatar06' WHERE avatar_id = 'ava5';
+              UPDATE paciente SET avatar_id = 'avatar03' WHERE avatar_id = 'profile1';
+              UPDATE paciente SET avatar_id = 'avatar08' WHERE avatar_id = 'profile2';
+              UPDATE paciente SET avatar_id = 'avatar10' WHERE avatar_id = 'profile3';

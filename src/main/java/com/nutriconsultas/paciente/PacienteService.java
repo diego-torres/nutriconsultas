@@ -35,6 +35,8 @@ public interface PacienteService {
 
 	Paciente save(@NonNull Paciente paciente);
 
+	Paciente updateAvatar(@NonNull Long id, @NonNull String userId, @NonNull String avatarId);
+
 	void delete(@NonNull Long id);
 
 	void deleteByIdAndUserId(@NonNull Long id, @NonNull String userId);

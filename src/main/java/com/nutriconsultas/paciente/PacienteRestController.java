@@ -25,6 +25,7 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,6 +39,7 @@ import com.nutriconsultas.dataTables.paging.PagingRequest;
 import com.nutriconsultas.paciente.projection.PacienteListView;
 import com.nutriconsultas.util.LogRedaction;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -280,6 +282,27 @@ public class PacienteRestController extends AbstractGridController<PacienteListV
 			log.error("Error assigning BMR to patient {}", id, e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(java.util.Map.of("success", false, "error", e.getMessage()));
+		}
+	}
+
+	@PutMapping("/{id}/avatar")
+	public ResponseEntity<Map<String, Object>> updateAvatar(@PathVariable @NonNull final Long id,
+			@Valid @RequestBody final PacienteAvatarUpdateRequest request,
+			@AuthenticationPrincipal final OidcUser principal) {
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				.body(Map.of("success", false, "error", "Not authenticated"));
+		}
+		try {
+			final Paciente saved = service.updateAvatar(id, userId, request.getAvatarId());
+			return ResponseEntity.ok(Map.of("success", true, "avatarId", saved.getAvatarId(), "avatarUrl",
+					PacienteAvatarCatalog.resolveImagePath(saved)));
+		}
+		catch (final IllegalArgumentException ex) {
+			final HttpStatus status = ex.getMessage() != null && ex.getMessage().contains("no encontrado")
+					? HttpStatus.NOT_FOUND : HttpStatus.BAD_REQUEST;
+			return ResponseEntity.status(status).body(Map.of("success", false, "error", ex.getMessage()));
 		}
 	}
 

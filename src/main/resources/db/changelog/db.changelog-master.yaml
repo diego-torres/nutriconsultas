@@ -26,3 +26,12 @@ databaseChangeLog:
   - include:
       file: changes/009-platillo-user-id.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/010-paciente-avatar-id.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: changes/011-paciente-avatar-id-normalize.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: changes/012-paciente-avatar-id-filename-keys.yaml
+      relativeToChangelogFile: true

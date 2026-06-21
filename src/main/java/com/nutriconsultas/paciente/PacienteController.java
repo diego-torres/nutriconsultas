@@ -245,6 +245,7 @@ public class PacienteController extends AbstractAuthorizedController {
 
 		model.addAttribute("activeMenu", "perfil");
 		model.addAttribute("paciente", paciente);
+		PacienteProfileViewSupport.addAvatarAttributes(model, paciente);
 		// calcular ultima consulta
 		final DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
 		final CalendarEvent citaAnterior = getCitaAnterior(id);

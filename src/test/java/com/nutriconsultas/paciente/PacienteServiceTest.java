@@ -272,4 +272,31 @@ public class PacienteServiceTest {
 		log.info("finished testDeleteByIdAndUserIdNotFound");
 	}
 
+	@Test
+	public void testUpdateAvatarPersistsValidSelection() {
+		when(repository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente1));
+		when(repository.save(any(Paciente.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		final Paciente saved = service.updateAvatar(1L, TEST_USER_ID, "avatar_3");
+
+		assertThat(saved.getAvatarId()).isEqualTo("avatar_3");
+		verify(repository).save(paciente1);
+	}
+
+	@Test
+	public void testUpdateAvatarRejectsInvalidSelection() {
+		org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.updateAvatar(1L, TEST_USER_ID, "invalid"))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("Avatar no válido");
+	}
+
+	@Test
+	public void testUpdateAvatarRejectsOtherUsersPatient() {
+		when(repository.findByIdAndUserId(99L, TEST_USER_ID)).thenReturn(java.util.Optional.empty());
+
+		org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.updateAvatar(99L, TEST_USER_ID, "avatar_1"))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("Paciente no encontrado");
+	}
+
 }
