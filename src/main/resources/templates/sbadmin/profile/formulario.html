@@ -216,7 +216,7 @@
                 <div class="card shadow mb-4">
                   <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
-                      <i class="fas fa-link"></i> Enlace público de agendamiento
+                      <i class="fas fa-link"></i> Enlace para agendar citas en línea
                     </h6>
                   </div>
                   <div class="card-body">
@@ -225,7 +225,7 @@
                       configurado.
                     </p>
                     <div th:if="${publicBookingLinkEnabled}">
-                      <label for="publicBookingUrlText" class="sr-only">Enlace de agendamiento</label>
+                      <label for="publicBookingUrlText" class="sr-only">Enlace para agendar citas en línea</label>
                       <div class="input-group">
                         <input type="text"
                           class="form-control"
@@ -238,10 +238,25 @@
                           </button>
                         </div>
                       </div>
+                      <div class="mt-4 pt-3 border-top" id="publicBookingQrSection">
+                        <p class="text-muted small mb-2">
+                          <i class="fas fa-qrcode"></i>
+                          Código QR para imprimir o usar en redes, folletos o tu consultorio:
+                        </p>
+                        <div id="publicBookingQr" class="mb-3 d-inline-block p-2 bg-white border rounded"></div>
+                        <div>
+                          <button type="button" id="downloadPublicBookingQrBtn" class="btn btn-outline-primary btn-sm mr-2">
+                            <i class="fas fa-download"></i> Descargar QR
+                          </button>
+                          <button type="button" id="printPublicBookingQrBtn" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-print"></i> Imprimir QR
+                          </button>
+                        </div>
+                      </div>
                     </div>
                     <div th:unless="${publicBookingLinkEnabled}" class="alert alert-info mb-0" role="status">
                       <span th:text="${publicBookingLinkDisabledMessage}">
-                        Necesitas una suscripción activa para compartir tu enlace de agendamiento.
+                        Necesitas una suscripción activa para compartir tu enlace para agendar citas en línea.
                       </span>
                     </div>
                   </div>
@@ -260,7 +275,7 @@
                   <div class="card-body">
                     <p class="text-muted small">
                       Define tu horario habitual de consulta. Se usará para generar espacios disponibles
-                      en tu enlace público de agendamiento.
+                      en tu enlace para agendar citas en línea.
                     </p>
                     <div id="availabilityAlert" class="alert d-none" role="alert"></div>
                     <div class="form-row mb-3">
@@ -429,9 +444,31 @@
         loadAvailability();
       })(jQuery);
     </script>
+    <script th:src="@{/sbadmin/vendor/qrcode/qrcode.min.js}"></script>
     <script lang="javascript">
       'use strict';
       (function ($) {
+        function initPublicBookingQr() {
+          var url = $('#publicBookingUrlText').val();
+          var $container = $('#publicBookingQr');
+          if (!url || $container.length === 0 || typeof QRCode === 'undefined') {
+            return;
+          }
+          $container.empty();
+          new QRCode($container[0], {
+            text: url,
+            width: 180,
+            height: 180,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        }
+
+        function getPublicBookingQrImage() {
+          return $('#publicBookingQr img').get(0);
+        }
+
         $('#copyPublicBookingUrlBtn').on('click', function () {
           var text = $('#publicBookingUrlText').val();
           if (!text) {
@@ -441,13 +478,56 @@
             navigator.clipboard.writeText(text).then(function () {
               swal({
                 title: 'Copiado',
-                text: 'Enlace de agendamiento copiado al portapapeles.',
+                text: 'Enlace para agendar citas en línea copiado al portapapeles.',
                 type: 'success',
                 timer: 2000
               });
             });
           }
         });
+
+        $('#downloadPublicBookingQrBtn').on('click', function () {
+          var img = getPublicBookingQrImage();
+          if (!img) {
+            return;
+          }
+          var link = document.createElement('a');
+          link.download = 'minutriporcion-agendar-citas-qr.png';
+          link.href = img.src;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        });
+
+        $('#printPublicBookingQrBtn').on('click', function () {
+          var img = getPublicBookingQrImage();
+          var url = $('#publicBookingUrlText').val();
+          if (!img) {
+            return;
+          }
+          var printWindow = window.open('', '_blank');
+          if (!printWindow) {
+            swal({
+              title: 'Ventana bloqueada',
+              text: 'Permite ventanas emergentes para imprimir el código QR.',
+              type: 'warning',
+              timer: 4000
+            });
+            return;
+          }
+          printWindow.document.write('<html><head><title>Código QR — Agendar citas</title></head>'
+            + '<body style="text-align:center;font-family:sans-serif;padding:2rem;">'
+            + '<h2>Agendar cita en línea</h2>'
+            + '<p>Escanea el código QR o visita:</p>'
+            + '<p style="word-break:break-all;font-size:0.9rem;">' + url + '</p>'
+            + '<img src="' + img.src + '" alt="Código QR para agendar citas" width="240" height="240" />'
+            + '</body></html>');
+          printWindow.document.close();
+          printWindow.focus();
+          printWindow.print();
+        });
+
+        initPublicBookingQr();
       })(jQuery);
     </script>
     <script lang="javascript">

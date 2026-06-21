@@ -197,13 +197,13 @@ public class NutritionistProfileController extends AbstractAuthorizedController 
 		if (grantingSubscription.isEmpty()) {
 			model.addAttribute("publicBookingLinkEnabled", false);
 			model.addAttribute("publicBookingLinkDisabledMessage",
-					"Necesitas una suscripción activa para compartir tu enlace de agendamiento.");
+					"Necesitas una suscripción activa para compartir tu enlace para agendar citas en línea.");
 			return;
 		}
 		if (!StringUtils.hasText(profile.getPublicBookingId())) {
 			model.addAttribute("publicBookingLinkEnabled", false);
 			model.addAttribute("publicBookingLinkDisabledMessage",
-					"Tu enlace de agendamiento aún no está disponible. Guarda tu perfil e inténtalo de nuevo.");
+					"Tu enlace para agendar citas en línea aún no está disponible. Guarda tu perfil e inténtalo de nuevo.");
 			return;
 		}
 		model.addAttribute("publicBookingLinkEnabled", true);
