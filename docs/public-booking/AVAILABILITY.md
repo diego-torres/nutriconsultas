@@ -44,3 +44,17 @@ REST (authenticated, calendar UI):
 - `DELETE /rest/calendario/blocks/{id}` — remove block (SweetAlert confirm in UI)
 
 Admin UI: `/admin/calendario` → **Marcar ausencia**; blocked intervals render in gray with striped styling.
+
+## Minimum booking advance (#248)
+
+Public self-booking requires **at least 2 calendar days of anticipation** (nutritionist timezone). The earliest bookable date is **today + 2 days** — not today or tomorrow.
+
+| Layer | Rule |
+|-------|------|
+| **Public slot API** | Return no slots (or reject the date) when `date` is before `today + 2 days` in the nutritionist's timezone |
+| **Public booking POST** | Reject submissions where `slotStart < today + 2 days` (server-side; do not rely on UI alone) |
+| **Public UI** | Date picker disables/blocks the next 2 calendar days; Spanish copy e.g. *Las citas requieren al menos 2 días de anticipación* |
+
+Implementation note: add `MIN_BOOKING_ADVANCE_DAYS = 2` to `BookingAvailabilityConstants` (or equivalent) and apply in the public slot path and booking validator — **not** in the nutritionist admin calendar preview (`GET /rest/profile/availability/slots` remains unrestricted for staff).
+
+Tests: slot API empty for D+0/D+1; booking rejected inside window; first eligible day is D+2; timezone boundary at midnight `America/Mexico_City`.
