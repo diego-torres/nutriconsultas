@@ -117,7 +117,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | 5b. Patient slot rotation (export/import `.mpx`) | ~~#221~~, ~~#222~~, ~~#223~~ — [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) (PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262)) |
 | 6. Branded / tiered reports | #187 — PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218) ✓ |
 | 7. PDF export by plan | #187 — PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218) ✓ |
-| 8. Production reCAPTCHA on contact form | #243 |
+| 8. Production reCAPTCHA on contact form | ~~#243~~ ✓ |
 | 9. Plan-aware Solicitar acceso CTA | #244 |
 
 ---

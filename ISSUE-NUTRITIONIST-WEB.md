@@ -220,7 +220,7 @@ Inline **cantidad** editing on the catalog platillo form (`/admin/platillos/{id}
 | #198 Diet templates | System diets seeded; editable (#232) and creatable (#272) by admin |
 | #280 / #281 Diet nutrients | Full nutrient modal (#280); in-row platillo edit on ingesta grid (#281) — refresh dieta rollup |
 | ~~#285~~ Platillo form | Inline cantidad edit on catalog `#ingredientesGrid` + diet ingesta grid — branch `issue-285-platillo-inline-cantidad` |
-| #243 / #244 Subscription | reCAPTCHA + Solicitar acceso pre-fill — public funnel, not admin UI |
+| ~~#243~~ / #244 Subscription | reCAPTCHA **done**; Solicitar acceso pre-fill — public funnel, not admin UI |
 | #245–#248 Public booking | ~~#246~~ done (branch `issue-246-working-hours`); nutritionist hours in profile — separate track |
 
 ---

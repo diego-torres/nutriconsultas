@@ -41,7 +41,7 @@ Shareable URL for patients to book into a nutritionist's real availability:
 | **245** | Epic — public appointment scheduling link per nutritionist | https://github.com/diego-torres/nutriconsultas/issues/245 | open | — | New track; Liquibase for availability + public slug |
 | **246** | Nutritionist profile — configure working hours and availability | https://github.com/diego-torres/nutriconsultas/issues/246 | **done** | **245** | Branch `issue-246-working-hours`; `GET/PUT /rest/profile/availability`; Liquibase `014` |
 | **247** | Calendar — unavailable days and absence windows | https://github.com/diego-torres/nutriconsultas/issues/247 | **NEXT** | **246** | Blocks subtract from public slots |
-| 248 | Public page — slot picker and appointment booking | https://github.com/diego-torres/nutriconsultas/issues/248 | open | **246**, **247**, #243 | reCAPTCHA recommended; opaque public id |
+| 248 | Public page — slot picker and appointment booking | https://github.com/diego-torres/nutriconsultas/issues/248 | open | **246**, **247**, ~~**243**~~ | reCAPTCHA via `@PublicRecaptchaForm`; opaque public id |
 
 ---
 
@@ -49,7 +49,7 @@ Shareable URL for patients to book into a nutritionist's real availability:
 
 | Track | Interaction |
 |-------|-------------|
-| #243 reCAPTCHA | Bot protection on public booking form |
+| ~~#243~~ reCAPTCHA | **done** — `RecaptchaVerificationService` + production keys; reuse on public booking (#248) |
 | #244 Solicitar acceso | Orthogonal — nutritionist onboarding vs patient booking |
 | `CalendarEvent` | Existing appointments; clarify vs availability blocks |
 | #236 Nutritionist profile | Same profile area for hours (#246) and logo |
