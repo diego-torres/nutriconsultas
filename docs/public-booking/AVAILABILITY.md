@@ -29,9 +29,9 @@ Public slot APIs convert `LocalDate` + slot start `LocalTime` using the nutritio
 - `nutritionist_availability_block` rows for that nutritionist (#247)
 - `CalendarEvent` rows with status `SCHEDULED` for that nutritionist's patients
 
-Authenticated preview: `GET /rest/profile/availability/slots?date=YYYY-MM-DD` (same slot list public booking #248 will expose per nutritionist).
+Authenticated preview: `GET /rest/profile/availability/slots?date=YYYY-MM-DD` (same slot list as public booking per nutritionist).
 
-## Public booking (#248)
+## Public booking (~~#248~~ — shipped)
 
 | Endpoint | Auth | Purpose |
 |----------|------|---------|
@@ -42,7 +42,7 @@ Authenticated preview: `GET /rest/profile/availability/slots?date=YYYY-MM-DD` (s
 
 Opaque **`public_booking_id`** (UUID) on `nutritionist_profile` — never expose OAuth `userId` in public URLs.
 
-## Minimum booking advance (#248)
+## Minimum booking advance (~~#248~~)
 
 Public self-booking requires **at least 2 calendar days of anticipation** (nutritionist timezone). The earliest bookable date is **today + 2 days** — not today or tomorrow.
 
