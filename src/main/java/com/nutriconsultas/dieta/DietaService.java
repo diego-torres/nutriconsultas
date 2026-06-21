@@ -30,6 +30,16 @@ public interface DietaService {
 
 	void recalculatePlatilloIngestaNutrients(@NonNull PlatilloIngesta platilloIngesta, @NonNull Integer portions);
 
+	IngredientePlatilloIngesta addIngredientePlatilloIngesta(@NonNull PlatilloIngesta platilloIngesta,
+			@NonNull Long alimentoId, @NonNull String cantidad, @NonNull Integer peso);
+
+	void deleteIngredientePlatilloIngesta(@NonNull PlatilloIngesta platilloIngesta, @NonNull Long ingredienteId);
+
+	void updateIngredientePlatilloIngesta(@NonNull PlatilloIngesta platilloIngesta, @NonNull Long ingredienteId,
+			@NonNull String cantidad, @NonNull Integer peso);
+
+	void recalculatePlatilloIngestaFromIngredientes(@NonNull PlatilloIngesta platilloIngesta);
+
 	Dieta duplicateDieta(@NonNull Long id, @NonNull String userId);
 
 }

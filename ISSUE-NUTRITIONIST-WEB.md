@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-21 — ~~#280~~ **done** (PR [#284](https://github.com/diego-torres/nutriconsultas/pull/284)). ~~#240~~ **done** (PR [#283](https://github.com/diego-torres/nutriconsultas/pull/283)). ~~#239~~ **done** (`issue-239-ingredient-weight-recalc`, bd07fb4). Epic **#280–#281** registered (diet full nutrients modal; in-row platillo ingredient edit). ~~#238~~ **done** (PR [#279](https://github.com/diego-torres/nutriconsultas/pull/279)). ~~#237~~ **done** (PR [#278](https://github.com/diego-torres/nutriconsultas/pull/278)). ~~#275~~ **done** (PR [#276](https://github.com/diego-torres/nutriconsultas/pull/276)). ~~#236~~ **done** (PR [#274](https://github.com/diego-torres/nutriconsultas/pull/274)). Epic **#271–#272** registered (platform admin **create** system catalog platillos/diets). ~~#259~~ **done** (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)). Platillo ownership **#257–#259 complete**. Diet & platillo authoring UX **#238–#240 complete**. **NEXT:** [#281 in-row platillo ingredient edit on ingesta grid](https://github.com/diego-torres/nutriconsultas/issues/281). Epics **#241–#242**, **#271–#272**, **#280–#281** registered.
+**Last updated:** 2026-06-21 — ~~#281~~ **done** (`issue-281-ingesta-platillo-ingredient-edit`). **NEXT:** #285. ~~#280~~ **done** (PR [#284](https://github.com/diego-torres/nutriconsultas/pull/284)).
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -149,12 +149,28 @@ Full nutrient visibility and inline platillo customization on the diet form with
 | Full nutrients modal from macronutrients table | #280 |
 | In-row platillo ingredient editor + diet nutrient refresh | #281 |
 
-**Suggested order:** #280 independent; #281 after **#239** (weight recalc in sub-row add-ingredient dialog). #281 should refresh macro table (#238) and full-nutrient modal (#280) when both exist.
+**Suggested order:** #280 independent; #281 after **#239** (weight recalc in sub-row add-ingredient dialog). #281 should refresh macro table (#238) and full-nutrient modal (#280) when both exist. **Epic complete** after #281.
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
 | **280** | Diet detail — full nutrients modal from macronutrients table | https://github.com/diego-torres/nutriconsultas/issues/280 | **done** | **238** | PR [#284](https://github.com/diego-torres/nutriconsultas/pull/284); modal from macro table + per-ingesta tabs |
-| **281** | Diet ingesta grid — in-row platillo ingredient editing with nutrient refresh | https://github.com/diego-torres/nutriconsultas/issues/281 | open | **238**, **239** | Sub-row editor on `PlatilloIngesta` snapshot; recalc dieta totals |
+| **281** | Diet ingesta grid — in-row platillo ingredient editing with nutrient refresh | https://github.com/diego-torres/nutriconsultas/issues/281 | **done** | **238**, **239** | Branch `issue-281-ingesta-platillo-ingredient-edit`; diet-scoped REST + accordion sub-row |
+
+---
+
+## Epic — Platillo form inline ingredient editing
+
+Inline **cantidad** editing on the catalog platillo form (`/admin/platillos/{id}`) without opening the add-ingredient modal.
+
+| Requirement | Issues |
+|-------------|--------|
+| Inline cantidad edit in platillo ingredient list | #285 |
+
+**Suggested order:** #285 after **#239** (weight recalc) and **#257** (ownership).
+
+| # | Title | URL | State | Depends on | Notes |
+|---|-------|-----|-------|-----------|-------|
+| **285** | Platillo form — inline ingredient cantidad editing | https://github.com/diego-torres/nutriconsultas/issues/285 | **NEXT** | **239**, **257** | `#ingredientesGrid`; PUT ingredient update REST; peso + macro refresh |
 
 ---
 
@@ -203,6 +219,7 @@ Full nutrient visibility and inline platillo customization on the diet form with
 | #187 Branded PDF | Logo profile (#236) and PDF sizing (#237) |
 | #198 Diet templates | System diets seeded; editable (#232) and creatable (#272) by admin |
 | #280 / #281 Diet nutrients | Full nutrient modal (#280); in-row platillo edit on ingesta grid (#281) — refresh dieta rollup |
+| #285 Platillo form | Inline cantidad edit on catalog `#ingredientesGrid` — distinct from diet ingesta snapshot (#281) |
 | #243 / #244 Subscription | reCAPTCHA + Solicitar acceso pre-fill — public funnel, not admin UI |
 | #245–#248 Public booking | Nutritionist hours in profile (#246) — separate track |
 
