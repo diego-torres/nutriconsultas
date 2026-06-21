@@ -395,6 +395,12 @@
               </button>
             </div>
 
+            <div th:if="${platillo != null && platillo.id != null && platillo.id == 0 && isSystemCatalog != null && isSystemCatalog}"
+                 class="alert alert-info mb-4" role="alert">
+              <i class="fas fa-info-circle"></i>
+              <strong>Catálogo del sistema:</strong> Este platillo se agregará al catálogo compartido visible para todos los nutricionistas.
+            </div>
+
             <div th:if="${platillo != null && platillo.id != null && platillo.id != 0 && isSystemCatalog != null && isSystemCatalog && isOwner != null && !isOwner}"
                  class="alert alert-info mb-4" role="alert">
               <i class="fas fa-info-circle"></i>

@@ -95,6 +95,8 @@ public class PlatilloRestControllerTest {
 			.thenAnswer(invocation -> platilloService.findById(invocation.getArgument(0)));
 		doNothing().when(platilloAuthorization).verifyCanModify(any(), any(), any());
 		doNothing().when(platilloAuthorization).auditSystemPlatilloMutationIfNeeded(any(), any(), anyString());
+		when(platilloAuthorization.resolveCreateUserId(any(), any()))
+			.thenAnswer(invocation -> invocation.getArgument(1));
 		// Read CSV file from classpath and convert to list of Platillo
 		try (Reader reader = new InputStreamReader(getClass().getResourceAsStream("/platillos.csv"))) {
 			log.debug("reading platillos from csv file");
@@ -135,6 +137,57 @@ public class PlatilloRestControllerTest {
 		assertThat(result).isNotNull();
 		assertThat(result.getName()).isEqualTo(newPlatillo.getName());
 		assertThat(result.getUserId()).isEqualTo(TEST_USER_ID);
+		verify(platilloAuthorization).resolveCreateUserId(principal, TEST_USER_ID);
+	}
+
+	@Test
+	public void testAddIgnoresClientSuppliedSystemUserId() {
+		final Platillo newPlatillo = new Platillo();
+		newPlatillo.setName("Spoofed platillo");
+		newPlatillo.setUserId(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID);
+
+		when(platilloAuthorization.resolveCreateUserId(any(), eq(TEST_USER_ID))).thenReturn(TEST_USER_ID);
+		when(platilloService.save(any(Platillo.class))).thenAnswer(invocation -> {
+			final Platillo saved = invocation.getArgument(0);
+			saved.setId(43L);
+			return saved;
+		});
+
+		final OidcUser principal = (OidcUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		final Platillo result = platilloRestController.add(newPlatillo, principal);
+
+		assertThat(result.getUserId()).isEqualTo(TEST_USER_ID);
+		verify(platilloAuthorization).resolveCreateUserId(principal, TEST_USER_ID);
+	}
+
+	@Test
+	public void testAddAsPlatformAdminSetsSystemUserId() {
+		final String adminUserId = "auth0|platform-admin-test";
+		final OidcIdToken adminToken = OidcIdToken.withTokenValue("admin-token")
+			.subject(adminUserId)
+			.claim("name", "Platform Admin")
+			.issuedAt(Instant.now())
+			.expiresAt(Instant.now().plusSeconds(3600))
+			.build();
+		final DefaultOidcUser adminPrincipal = new DefaultOidcUser(Collections.emptyList(), adminToken);
+		SecurityContextHolder.getContext().setAuthentication(new TestingAuthenticationToken(adminPrincipal, null));
+
+		final Platillo newPlatillo = new Platillo();
+		newPlatillo.setName("System platillo");
+
+		when(platilloAuthorization.resolveCreateUserId(adminPrincipal, adminUserId))
+			.thenReturn(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID);
+		when(platilloService.save(any(Platillo.class))).thenAnswer(invocation -> {
+			final Platillo saved = invocation.getArgument(0);
+			assertThat(saved.getUserId()).isEqualTo(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID);
+			saved.setId(99L);
+			return saved;
+		});
+
+		final Platillo result = platilloRestController.add(newPlatillo, adminPrincipal);
+
+		assertThat(result.getUserId()).isEqualTo(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID);
+		verify(platilloAuthorization).auditSystemPlatilloMutationIfNeeded(adminPrincipal, result, "platillos.create");
 	}
 
 	@Test

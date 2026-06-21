@@ -84,4 +84,17 @@ public class PlatilloAuthorization {
 		platformAdminAuditService.recordAction(actorUserId, action + ":platilloId=" + platillo.getId());
 	}
 
+	/**
+	 * Resolves the owner {@code userId} for a newly created platillo. Platform admins
+	 * create system catalog rows; all other users create owned rows. Client-supplied
+	 * {@code userId} values are ignored — callers must use this method instead of
+	 * trusting request data.
+	 */
+	public String resolveCreateUserId(final OidcUser principal, @NonNull final String oauthUserId) {
+		if (platformAdminService.isPlatformAdmin(principal)) {
+			return PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID;
+		}
+		return oauthUserId;
+	}
+
 }
