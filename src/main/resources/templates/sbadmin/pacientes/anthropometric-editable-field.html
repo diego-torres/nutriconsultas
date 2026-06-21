@@ -1,0 +1,180 @@
+<!--
+  Inline-editable anthropometric field (#242).
+  Fragment: field(pacienteId, measurementId, fieldKey, label, value, unit, minValue, maxValue, decimals, confirmRecalc)
+-->
+<div th:fragment="field(pacienteId, measurementId, fieldKey, label, value, unit, minValue, maxValue, decimals, confirmRecalc)"
+     class="anthropometric-editable-field col-md-4 mb-2"
+     th:attr="data-field-key=${fieldKey},
+              data-label=${label},
+              data-unit=${unit},
+              data-min=${minValue},
+              data-max=${maxValue},
+              data-decimals=${decimals},
+              data-confirm-recalc=${confirmRecalc},
+              data-paciente-id=${pacienteId},
+              data-measurement-id=${measurementId}">
+  <p class="mb-0">
+    <strong th:text="${label}">Campo</strong>:
+    <span class="field-display-value"
+          th:text="${value != null ? #numbers.formatDecimal(value, 1, decimals) + (unit != null && !unit.isEmpty() ? ' ' + unit : '') : '—'}">—</span>
+    <button type="button" class="btn btn-link btn-sm p-0 ml-1 edit-anthropometric-field-btn" title="Corregir valor">
+      <i class="fas fa-pencil-alt fa-sm"></i>
+    </button>
+  </p>
+</div>
+
+<!-- Script fragment: include once at bottom of ver-antropometrico.html -->
+<script th:fragment="editableFieldScript" th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
+<script th:fragment="editableFieldInit" th:inline="javascript">
+  /*<![CDATA[*/
+  (function ($) {
+    'use strict';
+
+    function formatValue(value, decimals, unit) {
+      if (value == null || isNaN(value)) {
+        return '—';
+      }
+      var formatted = Number(value).toFixed(decimals);
+      return unit ? formatted + ' ' + unit : formatted;
+    }
+
+    function refreshDerivedFields(data) {
+      if (!data) {
+        return;
+      }
+      if (data.imc != null) {
+        $('.anthropometric-imc-value').text(Number(data.imc).toFixed(1));
+      }
+      if (data.porcentajeGrasaCorporal != null) {
+        $('[data-derived="porcentajeGrasaCorporal"]').text(Number(data.porcentajeGrasaCorporal).toFixed(1) + '%');
+      }
+      if (data.porcentajeMasaMuscular != null) {
+        $('[data-derived="porcentajeMasaMuscular"]').text(Number(data.porcentajeMasaMuscular).toFixed(1) + '%');
+      }
+      if (data.getKcal != null) {
+        $('[data-derived="getKcal"]').text(Number(data.getKcal).toFixed(0) + ' kcal');
+      }
+      if (data.finalTotalKcal != null) {
+        $('[data-derived="finalTotalKcal"]').text(Number(data.finalTotalKcal).toFixed(0) + ' kcal');
+      }
+    }
+
+    function submitFieldUpdate($field, value, note, confirmRecalc) {
+      var pacienteId = $field.data('paciente-id');
+      var measurementId = $field.data('measurement-id');
+      var fieldKey = $field.data('field-key');
+      var decimals = parseInt($field.data('decimals'), 10) || 1;
+      var unit = $field.data('unit') || '';
+
+      $.ajax({
+        url: '/rest/pacientes/' + pacienteId + '/antropometricos/' + measurementId + '/fields',
+        type: 'PUT',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify({
+          fieldKey: fieldKey,
+          value: value,
+          correctionNote: note || null,
+          confirmDerivedRecalc: confirmRecalc
+        }),
+        success: function (response) {
+          if (response && response.success && response.data) {
+            $field.find('.field-display-value').text(formatValue(response.data.fieldValue, decimals, unit));
+            refreshDerivedFields(response.data);
+            swal({ title: 'Guardado', text: 'Campo corregido correctamente.', type: 'success', timer: 2000 });
+          } else {
+            swal({ title: 'Error', text: (response && response.error) || 'No se pudo guardar.', type: 'error', timer: 5000 });
+          }
+        },
+        error: function (xhr) {
+          var body = xhr.responseJSON || {};
+          if (xhr.status === 409 && body.requiresConfirmation) {
+            swal({
+              title: 'Recalcular métricas',
+              text: 'Este cambio recalculará IMC, composición u otras métricas derivadas. ¿Continuar?',
+              type: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#d33',
+              confirmButtonText: 'Sí, corregir',
+              cancelButtonText: 'Cancelar'
+            }, function (isConfirm) {
+              if (isConfirm) {
+                submitFieldUpdate($field, value, note, true);
+              }
+            });
+            return;
+          }
+          swal({
+            title: 'Error',
+            text: body.error || 'No se pudo guardar el campo.',
+            type: 'error',
+            timer: 5000
+          });
+        }
+      });
+    }
+
+    $(document).on('click', '.edit-anthropometric-field-btn', function () {
+      var $field = $(this).closest('.anthropometric-editable-field');
+      var label = $field.data('label');
+      var min = $field.data('min');
+      var max = $field.data('max');
+      var unit = $field.data('unit') || '';
+      var confirmRecalc = String($field.data('confirm-recalc')) === 'true';
+      var currentText = $field.find('.field-display-value').text().replace(/[^\d.,-]/g, '').replace(',', '.');
+      var currentVal = currentText === '—' || currentText === '' ? '' : currentText;
+
+      swal({
+        title: 'Corregir ' + label,
+        text: 'Rango permitido: ' + min + ' – ' + max + (unit ? ' ' + unit : ''),
+        type: 'input',
+        inputType: 'number',
+        inputValue: currentVal,
+        showCancelButton: true,
+        confirmButtonText: 'Guardar',
+        cancelButtonText: 'Cancelar',
+        closeOnConfirm: false
+      }, function (inputValue) {
+        if (inputValue === false) {
+          return;
+        }
+        var value = parseFloat(String(inputValue).replace(',', '.'));
+        if (isNaN(value) || value < min || value > max) {
+          swal.showInputError('Ingrese un valor entre ' + min + ' y ' + max);
+          return false;
+        }
+        swal({
+          title: 'Nota de corrección (opcional)',
+          text: 'Motivo de la corrección',
+          type: 'input',
+          inputType: 'text',
+          showCancelButton: true,
+          confirmButtonText: 'Continuar',
+          cancelButtonText: 'Omitir'
+        }, function (note) {
+          if (note === false) {
+            note = '';
+          }
+          if (confirmRecalc) {
+            swal({
+              title: 'Recalcular métricas',
+              text: 'Se recalcularán métricas derivadas (IMC, composición, etc.). ¿Continuar?',
+              type: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#d33',
+              confirmButtonText: 'Sí, corregir',
+              cancelButtonText: 'Cancelar'
+            }, function (isConfirm) {
+              if (isConfirm) {
+                submitFieldUpdate($field, value, note, true);
+              }
+            });
+          } else {
+            submitFieldUpdate($field, value, note, false);
+          }
+        });
+      });
+    });
+  })(jQuery);
+  /*]]>*/
+</script>

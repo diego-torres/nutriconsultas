@@ -22,6 +22,7 @@
 
   <!-- Custom styles for this template-->
   <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+  <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
   <div th:insert="~{sbadmin/pacientes/imc-gauge :: imcGaugeStyles}"></div>
 
 </head>
@@ -65,6 +66,9 @@
                       </p>
                       <p><strong>Fecha y Hora:</strong> 
                         <span th:text="${#dates.format(measurement.measurementDateTime, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                      </p>
+                      <p th:if="${measurement.updatedAt != null}"><strong>Última corrección:</strong>
+                        <span th:text="${#dates.format(measurement.updatedAt, 'dd/MM/yyyy HH:mm')}">Fecha</span>
                       </p>
                     </div>
                     <div class="col-md-6" th:if="${measurement.description != null && !measurement.description.isEmpty()}">
@@ -114,18 +118,20 @@
                     <!-- Body Mass Tab -->
                     <div class="tab-pane fade show active" id="body-mass" role="tabpanel" aria-labelledby="body-mass-tab">
                       <div class="row mb-3">
-                        <div class="col-md-6" th:if="${measurement.bodyMass != null && measurement.bodyMass.weight != null}">
-                          <p><strong>Peso:</strong> <span th:text="${#numbers.formatDecimal(measurement.bodyMass.weight, 1, 1)} + ' kg'">-</span></p>
-                        </div>
-                        <div class="col-md-6" th:if="${measurement.bodyMass != null && measurement.bodyMass.height != null}">
-                          <p><strong>Estatura:</strong> <span th:text="${#numbers.formatDecimal(measurement.bodyMass.height, 2, 2)} + ' m'">-</span></p>
-                        </div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'bodyMass.weight', 'Peso', ${measurement.bodyMass != null ? measurement.bodyMass.weight : null}, 'kg', 10.0, 200.0, 1, true)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'bodyMass.height', 'Estatura', ${measurement.bodyMass != null ? measurement.bodyMass.height : null}, 'm', 0.5, 3.0, 2, true)}"></div>
                         <div class="col-md-6" th:if="${measurement.imc != null}">
-                          <p class="mb-2"><strong>IMC</strong></p>
+                          <p class="mb-2"><strong>IMC</strong> <span class="anthropometric-imc-value" th:text="${#numbers.formatDecimal(measurement.imc, 1, 1)}"></span></p>
                           <div th:replace="~{sbadmin/pacientes/imc-gauge :: imcGauge(${measurement.imc}, ${measurement.nivelPeso})}"></div>
                         </div>
                       </div>
                       <div th:replace="~{sbadmin/pacientes/body-composition-fields :: bodyCompositionDisplay(${measurement})}"></div>
+                      <div class="row mt-2">
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'bodyComposition.porcentajeGrasaCorporal', '% grasa corporal', ${measurement.porcentajeGrasaCorporal}, '%', 3.0, 65.0, 1, false)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'bodyComposition.porcentajeMasaMuscular', '% masa muscular', ${measurement.porcentajeMasaMuscular}, '%', 10.0, 90.0, 1, false)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'bodyComposition.masaOseaKg', 'Masa ósea', ${measurement.masaOseaKg}, 'kg', 0.5, 20.0, 2, false)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'bodyComposition.porcentajeMasaOsea', '% masa ósea', ${measurement.porcentajeMasaOsea}, '%', 1.0, 30.0, 1, false)}"></div>
+                      </div>
                       <div class="row" th:if="${measurement.notes != null && !measurement.notes.isEmpty()}">
                         <div class="col-md-12">
                           <p><strong>Notas:</strong></p>
@@ -157,9 +163,7 @@
                       <hr class="my-4" th:if="${measurement.bioimpedance != null && (measurement.bioimpedance.bodyFatPercentage != null || measurement.bioimpedance.fatMass != null || measurement.bioimpedance.fatFreeMass != null || measurement.bioimpedance.skeletalMuscleMass != null || measurement.bioimpedance.boneMass != null || measurement.bioimpedance.boneMassPercentage != null)}">
                       <h5 class="mb-3" th:if="${measurement.bioimpedance != null && (measurement.bioimpedance.bodyFatPercentage != null || measurement.bioimpedance.fatMass != null || measurement.bioimpedance.fatFreeMass != null || measurement.bioimpedance.skeletalMuscleMass != null || measurement.bioimpedance.boneMass != null || measurement.bioimpedance.boneMassPercentage != null)}">Composición Corporal</h5>
                       <div class="row">
-                        <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.bodyFatPercentage != null}">
-                          <p><strong>% Grasa Corporal:</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.bodyFatPercentage, 1, 1)} + '%'">-</span></p>
-                        </div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'bioimpedance.bodyFatPercentage', '% grasa (bioimpedancia)', ${measurement.bioimpedance != null ? measurement.bioimpedance.bodyFatPercentage : null}, '%', 3.0, 65.0, 1, true)}"></div>
                         <div class="col-md-4" th:if="${measurement.bioimpedance != null && measurement.bioimpedance.fatMass != null}">
                           <p><strong>Masa Grasa (kg):</strong> <span th:text="${#numbers.formatDecimal(measurement.bioimpedance.fatMass, 1, 1)}">-</span></p>
                         </div>
@@ -207,36 +211,16 @@
                     <!-- Skinfolds Tab -->
                     <div class="tab-pane fade" id="skinfolds" role="tabpanel" aria-labelledby="skinfolds-tab">
                       <div class="row">
-                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.subscapularSkinfold != null}">
-                          <p><strong>Subescapular:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.subscapularSkinfold, 1, 1)} + ' mm'">-</span></p>
-                        </div>
-                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.tricepsSkinfold != null}">
-                          <p><strong>Tríceps:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.tricepsSkinfold, 1, 1)} + ' mm'">-</span></p>
-                        </div>
-                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.bicepsSkinfold != null}">
-                          <p><strong>Bíceps:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.bicepsSkinfold, 1, 1)} + ' mm'">-</span></p>
-                        </div>
-                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.iliacCrestSkinfold != null}">
-                          <p><strong>Cresta iliaca:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.iliacCrestSkinfold, 1, 1)} + ' mm'">-</span></p>
-                        </div>
-                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.supraespinalSkinfold != null}">
-                          <p><strong>Supraespinal:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.supraespinalSkinfold, 1, 1)} + ' mm'">-</span></p>
-                        </div>
-                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.abdominalSkinfold != null}">
-                          <p><strong>Abdominal:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.abdominalSkinfold, 1, 1)} + ' mm'">-</span></p>
-                        </div>
-                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.frontalThighSkinfold != null}">
-                          <p><strong>Muslo frontal:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.frontalThighSkinfold, 1, 1)} + ' mm'">-</span></p>
-                        </div>
-                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.medialCalfSkinfold != null}">
-                          <p><strong>Pantorrilla medial:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.medialCalfSkinfold, 1, 1)} + ' mm'">-</span></p>
-                        </div>
-                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.medialAxillarySkinfold != null}">
-                          <p><strong>Axilar medial:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.medialAxillarySkinfold, 1, 1)} + ' mm'">-</span></p>
-                        </div>
-                        <div class="col-md-4" th:if="${measurement.skinfolds != null && measurement.skinfolds.pectoralSkinfold != null}">
-                          <p><strong>Pectoral:</strong> <span th:text="${#numbers.formatDecimal(measurement.skinfolds.pectoralSkinfold, 1, 1)} + ' mm'">-</span></p>
-                        </div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'skinfolds.subscapularSkinfold', 'Subescapular', ${measurement.skinfolds != null ? measurement.skinfolds.subscapularSkinfold : null}, 'mm', 1.0, 80.0, 1, true)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'skinfolds.tricepsSkinfold', 'Tríceps', ${measurement.skinfolds != null ? measurement.skinfolds.tricepsSkinfold : null}, 'mm', 1.0, 80.0, 1, true)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'skinfolds.bicepsSkinfold', 'Bíceps', ${measurement.skinfolds != null ? measurement.skinfolds.bicepsSkinfold : null}, 'mm', 1.0, 80.0, 1, true)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'skinfolds.iliacCrestSkinfold', 'Cresta iliaca', ${measurement.skinfolds != null ? measurement.skinfolds.iliacCrestSkinfold : null}, 'mm', 1.0, 80.0, 1, true)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'skinfolds.supraespinalSkinfold', 'Supraespinal', ${measurement.skinfolds != null ? measurement.skinfolds.supraespinalSkinfold : null}, 'mm', 1.0, 80.0, 1, true)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'skinfolds.abdominalSkinfold', 'Abdominal', ${measurement.skinfolds != null ? measurement.skinfolds.abdominalSkinfold : null}, 'mm', 1.0, 80.0, 1, true)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'skinfolds.frontalThighSkinfold', 'Muslo frontal', ${measurement.skinfolds != null ? measurement.skinfolds.frontalThighSkinfold : null}, 'mm', 1.0, 80.0, 1, true)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'skinfolds.medialCalfSkinfold', 'Pantorrilla medial', ${measurement.skinfolds != null ? measurement.skinfolds.medialCalfSkinfold : null}, 'mm', 1.0, 80.0, 1, true)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'skinfolds.medialAxillarySkinfold', 'Axilar medial', ${measurement.skinfolds != null ? measurement.skinfolds.medialAxillarySkinfold : null}, 'mm', 1.0, 80.0, 1, true)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'skinfolds.pectoralSkinfold', 'Pectoral', ${measurement.skinfolds != null ? measurement.skinfolds.pectoralSkinfold : null}, 'mm', 1.0, 80.0, 1, true)}"></div>
                       </div>
                     </div>
 
@@ -246,15 +230,9 @@
                         <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.cephalicCircumference != null}">
                           <p><strong>Cefálico:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.cephalicCircumference, 1, 1)} + ' cm'">-</span></p>
                         </div>
-                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.neckCircumference != null}">
-                          <p><strong>Cuello:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.neckCircumference, 1, 1)} + ' cm'">-</span></p>
-                        </div>
-                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.midUpperArmCircumferenceRelaxed != null}">
-                          <p><strong>Mitad del brazo relajado:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.midUpperArmCircumferenceRelaxed, 1, 1)} + ' cm'">-</span></p>
-                        </div>
-                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.midUpperArmCircumferenceContracted != null}">
-                          <p><strong>Mitad del brazo contraído:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.midUpperArmCircumferenceContracted, 1, 1)} + ' cm'">-</span></p>
-                        </div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'circumferences.neckCircumference', 'Cuello', ${measurement.circumferences != null ? measurement.circumferences.neckCircumference : null}, 'cm', 20.0, 80.0, 1, true)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'circumferences.midUpperArmCircumferenceRelaxed', 'Brazo relajado', ${measurement.circumferences != null ? measurement.circumferences.midUpperArmCircumferenceRelaxed : null}, 'cm', 10.0, 80.0, 1, true)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'circumferences.midUpperArmCircumferenceContracted', 'Brazo contraído', ${measurement.circumferences != null ? measurement.circumferences.midUpperArmCircumferenceContracted : null}, 'cm', 10.0, 90.0, 1, true)}"></div>
                         <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.forearmCircumference != null}">
                           <p><strong>Antebrazo:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.forearmCircumference, 1, 1)} + ' cm'">-</span></p>
                         </div>
@@ -267,21 +245,13 @@
                         <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.umbilicalCircumference != null}">
                           <p><strong>Umbilical:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.umbilicalCircumference, 1, 1)} + ' cm'">-</span></p>
                         </div>
-                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.waistCircumference != null}">
-                          <p><strong>Cintura:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.waistCircumference, 1, 1)} + ' cm'">-</span></p>
-                        </div>
-                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.hipCircumference != null}">
-                          <p><strong>Cadera:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.hipCircumference, 1, 1)} + ' cm'">-</span></p>
-                        </div>
-                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.thighCircumference != null}">
-                          <p><strong>Muslo:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.thighCircumference, 1, 1)} + ' cm'">-</span></p>
-                        </div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'circumferences.waistCircumference', 'Cintura', ${measurement.circumferences != null ? measurement.circumferences.waistCircumference : null}, 'cm', 20.0, 250.0, 1, true)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'circumferences.hipCircumference', 'Cadera', ${measurement.circumferences != null ? measurement.circumferences.hipCircumference : null}, 'cm', 20.0, 250.0, 1, true)}"></div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'circumferences.thighCircumference', 'Muslo', ${measurement.circumferences != null ? measurement.circumferences.thighCircumference : null}, 'cm', 20.0, 120.0, 1, true)}"></div>
                         <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.midThighCircumference != null}">
                           <p><strong>Muslo medio:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.midThighCircumference, 1, 1)} + ' cm'">-</span></p>
                         </div>
-                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.calfCircumference != null}">
-                          <p><strong>Pantorrilla:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.calfCircumference, 1, 1)} + ' cm'">-</span></p>
-                        </div>
+                        <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'circumferences.calfCircumference', 'Pantorrilla', ${measurement.circumferences != null ? measurement.circumferences.calfCircumference : null}, 'cm', 15.0, 80.0, 1, true)}"></div>
                         <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.ankleCircumference != null}">
                           <p><strong>Tobillo:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.ankleCircumference, 1, 1)} + ' cm'">-</span></p>
                         </div>
@@ -1132,6 +1102,9 @@
       })();
       /*]]>*/
     </script>
+
+    <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: editableFieldScript}"></div>
+    <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: editableFieldInit}"></div>
 
 </body>
 

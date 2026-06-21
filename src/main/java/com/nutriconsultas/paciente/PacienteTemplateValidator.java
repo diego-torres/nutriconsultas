@@ -11,6 +11,7 @@ import com.nutriconsultas.paciente.calculation.PhysiologicalStressType;
 import com.nutriconsultas.paciente.calculation.StressFormulaTable;
 import com.nutriconsultas.paciente.calculation.StressIncrementMode;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
+import com.nutriconsultas.clinical.exam.anthropometric.AnthropometricFieldCatalog;
 import com.nutriconsultas.clinical.exam.ClinicalExam;
 import com.nutriconsultas.dieta.Dieta;
 import com.nutriconsultas.validation.template.BaseTemplateValidator;
@@ -57,6 +58,7 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		// Calculation tab variables
 		variables.put("patientAge", 30);
 		variables.put("patientIsMale", true);
+		variables.put("editableFields", AnthropometricFieldCatalog.allDefinitions());
 
 		addMockDietas(variables, paciente);
 		addMockConsulta(variables, paciente);

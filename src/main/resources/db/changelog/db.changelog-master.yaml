@@ -35,3 +35,6 @@ databaseChangeLog:
   - include:
       file: changes/012-paciente-avatar-id-filename-keys.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/013-anthropometric-updated-at.yaml
+      relativeToChangelogFile: true

@@ -59,6 +59,11 @@ public class AnthropometricMeasurement {
 	@NotNull(message = "La fecha y hora son requeridas")
 	private Date measurementDateTime;
 
+	@DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "updated_at")
+	private Date updatedAt;
+
 	@NotBlank(message = "El título es requerido")
 	@Column(nullable = false, length = 200)
 	private String title = "Medición Antropométrica";
