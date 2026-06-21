@@ -1,12 +1,12 @@
 # Nutritionist availability (#246)
 
-Working hours and slot duration configured at **`/admin/perfil`** feed future public booking slot generation (#248).
+Working hours and slot duration configured at **`/admin/perfil`** feed public booking slot generation (~~#248~~).
 
 ## Timezone
 
 All availability windows are interpreted in **`America/Mexico_City`** (CST/CDT). The REST API persists this value on `nutritionist_availability_settings.timezone`; the profile UI displays it read-only until multi-timezone support is added.
 
-Public slot APIs (#248) must convert `LocalDate` + slot start `LocalTime` using the nutritionist's stored zone, not the JVM default or the visitor's browser zone.
+Public slot APIs convert `LocalDate` + slot start `LocalTime` using the nutritionist's stored zone, not the JVM default or the visitor's browser zone.
 
 ## Data model
 
