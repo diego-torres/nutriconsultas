@@ -458,6 +458,37 @@ public class PacienteRestControllerTest {
 		assertThat(response.getStatusCode().value()).isEqualTo(401);
 	}
 
+	@Test
+	@DisplayName("updateAvatar with valid data returns avatar metadata")
+	void updateAvatar_validData_returnsAvatarMetadata() {
+		when(principal.getSubject()).thenReturn(TEST_USER_ID);
+		final PacienteAvatarUpdateRequest request = new PacienteAvatarUpdateRequest();
+		request.setAvatarId("avatar_8");
+		final Paciente updated = new Paciente();
+		updated.setId(1L);
+		updated.setAvatarId("avatar_8");
+		updated.setGender("M");
+		when(service.updateAvatar(1L, TEST_USER_ID, "avatar_8")).thenReturn(updated);
+
+		final ResponseEntity<java.util.Map<String, Object>> response = controller.updateAvatar(1L, request, principal);
+
+		assertThat(response.getStatusCode().value()).isEqualTo(200);
+		assertThat(response.getBody()).containsEntry("success", true);
+		assertThat(response.getBody()).containsEntry("avatarId", "avatar_8");
+		assertThat(response.getBody()).containsEntry("avatarUrl", "/sbadmin/img/paciente-avatars/avatar_8.png");
+	}
+
+	@Test
+	@DisplayName("updateAvatar unauthenticated returns 401")
+	void updateAvatar_unauthenticated_returns401() {
+		final PacienteAvatarUpdateRequest request = new PacienteAvatarUpdateRequest();
+		request.setAvatarId("avatar_1");
+
+		final ResponseEntity<java.util.Map<String, Object>> response = controller.updateAvatar(1L, request, null);
+
+		assertThat(response.getStatusCode().value()).isEqualTo(401);
+	}
+
 	private static PacienteListView toListView(final Paciente paciente) {
 		return new PacienteListView() {
 			@Override

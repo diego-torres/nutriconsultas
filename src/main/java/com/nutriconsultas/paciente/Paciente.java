@@ -88,6 +88,13 @@ public class Paciente {
 	@Column(name = "display_name", length = 100)
 	private String displayName;
 
+	/**
+	 * Selected avatar key from {@link PacienteAvatarCatalog} (#241). When null, UI uses
+	 * gender-based default.
+	 */
+	@Column(name = "avatar_id", length = 32)
+	private String avatarId;
+
 	public static final String DATE_OF_BIRTH_PATTERN = "dd/MM/yyyy";
 
 	@DateTimeFormat(pattern = DATE_OF_BIRTH_PATTERN)

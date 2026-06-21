@@ -34,6 +34,9 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		final Paciente paciente = createMockPaciente();
 		variables.put("paciente", paciente);
 		variables.put("mobileAuth", PatientMobileAuthStatus.of(null, false));
+		variables.put("avatarImageUrl", PacienteAvatarCatalog.resolveImagePath(paciente));
+		variables.put("selectedAvatarId", PacienteAvatarCatalog.resolveSelectedId(paciente));
+		variables.put("avatarOptions", PacienteAvatarCatalog.allOptions());
 
 		variables.put("citaAnterior", "");
 		variables.put("citaSiguiente", "");

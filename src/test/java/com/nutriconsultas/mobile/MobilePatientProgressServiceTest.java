@@ -28,6 +28,7 @@ import com.nutriconsultas.mobile.dto.PatientProgressSnapshotDto;
 import com.nutriconsultas.mobile.dto.ProgressMeasurementsDto;
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.PacienteAvatarCatalog;
 import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.paciente.metrics.BodyMetricRecord;
 import com.nutriconsultas.paciente.metrics.BodyMetricRecordRepository;
@@ -83,6 +84,8 @@ class MobilePatientProgressServiceTest {
 		assertThat(snapshot.deltaImc()).isCloseTo(-0.7, org.assertj.core.data.Offset.offset(0.0001));
 		assertThat(snapshot.circumferences().waistCm()).isEqualTo(82.0);
 		assertThat(snapshot.circumferences().hipCm()).isEqualTo(98.0);
+		assertThat(snapshot.avatarId()).isEqualTo(PacienteAvatarCatalog.DEFAULT_MALE_ID);
+		assertThat(snapshot.avatarUrl()).isEqualTo("/sbadmin/img/paciente-avatars/avatar_1.png");
 	}
 
 	@Test
@@ -157,6 +160,7 @@ class MobilePatientProgressServiceTest {
 		final Paciente paciente = new Paciente();
 		paciente.setId(5L);
 		paciente.setBmr(1500.0);
+		paciente.setGender("M");
 		return paciente;
 	}
 

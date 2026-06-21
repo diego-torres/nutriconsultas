@@ -56,6 +56,22 @@ public class PacienteServiceImpl implements PacienteService {
 	}
 
 	@Override
+	@Transactional
+	public Paciente updateAvatar(@NonNull final Long id, @NonNull final String userId, @NonNull final String avatarId) {
+		if (!PacienteAvatarCatalog.isValid(avatarId)) {
+			throw new IllegalArgumentException("Avatar no válido");
+		}
+		final Paciente paciente = findByIdAndUserId(id, userId);
+		if (paciente == null) {
+			throw new IllegalArgumentException("Paciente no encontrado");
+		}
+		paciente.setAvatarId(avatarId);
+		final Paciente saved = repo.save(paciente);
+		log.info("Updated avatar for patient id {}", id);
+		return saved;
+	}
+
+	@Override
 	public List<Paciente> findAll() {
 		log.info("getting all Paciente records.");
 		return repo.findAll();

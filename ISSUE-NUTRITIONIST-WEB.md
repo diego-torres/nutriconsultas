@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-21 — ~~#272~~ **in-progress** (`issue-272-system-diet-create`). ~~#271~~ **done** (PR [#288](https://github.com/diego-torres/nutriconsultas/pull/288)). ~~#285~~ **done** (`issue-285-platillo-inline-cantidad`, 340a318). ~~#281~~ **done** (`issue-281-ingesta-platillo-ingredient-edit`). ~~#280~~ **done** (PR [#284](https://github.com/diego-torres/nutriconsultas/pull/284)).
+**Last updated:** 2026-06-21 — ~~#272~~ **done** (PR [#289](https://github.com/diego-torres/nutriconsultas/pull/289)). **NEXT:** #241–#242. ~~#271~~ **done** (PR [#288](https://github.com/diego-torres/nutriconsultas/pull/288)).
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -100,7 +100,7 @@ Platform admins can **edit** seeded system rows (#232 diets, #257 platillos) but
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
 | **271** | Platform admin — create system catalog platillo | https://github.com/diego-torres/nutriconsultas/issues/271 | **done** | #183, **257** | PR [#288](https://github.com/diego-torres/nutriconsultas/pull/288); `system:catalog-platillos` on create |
-| **272** | Platform admin — create system template diet | https://github.com/diego-torres/nutriconsultas/issues/272 | **in-progress** | #183, **232** | `POST /rest/dietas/add` → `system:template-dietas` |
+| **272** | Platform admin — create system template diet | https://github.com/diego-torres/nutriconsultas/issues/272 | **done** | #183, **232** | PR [#289](https://github.com/diego-torres/nutriconsultas/pull/289); `system:template-dietas` on create |
 
 ---
 
@@ -185,7 +185,7 @@ Inline **cantidad** editing on the catalog platillo form (`/admin/platillos/{id}
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| 241 | Patient profile — selectable patient avatars | https://github.com/diego-torres/nutriconsultas/issues/241 | open | #46 | Liquibase `avatarId` on `Paciente` |
+| 241 | Patient profile — selectable patient avatars | https://github.com/diego-torres/nutriconsultas/issues/241 | **in-progress** | #46 | Liquibase `avatar_id` on `Paciente`; branch `issue-241-patient-avatars` |
 | 242 | Anthropometrics — per-field correction with recalculation | https://github.com/diego-torres/nutriconsultas/issues/242 | open | #161 (context) | Edit icon per field; derived metrics |
 
 ---

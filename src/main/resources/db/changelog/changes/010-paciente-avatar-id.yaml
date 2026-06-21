@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-paciente-avatar-id
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: paciente
+              columnName: avatar_id
+      changes:
+        - addColumn:
+            tableName: paciente
+            columns:
+              - column:
+                  name: avatar_id
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: true
