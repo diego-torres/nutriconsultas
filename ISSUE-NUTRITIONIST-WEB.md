@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-21 — ~~#281~~ **done** (`issue-281-ingesta-platillo-ingredient-edit`). **NEXT:** #285. ~~#280~~ **done** (PR [#284](https://github.com/diego-torres/nutriconsultas/pull/284)).
+**Last updated:** 2026-06-21 — ~~#285~~ **done** (`issue-285-platillo-inline-cantidad`, 340a318). **NEXT:** #271–#272. ~~#281~~ **done** (`issue-281-ingesta-platillo-ingredient-edit`). ~~#280~~ **done** (PR [#284](https://github.com/diego-torres/nutriconsultas/pull/284)).
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -166,11 +166,11 @@ Inline **cantidad** editing on the catalog platillo form (`/admin/platillos/{id}
 |-------------|--------|
 | Inline cantidad edit in platillo ingredient list | #285 |
 
-**Suggested order:** #285 after **#239** (weight recalc) and **#257** (ownership).
+**Suggested order:** ~~#285~~ **done** after **#239** (weight recalc) and **#257** (ownership). **Epic complete.**
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| **285** | Platillo form — inline ingredient cantidad editing | https://github.com/diego-torres/nutriconsultas/issues/285 | **NEXT** | **239**, **257** | `#ingredientesGrid`; PUT ingredient update REST; peso + macro refresh |
+| **285** | Platillo form — inline ingredient cantidad editing | https://github.com/diego-torres/nutriconsultas/issues/285 | **done** | **239**, **257** | Branch `issue-285-platillo-inline-cantidad` (340a318); catalog `#ingredientesGrid` + diet ingesta inline cantidad; PUT + peso recalc |
 
 ---
 
@@ -219,7 +219,7 @@ Inline **cantidad** editing on the catalog platillo form (`/admin/platillos/{id}
 | #187 Branded PDF | Logo profile (#236) and PDF sizing (#237) |
 | #198 Diet templates | System diets seeded; editable (#232) and creatable (#272) by admin |
 | #280 / #281 Diet nutrients | Full nutrient modal (#280); in-row platillo edit on ingesta grid (#281) — refresh dieta rollup |
-| #285 Platillo form | Inline cantidad edit on catalog `#ingredientesGrid` — distinct from diet ingesta snapshot (#281) |
+| ~~#285~~ Platillo form | Inline cantidad edit on catalog `#ingredientesGrid` + diet ingesta grid — branch `issue-285-platillo-inline-cantidad` |
 | #243 / #244 Subscription | reCAPTCHA + Solicitar acceso pre-fill — public funnel, not admin UI |
 | #245–#248 Public booking | Nutritionist hours in profile (#246) — separate track |
 
