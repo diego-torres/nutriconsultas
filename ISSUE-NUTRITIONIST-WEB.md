@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-20 — #240 **in-progress** (`issue-240-round-ingredient-fractions`). ~~#239~~ **done** (`issue-239-ingredient-weight-recalc`, bd07fb4). Epic **#280–#281** registered (diet full nutrients modal; in-row platillo ingredient edit). ~~#238~~ **done** (PR [#279](https://github.com/diego-torres/nutriconsultas/pull/279)). ~~#237~~ **done** (PR [#278](https://github.com/diego-torres/nutriconsultas/pull/278)). ~~#275~~ **done** (PR [#276](https://github.com/diego-torres/nutriconsultas/pull/276)). ~~#236~~ **done** (PR [#274](https://github.com/diego-torres/nutriconsultas/pull/274)). Epic **#271–#272** registered (platform admin **create** system catalog platillos/diets). ~~#259~~ **done** (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)). Platillo ownership **#257–#259 complete**. **NEXT:** [#240 round ingredient fractions](https://github.com/diego-torres/nutriconsultas/issues/240). Epics **#239–#242**, **#271–#272**, **#280–#281** registered.
+**Last updated:** 2026-06-20 — ~~#240~~ **done** (PR [#283](https://github.com/diego-torres/nutriconsultas/pull/283)). ~~#239~~ **done** (`issue-239-ingredient-weight-recalc`, bd07fb4). Epic **#280–#281** registered (diet full nutrients modal; in-row platillo ingredient edit). ~~#238~~ **done** (PR [#279](https://github.com/diego-torres/nutriconsultas/pull/279)). ~~#237~~ **done** (PR [#278](https://github.com/diego-torres/nutriconsultas/pull/278)). ~~#275~~ **done** (PR [#276](https://github.com/diego-torres/nutriconsultas/pull/276)). ~~#236~~ **done** (PR [#274](https://github.com/diego-torres/nutriconsultas/pull/274)). Epic **#271–#272** registered (platform admin **create** system catalog platillos/diets). ~~#259~~ **done** (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)). Platillo ownership **#257–#259 complete**. Diet & platillo authoring UX **#238–#240 complete**. **NEXT:** [#280 diet full nutrients modal](https://github.com/diego-torres/nutriconsultas/issues/280). Epics **#241–#242**, **#271–#272**, **#280–#281** registered.
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -129,13 +129,13 @@ Platform admins can **edit** seeded system rows (#232 diets, #257 platillos) but
 | Round fractions to ½, ¼, ⅓ in platillo table & PDFs | #240 |
 | Platillo image upload size limit + user-facing oversize error | #275 |
 
-**Suggested order:** #238 independent; ~~#239~~ **done** → #240. ~~#275~~ **done** (PR [#276](https://github.com/diego-torres/nutriconsultas/pull/276)).
+**Suggested order:** #238 independent; ~~#239~~ **done** → ~~#240~~ **done** (PR [#283](https://github.com/diego-torres/nutriconsultas/pull/283)). ~~#275~~ **done** (PR [#276](https://github.com/diego-torres/nutriconsultas/pull/276)). **Epic complete** after #240.
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
 | **238** | Diet detail — macronutrients table below caloric distribution | https://github.com/diego-torres/nutriconsultas/issues/238 | **done** | — | PR [#279](https://github.com/diego-torres/nutriconsultas/pull/279); macro table + layout |
 | **239** | Add-ingredient dialog — recalculate weight from portion quantity | https://github.com/diego-torres/nutriconsultas/issues/239 | **done** | — | `issue-239-ingredient-weight-recalc` (bd07fb4); platillo + dietas modals; ingesta card scroll |
-| 240 | Round ingredient fractions to ½, ¼, or ⅓ in UI and meal-plan PDFs | https://github.com/diego-torres/nutriconsultas/issues/240 | **in-progress** | — | `issue-240-round-ingredient-fractions`; extend `AbstractFraccionable` |
+| **240** | Round ingredient fractions to ½, ¼, or ⅓ in UI and meal-plan PDFs | https://github.com/diego-torres/nutriconsultas/issues/240 | **done** | — | PR [#283](https://github.com/diego-torres/nutriconsultas/pull/283); `AbstractFraccionable` + gram display for `unidad = g` |
 | **275** | Platillo image upload — raise size limit and show user-facing error | https://github.com/diego-torres/nutriconsultas/issues/275 | **done** | — | PR [#276](https://github.com/diego-torres/nutriconsultas/pull/276); 10MB limit; `AdminMultipartExceptionHandler` |
 
 ---
