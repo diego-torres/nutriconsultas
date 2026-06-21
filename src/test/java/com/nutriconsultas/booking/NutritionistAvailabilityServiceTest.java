@@ -9,7 +9,6 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -33,14 +32,11 @@ class NutritionistAvailabilityServiceTest {
 	@Mock
 	private NutritionistWorkingHoursIntervalRepository intervalRepository;
 
-	@BeforeEach
-	void setup() {
-		when(settingsRepository.findByUserId(USER_ID)).thenReturn(Optional.empty());
-		when(intervalRepository.findByUserIdOrderByDayOfWeekAscStartTimeAsc(USER_ID)).thenReturn(List.of());
-	}
-
 	@Test
 	void getScheduleReturnsDefaultsWhenMissing() {
+		when(settingsRepository.findByUserId(USER_ID)).thenReturn(Optional.empty());
+		when(intervalRepository.findByUserIdOrderByDayOfWeekAscStartTimeAsc(USER_ID)).thenReturn(List.of());
+
 		final AvailabilityScheduleDto schedule = service.getSchedule(USER_ID);
 
 		assertThat(schedule.getSlotDurationMinutes()).isEqualTo(60);

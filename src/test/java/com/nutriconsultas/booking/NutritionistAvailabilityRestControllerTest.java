@@ -15,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -40,11 +39,11 @@ class NutritionistAvailabilityRestControllerTest {
 		schedule.setSlotDurationMinutes(60);
 		schedule.setTimezone(BookingAvailabilityConstants.DEFAULT_TIMEZONE_ID);
 		schedule.setIntervals(List.of(new WorkingHoursIntervalDto(1, LocalTime.of(9, 0), LocalTime.of(17, 0))));
-		when(principal.getSubject()).thenReturn("auth0|user1");
 	}
 
 	@Test
 	void getScheduleReturnsSavedData() {
+		when(principal.getSubject()).thenReturn("auth0|user1");
 		when(availabilityService.getSchedule("auth0|user1")).thenReturn(schedule);
 
 		final ResponseEntity<AvailabilityScheduleDto> response = controller.getSchedule(principal);
@@ -63,6 +62,7 @@ class NutritionistAvailabilityRestControllerTest {
 
 	@Test
 	void saveScheduleReturnsValidationError() {
+		when(principal.getSubject()).thenReturn("auth0|user1");
 		when(availabilityService.saveSchedule("auth0|user1", schedule))
 			.thenThrow(new IllegalArgumentException("Los horarios se traslapan el mismo día"));
 
