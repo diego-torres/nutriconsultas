@@ -1296,6 +1296,109 @@
             }
           }
 
+          function resolvePlatilloIngredientePesoForCantidad(cantidad) {
+            if (platilloIngredienteAlimentoReference && window.IngredientWeightRecalc) {
+              var recalculated = IngredientWeightRecalc.recalculatePesoFromQuantityInput(
+                platilloIngredienteAlimentoReference.cantSugerida,
+                platilloIngredienteAlimentoReference.pesoNeto,
+                cantidad
+              );
+              if (recalculated !== null && recalculated !== undefined) {
+                return recalculated;
+              }
+            }
+            var pesoField = parseInt($('#platilloIngredientePeso').val(), 10);
+            return isNaN(pesoField) ? null : pesoField;
+          }
+
+          var inlinePlatilloIngredienteSaving = false;
+
+          function saveInlinePlatilloIngredienteCantidad($input) {
+            if (inlinePlatilloIngredienteSaving) {
+              return;
+            }
+            var card = $input.closest('.ingesta-item-card');
+            if (!card.length) {
+              return;
+            }
+            var committedValue = $input.data('committed');
+            var newCantidad = String($input.val()).trim();
+            if (committedValue === newCantidad) {
+              return;
+            }
+            if (!window.IngredientWeightRecalc) {
+              showToast('Error', 'No se pudo recalcular el peso del ingrediente.', 'error');
+              $input.val(committedValue);
+              return;
+            }
+            var alimentoCant = parseFloat($input.attr('data-alimento-cant'));
+            var alimentoPeso = parseInt($input.attr('data-alimento-peso'), 10);
+            var recalculatedPeso = IngredientWeightRecalc.recalculatePesoFromQuantityInput(
+              alimentoCant,
+              alimentoPeso,
+              newCantidad
+            );
+            if (recalculatedPeso == null) {
+              swal({
+                title: 'Cantidad inválida',
+                text: 'Use un valor fraccional válido (ej. 1/2, 1 1/4).',
+                type: 'error',
+                timer: 5000
+              });
+              $input.val(committedValue);
+              return;
+            }
+            var dietaId = card.data('dieta');
+            var ingestaId = card.data('ingesta');
+            var platilloId = card.data('platillo');
+            inlinePlatilloIngredienteSaving = true;
+            $input.prop('disabled', true);
+            $.ajax({
+              url: buildPlatilloIngredienteRestBase(dietaId, ingestaId, platilloId) + '/' + $input.attr('data-id'),
+              type: 'PUT',
+              contentType: 'application/json',
+              dataType: 'json',
+              data: JSON.stringify({
+                cantidad: newCantidad,
+                peso: recalculatedPeso
+              }),
+              success: function(response) {
+                $input.data('committed', newCantidad);
+                if (response && response.data) {
+                  refreshAfterPlatilloIngredientMutation(response.data, dietaId, ingestaId, platilloId);
+                }
+              },
+              error: function(error) {
+                $input.val(committedValue);
+                showToast('Error', error.responseJSON && error.responseJSON.message
+                  ? error.responseJSON.message
+                  : 'No se pudo actualizar la cantidad del ingrediente.', 'error');
+              },
+              complete: function() {
+                inlinePlatilloIngredienteSaving = false;
+                $input.prop('disabled', false);
+              }
+            });
+          }
+
+          $(document).on('focus', '.inline-platillo-ingesta-cantidad-input', function() {
+            var $input = $(this);
+            if (!$input.data('committed')) {
+              $input.data('committed', String($input.val()).trim());
+            }
+          });
+
+          $(document).on('keydown', '.inline-platillo-ingesta-cantidad-input', function(event) {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              $(this).blur();
+            }
+          });
+
+          $(document).on('blur', '.inline-platillo-ingesta-cantidad-input', function() {
+            saveInlinePlatilloIngredienteCantidad($(this));
+          });
+
           $(document).on('click', '.toggle-platillo-ingredientes', function() {
             var targetSelector = $(this).data('target');
             $(targetSelector).collapse('toggle');
@@ -1363,16 +1466,16 @@
             $('#platilloIngredienteContextDieta').val(card.data('dieta'));
             $('#platilloIngredienteContextIngesta').val(card.data('ingesta'));
             $('#platilloIngredienteContextPlatillo').val(card.data('platillo'));
-            $('#platilloIngredienteEditId').val(button.data('id'));
+            $('#platilloIngredienteEditId').val(button.attr('data-id'));
             $('#platilloIngredienteAlimentoGroup').hide();
-            $('#platilloIngredienteCantidad').val(button.data('cantidad'));
-            $('#platilloIngredientePeso').val(button.data('peso'));
+            $('#platilloIngredienteCantidad').val(button.attr('data-cantidad'));
+            $('#platilloIngredientePeso').val(button.attr('data-peso'));
             $('#platilloIngredienteFields').show();
             $('#savePlatilloIngredienteButton').prop('disabled', false);
             $('#platilloIngestaIngredientModalLabel').text('Editar ingrediente');
             platilloIngredienteAlimentoReference = null;
             $.ajax({
-              url: '/rest/alimentos/' + button.data('alimento-id'),
+              url: '/rest/alimentos/' + button.attr('data-alimento-id'),
               type: 'GET',
               success: function(response) {
                 platilloIngredienteAlimentoReference = {
@@ -1440,8 +1543,17 @@
             var dietaId = $('#platilloIngredienteContextDieta').val();
             var ingestaId = $('#platilloIngredienteContextIngesta').val();
             var platilloId = $('#platilloIngredienteContextPlatillo').val();
-            var cantidad = $('#platilloIngredienteCantidad').val();
-            var peso = parseInt($('#platilloIngredientePeso').val(), 10);
+            var cantidad = String($('#platilloIngredienteCantidad').val()).trim();
+            if (!cantidad) {
+              showToast('Validación', 'Indique una cantidad válida para el ingrediente.', 'warning');
+              return;
+            }
+            var peso = resolvePlatilloIngredientePesoForCantidad(cantidad);
+            if (peso == null) {
+              showToast('Validación', 'No se pudo calcular el peso. Verifique la cantidad.', 'warning');
+              return;
+            }
+            $('#platilloIngredientePeso').val(peso);
             var payload = { cantidad: cantidad, peso: peso };
             var url = buildPlatilloIngredienteRestBase(dietaId, ingestaId, platilloId);
             var method = 'POST';

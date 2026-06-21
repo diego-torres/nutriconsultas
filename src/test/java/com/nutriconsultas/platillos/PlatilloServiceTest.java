@@ -143,6 +143,43 @@ class PlatilloServiceTest {
 		assertThat(platilloService.duplicatePlatillo(5L, TEST_USER_ID)).isNull();
 	}
 
+	@Test
+	void updateIngrediente_recalculatesPlatilloMacros() {
+		final Platillo platillo = ownedPlatillo(10L, TEST_USER_ID);
+		final Alimento alimento = new Alimento();
+		alimento.setId(3L);
+		alimento.setCantSugerida(1.0);
+		alimento.setPesoNeto(100);
+		alimento.setEnergia(100);
+		alimento.setProteina(10.0);
+		alimento.setLipidos(5.0);
+		alimento.setHidratosDeCarbono(15.0);
+
+		final Ingrediente ingrediente = new Ingrediente();
+		ingrediente.setId(20L);
+		ingrediente.setAlimento(alimento);
+		ingrediente.setCantSugerida(1.0);
+		ingrediente.setPesoNeto(100);
+		ingrediente.setEnergia(100);
+		ingrediente.setProteina(10.0);
+		ingrediente.setLipidos(5.0);
+		ingrediente.setHidratosDeCarbono(15.0);
+		ingrediente.setPlatillo(platillo);
+		platillo.setIngredientes(new ArrayList<>(List.of(ingrediente)));
+
+		when(platilloRepository.findById(10L)).thenReturn(Optional.of(platillo));
+		when(platilloRepository.save(any(Platillo.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		final Platillo saved = platilloService.updateIngrediente(10L, 20L, "2", 200);
+
+		assertThat(saved).isNotNull();
+		assertThat(ingrediente.getPesoNeto()).isEqualTo(200);
+		assertThat(ingrediente.getEnergia()).isEqualTo(200);
+		assertThat(saved.getEnergia()).isEqualTo(200);
+		assertThat(saved.getProteina()).isEqualTo(20.0);
+		verify(platilloRepository).save(platillo);
+	}
+
 	private static Platillo systemPlatillo(final Long id) {
 		final Platillo platillo = new Platillo();
 		platillo.setId(id);

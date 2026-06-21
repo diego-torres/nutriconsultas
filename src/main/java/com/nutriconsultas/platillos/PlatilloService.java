@@ -34,6 +34,9 @@ public interface PlatilloService {
 	Ingrediente addIngrediente(@NonNull Long id, @NonNull Long alimentoId, @NonNull String cantidad,
 			@NonNull Integer peso);
 
+	Platillo updateIngrediente(@NonNull Long platilloId, @NonNull Long ingredienteId, @NonNull String cantidad,
+			@NonNull Integer peso);
+
 	void savePicture(@NonNull Long id, @NonNull byte[] bytes, @NonNull String fileExtension);
 
 	byte[] getPicture(@NonNull Long id, @NonNull String fileName) throws IOException;

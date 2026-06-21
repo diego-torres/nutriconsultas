@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
@@ -36,6 +37,7 @@ import com.nutriconsultas.dataTables.paging.Order;
 import com.nutriconsultas.dataTables.paging.PageArray;
 import com.nutriconsultas.dataTables.paging.PagingRequest;
 import com.nutriconsultas.dataTables.paging.Search;
+import com.nutriconsultas.model.ApiResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -67,6 +69,8 @@ public class IngredienteRestControllerTest {
 		alimento = new Alimento();
 		alimento.setId(1L);
 		alimento.setNombreAlimento("Test Alimento");
+		alimento.setCantSugerida(1.0);
+		alimento.setPesoNeto(100);
 
 		ingrediente = new Ingrediente();
 		ingrediente.setId(1L);
@@ -125,7 +129,8 @@ public class IngredienteRestControllerTest {
 		assertThat(result).isNotNull();
 		assertThat(result.size()).isEqualTo(5);
 		assertThat(result.get(0)).isEqualTo("Test Alimento");
-		assertThat(result.get(1)).isEqualTo("1/2");
+		assertThat(result.get(1)).contains("inline-cantidad-input");
+		assertThat(result.get(1)).contains("1/2");
 		assertThat(result.get(2)).isEqualTo("pieza");
 		assertThat(result.get(3)).isEqualTo("100");
 		assertThat(result.get(4)).contains("delete-btn");
@@ -275,6 +280,43 @@ public class IngredienteRestControllerTest {
 		assertThat(result.getRecordsFiltered()).isEqualTo(0);
 		assertThat(result.getData()).isEmpty();
 		log.info("Finishing testGetPageArrayWithNoMatch");
+	}
+
+	@Test
+	public void testUpdateIngrediente() {
+		when(platilloService.findById(1L)).thenReturn(platillo);
+		final IngredienteFormModel form = new IngredienteFormModel(null, "2", 200);
+		final Platillo updated = new Platillo();
+		updated.setId(1L);
+		updated.setEnergia(250);
+		when(platilloService.updateIngrediente(1L, 1L, "2", 200)).thenReturn(updated);
+
+		final ResponseEntity<ApiResponse<Platillo>> result = ingredienteRestController.update(1L, 1L, form);
+
+		assertThat(result.getStatusCode().value()).isEqualTo(200);
+		assertThat(result.getBody()).isNotNull();
+		assertThat(result.getBody().getData().getEnergia()).isEqualTo(250);
+		verify(platilloService).updateIngrediente(1L, 1L, "2", 200);
+	}
+
+	@Test
+	public void testUpdateIngredienteReturnsNotFoundWhenMissing() {
+		when(platilloService.findById(1L)).thenReturn(platillo);
+		final IngredienteFormModel form = new IngredienteFormModel(null, "2", 200);
+		when(platilloService.updateIngrediente(1L, 99L, "2", 200)).thenReturn(null);
+
+		final ResponseEntity<ApiResponse<Platillo>> result = ingredienteRestController.update(1L, 99L, form);
+
+		assertThat(result.getStatusCode().value()).isEqualTo(404);
+	}
+
+	@Test
+	public void testToStringListHidesInlineCantidadWhenReadOnly() {
+		final List<String> editable = ingredienteRestController.toStringList(ingrediente, true);
+		final List<String> readOnly = ingredienteRestController.toStringList(ingrediente, false);
+
+		assertThat(editable.get(1)).contains("inline-cantidad-input");
+		assertThat(readOnly.get(1)).isEqualTo("1/2");
 	}
 
 	@Test

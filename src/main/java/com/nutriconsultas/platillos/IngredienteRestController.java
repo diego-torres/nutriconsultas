@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,17 +16,20 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.controller.AbstractGridItemController;
+import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.dataTables.paging.Column;
 import com.nutriconsultas.dataTables.paging.Direction;
 import com.nutriconsultas.dataTables.paging.Page;
 import com.nutriconsultas.dataTables.paging.PageArray;
 import com.nutriconsultas.dataTables.paging.PagingRequest;
+import com.nutriconsultas.model.ApiResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -80,6 +84,25 @@ public class IngredienteRestController extends AbstractGridItemController<Ingred
 		platilloAuthorization.auditSystemPlatilloMutationIfNeeded(principal, platillo, "platillos.ingredientes.delete");
 	}
 
+	@PutMapping("/{ingredienteId}")
+	public ResponseEntity<ApiResponse<Platillo>> update(@NonNull @PathVariable final Long id,
+			@NonNull @PathVariable final Long ingredienteId, @RequestBody @NonNull final IngredienteFormModel form) {
+		log.debug("updating Ingrediente with id {} on platillo {}.", ingredienteId, id);
+		final OidcUser principal = currentUser();
+		final Platillo platillo = loadPlatilloForMutation(id, principal);
+		final String cantidad = form.getCantidad();
+		final Integer peso = form.getPeso();
+		if (cantidad == null || cantidad.isBlank() || peso == null) {
+			return ResponseEntity.badRequest().build();
+		}
+		final Platillo saved = platilloService.updateIngrediente(id, ingredienteId, cantidad.trim(), peso);
+		if (saved == null) {
+			return ResponseEntity.notFound().build();
+		}
+		platilloAuthorization.auditSystemPlatilloMutationIfNeeded(principal, saved, "platillos.ingredientes.update");
+		return ResponseEntity.ok(new ApiResponse<>(saved));
+	}
+
 	@Override
 	@PostMapping("data-table")
 	public PageArray getPageArray(@RequestBody final PagingRequest pagingRequest,
@@ -105,10 +128,20 @@ public class IngredienteRestController extends AbstractGridItemController<Ingred
 		log.debug("converting Ingrediente row {} to string list.", row);
 		final String actions = canModify ? "<a href='#'' class='btn action-btn btn-danger btn-sm delete-btn' data-id='"
 				+ row.getId() + "'><i class='fas fa-trash fa-sm fa-fw'></i> </a>" : "";
-		return Arrays.asList(row.getAlimento().getNombreAlimento(), row.getDisplayCantSugerida(row.getUnidad()), //
+		return Arrays.asList(row.getAlimento().getNombreAlimento(), buildCantidadCell(row, canModify), //
 				row.getUnidad(), //
 				row.getPesoNeto().toString(), //
 				actions);
+	}
+
+	private String buildCantidadCell(final Ingrediente row, final boolean canModify) {
+		if (!canModify) {
+			return row.getDisplayCantSugerida(row.getUnidad());
+		}
+		final Alimento alimento = row.getAlimento();
+		return "<input type='text' class='form-control form-control-sm inline-cantidad-input' data-id='" + row.getId()
+				+ "' data-alimento-cant='" + alimento.getCantSugerida() + "' data-alimento-peso='"
+				+ alimento.getPesoNeto() + "' value='" + row.getFractionalCantSugerida() + "' aria-label='Cantidad' />";
 	}
 
 	@Override
