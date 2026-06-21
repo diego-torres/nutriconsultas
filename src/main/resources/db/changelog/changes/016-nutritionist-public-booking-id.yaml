@@ -1,0 +1,61 @@
+databaseChangeLog:
+  - changeSet:
+      id: 016-nutritionist-public-booking-id-column
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: nutritionist_profile
+              columnName: public_booking_id
+      changes:
+        - addColumn:
+            tableName: nutritionist_profile
+            columns:
+              - column:
+                  name: public_booking_id
+                  type: VARCHAR(36)
+  - changeSet:
+      id: 016-nutritionist-public-booking-id-backfill-postgresql
+      author: nutriconsultas
+      dbms: postgresql
+      preConditions:
+        - onFail: MARK_RAN
+        - columnExists:
+            tableName: nutritionist_profile
+            columnName: public_booking_id
+      changes:
+        - sql:
+            sql: UPDATE nutritionist_profile SET public_booking_id = gen_random_uuid()::text WHERE public_booking_id IS NULL
+  - changeSet:
+      id: 016-nutritionist-public-booking-id-backfill-h2
+      author: nutriconsultas
+      dbms: h2
+      preConditions:
+        - onFail: MARK_RAN
+        - columnExists:
+            tableName: nutritionist_profile
+            columnName: public_booking_id
+      changes:
+        - sql:
+            sql: UPDATE nutritionist_profile SET public_booking_id = CAST(RANDOM_UUID() AS VARCHAR) WHERE public_booking_id IS NULL
+  - changeSet:
+      id: 016-nutritionist-public-booking-id-constraints
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - columnExists:
+            tableName: nutritionist_profile
+            columnName: public_booking_id
+        - not:
+            indexExists:
+              indexName: uk_nutritionist_profile_public_booking_id
+      changes:
+        - addNotNullConstraint:
+            tableName: nutritionist_profile
+            columnName: public_booking_id
+            columnDataType: VARCHAR(36)
+        - addUniqueConstraint:
+            tableName: nutritionist_profile
+            constraintName: uk_nutritionist_profile_public_booking_id
+            columnNames: public_booking_id

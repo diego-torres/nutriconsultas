@@ -23,6 +23,8 @@ import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.profile.NutritionistProfile;
 import com.nutriconsultas.profile.NutritionistProfileRepository;
 
+import java.util.UUID;
+
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 
 @SpringBootTest
@@ -66,6 +68,9 @@ class PatientMessageIntegrationTest {
 			.orElseGet(NutritionistProfile::new);
 		profile.setUserId(NUTRITIONIST_SUB);
 		profile.setDisplayName("Lic. Ana López");
+		if (profile.getPublicBookingId() == null || profile.getPublicBookingId().isBlank()) {
+			profile.setPublicBookingId(UUID.randomUUID().toString());
+		}
 		nutritionistProfileRepository.saveAndFlush(profile);
 	}
 

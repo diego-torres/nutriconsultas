@@ -77,4 +77,8 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 
 	boolean existsByUserIdAndNameIgnoreCaseAndDob(String userId, String name, Date dob);
 
+	@Query("SELECT p FROM Paciente p WHERE p.userId = :userId AND LOWER(p.email) = LOWER(:email)")
+	Optional<Paciente> findFirstByUserIdAndEmailIgnoreCase(@Param("userId") String userId,
+			@Param("email") String email);
+
 }

@@ -232,8 +232,8 @@ public class IngredientePlatilloIngestaRestController extends AbstractGridContro
 						+ "data-id='" + row.getId() + "' title='Eliminar'>"
 						+ "<i class='fas fa-trash fa-sm fa-fw'></i></button>"
 				: "";
-		return Arrays.asList(row.getAlimento().getNombreAlimento(), buildCantidadCell(row, canModify),
-				row.getUnidad(), row.getPesoNeto().toString(), actions);
+		return Arrays.asList(row.getAlimento().getNombreAlimento(), buildCantidadCell(row, canModify), row.getUnidad(),
+				row.getPesoNeto().toString(), actions);
 	}
 
 	private String buildCantidadCell(final IngredientePlatilloIngesta row, final boolean canModify) {

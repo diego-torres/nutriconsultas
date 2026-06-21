@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title th:text="'Agendar cita — ' + ${nutritionistDisplayName}">Agendar cita</title>
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+  <link th:href="@{/eterna/assets/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+  <link th:href="@{/eterna/assets/vendor/bootstrap-icons/bootstrap-icons.css}" rel="stylesheet">
+  <link th:href="@{/eterna/assets/vendor/boxicons/css/boxicons.min.css}" rel="stylesheet">
+  <link th:href="@{/eterna/assets/css/style.css}" rel="stylesheet">
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <style>
+    #main { padding-top: 150px; }
+    .slot-btn { margin: 0.25rem; }
+    .slot-btn.active { background-color: #0880e8; color: #fff; border-color: #0880e8; }
+    #advanceNotice { display: none; }
+    #bookingSuccess { display: none; }
+  </style>
+</head>
+
+<body>
+
+  <header id="header" class="d-flex align-items-center">
+    <div class="container d-flex justify-content-between align-items-center">
+      <div class="logo">
+        <a th:href="@{/}" class="d-flex align-items-center">
+          <img th:src="@{/eterna/assets/img/favicon.png}" alt="Minutriporcion" style="height: 40px; margin-right: 10px;">
+          <h1 class="mb-0">Minutriporcion</h1>
+        </a>
+      </div>
+      <nav id="navbar" class="navbar">
+        <ul>
+          <li><a th:href="@{/}">Inicio</a></li>
+          <li><a th:href="@{/contact}">Contacto</a></li>
+          <li><a th:href="@{/admin}">Ingresar</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="breadcrumbs">
+      <div class="container">
+        <h2>Agendar cita</h2>
+        <p class="mb-0" th:text="${nutritionistDisplayName}">Nutricionista</p>
+      </div>
+    </section>
+
+    <section class="contact">
+      <div class="container col-lg-8">
+
+        <div id="bookingSuccess" class="alert alert-success" role="alert">
+          <strong>¡Cita reservada!</strong> Recibirá confirmación por correo próximamente.
+          <span id="confirmedSlot"></span>
+        </div>
+
+        <form id="bookingForm">
+          <input type="hidden" id="publicBookingId" th:value="${publicBookingId}">
+          <input type="hidden" id="selectedTime" name="time">
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="patientName" class="form-label">Nombre completo *</label>
+              <input type="text" class="form-control" id="patientName" name="patientName" required maxlength="100">
+            </div>
+            <div class="col-md-6">
+              <label for="patientEmail" class="form-label">Correo electrónico *</label>
+              <input type="email" class="form-control" id="patientEmail" name="patientEmail" required maxlength="100">
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="patientPhone" class="form-label">Teléfono</label>
+              <input type="tel" class="form-control" id="patientPhone" name="patientPhone" maxlength="30">
+            </div>
+            <div class="col-md-6">
+              <label for="appointmentDate" class="form-label">Fecha *</label>
+              <input type="date" class="form-control" id="appointmentDate" name="date" required
+                th:attr="min=${minBookableDate}">
+              <small class="text-muted" th:text="${advanceNotice}">Anticipación mínima</small>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Horario disponible *</label>
+            <div id="advanceNotice" class="alert alert-warning py-2" th:text="${advanceNotice}"></div>
+            <div id="slotsContainer" class="d-flex flex-wrap"></div>
+            <div id="slotsEmpty" class="text-muted small" style="display:none;">No hay horarios disponibles este día.</div>
+          </div>
+
+          <div class="mb-3">
+            <div class="g-recaptcha" th:attr="data-sitekey=${recaptchaSiteKey}"></div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="submitBooking">Reservar cita</button>
+          <div id="bookingError" class="text-danger mt-2" style="display:none;"></div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer id="footer">
+    <div class="container">
+      <div class="copyright">&copy; Copyright <strong><span>Minutriporcion</span></strong> México</div>
+    </div>
+  </footer>
+
+  <script th:src="@{/eterna/assets/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/eterna/assets/js/main.js}"></script>
+  <script th:inline="javascript">
+    (function () {
+      const publicBookingId = document.getElementById('publicBookingId').value;
+      const minBookableDate = /*[[${minBookableDate}]]*/ '';
+      const dateInput = document.getElementById('appointmentDate');
+      const slotsContainer = document.getElementById('slotsContainer');
+      const slotsEmpty = document.getElementById('slotsEmpty');
+      const advanceNotice = document.getElementById('advanceNotice');
+      const selectedTimeInput = document.getElementById('selectedTime');
+      const bookingError = document.getElementById('bookingError');
+      const bookingSuccess = document.getElementById('bookingSuccess');
+      const bookingForm = document.getElementById('bookingForm');
+
+      function clearSlots() {
+        slotsContainer.innerHTML = '';
+        selectedTimeInput.value = '';
+        slotsEmpty.style.display = 'none';
+        advanceNotice.style.display = 'none';
+      }
+
+      function renderSlots(data) {
+        clearSlots();
+        if (data.notice) {
+          advanceNotice.textContent = data.notice;
+          advanceNotice.style.display = 'block';
+          return;
+        }
+        if (!data.slots || data.slots.length === 0) {
+          slotsEmpty.style.display = 'block';
+          return;
+        }
+        data.slots.forEach(function (slot) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'btn btn-outline-primary slot-btn';
+          btn.textContent = slot;
+          btn.addEventListener('click', function () {
+            document.querySelectorAll('.slot-btn').forEach(function (b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            selectedTimeInput.value = slot;
+          });
+          slotsContainer.appendChild(btn);
+        });
+      }
+
+      function loadSlots() {
+        const date = dateInput.value;
+        if (!date) {
+          clearSlots();
+          return;
+        }
+        fetch('/rest/public/booking/' + encodeURIComponent(publicBookingId) + '/slots?date=' + encodeURIComponent(date))
+          .then(function (r) { return r.json(); })
+          .then(renderSlots)
+          .catch(function () {
+            bookingError.textContent = 'No se pudieron cargar los horarios.';
+            bookingError.style.display = 'block';
+          });
+      }
+
+      dateInput.addEventListener('change', loadSlots);
+      if (dateInput.min) {
+        dateInput.addEventListener('input', function () {
+          if (dateInput.value && dateInput.value < minBookableDate) {
+            advanceNotice.style.display = 'block';
+            clearSlots();
+          }
+        });
+      }
+
+      bookingForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        bookingError.style.display = 'none';
+        const recaptchaResponse = typeof grecaptcha !== 'undefined' ? grecaptcha.getResponse() : '';
+        if (!selectedTimeInput.value) {
+          bookingError.textContent = 'Seleccione un horario disponible.';
+          bookingError.style.display = 'block';
+          return;
+        }
+        const payload = {
+          patientName: document.getElementById('patientName').value,
+          patientEmail: document.getElementById('patientEmail').value,
+          patientPhone: document.getElementById('patientPhone').value,
+          date: dateInput.value,
+          time: selectedTimeInput.value,
+          recaptchaResponse: recaptchaResponse
+        };
+        fetch('/rest/public/booking/' + encodeURIComponent(publicBookingId) + '/book', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(function (r) { return r.json().then(function (body) { return { ok: r.ok, body: body }; }); })
+          .then(function (result) {
+            if (result.ok && result.body.success) {
+              bookingForm.style.display = 'none';
+              document.getElementById('confirmedSlot').textContent =
+                ' ' + result.body.date + ' a las ' + result.body.time + '.';
+              bookingSuccess.style.display = 'block';
+            } else {
+              bookingError.textContent = result.body.error || 'No se pudo reservar la cita.';
+              bookingError.style.display = 'block';
+              if (typeof grecaptcha !== 'undefined') { grecaptcha.reset(); }
+            }
+          })
+          .catch(function () {
+            bookingError.textContent = 'Error de conexión. Intente nuevamente.';
+            bookingError.style.display = 'block';
+          });
+      });
+    })();
+  </script>
+</body>
+
+</html>

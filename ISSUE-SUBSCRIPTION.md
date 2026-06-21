@@ -89,7 +89,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | 243 | Production reCAPTCHA keys for minutriporcion.com | https://github.com/diego-torres/nutriconsultas/issues/243 | **done** | — | EC2 `RECAPTCHA_*` + `RecaptchaVerificationService` / `@PublicRecaptchaForm` |
 | 244 | Pre-fill contact form when clicking Solicitar Acceso for a plan | https://github.com/diego-torres/nutriconsultas/issues/244 | open | — | Plan slug on `ContactInquiry`; pairs with #184 |
 
-**Suggested order:** ~~#243~~ → #244 (or parallel). Public booking (#248) reuses `@PublicRecaptchaForm` + `RecaptchaVerificationService`.
+**Suggested order:** ~~#243~~ → #244 (or parallel). Public booking (~~#248~~) reuses `@PublicRecaptchaForm` + `RecaptchaVerificationService`.
 
 ---
 
