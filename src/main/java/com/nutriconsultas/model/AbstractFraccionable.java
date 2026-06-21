@@ -67,10 +67,7 @@ public abstract class AbstractFraccionable extends AbstractNutrible {
 		if (unidad == null || getPesoBrutoRedondeado() == null) {
 			return false;
 		}
-		if ("g".equals(unidad)) {
-			return true;
-		}
-		return "taza".equals(unidad) && cantSugerida != null && cantSugerida < 0.25;
+		return "g".equals(unidad) || ("taza".equals(unidad) && cantSugerida != null && cantSugerida < 0.25);
 	}
 
 	/**
