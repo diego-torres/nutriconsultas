@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+  <!--
+    Full nutrient table for diet rollup modals.
+    Parameters: totals (DietaNutrientTotals), idPrefix (String for element ids)
+  -->
+  <table th:fragment="nutrientTable(totals, idPrefix)"
+         class="table table-sm table-bordered mb-0">
+    <thead class="thead-light">
+      <tr>
+        <th>Nutriente</th>
+        <th class="text-right">Valor</th>
+        <th>Unidad</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><i class="fas fa-bolt text-warning mr-1"></i> Energ&iacute;a</td>
+        <td th:id="${idPrefix + '-energia'}" class="text-right"
+            th:text="${totals.energia != null ? #numbers.formatDecimal(totals.energia, 0, 0) : '0'}">0</td>
+        <td>kcal</td>
+      </tr>
+      <tr>
+        <td><i class="fas fa-dumbbell text-primary mr-1"></i> Prote&iacute;nas</td>
+        <td th:id="${idPrefix + '-proteina'}" class="text-right"
+            th:text="${totals.proteina != null ? #numbers.formatDecimal(totals.proteina, 1, 2) : '0.00'}">0.00</td>
+        <td>g</td>
+      </tr>
+      <tr>
+        <td><i class="fas fa-heart text-success mr-1"></i> L&iacute;pidos</td>
+        <td th:id="${idPrefix + '-lipidos'}" class="text-right"
+            th:text="${totals.lipidos != null ? #numbers.formatDecimal(totals.lipidos, 1, 2) : '0.00'}">0.00</td>
+        <td>g</td>
+      </tr>
+      <tr>
+        <td><i class="fas fa-atom text-info mr-1"></i> Hidratos de Carbono</td>
+        <td th:id="${idPrefix + '-hidratosDeCarbono'}" class="text-right"
+            th:text="${totals.hidratosDeCarbono != null ? #numbers.formatDecimal(totals.hidratosDeCarbono, 1, 2) : '0.00'}">0.00</td>
+        <td>g</td>
+      </tr>
+      <tr>
+        <td><i class="fas fa-seedling text-success mr-1"></i> Fibra</td>
+        <td th:id="${idPrefix + '-fibra'}" class="text-right"
+            th:text="${totals.fibra != null ? #numbers.formatDecimal(totals.fibra, 1, 2) : '0.00'}">0.00</td>
+        <td>g</td>
+      </tr>
+      <tr>
+        <td>Az&uacute;car</td>
+        <td th:id="${idPrefix + '-azucarPorEquivalente'}" class="text-right"
+            th:text="${totals.azucarPorEquivalente != null ? #numbers.formatDecimal(totals.azucarPorEquivalente, 1, 2) : '0.00'}">0.00</td>
+        <td>g</td>
+      </tr>
+      <tr>
+        <td>Grasas Saturadas</td>
+        <td th:id="${idPrefix + '-agSaturados'}" class="text-right"
+            th:text="${totals.agSaturados != null ? #numbers.formatDecimal(totals.agSaturados, 1, 2) : '0.00'}">0.00</td>
+        <td>g</td>
+      </tr>
+      <tr>
+        <td>Grasas Monoinsaturadas</td>
+        <td th:id="${idPrefix + '-agMonoinsaturados'}" class="text-right"
+            th:text="${totals.agMonoinsaturados != null ? #numbers.formatDecimal(totals.agMonoinsaturados, 1, 2) : '0.00'}">0.00</td>
+        <td>g</td>
+      </tr>
+      <tr>
+        <td>Grasas Poliinsaturadas</td>
+        <td th:id="${idPrefix + '-agPoliinsaturados'}" class="text-right"
+            th:text="${totals.agPoliinsaturados != null ? #numbers.formatDecimal(totals.agPoliinsaturados, 1, 2) : '0.00'}">0.00</td>
+        <td>g</td>
+      </tr>
+      <tr>
+        <td>Colesterol</td>
+        <td th:id="${idPrefix + '-colesterol'}" class="text-right"
+            th:text="${totals.colesterol != null ? #numbers.formatDecimal(totals.colesterol, 1, 2) : '0.00'}">0.00</td>
+        <td>mg</td>
+      </tr>
+      <tr>
+        <td>Vitamina A</td>
+        <td th:id="${idPrefix + '-vitA'}" class="text-right"
+            th:text="${totals.vitA != null ? #numbers.formatDecimal(totals.vitA, 1, 2) : '0.00'}">0.00</td>
+        <td>&mu;g</td>
+      </tr>
+      <tr>
+        <td>Vitamina C (&Aacute;cido Asc&oacute;rbico)</td>
+        <td th:id="${idPrefix + '-acidoAscorbico'}" class="text-right"
+            th:text="${totals.acidoAscorbico != null ? #numbers.formatDecimal(totals.acidoAscorbico, 1, 2) : '0.00'}">0.00</td>
+        <td>mg</td>
+      </tr>
+      <tr>
+        <td>&Aacute;cido F&oacute;lico</td>
+        <td th:id="${idPrefix + '-acidoFolico'}" class="text-right"
+            th:text="${totals.acidoFolico != null ? #numbers.formatDecimal(totals.acidoFolico, 1, 2) : '0.00'}">0.00</td>
+        <td>&mu;g</td>
+      </tr>
+      <tr>
+        <td>Calcio</td>
+        <td th:id="${idPrefix + '-calcio'}" class="text-right"
+            th:text="${totals.calcio != null ? #numbers.formatDecimal(totals.calcio, 1, 2) : '0.00'}">0.00</td>
+        <td>mg</td>
+      </tr>
+      <tr>
+        <td>Hierro</td>
+        <td th:id="${idPrefix + '-hierro'}" class="text-right"
+            th:text="${totals.hierro != null ? #numbers.formatDecimal(totals.hierro, 1, 2) : '0.00'}">0.00</td>
+        <td>mg</td>
+      </tr>
+      <tr>
+        <td>Hierro No Hem&iacute;nico</td>
+        <td th:id="${idPrefix + '-hierroNoHem'}" class="text-right"
+            th:text="${totals.hierroNoHem != null ? #numbers.formatDecimal(totals.hierroNoHem, 1, 2) : '0.00'}">0.00</td>
+        <td>mg</td>
+      </tr>
+      <tr>
+        <td>Sodio</td>
+        <td th:id="${idPrefix + '-sodio'}" class="text-right"
+            th:text="${totals.sodio != null ? #numbers.formatDecimal(totals.sodio, 1, 2) : '0.00'}">0.00</td>
+        <td>mg</td>
+      </tr>
+      <tr>
+        <td>Potasio</td>
+        <td th:id="${idPrefix + '-potasio'}" class="text-right"
+            th:text="${totals.potasio != null ? #numbers.formatDecimal(totals.potasio, 1, 2) : '0.00'}">0.00</td>
+        <td>mg</td>
+      </tr>
+      <tr>
+        <td>F&oacute;sforo</td>
+        <td th:id="${idPrefix + '-fosforo'}" class="text-right"
+            th:text="${totals.fosforo != null ? #numbers.formatDecimal(totals.fosforo, 1, 2) : '0.00'}">0.00</td>
+        <td>mg</td>
+      </tr>
+      <tr>
+        <td>Selenio</td>
+        <td th:id="${idPrefix + '-selenio'}" class="text-right"
+            th:text="${totals.selenio != null ? #numbers.formatDecimal(totals.selenio, 1, 2) : '0.00'}">0.00</td>
+        <td>&mu;g</td>
+      </tr>
+      <tr>
+        <td>&Iacute;ndice Glic&eacute;mico</td>
+        <td th:id="${idPrefix + '-indiceGlicemico'}" class="text-right"
+            th:text="${totals.indiceGlicemico != null ? #numbers.formatDecimal(totals.indiceGlicemico, 1, 2) : '0.00'}">0.00</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>Carga Glic&eacute;mica</td>
+        <td th:id="${idPrefix + '-cargaGlicemica'}" class="text-right"
+            th:text="${totals.cargaGlicemica != null ? #numbers.formatDecimal(totals.cargaGlicemica, 1, 2) : '0.00'}">0.00</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>Etanol</td>
+        <td th:id="${idPrefix + '-etanol'}" class="text-right"
+            th:text="${totals.etanol != null ? #numbers.formatDecimal(totals.etanol, 1, 2) : '0.00'}">0.00</td>
+        <td>g</td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

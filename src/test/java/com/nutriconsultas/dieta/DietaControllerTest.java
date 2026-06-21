@@ -391,7 +391,11 @@ public class DietaControllerTest {
 			.andExpect(MockMvcResultMatchers.model().attribute("totalHidratosDeCarbono", 50.0))
 			.andExpect(MockMvcResultMatchers.model().attribute("totalEnergia", 455))
 			.andExpect(content().string(containsString("macroSummaryTable")))
-			.andExpect(content().string(containsString("Macronutrientes")));
+			.andExpect(content().string(containsString("Macronutrientes")))
+			.andExpect(content().string(containsString("Ver todos los nutrientes")))
+			.andExpect(content().string(containsString("fullNutrientsModal")))
+			.andExpect(MockMvcResultMatchers.model().attributeExists("nutrientTotals"))
+			.andExpect(MockMvcResultMatchers.model().attributeExists("ingestaNutrientSummaries"));
 	}
 
 	@Test
