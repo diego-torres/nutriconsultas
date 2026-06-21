@@ -1,19 +1,16 @@
 package com.nutriconsultas.controller;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.client.RestClient;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.nutriconsultas.contact.ContactInquiry;
 import com.nutriconsultas.contact.ContactInquiryService;
+import com.nutriconsultas.recaptcha.PublicRecaptchaForm;
+import com.nutriconsultas.recaptcha.RecaptchaVerificationService;
 import com.nutriconsultas.util.LogRedaction;
 
 import jakarta.validation.Valid;
@@ -21,28 +18,17 @@ import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @Slf4j
+@PublicRecaptchaForm
 public class WebController {
-
-	private static final String RECAPTCHA_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify";
-
-	private final RestClient restClient;
 
 	private final ContactInquiryService contactInquiryService;
 
-	@Value("${recaptcha.secret-key:6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe}")
-	private String recaptchaSecretKey;
+	private final RecaptchaVerificationService recaptchaVerificationService;
 
-	@Value("${recaptcha.site-key:6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI}")
-	private String recaptchaSiteKey;
-
-	public WebController(final ContactInquiryService contactInquiryService) {
-		this.restClient = RestClient.create();
+	public WebController(final ContactInquiryService contactInquiryService,
+			final RecaptchaVerificationService recaptchaVerificationService) {
 		this.contactInquiryService = contactInquiryService;
-	}
-
-	@ModelAttribute
-	public void addPublicPageAttributes(final Model model) {
-		model.addAttribute("recaptchaSiteKey", recaptchaSiteKey);
+		this.recaptchaVerificationService = recaptchaVerificationService;
 	}
 
 	@GetMapping(path = "/")
@@ -72,7 +58,7 @@ public class WebController {
 			return ResponseEntity.badRequest().body("Por favor, completa la verificación reCAPTCHA.");
 		}
 
-		if (!verifyRecaptcha(recaptchaResponse)) {
+		if (!recaptchaVerificationService.verifyToken(recaptchaResponse)) {
 			log.warn("reCAPTCHA verification failed");
 			return ResponseEntity.badRequest().body("La verificación reCAPTCHA falló. Por favor, intenta nuevamente.");
 		}
@@ -81,46 +67,6 @@ public class WebController {
 		log.info("Contact form submitted successfully: {}", LogRedaction.redactContactInquiry(saved.getId()));
 
 		return ResponseEntity.ok("OK");
-	}
-
-	private boolean verifyRecaptcha(final String recaptchaResponse) {
-		try {
-			final RecaptchaResponse response = restClient.post()
-				.uri(RECAPTCHA_VERIFY_URL + "?secret={secret}&response={response}", recaptchaSecretKey,
-						recaptchaResponse)
-				.retrieve()
-				.body(RecaptchaResponse.class);
-
-			if (response != null && Boolean.TRUE.equals(response.getSuccess())) {
-				log.debug("reCAPTCHA verification successful");
-				return true;
-			}
-			log.warn("reCAPTCHA verification failed: {}", response);
-			return false;
-		}
-		catch (Exception e) {
-			log.error("Error verifying reCAPTCHA", e);
-			return false;
-		}
-	}
-
-	/**
-	 * Response DTO for reCAPTCHA verification.
-	 */
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	private static final class RecaptchaResponse {
-
-		private Boolean success;
-
-		public Boolean getSuccess() {
-			return this.success;
-		}
-
-		@SuppressWarnings("unused")
-		public void setSuccess(final Boolean success) {
-			this.success = success;
-		}
-
 	}
 
 }
