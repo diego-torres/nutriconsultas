@@ -18,17 +18,11 @@ public final class PublicBookingAdvanceRules {
 	}
 
 	public static boolean isDateBookable(final LocalDate date, final ZoneId zoneId) {
-		if (date == null) {
-			return false;
-		}
-		return !date.isBefore(earliestBookableDate(zoneId));
+		return date != null && !date.isBefore(earliestBookableDate(zoneId));
 	}
 
 	public static boolean isSlotBookable(final LocalDateTime slotStart, final ZoneId zoneId) {
-		if (slotStart == null) {
-			return false;
-		}
-		return !slotStart.toLocalDate().isBefore(earliestBookableDate(zoneId));
+		return slotStart != null && !slotStart.toLocalDate().isBefore(earliestBookableDate(zoneId));
 	}
 
 }

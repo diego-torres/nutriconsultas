@@ -37,7 +37,7 @@ public class PublicBookingController {
 			return "eterna/agendar-cita";
 		}
 		catch (PublicBookingNotFoundException ex) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Enlace de reserva no disponible");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Enlace de reserva no disponible", ex);
 		}
 	}
 

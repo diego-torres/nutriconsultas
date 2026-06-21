@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nutriconsultas.recaptcha.RecaptchaVerificationService;
 
-import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -71,9 +70,6 @@ public class PublicBookingRestController {
 			body.put("date", confirmation.date());
 			body.put("time", confirmation.time());
 			return ResponseEntity.ok(body);
-		}
-		catch (RequestNotPermitted ex) {
-			throw ex;
 		}
 		catch (IllegalArgumentException ex) {
 			return validationError(ex.getMessage());

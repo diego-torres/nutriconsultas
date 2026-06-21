@@ -1,8 +1,8 @@
 package com.nutriconsultas.booking;
 
-import org.springframework.lang.NonNull;
-
 public class PublicBookingNotFoundException extends RuntimeException {
+
+	private static final long serialVersionUID = 1L;
 
 	public PublicBookingNotFoundException() {
 		super("Nutritionist booking link not found");
