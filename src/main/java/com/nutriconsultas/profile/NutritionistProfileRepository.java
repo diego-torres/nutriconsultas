@@ -16,4 +16,6 @@ public interface NutritionistProfileRepository extends JpaRepository<Nutritionis
 	 */
 	Optional<NutritionistProfile> findByUserId(String userId);
 
+	Optional<NutritionistProfile> findByPublicBookingId(String publicBookingId);
+
 }

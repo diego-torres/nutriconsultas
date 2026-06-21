@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,6 +76,9 @@ class MobilePatientMessageIntegrationTest {
 			.orElseGet(NutritionistProfile::new);
 		profile.setUserId(linkedPaciente.getUserId());
 		profile.setDisplayName("Lic. Nutri Minutriporcion");
+		if (profile.getPublicBookingId() == null || profile.getPublicBookingId().isBlank()) {
+			profile.setPublicBookingId(UUID.randomUUID().toString());
+		}
 		nutritionistProfileRepository.saveAndFlush(profile);
 	}
 

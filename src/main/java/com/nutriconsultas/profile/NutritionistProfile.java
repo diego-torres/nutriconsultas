@@ -44,6 +44,9 @@ public class NutritionistProfile {
 	@Column(nullable = false, unique = true, length = 255)
 	private String userId;
 
+	@Column(nullable = false, unique = true, length = 36)
+	private String publicBookingId;
+
 	/**
 	 * Optional display name override. Falls back to the OIDC {@code name} claim when
 	 * blank.

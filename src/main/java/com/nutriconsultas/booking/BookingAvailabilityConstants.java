@@ -17,6 +17,8 @@ public final class BookingAvailabilityConstants {
 
 	public static final int MAX_SLOT_DURATION_MINUTES = 120;
 
+	public static final int MIN_BOOKING_ADVANCE_DAYS = 2;
+
 	private BookingAvailabilityConstants() {
 	}
 

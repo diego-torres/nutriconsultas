@@ -2,6 +2,8 @@ package com.nutriconsultas.profile;
 
 import java.util.Base64;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
@@ -59,10 +61,11 @@ public class NutritionistProfileServiceImpl implements NutritionistProfileServic
 	@NonNull
 	public NutritionistProfile getOrCreateProfile(@NonNull final String userId) {
 		log.info("Retrieving profile for user id: {}", LogRedaction.redactUserId(userId));
-		return repository.findByUserId(userId).orElseGet(() -> {
+		return repository.findByUserId(userId).map(this::ensurePublicBookingId).orElseGet(() -> {
 			log.info("No profile found, creating empty profile for user id: {}", LogRedaction.redactUserId(userId));
 			final NutritionistProfile emptyProfile = new NutritionistProfile();
 			emptyProfile.setUserId(userId);
+			emptyProfile.setPublicBookingId(UUID.randomUUID().toString());
 			return repository.save(emptyProfile);
 		});
 	}
@@ -141,6 +144,14 @@ public class NutritionistProfileServiceImpl implements NutritionistProfileServic
 
 	private String buildLogoKey(final String userId, final String extension) {
 		return LOGO_KEY_PREFIX + userId + LOGO_FILE_NAME + extension;
+	}
+
+	private NutritionistProfile ensurePublicBookingId(final NutritionistProfile profile) {
+		if (profile.getPublicBookingId() != null && !profile.getPublicBookingId().isBlank()) {
+			return profile;
+		}
+		profile.setPublicBookingId(UUID.randomUUID().toString());
+		return repository.save(profile);
 	}
 
 	private String resolveMimeType(final String extension) {

@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,19 @@ public class NutritionistProfileServiceTest {
 		existingProfile.setUserId(TEST_USER_ID);
 		existingProfile.setCedulaProfesional("12345678");
 		existingProfile.setDisplayName("Dra. Test");
+		existingProfile.setPublicBookingId(UUID.randomUUID().toString());
+	}
+
+	@Test
+	public void testGetOrCreateProfile_WhenProfileExistsWithoutPublicId_AssignsAndSaves() {
+		existingProfile.setPublicBookingId(null);
+		when(repository.findByUserId(TEST_USER_ID)).thenReturn(Optional.of(existingProfile));
+		when(repository.save(any(NutritionistProfile.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		final NutritionistProfile result = service.getOrCreateProfile(TEST_USER_ID);
+
+		assertThat(result.getPublicBookingId()).isNotBlank();
+		verify(repository).save(existingProfile);
 	}
 
 	@Test
