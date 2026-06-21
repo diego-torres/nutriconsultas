@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.alimentos.AlimentosRepository;
 import com.nutriconsultas.model.AbstractNutrible;
+import com.nutriconsultas.util.IngredienteFromAlimentoCalculator;
 
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -140,6 +141,30 @@ public class PlatilloServiceImpl implements PlatilloService {
 			summarizeMacronutrientesPlatillo(platillo);
 			platilloRepository.save(platillo);
 		});
+	}
+
+	@Override
+	public Platillo updateIngrediente(@NonNull final Long platilloId, @NonNull final Long ingredienteId,
+			@NonNull final String cantidad, @NonNull final Integer peso) {
+		log.info("Updating ingredient {} on platillo {}", ingredienteId, platilloId);
+		final Platillo platillo = platilloRepository.findById(platilloId).orElse(null);
+		if (platillo == null) {
+			log.warn("Platillo with id {} not found for ingredient update", platilloId);
+			return null;
+		}
+		final Ingrediente ingrediente = platillo.getIngredientes()
+			.stream()
+			.filter(ing -> Objects.equals(ing.getId(), ingredienteId))
+			.findFirst()
+			.orElse(null);
+		if (ingrediente == null || ingrediente.getAlimento() == null) {
+			log.warn("Ingrediente {} not found on platillo {}", ingredienteId, platilloId);
+			return null;
+		}
+		IngredienteFromAlimentoCalculator.populateCatalogIngredienteFromAlimento(ingrediente, ingrediente.getAlimento(),
+				cantidad, peso);
+		summarizeMacronutrientesPlatillo(platillo);
+		return platilloRepository.save(platillo);
 	}
 
 	@Override

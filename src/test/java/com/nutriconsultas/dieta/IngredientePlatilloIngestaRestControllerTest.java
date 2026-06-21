@@ -89,6 +89,7 @@ public class IngredientePlatilloIngestaRestControllerTest {
 		ingrediente.setId(30L);
 		ingrediente.setAlimento(alimento);
 		ingrediente.setProteina(2.0);
+		ingrediente.setPesoNeto(100);
 		ingrediente.setPlatillo(platilloIngesta);
 		platilloIngesta.getIngredientes().add(ingrediente);
 		ingesta.getPlatillos().add(platilloIngesta);
@@ -154,6 +155,13 @@ public class IngredientePlatilloIngestaRestControllerTest {
 
 		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
 		verify(dietaService).updateIngredientePlatilloIngesta(platilloIngesta, 30L, "2", 200);
+	}
+
+	@Test
+	public void testToStringListIncludesInlineCantidadWhenEditable() {
+		final java.util.List<String> row = controller.toStringList(ingrediente);
+
+		assertThat(row.get(1)).contains("inline-platillo-ingesta-cantidad-input");
 	}
 
 }

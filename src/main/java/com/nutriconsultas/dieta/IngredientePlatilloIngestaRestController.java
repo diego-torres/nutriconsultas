@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nutriconsultas.controller.AbstractGridController;
+import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.dataTables.paging.Column;
 import com.nutriconsultas.dataTables.paging.Direction;
 import com.nutriconsultas.dataTables.paging.Page;
@@ -122,7 +123,7 @@ public class IngredientePlatilloIngestaRestController extends AbstractGridContro
 		}
 		final String cantidad = ingrediente.getCantidad();
 		final Integer peso = ingrediente.getPeso();
-		if (cantidad == null || peso == null) {
+		if (cantidad == null || cantidad.isBlank() || peso == null) {
 			return ResponseEntity.badRequest().build();
 		}
 		final boolean exists = context.platilloIngesta()
@@ -231,8 +232,19 @@ public class IngredientePlatilloIngestaRestController extends AbstractGridContro
 						+ "data-id='" + row.getId() + "' title='Eliminar'>"
 						+ "<i class='fas fa-trash fa-sm fa-fw'></i></button>"
 				: "";
-		return Arrays.asList(row.getAlimento().getNombreAlimento(), row.getDisplayCantSugerida(row.getUnidad()),
+		return Arrays.asList(row.getAlimento().getNombreAlimento(), buildCantidadCell(row, canModify),
 				row.getUnidad(), row.getPesoNeto().toString(), actions);
+	}
+
+	private String buildCantidadCell(final IngredientePlatilloIngesta row, final boolean canModify) {
+		if (!canModify) {
+			return row.getDisplayCantSugerida(row.getUnidad());
+		}
+		final Alimento alimento = row.getAlimento();
+		return "<input type='text' class='form-control form-control-sm inline-platillo-ingesta-cantidad-input' "
+				+ "data-id='" + row.getId() + "' data-alimento-cant='" + alimento.getCantSugerida()
+				+ "' data-alimento-peso='" + alimento.getPesoNeto() + "' value='" + row.getFractionalCantSugerida()
+				+ "' aria-label='Cantidad' />";
 	}
 
 	@Override

@@ -4,12 +4,14 @@ import java.util.Objects;
 
 import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.dieta.IngredientePlatilloIngesta;
+import com.nutriconsultas.model.AbstractFraccionable;
+import com.nutriconsultas.platillos.Ingrediente;
 
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Builds diet-local {@link IngredientePlatilloIngesta} nutrient snapshots from catalog
- * {@link Alimento} rows, mirroring platillo catalog ingredient calculations.
+ * Builds ingredient nutrient snapshots from catalog {@link Alimento} rows, mirroring
+ * platillo catalog ingredient calculations.
  */
 @Slf4j
 public final class IngredienteFromAlimentoCalculator {
@@ -22,10 +24,19 @@ public final class IngredienteFromAlimentoCalculator {
 		ingrediente.setAlimento(alimento);
 		ingrediente.setUnidad(alimento.getUnidad());
 		ingrediente.setDescription(alimento.getNombreAlimento());
+		populateNutrientsFromAlimento(ingrediente, alimento, cantidad, peso);
+	}
 
+	public static void populateCatalogIngredienteFromAlimento(final Ingrediente ingrediente, final Alimento alimento,
+			final String cantidad, final Integer peso) {
+		populateNutrientsFromAlimento(ingrediente, alimento, cantidad, peso);
+	}
+
+	private static void populateNutrientsFromAlimento(final AbstractFraccionable ingrediente, final Alimento alimento,
+			final String cantidad, final Integer peso) {
 		boolean calculatedFromCantidad = false;
 		if (!cantidad.equals(alimento.getFractionalCantSugerida())) {
-			log.debug("Calculating ingesta ingredient from cantidad change");
+			log.debug("Calculating ingredient from cantidad change");
 			calculateFromCantidadChange(cantidad, ingrediente, alimento);
 			calculatedFromCantidad = true;
 		}
@@ -34,12 +45,12 @@ public final class IngredienteFromAlimentoCalculator {
 		}
 
 		if (!Objects.equals(peso, alimento.getPesoNeto()) && !calculatedFromCantidad) {
-			log.debug("Calculating ingesta ingredient from peso change");
+			log.debug("Calculating ingredient from peso change");
 			calculateFromPesoChange(peso, ingrediente, alimento);
 		}
 	}
 
-	private static void copyAlimentoDefaults(final IngredientePlatilloIngesta ingrediente, final Alimento alimento) {
+	private static void copyAlimentoDefaults(final AbstractFraccionable ingrediente, final Alimento alimento) {
 		ingrediente.setCantSugerida(alimento.getCantSugerida());
 		ingrediente.setAcidoAscorbico(alimento.getAcidoAscorbico());
 		ingrediente.setAcidoFolico(alimento.getAcidoFolico());
@@ -68,21 +79,22 @@ public final class IngredienteFromAlimentoCalculator {
 		ingrediente.setPesoNeto(alimento.getPesoNeto());
 	}
 
-	private static void calculateFromCantidadChange(final String given, final IngredientePlatilloIngesta ingrediente,
+	private static void calculateFromCantidadChange(final String given, final AbstractFraccionable ingrediente,
 			final Alimento alimento) {
-		final double factor = parseFractionalQuantity(given) / alimento.getCantSugerida();
+		final double parsedQuantity = parseFractionalQuantity(given);
+		final double factor = parsedQuantity / alimento.getCantSugerida();
 		applyNutrientFactor(ingrediente, alimento, factor);
-		ingrediente.setCantSugerida(parseFractionalQuantity(given));
+		ingrediente.setCantSugerida(parsedQuantity);
 	}
 
-	private static void calculateFromPesoChange(final Integer given, final IngredientePlatilloIngesta ingrediente,
+	private static void calculateFromPesoChange(final Integer given, final AbstractFraccionable ingrediente,
 			final Alimento alimento) {
 		final double factor = (double) given / (double) alimento.getPesoNeto();
 		applyNutrientFactor(ingrediente, alimento, factor);
 		ingrediente.setCantSugerida(factor * alimento.getCantSugerida());
 	}
 
-	private static void applyNutrientFactor(final IngredientePlatilloIngesta ingrediente, final Alimento alimento,
+	private static void applyNutrientFactor(final AbstractFraccionable ingrediente, final Alimento alimento,
 			final double factor) {
 		if (alimento.getAcidoAscorbico() != null) {
 			ingrediente.setAcidoAscorbico(alimento.getAcidoAscorbico() * factor);

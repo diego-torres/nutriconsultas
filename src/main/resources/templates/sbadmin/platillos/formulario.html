@@ -455,24 +455,24 @@
                     <ul class="list-group list-group-flush rounded-3">
                       <li class="list-group-item d-flex justify-content-between align-items-center p-3" >
                         <span><i class="fas fa-bolt fa-lg text-warning"></i> Energ&iacute;a:</span>
-                        <p class="mb-0" th:text="${platillo.energia + ' Kcal'}">0.0 Kcal</p>
+                        <p class="mb-0" id="platilloEnergia" th:text="${platillo.energia + ' Kcal'}">0.0 Kcal</p>
                       </li>
                       <li class="list-group-item d-flex justify-content-between align-items-center p-3">
                         <span><i class="fas fa-dumbbell fa-lg" style="color: #333333"></i> Protenina</span>
                         <!-- display proteina formatted to 2 decimal places -->
-                        <p class="mb-0" th:text="${#numbers.formatDecimal(platillo.proteina, 1, 2)}">0.0</p>
+                        <p class="mb-0" id="platilloProteina" th:text="${#numbers.formatDecimal(platillo.proteina, 1, 2)}">0.0</p>
                       </li>
                       <li class="list-group-item d-flex justify-content-between align-items-center p-3">
                         <span><i class="fas fa-heart fa-lg" style="color: #f00"></i> L&iacute;pidos</span>
-                        <p class="mb-0" th:text="${#numbers.formatDecimal(platillo.lipidos, 1, 2)}">0.0</p>
+                        <p class="mb-0" id="platilloLipidos" th:text="${#numbers.formatDecimal(platillo.lipidos, 1, 2)}">0.0</p>
                       </li>
                       <li class="list-group-item d-flex justify-content-between align-items-center p-3">
                         <span><i class="fas fa-atom fa-lg" style="color: #dd0"></i> Carbohidratos</span>
-                        <p class="mb-0" th:text="${#numbers.formatDecimal(platillo.hidratosDeCarbono, 1, 2)}">0.0</p>
+                        <p class="mb-0" id="platilloCarbohidratos" th:text="${#numbers.formatDecimal(platillo.hidratosDeCarbono, 1, 2)}">0.0</p>
                       </li>
                       <li class="list-group-item d-flex justify-content-between align-items-center p-3">
                         <span><i class="fas fa-cubes fa-lg" style="color: #333"></i> Azucar</span>
-                        <p class="mb-0" th:text="${#numbers.formatDecimal(platillo.azucarPorEquivalente, 1, 2)}">0.0</p>
+                        <p class="mb-0" id="platilloAzucar" th:text="${#numbers.formatDecimal(platillo.azucarPorEquivalente, 1, 2)}">0.0</p>
                       </li>
                     </ul>
                   </div>
@@ -683,6 +683,92 @@
       'use strict';
       (function ($) {
         var selectedAlimentoReference = null;
+        var inlineCantidadSaving = false;
+
+        function formatDecimal(value) {
+          if (value == null) {
+            return '0.00';
+          }
+          return Number(value).toFixed(2);
+        }
+
+        function updatePlatilloMacroSummary(platillo) {
+          if (!platillo) {
+            return;
+          }
+          $('#platilloEnergia').text(platillo.energia + ' Kcal');
+          $('#platilloProteina').text(formatDecimal(platillo.proteina));
+          $('#platilloLipidos').text(formatDecimal(platillo.lipidos));
+          $('#platilloCarbohidratos').text(formatDecimal(platillo.hidratosDeCarbono));
+          $('#platilloAzucar').text(formatDecimal(platillo.azucarPorEquivalente));
+        }
+
+        function showInlineCantidadError(message) {
+          swal({
+            title: 'Cantidad inválida',
+            text: message || 'No se pudo actualizar la cantidad del ingrediente.',
+            type: 'error',
+            timer: 5000
+          });
+        }
+
+        function saveInlineCantidad($input) {
+          if (inlineCantidadSaving) {
+            return;
+          }
+          var committedValue = $input.data('committed');
+          var newCantidad = String($input.val()).trim();
+          if (committedValue === newCantidad) {
+            return;
+          }
+          if (!window.IngredientWeightRecalc) {
+            showInlineCantidadError('No se pudo recalcular el peso del ingrediente.');
+            $input.val(committedValue);
+            return;
+          }
+          var alimentoCant = parseFloat($input.data('alimento-cant'));
+          var alimentoPeso = parseInt($input.data('alimento-peso'), 10);
+          var recalculatedPeso = window.IngredientWeightRecalc.recalculatePesoFromQuantityInput(
+            alimentoCant,
+            alimentoPeso,
+            newCantidad
+          );
+          if (recalculatedPeso == null) {
+            showInlineCantidadError('Use un valor fraccional válido (ej. 1/2, 1 1/4).');
+            $input.val(committedValue);
+            return;
+          }
+          inlineCantidadSaving = true;
+          $input.prop('disabled', true);
+          $.ajax({
+            url: '/rest/platillos/' + $('#id').val() + '/ingredientes/' + $input.data('id'),
+            type: 'PUT',
+            contentType: 'application/json',
+            dataType: 'json',
+            data: JSON.stringify({
+              cantidad: newCantidad,
+              peso: recalculatedPeso
+            }),
+            success: function (response) {
+              if (response && response.data) {
+                updatePlatilloMacroSummary(response.data);
+              }
+              $input.data('committed', newCantidad);
+              $('#ingredientesGrid').DataTable().ajax.reload(null, false);
+            },
+            error: function (error) {
+              $input.val(committedValue);
+              var message = error.responseJSON && error.responseJSON.message
+                ? error.responseJSON.message
+                : 'No se pudo actualizar la cantidad del ingrediente.';
+              showInlineCantidadError(message);
+            },
+            complete: function () {
+              inlineCantidadSaving = false;
+              $input.prop('disabled', false);
+            }
+          });
+        }
 
         function applyAlimentoDefaults(response) {
           selectedAlimentoReference = {
@@ -750,6 +836,24 @@
               console.error(thrown);
             },
           },
+        });
+
+        $(document).on('focus', '.inline-cantidad-input', function () {
+          var $input = $(this);
+          if (!$input.data('committed')) {
+            $input.data('committed', String($input.val()).trim());
+          }
+        });
+
+        $(document).on('keydown', '.inline-cantidad-input', function (event) {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            $(this).blur();
+          }
+        });
+
+        $(document).on('blur', '.inline-cantidad-input', function () {
+          saveInlineCantidad($(this));
         });
 
         //$("#ingredientesGrid").DataTable().ajax.reload();
