@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>Confirmación de cita — Minutriporción</title>
+</head>
+<body>
+  <p th:text="'Hola ' + ${patientName} + ','">Hola,</p>
+  <p>
+    Su cita con <strong th:text="${nutritionistDisplayName}">Consulta nutricional</strong> quedó reservada.
+  </p>
+  <p>
+    <strong>Fecha:</strong> <span th:text="${appointmentDateFormatted}">01/01/2026</span><br>
+    <strong>Hora:</strong> <span th:text="${appointmentTimeFormatted}">10:00</span>
+  </p>
+  <p>Si necesita reprogramar, contacte directamente a su nutricionista.</p>
+  <p>— Equipo Minutriporción</p>
+</body>
+</html>
