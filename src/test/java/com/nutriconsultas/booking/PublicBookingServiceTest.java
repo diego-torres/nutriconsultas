@@ -30,6 +30,7 @@ import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.paciente.PacienteService;
+import com.nutriconsultas.paciente.PacienteStatus;
 import com.nutriconsultas.profile.NutritionistProfile;
 import com.nutriconsultas.profile.NutritionistProfileRepository;
 import com.nutriconsultas.subscription.Subscription;
@@ -133,6 +134,9 @@ class PublicBookingServiceTest {
 		final PublicBookingConfirmation confirmation = service.book(PUBLIC_ID, request);
 
 		assertThat(confirmation.eventId()).isEqualTo(99L);
+		final ArgumentCaptor<Paciente> patientCaptor = ArgumentCaptor.forClass(Paciente.class);
+		verify(pacienteService).save(patientCaptor.capture());
+		assertThat(patientCaptor.getValue().getStatus()).isEqualTo(PacienteStatus.ONBOARDING);
 		final ArgumentCaptor<CalendarEvent> captor = ArgumentCaptor.forClass(CalendarEvent.class);
 		verify(calendarEventService).save(captor.capture());
 		assertThat(captor.getValue().getStatus()).isEqualTo(EventStatus.SCHEDULED);

@@ -13,7 +13,7 @@ registro de consultorio de nutrición
 
 **Agent workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Issue registries:** [`ISSUE.md`](ISSUE.md) (mobile) · [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) (subscription) · [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) (nutritionist web) · [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md) (public booking) · **Contract docs:** [`docs/mobile-api/README.md`](docs/mobile-api/README.md)
 
-**On `main` (2026-06-21):** Mobile **NEXT:** #134. Subscription **NEXT:** #207. Nutritionist web: all registered epics **complete** (#221–#242, #271–#272). Public booking: ~~#246~~, ~~#247~~ (PR [#295](https://github.com/diego-torres/nutriconsultas/pull/295)), ~~#248~~ (PR [#298](https://github.com/diego-torres/nutriconsultas/pull/298)), ~~#297~~ (PR [#299](https://github.com/diego-torres/nutriconsultas/pull/299)) **done**; epic **#245** child issues complete.
+**On `main` (2026-06-21):** Mobile **NEXT:** #134. Subscription **NEXT:** #207. Nutritionist web: all registered epics **complete** (#221–#242, #271–#272). Public booking: ~~#246~~, ~~#247~~ (PR [#295](https://github.com/diego-torres/nutriconsultas/pull/295)), ~~#248~~ (PR [#298](https://github.com/diego-torres/nutriconsultas/pull/298)), ~~#297~~ (PR [#299](https://github.com/diego-torres/nutriconsultas/pull/299)), ~~#300~~ **done**; epic **#245** child issues complete.
 
 ## AWS (production infrastructure)
 

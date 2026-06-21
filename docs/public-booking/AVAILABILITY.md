@@ -40,6 +40,8 @@ Authenticated preview: `GET /rest/profile/availability/slots?date=YYYY-MM-DD` (s
 | `GET /rest/public/booking/{publicBookingId}/slots?date=` | Public | Available slots (respects 2-day advance) |
 | `POST /rest/public/booking/{publicBookingId}/book` | Public | Create patient (if needed) + `CalendarEvent`; reCAPTCHA + rate limit |
 
+New patients from public booking get `PacienteStatus.ONBOARDING` with placeholder DOB/gender until the nutritionist completes the profile (~~#300~~).
+
 Opaque **`public_booking_id`** (UUID) on `nutritionist_profile` — never expose OAuth `userId` in public URLs.
 
 ## Minimum booking advance (~~#248~~)
