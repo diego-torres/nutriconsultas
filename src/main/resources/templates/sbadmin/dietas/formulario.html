@@ -304,6 +304,63 @@
           </div>
         </div>
 
+        <!-- Full nutrients modal -->
+        <div
+          class="modal fade"
+          id="fullNutrientsModal"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="fullNutrientsModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="fullNutrientsModalLabel">Nutrientes del plan alimentario</h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <ul class="nav nav-tabs mb-3" id="fullNutrientsTabs" role="tablist">
+                  <li class="nav-item">
+                    <a class="nav-link active" id="full-nutrients-total-tab" data-toggle="tab"
+                       href="#full-nutrients-total" role="tab" aria-controls="full-nutrients-total"
+                       aria-selected="true">Total del plan</a>
+                  </li>
+                  <li class="nav-item" th:each="summary : ${ingestaNutrientSummaries}">
+                    <a class="nav-link" th:id="${'full-nutrients-ingesta-tab-' + summary.id}"
+                       data-toggle="tab" th:href="${'#full-nutrients-ingesta-' + summary.id}" role="tab"
+                       th:attr="aria-controls=${'full-nutrients-ingesta-' + summary.id}, aria-selected='false'"
+                       th:text="${summary.name}">Ingesta</a>
+                  </li>
+                </ul>
+                <div class="tab-content" id="fullNutrientsTabContent">
+                  <div class="tab-pane fade show active" id="full-nutrients-total" role="tabpanel"
+                       aria-labelledby="full-nutrients-total-tab">
+                    <div class="table-responsive">
+                      <div th:replace="~{sbadmin/dietas/fragments/nutrient-table :: nutrientTable(${nutrientTotals}, 'nutrient-total')}"></div>
+                    </div>
+                  </div>
+                  <div class="tab-pane fade" th:each="summary : ${ingestaNutrientSummaries}"
+                       th:id="${'full-nutrients-ingesta-' + summary.id}" role="tabpanel"
+                       th:attr="aria-labelledby=${'full-nutrients-ingesta-tab-' + summary.id}">
+                    <div class="table-responsive">
+                      <div th:replace="~{sbadmin/dietas/fragments/nutrient-table :: nutrientTable(${summary.totals}, |nutrient-ingesta-${summary.id}|)}"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Delete platillo modal -->
         <div
           class="modal fade"
@@ -523,8 +580,12 @@
               </div>
               <div th:if="${hasDistribucion != null && hasDistribucion}" class="col-lg-6">
                 <div class="card shadow h-100">
-                  <div class="card-header py-3">
+                  <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">Macronutrientes</h6>
+                    <button type="button" class="btn btn-sm btn-outline-primary"
+                            data-toggle="modal" data-target="#fullNutrientsModal">
+                      <i class="fas fa-list-alt mr-1"></i> Ver todos los nutrientes
+                    </button>
                   </div>
                   <div class="card-body p-0 d-flex flex-column">
                     <div class="table-responsive flex-grow-1">
@@ -1521,6 +1582,9 @@
 
           // Function to update pie chart and macro summary table with new dieta data
           function updatePieChart(dieta) {
+            if (dieta) {
+              updateFullNutrientsModal(dieta);
+            }
             var ctx = document.getElementById('myPieChart');
             if (ctx && typeof Chart !== 'undefined' && window.myPieChart) {
               // Calculate totals from dieta
@@ -1596,6 +1660,127 @@
             document.getElementById('macroHidratosKcal').textContent = Math.round(totalHidratosDeCarbono * 4) + ' kcal';
             document.getElementById('macroHidratosPct').textContent = distribucionHidratoCarbono.toFixed(1) + ' %';
             document.getElementById('macroTotalKcal').textContent = Math.round(kCal) + ' kcal';
+          }
+
+          var nutrientFieldDecimals = {
+            energia: 0,
+            proteina: 2,
+            lipidos: 2,
+            hidratosDeCarbono: 2,
+            fibra: 2,
+            azucarPorEquivalente: 2,
+            agSaturados: 2,
+            agMonoinsaturados: 2,
+            agPoliinsaturados: 2,
+            colesterol: 2,
+            vitA: 2,
+            acidoAscorbico: 2,
+            acidoFolico: 2,
+            calcio: 2,
+            hierro: 2,
+            hierroNoHem: 2,
+            sodio: 2,
+            potasio: 2,
+            fosforo: 2,
+            selenio: 2,
+            indiceGlicemico: 2,
+            cargaGlicemica: 2,
+            etanol: 2
+          };
+
+          function createEmptyNutrientTotals() {
+            return {
+              energia: 0,
+              proteina: 0,
+              lipidos: 0,
+              hidratosDeCarbono: 0,
+              fibra: 0,
+              azucarPorEquivalente: 0,
+              agSaturados: 0,
+              agMonoinsaturados: 0,
+              agPoliinsaturados: 0,
+              colesterol: 0,
+              vitA: 0,
+              acidoAscorbico: 0,
+              acidoFolico: 0,
+              calcio: 0,
+              hierro: 0,
+              hierroNoHem: 0,
+              sodio: 0,
+              potasio: 0,
+              fosforo: 0,
+              selenio: 0,
+              indiceGlicemico: 0,
+              cargaGlicemica: 0,
+              etanol: 0
+            };
+          }
+
+          function addNutrientSource(totals, source) {
+            if (!source) {
+              return;
+            }
+            Object.keys(nutrientFieldDecimals).forEach(function(field) {
+              if (source[field]) {
+                totals[field] += source[field];
+              }
+            });
+          }
+
+          function rollupNutrientsFromIngesta(ingesta) {
+            var totals = createEmptyNutrientTotals();
+            if (!ingesta) {
+              return totals;
+            }
+            if (ingesta.platillos) {
+              ingesta.platillos.forEach(function(platillo) {
+                addNutrientSource(totals, platillo);
+              });
+            }
+            if (ingesta.alimentos) {
+              ingesta.alimentos.forEach(function(alimento) {
+                addNutrientSource(totals, alimento);
+              });
+            }
+            return totals;
+          }
+
+          function rollupNutrientsFromDieta(dieta) {
+            var totals = createEmptyNutrientTotals();
+            if (!dieta || !dieta.ingestas) {
+              return totals;
+            }
+            dieta.ingestas.forEach(function(ingesta) {
+              var ingestaTotals = rollupNutrientsFromIngesta(ingesta);
+              addNutrientSource(totals, ingestaTotals);
+            });
+            return totals;
+          }
+
+          function formatNutrientValue(field, value) {
+            var decimals = nutrientFieldDecimals[field] || 2;
+            return Number(value || 0).toFixed(decimals);
+          }
+
+          function updateNutrientTableCells(idPrefix, totals) {
+            Object.keys(nutrientFieldDecimals).forEach(function(field) {
+              var cell = document.getElementById(idPrefix + '-' + field);
+              if (cell) {
+                cell.textContent = formatNutrientValue(field, totals[field]);
+              }
+            });
+          }
+
+          function updateFullNutrientsModal(dieta) {
+            if (!dieta || !document.getElementById('fullNutrientsModal')) {
+              return;
+            }
+            updateNutrientTableCells('nutrient-total', rollupNutrientsFromDieta(dieta));
+            if (dieta.ingestas) {
+              dieta.ingestas.forEach(function(ingesta) {
+                updateNutrientTableCells('nutrient-ingesta-' + ingesta.id, rollupNutrientsFromIngesta(ingesta));
+              });
+            }
           }
 
           // Function to duplicate dieta

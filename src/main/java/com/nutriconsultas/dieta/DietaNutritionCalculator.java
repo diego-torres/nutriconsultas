@@ -81,4 +81,33 @@ public final class DietaNutritionCalculator {
 		dieta.setEnergia(kcal != null ? kcal.intValue() : 0);
 	}
 
+	public static DietaNutrientTotals calculateNutrientTotals(final Dieta dieta) {
+		final DietaNutrientTotals totals = new DietaNutrientTotals();
+		if (dieta == null || dieta.getIngestas() == null) {
+			return totals;
+		}
+		for (final Ingesta ingesta : dieta.getIngestas()) {
+			totals.addTotals(calculateNutrientTotals(ingesta));
+		}
+		return totals;
+	}
+
+	public static DietaNutrientTotals calculateNutrientTotals(final Ingesta ingesta) {
+		final DietaNutrientTotals totals = new DietaNutrientTotals();
+		if (ingesta == null) {
+			return totals;
+		}
+		if (ingesta.getPlatillos() != null) {
+			for (final PlatilloIngesta platillo : ingesta.getPlatillos()) {
+				totals.addFrom(platillo);
+			}
+		}
+		if (ingesta.getAlimentos() != null) {
+			for (final AlimentoIngesta alimento : ingesta.getAlimentos()) {
+				totals.addFromAlimento(alimento);
+			}
+		}
+		return totals;
+	}
+
 }

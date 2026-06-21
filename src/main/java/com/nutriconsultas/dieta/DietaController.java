@@ -151,7 +151,20 @@ public class DietaController extends AbstractAuthorizedController {
 			model.addAttribute("hasDistribucion", false);
 		}
 
+		addNutrientSummaryAttributes(model, sortedIngestas, dieta);
+
 		return "sbadmin/dietas/formulario";
+	}
+
+	private void addNutrientSummaryAttributes(final Model model, final List<Ingesta> sortedIngestas,
+			final Dieta dieta) {
+		final DietaNutrientTotals nutrientTotals = DietaNutritionCalculator.calculateNutrientTotals(dieta);
+		model.addAttribute("nutrientTotals", nutrientTotals);
+		final List<IngestaNutrientSummary> ingestaNutrientSummaries = sortedIngestas.stream()
+			.map(ingesta -> new IngestaNutrientSummary(ingesta.getId(), ingesta.getNombre(),
+					DietaNutritionCalculator.calculateNutrientTotals(ingesta)))
+			.collect(Collectors.toList());
+		model.addAttribute("ingestaNutrientSummaries", ingestaNutrientSummaries);
 	}
 
 	/**

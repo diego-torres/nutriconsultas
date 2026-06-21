@@ -7,11 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
-import com.nutriconsultas.dieta.AlimentoIngesta;
 import com.nutriconsultas.dieta.Dieta;
+import com.nutriconsultas.dieta.DietaNutritionCalculator;
+import com.nutriconsultas.dieta.DietaNutrientTotals;
 import com.nutriconsultas.dieta.DietaService;
-import com.nutriconsultas.dieta.Ingesta;
-import com.nutriconsultas.dieta.PlatilloIngesta;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,7 +53,8 @@ public class NutritionAnalysisService {
 		}
 
 		// Calculate total nutrients
-		final NutritionAnalysisResult.NutrientTotals totals = calculateTotalNutrients(dieta);
+		final NutritionAnalysisResult.NutrientTotals totals = toAnalysisTotals(
+				DietaNutritionCalculator.calculateNutrientTotals(dieta));
 
 		// Create result object
 		final NutritionAnalysisResult result = new NutritionAnalysisResult();
@@ -79,108 +79,31 @@ public class NutritionAnalysisService {
 	}
 
 	/**
-	 * Calculates total nutrients from all ingestas in the diet.
+	 * Converts shared dieta rollup totals into the analysis report shape.
 	 */
-	private NutritionAnalysisResult.NutrientTotals calculateTotalNutrients(final Dieta dieta) {
+	private NutritionAnalysisResult.NutrientTotals toAnalysisTotals(final DietaNutrientTotals rollup) {
 		final NutritionAnalysisResult.NutrientTotals totals = new NutritionAnalysisResult.NutrientTotals();
-
-		if (dieta.getIngestas() == null || dieta.getIngestas().isEmpty()) {
+		if (rollup == null) {
 			return totals;
 		}
-
-		for (final Ingesta ingesta : dieta.getIngestas()) {
-			// Sum from platillos
-			if (ingesta.getPlatillos() != null) {
-				for (final PlatilloIngesta platillo : ingesta.getPlatillos()) {
-					addNutrientsFromPlatillo(platillo, totals);
-				}
-			}
-
-			// Sum from alimentos
-			if (ingesta.getAlimentos() != null) {
-				for (final AlimentoIngesta alimento : ingesta.getAlimentos()) {
-					addNutrientsFromAlimento(alimento, totals);
-				}
-			}
-		}
-
+		totals.setEnergia(rollup.getEnergia());
+		totals.setProteina(rollup.getProteina());
+		totals.setLipidos(rollup.getLipidos());
+		totals.setHidratosDeCarbono(rollup.getHidratosDeCarbono());
+		totals.setFibra(rollup.getFibra());
+		totals.setVitA(rollup.getVitA());
+		totals.setAcidoAscorbico(rollup.getAcidoAscorbico());
+		totals.setAcidoFolico(rollup.getAcidoFolico());
+		totals.setCalcio(rollup.getCalcio());
+		totals.setHierro(rollup.getHierro());
+		totals.setSodio(rollup.getSodio());
+		totals.setPotasio(rollup.getPotasio());
+		totals.setFosforo(rollup.getFosforo());
+		totals.setSelenio(rollup.getSelenio());
+		totals.setColesterol(rollup.getColesterol());
+		totals.setAgSaturados(rollup.getAgSaturados());
+		totals.setAzucarPorEquivalente(rollup.getAzucarPorEquivalente());
 		return totals;
-	}
-
-	/**
-	 * Adds an Integer value to the current total, handling null values.
-	 * @param current the current total value (may be null)
-	 * @param toAdd the value to add (may be null)
-	 * @return the sum of current and toAdd, or null if both are null
-	 */
-	private Integer addIntegerValue(final Integer current, final Integer toAdd) {
-		if (toAdd == null) {
-			return current;
-		}
-		return (current != null ? current : 0) + toAdd;
-	}
-
-	/**
-	 * Adds a Double value to the current total, handling null values.
-	 * @param current the current total value (may be null)
-	 * @param toAdd the value to add (may be null)
-	 * @return the sum of current and toAdd, or null if both are null
-	 */
-	private Double addDoubleValue(final Double current, final Double toAdd) {
-		if (toAdd == null) {
-			return current;
-		}
-		return (current != null ? current : 0.0) + toAdd;
-	}
-
-	/**
-	 * Adds nutrients from a platillo to the totals.
-	 */
-	private void addNutrientsFromPlatillo(final PlatilloIngesta platillo,
-			final NutritionAnalysisResult.NutrientTotals totals) {
-		totals.setEnergia(addIntegerValue(totals.getEnergia(), platillo.getEnergia()));
-		totals.setProteina(addDoubleValue(totals.getProteina(), platillo.getProteina()));
-		totals.setLipidos(addDoubleValue(totals.getLipidos(), platillo.getLipidos()));
-		totals.setHidratosDeCarbono(addDoubleValue(totals.getHidratosDeCarbono(), platillo.getHidratosDeCarbono()));
-		totals.setFibra(addDoubleValue(totals.getFibra(), platillo.getFibra()));
-		totals.setVitA(addDoubleValue(totals.getVitA(), platillo.getVitA()));
-		totals.setAcidoAscorbico(addDoubleValue(totals.getAcidoAscorbico(), platillo.getAcidoAscorbico()));
-		totals.setAcidoFolico(addDoubleValue(totals.getAcidoFolico(), platillo.getAcidoFolico()));
-		totals.setCalcio(addDoubleValue(totals.getCalcio(), platillo.getCalcio()));
-		totals.setHierro(addDoubleValue(totals.getHierro(), platillo.getHierro()));
-		totals.setSodio(addDoubleValue(totals.getSodio(), platillo.getSodio()));
-		totals.setPotasio(addDoubleValue(totals.getPotasio(), platillo.getPotasio()));
-		totals.setFosforo(addDoubleValue(totals.getFosforo(), platillo.getFosforo()));
-		totals.setSelenio(addDoubleValue(totals.getSelenio(), platillo.getSelenio()));
-		totals.setColesterol(addDoubleValue(totals.getColesterol(), platillo.getColesterol()));
-		totals.setAgSaturados(addDoubleValue(totals.getAgSaturados(), platillo.getAgSaturados()));
-		totals.setAzucarPorEquivalente(
-				addDoubleValue(totals.getAzucarPorEquivalente(), platillo.getAzucarPorEquivalente()));
-	}
-
-	/**
-	 * Adds nutrients from an alimento to the totals.
-	 */
-	private void addNutrientsFromAlimento(final AlimentoIngesta alimento,
-			final NutritionAnalysisResult.NutrientTotals totals) {
-		totals.setEnergia(addIntegerValue(totals.getEnergia(), alimento.getEnergia()));
-		totals.setProteina(addDoubleValue(totals.getProteina(), alimento.getProteina()));
-		totals.setLipidos(addDoubleValue(totals.getLipidos(), alimento.getLipidos()));
-		totals.setHidratosDeCarbono(addDoubleValue(totals.getHidratosDeCarbono(), alimento.getHidratosDeCarbono()));
-		totals.setFibra(addDoubleValue(totals.getFibra(), alimento.getFibra()));
-		totals.setVitA(addDoubleValue(totals.getVitA(), alimento.getVitA()));
-		totals.setAcidoAscorbico(addDoubleValue(totals.getAcidoAscorbico(), alimento.getAcidoAscorbico()));
-		totals.setAcidoFolico(addDoubleValue(totals.getAcidoFolico(), alimento.getAcidoFolico()));
-		totals.setCalcio(addDoubleValue(totals.getCalcio(), alimento.getCalcio()));
-		totals.setHierro(addDoubleValue(totals.getHierro(), alimento.getHierro()));
-		totals.setSodio(addDoubleValue(totals.getSodio(), alimento.getSodio()));
-		totals.setPotasio(addDoubleValue(totals.getPotasio(), alimento.getPotasio()));
-		totals.setFosforo(addDoubleValue(totals.getFosforo(), alimento.getFosforo()));
-		totals.setSelenio(addDoubleValue(totals.getSelenio(), alimento.getSelenio()));
-		totals.setColesterol(addDoubleValue(totals.getColesterol(), alimento.getColesterol()));
-		totals.setAgSaturados(addDoubleValue(totals.getAgSaturados(), alimento.getAgSaturados()));
-		totals.setAzucarPorEquivalente(
-				addDoubleValue(totals.getAzucarPorEquivalente(), alimento.getAzucarPorEquivalente()));
 	}
 
 	/**

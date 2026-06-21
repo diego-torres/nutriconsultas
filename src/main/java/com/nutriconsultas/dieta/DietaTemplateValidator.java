@@ -240,6 +240,22 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		else {
 			variables.put("hasDistribucion", false);
 		}
+
+		addNutrientSummaryVariables(variables, mockDieta, mockIngestas);
+	}
+
+	private void addNutrientSummaryVariables(final Map<String, Object> variables, final Dieta mockDieta,
+			final List<Ingesta> mockIngestas) {
+		final DietaNutrientTotals nutrientTotals = DietaNutritionCalculator.calculateNutrientTotals(mockDieta);
+		variables.put("nutrientTotals", nutrientTotals);
+		final List<IngestaNutrientSummary> ingestaNutrientSummaries = mockIngestas.stream()
+			.map(ingesta -> new IngestaNutrientSummary(ingesta.getId(), ingesta.getNombre(),
+					DietaNutritionCalculator.calculateNutrientTotals(ingesta)))
+			.toList();
+		variables.put("ingestaNutrientSummaries", ingestaNutrientSummaries);
+		// Standalone fragment validation (nutrient-table.html)
+		variables.put("totals", nutrientTotals);
+		variables.put("idPrefix", "nutrient-total");
 	}
 
 	/**
