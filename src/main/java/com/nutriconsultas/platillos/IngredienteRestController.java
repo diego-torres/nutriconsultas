@@ -89,7 +89,7 @@ public class IngredienteRestController extends AbstractGridItemController<Ingred
 			@NonNull @PathVariable final Long ingredienteId, @RequestBody @NonNull final IngredienteFormModel form) {
 		log.debug("updating Ingrediente with id {} on platillo {}.", ingredienteId, id);
 		final OidcUser principal = currentUser();
-		final Platillo platillo = loadPlatilloForMutation(id, principal);
+		loadPlatilloForMutation(id, principal);
 		final String cantidad = form.getCantidad();
 		final Integer peso = form.getPeso();
 		if (cantidad == null || cantidad.isBlank() || peso == null) {
