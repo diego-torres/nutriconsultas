@@ -199,18 +199,18 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#208 — Stripe ops](https://github.com/diego-torres/nutriconsultas/issues/208) **in-progress** (`issue-208-stripe-ops`) |
-| **In progress** | #208 |
-| **Just completed** | [#207 — Stripe payment provider](https://github.com/diego-torres/nutriconsultas/issues/207) — PR [#308](https://github.com/diego-torres/nutriconsultas/pull/308) |
+| **Next issue** | [#220 — Retention cleanup](https://github.com/diego-torres/nutriconsultas/issues/220) (or #186 clinic hierarchy) |
+| **In progress** | — |
+| **Just completed** | [#209 — Invitation email](https://github.com/diego-torres/nutriconsultas/issues/209) — PR [#310](https://github.com/diego-torres/nutriconsultas/pull/310) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
+
+**Local dev (#209):** `nutriconsultas.subscription.invitation.email.mode=console` (default). After creating an invitation at `/admin/platform/invitations/new`, grep app logs for `INVITATION_LINK=` or use the flash `inviteUrl` in the admin UI. See [`docs/subscription/INVITATION-EMAIL.md`](docs/subscription/INVITATION-EMAIL.md).
 
 ### Siguientes acciones
 
 | Prioridad | Issue | Acción |
 |-----------|-------|--------|
-| 1 | **#208** | Webhooks Stripe en producción; credenciales test/live en EC2/terraform |
+| 1 | **#220** | Limpieza retención 90 días post-revoke + backup S3 + UI mantenimiento (deps: ~~#210~~ ✓) |
 | 2 | **#186** → **#188** | Modelo consultorio + invitaciones director (habilita `ClinicInvitationService` end-to-end) |
-| 3 | **#220** | Limpieza retención 90 días post-revoke + backup S3 + UI mantenimiento (deps: #210) |
-| 4 | **#209** | Entrega de email de invitación (SES prod / console local) |
-| 5 | **#221** → **#223** | MPX export/import pacientes (rotación cupos; [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md)) |
+| 3 | **#244** | Pre-fill formulario contacto desde CTA Solicitar acceso |

@@ -261,6 +261,9 @@ resource "aws_instance" "app" {
         payment_provider_b64         = base64encode(var.payment_provider)
         stripe_secret_key_b64        = base64encode(var.stripe_secret_key)
         stripe_webhook_secret_b64    = base64encode(var.stripe_webhook_secret)
+        invitation_email_mode      = local.ses_enabled ? "ses" : "console"
+        mail_from_b64              = base64encode(var.invitation_mail_from)
+        aws_ses_region             = var.aws_region
         nginx_config = templatefile("${path.module}/templates/nutriconsultas-nginx.conf.tpl", {
           nginx_server_names = local.app_nginx_server_names
         })

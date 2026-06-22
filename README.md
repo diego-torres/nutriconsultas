@@ -13,7 +13,7 @@ registro de consultorio de nutrición
 
 **Agent workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Issue registries:** [`ISSUE.md`](ISSUE.md) (mobile) · [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) (subscription) · [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) (nutritionist web) · [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md) (public booking) · **Contract docs:** [`docs/mobile-api/README.md`](docs/mobile-api/README.md)
 
-**On `main` (2026-06-22):** Mobile **NEXT:** #134. Subscription **NEXT:** #208 (~~#207~~ Stripe provider done on `issue-207-stripe-payment-provider`). Nutritionist web: all registered epics **complete** (#221–#242, #271–#272). Public booking: epic ~~#245~~ **done** (v1); ~~#246~~–~~#302~~ shipped.
+**On `main` (2026-06-22):** Mobile **NEXT:** #134. Subscription **NEXT:** #220 / #186 (~~#207~~ ~~#208~~ ~~#209~~ done). Nutritionist web: all registered epics **complete** (#221–#242, #271–#272). Public booking: epic ~~#245~~ **done** (v1); ~~#246~~–~~#302~~ shipped.
 
 ## AWS (production infrastructure)
 
