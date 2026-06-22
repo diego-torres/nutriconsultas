@@ -1,5 +1,7 @@
 package com.nutriconsultas.subscription.clinic;
 
+import java.util.List;
+
 import org.springframework.lang.NonNull;
 
 /**
@@ -23,5 +25,18 @@ public interface ClinicService {
 	 * Reactivates a suspended nutritionist when a seat is available.
 	 */
 	void reactivateMember(@NonNull String directorUserId, @NonNull Long memberId);
+
+	/**
+	 * Loads active clinic members and, when {@code sourceMemberId} is set, patients
+	 * assigned to that nutritionist for the transfer UI.
+	 */
+	ClinicPatientTransferPage getPatientTransferPage(@NonNull String directorUserId, Long sourceMemberId);
+
+	/**
+	 * Reassigns patients from one clinic nutritionist to another. Both members must be
+	 * ACTIVE in the director's clinic.
+	 */
+	ClinicPatientTransferResult transferPatients(@NonNull String directorUserId, @NonNull Long sourceMemberId,
+			@NonNull Long targetMemberId, @NonNull List<Long> patientIds, boolean transferAll);
 
 }

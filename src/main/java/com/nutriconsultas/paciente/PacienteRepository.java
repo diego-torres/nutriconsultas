@@ -24,9 +24,14 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 
 	List<Paciente> findByUserId(String userId);
 
+	List<Paciente> findByUserIdOrderByNameAsc(String userId);
+
 	Page<Paciente> findByUserId(String userId, Pageable pageable);
 
 	Optional<Paciente> findByIdAndUserId(Long id, String userId);
+
+	@Query("SELECT p FROM Paciente p WHERE p.id IN :ids AND p.userId = :userId")
+	List<Paciente> findByIdInAndUserId(@Param("ids") Collection<Long> ids, @Param("userId") String userId);
 
 	Optional<Paciente> findByPatientAuthSub(String patientAuthSub);
 

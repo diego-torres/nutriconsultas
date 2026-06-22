@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-22 — ~~#188~~ **done** (branch `subscription/188-director-invitations`).
+**Last updated:** 2026-06-22 — ~~#314~~ **done** (branch `subscription/314-patient-transfers`; UI verified locally).
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 
@@ -68,9 +68,9 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 |---|-------|-----|-------|-----------|-------|
 | 186 | Clinic model + director-consultorio administration | https://github.com/diego-torres/nutriconsultas/issues/186 | **done** | 180, 181 | Director roster, suspend/reactivate members |
 | 188 | Director invitations for nutritionists (no payment) | https://github.com/diego-torres/nutriconsultas/issues/188 | **done** | ~~186~~ ✓, 185 | Branch `subscription/188-director-invitations`; invite/redeem UI verified locally |
-| 314 | Director transfers patients between clinic nutritionists | https://github.com/diego-torres/nutriconsultas/issues/314 | **NEXT** | ~~186~~ ✓, ~~188~~ ✓ | Reassign `Paciente.userId` within consultorio |
+| 314 | Director transfers patients between clinic nutritionists | https://github.com/diego-torres/nutriconsultas/issues/314 | **done** | ~~186~~ ✓, ~~188~~ ✓ | Branch `subscription/314-patient-transfers`; reassign `Paciente.userId` within consultorio |
 
-**Suggested order:** ~~#186~~ ✓ → ~~#188~~ ✓ → **#314**.
+**Suggested order:** ~~#186~~ ✓ → ~~#188~~ ✓ → ~~#314~~ ✓.
 
 ## Phase 3 — Enforcement
 
@@ -88,7 +88,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
 | 243 | Production reCAPTCHA keys for minutriporcion.com | https://github.com/diego-torres/nutriconsultas/issues/243 | **done** | — | EC2 `RECAPTCHA_*` + `RecaptchaVerificationService` / `@PublicRecaptchaForm` |
-| 244 | Pre-fill contact form when clicking Solicitar Acceso for a plan | https://github.com/diego-torres/nutriconsultas/issues/244 | open | — | Plan slug on `ContactInquiry`; pairs with #184 |
+| 244 | Pre-fill contact form when clicking Solicitar Acceso for a plan | https://github.com/diego-torres/nutriconsultas/issues/244 | **NEXT** | — | Plan slug on `ContactInquiry`; pairs with #184 |
 
 **Suggested order:** ~~#243~~ → #244 (or parallel). Public booking (~~#248~~) reuses `@PublicRecaptchaForm` + `RecaptchaVerificationService`.
 
@@ -100,7 +100,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 |---|-------|-----|-------|-----------|-------|
 | 220 | Retention cleanup — purge revoked nutritionist data with S3 backup | https://github.com/diego-torres/nutriconsultas/issues/220 | **done** | 210, 183, 46 | PR [#313](https://github.com/diego-torres/nutriconsultas/pull/313); [`RETENTION-MAINTENANCE.md`](docs/subscription/RETENTION-MAINTENANCE.md) |
 
-**Suggested order:** ~~#220~~ ✓. **NEXT:** #314 director patient transfers.
+**Suggested order:** ~~#220~~ ✓ → ~~#314~~ ✓. **NEXT:** #244 contact form pre-fill.
 
 ---
 
@@ -114,7 +114,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | 3b. Admin revoke access and change plan tier | ~~#210~~ ✓ PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224), ~~#211~~ ✓ PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230) |
 | 3c. Retention purge + S3 backup after revoke | ~~#220~~ ✓ PR [#313](https://github.com/diego-torres/nutriconsultas/pull/313) |
 | 4. Director invites nutritionists; enable/disable access | ~~#186~~ ✓, ~~#188~~ ✓ |
-| 4b. Director transfers patients between nutritionists | #314 |
+| 4b. Director transfers patients between nutritionists | ~~#314~~ ✓ |
 | 5. Patient & nutritionist limits | #190 — PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) ✓ |
 | 5b. Patient slot rotation (export/import `.mpx`) | ~~#221~~, ~~#222~~, ~~#223~~ — [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) (PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262)) |
 | 6. Branded / tiered reports | #187 — PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218) ✓ |
