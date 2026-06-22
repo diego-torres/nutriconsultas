@@ -93,7 +93,7 @@ public class SubscriptionAccessInterceptor implements HandlerInterceptor {
 	}
 
 	private static boolean requiresNutritionistSubscription(final String uri) {
-		if (uri.equals("/admin") || uri.startsWith("/admin/")) {
+		if ("/admin".equals(uri) || uri.startsWith("/admin/")) {
 			return true;
 		}
 		if (!uri.startsWith("/rest/")) {
@@ -102,10 +102,7 @@ public class SubscriptionAccessInterceptor implements HandlerInterceptor {
 		if (uri.startsWith("/rest/mobile/")) {
 			return false;
 		}
-		if (uri.startsWith("/rest/subscription/payment/webhook")) {
-			return false;
-		}
-		return !uri.startsWith("/rest/public/booking/");
+		return !uri.startsWith("/rest/subscription/payment/webhook") && !uri.startsWith("/rest/public/booking/");
 	}
 
 	private static boolean isAllowedWithoutSubscription(final String uri) {

@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,7 +23,8 @@ public class NutritionistOAuth2LoginSuccessHandler extends SavedRequestAwareAuth
 
 	public static final String PENDING_INVITATION_TOKEN_SESSION_KEY = "PENDING_NUTRITIONIST_INVITATION_TOKEN";
 
-	public NutritionistOAuth2LoginSuccessHandler() {
+	@PostConstruct
+	void init() {
 		setDefaultTargetUrl("/admin");
 		setAlwaysUseDefaultTargetUrl(false);
 	}
