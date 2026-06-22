@@ -86,4 +86,6 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 	Optional<Paciente> findFirstByUserIdAndEmailIgnoreCase(@Param("userId") String userId,
 			@Param("email") String email);
 
+	boolean existsByAssignedId(String assignedId);
+
 }

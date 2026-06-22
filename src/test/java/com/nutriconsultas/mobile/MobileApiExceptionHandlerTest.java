@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.SendPatientMessageRequest;
+import com.nutriconsultas.subscription.SubscriptionErrorResponses;
 
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 
@@ -32,6 +33,9 @@ class MobileApiExceptionHandlerTest {
 
 	@Mock
 	private MessageSource messageSource;
+
+	@Mock
+	private SubscriptionErrorResponses subscriptionErrorResponses;
 
 	private MobileApiErrorResponses errorResponses;
 
@@ -42,7 +46,7 @@ class MobileApiExceptionHandlerTest {
 		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
 		errorResponses = new MobileApiErrorResponses(messageSource, objectMapper);
-		handler = new MobileApiExceptionHandler(errorResponses);
+		handler = new MobileApiExceptionHandler(errorResponses, subscriptionErrorResponses);
 	}
 
 	@AfterEach

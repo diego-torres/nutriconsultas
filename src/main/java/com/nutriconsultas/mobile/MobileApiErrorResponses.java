@@ -39,6 +39,8 @@ public final class MobileApiErrorResponses {
 
 	public static final String KEY_VALIDATION_FAILED = "error.validation.failed";
 
+	public static final String KEY_INVITATION_ASSIGNED_ID_TAKEN = "error.invitation.assigned_id.taken";
+
 	private final MessageSource messageSource;
 
 	private final ObjectMapper objectMapper;

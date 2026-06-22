@@ -72,4 +72,26 @@ class PhiLogTurboFilterTest {
 		assertThat(reply).isEqualTo(FilterReply.NEUTRAL);
 	}
 
+	@Test
+	void deniesHumanInvitationCodeInPatientInvitationPackage() {
+		filter.start();
+		final Logger invitationLogger = logger(
+				"com.nutriconsultas.paciente.invitation.ConsolePatientInvitationEmailSender");
+
+		final FilterReply reply = filter.decide(null, invitationLogger, Level.INFO, "code={}",
+				new Object[] { "NUTRI-ABCD-EFGH" }, null);
+
+		assertThat(reply).isEqualTo(FilterReply.DENY);
+	}
+
+	@Test
+	void deniesInviteUrlTokenInMobilePackage() {
+		filter.start();
+
+		final FilterReply reply = filter.decide(null, mobileLogger, Level.INFO, "url={}",
+				new Object[] { "https://links.test/i/abcdefghijklmnopqrstuvwxyz0123456789ABCDE" }, null);
+
+		assertThat(reply).isEqualTo(FilterReply.DENY);
+	}
+
 }

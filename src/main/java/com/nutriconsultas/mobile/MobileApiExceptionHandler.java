@@ -1,5 +1,7 @@
 package com.nutriconsultas.mobile;
 
+import java.time.Instant;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +11,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.mobile.dto.ApiResponse;
+import com.nutriconsultas.subscription.SubscriptionErrorResponses;
+import com.nutriconsultas.subscription.SubscriptionLimitExceededException;
 
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +28,12 @@ public class MobileApiExceptionHandler {
 
 	private final MobileApiErrorResponses errorResponses;
 
-	public MobileApiExceptionHandler(final MobileApiErrorResponses errorResponses) {
+	private final SubscriptionErrorResponses subscriptionErrorResponses;
+
+	public MobileApiExceptionHandler(final MobileApiErrorResponses errorResponses,
+			final SubscriptionErrorResponses subscriptionErrorResponses) {
 		this.errorResponses = errorResponses;
+		this.subscriptionErrorResponses = subscriptionErrorResponses;
 	}
 
 	@ExceptionHandler(PatientNotLinkedException.class)
@@ -37,16 +45,32 @@ public class MobileApiExceptionHandler {
 			.body(errorResponses.error(MobileApiErrorResponses.KEY_PATIENT_NOT_LINKED));
 	}
 
+	@ExceptionHandler(SubscriptionLimitExceededException.class)
+	public ResponseEntity<ApiResponse<Void>> handleSubscriptionLimit(final SubscriptionLimitExceededException ex) {
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile API subscription limit exceeded: messageKey={}", ex.getMessageKey());
+		}
+		final String message = subscriptionErrorResponses.resolve(ex);
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse<>(null, message, Instant.now()));
+	}
+
 	@ExceptionHandler(ResponseStatusException.class)
 	public ResponseEntity<ApiResponse<Void>> handleResponseStatus(final ResponseStatusException ex) {
-		if (!errorResponses.isNotFound(ex)) {
-			throw ex;
+		if (errorResponses.isNotFound(ex)) {
+			if (log.isDebugEnabled()) {
+				log.debug("Mobile API resource not found");
+			}
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.body(errorResponses.error(MobileApiErrorResponses.KEY_RESOURCE_NOT_FOUND));
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Mobile API resource not found");
+		if (ex.getStatusCode().value() == HttpStatus.CONFLICT.value()) {
+			if (log.isDebugEnabled()) {
+				log.debug("Mobile API conflict");
+			}
+			return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(errorResponses.error(MobileApiErrorResponses.KEY_INVITATION_ASSIGNED_ID_TAKEN));
 		}
-		return ResponseEntity.status(HttpStatus.NOT_FOUND)
-			.body(errorResponses.error(MobileApiErrorResponses.KEY_RESOURCE_NOT_FOUND));
+		throw ex;
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)

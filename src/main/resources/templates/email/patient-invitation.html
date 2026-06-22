@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>Invitación paciente Minutriporción</title>
+</head>
+<body>
+  <p>Hola,</p>
+  <p>Tu nutriólogo te invitó a usar la app Minutriporción.</p>
+  <p>
+    Abre el siguiente enlace en tu teléfono (válido por tiempo limitado):
+  </p>
+  <p>
+    <a th:href="${inviteUrl}" th:text="${inviteUrl}">https://links.example.com/i/token</a>
+  </p>
+  <p>
+    También puedes ingresar este código en la app:
+    <strong th:text="${humanCode}">NUTRI-XXXX-XXXX</strong>
+  </p>
+  <p>Si no esperabas este mensaje, puedes ignorarlo.</p>
+  <p>— Equipo Minutriporción</p>
+</body>
+</html>

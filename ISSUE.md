@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Subscription (parallel):** [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) · **Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-19 — ~~#133~~ **done** (PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229), deployed EC2). **NEXT:** [#134 create invitation](https://github.com/diego-torres/nutriconsultas/issues/134).
+**Last updated:** 2026-06-22 — ~~#133~~ **done** (PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229)). **NEXT:** [#134 create invitation](https://github.com/diego-torres/nutriconsultas/issues/134) (**in-progress** on `mobile-api/134-create-invitation`).
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116, #132–#141 invitation onboarding) plus the directly-related `[Dashboard]` IMC gauge (#106) and **integration prerequisites** that gate schema work (#156, #46). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -143,7 +143,7 @@ Invite-only patient onboarding replaces manual Afiliación linkage (#109) for ne
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
 | 133 | Invitation token generation & hashing service | https://github.com/diego-torres/nutriconsultas/issues/133 | **done** | ~~132~~ ✓ | Merged PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229): `PatientInvitationTokenService`, human code, SHA-256 hash, optional offline JWS (#140) |
-| 134 | `POST /rest/mobile/invitations` — nutritionist creates patient + invitation | https://github.com/diego-torres/nutriconsultas/issues/134 | **NEXT** | ~~132~~ ✓, ~~133~~ ✓ | Nutritionist JWT (not patient); creates `Paciente` + `Invitation` |
+| 134 | `POST /rest/mobile/invitations` — nutritionist creates patient + invitation | https://github.com/diego-torres/nutriconsultas/issues/134 | **in-progress** | ~~132~~ ✓, ~~133~~ ✓ | Nutritionist JWT (not patient); creates `Paciente` + `Invitation` |
 | 135 | `GET /rest/mobile/invitations/{token}/preview` — public rate-limited preview | https://github.com/diego-torres/nutriconsultas/issues/135 | open | ~~133~~ ✓ | Public; enumeration protection (#141) |
 | 136 | `POST /rest/mobile/invitations/{token}/redeem` — bind Auth0 sub → patient | https://github.com/diego-torres/nutriconsultas/issues/136 | open | ~~132~~ ✓, ~~133~~ ✓, 107 | **Authoritative** redeem gate; patient JWT required |
 | 137 | CurrentPatient resolver + onboarding data gate (403 onboarding required) | https://github.com/diego-torres/nutriconsultas/issues/137 | open | ~~132~~ ✓, 107 | Centralizes `sub → Paciente`; 403 until onboarded |

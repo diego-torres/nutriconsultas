@@ -23,6 +23,14 @@ public interface MobileOpenApiResponses {
 
 	@Target({ ElementType.METHOD, ElementType.TYPE })
 	@Retention(RetentionPolicy.RUNTIME)
+	@ApiResponses({ @ApiResponse(responseCode = "401", description = "Missing or invalid JWT"),
+			@ApiResponse(responseCode = "403", description = "Subscription limit or entitlement denied") })
+	@interface AuthenticatedNutritionist {
+
+	}
+
+	@Target({ ElementType.METHOD, ElementType.TYPE })
+	@Retention(RetentionPolicy.RUNTIME)
 	@ApiResponses({ @ApiResponse(responseCode = "404", description = "Resource not found or not owned by patient") })
 	@interface NotFoundWhenMissing {
 

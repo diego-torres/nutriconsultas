@@ -409,7 +409,7 @@ gh pr create ...
 | Field | Value |
 |-------|-------|
 | **Next issue** | [#134 — POST /rest/mobile/invitations](https://github.com/diego-torres/nutriconsultas/issues/134) |
-| **Status** | **NEXT** — ~~#133~~ ✓ merged (PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229)) |
+| **Status** | **in-progress** — branch `mobile-api/134-create-invitation` |
 | **Phase** | Nutritionist JWT creates `Paciente` + `PatientInvitation` with token hash |
 | **Just completed** | [#133 token service](https://github.com/diego-torres/nutriconsultas/issues/133) — PR #229, deployed EC2 |
 | **In scope for #134** | `POST /rest/mobile/invitations`; persist hash only; return invite URL + human code |
