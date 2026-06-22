@@ -28,9 +28,9 @@ import lombok.extern.slf4j.Slf4j;
 @ActiveProfiles("test")
 public class WebControllerTest {
 
-	private static final String TEST_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
+	private static final String TEST_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"; // notsecret
 
-	private static final String TEST_SECRET_KEY = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";
+	private static final String TEST_SECRET_KEY = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"; // notsecret
 
 	@DynamicPropertySource
 	static void recaptchaTestKeys(final DynamicPropertyRegistry registry) {

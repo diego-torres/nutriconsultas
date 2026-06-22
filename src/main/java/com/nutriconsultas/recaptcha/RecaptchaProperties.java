@@ -6,9 +6,9 @@ import org.springframework.util.StringUtils;
 @ConfigurationProperties(prefix = "recaptcha")
 public class RecaptchaProperties {
 
-	public static final String GOOGLE_TEST_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
+	public static final String GOOGLE_TEST_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"; // notsecret
 
-	public static final String GOOGLE_TEST_SECRET_KEY = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";
+	public static final String GOOGLE_TEST_SECRET_KEY = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"; // notsecret
 
 	private String siteKey = GOOGLE_TEST_SITE_KEY;
 
