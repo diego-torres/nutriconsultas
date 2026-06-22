@@ -199,9 +199,9 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#186 — Clinic hierarchy](https://github.com/diego-torres/nutriconsultas/issues/186) |
+| **Next issue** | [#188 — Director invitations](https://github.com/diego-torres/nutriconsultas/issues/188) |
 | **In progress** | — |
-| **Just completed** | [#220 — Retention cleanup](https://github.com/diego-torres/nutriconsultas/issues/220) — PR [#313](https://github.com/diego-torres/nutriconsultas/pull/313) |
+| **Just completed** | [#186 — Clinic hierarchy](https://github.com/diego-torres/nutriconsultas/issues/186) — branch `subscription/186-clinic-director-admin` |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
@@ -211,5 +211,5 @@ See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
 | Prioridad | Issue | Acción |
 |-----------|-------|--------|
-| 1 | **#186** → **#188** | Modelo consultorio + invitaciones director (habilita `ClinicInvitationService` end-to-end) |
+| 1 | **#188** → **#314** | Invitaciones director + transferencia de pacientes |
 | 2 | **#244** | Pre-fill formulario contacto desde CTA Solicitar acceso |

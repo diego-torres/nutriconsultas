@@ -23,4 +23,6 @@ public interface NutritionistInvitationRepository
 	Optional<NutritionistInvitation> findFirstByRedeemedByUserIdAndStatusOrderByRedeemedAtDesc(String redeemedByUserId,
 			InvitationStatus status);
 
+	Optional<NutritionistInvitation> findFirstByRedeemedByUserIdOrderByRedeemedAtDesc(String redeemedByUserId);
+
 }

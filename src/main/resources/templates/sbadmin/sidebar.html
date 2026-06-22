@@ -58,6 +58,11 @@
         <i class="fas fa-fw fa-user-md"></i>
         <span>Mi Perfil</span></a>
     </li>
+    <li class="nav-item" th:if="${clinicDirector}" th:classappend="${activeMenu == 'clinic' ? 'active' : ''}">
+      <a class="nav-link" th:href="@{/admin/clinic}">
+        <i class="fas fa-fw fa-clinic-medical"></i>
+        <span>Mi Consultorio</span></a>
+    </li>
     <li class="nav-item" th:if="${platformAdmin}" th:classappend="${activeMenu == 'platform' || activeMenu == 'contact-inquiries' || activeMenu == 'invitations' || activeMenu == 'subscriptions' || activeMenu == 'maintenance' ? 'active' : ''}">
       <a class="nav-link" href="#" data-toggle="collapse" data-target="#collapsePlatform"
         th:classappend="${activeMenu == 'platform' || activeMenu == 'contact-inquiries' || activeMenu == 'invitations' || activeMenu == 'subscriptions' || activeMenu == 'maintenance' ? '' : ' collapsed'}"

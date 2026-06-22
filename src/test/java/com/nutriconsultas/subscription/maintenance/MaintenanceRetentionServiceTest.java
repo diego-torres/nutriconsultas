@@ -86,8 +86,7 @@ class MaintenanceRetentionServiceTest {
 		when(tenantPurgeService.buildSnapshot(eligible))
 			.thenReturn(NutritionistTenantSnapshot.empty("auth0|user", 5L, eligible.revokedAt()));
 		when(backupSerializer.toGzippedJson(anyString(), any(), any())).thenReturn(new byte[] { 1, 2, 3 });
-		doThrow(new MaintenanceBackupException("upload failed", new RuntimeException("s3")))
-			.when(backupStorageService)
+		doThrow(new MaintenanceBackupException("upload failed", new RuntimeException("s3"))).when(backupStorageService)
 			.uploadBackup(anyString(), any());
 
 		assertThatThrownBy(() -> maintenanceRetentionService.executeCleanup("auth0|admin"))
