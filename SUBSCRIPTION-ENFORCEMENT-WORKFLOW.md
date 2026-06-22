@@ -199,9 +199,9 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#208 — Stripe ops](https://github.com/diego-torres/nutriconsultas/issues/208) (prod webhooks + credenciales) |
-| **In progress** | — |
-| **Just completed** | [#207 — Stripe payment provider](https://github.com/diego-torres/nutriconsultas/issues/207) — branch `issue-207-stripe-payment-provider` |
+| **Next issue** | [#208 — Stripe ops](https://github.com/diego-torres/nutriconsultas/issues/208) **in-progress** (`issue-208-stripe-ops`) |
+| **In progress** | #208 |
+| **Just completed** | [#207 — Stripe payment provider](https://github.com/diego-torres/nutriconsultas/issues/207) — PR [#308](https://github.com/diego-torres/nutriconsultas/pull/308) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 

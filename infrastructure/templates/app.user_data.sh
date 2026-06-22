@@ -73,6 +73,8 @@ install -d -o root -g nutri -m 750 /opt/nutriconsultas
   echo -n "STRIPE_WEBHOOK_SECRET="
   printf '%s' '${stripe_webhook_secret_b64}' | base64 -d
   echo
+  echo "PAYMENT_STUB_SIMULATE_CHECKOUT=false"
+  echo "PAYMENT_CURRENCY=MXN"
 %{ if app_base_url != "" ~}
   echo "APP_BASE_URL=${app_base_url}"
   echo "STRIPE_SUCCESS_URL=${app_base_url}/admin"
