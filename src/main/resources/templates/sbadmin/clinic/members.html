@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <title>Minutriporcion - Mi Consultorio</title>
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+  <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
+  <style>
+    #clinicMembersTable th.clinic-member-name-col,
+    #clinicMembersTable td.clinic-member-name-col {
+      min-width: 18rem;
+      width: 38%;
+      white-space: normal;
+      word-break: break-word;
+    }
+  </style>
+</head>
+
+<body id="page-top">
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/sidebar :: sidebar}"></div>
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <div class="container-fluid">
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Mi Consultorio</h1>
+          </div>
+          <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">Éxito</div>
+
+          <div class="row mb-4">
+            <div class="col-lg-4">
+              <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Plazas de nutriólogos</div>
+                      <div class="h5 mb-0 font-weight-bold text-gray-800">
+                        <span th:text="${roster.activeSeatCount + roster.pendingInviteCount}">1</span>
+                        /
+                        <span th:text="${roster.maxNutritionists}">20</span>
+                      </div>
+                      <div class="small text-muted mt-1" th:if="${roster.pendingInviteCount > 0}">
+                        <span th:text="${roster.pendingInviteCount}">0</span> invitación(es) pendiente(s)
+                      </div>
+                    </div>
+                    <div class="col-auto">
+                      <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Plan</div>
+                      <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${roster.planTier}">CONSULTORIO</div>
+                    </div>
+                    <div class="col-auto">
+                      <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Suscripción</div>
+                      <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${roster.subscriptionStatus}">ACTIVE</div>
+                    </div>
+                    <div class="col-auto">
+                      <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+              <h6 class="m-0 font-weight-bold text-primary" th:text="${roster.clinicName}">Consultorio</h6>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="clinicMembersTable" width="100%" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th class="clinic-member-name-col">Nutriólogo</th>
+                      <th>Rol</th>
+                      <th>Estado</th>
+                      <th>Desde</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="member : ${roster.members}">
+                      <td class="clinic-member-name-col">
+                        <span th:text="${member.displayLabel}">Nombre</span>
+                        <span th:if="${member.currentUser}" class="badge badge-secondary ml-1">Tú</span>
+                      </td>
+                      <td>
+                        <span th:if="${member.role.name() == 'DIRECTOR'}" class="badge badge-primary">Director</span>
+                        <span th:if="${member.role.name() == 'NUTRITIONIST'}" class="badge badge-info">Nutriólogo</span>
+                      </td>
+                      <td>
+                        <span th:if="${member.membershipStatus.name() == 'ACTIVE'}" class="badge badge-success">Activo</span>
+                        <span th:if="${member.membershipStatus.name() == 'SUSPENDED'}" class="badge badge-warning">Suspendido</span>
+                      </td>
+                      <td th:text="${#temporals.format(member.joinedAt.atZone(T(java.time.ZoneId).systemDefault()), 'dd/MM/yyyy')}">
+                        01/01/2026
+                      </td>
+                      <td>
+                        <form th:if="${member.role.name() == 'NUTRITIONIST' and member.membershipStatus.name() == 'ACTIVE'}"
+                          th:action="@{/admin/clinic/members/{id}/suspend(id=${member.memberId})}" method="post"
+                          class="d-inline suspend-member-form">
+                          <button type="button" class="btn btn-sm btn-warning suspend-member-btn">
+                            <i class="fas fa-pause"></i> Suspender
+                          </button>
+                        </form>
+                        <form th:if="${member.role.name() == 'NUTRITIONIST' and member.membershipStatus.name() == 'SUSPENDED'}"
+                          th:action="@{/admin/clinic/members/{id}/reactivate(id=${member.memberId})}" method="post"
+                          class="d-inline reactivate-member-form">
+                          <button type="button" class="btn btn-sm btn-success reactivate-member-btn">
+                            <i class="fas fa-play"></i> Reactivar
+                          </button>
+                        </form>
+                        <span th:if="${member.role.name() == 'DIRECTOR'}" class="text-muted small">—</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="text-muted small mb-0">
+                Los nutriólogos suspendidos no pueden acceder a la plataforma. Sus pacientes y datos se conservan.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div th:insert="~{sbadmin/footer :: footer}"></div>
+    </div>
+  </div>
+  <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+  <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
+  <script>
+    $(function () {
+      $('.suspend-member-btn').on('click', function () {
+        var form = $(this).closest('form');
+        swal({
+          title: '¿Suspender acceso?',
+          text: 'El nutriólogo no podrá iniciar sesión hasta que lo reactives.',
+          type: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#f6c23e',
+          confirmButtonText: 'Sí, suspender',
+          cancelButtonText: 'Cancelar',
+          closeOnConfirm: true
+        }, function (isConfirm) {
+          if (isConfirm) {
+            form.submit();
+          }
+        });
+      });
+      $('.reactivate-member-btn').on('click', function () {
+        var form = $(this).closest('form');
+        swal({
+          title: '¿Reactivar acceso?',
+          text: 'El nutriólogo volverá a tener acceso si hay plazas disponibles.',
+          type: 'info',
+          showCancelButton: true,
+          confirmButtonColor: '#1cc88a',
+          confirmButtonText: 'Sí, reactivar',
+          cancelButtonText: 'Cancelar',
+          closeOnConfirm: true
+        }, function (isConfirm) {
+          if (isConfirm) {
+            form.submit();
+          }
+        });
+      });
+    });
+  </script>
+</body>
+
+</html>

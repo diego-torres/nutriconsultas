@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface ClinicMemberRepository extends JpaRepository<ClinicMember, Long> {
 
+	List<ClinicMember> findByClinicIdOrderByCreatedAtAsc(Long clinicId);
+
 	List<ClinicMember> findByClinicIdAndMembershipStatus(Long clinicId, MembershipStatus membershipStatus);
 
 	Optional<ClinicMember> findByClinicIdAndUserId(Long clinicId, String userId);

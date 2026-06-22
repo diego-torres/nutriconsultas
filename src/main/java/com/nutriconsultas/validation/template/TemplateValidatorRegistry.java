@@ -14,6 +14,7 @@ import com.nutriconsultas.platform.SubscriptionBillingTemplateValidator;
 import com.nutriconsultas.profile.ProfileTemplateValidator;
 import com.nutriconsultas.reports.ReportTemplateValidator;
 import com.nutriconsultas.search.SearchTemplateValidator;
+import com.nutriconsultas.subscription.clinic.ClinicDirectorTemplateValidator;
 import com.nutriconsultas.subscription.invitation.InvitationRedeemTemplateValidator;
 
 /**
@@ -38,6 +39,7 @@ public class TemplateValidatorRegistry {
 		register(new SearchTemplateValidator());
 		register(new ProfileTemplateValidator());
 		register(new PlatformAdminTemplateValidator());
+		register(new ClinicDirectorTemplateValidator());
 		register(new SubscriptionBillingTemplateValidator());
 		register(new ContactInquiryTemplateValidator());
 		register(new InvitationRedeemTemplateValidator());

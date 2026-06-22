@@ -11,4 +11,10 @@ public interface Auth0UserLookup {
 
 	Optional<String> findUserIdByEmail(String email);
 
+	/**
+	 * Resolves the primary email for an Auth0 user id ({@code sub}) via the Management
+	 * API.
+	 */
+	Optional<String> findEmailByUserId(String userId);
+
 }

@@ -1,6 +1,8 @@
 package com.nutriconsultas.auth0;
 
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 public class Auth0UserLookupImpl implements Auth0UserLookup {
 
 	private static final ParameterizedTypeReference<List<Map<String, Object>>> USER_LIST_TYPE = new ParameterizedTypeReference<>() {
+	};
+
+	private static final ParameterizedTypeReference<Map<String, Object>> USER_TYPE = new ParameterizedTypeReference<>() {
 	};
 
 	private final RestClient restClient;
@@ -66,6 +71,37 @@ public class Auth0UserLookupImpl implements Auth0UserLookup {
 			return Optional.empty();
 		}
 		return Optional.of(userId.toString());
+	}
+
+	@Override
+	public Optional<String> findEmailByUserId(final String userId) {
+		if (!isConfigured() || !StringUtils.hasText(userId)) {
+			return Optional.empty();
+		}
+		try {
+			final String token = tokenProvider.obtainToken();
+			final String encodedUserId = URLEncoder.encode(userId, StandardCharsets.UTF_8);
+			final Map<String, Object> user = restClient.get()
+				.uri("https://" + tokenProvider.getDomain() + "/api/v2/users/" + encodedUserId)
+				.header("Authorization", "Bearer " + token)
+				.accept(MediaType.APPLICATION_JSON)
+				.retrieve()
+				.body(USER_TYPE);
+			if (user == null) {
+				return Optional.empty();
+			}
+			final Object email = user.get("email");
+			if (email == null || !StringUtils.hasText(email.toString())) {
+				return Optional.empty();
+			}
+			return Optional.of(email.toString().trim());
+		}
+		catch (RuntimeException ex) {
+			if (log.isDebugEnabled()) {
+				log.debug("Auth0 user email lookup failed for userId present={}", StringUtils.hasText(userId), ex);
+			}
+			return Optional.empty();
+		}
 	}
 
 }

@@ -19,4 +19,9 @@ public class NoOpAuth0UserLookup implements Auth0UserLookup {
 		return Optional.empty();
 	}
 
+	@Override
+	public Optional<String> findEmailByUserId(final String userId) {
+		return Optional.empty();
+	}
+
 }

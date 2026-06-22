@@ -10,4 +10,6 @@ public interface ClinicInvitationRepository extends JpaRepository<ClinicInvitati
 
 	long countByClinicIdAndStatus(Long clinicId, InvitationStatus status);
 
+	Optional<ClinicInvitation> findFirstByRedeemedByUserIdOrderByRedeemedAtDesc(String redeemedByUserId);
+
 }
