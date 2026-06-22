@@ -227,11 +227,11 @@
 			</tr>
 			<tr th:if="${paciente.peso != null}">
 				<td>Peso:</td>
-				<td th:text="${paciente.peso + ' kg'}"></td>
+				<td th:text="${#numbers.formatDecimal(paciente.peso, 1, 2) + ' kg'}"></td>
 			</tr>
 			<tr th:if="${paciente.estatura != null}">
 				<td>Estatura:</td>
-				<td th:text="${paciente.estatura + ' m'}"></td>
+				<td th:text="${#numbers.formatDecimal(paciente.estatura, 1, 2) + ' m'}"></td>
 			</tr>
 			<tr th:if="${pacienteDieta != null && pacienteDieta.startDate != null}">
 				<td>Fecha de Inicio:</td>
@@ -265,7 +265,7 @@
 						<div th:each="ingrediente : ${platillo.ingredientes}" class="ingrediente-item" th:with="showInGrams=${ingrediente.shouldDisplayWeightInGrams(ingrediente.unidad)}">
 							<span th:text="${(ingrediente.alimento != null && ingrediente.alimento.nombreAlimento != null) ? ingrediente.alimento.nombreAlimento : (ingrediente.description != null ? ingrediente.description : '')}"></span>
 							<!-- Show in grams for g units or very small taza portions; otherwise cooking fractions -->
-							<span th:if="${showInGrams}" th:text="${' - ' + ingrediente.pesoBrutoRedondeado + ' g'}"></span>
+							<span th:if="${showInGrams}" th:text="${' - ' + #numbers.formatDecimal(ingrediente.pesoBrutoRedondeado, 1, 2) + ' g'}"></span>
 							<span th:if="${ingrediente.cantSugerida != null && !showInGrams}" th:text="${' - ' + ingrediente.getRoundedFractionalCantSugerida()}"></span>
 							<span th:if="${ingrediente.unidad != null && !showInGrams}" th:text="${' ' + ingrediente.unidad}"></span>
 						</div>
@@ -278,15 +278,15 @@
 							</tr>
 							<tr th:if="${platillo.pesoBrutoRedondeado != null}">
 								<td>Peso Bruto:</td>
-								<td th:text="${platillo.pesoBrutoRedondeado + ' g'}"></td>
+								<td th:text="${#numbers.formatDecimal(platillo.pesoBrutoRedondeado, 1, 2) + ' g'}"></td>
 							</tr>
 							<tr th:if="${platillo.pesoNeto != null}">
 								<td>Peso Neto:</td>
-								<td th:text="${platillo.pesoNeto + ' g'}"></td>
+								<td th:text="${#numbers.formatDecimal(platillo.pesoNeto, 1, 2) + ' g'}"></td>
 							</tr>
 							<tr th:if="${platillo.energia != null}">
 								<td>Energía:</td>
-								<td th:text="${platillo.energia + ' kcal'}"></td>
+								<td th:text="${#numbers.formatDecimal(platillo.energia, 1, 2) + ' kcal'}"></td>
 							</tr>
 							<tr th:if="${platillo.proteina != null}">
 								<td>Proteína:</td>
@@ -325,19 +325,19 @@
 					</tr>
 					<tr>
 						<td>Energía Total:</td>
-						<td th:text="${totals != null && totals.totalEnergia != null ? (totals.totalEnergia + ' kcal') : '0 kcal'}"></td>
+						<td th:text="${totals != null && totals.totalEnergia != null ? (#numbers.formatDecimal(totals.totalEnergia, 1, 2) + ' kcal') : '0.00 kcal'}"></td>
 					</tr>
 					<tr>
 						<td>Proteína Total:</td>
-						<td th:text="${totals != null && totals.totalProteina != null ? (#numbers.formatDecimal(totals.totalProteina, 1, 2) + ' g') : '0.0 g'}"></td>
+						<td th:text="${totals != null && totals.totalProteina != null ? (#numbers.formatDecimal(totals.totalProteina, 1, 2) + ' g') : '0.00 g'}"></td>
 					</tr>
 					<tr>
 						<td>Lípidos Total:</td>
-						<td th:text="${totals != null && totals.totalLipidos != null ? (#numbers.formatDecimal(totals.totalLipidos, 1, 2) + ' g') : '0.0 g'}"></td>
+						<td th:text="${totals != null && totals.totalLipidos != null ? (#numbers.formatDecimal(totals.totalLipidos, 1, 2) + ' g') : '0.00 g'}"></td>
 					</tr>
 					<tr>
 						<td>Hidratos de Carbono Total:</td>
-						<td th:text="${totals != null && totals.totalHidratosDeCarbono != null ? (#numbers.formatDecimal(totals.totalHidratosDeCarbono, 1, 2) + ' g') : '0.0 g'}"></td>
+						<td th:text="${totals != null && totals.totalHidratosDeCarbono != null ? (#numbers.formatDecimal(totals.totalHidratosDeCarbono, 1, 2) + ' g') : '0.00 g'}"></td>
 					</tr>
 				</table>
 			</div>
@@ -352,19 +352,19 @@
 			</tr>
 			<tr class="total-row">
 				<td>Energía Total:</td>
-				<td th:text="${totalEnergia != null ? (totalEnergia + ' kcal') : '0 kcal'}"></td>
+				<td th:text="${totalEnergia != null ? (#numbers.formatDecimal(totalEnergia, 1, 2) + ' kcal') : '0.00 kcal'}"></td>
 			</tr>
 			<tr class="total-row">
 				<td>Proteína Total:</td>
-				<td th:text="${totalProteina != null ? (#numbers.formatDecimal(totalProteina, 1, 2) + ' g') : '0.0 g'}"></td>
+				<td th:text="${totalProteina != null ? (#numbers.formatDecimal(totalProteina, 1, 2) + ' g') : '0.00 g'}"></td>
 			</tr>
 			<tr class="total-row">
 				<td>Lípidos Total:</td>
-				<td th:text="${totalLipidos != null ? (#numbers.formatDecimal(totalLipidos, 1, 2) + ' g') : '0.0 g'}"></td>
+				<td th:text="${totalLipidos != null ? (#numbers.formatDecimal(totalLipidos, 1, 2) + ' g') : '0.00 g'}"></td>
 			</tr>
 			<tr class="total-row">
 				<td>Hidratos de Carbono Total:</td>
-				<td th:text="${totalHidratosDeCarbono != null ? (#numbers.formatDecimal(totalHidratosDeCarbono, 1, 2) + ' g') : '0.0 g'}"></td>
+				<td th:text="${totalHidratosDeCarbono != null ? (#numbers.formatDecimal(totalHidratosDeCarbono, 1, 2) + ' g') : '0.00 g'}"></td>
 			</tr>
 		</table>
 	</div>
