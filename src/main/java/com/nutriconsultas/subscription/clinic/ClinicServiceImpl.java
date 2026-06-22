@@ -2,7 +2,6 @@ package com.nutriconsultas.subscription.clinic;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
@@ -146,7 +145,7 @@ public class ClinicServiceImpl implements ClinicService {
 		}
 		catch (SubscriptionLimitExceededException ex) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT,
-					"No hay plazas disponibles para reactivar a este nutriólogo");
+					"No hay plazas disponibles para reactivar a este nutriólogo", ex);
 		}
 	}
 
