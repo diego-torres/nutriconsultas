@@ -56,6 +56,11 @@ ebs_root_volume_size_gb = 30
 # If null, you can still point DNS at the EIP at your registrar; see domain-setup.md.
 # route53_domain   = "minutriporcion.com"
 # route53_www_record = true
+#
+# Invitation email via Amazon SES (#209). Requires a public mail domain (route53_domain or public_site_domain).
+# enable_ses            = true
+# ses_mail_domain       = "minutriporcion.com"
+# invitation_mail_from  = "invites@minutriporcion.com"
 
 # CodePipeline (CodeStar → GitHub → CodeBuild → SSM deploy). OMITTING github_repository
 # (or leaving it as "") means Terraform will NOT create CodePipeline, CodeBuild, or a CodeStar

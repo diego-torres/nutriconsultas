@@ -158,6 +158,24 @@ bash infrastructure/scripts/ssm-update-stripe-keys.sh
 
 Full runbook: [`docs/subscription/STRIPE-OPS.md`](../docs/subscription/STRIPE-OPS.md). Webhook URL: `https://minutriporcion.com/rest/subscription/payment/webhook`.
 
+**Invitation email (#209)** — nutritionist invite delivery (SES prod / console local):
+
+| Variable | Purpose |
+|----------|---------|
+| `INVITATION_EMAIL_MODE` | `console` (default local) or `ses` (production EC2) |
+| `MAIL_FROM` | From address when `ses` (e.g. `invites@minutriporcion.com`) |
+| `AWS_SES_REGION` | SES API region (default `us-east-1`) |
+
+Terraform (`enable_ses`, `ses_mail_domain`, `invitation_mail_from`) creates domain identity, DKIM Route 53 records, and IAM send policy. Brownfield hosts:
+
+```bash
+export AWS_PROFILE=minutriporcion AWS_DEFAULT_REGION=us-east-1
+export INVITATION_EMAIL_MODE=ses MAIL_FROM='invites@minutriporcion.com'
+bash infrastructure/scripts/ssm-update-invitation-email.sh
+```
+
+Runbook: [`docs/subscription/INVITATION-EMAIL.md`](../docs/subscription/INVITATION-EMAIL.md). SES sandbox requires verified recipients until production access is approved.
+
 Edit `/opt/nutriconsultas/app.env` in an SSM session (or a systemd `EnvironmentFile` drop-in). On instances already running, add missing keys manually and restart the app — `user_data` only runs at first boot. Never commit real secrets to git.
 
 ## Outputs

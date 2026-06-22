@@ -240,4 +240,20 @@ public final class LogRedaction {
 		return "PatientMessage[id=" + messageId + "]";
 	}
 
+	/**
+	 * Redacts an email address for logging (shows first character and domain only).
+	 * @param email the email address
+	 * @return a safe string representation (e.g., "email[n***@example.com]")
+	 */
+	public static String redactEmail(final String email) {
+		if (email == null || email.isBlank()) {
+			return "email[null]";
+		}
+		final int atIndex = email.indexOf('@');
+		if (atIndex <= 0) {
+			return "email[redacted]";
+		}
+		return "email[" + email.charAt(0) + "***@" + email.substring(atIndex + 1) + "]";
+	}
+
 }

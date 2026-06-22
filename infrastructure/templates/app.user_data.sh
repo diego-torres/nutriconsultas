@@ -75,6 +75,11 @@ install -d -o root -g nutri -m 750 /opt/nutriconsultas
   echo
   echo "PAYMENT_STUB_SIMULATE_CHECKOUT=false"
   echo "PAYMENT_CURRENCY=MXN"
+  echo "INVITATION_EMAIL_MODE=${invitation_email_mode}"
+  echo -n "MAIL_FROM="
+  printf '%s' '${mail_from_b64}' | base64 -d
+  echo
+  echo "AWS_SES_REGION=${aws_ses_region}"
 %{ if app_base_url != "" ~}
   echo "APP_BASE_URL=${app_base_url}"
   echo "STRIPE_SUCCESS_URL=${app_base_url}/admin"

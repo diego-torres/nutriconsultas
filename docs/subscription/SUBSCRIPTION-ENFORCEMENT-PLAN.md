@@ -194,6 +194,10 @@ sequenceDiagram
 
 Director can `suspend` / `reactivate` members without Auth0 deletion (revoke group or app membership flag).
 
+### Invitation email delivery (#209)
+
+Platform-admin invitations call `InvitationEmailSender` after persisting the token. **Console mode** (default locally) logs `INVITATION_LINK=...` for QA without SMTP. **SES mode** sends HTML from `email/nutritionist-invitation.html` via the EC2 instance role. See [`INVITATION-EMAIL.md`](INVITATION-EMAIL.md).
+
 ---
 
 ## Payment provider integration

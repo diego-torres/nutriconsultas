@@ -66,3 +66,18 @@ output "codestar_connection_arn" {
   description = "CodeStar connection for GitHub. In AWS console: update pending connection to authorize. When AVAILABLE, CodePipeline V2 Git push trigger + DetectChanges start runs on pushes to codepipeline_branch."
   value       = try(aws_codestarconnections_connection.github[0].arn, "")
 }
+
+output "ses_domain_identity_arn" {
+  description = "SES domain identity ARN when enable_ses and a mail domain are configured; empty otherwise."
+  value       = try(aws_ses_domain_identity.invitations[0].arn, "")
+}
+
+output "ses_mail_domain" {
+  description = "Domain verified in SES for invitation email; empty when SES is disabled."
+  value       = try(aws_ses_domain_identity.invitations[0].domain, "")
+}
+
+output "invitation_mail_from" {
+  description = "Configured MAIL_FROM address for nutritionist invitations."
+  value       = var.invitation_mail_from
+}

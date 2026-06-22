@@ -221,6 +221,28 @@ variable "route53_www_record" {
 }
 
 # -----------------------------------------------------------------------------
+# Amazon SES — nutritionist invitation email (#209)
+# -----------------------------------------------------------------------------
+
+variable "enable_ses" {
+  type        = bool
+  description = "Create SES domain identity, DKIM DNS (when Route 53 zone exists), and IAM send policy on the app EC2 role."
+  default     = true
+}
+
+variable "ses_mail_domain" {
+  type        = string
+  description = "Domain for SES identity and DKIM. Defaults to route53_domain or public_site_domain when empty."
+  default     = ""
+}
+
+variable "invitation_mail_from" {
+  type        = string
+  description = "From address for nutritionist invitation emails (MAIL_FROM / app env)."
+  default     = "invites@minutriporcion.com"
+}
+
+# -----------------------------------------------------------------------------
 # CodePipeline: GitHub source (CodeStar Connection) + CodeBuild. Leave empty to skip.
 # -----------------------------------------------------------------------------
 
