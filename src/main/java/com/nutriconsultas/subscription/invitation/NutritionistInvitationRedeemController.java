@@ -4,12 +4,16 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.nutriconsultas.controller.AbstractAuthorizedController;
+import com.nutriconsultas.security.NutritionistOAuth2LoginSuccessHandler;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/invitation/nutritionist")
@@ -26,8 +30,13 @@ public class NutritionistInvitationRedeemController extends AbstractAuthorizedCo
 	}
 
 	@GetMapping("/redeem")
-	public String redeemPage(@RequestParam(name = "token", required = false) final String token, final Model model) {
+	public String redeemPage(@RequestParam(name = "token", required = false) final String token,
+			@AuthenticationPrincipal final OidcUser principal, final HttpSession session, final Model model) {
+		if (StringUtils.hasText(token)) {
+			session.setAttribute(NutritionistOAuth2LoginSuccessHandler.PENDING_INVITATION_TOKEN_SESSION_KEY, token);
+		}
 		model.addAttribute("token", token);
+		model.addAttribute("authenticated", principal != null);
 		return "sbadmin/invitation/redeem";
 	}
 

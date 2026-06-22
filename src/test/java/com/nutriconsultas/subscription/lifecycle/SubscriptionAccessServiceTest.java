@@ -42,6 +42,17 @@ class SubscriptionAccessServiceTest {
 	private SubscriptionAccessService subscriptionAccessService;
 
 	@Test
+	void isAdminAccessBlockedWhenUserHasNoSubscriptionOrClinicLink() {
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(USER_ID)).thenReturn(Optional.empty());
+		when(clinicRepository.findByDirectorUserIdWithSubscription(USER_ID)).thenReturn(Optional.empty());
+		when(invitationRepository.findFirstByRedeemedByUserIdAndStatusOrderByRedeemedAtDesc(USER_ID,
+				InvitationStatus.REDEEMED))
+			.thenReturn(Optional.empty());
+
+		assertThat(subscriptionAccessService.isAdminAccessBlocked(USER_ID)).isTrue();
+	}
+
+	@Test
 	void isAdminAccessBlockedWhenClinicSubscriptionCancelled() {
 		final Subscription cancelled = subscription(2L, PlanTier.PROFESIONAL, SubscriptionStatus.CANCELLED);
 		stubActiveMemberWithSubscription(cancelled);

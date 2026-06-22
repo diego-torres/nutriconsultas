@@ -5,6 +5,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -12,6 +13,8 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 import com.nutriconsultas.admin.LogoutHandler;
+import com.nutriconsultas.security.NutritionistOAuth2AuthorizationRequestResolver;
+import com.nutriconsultas.security.NutritionistOAuth2LoginSuccessHandler;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,8 +25,16 @@ public class SecurityConfig {
 
 	private final LogoutHandler logoutHandler;
 
-	public SecurityConfig(final LogoutHandler logoutHandler) {
+	private final NutritionistOAuth2AuthorizationRequestResolver authorizationRequestResolver;
+
+	private final NutritionistOAuth2LoginSuccessHandler loginSuccessHandler;
+
+	public SecurityConfig(final LogoutHandler logoutHandler,
+			final NutritionistOAuth2AuthorizationRequestResolver authorizationRequestResolver,
+			final NutritionistOAuth2LoginSuccessHandler loginSuccessHandler) {
 		this.logoutHandler = logoutHandler;
+		this.authorizationRequestResolver = authorizationRequestResolver;
+		this.loginSuccessHandler = loginSuccessHandler;
 	}
 
 	@Bean
@@ -40,6 +51,8 @@ public class SecurityConfig {
 				.permitAll()
 				.requestMatchers("/rest/public/booking/**")
 				.permitAll()
+				.requestMatchers(HttpMethod.GET, "/invitation/nutritionist/redeem")
+				.permitAll()
 				.requestMatchers("/invitation/nutritionist/redeem", "/invitation/nutritionist/dev-checkout")
 				.authenticated()
 				.requestMatchers("/invitation/**")
@@ -52,7 +65,10 @@ public class SecurityConfig {
 				.authenticated()
 				.anyRequest()
 				.permitAll())
-			.oauth2Login(withDefaults())
+			.oauth2Login(oauth2 -> oauth2
+				.authorizationEndpoint(
+						authorization -> authorization.authorizationRequestResolver(authorizationRequestResolver))
+				.successHandler(loginSuccessHandler))
 			.logout(logout -> logout.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
 				.addLogoutHandler(logoutHandler));
 

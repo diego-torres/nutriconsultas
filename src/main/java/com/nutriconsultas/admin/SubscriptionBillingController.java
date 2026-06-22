@@ -30,4 +30,10 @@ public class SubscriptionBillingController extends AbstractAuthorizedController 
 		return "sbadmin/subscription/billing";
 	}
 
+	@GetMapping("/access-denied")
+	public String accessDenied(final Model model) {
+		model.addAttribute("activeMenu", "home");
+		return "sbadmin/subscription/access-denied";
+	}
+
 }

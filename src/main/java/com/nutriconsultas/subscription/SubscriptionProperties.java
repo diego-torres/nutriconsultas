@@ -23,6 +23,8 @@ public class SubscriptionProperties {
 	private Set<Entitlement> graceDeniedEntitlements = EnumSet.of(Entitlement.CREATE_PATIENT, Entitlement.PDF_EXPORT,
 			Entitlement.USER_ADMINISTRATION);
 
+	private boolean enforceNutritionistAccess = true;
+
 	public int getDefaultGracePeriodDays() {
 		return defaultGracePeriodDays;
 	}
@@ -61,6 +63,14 @@ public class SubscriptionProperties {
 			return;
 		}
 		this.graceDeniedEntitlements = EnumSet.copyOf(graceDeniedEntitlements);
+	}
+
+	public boolean isEnforceNutritionistAccess() {
+		return enforceNutritionistAccess;
+	}
+
+	public void setEnforceNutritionistAccess(final boolean enforceNutritionistAccess) {
+		this.enforceNutritionistAccess = enforceNutritionistAccess;
 	}
 
 }

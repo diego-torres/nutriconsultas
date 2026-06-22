@@ -26,6 +26,7 @@ Nutritionist plan tiers map to Auth0 **Roles** (RBAC). The database `subscriptio
    - `update:users`
    - `create:role_members` (assign roles)
    - `delete:role_members` (revoke roles on plan change)
+   - `read:connections` and `update:connections` (disable public signup via `infrastructure/scripts/auth0-disable-public-signup.sh`)
 
 4. **Environment variables** (see `.env.example`):
 
