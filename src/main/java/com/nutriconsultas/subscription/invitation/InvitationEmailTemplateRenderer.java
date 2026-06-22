@@ -14,7 +14,7 @@ public class InvitationEmailTemplateRenderer {
 
 	private static final String TEMPLATE = "email/nutritionist-invitation";
 
-	private static final String SUBJECT = "Invitación a Minutriporción";
+	private static final String INVITATION_SUBJECT = "Invitación a Minutriporción";
 
 	private final SpringTemplateEngine templateEngine;
 
@@ -30,7 +30,7 @@ public class InvitationEmailTemplateRenderer {
 	}
 
 	public String subject() {
-		return SUBJECT;
+		return INVITATION_SUBJECT;
 	}
 
 }
