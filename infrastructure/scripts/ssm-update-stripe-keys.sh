@@ -42,6 +42,12 @@ if [ -n "$STRIPE_WEBHOOK_SECRET" ] && [[ "$STRIPE_WEBHOOK_SECRET" != whsec_* ]];
   exit 1
 fi
 
+UPDATE_WEBHOOK_SECRET=true
+if [ -z "$STRIPE_WEBHOOK_SECRET" ]; then
+  UPDATE_WEBHOOK_SECRET=false
+  echo "Note: STRIPE_WEBHOOK_SECRET not set — leaving existing EC2 value unchanged."
+fi
+
 INSTANCE_ID="$(aws ssm get-parameter --name "$P/app_instance_id" --query "Parameter.Value" --output text)"
 
 b64() { printf '%s' "$1" | base64 | tr -d '\n'; }
@@ -58,6 +64,7 @@ PARAMS="$(jq -n \
   --arg ppr "$(b64 "$STRIPE_PRICE_PROFESIONAL")" \
   --arg pl "$(b64 "$STRIPE_PRICE_PLUS")" \
   --arg pc "$(b64 "$STRIPE_PRICE_CONSULTORIO")" \
+  --arg updateWh "$UPDATE_WEBHOOK_SECRET" \
   'def upsert($key; $valB64):
      [
        "set -euo pipefail",
@@ -71,7 +78,7 @@ PARAMS="$(jq -n \
      ];
    upsert("PAYMENT_PROVIDER"; $pp)
    + upsert("STRIPE_SECRET_KEY"; $sk)
-   + upsert("STRIPE_WEBHOOK_SECRET"; $wh)
+   + (if ($updateWh == "true") then upsert("STRIPE_WEBHOOK_SECRET"; $wh) else [] end)
    + upsert("PAYMENT_STUB_SIMULATE_CHECKOUT"; $stub)
    + upsert("PAYMENT_CURRENCY"; $cur)
    + upsert("STRIPE_SUCCESS_URL"; $suc)
