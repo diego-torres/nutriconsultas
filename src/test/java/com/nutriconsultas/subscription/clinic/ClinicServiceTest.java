@@ -105,6 +105,8 @@ class ClinicServiceTest {
 		when(clinicMemberRepository.findByClinicIdOrderByCreatedAtAsc(1L)).thenReturn(List.of(director, nutritionist));
 		when(clinicMemberRepository.countByClinicIdAndMembershipStatus(1L, MembershipStatus.ACTIVE)).thenReturn(2L);
 		when(clinicInvitationRepository.countByClinicIdAndStatus(1L, InvitationStatus.PENDING)).thenReturn(1L);
+		when(clinicInvitationRepository.findByClinicIdAndStatusOrderByCreatedAtDesc(1L, InvitationStatus.PENDING))
+			.thenReturn(List.of());
 		when(clinicMemberLabelResolver.resolveLabel(NUTRITIONIST_ID)).thenReturn("Lic. Ana");
 		when(clinicMemberLabelResolver.resolveLabel(DIRECTOR_ID)).thenReturn("director@example.com");
 
@@ -215,6 +217,9 @@ class ClinicServiceTest {
 		when(clinicRepository.findByDirectorUserIdWithSubscription(DIRECTOR_ID)).thenReturn(Optional.of(clinic));
 		lenient().when(subscriptionAccessService.findGrantingSubscriptionForUser(DIRECTOR_ID))
 			.thenReturn(Optional.of(subscription));
+		lenient()
+			.when(clinicInvitationRepository.findByClinicIdAndStatusOrderByCreatedAtDesc(1L, InvitationStatus.PENDING))
+			.thenReturn(List.of());
 	}
 
 	private ClinicMember member(final Long id, final String userId, final ClinicMemberRole role,

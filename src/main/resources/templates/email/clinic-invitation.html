@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>Invitación al consultorio</title>
+</head>
+<body>
+  <p>Hola,</p>
+  <p>
+    Has sido invitado a unirte al consultorio
+    <strong th:text="${clinicName}">Consultorio</strong> en Minutriporción.
+  </p>
+  <p>
+    Para aceptar la invitación, abre el siguiente enlace (válido por tiempo limitado):
+  </p>
+  <p>
+    <a th:href="${inviteUrl}" th:text="${inviteUrl}">https://example.com/invitation</a>
+  </p>
+  <p>Si no esperabas este mensaje, puedes ignorarlo.</p>
+  <p>— Equipo Minutriporción</p>
+</body>
+</html>

@@ -32,7 +32,6 @@ class ConsoleInvitationEmailSenderTest {
 	@BeforeEach
 	void setUp() {
 		sender = new ConsoleInvitationEmailSender(templateRenderer);
-		when(templateRenderer.renderHtmlBody(PlanTier.BASICO, INVITE_URL)).thenReturn("<html>invite</html>");
 
 		final Logger logger = (Logger) LoggerFactory.getLogger(ConsoleInvitationEmailSender.class);
 		logAppender = new ListAppender<>();
@@ -42,12 +41,26 @@ class ConsoleInvitationEmailSenderTest {
 
 	@Test
 	void sendNutritionistInvitationLogsInvitationLinkMarker() {
+		when(templateRenderer.renderHtmlBody(PlanTier.BASICO, INVITE_URL)).thenReturn("<html>invite</html>");
 		sender.sendNutritionistInvitation("invitee@example.com", PlanTier.BASICO, INVITE_URL);
 
 		verify(templateRenderer).renderHtmlBody(PlanTier.BASICO, INVITE_URL);
 		assertThat(logAppender.list)
 			.anyMatch(event -> event.getFormattedMessage().equals("INVITATION_LINK=" + INVITE_URL));
 		assertThat(logAppender.list).noneMatch(event -> event.getFormattedMessage().contains("invitee@example.com"));
+	}
+
+	@Test
+	void sendClinicInvitationLogsClinicInvitationLinkMarker() {
+		final String clinicInviteUrl = "http://localhost:3000/invitation/clinic/redeem?token=abc";
+		when(templateRenderer.renderClinicHtmlBody("Consultorio Norte", clinicInviteUrl))
+			.thenReturn("<html>clinic invite</html>");
+
+		sender.sendClinicInvitation("invitee@example.com", "Consultorio Norte", clinicInviteUrl);
+
+		verify(templateRenderer).renderClinicHtmlBody("Consultorio Norte", clinicInviteUrl);
+		assertThat(logAppender.list)
+			.anyMatch(event -> event.getFormattedMessage().equals("CLINIC_INVITATION_LINK=" + clinicInviteUrl));
 	}
 
 }

@@ -34,4 +34,14 @@ public class ConsoleInvitationEmailSender implements InvitationEmailSender {
 		}
 	}
 
+	@Override
+	public void sendClinicInvitation(final String recipientEmail, final String clinicName, final String inviteUrl) {
+		final String body = templateRenderer.renderClinicHtmlBody(clinicName, inviteUrl);
+		if (log.isInfoEnabled()) {
+			log.info("CLINIC_INVITATION_LINK={}", inviteUrl);
+			log.info("Clinic invitation email (console mode): clinicName={}, recipient={}, bodyLength={}", clinicName,
+					LogRedaction.redactEmail(recipientEmail), body.length());
+		}
+	}
+
 }

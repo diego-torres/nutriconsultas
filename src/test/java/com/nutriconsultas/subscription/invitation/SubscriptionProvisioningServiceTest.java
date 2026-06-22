@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.nutriconsultas.auth0.Auth0RoleSyncClient;
 import com.nutriconsultas.subscription.Clinic;
+import com.nutriconsultas.subscription.ClinicInvitation;
 import com.nutriconsultas.subscription.ClinicMember;
 import com.nutriconsultas.subscription.ClinicMemberRepository;
 import com.nutriconsultas.subscription.ClinicMemberRole;
@@ -109,6 +110,30 @@ class SubscriptionProvisioningServiceTest {
 		assertThat(clinic.getSubscription()).isEqualTo(active);
 		verify(clinicRepository).save(clinic);
 		verify(clinicMemberRepository).save(member);
+	}
+
+	@Test
+	void provisionClinicInvitationMemberJoinsExistingClinic() {
+		final Subscription subscription = new Subscription();
+		subscription.setId(10L);
+		subscription.setPlanTier(PlanTier.CONSULTORIO);
+		subscription.setStatus(SubscriptionStatus.ACTIVE);
+		final Clinic clinicEntity = new Clinic();
+		clinicEntity.setId(1L);
+		clinicEntity.setSubscription(subscription);
+		final ClinicInvitation invitation = new ClinicInvitation();
+		invitation.setId(5L);
+		invitation.setClinic(clinicEntity);
+		invitation.setInvitedByUserId("auth0|director");
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription("auth0|invitee"))
+			.thenReturn(Optional.empty());
+		when(auth0RoleSyncClient.isConfigured()).thenReturn(true);
+
+		provisioningService.provisionClinicInvitationMember(invitation, "auth0|invitee");
+
+		verify(clinicMemberRepository).save(org.mockito.ArgumentMatchers.argThat(
+				member -> member.getRole() == ClinicMemberRole.NUTRITIONIST && member.getClinic().getId().equals(1L)));
+		verify(auth0RoleSyncClient).syncPlanRole("auth0|invitee", PlanTier.PROFESIONAL);
 	}
 
 	@Test

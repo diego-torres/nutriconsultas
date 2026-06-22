@@ -74,4 +74,36 @@ public class SesInvitationEmailSender implements InvitationEmailSender {
 		}
 	}
 
+	@Override
+	public void sendClinicInvitation(final String recipientEmail, final String clinicName, final String inviteUrl) {
+		final String fromAddress = invitationEmailProperties.getFromAddress();
+		if (!StringUtils.hasText(fromAddress)) {
+			throw new IllegalStateException(
+					"MAIL_FROM / nutriconsultas.subscription.invitation.email.from-address is required in ses mode");
+		}
+		final String htmlBody = templateRenderer.renderClinicHtmlBody(clinicName, inviteUrl);
+		final SendEmailRequest request = SendEmailRequest.builder()
+			.fromEmailAddress(fromAddress)
+			.destination(Destination.builder().toAddresses(recipientEmail).build())
+			.content(EmailContent.builder()
+				.simple(Message.builder()
+					.subject(Content.builder().data(templateRenderer.clinicSubject()).charset("UTF-8").build())
+					.body(Body.builder().html(Content.builder().data(htmlBody).charset("UTF-8").build()).build())
+					.build())
+				.build())
+			.build();
+		try {
+			sesV2Client.sendEmail(request);
+			if (log.isInfoEnabled()) {
+				log.info("Clinic invitation email sent via SES: clinicName={}, recipient={}", clinicName,
+						LogRedaction.redactEmail(recipientEmail));
+			}
+		}
+		catch (SesV2Exception ex) {
+			log.error("Failed to send clinic invitation email via SES: clinicName={}, recipient={}", clinicName,
+					LogRedaction.redactEmail(recipientEmail), ex);
+			throw ex;
+		}
+	}
+
 }

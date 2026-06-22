@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.auth0.Auth0RoleSyncClient;
 import com.nutriconsultas.subscription.Clinic;
+import com.nutriconsultas.subscription.ClinicInvitation;
 import com.nutriconsultas.subscription.ClinicInvitationRepository;
 import com.nutriconsultas.subscription.ClinicMember;
 import com.nutriconsultas.subscription.ClinicMemberRepository;
@@ -160,9 +161,15 @@ public class ClinicServiceImpl implements ClinicService {
 		for (final ClinicMember member : clinicMemberRepository.findByClinicIdOrderByCreatedAtAsc(clinic.getId())) {
 			members.add(toMemberView(member, directorUserId));
 		}
+		final List<ClinicInvitationView> pendingInvitations = new ArrayList<>();
+		for (final ClinicInvitation invitation : clinicInvitationRepository
+			.findByClinicIdAndStatusOrderByCreatedAtDesc(clinic.getId(), InvitationStatus.PENDING)) {
+			pendingInvitations.add(new ClinicInvitationView(invitation.getId(), invitation.getEmail(),
+					invitation.getExpiresAt(), invitation.getCreatedAt()));
+		}
 		return new ClinicRosterOverview(clinic.getId(), clinic.getName(), subscription.getPlanTier(),
 				subscription.getStatus(), entitlements.getMaxNutritionists(), activeSeatCount, pendingInviteCount,
-				members);
+				members, pendingInvitations);
 	}
 
 	private ClinicMemberView toMemberView(final ClinicMember member, final String directorUserId) {

@@ -10,5 +10,10 @@ import com.nutriconsultas.subscription.SubscriptionStatus;
  */
 public record ClinicRosterOverview(Long clinicId, String clinicName, PlanTier planTier,
 		SubscriptionStatus subscriptionStatus, int maxNutritionists, long activeSeatCount, long pendingInviteCount,
-		List<ClinicMemberView> members) {
+		List<ClinicMemberView> members, List<ClinicInvitationView> pendingInvitations) {
+
+	public boolean canInviteMore() {
+		return activeSeatCount + pendingInviteCount < maxNutritionists;
+	}
+
 }

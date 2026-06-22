@@ -24,4 +24,13 @@ class NutritionistInvitationPropertiesTest {
 			.isEqualTo("https://minutriporcion.com/invitation/nutritionist/redeem?token=abc123");
 	}
 
+	@Test
+	void buildClinicRedeemUrlUsesConfiguredBaseUrl() {
+		final NutritionistInvitationProperties properties = new NutritionistInvitationProperties();
+		properties.setBaseUrl("https://minutriporcion.com");
+
+		assertThat(properties.buildClinicRedeemUrl("abc123"))
+			.isEqualTo("https://minutriporcion.com/invitation/clinic/redeem?token=abc123");
+	}
+
 }
