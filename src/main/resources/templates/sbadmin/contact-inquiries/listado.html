@@ -40,6 +40,7 @@
                       <th>Nombre</th>
                       <th>Email</th>
                       <th>Asunto</th>
+                      <th>Plan</th>
                       <th>Mensaje</th>
                       <th>Acciones</th>
                     </tr>
@@ -55,6 +56,11 @@
                       <td th:text="${inquiry.name}">Nombre</td>
                       <td th:text="${inquiry.email}">email@example.com</td>
                       <td th:text="${inquiry.subject}">Asunto</td>
+                      <td>
+                        <span th:if="${inquiry.planRoleSlug != null}"
+                          th:text="${T(com.nutriconsultas.subscription.PlanTier).fromRoleSlug(inquiry.planRoleSlug).displayName}">Plan</span>
+                        <span th:unless="${inquiry.planRoleSlug != null}" class="text-muted">—</span>
+                      </td>
                       <td th:text="${inquiry.message}">Mensaje</td>
                       <td class="text-nowrap">
                         <form th:if="${!inquiry.readByAdmin}"
@@ -98,7 +104,7 @@
           url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
         },
         columnDefs: [
-          { orderable: false, targets: [6] }
+          { orderable: false, targets: [7] }
         ]
       });
 

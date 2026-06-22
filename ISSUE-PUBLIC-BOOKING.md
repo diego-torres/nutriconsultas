@@ -57,7 +57,7 @@ Shareable URL for patients to book into a nutritionist's real availability:
 | Track | Interaction |
 |-------|-------------|
 | ~~#243~~ reCAPTCHA | **done** — `RecaptchaVerificationService` + production keys; reused on public booking (~~#248~~) |
-| #244 Solicitar acceso | Orthogonal — nutritionist onboarding vs patient booking |
+| ~~#244~~ Solicitar acceso | **done** — nutritionist onboarding pre-fill; orthogonal to patient booking |
 | `CalendarEvent` | Existing appointments; clarify vs availability blocks |
 | #236 Nutritionist profile | Same profile area for hours (#246) and logo |
 

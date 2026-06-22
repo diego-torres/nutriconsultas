@@ -11,8 +11,19 @@
         <input type="email" class="form-control" name="email" id="email" placeholder="Tu Email" required>
       </div>
     </div>
+    <div class="form-group mt-3" th:if="${selectedPlan != null}">
+      <label for="planDisplay" class="form-label text-muted small mb-1">Plan de interés</label>
+      <input type="text" class="form-control" id="planDisplay" th:value="${selectedPlanDisplayName}" readonly>
+      <input type="hidden" name="planRoleSlug" id="planRoleSlug" th:value="${selectedPlan.roleSlug}">
+    </div>
+    <div class="form-group mt-3" th:unless="${selectedPlan != null}" id="planInterestGroup" style="display: none;">
+      <label for="planDisplayClient" class="form-label text-muted small mb-1">Plan de interés</label>
+      <input type="text" class="form-control" id="planDisplayClient" readonly>
+      <input type="hidden" name="planRoleSlug" id="planRoleSlugClient" value="">
+    </div>
     <div class="form-group mt-3">
-      <input type="text" class="form-control" name="subject" id="subject" placeholder="Asunto" required>
+      <input type="text" class="form-control" name="subject" id="subject" placeholder="Asunto" required
+        th:value="${selectedPlanSubject}">
     </div>
     <div class="form-group mt-3">
       <textarea class="form-control" name="message" rows="5" placeholder="Mensaje" required></textarea>
@@ -26,6 +37,37 @@
       <div class="sent-message">Tu mensaje ha sido enviado. ¡Gracias!</div>
     </div>
     <div class="text-center"><button type="submit">Enviar Mensaje</button></div>
+    <script th:inline="javascript">
+      (function () {
+        var planLabels = {
+          'nutriologo-basico': 'Básico',
+          'nutriologo-profesional': 'Profesional',
+          'nutriologo-plus': 'Plus',
+          'director-consultorio': 'Consultorio'
+        };
+        var params = new URLSearchParams(window.location.search);
+        var planSlug = params.get('plan');
+        if (!planSlug || !planLabels[planSlug]) {
+          return;
+        }
+        var serverPlanField = document.getElementById('planRoleSlug');
+        if (serverPlanField && serverPlanField.value) {
+          return;
+        }
+        var group = document.getElementById('planInterestGroup');
+        var display = document.getElementById('planDisplayClient');
+        var hidden = document.getElementById('planRoleSlugClient');
+        var subject = document.getElementById('subject');
+        if (group && display && hidden) {
+          group.style.display = '';
+          display.value = planLabels[planSlug];
+          hidden.value = planSlug;
+        }
+        if (subject && !subject.value) {
+          subject.value = 'Solicitud de acceso — Plan ' + planLabels[planSlug];
+        }
+      })();
+    </script>
   </form>
 </body>
 

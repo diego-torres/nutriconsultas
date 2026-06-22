@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-22 — ~~#314~~ **done** (branch `subscription/314-patient-transfers`; UI verified locally).
+**Last updated:** 2026-06-22 — ~~#244~~ **done** (branch `subscription/244-contact-form-prefill`; UI verified locally).
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 
@@ -88,9 +88,9 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
 | 243 | Production reCAPTCHA keys for minutriporcion.com | https://github.com/diego-torres/nutriconsultas/issues/243 | **done** | — | EC2 `RECAPTCHA_*` + `RecaptchaVerificationService` / `@PublicRecaptchaForm` |
-| 244 | Pre-fill contact form when clicking Solicitar Acceso for a plan | https://github.com/diego-torres/nutriconsultas/issues/244 | **NEXT** | — | Plan slug on `ContactInquiry`; pairs with #184 |
+| 244 | Pre-fill contact form when clicking Solicitar Acceso for a plan | https://github.com/diego-torres/nutriconsultas/issues/244 | **done** | — | Branch `subscription/244-contact-form-prefill`; `plan_role_slug` on `ContactInquiry`; UI verified locally |
 
-**Suggested order:** ~~#243~~ → #244 (or parallel). Public booking (~~#248~~) reuses `@PublicRecaptchaForm` + `RecaptchaVerificationService`.
+**Suggested order:** ~~#243~~ ✓ → ~~#244~~ ✓. Public funnel **complete**. Public booking (~~#248~~) reuses `@PublicRecaptchaForm` + `RecaptchaVerificationService`.
 
 ---
 
@@ -100,7 +100,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 |---|-------|-----|-------|-----------|-------|
 | 220 | Retention cleanup — purge revoked nutritionist data with S3 backup | https://github.com/diego-torres/nutriconsultas/issues/220 | **done** | 210, 183, 46 | PR [#313](https://github.com/diego-torres/nutriconsultas/pull/313); [`RETENTION-MAINTENANCE.md`](docs/subscription/RETENTION-MAINTENANCE.md) |
 
-**Suggested order:** ~~#220~~ ✓ → ~~#314~~ ✓. **NEXT:** #244 contact form pre-fill.
+**Suggested order:** ~~#220~~ ✓ → ~~#314~~ ✓ → ~~#244~~ ✓. **Registered track complete** — triage new `[Subscription]` GitHub issues for next work.
 
 ---
 
@@ -120,7 +120,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | 6. Branded / tiered reports | #187 — PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218) ✓ |
 | 7. PDF export by plan | #187 — PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218) ✓ |
 | 8. Production reCAPTCHA on contact form | ~~#243~~ ✓ |
-| 9. Plan-aware Solicitar acceso CTA | #244 |
+| 9. Plan-aware Solicitar acceso CTA | ~~#244~~ ✓ |
 
 ---
 

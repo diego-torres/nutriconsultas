@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.nutriconsultas.contact.ContactInquiryRepository;
+import com.nutriconsultas.subscription.PlanTier;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -67,6 +68,53 @@ public class WebControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.get("/contact"))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("eterna/contact"));
+	}
+
+	@Test
+	public void testContactPageWithPlanParam() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/contact").param("plan", "nutriologo-profesional"))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.view().name("eterna/contact"))
+			.andExpect(MockMvcResultMatchers.model().attribute("selectedPlan", PlanTier.PROFESIONAL))
+			.andExpect(MockMvcResultMatchers.model().attribute("selectedPlanDisplayName", "Profesional"));
+	}
+
+	@Test
+	public void testIndexWithPlanParam() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/").param("plan", "nutriologo-basico"))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.view().name("eterna/index"))
+			.andExpect(MockMvcResultMatchers.model().attribute("selectedPlan", PlanTier.BASICO));
+	}
+
+	@Test
+	public void testIndexWithInvalidPlanParam() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/").param("plan", "not-a-plan"))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.model().attributeDoesNotExist("selectedPlanDisplayName"));
+	}
+
+	@Test
+	public void testContactFormSuccessWithPlan() throws Exception {
+		final long before = contactInquiryRepository.count();
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/contact")
+				.contentType(Objects.requireNonNull(MediaType.APPLICATION_FORM_URLENCODED))
+				.param("name", "Test User")
+				.param("email", "test@example.com")
+				.param("subject", "Solicitud de acceso — Plan Plus")
+				.param("message", "Test message")
+				.param("planRoleSlug", "nutriologo-plus")
+				.param("recaptcha-response", "test-token"))
+			.andExpect(status().isOk())
+			.andExpect(content().string("OK"));
+		assertThat(contactInquiryRepository.count()).isEqualTo(before + 1);
+		final var saved = contactInquiryRepository.findAll()
+			.stream()
+			.filter(inquiry -> "test@example.com".equals(inquiry.getEmail()))
+			.reduce((first, second) -> second)
+			.orElseThrow();
+		assertThat(saved.getPlanRoleSlug()).isEqualTo("nutriologo-plus");
 	}
 
 	@Test

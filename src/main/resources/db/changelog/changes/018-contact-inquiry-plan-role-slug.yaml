@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: 018-contact-inquiry-plan-role-slug
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: contact_inquiry
+              columnName: plan_role_slug
+      changes:
+        - addColumn:
+            tableName: contact_inquiry
+            columns:
+              - column:
+                  name: plan_role_slug
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: true

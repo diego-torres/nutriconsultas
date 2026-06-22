@@ -30,4 +30,7 @@ public class ContactForm {
 
 	private String recaptchaResponse;
 
+	@Size(max = 64, message = "El plan no puede exceder 64 caracteres")
+	private String planRoleSlug;
+
 }

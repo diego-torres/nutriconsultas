@@ -50,3 +50,6 @@ databaseChangeLog:
   - include:
       file: changes/017-maintenance-run.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/018-contact-inquiry-plan-role-slug.yaml
+      relativeToChangelogFile: true
