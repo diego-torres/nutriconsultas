@@ -21,7 +21,7 @@
 - Export/import consultation history, diet assignments, measurements over time, or messages
 - Patient mobile API endpoints for MPX
 - Merge import into an existing `Paciente` row (always creates new record)
-- Platform admin bulk retention (#220)
+- ~~Platform admin bulk retention (#220)~~ — PR [#313](https://github.com/diego-torres/nutriconsultas/pull/313)
 
 ---
 

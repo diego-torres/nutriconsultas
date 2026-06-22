@@ -117,7 +117,7 @@ Enforcement: central `SubscriptionEntitlementService.hasEntitlement(userId, Enti
 | `ACTIVE` | Full | Paid period current |
 | `GRACE` | Read + messaging; **no** new patients / PDF | Configurable `gracePeriodDays` (default 7) after `periodEnd` |
 | `SUSPENDED` | Login blocked or redirect to billing | After grace without payment |
-| `CANCELLED` | None | Terminal; data retained per retention policy |
+| `CANCELLED` | None | Terminal; clinical data retained until [retention purge](#retention-after-revoke) (#220) |
 
 ### Payment override flag
 
@@ -149,6 +149,17 @@ Scheduled job (daily):
 4. Reminder at T-7, T-3, T-1 days before `periodEnd` for `ACTIVE`.
 
 **PHI rule:** notifications contain subscription status and billing links only — no patient names.
+
+### Retention after revoke (#220)
+
+After platform admin **revoke** (`access.revoke` → `CANCELLED`), clinical tenant data is retained for **90 days** (configurable). Platform admins run manual cleanup from `/admin/platform/maintenance`:
+
+1. Identify eligible revoked nutritionists (audit `created_at` ≤ now − retention days; `tenant_purged_at` null).
+2. Export snapshot to **gzip JSON** on S3 under `maintenance/revoked-nutritionist-backups/{runId}/`.
+3. Purge patients, owned diets/platillos, profile, booking availability, clinic (sole director only).
+4. Record `maintenance_run` row; set `subscription.tenant_purged_at`.
+
+Subscription rows and audit events are **never** deleted. Restore from backup is a future issue. See [`RETENTION-MAINTENANCE.md`](RETENTION-MAINTENANCE.md).
 
 ---
 

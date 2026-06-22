@@ -36,6 +36,10 @@ public class PlatformAdminTemplateValidator extends BaseTemplateValidator {
 		variables.put("subscriptionBanner", null);
 		variables.put("subscriptionStatus", com.nutriconsultas.subscription.SubscriptionStatus.SUSPENDED);
 		variables.put("updateSubscriptionForm", new UpdateSubscriptionForm());
+		variables.put("retentionDays", 90);
+		variables.put("latestRun", null);
+		variables.put("runs", org.springframework.data.domain.Page.empty());
+		variables.put("currentPage", 0);
 		return variables;
 	}
 

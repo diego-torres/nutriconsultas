@@ -199,9 +199,9 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#220 — Retention cleanup](https://github.com/diego-torres/nutriconsultas/issues/220) (or #186 clinic hierarchy) |
+| **Next issue** | [#186 — Clinic hierarchy](https://github.com/diego-torres/nutriconsultas/issues/186) |
 | **In progress** | — |
-| **Just completed** | [#209 — Invitation email](https://github.com/diego-torres/nutriconsultas/issues/209) — PR [#310](https://github.com/diego-torres/nutriconsultas/pull/310) |
+| **Just completed** | [#220 — Retention cleanup](https://github.com/diego-torres/nutriconsultas/issues/220) — PR [#313](https://github.com/diego-torres/nutriconsultas/pull/313) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
@@ -211,6 +211,5 @@ See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
 | Prioridad | Issue | Acción |
 |-----------|-------|--------|
-| 1 | **#220** | Limpieza retención 90 días post-revoke + backup S3 + UI mantenimiento (deps: ~~#210~~ ✓) |
-| 2 | **#186** → **#188** | Modelo consultorio + invitaciones director (habilita `ClinicInvitationService` end-to-end) |
-| 3 | **#244** | Pre-fill formulario contacto desde CTA Solicitar acceso |
+| 1 | **#186** → **#188** | Modelo consultorio + invitaciones director (habilita `ClinicInvitationService` end-to-end) |
+| 2 | **#244** | Pre-fill formulario contacto desde CTA Solicitar acceso |

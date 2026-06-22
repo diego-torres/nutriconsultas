@@ -213,7 +213,7 @@ Inline **cantidad** editing on the catalog platillo form (`/admin/platillos/{id}
 |-------|-------------|
 | #190 Patient limits | Import and manual alta call `assertCanCreatePatient`; delete frees a slot |
 | #109 Mobile linkage | Delete clears `patientAuthSub`; not stored in `.mpx` |
-| #220 Retention purge | Platform admin purge of **revoked** nutritionists — orthogonal to nutritionist-initiated patient delete |
+| ~~#220~~ Retention purge | Platform admin purge of **revoked** nutritionists — ~~#220~~ PR [#313](https://github.com/diego-torres/nutriconsultas/pull/313); orthogonal to nutritionist-initiated patient delete |
 | #132 Patient invitations | Onboarding `Paciente.status` — import creates `ACTIVE` patient unless product specifies otherwise |
 | #183 Platform admin | System diet edit (#232), create (#272); system platillo edit (#257), create (#271) |
 | #187 Branded PDF | Logo profile (#236) and PDF sizing (#237) |
