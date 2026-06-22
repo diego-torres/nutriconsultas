@@ -14,7 +14,6 @@ import org.springframework.util.StringUtils;
 
 import com.nutriconsultas.platform.PlatformAdminAuditService;
 import com.nutriconsultas.subscription.maintenance.MaintenanceBackupSerializer.NutritionistTenantSnapshot;
-import com.nutriconsultas.util.LogRedaction;
 
 import lombok.extern.slf4j.Slf4j;
 
