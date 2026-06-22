@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-22 — ~~#207~~ **done** (PR [#308](https://github.com/diego-torres/nutriconsultas/pull/308)). ~~#208~~ **done** (PR [#309](https://github.com/diego-torres/nutriconsultas/pull/309)). ~~#209~~ **done** (PR [#310](https://github.com/diego-torres/nutriconsultas/pull/310)). Public funnel: ~~#243~~, #244 registered.
+**Last updated:** 2026-06-22 — ~~#207~~ **done** (PR [#308](https://github.com/diego-torres/nutriconsultas/pull/308)). ~~#208~~ **done** (PR [#309](https://github.com/diego-torres/nutriconsultas/pull/309)). ~~#209~~ **done** (PR [#310](https://github.com/diego-torres/nutriconsultas/pull/310)). ~~#220~~ **in-progress** (branch `subscription/220-retention-cleanup`). Public funnel: ~~#243~~, #244 registered.
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 
@@ -97,7 +97,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| 220 | Retention cleanup — purge revoked nutritionist data with S3 backup | https://github.com/diego-torres/nutriconsultas/issues/220 | open | 210, 183, 46 | 90 días post-revoke; UI mantenimiento; backup S3; bitácora |
+| 220 | Retention cleanup — purge revoked nutritionist data with S3 backup | https://github.com/diego-torres/nutriconsultas/issues/220 | **in-progress** | 210, 183, 46 | Branch `subscription/220-retention-cleanup`; [`RETENTION-MAINTENANCE.md`](docs/subscription/RETENTION-MAINTENANCE.md) |
 
 **Suggested order:** #220 after ~~#210~~ ✓ (needs `access.revoke` audit + `CANCELLED` state).
 

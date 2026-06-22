@@ -19,4 +19,6 @@ public interface NutritionistAvailabilityBlockRepository extends JpaRepository<N
 
 	Optional<NutritionistAvailabilityBlock> findByIdAndUserId(Long id, String userId);
 
+	List<NutritionistAvailabilityBlock> findByUserId(String userId);
+
 }

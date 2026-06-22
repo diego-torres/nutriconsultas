@@ -47,3 +47,6 @@ databaseChangeLog:
   - include:
       file: changes/016-nutritionist-public-booking-id.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/017-maintenance-run.yaml
+      relativeToChangelogFile: true

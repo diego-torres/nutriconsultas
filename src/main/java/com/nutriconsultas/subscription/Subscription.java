@@ -59,6 +59,9 @@ public class Subscription {
 	@Column(name = "updated_at", nullable = false)
 	private Instant updatedAt;
 
+	@Column(name = "tenant_purged_at")
+	private Instant tenantPurgedAt;
+
 	@PrePersist
 	void onCreate() {
 		final Instant now = Instant.now();
