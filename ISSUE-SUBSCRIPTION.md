@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-22 — ~~#207~~ **done** (PR [#308](https://github.com/diego-torres/nutriconsultas/pull/308)). ~~#208~~ **done** (PR [#309](https://github.com/diego-torres/nutriconsultas/pull/309)). ~~#209~~ **done** (PR [#310](https://github.com/diego-torres/nutriconsultas/pull/310)). ~~#220~~ **in-progress** (branch `subscription/220-retention-cleanup`). Public funnel: ~~#243~~, #244 registered.
+**Last updated:** 2026-06-22 — ~~#220~~ **done** (PR [#313](https://github.com/diego-torres/nutriconsultas/pull/313)). Public funnel: ~~#243~~, #244 registered.
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 
@@ -66,7 +66,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| 186 | Clinic model + director-consultorio administration | https://github.com/diego-torres/nutriconsultas/issues/186 | open | 180, 181 | Seats, suspend members |
+| 186 | Clinic model + director-consultorio administration | https://github.com/diego-torres/nutriconsultas/issues/186 | **NEXT** | 180, 181 | Seats, suspend members |
 | 188 | Director invitations for nutritionists (no payment) | https://github.com/diego-torres/nutriconsultas/issues/188 | open | 186, 185 | Inherits clinic subscription |
 
 ---
@@ -78,7 +78,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | 190 | Enforce patient and nutritionist limits per plan | https://github.com/diego-torres/nutriconsultas/issues/190 | **done** | 181, ~~185~~ ✓ | Merged PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) |
 | 187 | Gate report tiers and PDF export by plan | https://github.com/diego-torres/nutriconsultas/issues/187 | **done** | 181, ~~185~~ ✓, ~~190~~ ✓ | Merged PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218) |
 
-**Suggested order:** ~~#207~~ ✓; ~~#208~~ ✓; ~~#209~~ ✓; **#220** (retention purge) unblocked after ~~#210~~ ✓.
+**Suggested order:** ~~#207~~ ✓; ~~#208~~ ✓; ~~#209~~ ✓; ~~#220~~ ✓.
 
 ---
 
@@ -97,9 +97,9 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| 220 | Retention cleanup — purge revoked nutritionist data with S3 backup | https://github.com/diego-torres/nutriconsultas/issues/220 | **in-progress** | 210, 183, 46 | Branch `subscription/220-retention-cleanup`; [`RETENTION-MAINTENANCE.md`](docs/subscription/RETENTION-MAINTENANCE.md) |
+| 220 | Retention cleanup — purge revoked nutritionist data with S3 backup | https://github.com/diego-torres/nutriconsultas/issues/220 | **done** | 210, 183, 46 | PR [#313](https://github.com/diego-torres/nutriconsultas/pull/313); [`RETENTION-MAINTENANCE.md`](docs/subscription/RETENTION-MAINTENANCE.md) |
 
-**Suggested order:** #220 after ~~#210~~ ✓ (needs `access.revoke` audit + `CANCELLED` state).
+**Suggested order:** ~~#220~~ ✓. **NEXT:** #186 clinic hierarchy.
 
 ---
 
@@ -111,7 +111,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | 2. Admin assigns nutriologo-* / director-consultorio | #182 |
 | 3. Admin paid invitations, payment, grace, payment override | #184, #189, #185 |
 | 3b. Admin revoke access and change plan tier | ~~#210~~ ✓ PR [#224](https://github.com/diego-torres/nutriconsultas/pull/224), ~~#211~~ ✓ PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230) |
-| 3c. Retention purge + S3 backup after revoke | #220 |
+| 3c. Retention purge + S3 backup after revoke | ~~#220~~ ✓ PR [#313](https://github.com/diego-torres/nutriconsultas/pull/313) |
 | 4. Director invites nutritionists; enable/disable access | #186, #188 |
 | 5. Patient & nutritionist limits | #190 — PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) ✓ |
 | 5b. Patient slot rotation (export/import `.mpx`) | ~~#221~~, ~~#222~~, ~~#223~~ — [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) (PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262)) |
