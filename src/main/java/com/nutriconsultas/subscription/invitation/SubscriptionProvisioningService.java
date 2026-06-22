@@ -112,18 +112,8 @@ public class SubscriptionProvisioningService {
 		final Optional<ClinicMember> existingMember = clinicMemberRepository
 			.findByUserIdWithClinicAndSubscription(userId);
 		if (existingMember.isPresent()) {
-			final ClinicMember member = existingMember.get();
-			if (member.getClinic().getId().equals(clinic.getId())) {
-				if (member.getMembershipStatus() == MembershipStatus.SUSPENDED) {
-					member.setMembershipStatus(MembershipStatus.ACTIVE);
-					clinicMemberRepository.save(member);
-				}
-				syncAuth0RoleIfConfigured(userId, CLINIC_NUTRITIONIST_AUTH0_ROLE);
-				recordClinicInvitationAudit(subscription, userId, invitation.getId());
-				return;
-			}
-			throw new ResponseStatusException(HttpStatus.CONFLICT,
-					"Ya perteneces a otro consultorio. Contacta al administrador.");
+			reactivateOrVerifyExistingClinicMember(existingMember.get(), clinic, userId, invitation, subscription);
+			return;
 		}
 		final ClinicMember member = new ClinicMember();
 		member.setClinic(clinic);
@@ -138,6 +128,20 @@ public class SubscriptionProvisioningService {
 			log.info("Provisioned clinic invitation member: userId={}, clinicId={}, invitationId={}", userId,
 					clinic.getId(), invitation.getId());
 		}
+	}
+
+	private void reactivateOrVerifyExistingClinicMember(final ClinicMember member, final Clinic clinic,
+			final String userId, final ClinicInvitation invitation, final Subscription subscription) {
+		if (!member.getClinic().getId().equals(clinic.getId())) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT,
+					"Ya perteneces a otro consultorio. Contacta al administrador.");
+		}
+		if (member.getMembershipStatus() == MembershipStatus.SUSPENDED) {
+			member.setMembershipStatus(MembershipStatus.ACTIVE);
+			clinicMemberRepository.save(member);
+		}
+		syncAuth0RoleIfConfigured(userId, CLINIC_NUTRITIONIST_AUTH0_ROLE);
+		recordClinicInvitationAudit(subscription, userId, invitation.getId());
 	}
 
 	private Subscription ensureSubscription(final NutritionistInvitation invitation, final SubscriptionStatus status,
