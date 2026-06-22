@@ -80,6 +80,22 @@
         font-style: italic;
         padding: 1rem 0.25rem;
       }
+      .patient-caloric-indicator {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        z-index: 1050;
+        min-width: 18rem;
+        max-width: 22rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+      }
+      @media (max-width: 576px) {
+        .patient-caloric-indicator {
+          left: 1rem;
+          right: 1rem;
+          max-width: none;
+        }
+      }
       .platillo-ingredientes-panel {
         border-top: 1px solid #e3e6f0;
         padding-top: 0.75rem;
@@ -599,7 +615,7 @@
             <div class="d-sm-flex align-items-center justify-content-between mb-4">
               <h1 th:if="${dieta == null || dieta.id == null || dieta.id ==0}" class="h3 mb-0 text-gray-800">Nueva Dieta</h1>
               <h1 th:unless="${dieta == null || dieta.id == null || dieta.id ==0}" class="h3 mb-0 text-gray-800" th:text="${dieta != null ? dieta.nombre : 'Modificar Dieta'}">Modificar Dieta</h1>
-              <div th:if="${dieta != null && dieta.id != null && dieta.id != 0}">
+              <div th:if="${dieta != null && dieta.id != null && dieta.id != 0 && (patientDiet == null || !patientDiet)}">
                 <button 
                    type="button"
                    class="btn btn-sm btn-info shadow-sm" 
@@ -613,9 +629,25 @@
                   <i class="fas fa-file-pdf fa-sm text-white-50"></i> Imprimir PDF
                 </a>
               </div>
+              <div th:if="${dieta != null && dieta.id != null && dieta.id != 0 && patientDiet != null && patientDiet}">
+                <a th:if="${patientDietPlanUrl != null}" th:href="@{${patientDietPlanUrl}}"
+                   class="btn btn-sm btn-secondary shadow-sm mr-2">
+                  <i class="fas fa-arrow-left fa-sm"></i> Plan alimentario
+                </a>
+                <a th:href="@{/admin/pacientes/{pacienteId}/dietas/{dietaId}/print(pacienteId=${paciente.id}, dietaId=${dieta.id})}"
+                   class="btn btn-sm btn-primary shadow-sm"
+                   target="_blank">
+                  <i class="fas fa-file-pdf fa-sm text-white-50"></i> Imprimir PDF
+                </a>
+              </div>
             </div>
             <!-- Ownership indicator -->
-            <div th:if="${dieta != null && dieta.id != null && dieta.id != 0 && isOwner != null && !isOwner}" 
+            <div th:if="${patientDiet != null && patientDiet}" class="alert alert-primary mb-4" role="alert">
+              <i class="fas fa-user"></i>
+              <strong>Dieta del paciente:</strong>
+              Los cambios solo aplican a este plan alimentario asignado.
+            </div>
+            <div th:if="${dieta != null && dieta.id != null && dieta.id != 0 && isOwner != null && !isOwner && (patientDiet == null || !patientDiet)}" 
                  class="alert alert-info mb-4" role="alert">
               <i class="fas fa-info-circle"></i> 
               <strong>Dieta de otro usuario:</strong> Puedes ver y copiar esta dieta, pero no puedes modificarla.
@@ -2182,6 +2214,53 @@
             document.getElementById('macroHidratosKcal').textContent = Math.round(totalHidratosDeCarbono * 4) + ' kcal';
             document.getElementById('macroHidratosPct').textContent = distribucionHidratoCarbono.toFixed(1) + ' %';
             document.getElementById('macroTotalKcal').textContent = Math.round(kCal) + ' kcal';
+            updatePatientCaloricIndicator(kCal);
+          }
+
+          var requerimientoKcal = /*[[${requerimientoKcal}]]*/ null;
+
+          function classifyCaloricFit(dietKcal) {
+            if (requerimientoKcal == null || dietKcal == null || dietKcal <= 0) {
+              return { fit: 'unknown', label: 'Sin comparación', css: 'secondary' };
+            }
+            var tolerance = Math.max(50, requerimientoKcal * 0.05);
+            var diff = dietKcal - requerimientoKcal;
+            if (Math.abs(diff) <= tolerance) {
+              return { fit: 'match', label: 'Adecuada', css: 'success' };
+            }
+            if (diff < 0) {
+              return {
+                fit: 'under',
+                label: 'Por debajo (' + Math.round(Math.abs(diff)).toLocaleString('es-MX') + ' kcal)',
+                css: 'warning'
+              };
+            }
+            return {
+              fit: 'over',
+              label: 'Por encima (+' + Math.round(diff).toLocaleString('es-MX') + ' kcal)',
+              css: 'danger'
+            };
+          }
+
+          function updatePatientCaloricIndicator(dietKcal) {
+            var indicator = document.getElementById('patientCaloricIndicator');
+            if (!indicator || requerimientoKcal == null) {
+              return;
+            }
+            var fitInfo = classifyCaloricFit(dietKcal);
+            var badge = indicator.querySelector('[data-role="fit-badge"]');
+            var dietKcalEl = indicator.querySelector('[data-role="diet-kcal"]');
+            var reqKcalEl = indicator.querySelector('[data-role="req-kcal"]');
+            if (badge) {
+              badge.className = 'badge badge-' + fitInfo.css;
+              badge.textContent = fitInfo.label;
+            }
+            if (dietKcalEl) {
+              dietKcalEl.textContent = Math.round(dietKcal).toLocaleString('es-MX') + ' kcal';
+            }
+            if (reqKcalEl) {
+              reqKcalEl.textContent = Math.round(requerimientoKcal).toLocaleString('es-MX') + ' kcal/día';
+            }
           }
 
           var nutrientFieldDecimals = {
@@ -2359,5 +2438,30 @@
         });
       })(jQuery);
     </script>
+
+    <div th:if="${patientDiet != null && patientDiet && requerimientoKcal != null}"
+         id="patientCaloricIndicator"
+         class="card patient-caloric-indicator border-left-primary">
+      <div class="card-body py-3">
+        <div class="small text-muted mb-1">Requerimiento calórico del paciente</div>
+        <div class="font-weight-bold mb-2" data-role="req-kcal"
+             th:text="${#numbers.formatDecimal(requerimientoKcal, 1, 'COMMA', 0, 'POINT')} + ' kcal/día'">
+          0 kcal/día
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="small text-muted">Dieta actual</div>
+            <div class="font-weight-bold" data-role="diet-kcal"
+                 th:text="${totalEnergia != null ? totalEnergia + ' kcal' : '0 kcal'}">0 kcal</div>
+          </div>
+          <span class="badge"
+                data-role="fit-badge"
+                th:classappend="' badge-' + ${caloricFitCss != null ? caloricFitCss : 'secondary'}"
+                th:text="${caloricFitLabel != null ? caloricFitLabel : 'Sin comparación'}">
+            Sin comparación
+          </span>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

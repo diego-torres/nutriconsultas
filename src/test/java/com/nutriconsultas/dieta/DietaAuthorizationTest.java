@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
+import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.platform.PlatformAdminAuditService;
 import com.nutriconsultas.platform.PlatformAdminService;
 
@@ -22,11 +23,16 @@ class DietaAuthorizationTest {
 
 	private static final String PLATFORM_ADMIN_USER_ID = "auth0|platform-admin-test";
 
+	private static final Long PACIENTE_ID = 42L;
+
 	@Mock
 	private PlatformAdminService platformAdminService;
 
 	@Mock
 	private PlatformAdminAuditService platformAdminAuditService;
+
+	@Mock
+	private PacienteRepository pacienteRepository;
 
 	@Mock
 	private DietaService dietaService;
@@ -39,17 +45,39 @@ class DietaAuthorizationTest {
 
 	private DietaAuthorization dietaAuthorization;
 
+	@org.junit.jupiter.api.BeforeEach
+	void setUp() {
+		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService,
+				pacienteRepository);
+	}
+
 	@Test
 	void canModify_returnsTrueForOwnedDiet() {
-		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
 		final Dieta dieta = ownedDiet(10L, NUTRITIONIST_USER_ID);
 
 		assertThat(dietaAuthorization.canModify(dieta, NUTRITIONIST_USER_ID, nutritionistPrincipal)).isTrue();
 	}
 
 	@Test
+	void canModify_returnsTrueForPatientDietWhenNutritionistOwnsPatient() {
+		final Dieta dieta = patientDiet(20L, PACIENTE_ID, NUTRITIONIST_USER_ID);
+		when(pacienteRepository.findByIdAndUserId(PACIENTE_ID, NUTRITIONIST_USER_ID))
+			.thenReturn(java.util.Optional.of(new com.nutriconsultas.paciente.Paciente()));
+
+		assertThat(dietaAuthorization.canModify(dieta, NUTRITIONIST_USER_ID, nutritionistPrincipal)).isTrue();
+	}
+
+	@Test
+	void canModify_returnsFalseForPatientDietWhenNutritionistDoesNotOwnPatient() {
+		final Dieta dieta = patientDiet(20L, PACIENTE_ID, NUTRITIONIST_USER_ID);
+		when(pacienteRepository.findByIdAndUserId(PACIENTE_ID, "auth0|other-user"))
+			.thenReturn(java.util.Optional.empty());
+
+		assertThat(dietaAuthorization.canModify(dieta, "auth0|other-user", nutritionistPrincipal)).isFalse();
+	}
+
+	@Test
 	void canModify_returnsTrueForPlatformAdminOnSystemTemplate() {
-		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
 		final Dieta dieta = systemDiet(8L);
 		when(platformAdminService.isPlatformAdmin(platformAdminPrincipal)).thenReturn(true);
 
@@ -58,7 +86,6 @@ class DietaAuthorizationTest {
 
 	@Test
 	void canModify_returnsFalseForNutritionistOnSystemTemplate() {
-		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
 		final Dieta dieta = systemDiet(8L);
 		when(platformAdminService.isPlatformAdmin(nutritionistPrincipal)).thenReturn(false);
 
@@ -67,7 +94,6 @@ class DietaAuthorizationTest {
 
 	@Test
 	void canModify_returnsFalseForPlatformAdminOnOtherUserDiet() {
-		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
 		final Dieta dieta = ownedDiet(11L, "auth0|other-user");
 		when(platformAdminService.isPlatformAdmin(platformAdminPrincipal)).thenReturn(true);
 
@@ -76,7 +102,6 @@ class DietaAuthorizationTest {
 
 	@Test
 	void verifyCanModify_throwsForUnauthorizedUser() {
-		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
 		final Dieta dieta = systemDiet(8L);
 		when(platformAdminService.isPlatformAdmin(nutritionistPrincipal)).thenReturn(false);
 
@@ -87,8 +112,8 @@ class DietaAuthorizationTest {
 
 	@Test
 	void resolveForMutation_returnsOwnedDietWithoutAdminCheck() {
-		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
 		final Dieta owned = ownedDiet(5L, NUTRITIONIST_USER_ID);
+		when(dietaService.getDieta(5L)).thenReturn(owned);
 		when(dietaService.getDietaByIdAndUserId(5L, NUTRITIONIST_USER_ID)).thenReturn(owned);
 
 		final Dieta result = dietaAuthorization.resolveForMutation(5L, NUTRITIONIST_USER_ID, nutritionistPrincipal,
@@ -100,8 +125,8 @@ class DietaAuthorizationTest {
 
 	@Test
 	void resolveForMutation_returnsSystemDietForPlatformAdmin() {
-		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
 		final Dieta system = systemDiet(8L);
+		when(dietaService.getDieta(8L)).thenReturn(system);
 		when(dietaService.getDietaByIdAndUserId(8L, PLATFORM_ADMIN_USER_ID)).thenReturn(null);
 		when(platformAdminService.isPlatformAdmin(platformAdminPrincipal)).thenReturn(true);
 		when(dietaService.getDieta(8L)).thenReturn(system);
@@ -114,7 +139,8 @@ class DietaAuthorizationTest {
 
 	@Test
 	void resolveForMutation_returnsNullForNutritionistOnSystemDiet() {
-		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
+		final Dieta system = systemDiet(8L);
+		when(dietaService.getDieta(8L)).thenReturn(system);
 		when(dietaService.getDietaByIdAndUserId(8L, NUTRITIONIST_USER_ID)).thenReturn(null);
 		when(platformAdminService.isPlatformAdmin(nutritionistPrincipal)).thenReturn(false);
 
@@ -126,7 +152,6 @@ class DietaAuthorizationTest {
 
 	@Test
 	void auditSystemDietMutationIfNeeded_recordsPlatformAdminAction() {
-		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
 		final Dieta system = systemDiet(8L);
 		when(platformAdminService.isPlatformAdmin(platformAdminPrincipal)).thenReturn(true);
 		when(platformAdminService.resolveActorUserId(platformAdminPrincipal)).thenReturn(PLATFORM_ADMIN_USER_ID);
@@ -138,7 +163,6 @@ class DietaAuthorizationTest {
 
 	@Test
 	void auditSystemDietMutationIfNeeded_skipsNonSystemDiet() {
-		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
 		final Dieta owned = ownedDiet(5L, NUTRITIONIST_USER_ID);
 
 		dietaAuthorization.auditSystemDietMutationIfNeeded(platformAdminPrincipal, owned, "dietas.save");
@@ -149,7 +173,6 @@ class DietaAuthorizationTest {
 
 	@Test
 	void resolveCreateUserId_returnsSystemTemplateUserIdForPlatformAdmin() {
-		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
 		when(platformAdminService.isPlatformAdmin(platformAdminPrincipal)).thenReturn(true);
 
 		assertThat(dietaAuthorization.resolveCreateUserId(platformAdminPrincipal, PLATFORM_ADMIN_USER_ID))
@@ -158,7 +181,6 @@ class DietaAuthorizationTest {
 
 	@Test
 	void resolveCreateUserId_returnsOAuthUserIdForNutritionist() {
-		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
 		when(platformAdminService.isPlatformAdmin(nutritionistPrincipal)).thenReturn(false);
 
 		assertThat(dietaAuthorization.resolveCreateUserId(nutritionistPrincipal, NUTRITIONIST_USER_ID))
@@ -178,6 +200,15 @@ class DietaAuthorizationTest {
 		dieta.setId(id);
 		dieta.setNombre("Plantilla: Menú vegetal 02");
 		dieta.setUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+		return dieta;
+	}
+
+	private static Dieta patientDiet(final Long id, final Long pacienteId, final String userId) {
+		final Dieta dieta = new Dieta();
+		dieta.setId(id);
+		dieta.setNombre("Dieta paciente");
+		dieta.setUserId(userId);
+		dieta.setPacienteId(pacienteId);
 		return dieta;
 	}
 

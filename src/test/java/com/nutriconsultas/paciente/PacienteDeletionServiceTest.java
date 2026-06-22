@@ -22,6 +22,8 @@ import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurementService;
 import com.nutriconsultas.clinical.exam.ClinicalExam;
 import com.nutriconsultas.clinical.exam.ClinicalExamService;
+import com.nutriconsultas.dieta.Dieta;
+import com.nutriconsultas.dieta.DietaService;
 import com.nutriconsultas.message.PatientMessageRepository;
 import com.nutriconsultas.paciente.metrics.BodyMetricRecordRepository;
 
@@ -59,6 +61,9 @@ class PacienteDeletionServiceTest {
 	@Mock
 	private BodyMetricRecordRepository bodyMetricRecordRepository;
 
+	@Mock
+	private DietaService dietaService;
+
 	private Paciente paciente;
 
 	@BeforeEach
@@ -80,6 +85,10 @@ class PacienteDeletionServiceTest {
 		measurement.setId(30L);
 		final PacienteDieta assignment = new PacienteDieta();
 		assignment.setId(40L);
+		final Dieta patientDieta = new Dieta();
+		patientDieta.setId(60L);
+		patientDieta.setPacienteId(7L);
+		assignment.setDieta(patientDieta);
 		final PatientInvitation invitation = new PatientInvitation();
 		invitation.setId(50L);
 
@@ -94,6 +103,7 @@ class PacienteDeletionServiceTest {
 
 		verify(patientMessageRepository).deleteByPacienteId(7L);
 		verify(patientInvitationRepository).deleteAll(List.of(invitation));
+		verify(dietaService).deleteDieta(60L);
 		verify(pacienteDietaRepository).deleteAll(List.of(assignment));
 		verify(calendarEventService).delete(10L);
 		verify(clinicalExamService).deleteById(20L);

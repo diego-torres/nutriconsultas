@@ -417,12 +417,12 @@ public class DietaServiceTest {
 		systemDieta.setId(8L);
 		systemDieta.setUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
 		final List<Dieta> allDietas = Arrays.asList(originalDieta, systemDieta);
-		when(dietaRepository.findAll()).thenReturn(allDietas);
+		when(dietaRepository.findAllCatalogDiets()).thenReturn(allDietas);
 
 		final List<Dieta> result = dietaService.getDietasForCatalogFilter(DietaCatalogFilter.TODAS, TEST_USER_ID);
 
 		assertThat(result).hasSize(2);
-		verify(dietaRepository).findAll();
+		verify(dietaRepository).findAllCatalogDiets();
 	}
 
 	@Test
@@ -441,12 +441,12 @@ public class DietaServiceTest {
 
 	@Test
 	public void testGetDietasForCatalogFilterPropiasReturnsOwnedDietas() {
-		when(dietaRepository.findByUserId(TEST_USER_ID)).thenReturn(List.of(originalDieta));
+		when(dietaRepository.findByUserIdAndPacienteIdIsNull(TEST_USER_ID)).thenReturn(List.of(originalDieta));
 
 		final List<Dieta> result = dietaService.getDietasForCatalogFilter(DietaCatalogFilter.PROPIAS, TEST_USER_ID);
 
 		assertThat(result).containsExactly(originalDieta);
-		verify(dietaRepository).findByUserId(TEST_USER_ID);
+		verify(dietaRepository).findByUserIdAndPacienteIdIsNull(TEST_USER_ID);
 	}
 
 	@Test

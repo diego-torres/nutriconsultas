@@ -356,7 +356,7 @@ public class DietaControllerTest {
 		when(platilloService.findAll()).thenReturn(platillos);
 
 		// Perform GET request
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/1"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/1").with(oidcLogin(TEST_USER_ID)))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/dietas/formulario"))
 			.andExpect(MockMvcResultMatchers.model().attribute("activeMenu", "dietas"))
@@ -383,7 +383,7 @@ public class DietaControllerTest {
 
 		when(platilloService.findAll()).thenReturn(List.of(platillo));
 
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/1"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/1").with(oidcLogin(TEST_USER_ID)))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.model().attribute("hasDistribucion", true))
 			.andExpect(MockMvcResultMatchers.model().attribute("totalProteina", 30.0))
@@ -409,7 +409,7 @@ public class DietaControllerTest {
 
 		when(platilloService.findAll()).thenReturn(List.of(platillo));
 
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/1"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/1").with(oidcLogin(TEST_USER_ID)))
 			.andExpect(status().isOk())
 			.andExpect(content().string(containsString("/admin/platillos/97")))
 			.andExpect(content().string(not(containsString("/admin/platillos/32"))));
@@ -564,7 +564,7 @@ public class DietaControllerTest {
 		when(alimentoService.findAll()).thenReturn(alimentos);
 
 		// Perform GET request
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/1"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/1").with(oidcLogin(TEST_USER_ID)))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.view().name("sbadmin/dietas/formulario"))
 			.andExpect(MockMvcResultMatchers.model().attribute("activeMenu", "dietas"))

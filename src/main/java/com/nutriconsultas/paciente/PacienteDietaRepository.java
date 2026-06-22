@@ -48,4 +48,7 @@ public interface PacienteDietaRepository extends JpaRepository<PacienteDieta, Lo
 	List<PacienteDieta> findByUserIdAndDateRange(@Param("userId") String userId, @Param("startDate") Date startDate,
 			@Param("endDate") Date endDate);
 
+	@Query("SELECT pd FROM PacienteDieta pd JOIN pd.dieta d WHERE d.pacienteId IS NULL")
+	List<PacienteDieta> findAssignmentsReferencingSharedDieta();
+
 }

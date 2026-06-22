@@ -13,6 +13,9 @@ import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurementService;
 import com.nutriconsultas.clinical.exam.ClinicalExam;
 import com.nutriconsultas.clinical.exam.ClinicalExamService;
+import com.nutriconsultas.dieta.Dieta;
+import com.nutriconsultas.dieta.DietaCatalogConstants;
+import com.nutriconsultas.dieta.DietaService;
 import com.nutriconsultas.message.PatientMessageRepository;
 import com.nutriconsultas.paciente.metrics.BodyMetricRecordRepository;
 import com.nutriconsultas.util.LogRedaction;
@@ -39,13 +42,15 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 
 	private final BodyMetricRecordRepository bodyMetricRecordRepository;
 
+	private final DietaService dietaService;
+
 	public PacienteDeletionServiceImpl(final PacienteRepository pacienteRepository,
 			final PatientMessageRepository patientMessageRepository,
 			final PatientInvitationRepository patientInvitationRepository,
 			final PacienteDietaRepository pacienteDietaRepository, final CalendarEventService calendarEventService,
 			final ClinicalExamService clinicalExamService,
 			final AnthropometricMeasurementService anthropometricMeasurementService,
-			final BodyMetricRecordRepository bodyMetricRecordRepository) {
+			final BodyMetricRecordRepository bodyMetricRecordRepository, final DietaService dietaService) {
 		this.pacienteRepository = pacienteRepository;
 		this.patientMessageRepository = patientMessageRepository;
 		this.patientInvitationRepository = patientInvitationRepository;
@@ -54,6 +59,7 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 		this.clinicalExamService = clinicalExamService;
 		this.anthropometricMeasurementService = anthropometricMeasurementService;
 		this.bodyMetricRecordRepository = bodyMetricRecordRepository;
+		this.dietaService = dietaService;
 	}
 
 	@Override
@@ -84,6 +90,12 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 			patientInvitationRepository.deleteAll(invitations);
 		}
 		final List<PacienteDieta> dietAssignments = pacienteDietaRepository.findByPacienteId(pacienteId);
+		for (final PacienteDieta assignment : dietAssignments) {
+			final Dieta dieta = assignment.getDieta();
+			if (dieta != null && dieta.getId() != null && DietaCatalogConstants.isPatientAssignment(dieta)) {
+				dietaService.deleteDieta(dieta.getId());
+			}
+		}
 		if (!dietAssignments.isEmpty()) {
 			pacienteDietaRepository.deleteAll(dietAssignments);
 		}

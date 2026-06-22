@@ -12,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Sort;
 
 @ExtendWith(MockitoExtension.class)
 class DietaServiceImplPickerTest {
@@ -32,7 +31,7 @@ class DietaServiceImplPickerTest {
 			dieta.setNombre("Dieta " + i);
 			dietas.add(dieta);
 		});
-		when(dietaRepository.findAll(Sort.by("nombre"))).thenReturn(dietas);
+		when(dietaRepository.findAllCatalogDiets()).thenReturn(dietas);
 
 		final DietaPickerPageDto page = dietaService.findPickerPage(null, 0, 20, null);
 
@@ -49,7 +48,7 @@ class DietaServiceImplPickerTest {
 		final Dieta other = new Dieta();
 		other.setId(2L);
 		other.setNombre("Otra dieta");
-		when(dietaRepository.findAll(Sort.by("nombre"))).thenReturn(List.of(match, other));
+		when(dietaRepository.findAllCatalogDiets()).thenReturn(List.of(match, other));
 
 		final DietaPickerPageDto page = dietaService.findPickerPage("2000", 0, 20, null);
 
