@@ -199,9 +199,9 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#207 — Stripe payment provider](https://github.com/diego-torres/nutriconsultas/issues/207) **in-progress** (`issue-207-stripe-payment-provider`) |
+| **Next issue** | [#208 — Stripe ops](https://github.com/diego-torres/nutriconsultas/issues/208) (prod webhooks + credenciales) |
 | **In progress** | — |
-| **Just completed** | [#211 — change plan tier](https://github.com/diego-torres/nutriconsultas/issues/211) — PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230) |
+| **Just completed** | [#207 — Stripe payment provider](https://github.com/diego-torres/nutriconsultas/issues/207) — branch `issue-207-stripe-payment-provider` |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
@@ -209,7 +209,7 @@ See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
 | Prioridad | Issue | Acción |
 |-----------|-------|--------|
-| 1 | **#207** / **#208** | Migrar checkout Mercado Pago → Stripe; credenciales y webhooks operativos |
+| 1 | **#208** | Webhooks Stripe en producción; credenciales test/live en EC2/terraform |
 | 2 | **#186** → **#188** | Modelo consultorio + invitaciones director (habilita `ClinicInvitationService` end-to-end) |
 | 3 | **#220** | Limpieza retención 90 días post-revoke + backup S3 + UI mantenimiento (deps: #210) |
 | 4 | **#209** | Entrega de email de invitación (SES prod / console local) |

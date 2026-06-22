@@ -128,7 +128,7 @@ Set `AUTH_*` (including `AUTH_AUDIENCE` for `/rest/mobile/**` JWT validation), `
 |----------|---------|
 | `STRIPE_SECRET_KEY` | Stripe secret API key (checkout + subscription API). Never commit. |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret (`Stripe-Signature` HMAC). |
-| `PAYMENT_PROVIDER` | Provider id (target default `stripe`; `mercadopago` legacy until #207 merges). |
+| `PAYMENT_PROVIDER` | Provider id (default `stripe`; `mercadopago` legacy). |
 | `STRIPE_SUCCESS_URL` | Post-checkout redirect (default `https://minutriporcion.com/admin`). |
 | `STRIPE_CANCEL_URL` | Checkout cancel redirect (default `https://minutriporcion.com/admin`). |
 | `STRIPE_PRICE_BASICO` / `_PROFESIONAL` / `_PLUS` / `_CONSULTORIO` | Optional Stripe Price IDs per plan; omit to use inline `price_data` at checkout (#207). |

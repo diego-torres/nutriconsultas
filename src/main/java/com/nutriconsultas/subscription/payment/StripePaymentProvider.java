@@ -1,11 +1,9 @@
 package com.nutriconsultas.subscription.payment;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import com.nutriconsultas.subscription.InvitationStatus;
 import com.nutriconsultas.subscription.NutritionistInvitation;
 import com.nutriconsultas.subscription.NutritionistInvitationRepository;
 import com.nutriconsultas.subscription.PlanTier;
@@ -27,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Component
 @ConditionalOnProperty(prefix = "nutriconsultas.subscription.payment", name = "provider", havingValue = "stripe")
-@ConditionalOnExpression("'${nutriconsultas.subscription.payment.stripe-secret-key:}'.length() > 0")
 @Slf4j
 public class StripePaymentProvider implements PaymentProvider {
 
@@ -46,6 +43,9 @@ public class StripePaymentProvider implements PaymentProvider {
 		this.stripeClient = new StripeClient(paymentProperties.getStripeSecretKey());
 		this.invitationRepository = invitationRepository;
 		this.subscriptionRepository = subscriptionRepository;
+		if (log.isInfoEnabled()) {
+			log.info("Stripe payment provider active (checkout + webhooks)");
+		}
 	}
 
 	@Override
@@ -67,9 +67,7 @@ public class StripePaymentProvider implements PaymentProvider {
 		}
 		final NutritionistInvitation invitation = invitationRepository.findById(invitationId)
 			.orElseThrow(() -> new PaymentProviderException("Invitation not found: " + invitationId));
-		if (invitation.getStatus() != InvitationStatus.PENDING) {
-			throw new PaymentProviderException("Invitation is not pending checkout");
-		}
+		PaymentCheckoutInvitationGuard.verifyEligibleForCheckout(invitation);
 		final Subscription subscription = resolveSubscription(invitation, planTier);
 		try {
 			final SessionCreateParams params = buildSessionParams(invitation, invitationId, subscription.getId(),

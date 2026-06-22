@@ -586,11 +586,11 @@ Issue registry: [`ISSUE.md`](ISSUE.md). Agent workflow: [`AGENT-WORKFLOW.md`](AG
 
 Issue registry: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Agent workflow: [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md). Design: [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md).
 
-**Epic #180–#211** (2026-06-19): ~~#46~~ Liquibase done; ~~#180–#185~~, ~~#190~~, ~~#187~~, ~~#210~~, ~~#211~~ on `main`. Public funnel: ~~#243~~ reCAPTCHA **done**. **NEXT:** #207 **in-progress** (`issue-207-stripe-payment-provider`, Stripe Checkout + webhooks); then #208 Stripe ops. See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md).
+**Epic #180–#211** (2026-06-19): ~~#46~~ Liquibase done; ~~#180–#185~~, ~~#190~~, ~~#187~~, ~~#210~~, ~~#211~~ on `main`. Public funnel: ~~#243~~ reCAPTCHA **done**. ~~#207~~ **done** (`issue-207-stripe-payment-provider`, Stripe Checkout + webhooks). **NEXT:** #208 Stripe ops. See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md).
 
 **Done on `main` (2026-06-14):** #107/#109/#110 (JWT + linkage + DTO envelope); endpoints #91–#98; messages #96/#97 with rate limit (#113); localized errors (#111, PR #151); dashboard IMC gauge (#106).
 
-**Next:** [#134](https://github.com/diego-torres/nutriconsultas/issues/134) create patient invitation (~~#133~~ PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229) on `main`). ~~#114~~, ~~#116~~, ~~#115~~, ~~#112~~ **done**. Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) — ~~#211~~ done (PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230)); **NEXT** #207.
+**Next:** [#134](https://github.com/diego-torres/nutriconsultas/issues/134) create patient invitation (~~#133~~ PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229) on `main`). ~~#114~~, ~~#116~~, ~~#115~~, ~~#112~~ **done**. Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) — ~~#207~~ done (`issue-207-stripe-payment-provider`); **NEXT** #208.
 
 **Schema gate (post-#46):** [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46) baseline is on `main` (PR #196). All new schema/catalog changes require **incremental Liquibase changesets** — see [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) and [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md). ~~#156~~ Phase C done before baseline.
 

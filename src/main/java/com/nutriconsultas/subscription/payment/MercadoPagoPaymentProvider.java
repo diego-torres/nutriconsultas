@@ -75,9 +75,7 @@ public class MercadoPagoPaymentProvider implements PaymentProvider {
 		}
 		final NutritionistInvitation invitation = invitationRepository.findById(invitationId)
 			.orElseThrow(() -> new PaymentProviderException("Invitation not found: " + invitationId));
-		if (invitation.getStatus() != InvitationStatus.PENDING) {
-			throw new PaymentProviderException("Invitation is not pending checkout");
-		}
+		PaymentCheckoutInvitationGuard.verifyEligibleForCheckout(invitation);
 		final Subscription subscription = resolveSubscription(invitation, planTier);
 		final Map<String, Object> body = buildPreapprovalBody(invitation, planTier, subscription.getId());
 		final JsonNode response = postPreapproval(body);

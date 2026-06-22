@@ -258,6 +258,9 @@ resource "aws_instance" "app" {
         auth0_mgmt_client_id_b64     = base64encode(var.auth0_mgmt_client_id)
         auth0_mgmt_client_secret_b64 = base64encode(var.auth0_mgmt_client_secret)
         auth0_mgmt_domain_b64        = base64encode(var.auth0_mgmt_domain != "" ? var.auth0_mgmt_domain : var.auth_issuer)
+        payment_provider_b64         = base64encode(var.payment_provider)
+        stripe_secret_key_b64        = base64encode(var.stripe_secret_key)
+        stripe_webhook_secret_b64    = base64encode(var.stripe_webhook_secret)
         nginx_config = templatefile("${path.module}/templates/nutriconsultas-nginx.conf.tpl", {
           nginx_server_names = local.app_nginx_server_names
         })

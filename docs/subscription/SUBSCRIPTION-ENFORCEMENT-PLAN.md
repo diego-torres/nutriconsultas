@@ -130,7 +130,7 @@ Enforcement: central `SubscriptionEntitlementService.hasEntitlement(userId, Enti
 - **Who:** platform admins only, from `/admin/platform/subscriptions/{id}/edit`.
 - **States:** `TRIAL`, `ACTIVE`, `GRACE` only (not `PENDING_PAYMENT`, `SUSPENDED`, `CANCELLED`).
 - **Downgrade policy:** **block** when clinic usage exceeds the new plan caps (patient count or active nutritionist seats). Spanish `409` message; no read-only grace on downgrade.
-- **Paid subscriptions (MVP):** admin override only — no proration or new checkout (#207 deferred).
+- **Paid subscriptions (MVP):** admin override only — no proration or new checkout (Stripe checkout implemented in ~~#207~~).
 - **Auth0:** sync role via Management API (#182); non-fatal failure surfaces admin warning; DB `Subscription.planTier` remains authoritative.
 - **Audit:** `PLATFORM_ADMIN_ACTION` with `action=plan.tier.change`, `previousTier`, `newTier`.
 
@@ -198,7 +198,7 @@ Director can `suspend` / `reactivate` members without Auth0 deletion (revoke gro
 
 ## Payment provider integration
 
-**Decision:** **Stripe** for subscription checkout and recurring monthly billing. Abstract behind `PaymentProvider` interface (existing from #189; Mercado Pago implementation to be replaced in #207):
+**Decision:** **Stripe** for subscription checkout and recurring monthly billing. Abstract behind `PaymentProvider` interface (existing from #189; Mercado Pago superseded by ~~#207~~):
 
 - `createCheckoutSession(invitationId, planTier, billingInterval)`
 - `handleWebhook(payload, signature)`
@@ -300,7 +300,7 @@ nutriconsultas.subscription.payment.webhook-secret=${STRIPE_WEBHOOK_SECRET:}
 
 | # | Question | Default proposal |
 |---|----------|------------------|
-| 1 | Payment provider | **Stripe** (Checkout + Billing subscriptions) — #207 |
+| 1 | Payment provider | **Stripe** (Checkout + Billing subscriptions) — ~~#207~~ ✓ |
 | 2 | Consultorio patient limit | Clinic-wide unlimited (per landing page) |
 | 3 | Grace write policy | Block new patients + PDF; allow messages |
 | 4 | Auth0 groups vs Roles | Auth0 Roles with RBAC enabled |

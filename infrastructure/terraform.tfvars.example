@@ -39,6 +39,11 @@ ebs_root_volume_size_gb = 30
 # Platform admins (OAuth login emails; contact inquiries inbox). Gitignored tfvars only:
 # platform_admin_emails = ["you@example.com", "colleague@example.com"]
 #
+# Stripe payment (#207). Prefer TF_VAR_stripe_secret_key / TF_VAR_stripe_webhook_secret in CI:
+# payment_provider      = "stripe"
+# stripe_secret_key     = "sk_test_..."
+# stripe_webhook_secret = "whsec_..."   # optional until Stripe Dashboard webhook (#208)
+#
 # Security: EC2 user_data is readable via DescribeInstances; Terraform state also holds
 # these values. For production, consider SSM SecureString / Secrets Manager instead.
 

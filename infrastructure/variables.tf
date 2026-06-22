@@ -160,6 +160,27 @@ variable "platform_admin_emails" {
   sensitive   = true
 }
 
+variable "payment_provider" {
+  type        = string
+  description = "Subscription payment provider id (PAYMENT_PROVIDER). Default stripe (#207)."
+  default     = "stripe"
+  sensitive   = false
+}
+
+variable "stripe_secret_key" {
+  type        = string
+  description = "Stripe secret API key (STRIPE_SECRET_KEY). Never commit."
+  default     = ""
+  sensitive   = true
+}
+
+variable "stripe_webhook_secret" {
+  type        = string
+  description = "Stripe webhook signing secret (STRIPE_WEBHOOK_SECRET). Optional until Dashboard webhook is configured (#208)."
+  default     = ""
+  sensitive   = true
+}
+
 # -----------------------------------------------------------------------------
 # HTTPS (Let's Encrypt Certbot on the app EC2; DNS must point apex/aliases to the app EIP first)
 # -----------------------------------------------------------------------------
