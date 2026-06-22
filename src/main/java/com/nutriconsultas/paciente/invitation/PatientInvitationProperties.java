@@ -19,6 +19,12 @@ public class PatientInvitationProperties {
 	 */
 	private String jwsSecret = "";
 
+	/**
+	 * Base URL for patient invite deep links ({@code {baseUrl}/i/{token}}). Production
+	 * typically uses the links subdomain (e.g. {@code https://links.minutriporcion.com}).
+	 */
+	private String baseUrl = "http://localhost:3000";
+
 	public int getExpiryDays() {
 		return expiryDays;
 	}
@@ -45,6 +51,19 @@ public class PatientInvitationProperties {
 
 	public boolean isJwsEnabled() {
 		return StringUtils.hasText(jwsSecret);
+	}
+
+	public String getBaseUrl() {
+		return baseUrl;
+	}
+
+	public void setBaseUrl(final String baseUrl) {
+		this.baseUrl = baseUrl;
+	}
+
+	public String buildInviteUrl(final String rawUrlToken) {
+		final String normalizedBase = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+		return normalizedBase + "/i/" + rawUrlToken;
 	}
 
 }

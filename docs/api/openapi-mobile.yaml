@@ -15,6 +15,8 @@ security:
 tags:
 - name: Mobile
   description: Patient mobile API
+- name: Mobile Invitations
+  description: Nutritionist-initiated patient onboarding
 paths:
   /rest/mobile/patient/messages:
     get:
@@ -100,6 +102,39 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponsePatientMessageSummaryDto"
+  /rest/mobile/invitations:
+    post:
+      tags:
+      - Mobile Invitations
+      summary: Create patient invitation
+      description: Nutritionist JWT creates Paciente (INVITED) + pending invitation;
+        returns deep link and human code.
+      operationId: createInvitation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePatientInvitationRequest"
+        required: true
+      responses:
+        "201":
+          description: Patient and invitation created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseCreatedPatientInvitationDto"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseCreatedPatientInvitationDto"
+        "403":
+          description: Subscription limit or entitlement denied
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseCreatedPatientInvitationDto"
   /rest/mobile/patient/visits:
     get:
       tags:
@@ -460,8 +495,95 @@ components:
           type: boolean
         senderDisplayName:
           type: string
-          description: Nutritionist display name when senderRole is NUTRITIONIST; omitted otherwise
-          nullable: true
+    CreatePatientInvitationRequest:
+      type: object
+      description: Create patient + invitation
+      properties:
+        name:
+          type: string
+          description: Patient legal/clinical name
+          example: María López
+          maxLength: 100
+          minLength: 0
+        email:
+          type: string
+          description: Delivery email for the invite
+          example: maria@example.com
+          maxLength: 100
+          minLength: 0
+        dob:
+          type: string
+          format: date
+          description: Date of birth (ISO-8601 date)
+          example: 1990-05-15
+        gender:
+          type: string
+          description: Gender (M/F)
+          example: F
+          pattern: "(?i)^[MF]$"
+        phone:
+          type: string
+          description: Optional phone
+          example: "+525512345678"
+          maxLength: 25
+          minLength: 0
+        assignedId:
+          type: string
+          description: Optional clinic-facing identifier; auto-generated when omitted
+          example: P-CLINIC-001
+          maxLength: 50
+          minLength: 0
+        displayName:
+          type: string
+          description: Optional display name for onboarding UI
+          example: María
+          maxLength: 100
+          minLength: 0
+      required:
+      - dob
+      - email
+      - gender
+      - name
+    ApiResponseCreatedPatientInvitationDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/CreatedPatientInvitationDto"
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    CreatedPatientInvitationDto:
+      type: object
+      description: Created patient invitation
+      properties:
+        invitationId:
+          type: integer
+          format: int64
+          description: Invitation row id
+          example: 42
+        pacienteId:
+          type: integer
+          format: int64
+          description: Created Paciente id
+          example: 1001
+        inviteUrl:
+          type: string
+          description: Deep link for the patient app
+          example: https://links.example.com/i/abc...
+        humanCode:
+          type: string
+          description: Human-readable onboarding code
+          example: NUTRI-ABCD-EFGH
+        expiresAt:
+          type: string
+          format: date-time
+          description: Invitation expiry (ISO-8601 instant)
+        offlineJws:
+          type: string
+          description: Optional offline JWS when PATIENT_INVITATION_JWS_SECRET is
+            configured
     ApiResponsePagedResponseVisitSummaryDto:
       type: object
       properties:
@@ -637,6 +759,10 @@ components:
           format: double
         circumferences:
           $ref: "#/components/schemas/ProgressCircumferenceDto"
+        avatarId:
+          type: string
+        avatarUrl:
+          type: string
     ProgressCircumferenceDto:
       type: object
       properties:
