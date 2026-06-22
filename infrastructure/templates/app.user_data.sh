@@ -64,8 +64,19 @@ install -d -o root -g nutri -m 750 /opt/nutriconsultas
   echo -n "AUTH0_MGMT_DOMAIN="
   printf '%s' '${auth0_mgmt_domain_b64}' | base64 -d
   echo
+  echo -n "PAYMENT_PROVIDER="
+  printf '%s' '${payment_provider_b64}' | base64 -d
+  echo
+  echo -n "STRIPE_SECRET_KEY="
+  printf '%s' '${stripe_secret_key_b64}' | base64 -d
+  echo
+  echo -n "STRIPE_WEBHOOK_SECRET="
+  printf '%s' '${stripe_webhook_secret_b64}' | base64 -d
+  echo
 %{ if app_base_url != "" ~}
   echo "APP_BASE_URL=${app_base_url}"
+  echo "STRIPE_SUCCESS_URL=${app_base_url}/admin"
+  echo "STRIPE_CANCEL_URL=${app_base_url}/admin"
 %{ endif ~}
 } > /opt/nutriconsultas/app.env
 chown root:nutri /opt/nutriconsultas/app.env

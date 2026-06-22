@@ -6,6 +6,7 @@ import java.util.HexFormat;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -13,6 +14,7 @@ import org.springframework.util.StringUtils;
  * Mercado Pago webhook signature verification (x-signature manifest + HMAC-SHA256).
  */
 @Component
+@ConditionalOnProperty(prefix = "nutriconsultas.subscription.payment", name = "provider", havingValue = "mercadopago")
 public final class MercadoPagoWebhookSignatureVerifier {
 
 	private final PaymentProperties paymentProperties;

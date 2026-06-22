@@ -5,7 +5,7 @@ Living index of GitHub issues that implement **subscription enforcement**, platf
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Workflow:** [`SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md`](SUBSCRIPTION-ENFORCEMENT-WORKFLOW.md)  
 **Design doc:** [`docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md`](docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md)  
-**Last updated:** 2026-06-21 — ~~#243~~ **done** (production reCAPTCHA keys on EC2 + shared `RecaptchaVerificationService`); **NEXT:** #207 (Stripe provider). Public funnel: ~~#243~~, #244 registered. Patient MPX ~~#221–#223~~ done ([`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md), PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262)). Production **#226** fixed (PR [#227](https://github.com/diego-torres/nutriconsultas/pull/227), invitation base URL).
+**Last updated:** 2026-06-22 — ~~#207~~ **done** (`issue-207-stripe-payment-provider`, Stripe Checkout + webhooks; E2E test OK). **NEXT:** #208 (Stripe ops). Public funnel: ~~#243~~, #244 registered. Patient MPX ~~#221–#223~~ done ([`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md), PR [#262](https://github.com/diego-torres/nutriconsultas/pull/262)). Production **#226** fixed (PR [#227](https://github.com/diego-torres/nutriconsultas/pull/227), invitation base URL).
 
 > **Scope.** This registry tracks `[Subscription]` issues only. The patient mobile API lives in [`ISSUE.md`](ISSUE.md). Patient invitation onboarding (#132–#141) is orthogonal — do not merge nutritionist and patient invitation entities.
 
@@ -51,8 +51,8 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
 | 189 | Payment provider integration (Mercado Pago / abstraction) | https://github.com/diego-torres/nutriconsultas/issues/189 | **done** | 180 | MP impl merged; **superseded by Stripe #207** |
-| **207** | Payment provider integration (Stripe / abstraction) | https://github.com/diego-torres/nutriconsultas/issues/207 | **NEXT** | 180, 189 | Migrate MP → Stripe |
-| 208 | Tramitar integración operativa con Stripe | https://github.com/diego-torres/nutriconsultas/issues/208 | open | 207 | Cuenta, credenciales, webhooks, test/live |
+| ~~**207**~~ | ~~Payment provider integration (Stripe / abstraction)~~ | https://github.com/diego-torres/nutriconsultas/issues/207 | **done** | 180, 189 | Branch `issue-207-stripe-payment-provider`; Stripe Checkout + webhooks; E2E verified |
+| **208** | Tramitar integración operativa con Stripe | https://github.com/diego-torres/nutriconsultas/issues/208 | **NEXT** | 207 | Cuenta, credenciales, webhooks prod, test/live |
 | ~~204~~ | ~~Tramitar integración operativa con Mercado Pago~~ | https://github.com/diego-torres/nutriconsultas/issues/204 | **deferred** | — | Cerrado; reemplazado por #208 |
 | 184 | Admin invitations + payment checkout | https://github.com/diego-torres/nutriconsultas/issues/184 | **done** | 180, 182, 183 | Merged [PR #206](https://github.com/diego-torres/nutriconsultas/pull/206); GitHub closed 2026-06-17. Live checkout → Stripe (#207/#208); email delivery → #209 |
 | 209 | Invitation email — SES (Terraform) + localhost console sender | https://github.com/diego-torres/nutriconsultas/issues/209 | open | 184 | SES prod; `email.mode=console` for local dev |
@@ -78,7 +78,7 @@ Subscription Liquibase changesets land **after** #46 baseline. Issue #183 (platf
 | 190 | Enforce patient and nutritionist limits per plan | https://github.com/diego-torres/nutriconsultas/issues/190 | **done** | 181, ~~185~~ ✓ | Merged PR [#216](https://github.com/diego-torres/nutriconsultas/pull/216) |
 | 187 | Gate report tiers and PDF export by plan | https://github.com/diego-torres/nutriconsultas/issues/187 | **done** | 181, ~~185~~ ✓, ~~190~~ ✓ | Merged PR [#218](https://github.com/diego-torres/nutriconsultas/pull/218) |
 
-**Suggested order:** ~~#211~~ ✓; **#207** / **#208** (Stripe) in parallel; #220 unblocked after ~~#210~~ ✓.
+**Suggested order:** ~~#207~~ ✓; **#208** (Stripe ops prod); #220 unblocked after ~~#210~~ ✓.
 
 ---
 

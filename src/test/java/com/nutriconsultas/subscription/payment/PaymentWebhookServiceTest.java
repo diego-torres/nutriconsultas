@@ -123,8 +123,27 @@ class PaymentWebhookServiceTest {
 		verify(webhookEventRepository, never()).save(any());
 	}
 
+	@Test
+	void handleWebhookPersistsProviderSubscriptionIdAfterCheckout() {
+		final Subscription subscription = pendingSubscription("cs_test_1");
+		when(paymentProvider.getProviderId()).thenReturn(PaymentProperties.PROVIDER_STRIPE);
+		when(paymentProvider.verifyWebhookSignature(PAYLOAD, headers)).thenReturn(true);
+		when(paymentProvider.parseWebhook(PAYLOAD, headers))
+			.thenReturn(new ParsedPaymentWebhookEvent("evt-2", "checkout.session.completed", "cs_test_1", "cus_test_1",
+					"sub_test_1", PaymentWebhookAction.PAYMENT_SUCCEEDED, SubscriptionStatus.ACTIVE));
+		when(webhookEventRepository.findByProviderAndEventId(PaymentProperties.PROVIDER_STRIPE, "evt-2"))
+			.thenReturn(Optional.empty());
+		when(subscriptionRepository.findByExternalSubscriptionId("cs_test_1")).thenReturn(Optional.of(subscription));
+		when(invitationRepository.findBySubscriptionId(subscription.getId())).thenReturn(Optional.empty());
+
+		paymentWebhookService.handleWebhook(PAYLOAD, headers);
+
+		assertThat(subscription.getExternalSubscriptionId()).isEqualTo("sub_test_1");
+		assertThat(subscription.getExternalCustomerId()).isEqualTo("cus_test_1");
+	}
+
 	private static ParsedPaymentWebhookEvent successEvent() {
-		return new ParsedPaymentWebhookEvent("evt-1", "subscription_preapproval", "mp-sub-1", "cust-1",
+		return new ParsedPaymentWebhookEvent("evt-1", "subscription_preapproval", "mp-sub-1", "cust-1", null,
 				PaymentWebhookAction.PAYMENT_SUCCEEDED, SubscriptionStatus.ACTIVE);
 	}
 

@@ -50,7 +50,7 @@ class NutritionistInvitationDevCheckoutServiceTest {
 	@Test
 	void completeStubCheckout_activatesSubscriptionAndProvisionsAccess() {
 		when(paymentProperties.isStubSimulateCheckout()).thenReturn(true);
-		when(paymentProperties.isMercadoPagoConfigured()).thenReturn(false);
+		when(paymentProperties.isLivePaymentProviderConfigured()).thenReturn(false);
 		final Subscription subscription = new Subscription();
 		subscription.setId(2L);
 		subscription.setPlanTier(PlanTier.BASICO);

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -11,7 +12,6 @@ import org.springframework.web.client.RestClient;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nutriconsultas.subscription.InvitationStatus;
 import com.nutriconsultas.subscription.NutritionistInvitation;
 import com.nutriconsultas.subscription.NutritionistInvitationRepository;
 import com.nutriconsultas.subscription.PlanTier;
@@ -22,8 +22,10 @@ import com.nutriconsultas.subscription.SubscriptionStatus;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
+@ConditionalOnProperty(prefix = "nutriconsultas.subscription.payment", name = "provider", havingValue = "mercadopago")
 @ConditionalOnExpression("'${nutriconsultas.subscription.payment.mercadopago-access-token:}'.length() > 0")
 @Slf4j
+@Deprecated(since = "2.0", forRemoval = false)
 public class MercadoPagoPaymentProvider implements PaymentProvider {
 
 	private static final String API_BASE = "https://api.mercadopago.com";
@@ -72,9 +74,7 @@ public class MercadoPagoPaymentProvider implements PaymentProvider {
 		}
 		final NutritionistInvitation invitation = invitationRepository.findById(invitationId)
 			.orElseThrow(() -> new PaymentProviderException("Invitation not found: " + invitationId));
-		if (invitation.getStatus() != InvitationStatus.PENDING) {
-			throw new PaymentProviderException("Invitation is not pending checkout");
-		}
+		PaymentCheckoutInvitationGuard.verifyEligibleForCheckout(invitation);
 		final Subscription subscription = resolveSubscription(invitation, planTier);
 		final Map<String, Object> body = buildPreapprovalBody(invitation, planTier, subscription.getId());
 		final JsonNode response = postPreapproval(body);
@@ -117,7 +117,8 @@ public class MercadoPagoPaymentProvider implements PaymentProvider {
 			if ("payment".equals(eventType)) {
 				return parsePaymentWebhook(eventId, eventType, resourceId);
 			}
-			return new ParsedPaymentWebhookEvent(eventId, eventType, null, null, PaymentWebhookAction.IGNORED, null);
+			return new ParsedPaymentWebhookEvent(eventId, eventType, null, null, null, PaymentWebhookAction.IGNORED,
+					null);
 		}
 		catch (InvalidPaymentWebhookException ex) {
 			throw ex;
@@ -202,18 +203,18 @@ public class MercadoPagoPaymentProvider implements PaymentProvider {
 		final String status = preapproval.path("status").asText("");
 		final String payerId = preapproval.path("payer_id").asText(null);
 		if ("authorized".equalsIgnoreCase(status)) {
-			return new ParsedPaymentWebhookEvent(eventId, eventType, externalSubscriptionId, payerId,
+			return new ParsedPaymentWebhookEvent(eventId, eventType, externalSubscriptionId, payerId, null,
 					PaymentWebhookAction.PAYMENT_SUCCEEDED, SubscriptionStatus.ACTIVE);
 		}
 		if ("cancelled".equalsIgnoreCase(status)) {
-			return new ParsedPaymentWebhookEvent(eventId, eventType, externalSubscriptionId, payerId,
+			return new ParsedPaymentWebhookEvent(eventId, eventType, externalSubscriptionId, payerId, null,
 					PaymentWebhookAction.SUBSCRIPTION_CANCELLED, SubscriptionStatus.CANCELLED);
 		}
 		if ("paused".equalsIgnoreCase(status)) {
-			return new ParsedPaymentWebhookEvent(eventId, eventType, externalSubscriptionId, payerId,
+			return new ParsedPaymentWebhookEvent(eventId, eventType, externalSubscriptionId, payerId, null,
 					PaymentWebhookAction.PAYMENT_FAILED, SubscriptionStatus.SUSPENDED);
 		}
-		return new ParsedPaymentWebhookEvent(eventId, eventType, externalSubscriptionId, payerId,
+		return new ParsedPaymentWebhookEvent(eventId, eventType, externalSubscriptionId, payerId, null,
 				PaymentWebhookAction.IGNORED, null);
 	}
 
@@ -223,11 +224,11 @@ public class MercadoPagoPaymentProvider implements PaymentProvider {
 		final String status = payment.path("status").asText("");
 		final String preapprovalId = payment.path("metadata").path("preapproval_id").asText(null);
 		if (!"approved".equalsIgnoreCase(status) || !StringUtils.hasText(preapprovalId)) {
-			return new ParsedPaymentWebhookEvent(eventId, eventType, preapprovalId, null, PaymentWebhookAction.IGNORED,
-					null);
+			return new ParsedPaymentWebhookEvent(eventId, eventType, preapprovalId, null, null,
+					PaymentWebhookAction.IGNORED, null);
 		}
 		return new ParsedPaymentWebhookEvent(eventId, eventType, preapprovalId,
-				payment.path("payer").path("id").asText(null), PaymentWebhookAction.PAYMENT_SUCCEEDED,
+				payment.path("payer").path("id").asText(null), null, PaymentWebhookAction.PAYMENT_SUCCEEDED,
 				SubscriptionStatus.ACTIVE);
 	}
 

@@ -91,8 +91,10 @@ public class PaymentWebhookService {
 			if (StringUtils.hasText(parsed.externalCustomerId())) {
 				subscription.setExternalCustomerId(parsed.externalCustomerId());
 			}
-			if (StringUtils.hasText(parsed.externalSubscriptionId())) {
-				subscription.setExternalSubscriptionId(parsed.externalSubscriptionId());
+			final String persistedExternalId = StringUtils.hasText(parsed.providerSubscriptionId())
+					? parsed.providerSubscriptionId() : parsed.externalSubscriptionId();
+			if (StringUtils.hasText(persistedExternalId)) {
+				subscription.setExternalSubscriptionId(persistedExternalId);
 			}
 			recordAudit(subscription, previousStatus, SubscriptionAuditEventType.WEBHOOK_PAYMENT_SUCCEEDED,
 					"Payment provider webhook");

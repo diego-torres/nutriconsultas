@@ -92,7 +92,7 @@ public class NutritionistInvitationDevCheckoutService {
 	}
 
 	private void requireStubSimulateEnabled() {
-		if (!paymentProperties.isStubSimulateCheckout() || paymentProperties.isMercadoPagoConfigured()) {
+		if (!paymentProperties.isStubSimulateCheckout() || paymentProperties.isLivePaymentProviderConfigured()) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 		}
 	}
