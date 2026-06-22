@@ -35,6 +35,14 @@
             <h1 class="h3 mb-0 text-gray-800">Mi Consultorio</h1>
           </div>
           <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">Éxito</div>
+          <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">Error</div>
+          <div th:if="${inviteUrl}" class="alert alert-info">
+            <strong>Enlace de invitación (compártelo si el correo no llegó):</strong>
+            <div class="mt-2"><code id="inviteUrlText" th:text="${inviteUrl}">https://...</code></div>
+            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="copyInviteUrlBtn">
+              <i class="fas fa-copy"></i> Copiar enlace
+            </button>
+          </div>
 
           <div class="row mb-4">
             <div class="col-lg-4">
@@ -87,6 +95,72 @@
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card shadow mb-4" th:if="${roster.canInviteMore()}">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Invitar nutriólogo</h6>
+            </div>
+            <div class="card-body">
+              <form th:action="@{/admin/clinic/invitations}" th:object="${inviteForm}" method="post"
+                class="form-inline">
+                <label class="sr-only" for="inviteEmail">Correo</label>
+                <input type="email" class="form-control mb-2 mr-sm-2" id="inviteEmail" th:field="*{email}"
+                  placeholder="correo@ejemplo.com" required>
+                <button type="submit" class="btn btn-primary mb-2">
+                  <i class="fas fa-paper-plane"></i> Enviar invitación
+                </button>
+              </form>
+              <p class="text-muted small mb-0 mt-2">
+                El nutriólogo recibirá un enlace para registrarse sin pago adicional. Hereda la suscripción del
+                consultorio.
+              </p>
+            </div>
+          </div>
+
+          <div class="card shadow mb-4" th:if="${!#lists.isEmpty(roster.pendingInvitations)}">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Invitaciones pendientes</h6>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover" width="100%" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Correo</th>
+                      <th>Enviada</th>
+                      <th>Expira</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="invite : ${roster.pendingInvitations}">
+                      <td th:text="${invite.email}">nutriologo@example.com</td>
+                      <td th:text="${#temporals.format(invite.createdAt.atZone(T(java.time.ZoneId).systemDefault()), 'dd/MM/yyyy')}">
+                        01/01/2026
+                      </td>
+                      <td th:text="${#temporals.format(invite.expiresAt.atZone(T(java.time.ZoneId).systemDefault()), 'dd/MM/yyyy')}">
+                        08/01/2026
+                      </td>
+                      <td>
+                        <form th:action="@{/admin/clinic/invitations/{id}/regenerate-link(id=${invite.invitationId})}"
+                          method="post" class="d-inline regenerate-invite-form">
+                          <button type="button" class="btn btn-sm btn-outline-primary regenerate-invite-btn">
+                            <i class="fas fa-link"></i> Nuevo enlace
+                          </button>
+                        </form>
+                        <form th:action="@{/admin/clinic/invitations/{id}/cancel(id=${invite.invitationId})}"
+                          method="post" class="d-inline cancel-invite-form">
+                          <button type="button" class="btn btn-sm btn-outline-danger cancel-invite-btn">
+                            <i class="fas fa-times"></i> Cancelar
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -195,6 +269,45 @@
             form.submit();
           }
         });
+      });
+      $('.cancel-invite-btn').on('click', function () {
+        var form = $(this).closest('form');
+        swal({
+          title: '¿Cancelar invitación?',
+          text: 'El enlace dejará de funcionar. Podrás invitar de nuevo a este correo.',
+          type: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          confirmButtonText: 'Sí, cancelar',
+          cancelButtonText: 'No',
+          closeOnConfirm: true
+        }, function (isConfirm) {
+          if (isConfirm) {
+            form.submit();
+          }
+        });
+      });
+      $('.regenerate-invite-btn').on('click', function () {
+        var form = $(this).closest('form');
+        swal({
+          title: '¿Generar nuevo enlace?',
+          text: 'El enlace anterior dejará de funcionar.',
+          type: 'info',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, generar',
+          cancelButtonText: 'Cancelar',
+          closeOnConfirm: true
+        }, function (isConfirm) {
+          if (isConfirm) {
+            form.submit();
+          }
+        });
+      });
+      $('#copyInviteUrlBtn').on('click', function () {
+        var text = $('#inviteUrlText').text();
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text);
+        }
       });
     });
   </script>

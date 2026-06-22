@@ -10,4 +10,6 @@ public interface InvitationEmailSender {
 
 	void sendNutritionistInvitation(String recipientEmail, PlanTier planTier, String inviteUrl);
 
+	void sendClinicInvitation(String recipientEmail, String clinicName, String inviteUrl);
+
 }

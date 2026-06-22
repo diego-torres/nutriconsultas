@@ -33,4 +33,9 @@ public class NutritionistInvitationProperties {
 		return normalizedBase + "/invitation/nutritionist/redeem?token=" + rawToken;
 	}
 
+	public String buildClinicRedeemUrl(final String rawToken) {
+		final String normalizedBase = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+		return normalizedBase + "/invitation/clinic/redeem?token=" + rawToken;
+	}
+
 }

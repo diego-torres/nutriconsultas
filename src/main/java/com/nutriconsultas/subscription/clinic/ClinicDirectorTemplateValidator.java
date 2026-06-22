@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+import com.nutriconsultas.clinic.CreateClinicInvitationForm;
 import com.nutriconsultas.subscription.ClinicMemberRole;
 import com.nutriconsultas.subscription.MembershipStatus;
 import com.nutriconsultas.subscription.PlanTier;
@@ -24,8 +25,17 @@ public class ClinicDirectorTemplateValidator extends BaseTemplateValidator {
 		variables.put("clinicDirector", true);
 		variables.put("activeMenu", "clinic");
 		variables.put("successMessage", null);
+		variables.put("errorMessage", null);
+		variables.put("inviteUrl", null);
+		variables.put("inviteForm", createMockInviteForm());
 		variables.put("roster", createMockRoster());
 		return variables;
+	}
+
+	private static CreateClinicInvitationForm createMockInviteForm() {
+		final CreateClinicInvitationForm form = new CreateClinicInvitationForm();
+		form.setEmail("");
+		return form;
 	}
 
 	private static ClinicRosterOverview createMockRoster() {
@@ -33,8 +43,10 @@ public class ClinicDirectorTemplateValidator extends BaseTemplateValidator {
 				ClinicMemberRole.DIRECTOR, MembershipStatus.ACTIVE, Instant.parse("2026-01-01T00:00:00Z"), true);
 		final ClinicMemberView nutritionist = new ClinicMemberView(2L, "auth0|nutri-1", "nutriologo@example.com",
 				ClinicMemberRole.NUTRITIONIST, MembershipStatus.ACTIVE, Instant.parse("2026-02-01T00:00:00Z"), false);
+		final ClinicInvitationView pendingInvite = new ClinicInvitationView(10L, "pendiente@example.com",
+				Instant.parse("2026-02-08T00:00:00Z"), Instant.parse("2026-02-01T00:00:00Z"));
 		return new ClinicRosterOverview(1L, "Consultorio Demo", PlanTier.CONSULTORIO, SubscriptionStatus.ACTIVE, 20, 2L,
-				0L, List.of(director, nutritionist));
+				1L, List.of(director, nutritionist), List.of(pendingInvite));
 	}
 
 }

@@ -4,12 +4,15 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.auth0.Auth0RoleSyncClient;
 import com.nutriconsultas.subscription.Clinic;
+import com.nutriconsultas.subscription.ClinicInvitation;
 import com.nutriconsultas.subscription.ClinicMember;
 import com.nutriconsultas.subscription.ClinicMemberRepository;
 import com.nutriconsultas.subscription.ClinicMemberRole;
@@ -34,6 +37,12 @@ import lombok.extern.slf4j.Slf4j;
 public class SubscriptionProvisioningService {
 
 	private static final int TRIAL_PERIOD_DAYS = 30;
+
+	/**
+	 * Auth0 role assigned to clinic nutritionists invited by a director (inherits clinic
+	 * subscription for entitlements).
+	 */
+	private static final PlanTier CLINIC_NUTRITIONIST_AUTH0_ROLE = PlanTier.PROFESIONAL;
 
 	private final ClinicRepository clinicRepository;
 
@@ -81,6 +90,54 @@ public class SubscriptionProvisioningService {
 	@Transactional
 	public Subscription createPendingSubscription(final NutritionistInvitation invitation) {
 		return ensureSubscription(invitation, SubscriptionStatus.PENDING_PAYMENT, false);
+	}
+
+	/**
+	 * Links a redeemed clinic invitation to an existing consultorio (no separate payment
+	 * or subscription).
+	 */
+	@Transactional
+	public void provisionClinicInvitationMember(final ClinicInvitation invitation, final String userId) {
+		if (invitation == null || invitation.getClinic() == null) {
+			throw new IllegalArgumentException("invitation and clinic are required");
+		}
+		if (!StringUtils.hasText(userId)) {
+			throw new IllegalArgumentException("userId is required");
+		}
+		final Clinic clinic = invitation.getClinic();
+		final Subscription subscription = clinic.getSubscription();
+		if (subscription == null || !grantsClinicAccess(subscription.getStatus())) {
+			throw new ResponseStatusException(HttpStatus.GONE, "La suscripción del consultorio ya no está activa");
+		}
+		final Optional<ClinicMember> existingMember = clinicMemberRepository
+			.findByUserIdWithClinicAndSubscription(userId);
+		if (existingMember.isPresent()) {
+			final ClinicMember member = existingMember.get();
+			if (member.getClinic().getId().equals(clinic.getId())) {
+				if (member.getMembershipStatus() == MembershipStatus.SUSPENDED) {
+					member.setMembershipStatus(MembershipStatus.ACTIVE);
+					clinicMemberRepository.save(member);
+				}
+				syncAuth0RoleIfConfigured(userId, CLINIC_NUTRITIONIST_AUTH0_ROLE);
+				recordClinicInvitationAudit(subscription, userId, invitation.getId());
+				return;
+			}
+			throw new ResponseStatusException(HttpStatus.CONFLICT,
+					"Ya perteneces a otro consultorio. Contacta al administrador.");
+		}
+		final ClinicMember member = new ClinicMember();
+		member.setClinic(clinic);
+		member.setUserId(userId);
+		member.setRole(ClinicMemberRole.NUTRITIONIST);
+		member.setMembershipStatus(MembershipStatus.ACTIVE);
+		member.setInvitedBy(invitation.getInvitedByUserId());
+		clinicMemberRepository.save(member);
+		syncAuth0RoleIfConfigured(userId, CLINIC_NUTRITIONIST_AUTH0_ROLE);
+		recordClinicInvitationAudit(subscription, userId, invitation.getId());
+		if (log.isInfoEnabled()) {
+			log.info("Provisioned clinic invitation member: userId={}, clinicId={}, invitationId={}", userId,
+					clinic.getId(), invitation.getId());
+		}
 	}
 
 	private Subscription ensureSubscription(final NutritionistInvitation invitation, final SubscriptionStatus status,
@@ -194,6 +251,16 @@ public class SubscriptionProvisioningService {
 		event.setEventType(SubscriptionAuditEventType.INVITATION_REDEEMED);
 		event.setActorUserId(userId);
 		event.setDetails("planTier=" + planTier);
+		auditEventRepository.save(event);
+	}
+
+	private void recordClinicInvitationAudit(final Subscription subscription, final String userId,
+			final Long invitationId) {
+		final SubscriptionAuditEvent event = new SubscriptionAuditEvent();
+		event.setSubscription(subscription);
+		event.setEventType(SubscriptionAuditEventType.INVITATION_REDEEMED);
+		event.setActorUserId(userId);
+		event.setDetails("clinicInvitationId=" + invitationId);
 		auditEventRepository.save(event);
 	}
 

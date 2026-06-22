@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
+import com.nutriconsultas.clinic.CreateClinicInvitationForm;
 import com.nutriconsultas.subscription.ClinicMemberRole;
 import com.nutriconsultas.subscription.MembershipStatus;
 import com.nutriconsultas.subscription.PlanTier;
@@ -23,6 +24,8 @@ import com.nutriconsultas.subscription.SubscriptionStatus;
 import com.nutriconsultas.subscription.clinic.ClinicMemberView;
 import com.nutriconsultas.subscription.clinic.ClinicRosterOverview;
 import com.nutriconsultas.subscription.clinic.ClinicService;
+import com.nutriconsultas.subscription.invitation.ClinicInvitationService;
+import com.nutriconsultas.subscription.invitation.CreatedClinicInvitation;
 
 @ExtendWith(MockitoExtension.class)
 class ClinicDirectorControllerTest {
@@ -36,6 +39,9 @@ class ClinicDirectorControllerTest {
 	private ClinicService clinicService;
 
 	@Mock
+	private ClinicInvitationService clinicInvitationService;
+
+	@Mock
 	private OidcUser principal;
 
 	@Test
@@ -43,7 +49,8 @@ class ClinicDirectorControllerTest {
 		when(principal.getSubject()).thenReturn(DIRECTOR_ID);
 		final ClinicRosterOverview roster = new ClinicRosterOverview(1L, "Consultorio", PlanTier.CONSULTORIO,
 				SubscriptionStatus.ACTIVE, 20, 1L, 0L, List.of(new ClinicMemberView(1L, DIRECTOR_ID, "Director",
-						ClinicMemberRole.DIRECTOR, MembershipStatus.ACTIVE, Instant.now(), true)));
+						ClinicMemberRole.DIRECTOR, MembershipStatus.ACTIVE, Instant.now(), true)),
+				List.of());
 		when(clinicService.getDirectorRoster(DIRECTOR_ID)).thenReturn(roster);
 		final ExtendedModelMap model = new ExtendedModelMap();
 
@@ -52,6 +59,24 @@ class ClinicDirectorControllerTest {
 		assertThat(view).isEqualTo("sbadmin/clinic/members");
 		assertThat(model.get("roster")).isEqualTo(roster);
 		assertThat(model.get("activeMenu")).isEqualTo("clinic");
+		assertThat(model.get("inviteForm")).isNotNull();
+	}
+
+	@Test
+	void createInvitation_redirectsWithFlashMessage() {
+		when(clinicInvitationService.createInvitation(principal, "nutri@example.com"))
+			.thenReturn(new CreatedClinicInvitation(1L, "https://app.test/clinic/redeem?token=abc"));
+		final CreateClinicInvitationForm form = new CreateClinicInvitationForm();
+		form.setEmail("nutri@example.com");
+		final RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
+
+		final String view = controller.createInvitation(principal, form,
+				new org.springframework.validation.BeanPropertyBindingResult(form, "inviteForm"),
+				new ExtendedModelMap(), redirectAttributes);
+
+		assertThat(view).isEqualTo("redirect:/admin/clinic");
+		assertThat(redirectAttributes.getFlashAttributes().get("inviteUrl"))
+			.isEqualTo("https://app.test/clinic/redeem?token=abc");
 	}
 
 	@Test

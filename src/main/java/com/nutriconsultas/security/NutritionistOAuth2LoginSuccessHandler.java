@@ -23,6 +23,8 @@ public class NutritionistOAuth2LoginSuccessHandler extends SavedRequestAwareAuth
 
 	public static final String PENDING_INVITATION_TOKEN_SESSION_KEY = "PENDING_NUTRITIONIST_INVITATION_TOKEN";
 
+	public static final String PENDING_CLINIC_INVITATION_TOKEN_SESSION_KEY = "PENDING_CLINIC_INVITATION_TOKEN";
+
 	@PostConstruct
 	void init() {
 		setDefaultTargetUrl("/admin");
@@ -34,6 +36,14 @@ public class NutritionistOAuth2LoginSuccessHandler extends SavedRequestAwareAuth
 			final Authentication authentication) throws IOException, ServletException {
 		final HttpSession session = request.getSession(false);
 		if (session != null) {
+			final Object clinicToken = session.getAttribute(PENDING_CLINIC_INVITATION_TOKEN_SESSION_KEY);
+			if (clinicToken instanceof String clinicInviteToken && !clinicInviteToken.isBlank()) {
+				session.removeAttribute(PENDING_CLINIC_INVITATION_TOKEN_SESSION_KEY);
+				final String redeemUrl = request.getContextPath() + "/invitation/clinic/redeem?token="
+						+ URLEncoder.encode(clinicInviteToken, StandardCharsets.UTF_8);
+				getRedirectStrategy().sendRedirect(request, response, redeemUrl);
+				return;
+			}
 			final Object pendingToken = session.getAttribute(PENDING_INVITATION_TOKEN_SESSION_KEY);
 			if (pendingToken instanceof String token && !token.isBlank()) {
 				session.removeAttribute(PENDING_INVITATION_TOKEN_SESSION_KEY);
