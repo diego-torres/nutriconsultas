@@ -1,0 +1,10 @@
+# Red Hat PwnedAlert / rh-pre-commit allowlist (top-level [allowlist] only).
+# Google reCAPTCHA v2 public test keys — not production secrets.
+# https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
+[allowlist]
+  description = "Google reCAPTCHA v2 public test keys (dev/CI only)"
+
+  regexes = [
+    '''6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe''',
+    '''6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI''',
+  ]
