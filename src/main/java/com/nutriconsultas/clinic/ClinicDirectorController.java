@@ -10,9 +10,12 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.nutriconsultas.controller.AbstractAuthorizedController;
+import com.nutriconsultas.subscription.clinic.ClinicPatientTransferPage;
+import com.nutriconsultas.subscription.clinic.ClinicPatientTransferResult;
 import com.nutriconsultas.subscription.clinic.ClinicService;
 import com.nutriconsultas.subscription.invitation.ActiveNutritionistUserException;
 import com.nutriconsultas.subscription.invitation.ClinicInvitationService;
@@ -115,6 +118,34 @@ public class ClinicDirectorController extends AbstractAuthorizedController {
 		clinicService.reactivateMember(principal.getSubject(), memberId);
 		redirectAttributes.addFlashAttribute("successMessage", "Acceso del nutriólogo reactivado.");
 		return "redirect:/admin/clinic";
+	}
+
+	@GetMapping("/patient-transfers")
+	public String patientTransfers(@AuthenticationPrincipal final OidcUser principal,
+			@RequestParam(required = false) final Long sourceMemberId, final Model model) {
+		final ClinicPatientTransferPage transferPage = clinicService.getPatientTransferPage(principal.getSubject(),
+				sourceMemberId);
+		model.addAttribute("transferPage", transferPage);
+		final ClinicPatientTransferForm transferForm = new ClinicPatientTransferForm();
+		if (sourceMemberId != null) {
+			transferForm.setSourceMemberId(sourceMemberId);
+		}
+		model.addAttribute("transferForm", transferForm);
+		model.addAttribute("activeMenu", "clinic");
+		return "sbadmin/clinic/patient-transfers";
+	}
+
+	@PostMapping("/patient-transfers")
+	public String executePatientTransfer(@AuthenticationPrincipal final OidcUser principal,
+			@ModelAttribute final ClinicPatientTransferForm form, final RedirectAttributes redirectAttributes) {
+		final ClinicPatientTransferResult result = clinicService.transferPatients(principal.getSubject(),
+				form.getSourceMemberId(), form.getTargetMemberId(), form.getPatientIds(), form.isTransferAll());
+		redirectAttributes.addFlashAttribute("successMessage",
+				"Se transfirieron " + result.transferredCount() + " paciente(s) correctamente.");
+		if (result.hasWarning()) {
+			redirectAttributes.addFlashAttribute("warningMessage", result.warningMessage());
+		}
+		return "redirect:/admin/clinic/patient-transfers?sourceMemberId=" + form.getSourceMemberId();
 	}
 
 }

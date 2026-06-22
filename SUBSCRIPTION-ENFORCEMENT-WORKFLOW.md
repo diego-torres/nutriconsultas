@@ -199,9 +199,9 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#314 — Director patient transfers](https://github.com/diego-torres/nutriconsultas/issues/314) |
+| **Next issue** | [#244 — Contact form pre-fill from Solicitar acceso](https://github.com/diego-torres/nutriconsultas/issues/244) |
 | **In progress** | — |
-| **Just completed** | [#188 — Director invitations](https://github.com/diego-torres/nutriconsultas/issues/188) — branch `subscription/188-director-invitations` |
+| **Just completed** | [#314 — Director patient transfers](https://github.com/diego-torres/nutriconsultas/issues/314) — branch `subscription/314-patient-transfers` |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
@@ -211,5 +211,4 @@ See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
 | Prioridad | Issue | Acción |
 |-----------|-------|--------|
-| 1 | **#314** | Transferencia de pacientes entre nutriólogos del consultorio |
-| 2 | **#244** | Pre-fill formulario contacto desde CTA Solicitar acceso |
+| 1 | **#244** | Pre-fill formulario contacto desde CTA Solicitar acceso |

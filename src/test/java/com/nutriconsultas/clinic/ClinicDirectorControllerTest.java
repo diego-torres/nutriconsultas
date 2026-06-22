@@ -3,6 +3,8 @@ package com.nutriconsultas.clinic;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 import java.time.Instant;
 import java.util.List;
@@ -21,6 +23,9 @@ import com.nutriconsultas.subscription.ClinicMemberRole;
 import com.nutriconsultas.subscription.MembershipStatus;
 import com.nutriconsultas.subscription.PlanTier;
 import com.nutriconsultas.subscription.SubscriptionStatus;
+import com.nutriconsultas.clinic.ClinicPatientTransferForm;
+import com.nutriconsultas.subscription.clinic.ClinicPatientTransferPage;
+import com.nutriconsultas.subscription.clinic.ClinicPatientTransferResult;
 import com.nutriconsultas.subscription.clinic.ClinicMemberView;
 import com.nutriconsultas.subscription.clinic.ClinicRosterOverview;
 import com.nutriconsultas.subscription.clinic.ClinicService;
@@ -103,6 +108,38 @@ class ClinicDirectorControllerTest {
 		assertThat(view).isEqualTo("redirect:/admin/clinic");
 		assertThat(redirectAttributes.getFlashAttributes().get("successMessage"))
 			.isEqualTo("Acceso del nutriólogo reactivado.");
+	}
+
+	@Test
+	void patientTransfers_delegatesToClinicService() {
+		when(principal.getSubject()).thenReturn(DIRECTOR_ID);
+		final ClinicPatientTransferPage transferPage = new ClinicPatientTransferPage(List.of(), null, List.of());
+		when(clinicService.getPatientTransferPage(DIRECTOR_ID, null)).thenReturn(transferPage);
+		final ExtendedModelMap model = new ExtendedModelMap();
+
+		final String view = controller.patientTransfers(principal, null, model);
+
+		assertThat(view).isEqualTo("sbadmin/clinic/patient-transfers");
+		assertThat(model.get("transferPage")).isEqualTo(transferPage);
+		assertThat(model.get("activeMenu")).isEqualTo("clinic");
+	}
+
+	@Test
+	void executePatientTransfer_redirectsWithFlashMessage() {
+		when(principal.getSubject()).thenReturn(DIRECTOR_ID);
+		when(clinicService.transferPatients(eq(DIRECTOR_ID), eq(2L), eq(1L), any(), eq(false)))
+			.thenReturn(new ClinicPatientTransferResult(3, null));
+		final ClinicPatientTransferForm form = new ClinicPatientTransferForm();
+		form.setSourceMemberId(2L);
+		form.setTargetMemberId(1L);
+		form.setPatientIds(List.of(10L, 11L, 12L));
+		final RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
+
+		final String view = controller.executePatientTransfer(principal, form, redirectAttributes);
+
+		assertThat(view).isEqualTo("redirect:/admin/clinic/patient-transfers?sourceMemberId=2");
+		assertThat(redirectAttributes.getFlashAttributes().get("successMessage"))
+			.isEqualTo("Se transfirieron 3 paciente(s) correctamente.");
 	}
 
 }

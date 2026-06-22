@@ -2,6 +2,7 @@ package com.nutriconsultas.subscription.clinic;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
@@ -11,6 +12,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.auth0.Auth0RoleSyncClient;
+import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.subscription.Clinic;
 import com.nutriconsultas.subscription.ClinicInvitation;
 import com.nutriconsultas.subscription.ClinicInvitationRepository;
@@ -22,6 +25,7 @@ import com.nutriconsultas.subscription.Entitlement;
 import com.nutriconsultas.subscription.InvitationStatus;
 import com.nutriconsultas.subscription.MembershipStatus;
 import com.nutriconsultas.subscription.PlanEntitlements;
+import com.nutriconsultas.subscription.PlanTier;
 import com.nutriconsultas.subscription.Subscription;
 import com.nutriconsultas.subscription.SubscriptionAuditEvent;
 import com.nutriconsultas.subscription.SubscriptionAuditEventRepository;
@@ -52,6 +56,8 @@ public class ClinicServiceImpl implements ClinicService {
 
 	private final Auth0RoleSyncClient auth0RoleSyncClient;
 
+	private final PacienteRepository pacienteRepository;
+
 	public ClinicServiceImpl(final ClinicRepository clinicRepository,
 			final ClinicMemberRepository clinicMemberRepository,
 			final ClinicInvitationRepository clinicInvitationRepository,
@@ -59,7 +65,7 @@ public class ClinicServiceImpl implements ClinicService {
 			final SubscriptionEntitlementService subscriptionEntitlementService,
 			final SubscriptionAccessService subscriptionAccessService,
 			final SubscriptionAuditEventRepository subscriptionAuditEventRepository,
-			final Auth0RoleSyncClient auth0RoleSyncClient) {
+			final Auth0RoleSyncClient auth0RoleSyncClient, final PacienteRepository pacienteRepository) {
 		this.clinicRepository = clinicRepository;
 		this.clinicMemberRepository = clinicMemberRepository;
 		this.clinicInvitationRepository = clinicInvitationRepository;
@@ -68,6 +74,7 @@ public class ClinicServiceImpl implements ClinicService {
 		this.subscriptionAccessService = subscriptionAccessService;
 		this.subscriptionAuditEventRepository = subscriptionAuditEventRepository;
 		this.auth0RoleSyncClient = auth0RoleSyncClient;
+		this.pacienteRepository = pacienteRepository;
 	}
 
 	@Override
@@ -75,6 +82,56 @@ public class ClinicServiceImpl implements ClinicService {
 	public ClinicRosterOverview getDirectorRoster(@NonNull final String directorUserId) {
 		final Clinic clinic = requireDirectorClinic(directorUserId);
 		return buildRosterOverview(clinic, directorUserId);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ClinicPatientTransferPage getPatientTransferPage(@NonNull final String directorUserId,
+			final Long sourceMemberId) {
+		final Clinic clinic = requireDirectorClinic(directorUserId);
+		final List<ClinicMemberView> activeMembers = listActiveMemberViews(clinic, directorUserId);
+		if (sourceMemberId == null) {
+			return new ClinicPatientTransferPage(activeMembers, null, List.of());
+		}
+		final ClinicMember sourceMember = requireActiveTransferMember(clinic, sourceMemberId);
+		final List<ClinicPatientSummary> patients = loadPatientSummaries(sourceMember.getUserId());
+		return new ClinicPatientTransferPage(activeMembers, sourceMemberId, patients);
+	}
+
+	@Override
+	@Transactional
+	public ClinicPatientTransferResult transferPatients(@NonNull final String directorUserId,
+			@NonNull final Long sourceMemberId, @NonNull final Long targetMemberId,
+			@NonNull final List<Long> patientIds, final boolean transferAll) {
+		final Clinic clinic = requireDirectorClinic(directorUserId);
+		if (sourceMemberId.equals(targetMemberId)) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"El nutriólogo origen y destino deben ser distintos");
+		}
+		final ClinicMember sourceMember = requireActiveTransferMember(clinic, sourceMemberId);
+		final ClinicMember targetMember = requireActiveTransferMember(clinic, targetMemberId);
+		final List<Paciente> patientsToTransfer = resolvePatientsToTransfer(sourceMember, patientIds, transferAll);
+		if (patientsToTransfer.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Selecciona al menos un paciente para transferir");
+		}
+		final String targetUserId = targetMember.getUserId();
+		for (final Paciente paciente : patientsToTransfer) {
+			paciente.setUserId(targetUserId);
+		}
+		pacienteRepository.saveAll(patientsToTransfer);
+		final String warningMessage = buildTransferCapWarning(clinic, targetUserId);
+		final String patientIdList = patientsToTransfer.stream()
+			.map(p -> String.valueOf(p.getId()))
+			.collect(Collectors.joining("|"));
+		recordDirectorAction(directorUserId, resolveSubscription(clinic, directorUserId),
+				"clinic.patient.transfer,patientIds=" + patientIdList + ",sourceUserId=" + sourceMember.getUserId()
+						+ ",targetUserId=" + targetUserId + ",count=" + patientsToTransfer.size());
+		if (log.isInfoEnabled()) {
+			log.info("Transferred clinic patients: clinicId={}, count={}, directorUserId present={}", clinic.getId(),
+					patientsToTransfer.size(), StringUtils.hasText(directorUserId));
+		}
+		return new ClinicPatientTransferResult(patientsToTransfer.size(), warningMessage);
 	}
 
 	@Override
@@ -113,6 +170,69 @@ public class ClinicServiceImpl implements ClinicService {
 			log.info("Reactivated clinic member: clinicId={}, memberId={}, directorUserId present={}", clinic.getId(),
 					memberId, StringUtils.hasText(directorUserId));
 		}
+	}
+
+	private List<ClinicMemberView> listActiveMemberViews(final Clinic clinic, final String directorUserId) {
+		final List<ClinicMemberView> activeMembers = new ArrayList<>();
+		for (final ClinicMember member : clinicMemberRepository.findByClinicIdOrderByCreatedAtAsc(clinic.getId())) {
+			if (member.getMembershipStatus() == MembershipStatus.ACTIVE) {
+				activeMembers.add(toMemberView(member, directorUserId));
+			}
+		}
+		return activeMembers;
+	}
+
+	private ClinicMember requireActiveTransferMember(final Clinic clinic, final Long memberId) {
+		final ClinicMember member = clinicMemberRepository.findById(memberId)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Miembro no encontrado"));
+		if (!member.getClinic().getId().equals(clinic.getId())) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+					"No puedes transferir pacientes fuera de tu consultorio");
+		}
+		if (member.getMembershipStatus() != MembershipStatus.ACTIVE) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT,
+					"Solo puedes transferir hacia o desde nutriólogos activos");
+		}
+		return member;
+	}
+
+	private List<ClinicPatientSummary> loadPatientSummaries(final String sourceUserId) {
+		final List<ClinicPatientSummary> summaries = new ArrayList<>();
+		for (final Paciente paciente : pacienteRepository.findByUserIdOrderByNameAsc(sourceUserId)) {
+			summaries.add(new ClinicPatientSummary(paciente.getId(), paciente.getName()));
+		}
+		return summaries;
+	}
+
+	private List<Paciente> resolvePatientsToTransfer(final ClinicMember sourceMember, final List<Long> patientIds,
+			final boolean transferAll) {
+		if (transferAll) {
+			return pacienteRepository.findByUserIdOrderByNameAsc(sourceMember.getUserId());
+		}
+		if (patientIds == null || patientIds.isEmpty()) {
+			return List.of();
+		}
+		final List<Long> distinctIds = patientIds.stream().distinct().toList();
+		final List<Paciente> matched = pacienteRepository.findByIdInAndUserId(distinctIds, sourceMember.getUserId());
+		if (matched.size() != distinctIds.size()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Uno o más pacientes no pertenecen al nutriólogo origen");
+		}
+		return matched;
+	}
+
+	private String buildTransferCapWarning(final Clinic clinic, final String targetUserId) {
+		final PlanTier planTier = resolveSubscription(clinic, clinic.getDirectorUserId()).getPlanTier();
+		final Integer maxPatients = PlanEntitlements.forTier(planTier).getMaxPatients();
+		if (maxPatients == null) {
+			return null;
+		}
+		final long currentCount = pacienteRepository.countByUserId(targetUserId);
+		if (currentCount > maxPatients) {
+			return "El nutriólogo destino tendrá " + currentCount + " pacientes, por encima del límite típico de "
+					+ maxPatients + " del plan " + planTier.getRoleSlug() + ".";
+		}
+		return null;
 	}
 
 	private Clinic requireDirectorClinic(final String directorUserId) {

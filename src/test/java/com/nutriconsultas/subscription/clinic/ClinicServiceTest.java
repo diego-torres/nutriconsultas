@@ -3,6 +3,7 @@ package com.nutriconsultas.subscription.clinic;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
@@ -24,6 +25,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.auth0.Auth0RoleSyncClient;
+import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.subscription.Clinic;
 import com.nutriconsultas.subscription.ClinicInvitationRepository;
 import com.nutriconsultas.subscription.ClinicMember;
@@ -78,6 +81,9 @@ class ClinicServiceTest {
 
 	@Mock
 	private Auth0RoleSyncClient auth0RoleSyncClient;
+
+	@Mock
+	private PacienteRepository pacienteRepository;
 
 	private Clinic clinic;
 
@@ -209,6 +215,86 @@ class ClinicServiceTest {
 			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode().value())
 			.isEqualTo(HttpStatus.CONFLICT.value());
 		verify(clinicMemberRepository, never()).save(any());
+	}
+
+	@Test
+	void transferPatients_updatesUserIdAndRecordsAudit() {
+		stubDirectorAccess();
+		final ClinicMember source = member(2L, NUTRITIONIST_ID, ClinicMemberRole.NUTRITIONIST, MembershipStatus.ACTIVE);
+		final ClinicMember target = member(3L, "auth0|nutri-2", ClinicMemberRole.NUTRITIONIST, MembershipStatus.ACTIVE);
+		when(clinicMemberRepository.findById(2L)).thenReturn(Optional.of(source));
+		when(clinicMemberRepository.findById(3L)).thenReturn(Optional.of(target));
+		final Paciente paciente = new Paciente();
+		paciente.setId(50L);
+		paciente.setUserId(NUTRITIONIST_ID);
+		paciente.setName("Paciente A");
+		when(pacienteRepository.findByIdInAndUserId(List.of(50L), NUTRITIONIST_ID)).thenReturn(List.of(paciente));
+
+		final ClinicPatientTransferResult result = clinicService.transferPatients(DIRECTOR_ID, 2L, 3L, List.of(50L),
+				false);
+
+		assertThat(result.transferredCount()).isEqualTo(1);
+		assertThat(paciente.getUserId()).isEqualTo("auth0|nutri-2");
+		verify(pacienteRepository).saveAll(List.of(paciente));
+		final ArgumentCaptor<SubscriptionAuditEvent> auditCaptor = ArgumentCaptor
+			.forClass(SubscriptionAuditEvent.class);
+		verify(subscriptionAuditEventRepository).save(auditCaptor.capture());
+		assertThat(auditCaptor.getValue().getDetails()).contains("clinic.patient.transfer");
+		assertThat(auditCaptor.getValue().getDetails()).contains("patientIds=50");
+	}
+
+	@Test
+	void transferPatients_whenTargetSuspended_throwsConflict() {
+		stubDirectorAccess();
+		final ClinicMember source = member(2L, NUTRITIONIST_ID, ClinicMemberRole.NUTRITIONIST, MembershipStatus.ACTIVE);
+		final ClinicMember suspended = member(3L, "auth0|nutri-2", ClinicMemberRole.NUTRITIONIST,
+				MembershipStatus.SUSPENDED);
+		when(clinicMemberRepository.findById(2L)).thenReturn(Optional.of(source));
+		when(clinicMemberRepository.findById(3L)).thenReturn(Optional.of(suspended));
+
+		assertThatThrownBy(() -> clinicService.transferPatients(DIRECTOR_ID, 2L, 3L, List.of(50L), false))
+			.isInstanceOf(ResponseStatusException.class)
+			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode().value())
+			.isEqualTo(HttpStatus.CONFLICT.value());
+		verify(pacienteRepository, never()).saveAll(any());
+	}
+
+	@Test
+	void transferPatients_whenMemberOutsideClinic_throwsForbidden() {
+		stubDirectorAccess();
+		final Clinic otherClinic = new Clinic();
+		otherClinic.setId(99L);
+		final ClinicMember foreignMember = member(5L, "auth0|foreign", ClinicMemberRole.NUTRITIONIST,
+				MembershipStatus.ACTIVE);
+		foreignMember.setClinic(otherClinic);
+		when(clinicMemberRepository.findById(5L)).thenReturn(Optional.of(foreignMember));
+
+		assertThatThrownBy(() -> clinicService.transferPatients(DIRECTOR_ID, 5L, 3L, List.of(50L), false))
+			.isInstanceOf(ResponseStatusException.class)
+			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode().value())
+			.isEqualTo(HttpStatus.FORBIDDEN.value());
+	}
+
+	@Test
+	void getPatientTransferPage_listsActiveMembersAndSourcePatients() {
+		stubDirectorAccess();
+		final ClinicMember director = member(1L, DIRECTOR_ID, ClinicMemberRole.DIRECTOR, MembershipStatus.ACTIVE);
+		final ClinicMember nutritionist = member(2L, NUTRITIONIST_ID, ClinicMemberRole.NUTRITIONIST,
+				MembershipStatus.ACTIVE);
+		when(clinicMemberRepository.findByClinicIdOrderByCreatedAtAsc(1L)).thenReturn(List.of(director, nutritionist));
+		when(clinicMemberRepository.findById(2L)).thenReturn(Optional.of(nutritionist));
+		final Paciente paciente = new Paciente();
+		paciente.setId(10L);
+		paciente.setName("Ana");
+		when(pacienteRepository.findByUserIdOrderByNameAsc(NUTRITIONIST_ID)).thenReturn(List.of(paciente));
+		when(clinicMemberLabelResolver.resolveLabel(NUTRITIONIST_ID)).thenReturn("Lic. Ana");
+		when(clinicMemberLabelResolver.resolveLabel(DIRECTOR_ID)).thenReturn("Director");
+
+		final ClinicPatientTransferPage page = clinicService.getPatientTransferPage(DIRECTOR_ID, 2L);
+
+		assertThat(page.activeMembers()).hasSize(2);
+		assertThat(page.sourcePatients()).hasSize(1);
+		assertThat(page.sourcePatients().get(0).patientId()).isEqualTo(10L);
 	}
 
 	private void stubDirectorAccess() {

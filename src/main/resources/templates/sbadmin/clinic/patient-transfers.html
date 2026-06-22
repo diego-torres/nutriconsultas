@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <title>Minutriporcion - Transferir pacientes</title>
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+  <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
+</head>
+
+<body id="page-top">
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/sidebar :: sidebar}"></div>
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <div class="container-fluid">
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Transferir pacientes</h1>
+            <a th:href="@{/admin/clinic}" class="btn btn-sm btn-outline-secondary">
+              <i class="fas fa-arrow-left"></i> Volver al consultorio
+            </a>
+          </div>
+          <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">Éxito</div>
+          <div th:if="${warningMessage}" class="alert alert-warning" th:text="${warningMessage}">Advertencia</div>
+          <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">Error</div>
+
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">1. Seleccionar nutriólogo origen</h6>
+            </div>
+            <div class="card-body">
+              <form th:action="@{/admin/clinic/patient-transfers}" method="get" class="form-inline">
+                <label class="sr-only" for="sourceMemberId">Origen</label>
+                <select class="form-control mb-2 mr-sm-2" id="sourceMemberId" name="sourceMemberId" required>
+                  <option value="" disabled th:selected="${transferPage.selectedSourceMemberId == null}">—
+                    Seleccionar —</option>
+                  <option th:each="member : ${transferPage.activeMembers}" th:value="${member.memberId}"
+                    th:text="${member.displayLabel + (member.currentUser ? ' (Tú)' : '')}"
+                    th:selected="${transferPage.selectedSourceMemberId != null and transferPage.selectedSourceMemberId == member.memberId}">
+                    Nutriólogo
+                  </option>
+                </select>
+                <button type="submit" class="btn btn-primary mb-2">
+                  <i class="fas fa-search"></i> Cargar pacientes
+                </button>
+              </form>
+              <p class="text-muted small mb-0 mt-2">
+                Solo se muestran nutriólogos activos del consultorio. La vinculación móvil del paciente no cambia.
+              </p>
+            </div>
+          </div>
+
+          <div class="card shadow mb-4" th:if="${transferPage.selectedSourceMemberId != null}">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">2. Transferir a otro nutriólogo</h6>
+            </div>
+            <div class="card-body">
+              <form th:action="@{/admin/clinic/patient-transfers}" method="post" id="transferForm">
+                <input type="hidden" name="sourceMemberId" th:value="${transferPage.selectedSourceMemberId}">
+                <div class="form-group">
+                  <label for="targetMemberId">Nutriólogo destino</label>
+                  <select class="form-control" id="targetMemberId" name="targetMemberId" required>
+                    <option value="" disabled selected>— Seleccionar —</option>
+                    <option th:each="member : ${transferPage.activeMembers}"
+                      th:if="${member.memberId != transferPage.selectedSourceMemberId}" th:value="${member.memberId}"
+                      th:text="${member.displayLabel + (member.currentUser ? ' (Tú)' : '')}">
+                      Nutriólogo
+                    </option>
+                  </select>
+                </div>
+
+                <div th:if="${#lists.isEmpty(transferPage.sourcePatients)}" class="alert alert-info mb-0">
+                  Este nutriólogo no tiene pacientes asignados.
+                </div>
+
+                <div th:unless="${#lists.isEmpty(transferPage.sourcePatients)}">
+                  <div class="form-group">
+                    <div class="custom-control custom-checkbox mb-2">
+                      <input type="checkbox" class="custom-control-input" id="transferAll" name="transferAll"
+                        value="true">
+                      <label class="custom-control-label" for="transferAll">Transferir todos los pacientes</label>
+                    </div>
+                  </div>
+                  <div class="form-group" id="patientSelectionGroup">
+                    <label>Pacientes a transferir</label>
+                    <div class="table-responsive">
+                      <table class="table table-sm table-bordered">
+                        <thead>
+                          <tr>
+                            <th style="width: 3rem;">
+                              <input type="checkbox" id="selectAllPatients" title="Seleccionar todos">
+                            </th>
+                            <th>Paciente</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr th:each="patient : ${transferPage.sourcePatients}">
+                            <td>
+                              <input type="checkbox" class="patient-checkbox" name="patientIds"
+                                th:value="${patient.patientId}">
+                            </td>
+                            <td th:text="${patient.displayLabel}">Nombre</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-primary" id="submitTransferBtn">
+                    <i class="fas fa-exchange-alt"></i> Transferir pacientes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div th:insert="~{sbadmin/footer :: footer}"></div>
+    </div>
+  </div>
+  <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+  <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
+  <script>
+    $(function () {
+      function togglePatientSelection() {
+        var transferAll = $('#transferAll').is(':checked');
+        $('#patientSelectionGroup').toggle(!transferAll);
+        if (transferAll) {
+          $('.patient-checkbox').prop('checked', false);
+        }
+      }
+      $('#transferAll').on('change', togglePatientSelection);
+      togglePatientSelection();
+
+      $('#selectAllPatients').on('change', function () {
+        $('.patient-checkbox').prop('checked', $(this).is(':checked'));
+      });
+
+      $('#submitTransferBtn').on('click', function () {
+        var transferAll = $('#transferAll').is(':checked');
+        var selectedCount = $('.patient-checkbox:checked').length;
+        if (!transferAll && selectedCount === 0) {
+          swal({
+            title: 'Selecciona pacientes',
+            text: 'Marca al menos un paciente o usa la opción de transferir todos.',
+            type: 'warning',
+            timer: 4000
+          });
+          return;
+        }
+        var targetText = $('#targetMemberId option:selected').text();
+        if (!$('#targetMemberId').val()) {
+          swal({
+            title: 'Nutriólogo destino',
+            text: 'Selecciona el nutriólogo que recibirá los pacientes.',
+            type: 'warning',
+            timer: 4000
+          });
+          return;
+        }
+        var countLabel = transferAll ? 'todos los pacientes' : (selectedCount + ' paciente(s)');
+        swal({
+          title: '¿Confirmar transferencia?',
+          text: 'Se transferirán ' + countLabel + ' a ' + targetText + '.',
+          type: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#4e73df',
+          confirmButtonText: 'Sí, transferir',
+          cancelButtonText: 'Cancelar',
+          closeOnConfirm: true
+        }, function (isConfirm) {
+          if (isConfirm) {
+            $('#transferForm').submit();
+          }
+        });
+      });
+    });
+  </script>
+</body>
+
+</html>
