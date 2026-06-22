@@ -27,10 +27,22 @@
               Falta el token de invitación. Usa el enlace que recibiste por correo.
             </p>
             <div th:if="${token != null && !token.isEmpty()}">
-              <p class="text-muted text-center mb-4">
+              <p class="text-muted text-center mb-4" th:if="${authenticated}">
                 Confirma para activar tu cuenta con el correo con el que iniciaste sesión.
               </p>
-              <form th:action="@{/invitation/nutritionist/redeem}" method="post">
+              <p class="text-muted text-center mb-4" th:unless="${authenticated}">
+                Inicia sesión o crea una cuenta con el mismo correo al que se envió la invitación.
+              </p>
+              <div th:unless="${authenticated}" class="mb-4">
+                <a th:href="@{/oauth2/authorization/auth0(signup=true)}"
+                  class="btn btn-success btn-user btn-block mb-2">
+                  Crear cuenta y continuar
+                </a>
+                <a th:href="@{/oauth2/authorization/auth0}" class="btn btn-primary btn-user btn-block">
+                  Ya tengo cuenta — iniciar sesión
+                </a>
+              </div>
+              <form th:if="${authenticated}" th:action="@{/invitation/nutritionist/redeem}" method="post">
                 <input type="hidden" name="token" th:value="${token}">
                 <button type="submit" class="btn btn-success btn-user btn-block">
                   Aceptar invitación y continuar

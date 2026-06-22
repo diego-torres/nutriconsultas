@@ -15,6 +15,7 @@ public class InvitationRedeemTemplateValidator extends BaseTemplateValidator {
 	public Map<String, Object> createMockModelVariables() {
 		final Map<String, Object> variables = super.createMockModelVariables();
 		variables.put("token", "sample-token");
+		variables.put("authenticated", true);
 		return variables;
 	}
 

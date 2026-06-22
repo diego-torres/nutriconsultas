@@ -17,7 +17,7 @@ public class SubscriptionWebMvcConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addInterceptors(final InterceptorRegistry registry) {
-		registry.addInterceptor(subscriptionAccessInterceptor).addPathPatterns("/admin/**");
+		registry.addInterceptor(subscriptionAccessInterceptor).addPathPatterns("/admin/**", "/rest/**");
 	}
 
 }
