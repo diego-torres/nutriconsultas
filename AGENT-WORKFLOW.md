@@ -43,7 +43,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (mobile):** [#134 — POST /rest/mobile/invitations](https://github.com/diego-torres/nutriconsultas/issues/134). ~~#133~~ done (PR [#229](https://github.com/diego-torres/nutriconsultas/pull/229)).
 
-**Current next issue (subscription):** [#208 — Stripe ops](https://github.com/diego-torres/nutriconsultas/issues/208) (prod webhooks + credenciales). ~~#207~~ done (`issue-207-stripe-payment-provider`). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). ~~#211~~ merged PR [#230](https://github.com/diego-torres/nutriconsultas/pull/230).
+**Current next issue (subscription):** [#208 — Stripe ops](https://github.com/diego-torres/nutriconsultas/issues/208) **in-progress** (`issue-208-stripe-ops`). ~~#207~~ merged PR [#308](https://github.com/diego-torres/nutriconsultas/pull/308). See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) and [`docs/subscription/STRIPE-OPS.md`](docs/subscription/STRIPE-OPS.md).
 
 **Current next issue (nutritionist web):** None — all registered epics complete: ~~#271~~ done (PR [#288](https://github.com/diego-torres/nutriconsultas/pull/288)) + ~~#272~~ done (PR [#289](https://github.com/diego-torres/nutriconsultas/pull/289)) system catalog create; ~~#241~~–~~#242~~ patient UX; ~~#232~~–~~#235~~ diet grid; ~~#236~~–~~#240~~ profile/PDF/nutrients; ~~#257~~–~~#259~~ platillo ownership; ~~#275~~, ~~#280~~–~~#281~~, ~~#285~~ diet/ingredient editing. Deferred follow-ups need new issues. See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 

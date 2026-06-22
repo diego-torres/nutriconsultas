@@ -147,6 +147,17 @@ bash infrastructure/scripts/ssm-update-recaptcha-keys.sh
 
 Local dev: copy `.env.example` to `.env` (Google test keys are fine). Production must use keys registered for `minutriporcion.com` at [Google reCAPTCHA admin](https://www.google.com/recaptcha/admin).
 
+**Stripe (#208)** — configure checkout and webhooks on the running app host:
+
+```bash
+export AWS_PROFILE=minutriporcion AWS_DEFAULT_REGION=us-east-1
+export STRIPE_SECRET_KEY='sk_test_...' STRIPE_WEBHOOK_SECRET='whsec_...'
+export PAYMENT_STUB_SIMULATE_CHECKOUT=false
+bash infrastructure/scripts/ssm-update-stripe-keys.sh
+```
+
+Full runbook: [`docs/subscription/STRIPE-OPS.md`](../docs/subscription/STRIPE-OPS.md). Webhook URL: `https://minutriporcion.com/rest/subscription/payment/webhook`.
+
 Edit `/opt/nutriconsultas/app.env` in an SSM session (or a systemd `EnvironmentFile` drop-in). On instances already running, add missing keys manually and restart the app — `user_data` only runs at first boot. Never commit real secrets to git.
 
 ## Outputs
