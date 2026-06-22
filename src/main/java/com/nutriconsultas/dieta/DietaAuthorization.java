@@ -47,10 +47,7 @@ public class DietaAuthorization {
 		if (dieta == null || userId == null) {
 			return false;
 		}
-		if (DietaCatalogConstants.isPatientAssignment(dieta)) {
-			return ownsPatientDieta(dieta, userId);
-		}
-		return true;
+		return !DietaCatalogConstants.isPatientAssignment(dieta) || ownsPatientDieta(dieta, userId);
 	}
 
 	public void verifyCanModify(final Dieta dieta, final String userId, final OidcUser principal) {
@@ -120,10 +117,8 @@ public class DietaAuthorization {
 	}
 
 	private boolean ownsPatientDieta(final Dieta dieta, final String userId) {
-		if (dieta.getPacienteId() == null) {
-			return false;
-		}
-		return pacienteRepository.findByIdAndUserId(dieta.getPacienteId(), userId).isPresent();
+		return dieta.getPacienteId() != null
+				&& pacienteRepository.findByIdAndUserId(dieta.getPacienteId(), userId).isPresent();
 	}
 
 }
