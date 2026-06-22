@@ -199,9 +199,9 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#209 — Invitation email](https://github.com/diego-torres/nutriconsultas/issues/209) **in-progress** (`subscription/209-invitation-email-ses`) |
-| **In progress** | #209 |
-| **Just completed** | [#208 — Stripe ops](https://github.com/diego-torres/nutriconsultas/issues/208) — PR [#309](https://github.com/diego-torres/nutriconsultas/pull/309) |
+| **Next issue** | [#220 — Retention cleanup](https://github.com/diego-torres/nutriconsultas/issues/220) (or #186 clinic hierarchy) |
+| **In progress** | — |
+| **Just completed** | [#209 — Invitation email](https://github.com/diego-torres/nutriconsultas/issues/209) — PR [#310](https://github.com/diego-torres/nutriconsultas/pull/310) |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
@@ -211,7 +211,6 @@ See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
 | Prioridad | Issue | Acción |
 |-----------|-------|--------|
-| 1 | **#209** | Entrega email invitación nutricionista (SES prod / console local) |
+| 1 | **#220** | Limpieza retención 90 días post-revoke + backup S3 + UI mantenimiento (deps: ~~#210~~ ✓) |
 | 2 | **#186** → **#188** | Modelo consultorio + invitaciones director (habilita `ClinicInvitationService` end-to-end) |
-| 3 | **#220** | Limpieza retención 90 días post-revoke + backup S3 + UI mantenimiento (deps: #210) |
-| 4 | **#244** | Pre-fill formulario contacto desde CTA Solicitar acceso |
+| 3 | **#244** | Pre-fill formulario contacto desde CTA Solicitar acceso |
