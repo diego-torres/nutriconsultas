@@ -3,13 +3,14 @@ package com.nutriconsultas.paciente;
 import java.util.List;
 import java.util.Objects;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.nutriconsultas.dieta.Dieta;
+import com.nutriconsultas.dieta.DietaCatalogConstants;
 import com.nutriconsultas.dieta.DietaRepository;
+import com.nutriconsultas.dieta.DietaService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,14 +19,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PacienteDietaServiceImpl implements PacienteDietaService {
 
-	@Autowired
-	private PacienteDietaRepository pacienteDietaRepository;
+	private final PacienteDietaRepository pacienteDietaRepository;
 
-	@Autowired
-	private PacienteRepository pacienteRepository;
+	private final PacienteRepository pacienteRepository;
 
-	@Autowired
-	private DietaRepository dietaRepository;
+	private final DietaRepository dietaRepository;
+
+	private final DietaService dietaService;
+
+	public PacienteDietaServiceImpl(final PacienteDietaRepository pacienteDietaRepository,
+			final PacienteRepository pacienteRepository, final DietaRepository dietaRepository,
+			final DietaService dietaService) {
+		this.pacienteDietaRepository = pacienteDietaRepository;
+		this.pacienteRepository = pacienteRepository;
+		this.dietaRepository = dietaRepository;
+		this.dietaService = dietaService;
+	}
 
 	@Override
 	public PacienteDieta assignDieta(@NonNull final Long pacienteId, @NonNull final Long dietaId,
@@ -33,14 +42,17 @@ public class PacienteDietaServiceImpl implements PacienteDietaService {
 		log.info("Assigning dieta {} to paciente {} for user {}", dietaId, pacienteId, userId);
 		final Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con id " + pacienteId));
-		final Dieta dieta = dietaRepository.findById(dietaId)
+		final Dieta sourceDieta = dietaRepository.findById(dietaId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado dieta con id " + dietaId));
+		if (DietaCatalogConstants.isPatientAssignment(sourceDieta)) {
+			throw new IllegalArgumentException("No se puede asignar una dieta exclusiva de otro paciente");
+		}
 
-		// Create a new PacienteDieta to avoid issues with existing IDs from form binding
-		// This ensures we're creating a new entity, not trying to update an existing one
+		final Dieta patientCopy = dietaService.copyDietaForPatientAssignment(dietaId, pacienteId, userId);
+
 		final PacienteDieta newAssignment = new PacienteDieta();
 		newAssignment.setPaciente(paciente);
-		newAssignment.setDieta(dieta);
+		newAssignment.setDieta(patientCopy);
 		newAssignment.setStartDate(pacienteDieta.getStartDate());
 		newAssignment.setEndDate(pacienteDieta.getEndDate());
 		newAssignment

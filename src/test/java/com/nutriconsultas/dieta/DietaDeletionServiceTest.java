@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.nutriconsultas.paciente.PacienteDietaRepository;
+import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.platform.PlatformAdminAuditService;
 import com.nutriconsultas.platform.PlatformAdminService;
 
@@ -41,6 +42,9 @@ class DietaDeletionServiceTest {
 	private PlatformAdminAuditService platformAdminAuditService;
 
 	@Mock
+	private PacienteRepository pacienteRepository;
+
+	@Mock
 	private OidcUser nutritionistPrincipal;
 
 	@Mock
@@ -51,13 +55,14 @@ class DietaDeletionServiceTest {
 	@BeforeEach
 	void setUp() {
 		final DietaAuthorization dietaAuthorization = new DietaAuthorization(platformAdminService,
-				platformAdminAuditService);
+				platformAdminAuditService, pacienteRepository);
 		service = new DietaDeletionServiceImpl(dietaService, dietaAuthorization, pacienteDietaRepository);
 	}
 
 	@Test
 	void deleteDieta_deletesOwnedDietWhenNotAssigned() {
 		final Dieta dieta = ownedDiet(5L);
+		when(dietaService.getDieta(5L)).thenReturn(dieta);
 		when(dietaService.getDietaByIdAndUserId(5L, NUTRITIONIST_USER_ID)).thenReturn(dieta);
 		when(pacienteDietaRepository.countByDietaIdAndPacienteUserId(5L, NUTRITIONIST_USER_ID)).thenReturn(0L);
 
@@ -70,6 +75,7 @@ class DietaDeletionServiceTest {
 	@Test
 	void deleteDieta_blocksWhenOwnedDietAssignedToPatients() {
 		final Dieta dieta = ownedDiet(6L);
+		when(dietaService.getDieta(6L)).thenReturn(dieta);
 		when(dietaService.getDietaByIdAndUserId(6L, NUTRITIONIST_USER_ID)).thenReturn(dieta);
 		when(pacienteDietaRepository.countByDietaIdAndPacienteUserId(6L, NUTRITIONIST_USER_ID)).thenReturn(2L);
 
@@ -96,8 +102,6 @@ class DietaDeletionServiceTest {
 
 	@Test
 	void deleteDieta_returnsNotFoundWhenDietMissing() {
-		when(dietaService.getDietaByIdAndUserId(99L, NUTRITIONIST_USER_ID)).thenReturn(null);
-		when(platformAdminService.isPlatformAdmin(nutritionistPrincipal)).thenReturn(false);
 		when(dietaService.getDieta(99L)).thenReturn(null);
 
 		final DietaDeleteResult result = service.deleteDieta(99L, NUTRITIONIST_USER_ID, nutritionistPrincipal);

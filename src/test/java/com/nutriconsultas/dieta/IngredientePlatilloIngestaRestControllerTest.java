@@ -22,6 +22,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.model.ApiResponse;
 import com.nutriconsultas.platillos.IngredienteFormModel;
+import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.platform.PlatformAdminAuditService;
 import com.nutriconsultas.platform.PlatformAdminService;
 
@@ -45,6 +46,9 @@ public class IngredientePlatilloIngestaRestControllerTest {
 	@Mock
 	private PlatformAdminAuditService platformAdminAuditService;
 
+	@Mock
+	private PacienteRepository pacienteRepository;
+
 	private DietaAuthorization dietaAuthorization;
 
 	private static final String TEST_USER_ID = "test-user-id-123";
@@ -57,7 +61,8 @@ public class IngredientePlatilloIngestaRestControllerTest {
 
 	@BeforeEach
 	public void setup() {
-		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
+		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService,
+				pacienteRepository);
 		ReflectionTestUtils.setField(controller, "dietaAuthorization", dietaAuthorization);
 
 		dieta = new Dieta();
@@ -106,6 +111,8 @@ public class IngredientePlatilloIngestaRestControllerTest {
 
 	@Test
 	public void testDeleteIngredienteReturnsUpdatedDieta() {
+		when(dietaService.getDieta(1L)).thenReturn(dieta);
+		when(dietaService.getDieta(1L)).thenReturn(dieta);
 		when(dietaService.getDietaByIdAndUserId(1L, TEST_USER_ID)).thenReturn(dieta);
 		when(dietaService.saveDieta(dieta)).thenReturn(dieta);
 
@@ -132,6 +139,7 @@ public class IngredientePlatilloIngestaRestControllerTest {
 		added.setId(40L);
 		added.setAlimento(alimento);
 
+		when(dietaService.getDieta(1L)).thenReturn(dieta);
 		when(dietaService.getDietaByIdAndUserId(1L, TEST_USER_ID)).thenReturn(dieta);
 		when(dietaService.addIngredientePlatilloIngesta(platilloIngesta, 7L, "1", 90)).thenReturn(added);
 		when(dietaService.saveDieta(dieta)).thenReturn(dieta);
@@ -146,6 +154,7 @@ public class IngredientePlatilloIngestaRestControllerTest {
 
 	@Test
 	public void testUpdateIngredienteReturnsUpdatedDieta() {
+		when(dietaService.getDieta(1L)).thenReturn(dieta);
 		when(dietaService.getDietaByIdAndUserId(1L, TEST_USER_ID)).thenReturn(dieta);
 		when(dietaService.saveDieta(dieta)).thenReturn(dieta);
 

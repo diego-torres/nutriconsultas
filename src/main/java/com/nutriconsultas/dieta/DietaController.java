@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.alimentos.AlimentoService;
 import com.nutriconsultas.controller.AbstractAuthorizedController;
+import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.platillos.IngestaFormModel;
 import com.nutriconsultas.platillos.Ingrediente;
 import com.nutriconsultas.platillos.Platillo;
@@ -49,6 +51,9 @@ public class DietaController extends AbstractAuthorizedController {
 
 	@Autowired
 	private DietaAuthorization dietaAuthorization;
+
+	@Autowired
+	private PacienteRepository pacienteRepository;
 
 	/**
 	 * Gets the user ID from the OAuth2 principal.
@@ -100,36 +105,45 @@ public class DietaController extends AbstractAuthorizedController {
 	public String editar(@PathVariable @NonNull final Long id, final Model model,
 			@AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Editar dieta con id {}", id);
-		model.addAttribute("activeMenu", "dietas");
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
 
 		final Dieta dieta = dietaService.getDieta(id);
 		if (dieta == null) {
 			throw new IllegalArgumentException("Dieta no encontrada");
 		}
-		LOGGER.debug("Dieta encontrada: {}", dieta);
-		model.addAttribute("dieta", dieta);
+		dietaAuthorization.verifyCanView(dieta, userId, principal);
 
-		// Check edit permission and pass to model
-		final String userId = getUserId(principal);
+		final boolean patientDiet = DietaCatalogConstants.isPatientAssignment(dieta);
+		model.addAttribute("activeMenu", patientDiet ? "plan-alimentario" : "dietas");
+		model.addAttribute("dieta", dieta);
+		model.addAttribute("patientDiet", patientDiet);
+
 		final boolean isOwner = dietaAuthorization.canModify(dieta, userId, principal);
 		model.addAttribute("isOwner", isOwner);
 
-		// Sort the ingestas list by id
+		if (patientDiet && dieta.getPacienteId() != null) {
+			pacienteRepository.findByIdAndUserId(dieta.getPacienteId(), userId).ifPresent(paciente -> {
+				model.addAttribute("paciente", paciente);
+				model.addAttribute("requerimientoKcal", resolveRequerimientoKcal(paciente));
+				model.addAttribute("patientDietPlanUrl", "/admin/pacientes/" + paciente.getId() + "/dietas");
+			});
+		}
+
 		final List<Ingesta> sortedIngestas = dieta.getIngestas()
 			.stream()
 			.sorted(Comparator.comparingLong(Ingesta::getId))
 			.collect(Collectors.toList());
 		model.addAttribute("ingestas", sortedIngestas);
 
-		// calculate the minimun id in ingestas
 		final Long minId = sortedIngestas.isEmpty() ? Long.valueOf(0L) : sortedIngestas.get(0).getId();
 		model.addAttribute("minId", minId);
 
 		model.addAttribute("platillos", platilloService.findAll());
-
 		model.addAttribute("alimentos", alimentoService.findAll());
 
-		// Calculate distribution percentages for pie chart and macro summary table
 		final Double totalProteina = getTotalProteina(dieta);
 		final Double totalLipidos = getTotalLipidos(dieta);
 		final Double totalHidratosDeCarbono = getTotalHidratosDeCarbono(dieta);
@@ -146,6 +160,13 @@ public class DietaController extends AbstractAuthorizedController {
 			model.addAttribute("distribucionLipido", distLipido);
 			model.addAttribute("distribucionHidratoCarbono", distHidratoCarbono);
 			model.addAttribute("hasDistribucion", true);
+			if (patientDiet && model.containsAttribute("requerimientoKcal")) {
+				final Double requerimientoKcal = (Double) model.getAttribute("requerimientoKcal");
+				final DietaCaloricFit.Fit fit = DietaCaloricFit.classify(kCal, requerimientoKcal);
+				model.addAttribute("caloricFit", fit.name());
+				model.addAttribute("caloricFitLabel", DietaCaloricFit.label(fit, kCal, requerimientoKcal));
+				model.addAttribute("caloricFitCss", DietaCaloricFit.cssClass(fit));
+			}
 		}
 		else {
 			model.addAttribute("hasDistribucion", false);
@@ -154,6 +175,13 @@ public class DietaController extends AbstractAuthorizedController {
 		addNutrientSummaryAttributes(model, sortedIngestas, dieta);
 
 		return "sbadmin/dietas/formulario";
+	}
+
+	private Double resolveRequerimientoKcal(final Paciente paciente) {
+		if (paciente.getTotalAdjustedKcal() != null) {
+			return paciente.getTotalAdjustedKcal();
+		}
+		return paciente.getGetKcal();
 	}
 
 	private void addNutrientSummaryAttributes(final Model model, final List<Ingesta> sortedIngestas,

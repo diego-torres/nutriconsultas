@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: 019-dieta-paciente-id-column
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: dieta
+              columnName: paciente_id
+      changes:
+        - addColumn:
+            tableName: dieta
+            columns:
+              - column:
+                  name: paciente_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+        - addForeignKeyConstraint:
+            baseTableName: dieta
+            baseColumnNames: paciente_id
+            referencedTableName: paciente
+            referencedColumnNames: id
+            constraintName: fk_dieta_paciente
+            onDelete: CASCADE
+        - createIndex:
+            indexName: idx_dieta_paciente_id
+            tableName: dieta
+            columns:
+              - column:
+                  name: paciente_id

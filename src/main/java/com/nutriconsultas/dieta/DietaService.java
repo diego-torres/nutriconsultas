@@ -42,4 +42,7 @@ public interface DietaService {
 
 	Dieta duplicateDieta(@NonNull Long id, @NonNull String userId);
 
+	Dieta copyDietaForPatientAssignment(@NonNull Long sourceDietaId, @NonNull Long pacienteId,
+			@NonNull String nutritionistUserId);
+
 }

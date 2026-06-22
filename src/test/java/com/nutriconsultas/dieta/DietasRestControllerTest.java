@@ -34,6 +34,7 @@ import com.nutriconsultas.dataTables.paging.PageArray;
 import com.nutriconsultas.dataTables.paging.PagingRequest;
 import com.nutriconsultas.dataTables.paging.Search;
 import com.nutriconsultas.model.ApiResponse;
+import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.platform.PlatformAdminAuditService;
 import com.nutriconsultas.platform.PlatformAdminService;
 
@@ -56,6 +57,9 @@ public class DietasRestControllerTest {
 
 	@Mock
 	private PlatformAdminAuditService platformAdminAuditService;
+
+	@Mock
+	private PacienteRepository pacienteRepository;
 
 	@Mock
 	private DietaDeletionService dietaDeletionService;
@@ -89,9 +93,22 @@ public class DietasRestControllerTest {
 		return oidcUser;
 	}
 
+	private void stubMutationAccess(final Long dietaId, final String userId, final Dieta dieta) {
+		if (dieta.getUserId() == null) {
+			dieta.setUserId(userId);
+		}
+		when(dietaService.getDieta(dietaId)).thenReturn(dieta);
+		when(dietaService.getDietaByIdAndUserId(dietaId, userId)).thenReturn(dieta);
+	}
+
+	private void stubMutationNotFound(final Long dietaId) {
+		when(dietaService.getDieta(dietaId)).thenReturn(null);
+	}
+
 	@BeforeEach
 	public void setup() {
-		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService);
+		dietaAuthorization = new DietaAuthorization(platformAdminService, platformAdminAuditService,
+				pacienteRepository);
 		ReflectionTestUtils.setField(dietasRestController, "dietaAuthorization", dietaAuthorization);
 
 		// Create empty diet
@@ -398,8 +415,7 @@ public class DietasRestControllerTest {
 		ingestaAfterDelete.setPlatillos(new ArrayList<>());
 		dietaAfterDelete.getIngestas().add(ingestaAfterDelete);
 
-		dietaBeforeDelete.setUserId(TEST_USER_ID);
-		when(dietaService.getDietaByIdAndUserId(dietaId, TEST_USER_ID)).thenReturn(dietaBeforeDelete);
+		stubMutationAccess(dietaId, TEST_USER_ID, dietaBeforeDelete);
 		when(dietaService.saveDieta(dietaBeforeDelete)).thenReturn(dietaAfterDelete);
 
 		// Act
@@ -434,7 +450,7 @@ public class DietasRestControllerTest {
 		Long ingestaId = 2L;
 		Long platilloIngestaId = 1L;
 
-		when(dietaService.getDietaByIdAndUserId(dietaId, TEST_USER_ID)).thenReturn(null);
+		stubMutationNotFound(dietaId);
 
 		// Act
 		ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.deletePlatilloIngesta(dietaId, ingestaId,
@@ -469,7 +485,8 @@ public class DietasRestControllerTest {
 		dieta.getIngestas().add(otherIngesta);
 
 		dieta.setUserId(TEST_USER_ID);
-		when(dietaService.getDietaByIdAndUserId(dietaId, TEST_USER_ID)).thenReturn(dieta);
+		dieta.setUserId(TEST_USER_ID);
+		stubMutationAccess(dietaId, TEST_USER_ID, dieta);
 		when(dietaService.saveDieta(dieta)).thenReturn(dieta);
 
 		// Act
@@ -509,7 +526,8 @@ public class DietasRestControllerTest {
 		dieta.getIngestas().add(ingesta);
 
 		dieta.setUserId(TEST_USER_ID);
-		when(dietaService.getDietaByIdAndUserId(dietaId, TEST_USER_ID)).thenReturn(dieta);
+		dieta.setUserId(TEST_USER_ID);
+		stubMutationAccess(dietaId, TEST_USER_ID, dieta);
 		when(dietaService.saveDieta(dieta)).thenReturn(dieta);
 
 		// Act
@@ -589,8 +607,7 @@ public class DietasRestControllerTest {
 		ingestaAfterDelete.getPlatillos().add(remainingPlatillo);
 		dietaAfterDelete.getIngestas().add(ingestaAfterDelete);
 
-		dietaBeforeDelete.setUserId(TEST_USER_ID);
-		when(dietaService.getDietaByIdAndUserId(dietaId, TEST_USER_ID)).thenReturn(dietaBeforeDelete);
+		stubMutationAccess(dietaId, TEST_USER_ID, dietaBeforeDelete);
 		when(dietaService.saveDieta(dietaBeforeDelete)).thenReturn(dietaAfterDelete);
 
 		// Act
@@ -657,8 +674,7 @@ public class DietasRestControllerTest {
 		ingestaAfterDelete.setAlimentos(new ArrayList<>());
 		dietaAfterDelete.getIngestas().add(ingestaAfterDelete);
 
-		dietaBeforeDelete.setUserId(TEST_USER_ID);
-		when(dietaService.getDietaByIdAndUserId(dietaId, TEST_USER_ID)).thenReturn(dietaBeforeDelete);
+		stubMutationAccess(dietaId, TEST_USER_ID, dietaBeforeDelete);
 		when(dietaService.saveDieta(dietaBeforeDelete)).thenReturn(dietaAfterDelete);
 
 		// Act
@@ -693,7 +709,7 @@ public class DietasRestControllerTest {
 		Long ingestaId = 2L;
 		Long alimentoIngestaId = 1L;
 
-		when(dietaService.getDietaByIdAndUserId(dietaId, TEST_USER_ID)).thenReturn(null);
+		stubMutationNotFound(dietaId);
 
 		// Act
 		ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.deleteAlimentoIngesta(dietaId, ingestaId,
@@ -1270,7 +1286,7 @@ public class DietasRestControllerTest {
 		ingesta.getPlatillos().add(platilloIngesta);
 		dieta.getIngestas().add(ingesta);
 
-		when(dietaService.getDietaByIdAndUserId(1L, TEST_USER_ID)).thenReturn(dieta);
+		stubMutationAccess(1L, TEST_USER_ID, dieta);
 		when(dietaService.saveDieta(any(Dieta.class))).thenReturn(dieta);
 
 		// Create mock OidcUser
@@ -1293,7 +1309,12 @@ public class DietasRestControllerTest {
 		log.info("Starting testDeletePlatilloIngestaRejectsOtherUserDiet");
 
 		// Arrange - diet belongs to other user
+		final Dieta otherUserDieta = new Dieta();
+		otherUserDieta.setId(1L);
+		otherUserDieta.setUserId(TEST_USER_ID);
+		when(dietaService.getDieta(1L)).thenReturn(otherUserDieta);
 		when(dietaService.getDietaByIdAndUserId(1L, OTHER_USER_ID)).thenReturn(null);
+		when(platformAdminService.isPlatformAdmin(org.mockito.ArgumentMatchers.any(OidcUser.class))).thenReturn(false);
 
 		// Create mock OidcUser
 		OidcUser principal = org.mockito.Mockito.mock(OidcUser.class);
@@ -1387,6 +1408,10 @@ public class DietasRestControllerTest {
 
 	@Test
 	public void testDeletePlatilloIngestaRejectsNutritionistOnSystemTemplate() {
+		final Dieta systemDieta = new Dieta();
+		systemDieta.setId(8L);
+		systemDieta.setUserId(DietaCatalogConstants.SYSTEM_TEMPLATE_USER_ID);
+		when(dietaService.getDieta(8L)).thenReturn(systemDieta);
 		when(dietaService.getDietaByIdAndUserId(8L, TEST_USER_ID)).thenReturn(null);
 		when(platformAdminService.isPlatformAdmin(org.mockito.ArgumentMatchers.any(OidcUser.class))).thenReturn(false);
 

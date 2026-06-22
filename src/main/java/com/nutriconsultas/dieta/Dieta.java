@@ -34,6 +34,12 @@ public class Dieta extends AbstractMacroNutrible {
 	@Column(nullable = false, length = 255)
 	private String userId;
 
+	/**
+	 * When set, this diet is a patient-specific copy (not shown in the catalog).
+	 */
+	@Column(name = "paciente_id")
+	private Long pacienteId;
+
 	@OneToMany(mappedBy = "dieta", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true,
 			targetEntity = Ingesta.class, fetch = jakarta.persistence.FetchType.LAZY)
 	@ToString.Exclude

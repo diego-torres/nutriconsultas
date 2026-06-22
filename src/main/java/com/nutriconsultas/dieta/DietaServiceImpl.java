@@ -69,7 +69,7 @@ public class DietaServiceImpl implements DietaService {
 	public List<Dieta> getDietasForCatalogFilter(final DietaCatalogFilter filter, final String userId) {
 		if (filter == null || filter == DietaCatalogFilter.TODAS) {
 			log.info("Getting all dietas for catalog filter todas");
-			return dietaRepository.findAll();
+			return dietaRepository.findAllCatalogDiets();
 		}
 		if (filter == DietaCatalogFilter.SISTEMA) {
 			log.info("Getting system template dietas for catalog filter sistema");
@@ -80,7 +80,7 @@ public class DietaServiceImpl implements DietaService {
 			return List.of();
 		}
 		log.info("Getting owned dietas for catalog filter propias, userId present");
-		return dietaRepository.findByUserId(userId);
+		return dietaRepository.findByUserIdAndPacienteIdIsNull(userId);
 	}
 
 	private static final int PICKER_MAX_PAGE_SIZE = 50;
@@ -93,7 +93,7 @@ public class DietaServiceImpl implements DietaService {
 		final int safeSize = Math.min(Math.max(size, 1), PICKER_MAX_PAGE_SIZE);
 		final int safePage = Math.max(page, 0);
 
-		final List<DietaPickerItemDto> filtered = dietaRepository.findAll(Sort.by("nombre"))
+		final List<DietaPickerItemDto> filtered = dietaRepository.findAllCatalogDiets()
 			.stream()
 			.filter(dieta -> matchesPickerSearch(dieta, term))
 			.map(this::toPickerItem)
@@ -436,33 +436,57 @@ public class DietaServiceImpl implements DietaService {
 			log.warn("Dieta with id {} not found for duplication", id);
 			return null;
 		}
+		if (DietaCatalogConstants.isPatientAssignment(originalDieta)) {
+			log.warn("Cannot duplicate patient-assigned dieta {}", id);
+			return null;
+		}
 
-		// Create new dieta with "Copy of [Original Name]"
-		final Dieta newDieta = new Dieta();
 		final String originalNombre = originalDieta.getNombre() != null ? originalDieta.getNombre() : "Dieta";
-		newDieta.setNombre("Copia de " + originalNombre);
-		newDieta.setUserId(userId);
+		final Dieta newDieta = buildDietaCopy(originalDieta, "Copia de " + originalNombre, userId, null);
+		final Dieta savedDieta = dietaRepository.save(newDieta);
+		log.info("Successfully duplicated dieta with id {} to new dieta with id {}", id, savedDieta.getId());
+		return savedDieta;
+	}
 
-		// Copy nutritional values from AbstractMacroNutrible
+	@Override
+	public Dieta copyDietaForPatientAssignment(@NonNull final Long sourceDietaId, @NonNull final Long pacienteId,
+			@NonNull final String nutritionistUserId) {
+		log.info("Copying dieta {} for patient assignment, pacienteId present", sourceDietaId);
+		final Dieta source = dietaRepository.findById(sourceDietaId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado dieta con id " + sourceDietaId));
+		if (DietaCatalogConstants.isPatientAssignment(source)) {
+			throw new IllegalArgumentException("No se puede asignar una copia de dieta de otro paciente");
+		}
+		final String nombre = source.getNombre() != null ? source.getNombre() : "Dieta";
+		final Dieta copy = buildDietaCopy(source, nombre, nutritionistUserId, pacienteId);
+		final Dieta saved = dietaRepository.save(copy);
+		log.info("Created patient diet copy with id {} from source {}", saved.getId(), sourceDietaId);
+		return saved;
+	}
+
+	private Dieta buildDietaCopy(final Dieta originalDieta, final String nombre, final String userId,
+			final Long pacienteId) {
+		final Dieta newDieta = new Dieta();
+		newDieta.setNombre(nombre);
+		newDieta.setUserId(userId);
+		newDieta.setPacienteId(pacienteId);
+
 		newDieta.setEnergia(originalDieta.getEnergia());
 		newDieta.setProteina(originalDieta.getProteina());
 		newDieta.setLipidos(originalDieta.getLipidos());
 		newDieta.setHidratosDeCarbono(originalDieta.getHidratosDeCarbono());
 
-		// Copy all ingestas
 		final List<Ingesta> newIngestas = new ArrayList<>();
 		for (final Ingesta originalIngesta : originalDieta.getIngestas()) {
 			final Ingesta newIngesta = new Ingesta();
 			newIngesta.setNombre(originalIngesta.getNombre());
 			newIngesta.setDieta(newDieta);
 
-			// Copy nutritional values from AbstractMacroNutrible
 			newIngesta.setEnergia(originalIngesta.getEnergia());
 			newIngesta.setProteina(originalIngesta.getProteina());
 			newIngesta.setLipidos(originalIngesta.getLipidos());
 			newIngesta.setHidratosDeCarbono(originalIngesta.getHidratosDeCarbono());
 
-			// Copy platillos
 			final List<PlatilloIngesta> newPlatillos = new ArrayList<>();
 			for (final PlatilloIngesta originalPlatillo : originalIngesta.getPlatillos()) {
 				final PlatilloIngesta newPlatillo = copyPlatilloIngesta(originalPlatillo);
@@ -471,7 +495,6 @@ public class DietaServiceImpl implements DietaService {
 			}
 			newIngesta.setPlatillos(newPlatillos);
 
-			// Copy alimentos
 			final List<AlimentoIngesta> newAlimentos = new ArrayList<>();
 			for (final AlimentoIngesta originalAlimento : originalIngesta.getAlimentos()) {
 				final AlimentoIngesta newAlimento = copyAlimentoIngesta(originalAlimento);
@@ -483,11 +506,7 @@ public class DietaServiceImpl implements DietaService {
 			newIngestas.add(newIngesta);
 		}
 		newDieta.setIngestas(newIngestas);
-
-		// Save and return the duplicated dieta
-		final Dieta savedDieta = dietaRepository.save(newDieta);
-		log.info("Successfully duplicated dieta with id {} to new dieta with id {}", id, savedDieta.getId());
-		return savedDieta;
+		return newDieta;
 	}
 
 	private PlatilloIngesta copyPlatilloIngesta(final PlatilloIngesta original) {
