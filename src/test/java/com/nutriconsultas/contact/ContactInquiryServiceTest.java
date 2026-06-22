@@ -36,6 +36,7 @@ class ContactInquiryServiceTest {
 		form.setEmail("ana@example.com");
 		form.setSubject("Acceso");
 		form.setMessage("Quiero solicitar acceso");
+		form.setPlanRoleSlug("director-consultorio");
 
 		when(contactInquiryRepository.save(any(ContactInquiry.class))).thenAnswer(invocation -> {
 			final ContactInquiry inquiry = invocation.getArgument(0);
@@ -52,7 +53,30 @@ class ContactInquiryServiceTest {
 		assertThat(captor.getValue().getEmail()).isEqualTo("ana@example.com");
 		assertThat(captor.getValue().getSubject()).isEqualTo("Acceso");
 		assertThat(captor.getValue().getMessage()).isEqualTo("Quiero solicitar acceso");
+		assertThat(captor.getValue().getPlanRoleSlug()).isEqualTo("director-consultorio");
 		assertThat(captor.getValue().isReadByAdmin()).isFalse();
+	}
+
+	@Test
+	void saveFromForm_ignoresInvalidPlanSlug() {
+		final ContactForm form = new ContactForm();
+		form.setName("Ana López");
+		form.setEmail("ana@example.com");
+		form.setSubject("Acceso");
+		form.setMessage("Quiero solicitar acceso");
+		form.setPlanRoleSlug("invalid-plan");
+
+		when(contactInquiryRepository.save(any(ContactInquiry.class))).thenAnswer(invocation -> {
+			final ContactInquiry inquiry = invocation.getArgument(0);
+			inquiry.setId(11L);
+			return inquiry;
+		});
+
+		contactInquiryService.saveFromForm(form);
+
+		final ArgumentCaptor<ContactInquiry> captor = ArgumentCaptor.forClass(ContactInquiry.class);
+		verify(contactInquiryRepository).save(captor.capture());
+		assertThat(captor.getValue().getPlanRoleSlug()).isNull();
 	}
 
 	@Test

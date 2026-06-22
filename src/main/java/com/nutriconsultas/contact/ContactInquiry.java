@@ -40,6 +40,9 @@ public class ContactInquiry {
 	@Column(nullable = false)
 	private boolean readByAdmin;
 
+	@Column(length = 64)
+	private String planRoleSlug;
+
 	@PrePersist
 	void onCreate() {
 		if (createdAt == null) {

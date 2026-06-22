@@ -27,6 +27,7 @@ public class ContactInquiryService {
 		inquiry.setEmail(contactForm.getEmail());
 		inquiry.setSubject(contactForm.getSubject());
 		inquiry.setMessage(contactForm.getMessage());
+		inquiry.setPlanRoleSlug(ContactPlanInterest.normalizeForStorage(contactForm.getPlanRoleSlug()));
 		inquiry.setReadByAdmin(false);
 		final ContactInquiry saved = contactInquiryRepository.save(inquiry);
 		log.info("Contact inquiry saved: {}", LogRedaction.redactContactInquiry(saved.getId()));

@@ -22,6 +22,7 @@ public class ContactInquiryTemplateValidator extends BaseTemplateValidator {
 		unread.setEmail("ana@example.com");
 		unread.setSubject("Consulta");
 		unread.setMessage("Mensaje de prueba");
+		unread.setPlanRoleSlug("nutriologo-profesional");
 		unread.setReadByAdmin(false);
 		unread.setCreatedAt(Instant.parse("2026-01-15T10:30:00Z"));
 

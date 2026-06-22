@@ -199,9 +199,9 @@ cat docs/subscription/SUBSCRIPTION-ENFORCEMENT-PLAN.md
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#244 — Contact form pre-fill from Solicitar acceso](https://github.com/diego-torres/nutriconsultas/issues/244) |
+| **Next issue** | — (registered track complete; triage open `[Subscription]` issues) |
 | **In progress** | — |
-| **Just completed** | [#314 — Director patient transfers](https://github.com/diego-torres/nutriconsultas/issues/314) — branch `subscription/314-patient-transfers` |
+| **Just completed** | [#244 — Contact form pre-fill from Solicitar acceso](https://github.com/diego-torres/nutriconsultas/issues/244) — branch `subscription/244-contact-form-prefill` |
 
 See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
@@ -211,4 +211,4 @@ See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) for full registry.
 
 | Prioridad | Issue | Acción |
 |-----------|-------|--------|
-| 1 | **#244** | Pre-fill formulario contacto desde CTA Solicitar acceso |
+| — | — | Registered `[Subscription]` track complete (~~#244~~ ✓). Triage new GitHub issues or maintenance follow-ups. |
