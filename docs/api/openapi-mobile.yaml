@@ -453,6 +453,46 @@ paths:
               schema:
                 type: string
                 format: byte
+  /rest/mobile/invitations/{token}/preview:
+    get:
+      tags:
+      - Mobile Invitations
+      summary: Preview patient invitation
+      description: "Public, rate-limited preview returning inviter display name only\
+        \ (no patient PII)."
+      operationId: previewInvitation
+      parameters:
+      - name: token
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Invitation preview when token is valid and pending
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePatientInvitationPreviewDto"
+        "400":
+          description: Malformed invitation token
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePatientInvitationPreviewDto"
+        "404":
+          description: Invalid or expired invitation
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePatientInvitationPreviewDto"
+        "429":
+          description: "Rate limit exceeded (Retry-After: 60)"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePatientInvitationPreviewDto"
+      security: []
 components:
   schemas:
     SendPatientMessageRequest:
@@ -1001,6 +1041,24 @@ components:
           type: string
         imageUrl:
           type: string
+    ApiResponsePatientInvitationPreviewDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/PatientInvitationPreviewDto"
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    PatientInvitationPreviewDto:
+      type: object
+      description: Public invitation preview
+      properties:
+        inviterDisplayName:
+          type: string
+          description: Nutritionist display name from profile
+          example: Lic. Ana López
   securitySchemes:
     bearer-jwt:
       type: http

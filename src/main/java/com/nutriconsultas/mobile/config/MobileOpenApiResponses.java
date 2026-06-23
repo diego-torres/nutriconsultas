@@ -44,4 +44,13 @@ public interface MobileOpenApiResponses {
 
 	}
 
+	@Target({ ElementType.METHOD, ElementType.TYPE })
+	@Retention(RetentionPolicy.RUNTIME)
+	@ApiResponses({ @ApiResponse(responseCode = "400", description = "Malformed invitation token"),
+			@ApiResponse(responseCode = "404", description = "Invalid or expired invitation"),
+			@ApiResponse(responseCode = "429", description = "Rate limit exceeded (Retry-After: 60)") })
+	@interface PublicInvitationPreview {
+
+	}
+
 }

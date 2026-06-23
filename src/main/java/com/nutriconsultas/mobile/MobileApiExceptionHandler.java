@@ -82,6 +82,25 @@ public class MobileApiExceptionHandler {
 		return ResponseEntity.badRequest().body(errorResponses.error(messageKey));
 	}
 
+	@ExceptionHandler(PatientInvitationInvalidTokenException.class)
+	public ResponseEntity<ApiResponse<Void>> handleInvitationInvalidToken(
+			final PatientInvitationInvalidTokenException ex) {
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile API invitation token malformed");
+		}
+		return ResponseEntity.badRequest().body(errorResponses.error(MobileApiErrorResponses.KEY_INVITATION_INVALID));
+	}
+
+	@ExceptionHandler(PatientInvitationUnavailableException.class)
+	public ResponseEntity<ApiResponse<Void>> handleInvitationUnavailable(
+			final PatientInvitationUnavailableException ex) {
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile API invitation preview unavailable");
+		}
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+			.body(errorResponses.error(MobileApiErrorResponses.KEY_INVITATION_UNAVAILABLE));
+	}
+
 	@ExceptionHandler(RequestNotPermitted.class)
 	public ResponseEntity<ApiResponse<Void>> handleRateLimitExceeded(final RequestNotPermitted ex) {
 		if (log.isDebugEnabled()) {

@@ -2,12 +2,20 @@ package com.nutriconsultas.mobile;
 
 import static com.nutriconsultas.mobile.MobileIntegrationTestJwt.mobileJwt;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -20,12 +28,20 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.paciente.PacienteStatus;
+import com.nutriconsultas.paciente.PatientInvitation;
 import com.nutriconsultas.paciente.PatientInvitationRepository;
 import com.nutriconsultas.paciente.PatientInvitationStatus;
+import com.nutriconsultas.paciente.invitation.PatientInvitationTokenBundle;
+import com.nutriconsultas.paciente.invitation.PatientInvitationTokenService;
+import com.nutriconsultas.profile.NutritionistProfile;
+import com.nutriconsultas.profile.NutritionistProfileRepository;
 import com.nutriconsultas.subscription.SubscriptionEntitlementService;
 import com.nutriconsultas.util.InvitationTokenHasher;
+
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -46,8 +62,22 @@ class MobileInvitationIntegrationTest {
 	@Autowired
 	private PatientInvitationRepository patientInvitationRepository;
 
+	@Autowired
+	private PatientInvitationTokenService patientInvitationTokenService;
+
+	@Autowired
+	private NutritionistProfileRepository nutritionistProfileRepository;
+
+	@Autowired
+	private RateLimiterRegistry rateLimiterRegistry;
+
 	@MockBean
 	private SubscriptionEntitlementService subscriptionEntitlementService;
+
+	@BeforeEach
+	void resetRateLimiters() {
+		rateLimiterRegistry.remove(PatientInvitationPreviewRateLimiter.PATIENT_INVITATION_PREVIEW + ":127.0.0.1");
+	}
 
 	@Test
 	void createInvitation_withoutJwt_returnsUnauthorized() throws Exception {
@@ -102,6 +132,91 @@ class MobileInvitationIntegrationTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(validRequestJson(email)))
 			.andExpect(status().isCreated());
+	}
+
+	@Test
+	void previewInvitation_withoutJwt_returnsInviterDisplayName() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		seedPendingInvitation(bundle, NUTRITIONIST_SUB);
+		seedNutritionistProfile(NUTRITIONIST_SUB, "Lic. Preview Nutri");
+
+		mockMvc.perform(get("/rest/mobile/invitations/{token}/preview", bundle.urlToken()))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.inviterDisplayName").value("Lic. Preview Nutri"))
+			.andExpect(jsonPath("$.timestamp").exists());
+	}
+
+	@Test
+	void previewInvitation_withUnknownToken_returnsGenericNotFound() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+
+		mockMvc.perform(get("/rest/mobile/invitations/{token}/preview", bundle.urlToken()))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.message").value("La invitación no es válida o ha expirado."));
+	}
+
+	@Test
+	void previewInvitation_withExpiredToken_returnsSameMessageAsUnknown() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		final PatientInvitation invitation = seedPendingInvitation(bundle, NUTRITIONIST_SUB);
+		invitation.setExpiresAt(Instant.now().minus(1, ChronoUnit.HOURS));
+		patientInvitationRepository.saveAndFlush(invitation);
+
+		mockMvc.perform(get("/rest/mobile/invitations/{token}/preview", bundle.urlToken()))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.message").value("La invitación no es válida o ha expirado."));
+	}
+
+	@Test
+	void previewInvitation_withMalformedToken_returnsBadRequest() throws Exception {
+		mockMvc.perform(get("/rest/mobile/invitations/{token}/preview", "not-valid"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("El enlace de invitación no es válido."));
+	}
+
+	@Test
+	void previewInvitation_whenRateLimited_returns429WithRetryAfter() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		seedPendingInvitation(bundle, NUTRITIONIST_SUB);
+
+		for (int attempt = 0; attempt < 2; attempt++) {
+			mockMvc.perform(get("/rest/mobile/invitations/{token}/preview", bundle.urlToken()))
+				.andExpect(status().isOk());
+		}
+
+		mockMvc.perform(get("/rest/mobile/invitations/{token}/preview", bundle.urlToken()))
+			.andExpect(status().isTooManyRequests())
+			.andExpect(header().string("Retry-After", "60"))
+			.andExpect(jsonPath("$.message").value("Demasiadas solicitudes. Inténtalo de nuevo en un minuto."));
+	}
+
+	private PatientInvitation seedPendingInvitation(final PatientInvitationTokenBundle bundle,
+			final String nutritionistUserId) {
+		final Paciente paciente = new Paciente();
+		paciente.setUserId(nutritionistUserId);
+		paciente.setName("Preview Patient");
+		paciente.setEmail("preview." + UUID.randomUUID() + "@example.com");
+		paciente.setStatus(PacienteStatus.INVITED);
+		paciente.setGender("F");
+		paciente.setDob(Date.from(LocalDate.of(1990, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+		final Paciente savedPaciente = pacienteRepository.saveAndFlush(paciente);
+
+		final PatientInvitation invitation = new PatientInvitation();
+		invitation.setTokenHash(bundle.tokenHash());
+		invitation.setPaciente(savedPaciente);
+		invitation.setNutritionistUserId(nutritionistUserId);
+		invitation.setStatus(PatientInvitationStatus.PENDING);
+		invitation.setExpiresAt(Instant.now().plus(14, ChronoUnit.DAYS));
+		invitation.setMaxUses(1);
+		return patientInvitationRepository.saveAndFlush(invitation);
+	}
+
+	private void seedNutritionistProfile(final String nutritionistUserId, final String displayName) {
+		final NutritionistProfile profile = new NutritionistProfile();
+		profile.setUserId(nutritionistUserId);
+		profile.setPublicBookingId(UUID.randomUUID().toString());
+		profile.setDisplayName(displayName);
+		nutritionistProfileRepository.saveAndFlush(profile);
 	}
 
 	private static String validRequestJson(final String email) {
