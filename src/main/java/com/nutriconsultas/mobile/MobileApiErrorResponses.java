@@ -53,6 +53,8 @@ public final class MobileApiErrorResponses {
 
 	public static final String KEY_INVITATION_PATIENT_STATUS = "error.invitation.patient_status";
 
+	public static final String KEY_INVITATION_REVOKE_NOT_ALLOWED = "error.invitation.revoke_not_allowed";
+
 	private final MessageSource messageSource;
 
 	private final ObjectMapper objectMapper;

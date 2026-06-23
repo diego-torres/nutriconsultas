@@ -141,6 +141,26 @@ public class MobileApiExceptionHandler {
 			.body(errorResponses.error(MobileApiErrorResponses.KEY_INVITATION_PATIENT_STATUS));
 	}
 
+	@ExceptionHandler(PatientInvitationRevokeNotFoundException.class)
+	public ResponseEntity<ApiResponse<Void>> handleInvitationRevokeNotFound(
+			final PatientInvitationRevokeNotFoundException ex) {
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile API invitation revoke not found");
+		}
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+			.body(errorResponses.error(MobileApiErrorResponses.KEY_INVITATION_UNAVAILABLE));
+	}
+
+	@ExceptionHandler(PatientInvitationRevokeNotAllowedException.class)
+	public ResponseEntity<ApiResponse<Void>> handleInvitationRevokeNotAllowed(
+			final PatientInvitationRevokeNotAllowedException ex) {
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile API invitation revoke not allowed");
+		}
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+			.body(errorResponses.error(MobileApiErrorResponses.KEY_INVITATION_REVOKE_NOT_ALLOWED));
+	}
+
 	@ExceptionHandler(RequestNotPermitted.class)
 	public ResponseEntity<ApiResponse<Void>> handleRateLimitExceeded(final RequestNotPermitted ex) {
 		if (log.isDebugEnabled()) {

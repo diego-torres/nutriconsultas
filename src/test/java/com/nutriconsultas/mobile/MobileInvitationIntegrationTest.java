@@ -50,6 +50,8 @@ class MobileInvitationIntegrationTest {
 
 	private static final String NUTRITIONIST_SUB = "auth0|mobile-invitation-nutritionist";
 
+	private static final String OTHER_NUTRITIONIST_SUB = "auth0|mobile-invitation-other-nutritionist";
+
 	@Autowired
 	private MockMvc mockMvc;
 
@@ -252,6 +254,62 @@ class MobileInvitationIntegrationTest {
 		mockMvc.perform(post("/rest/mobile/invitations/{token}/redeem", bundle.urlToken()).with(mobileJwt(patientSub)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.pacienteStatus").value("ONBOARDING"));
+	}
+
+	@Test
+	void revokeInvitation_withNutritionistJwt_revokesPendingInvitation() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		final PatientInvitation invitation = seedPendingInvitation(bundle, NUTRITIONIST_SUB);
+
+		mockMvc
+			.perform(post("/rest/mobile/invitations/{id}/revoke", invitation.getId()).with(mobileJwt(NUTRITIONIST_SUB)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.invitationId").value(invitation.getId()))
+			.andExpect(jsonPath("$.data.pacienteId").value(invitation.getPaciente().getId()))
+			.andExpect(jsonPath("$.data.status").value("REVOKED"));
+
+		final var savedInvitation = patientInvitationRepository.findById(invitation.getId()).orElseThrow();
+		assertThat(savedInvitation.getStatus()).isEqualTo(PatientInvitationStatus.REVOKED);
+
+		mockMvc.perform(get("/rest/mobile/invitations/{token}/preview", bundle.urlToken()))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.message").value("La invitación no es válida o ha expirado."));
+	}
+
+	@Test
+	void revokeInvitation_idempotentWhenAlreadyRevoked_returnsOk() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		final PatientInvitation invitation = seedPendingInvitation(bundle, NUTRITIONIST_SUB);
+
+		mockMvc
+			.perform(post("/rest/mobile/invitations/{id}/revoke", invitation.getId()).with(mobileJwt(NUTRITIONIST_SUB)))
+			.andExpect(status().isOk());
+
+		mockMvc
+			.perform(post("/rest/mobile/invitations/{id}/revoke", invitation.getId()).with(mobileJwt(NUTRITIONIST_SUB)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.status").value("REVOKED"));
+	}
+
+	@Test
+	void revokeInvitation_withOtherNutritionist_returnsNotFound() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		final PatientInvitation invitation = seedPendingInvitation(bundle, NUTRITIONIST_SUB);
+
+		mockMvc
+			.perform(post("/rest/mobile/invitations/{id}/revoke", invitation.getId())
+				.with(mobileJwt(OTHER_NUTRITIONIST_SUB)))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.message").value("La invitación no es válida o ha expirado."));
+	}
+
+	@Test
+	void revokeInvitation_withoutJwt_returnsUnauthorized() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		final PatientInvitation invitation = seedPendingInvitation(bundle, NUTRITIONIST_SUB);
+
+		mockMvc.perform(post("/rest/mobile/invitations/{id}/revoke", invitation.getId()))
+			.andExpect(status().isUnauthorized());
 	}
 
 	private PatientInvitation seedPendingInvitation(final PatientInvitationTokenBundle bundle,
