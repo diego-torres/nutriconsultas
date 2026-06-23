@@ -590,7 +590,7 @@ Issue registry: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Agent workflow
 
 **Done on `main` (2026-06-14):** #107/#109/#110 (JWT + linkage + DTO envelope); endpoints #91–#98; messages #96/#97 with rate limit (#113); localized errors (#111, PR #151); dashboard IMC gauge (#106).
 
-**Next:** [#138](https://github.com/diego-torres/nutriconsultas/issues/138) onboarding profile (**NEXT**). ~~#137~~ done (PR [#326](https://github.com/diego-torres/nutriconsultas/pull/326)). ~~#136~~ done (PR [#325](https://github.com/diego-torres/nutriconsultas/pull/325)). ~~#135~~ done (PR [#324](https://github.com/diego-torres/nutriconsultas/pull/324)). ~~#114~~, ~~#116~~, ~~#115~~, ~~#112~~ **done**. Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) — registered track **complete** (~~#244~~ ✓).
+**Next:** [#138](https://github.com/diego-torres/nutriconsultas/issues/138) onboarding profile (**in-progress**). ~~#137~~ done (PR [#326](https://github.com/diego-torres/nutriconsultas/pull/326)).
 
 **Schema gate (post-#46):** [#46 Liquibase](https://github.com/diego-torres/nutriconsultas/issues/46) baseline is on `main` (PR #196). All new schema/catalog changes require **incremental Liquibase changesets** — see [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) and [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md). ~~#156~~ Phase C done before baseline.
 

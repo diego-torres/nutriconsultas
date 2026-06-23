@@ -32,7 +32,7 @@ class MobileOpenApiIntegrationTest {
 			"/rest/mobile/patient/visits/{visitId}", "/rest/mobile/patient/diet-plans",
 			"/rest/mobile/patient/diet-plans/{assignmentId}", "/rest/mobile/patient/diet-plans/{assignmentId}/pdf",
 			"/rest/mobile/patient/messages", "/rest/mobile/patient/progress",
-			"/rest/mobile/patient/progress/measurements", "/rest/mobile/invitations",
+			"/rest/mobile/patient/progress/measurements", "/rest/mobile/patient/me", "/rest/mobile/invitations",
 			"/rest/mobile/invitations/{token}/preview", "/rest/mobile/invitations/{token}/redeem");
 
 	@Autowired
@@ -56,6 +56,8 @@ class MobileOpenApiIntegrationTest {
 		}
 		assertThat(paths.path("/rest/mobile/patient/messages").has("get")).isTrue();
 		assertThat(paths.path("/rest/mobile/patient/messages").has("post")).isTrue();
+		assertThat(paths.path("/rest/mobile/patient/me").has("get")).isTrue();
+		assertThat(paths.path("/rest/mobile/patient/me").has("patch")).isTrue();
 	}
 
 	@Test

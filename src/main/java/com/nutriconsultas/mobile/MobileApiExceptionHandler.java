@@ -55,6 +55,16 @@ public class MobileApiExceptionHandler {
 			.body(errorResponses.error(MobileApiErrorResponses.KEY_PATIENT_ONBOARDING_REQUIRED));
 	}
 
+	@ExceptionHandler(PatientOnboardingInvalidAvatarException.class)
+	public ResponseEntity<ApiResponse<Void>> handlePatientOnboardingInvalidAvatar(
+			final PatientOnboardingInvalidAvatarException ex) {
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile API onboarding invalid avatar");
+		}
+		return ResponseEntity.badRequest()
+			.body(errorResponses.error(MobileApiErrorResponses.KEY_PATIENT_ONBOARDING_INVALID_AVATAR));
+	}
+
 	@ExceptionHandler(SubscriptionLimitExceededException.class)
 	public ResponseEntity<ApiResponse<Void>> handleSubscriptionLimit(final SubscriptionLimitExceededException ex) {
 		if (log.isDebugEnabled()) {
