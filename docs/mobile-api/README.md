@@ -10,9 +10,10 @@ Canonical cross-repo contracts for the `[Mobile API]` track. Indexed from [`../.
 | [`mobile-api-roadmap-v2.md`](mobile-api-roadmap-v2.md) | Per-endpoint (#91–#99) request/response JSON and field mappings |
 | [`PHI-LOGGING-AUDIT.md`](PHI-LOGGING-AUDIT.md) | Completed PHI logging audit for `/rest/mobile/**` (#115, PR #168) |
 | [`MOBILE-E2E-STATUS.md`](MOBILE-E2E-STATUS.md) | Live E2E status, Auth0 setup, HTTP code matrix |
+| [`../auth0/PATIENT-POST-LOGIN-GATE.md`](../auth0/PATIENT-POST-LOGIN-GATE.md) | Auth0 Post-Login invitation gate (#140) — Action script + deployment |
 | [`../api/openapi-mobile.yaml`](../api/openapi-mobile.yaml) | OpenAPI 3.1 export (#112, PR #164); regen: `scripts/export-openapi-mobile.sh` |
 
-**Status (2026-06-22):** ~~#132~~ ~~#133~~ ~~#134~~ ~~#135~~ ~~#136~~ ~~#137~~ ~~#138~~ ~~#139~~ done (PR [#330](https://github.com/diego-torres/nutriconsultas/pull/330)). **NEXT:** [#140](https://github.com/diego-torres/nutriconsultas/issues/140) Auth0 Post-Login gate.
+**Status (2026-06-22):** ~~#132~~ ~~#133~~ ~~#134~~ ~~#135~~ ~~#136~~ ~~#137~~ ~~#138~~ ~~#139~~ ~~#140~~ done ([`docs/auth0/PATIENT-POST-LOGIN-GATE.md`](../auth0/PATIENT-POST-LOGIN-GATE.md)). **NEXT:** [#141](https://github.com/diego-torres/nutriconsultas/issues/141) invitation hardening.
 
 ## Related registries (same repo)
 
