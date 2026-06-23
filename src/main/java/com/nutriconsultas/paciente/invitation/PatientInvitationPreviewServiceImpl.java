@@ -53,10 +53,8 @@ public class PatientInvitationPreviewServiceImpl implements PatientInvitationPre
 	}
 
 	private boolean isPreviewable(final PatientInvitation invitation) {
-		if (invitation.getStatus() != PatientInvitationStatus.PENDING) {
-			return false;
-		}
-		return !invitation.getExpiresAt().isBefore(Instant.now());
+		return invitation.getStatus() == PatientInvitationStatus.PENDING
+				&& !invitation.getExpiresAt().isBefore(Instant.now());
 	}
 
 }
