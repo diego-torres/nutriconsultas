@@ -99,7 +99,7 @@ GET /actuator/health                 → 200
 | Code | Meaning |
 |------|---------|
 | **401** | Missing/invalid JWT, wrong issuer, or wrong `aud` |
-| **403** | JWT valid but no linked `Paciente.patientAuthSub` — localized `ApiResponse.message` (`error.patient.not.linked`, #111) |
+| **403** | JWT valid but patient data blocked (#137): unlinked `sub`, `ONBOARDING` on data endpoints, or `REVOKED`/`INVITED` — localized `error.patient.onboarding.required` |
 | **200** | Auth + linkage OK; endpoint implemented |
 | **201** | POST `/messages` success (#97) |
 | **400** | Validation failure (localized message, #111) |

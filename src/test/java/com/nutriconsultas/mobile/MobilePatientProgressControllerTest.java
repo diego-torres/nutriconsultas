@@ -73,22 +73,7 @@ class MobilePatientProgressControllerTest {
 	}
 
 	private static PacienteAuthView authView(final Long id) {
-		return new PacienteAuthView() {
-			@Override
-			public Long getId() {
-				return id;
-			}
-
-			@Override
-			public String getPatientAuthSub() {
-				return PATIENT_SUB;
-			}
-
-			@Override
-			public String getUserId() {
-				return "auth0|nutritionist";
-			}
-		};
+		return MobileTestPacienteAuthViews.authView(id, PATIENT_SUB, "auth0|nutritionist");
 	}
 
 }

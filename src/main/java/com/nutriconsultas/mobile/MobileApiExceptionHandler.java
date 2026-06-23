@@ -45,6 +45,16 @@ public class MobileApiExceptionHandler {
 			.body(errorResponses.error(MobileApiErrorResponses.KEY_PATIENT_NOT_LINKED));
 	}
 
+	@ExceptionHandler(PatientOnboardingRequiredException.class)
+	public ResponseEntity<ApiResponse<Void>> handlePatientOnboardingRequired(
+			final PatientOnboardingRequiredException ex) {
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile API onboarding required");
+		}
+		return ResponseEntity.status(HttpStatus.FORBIDDEN)
+			.body(errorResponses.error(MobileApiErrorResponses.KEY_PATIENT_ONBOARDING_REQUIRED));
+	}
+
 	@ExceptionHandler(SubscriptionLimitExceededException.class)
 	public ResponseEntity<ApiResponse<Void>> handleSubscriptionLimit(final SubscriptionLimitExceededException ex) {
 		if (log.isDebugEnabled()) {

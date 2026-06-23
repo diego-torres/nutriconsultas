@@ -3,6 +3,8 @@ package com.nutriconsultas.mobile;
 import java.io.Serial;
 import java.io.Serializable;
 
+import com.nutriconsultas.paciente.PacienteStatus;
+
 /**
  * Authenticated patient identity for mobile API requests. Contains only non-PHI
  * identifiers.
@@ -16,9 +18,12 @@ public final class PatientPrincipal implements Serializable {
 
 	private final String patientAuthSub;
 
-	public PatientPrincipal(final Long pacienteId, final String patientAuthSub) {
+	private final PacienteStatus status;
+
+	public PatientPrincipal(final Long pacienteId, final String patientAuthSub, final PacienteStatus status) {
 		this.pacienteId = pacienteId;
 		this.patientAuthSub = patientAuthSub;
+		this.status = status;
 	}
 
 	public Long getPacienteId() {
@@ -27,6 +32,10 @@ public final class PatientPrincipal implements Serializable {
 
 	public String getPatientAuthSub() {
 		return patientAuthSub;
+	}
+
+	public PacienteStatus getStatus() {
+		return status;
 	}
 
 }
