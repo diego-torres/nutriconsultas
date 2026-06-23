@@ -22,6 +22,7 @@ This document summarizes what the backend team verified after Auth0 CLI authenti
 | Visits / diet-plans / messages / progress API | ✅ Deployed on `main` (incl. #99 via PR #153) | Expect **200** (POST messages **201**) after login + linkage |
 | Localized error envelope (#111) | ✅ Deployed | 403/404/400/429 return `ApiResponse` with localized `message` |
 | Message rate limit (#113) | ✅ Deployed | POST messages: 10/min per `patientAuthSub`; **429** + `Retry-After: 60` |
+| Patient invitation Post-Login gate (#140) | 📋 Script ready | Deploy Action from [`docs/auth0/PATIENT-POST-LOGIN-GATE.md`](../auth0/PATIENT-POST-LOGIN-GATE.md); mobile must pass `invitation_token` on authorize ([mobile #64](https://github.com/Escanor4323/nutriconsultas-mobile/issues/64)) |
 
 ---
 

@@ -41,7 +41,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (public booking):** None — epic ~~#245~~ **done**; ~~#246~~, ~~#247~~, ~~#248~~, ~~#297~~, ~~#300~~, ~~#302~~ done. Deferred follow-ups need new issues. See [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md).
 
-**Current next issue (mobile):** [#140 — Auth0 Post-Login Action gate](https://github.com/diego-torres/nutriconsultas/issues/140) (**NEXT**). ~~#139~~ done (PR [#330](https://github.com/diego-torres/nutriconsultas/pull/330)).
+**Current next issue (mobile):** [#141 — Invitation security hardening](https://github.com/diego-torres/nutriconsultas/issues/141) (**NEXT**). ~~#140~~ done ([`docs/auth0/PATIENT-POST-LOGIN-GATE.md`](docs/auth0/PATIENT-POST-LOGIN-GATE.md)).
 
 **Current next issue (subscription):** Registered track **complete** (~~#244~~ ✓ on `subscription/244-contact-form-prefill`). Triage open `[Subscription]` GitHub issues. See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md).
 
@@ -408,9 +408,9 @@ gh pr create ...
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#140 — Auth0 Post-Login Action gate](https://github.com/diego-torres/nutriconsultas/issues/140) |
+| **Next issue** | [#141 — Invitation security hardening](https://github.com/diego-torres/nutriconsultas/issues/141) |
 | **Status** | **NEXT** — unblocked on `main` |
-| **Just completed** | [#135 preview](https://github.com/diego-torres/nutriconsultas/issues/135) — PR [#324](https://github.com/diego-torres/nutriconsultas/pull/324) |
+| **Just completed** | [#140 — Auth0 Post-Login Action gate](https://github.com/diego-torres/nutriconsultas/issues/140) — [`docs/auth0/PATIENT-POST-LOGIN-GATE.md`](docs/auth0/PATIENT-POST-LOGIN-GATE.md) |
 
 ### Upcoming gates
 
@@ -427,7 +427,7 @@ gh pr create ...
 
 **Patient mobile API on `main`:** Phase 0 + endpoints **#91–#99** done; cross-cutting **#111–#116** done. Onboarding **#132** + token service **#133 done** (PR #229, deployed EC2).
 
-**Next (mobile):** **#140** Auth0 Post-Login → #141 hardening.
+**Next (mobile):** **#141** invitation hardening.
 
 **Schema track:** ~~#46~~ Liquibase baseline (PR #196). Changesets **003–007** on `main` (subscription, patient invitation). All new edits → forward changesets only.
 
