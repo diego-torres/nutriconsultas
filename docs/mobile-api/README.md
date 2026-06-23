@@ -40,7 +40,7 @@ Canonical cross-repo contracts for the `[Mobile API]` track. Indexed from [`../.
 | [`../../ISSUE-NUTRITIONIST-WEB.md`](../../ISSUE-NUTRITIONIST-WEB.md) | Patient MPX epic (#221–#223) |
 | [`../paciente/PATIENT-MPX-PLAN.md`](../paciente/PATIENT-MPX-PLAN.md) | Export/import plan |
 
-**Nutritionist web NEXT:** [#271](https://github.com/diego-torres/nutriconsultas/issues/271)–[#272](https://github.com/diego-torres/nutriconsultas/issues/272) system catalog create. ~~#285~~ done (`issue-285-platillo-inline-cantidad`, 340a318). ~~#281~~ done (`issue-281-ingesta-platillo-ingredient-edit`). ~~#280~~ done (PR [#284](https://github.com/diego-torres/nutriconsultas/pull/284)). ~~#238~~ done (PR [#279](https://github.com/diego-torres/nutriconsultas/pull/279)). ~~#237~~ done (PR [#278](https://github.com/diego-torres/nutriconsultas/pull/278)). ~~#236~~ done (PR [#274](https://github.com/diego-torres/nutriconsultas/pull/274)). ~~#259~~ done (PR [#270](https://github.com/diego-torres/nutriconsultas/pull/270)); platillo ownership ~~#257–#258~~ done; diet catalog ~~#232–#235~~ done; ~~#221–#223~~ MPX epic done.
+**Nutritionist web NEXT:** None — all registered epics complete (~~#271~~–~~#272~~ system catalog create; ~~#285~~ done; ~~#281~~ done; ~~#280~~ done; ~~#238~~ done; ~~#237~~ done; ~~#236~~ done; ~~#259~~ done; platillo ownership ~~#257–#258~~ done; diet catalog ~~#232–#235~~ done; ~~#221–#223~~ MPX epic done).
 
 **Subscription NEXT:** Registered track **complete** (~~#244~~ ✓ on `subscription/244-contact-form-prefill`; ~~#314~~ ~~#188~~ ~~#186~~ ~~#220~~ ~~#207~~ ~~#208~~ ~~#209~~ ~~#211~~ ~~#210~~ ~~#187~~ ~~#190~~ on `main`).
 
