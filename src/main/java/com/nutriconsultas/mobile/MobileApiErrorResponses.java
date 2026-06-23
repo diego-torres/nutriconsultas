@@ -41,6 +41,10 @@ public final class MobileApiErrorResponses {
 
 	public static final String KEY_INVITATION_ASSIGNED_ID_TAKEN = "error.invitation.assigned_id.taken";
 
+	public static final String KEY_INVITATION_INVALID = "error.invitation.invalid";
+
+	public static final String KEY_INVITATION_UNAVAILABLE = "error.invitation.invalid_or_expired";
+
 	private final MessageSource messageSource;
 
 	private final ObjectMapper objectMapper;

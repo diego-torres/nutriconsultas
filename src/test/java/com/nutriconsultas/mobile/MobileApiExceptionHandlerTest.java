@@ -118,4 +118,33 @@ class MobileApiExceptionHandlerTest {
 		assertThat(response.getBody().message()).isEqualTo("Demasiadas solicitudes.");
 	}
 
+	@Test
+	void handleInvitationInvalidTokenReturnsLocalized400() {
+		LocaleContextHolder.setLocale(Locale.forLanguageTag("es-MX"));
+		when(messageSource.getMessage(MobileApiErrorResponses.KEY_INVITATION_INVALID, null,
+				Locale.forLanguageTag("es-MX")))
+			.thenReturn("El enlace de invitación no es válido.");
+
+		final ResponseEntity<ApiResponse<Void>> response = handler
+			.handleInvitationInvalidToken(new PatientInvitationInvalidTokenException());
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().message()).isEqualTo("El enlace de invitación no es válido.");
+	}
+
+	@Test
+	void handleInvitationUnavailableReturnsLocalized404() {
+		LocaleContextHolder.setLocale(Locale.ENGLISH);
+		when(messageSource.getMessage(MobileApiErrorResponses.KEY_INVITATION_UNAVAILABLE, null, Locale.ENGLISH))
+			.thenReturn("The invitation is invalid or has expired.");
+
+		final ResponseEntity<ApiResponse<Void>> response = handler
+			.handleInvitationUnavailable(new PatientInvitationUnavailableException());
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().message()).isEqualTo("The invitation is invalid or has expired.");
+	}
+
 }
