@@ -53,4 +53,16 @@ public interface MobileOpenApiResponses {
 
 	}
 
+	@Target({ ElementType.METHOD, ElementType.TYPE })
+	@Retention(RetentionPolicy.RUNTIME)
+	@ApiResponses({ @ApiResponse(responseCode = "401", description = "Missing or invalid JWT"),
+			@ApiResponse(responseCode = "400", description = "Malformed invitation token"),
+			@ApiResponse(responseCode = "404", description = "Invalid or expired invitation"),
+			@ApiResponse(responseCode = "409", description = "Invitation already redeemed by another account"),
+			@ApiResponse(responseCode = "422", description = "Patient not in INVITED status"),
+			@ApiResponse(responseCode = "429", description = "Rate limit exceeded (Retry-After: 60)") })
+	@interface AuthenticatedPatientRedeem {
+
+	}
+
 }

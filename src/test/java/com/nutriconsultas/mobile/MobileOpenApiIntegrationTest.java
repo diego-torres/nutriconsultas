@@ -33,7 +33,7 @@ class MobileOpenApiIntegrationTest {
 			"/rest/mobile/patient/diet-plans/{assignmentId}", "/rest/mobile/patient/diet-plans/{assignmentId}/pdf",
 			"/rest/mobile/patient/messages", "/rest/mobile/patient/progress",
 			"/rest/mobile/patient/progress/measurements", "/rest/mobile/invitations",
-			"/rest/mobile/invitations/{token}/preview");
+			"/rest/mobile/invitations/{token}/preview", "/rest/mobile/invitations/{token}/redeem");
 
 	@Autowired
 	private MockMvc mockMvc;
