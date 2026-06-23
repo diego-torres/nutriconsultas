@@ -160,7 +160,7 @@ Add to each a short "Backend dependency" line per the cross-reference table, e.g
 - **Phase 0 DONE:** #107 (PR #117), #109 (PR #142), #110 (DTO envelope).
 - **Endpoints on `main`:** #91–#99 (visits, diet plans + PDF, messages, progress snapshot + measurements time series); #96/#97 messaging with HTTP 201 + Resilience4j 10/min (#113, PR #151).
 - **i18n (#111) DONE** (PR #151): `LocaleContextFilter`, `MobileApiErrorResponses`, localized 403/404/400/429.
-- **Cross-cutting:** ~~#116~~ `senderDisplayName` **done** (PR #173). ~~#114~~ nutritionist reply **done**. ~~#115~~ PHI audit **done** (PR #168). ~~#112~~ OpenAPI **done** (PR #164). Onboarding **#132–#136 done** (PR #325 for #136). **in-progress:** #137.
+- **Cross-cutting:** ~~#116~~ `senderDisplayName` **done** (PR #173). ~~#114~~ nutritionist reply **done**. ~~#115~~ PHI audit **done** (PR #168). ~~#112~~ OpenAPI **done** (PR #164). Onboarding **#132–#137 done** (PR #326 for #137). **NEXT:** #138.
 - `deltaPeso`/`deltaImc` are computed-at-query, not stored.
 - Progress `grasa` ambiguity: prefer `bodyComposition.porcentajeGrasaCorporal` (patient-facing %) over `indiceGrasaCorporal`.
 - Template dietas (seed `system:template-dietas`) have 4 ingestas incl. Colación — contract examples show only 3.
@@ -172,7 +172,7 @@ Add to each a short "Backend dependency" line per the cross-reference table, e.g
 
 ### F8.6 — Invitation onboarding gate (#132–#141)
 - **Prerequisites done on `main`:** #156 Paciente decomposition (PRs #175/#176/#178); #46 Liquibase baseline (PR #196). All new schema → incremental changesets per [`docs/db/LIQUIBASE.md`](../db/LIQUIBASE.md).
-- **Active sprint:** ~~#132~~ ~~#133~~ ~~#134~~ ~~#135~~ ~~#136~~ **done**; **in-progress:** #137; **NEXT:** #138–#141 per [`ISSUE.md`](../../ISSUE.md) Phase 2.
+- **Active sprint:** ~~#132~~ ~~#133~~ ~~#134~~ ~~#135~~ ~~#136~~ ~~#137~~ **done**; **NEXT:** #138–#141 per [`ISSUE.md`](../../ISSUE.md) Phase 2.
 - **Orthogonal:** nutritionist subscription invitations (`NutritionistInvitation` in subscription track) — see [`ISSUE-SUBSCRIPTION.md`](../../ISSUE-SUBSCRIPTION.md); do not conflate with patient `Invitation`.
 
 #### F8.6.1 — Token contract (AUTHORITATIVE; verified against `main` #133 code, 2026-06-21)
