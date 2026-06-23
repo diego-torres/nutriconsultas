@@ -56,3 +56,9 @@ databaseChangeLog:
   - include:
       file: changes/019-dieta-paciente-id.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/020-seed-mexican-platillos.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: changes/021-seed-high-kcal-dieta-templates.yaml
+      relativeToChangelogFile: true

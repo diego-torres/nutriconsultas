@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 020-seed-mexican-platillos
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - sqlCheck:
+            expectedResult: 0
+            sql: SELECT COUNT(*) FROM platillo WHERE name IN ('Molletes', 'Tacos de pollo', 'Entomatadas')
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/data/issue-198-mexican-platillos-seed.sql
+            splitStatements: true
+            stripComments: true
+        - sql:
+            dbms: postgresql
+            sql: SELECT setval(pg_get_serial_sequence('platillo', 'id'), GREATEST(COALESCE((SELECT MAX(id) FROM platillo), 1), 111));
+        - sql:
+            dbms: postgresql
+            sql: SELECT setval(pg_get_serial_sequence('ingrediente', 'id'), GREATEST(COALESCE((SELECT MAX(id) FROM ingrediente), 1), 548));
+        - sql:
+            dbms: h2
+            sql: ALTER TABLE platillo ALTER COLUMN id RESTART WITH 112;
+        - sql:
+            dbms: h2
+            sql: ALTER TABLE ingrediente ALTER COLUMN id RESTART WITH 549;

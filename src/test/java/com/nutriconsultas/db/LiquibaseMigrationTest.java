@@ -35,14 +35,37 @@ public class LiquibaseMigrationTest {
 	@Test
 	public void testPlatillosSeedLoaded() {
 		final Long count = jdbc.queryForObject("SELECT COUNT(*) FROM platillo", Long.class);
-		assertThat(count).isNotNull().isEqualTo(100L);
+		assertThat(count).isNotNull().isEqualTo(103L);
 	}
 
 	@Test
 	public void testDietaTemplatesSeedLoaded() {
 		final Long count = jdbc.queryForObject("SELECT COUNT(*) FROM dieta WHERE user_id = 'system:template-dietas'",
 				Long.class);
-		assertThat(count).isNotNull().isEqualTo(20L);
+		assertThat(count).isNotNull().isEqualTo(50L);
+	}
+
+	@Test
+	public void testHighKcalDietaTemplatesSeedLoaded() {
+		final Long count = jdbc.queryForObject(
+				"SELECT COUNT(*) FROM dieta WHERE user_id = 'system:template-dietas' AND energia >= 2500", Long.class);
+		assertThat(count).isNotNull().isEqualTo(30L);
+		final Long minKcal = jdbc.queryForObject(
+				"SELECT MIN(energia) FROM dieta WHERE user_id = 'system:template-dietas' AND energia >= 2500",
+				Long.class);
+		final Long maxKcal = jdbc.queryForObject(
+				"SELECT MAX(energia) FROM dieta WHERE user_id = 'system:template-dietas' AND energia >= 2500",
+				Long.class);
+		assertThat(minKcal).isGreaterThanOrEqualTo(2500L);
+		assertThat(maxKcal).isLessThanOrEqualTo(3500L);
+	}
+
+	@Test
+	public void testMexicanPlatillosSeedLoaded() {
+		final Long count = jdbc.queryForObject(
+				"SELECT COUNT(*) FROM platillo WHERE name IN ('Molletes', 'Tacos de pollo', 'Entomatadas')",
+				Long.class);
+		assertThat(count).isNotNull().isEqualTo(3L);
 	}
 
 	@Test

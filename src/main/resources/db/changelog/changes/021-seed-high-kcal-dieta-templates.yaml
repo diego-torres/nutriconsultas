@@ -1,0 +1,38 @@
+databaseChangeLog:
+  - changeSet:
+      id: 021-seed-high-kcal-dieta-templates
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - sqlCheck:
+            expectedResult: 0
+            sql: SELECT COUNT(*) FROM dieta WHERE user_id = 'system:template-dietas' AND energia >= 2500
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/data/issue-198-high-kcal-dieta-templates-seed.sql
+            splitStatements: true
+            stripComments: true
+        - sql:
+            dbms: postgresql
+            sql: SELECT setval(pg_get_serial_sequence('dieta', 'id'), GREATEST(COALESCE((SELECT MAX(id) FROM dieta), 1), 55));
+        - sql:
+            dbms: postgresql
+            sql: SELECT setval(pg_get_serial_sequence('ingesta', 'id'), GREATEST(COALESCE((SELECT MAX(id) FROM ingesta), 1), 220));
+        - sql:
+            dbms: postgresql
+            sql: SELECT setval(pg_get_serial_sequence('platillo_ingesta', 'id'), GREATEST(COALESCE((SELECT MAX(id) FROM platillo_ingesta), 1), 227));
+        - sql:
+            dbms: postgresql
+            sql: SELECT setval(pg_get_serial_sequence('ingrediente_platillo_ingesta', 'id'), GREATEST(COALESCE((SELECT MAX(id) FROM ingrediente_platillo_ingesta), 1), 22708));
+        - sql:
+            dbms: h2
+            sql: ALTER TABLE dieta ALTER COLUMN id RESTART WITH 56;
+        - sql:
+            dbms: h2
+            sql: ALTER TABLE ingesta ALTER COLUMN id RESTART WITH 221;
+        - sql:
+            dbms: h2
+            sql: ALTER TABLE platillo_ingesta ALTER COLUMN id RESTART WITH 228;
+        - sql:
+            dbms: h2
+            sql: ALTER TABLE ingrediente_platillo_ingesta ALTER COLUMN id RESTART WITH 22709;
