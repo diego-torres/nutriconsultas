@@ -81,6 +81,8 @@ class MobileInvitationIntegrationTest {
 		rateLimiterRegistry.remove(PatientInvitationPreviewRateLimiter.PATIENT_INVITATION_PREVIEW + ":127.0.0.1");
 		rateLimiterRegistry
 			.remove(PatientInvitationRedeemRateLimiter.PATIENT_INVITATION_REDEEM + ":auth0|patient-redeem-integration");
+		rateLimiterRegistry
+			.remove(PatientInvitationRedeemRateLimiter.PATIENT_INVITATION_REDEEM + ":auth0|patient-redeem-rate-limit");
 	}
 
 	@Test
@@ -189,6 +191,48 @@ class MobileInvitationIntegrationTest {
 		}
 
 		mockMvc.perform(get("/rest/mobile/invitations/{token}/preview", bundle.urlToken()))
+			.andExpect(status().isTooManyRequests())
+			.andExpect(header().string("Retry-After", "60"))
+			.andExpect(jsonPath("$.message").value("Demasiadas solicitudes. Inténtalo de nuevo en un minuto."));
+	}
+
+	@Test
+	void redeemInvitation_withUnknownToken_returnsGenericNotFound() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+
+		mockMvc
+			.perform(post("/rest/mobile/invitations/{token}/redeem", bundle.urlToken())
+				.with(mobileJwt("auth0|patient-redeem-unknown")))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.message").value("La invitación no es válida o ha expirado."));
+	}
+
+	@Test
+	void redeemInvitation_withExpiredToken_returnsSameMessageAsUnknown() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		final PatientInvitation invitation = seedPendingInvitation(bundle, NUTRITIONIST_SUB);
+		invitation.setExpiresAt(Instant.now().minus(1, ChronoUnit.HOURS));
+		patientInvitationRepository.saveAndFlush(invitation);
+
+		mockMvc
+			.perform(post("/rest/mobile/invitations/{token}/redeem", bundle.urlToken())
+				.with(mobileJwt("auth0|patient-redeem-expired")))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.message").value("La invitación no es válida o ha expirado."));
+	}
+
+	@Test
+	void redeemInvitation_whenRateLimited_returns429WithRetryAfter() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		seedPendingInvitation(bundle, NUTRITIONIST_SUB);
+		final String patientSub = "auth0|patient-redeem-rate-limit";
+
+		for (int attempt = 0; attempt < 2; attempt++) {
+			mockMvc.perform(post("/rest/mobile/invitations/{token}/redeem", bundle.urlToken()).with(mobileJwt(patientSub)))
+				.andExpect(status().isOk());
+		}
+
+		mockMvc.perform(post("/rest/mobile/invitations/{token}/redeem", bundle.urlToken()).with(mobileJwt(patientSub)))
 			.andExpect(status().isTooManyRequests())
 			.andExpect(header().string("Retry-After", "60"))
 			.andExpect(jsonPath("$.message").value("Demasiadas solicitudes. Inténtalo de nuevo en un minuto."));

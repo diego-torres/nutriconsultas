@@ -85,11 +85,12 @@ class PhiLogTurboFilterTest {
 	}
 
 	@Test
-	void deniesInviteUrlTokenInMobilePackage() {
+	void deniesStandaloneUrlTokenInPatientInvitationPackage() {
 		filter.start();
+		final Logger invitationLogger = logger("com.nutriconsultas.paciente.invitation.PatientInvitationCreateServiceImpl");
 
-		final FilterReply reply = filter.decide(null, mobileLogger, Level.INFO, "url={}",
-				new Object[] { "https://links.test/i/abcdefghijklmnopqrstuvwxyz0123456789ABCDE" }, null);
+		final FilterReply reply = filter.decide(null, invitationLogger, Level.INFO, "token={}",
+				new Object[] { "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG" }, null);
 
 		assertThat(reply).isEqualTo(FilterReply.DENY);
 	}

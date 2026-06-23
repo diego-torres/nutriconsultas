@@ -29,6 +29,8 @@ public final class PhiLogTurboFilter extends TurboFilter {
 
 	private static final Pattern INVITE_URL_TOKEN = Pattern.compile("/i/[A-Za-z0-9_-]{40,50}\\b");
 
+	private static final Pattern STANDALONE_URL_TOKEN = Pattern.compile("\\b[A-Za-z0-9_-]{43}\\b");
+
 	@Override
 	public FilterReply decide(final Marker marker, final Logger logger, final Level level, final String format,
 			final Object[] params, final Throwable throwable) {
@@ -52,6 +54,9 @@ public final class PhiLogTurboFilter extends TurboFilter {
 			return FilterReply.DENY;
 		}
 		if (INVITE_URL_TOKEN.matcher(message).find()) {
+			return FilterReply.DENY;
+		}
+		if (STANDALONE_URL_TOKEN.matcher(message).find()) {
 			return FilterReply.DENY;
 		}
 		return FilterReply.NEUTRAL;

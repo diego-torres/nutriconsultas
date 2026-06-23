@@ -6,7 +6,7 @@ Audit completed **2026-06-15**; merged to `main` via [PR #168](https://github.co
 
 - No patient names, emails, phone numbers, DOB, measurements, message bodies, or raw Auth0 `sub` values in unstructured logs at **INFO** or above.
 - Use `com.nutriconsultas.util.LogRedaction` for all patient-related identifiers in log statements.
-- Defense in depth: `PhiLogTurboFilter` (configured in `logback-spring.xml`) denies INFO+ mobile log lines that match email or unredacted Auth0 sub patterns. Static audit + checklist cover names/DOB/measures; TurboFilter does not yet mask those patterns (follow-up optional).
+- Defense in depth: `PhiLogTurboFilter` (configured in `logback-spring.xml`) denies INFO+ mobile and `paciente.invitation` log lines that match email, unredacted Auth0 sub, human invitation codes, invite URL tokens, or standalone 43-char URL tokens (#141).
 
 ## Checklist
 
@@ -24,8 +24,8 @@ Audit completed **2026-06-15**; merged to `main` via [PR #168](https://github.co
 | Gate | Command |
 |------|---------|
 | Repo-wide logging audit | `bash scripts/audit-logging.sh` |
-| Mobile package audit (#115) | `bash scripts/audit-mobile-logging.sh` |
-| Automated tests | `MobilePackageLoggingAuditTest`, `MobilePhiLoggingIntegrationTest`, `PhiLogTurboFilterTest` |
+| Mobile package audit (#115 / #141) | `bash scripts/audit-mobile-logging.sh` |
+| Automated tests | `MobilePackageLoggingAuditTest`, `InvitationPackageLoggingAuditTest`, `MobilePhiLoggingIntegrationTest`, `PhiLogTurboFilterTest` |
 
 ## Safe logging examples
 
@@ -40,4 +40,4 @@ log.info("Linked mobile Auth0 account for patient {} sub={}",
 
 - `docs/LOGGING_SECURITY.md` — project-wide logging security guide
 - `README_LOGGING_SECURITY.md` — quick reference
-- Issue [#141](https://github.com/diego-torres/nutriconsultas/issues/141) — invitation token logging (future; never log raw tokens)
+- Issue [#141](https://github.com/diego-torres/nutriconsultas/issues/141) — invitation token logging **done**; see [`INVITATION-SECURITY-AUDIT.md`](INVITATION-SECURITY-AUDIT.md)
