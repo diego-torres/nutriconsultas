@@ -149,6 +149,14 @@ Rotating `PATIENT_INVITATION_JWS_SECRET` invalidates outstanding **offline JWS**
 
 ---
 
+## Logging policy (#141)
+
+- **Never** log `invitation_token`, raw URL tokens, human codes, or offline JWS in Action code, custom log streams, or `console.*`.
+- The Action does not emit token values; rely on deny/allow outcomes only.
+- Preview API fallback passes the token in the request URL — restrict Auth0 platform log access and retention.
+
+---
+
 ## Testing
 
 ### Local JWS interop (Java ↔ Action script)

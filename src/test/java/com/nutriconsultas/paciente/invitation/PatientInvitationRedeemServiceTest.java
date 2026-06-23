@@ -143,6 +143,17 @@ class PatientInvitationRedeemServiceTest {
 	}
 
 	@Test
+	void redeem_withRevokedInvitation_throwsUnavailable() {
+		final PatientInvitationTokenBundle bundle = tokenService.generate();
+		final PatientInvitation invitation = pendingInvitation(bundle.tokenHash(), invitedPaciente(100L));
+		invitation.setStatus(PatientInvitationStatus.REVOKED);
+		when(patientInvitationRepository.findByTokenHash(bundle.tokenHash())).thenReturn(Optional.of(invitation));
+
+		assertThatThrownBy(() -> service.redeem(bundle.urlToken(), PATIENT_SUB))
+			.isInstanceOf(PatientInvitationUnavailableException.class);
+	}
+
+	@Test
 	void redeem_withMalformedToken_throwsInvalid() {
 		assertThatThrownBy(() -> service.redeem("bad-token", PATIENT_SUB))
 			.isInstanceOf(PatientInvitationInvalidTokenException.class);
