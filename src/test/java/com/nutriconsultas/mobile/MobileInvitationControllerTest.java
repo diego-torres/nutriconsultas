@@ -17,10 +17,14 @@ import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.CreatePatientInvitationRequest;
 import com.nutriconsultas.mobile.dto.CreatedPatientInvitationDto;
 import com.nutriconsultas.mobile.dto.PatientInvitationPreviewDto;
+import com.nutriconsultas.mobile.dto.RedeemedPatientInvitationDto;
+import com.nutriconsultas.paciente.PacienteStatus;
 import com.nutriconsultas.paciente.invitation.CreatedPatientInvitationResult;
 import com.nutriconsultas.paciente.invitation.PatientInvitationCreateService;
 import com.nutriconsultas.paciente.invitation.PatientInvitationPreviewResult;
 import com.nutriconsultas.paciente.invitation.PatientInvitationPreviewService;
+import com.nutriconsultas.paciente.invitation.PatientInvitationRedeemResult;
+import com.nutriconsultas.paciente.invitation.PatientInvitationRedeemService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -28,6 +32,8 @@ import jakarta.servlet.http.HttpServletRequest;
 class MobileInvitationControllerTest {
 
 	private static final String NUTRITIONIST_SUB = "auth0|nutritionist-mobile-invite";
+
+	private static final String PATIENT_SUB = "auth0|patient-mobile-redeem";
 
 	@InjectMocks
 	private MobileInvitationController controller;
@@ -40,6 +46,12 @@ class MobileInvitationControllerTest {
 
 	@Mock
 	private PatientInvitationPreviewRateLimiter patientInvitationPreviewRateLimiter;
+
+	@Mock
+	private PatientInvitationRedeemService patientInvitationRedeemService;
+
+	@Mock
+	private PatientInvitationRedeemRateLimiter patientInvitationRedeemRateLimiter;
 
 	@Mock
 	private HttpServletRequest httpServletRequest;
@@ -78,6 +90,24 @@ class MobileInvitationControllerTest {
 		assertThat(response.data().inviterDisplayName()).isEqualTo("Lic. Ana López");
 		assertThat(response.timestamp()).isNotNull();
 		verify(patientInvitationPreviewService).preview("url-token-value");
+	}
+
+	@Test
+	void redeemInvitation_returnsApiResponseEnvelope() throws Exception {
+		final PatientInvitationRedeemResult result = new PatientInvitationRedeemResult(100L, PacienteStatus.ONBOARDING,
+				1L, Instant.parse("2026-06-01T12:00:00Z"));
+		final Jwt jwt = Jwt.withTokenValue("token").header("alg", "none").subject(PATIENT_SUB).build();
+		when(patientInvitationRedeemRateLimiter.execute(org.mockito.ArgumentMatchers.eq(PATIENT_SUB),
+				org.mockito.ArgumentMatchers.any()))
+			.thenAnswer(invocation -> ((java.util.concurrent.Callable<?>) invocation.getArgument(1)).call());
+		when(patientInvitationRedeemService.redeem("url-token-value", PATIENT_SUB)).thenReturn(result);
+
+		final ApiResponse<RedeemedPatientInvitationDto> response = controller.redeemInvitation("url-token-value", jwt);
+
+		assertThat(response.data().pacienteId()).isEqualTo(100L);
+		assertThat(response.data().pacienteStatus()).isEqualTo(PacienteStatus.ONBOARDING);
+		assertThat(response.data().invitationId()).isEqualTo(1L);
+		verify(patientInvitationRedeemService).redeem("url-token-value", PATIENT_SUB);
 	}
 
 }

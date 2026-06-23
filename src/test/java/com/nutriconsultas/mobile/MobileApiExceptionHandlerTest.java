@@ -147,4 +147,33 @@ class MobileApiExceptionHandlerTest {
 		assertThat(response.getBody().message()).isEqualTo("The invitation is invalid or has expired.");
 	}
 
+	@Test
+	void handleInvitationRedeemConflictReturnsLocalized409() {
+		LocaleContextHolder.setLocale(Locale.forLanguageTag("es-MX"));
+		when(messageSource.getMessage(MobileApiErrorResponses.KEY_INVITATION_REDEEM_CONFLICT, null,
+				Locale.forLanguageTag("es-MX")))
+			.thenReturn("Esta invitación ya fue canjeada por otra cuenta.");
+
+		final ResponseEntity<ApiResponse<Void>> response = handler
+			.handleInvitationRedeemConflict(new PatientInvitationRedeemConflictException());
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().message()).isEqualTo("Esta invitación ya fue canjeada por otra cuenta.");
+	}
+
+	@Test
+	void handleInvitationPatientStatusReturnsLocalized422() {
+		LocaleContextHolder.setLocale(Locale.ENGLISH);
+		when(messageSource.getMessage(MobileApiErrorResponses.KEY_INVITATION_PATIENT_STATUS, null, Locale.ENGLISH))
+			.thenReturn("The patient is not in pending invitation status.");
+
+		final ResponseEntity<ApiResponse<Void>> response = handler
+			.handleInvitationPatientStatus(new PatientInvitationPatientStatusException());
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().message()).isEqualTo("The patient is not in pending invitation status.");
+	}
+
 }

@@ -77,6 +77,8 @@ class MobileInvitationIntegrationTest {
 	@BeforeEach
 	void resetRateLimiters() {
 		rateLimiterRegistry.remove(PatientInvitationPreviewRateLimiter.PATIENT_INVITATION_PREVIEW + ":127.0.0.1");
+		rateLimiterRegistry
+			.remove(PatientInvitationRedeemRateLimiter.PATIENT_INVITATION_REDEEM + ":auth0|patient-redeem-integration");
 	}
 
 	@Test
@@ -188,6 +190,68 @@ class MobileInvitationIntegrationTest {
 			.andExpect(status().isTooManyRequests())
 			.andExpect(header().string("Retry-After", "60"))
 			.andExpect(jsonPath("$.message").value("Demasiadas solicitudes. Inténtalo de nuevo en un minuto."));
+	}
+
+	@Test
+	void redeemInvitation_withPatientJwt_bindsSubAndTransitionsToOnboarding() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		final PatientInvitation invitation = seedPendingInvitation(bundle, NUTRITIONIST_SUB);
+		final String patientSub = "auth0|patient-redeem-integration";
+
+		mockMvc.perform(post("/rest/mobile/invitations/{token}/redeem", bundle.urlToken()).with(mobileJwt(patientSub)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.pacienteId").value(invitation.getPaciente().getId()))
+			.andExpect(jsonPath("$.data.pacienteStatus").value("ONBOARDING"))
+			.andExpect(jsonPath("$.data.invitationId").value(invitation.getId()))
+			.andExpect(jsonPath("$.data.redeemedAt").exists());
+
+		final var paciente = pacienteRepository.findById(invitation.getPaciente().getId()).orElseThrow();
+		assertThat(paciente.getPatientAuthSub()).isEqualTo(patientSub);
+		assertThat(paciente.getStatus()).isEqualTo(PacienteStatus.ONBOARDING);
+
+		final var savedInvitation = patientInvitationRepository.findById(invitation.getId()).orElseThrow();
+		assertThat(savedInvitation.getStatus()).isEqualTo(PatientInvitationStatus.REDEEMED);
+		assertThat(savedInvitation.getRedeemedBySub()).isEqualTo(patientSub);
+	}
+
+	@Test
+	void redeemInvitation_withoutJwt_returnsUnauthorized() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		seedPendingInvitation(bundle, NUTRITIONIST_SUB);
+
+		mockMvc.perform(post("/rest/mobile/invitations/{token}/redeem", bundle.urlToken()))
+			.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void redeemInvitation_withDifferentSubAfterRedeem_returnsConflict() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		seedPendingInvitation(bundle, NUTRITIONIST_SUB);
+
+		mockMvc
+			.perform(post("/rest/mobile/invitations/{token}/redeem", bundle.urlToken())
+				.with(mobileJwt("auth0|first-redeemer")))
+			.andExpect(status().isOk());
+
+		mockMvc
+			.perform(post("/rest/mobile/invitations/{token}/redeem", bundle.urlToken())
+				.with(mobileJwt("auth0|second-redeemer")))
+			.andExpect(status().isConflict())
+			.andExpect(jsonPath("$.message").value("Esta invitación ya fue canjeada por otra cuenta."));
+	}
+
+	@Test
+	void redeemInvitation_idempotentRetryBySameSub_returnsOk() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		seedPendingInvitation(bundle, NUTRITIONIST_SUB);
+		final String patientSub = "auth0|patient-redeem-idempotent";
+
+		mockMvc.perform(post("/rest/mobile/invitations/{token}/redeem", bundle.urlToken()).with(mobileJwt(patientSub)))
+			.andExpect(status().isOk());
+
+		mockMvc.perform(post("/rest/mobile/invitations/{token}/redeem", bundle.urlToken()).with(mobileJwt(patientSub)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.pacienteStatus").value("ONBOARDING"));
 	}
 
 	private PatientInvitation seedPendingInvitation(final PatientInvitationTokenBundle bundle,

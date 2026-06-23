@@ -135,6 +135,63 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseCreatedPatientInvitationDto"
+  /rest/mobile/invitations/{token}/redeem:
+    post:
+      tags:
+      - Mobile Invitations
+      summary: Redeem patient invitation
+      description: Patient JWT binds Auth0 sub to pre-created Paciente; authoritative
+        onboarding gate.
+      operationId: redeemInvitation
+      parameters:
+      - name: token
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Invitation redeemed or idempotent retry by same sub
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseRedeemedPatientInvitationDto"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseRedeemedPatientInvitationDto"
+        "400":
+          description: Malformed invitation token
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseRedeemedPatientInvitationDto"
+        "404":
+          description: Invalid or expired invitation
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseRedeemedPatientInvitationDto"
+        "409":
+          description: Invitation already redeemed by another account
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseRedeemedPatientInvitationDto"
+        "422":
+          description: Patient not in INVITED status
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseRedeemedPatientInvitationDto"
+        "429":
+          description: "Rate limit exceeded (Retry-After: 60)"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseRedeemedPatientInvitationDto"
   /rest/mobile/patient/visits:
     get:
       tags:
@@ -624,6 +681,43 @@ components:
           type: string
           description: Optional offline JWS when PATIENT_INVITATION_JWS_SECRET is
             configured
+    ApiResponseRedeemedPatientInvitationDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/RedeemedPatientInvitationDto"
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    RedeemedPatientInvitationDto:
+      type: object
+      description: Redeemed patient invitation
+      properties:
+        pacienteId:
+          type: integer
+          format: int64
+          description: Linked Paciente id
+          example: 1001
+        pacienteStatus:
+          type: string
+          description: Patient lifecycle status after redeem
+          enum:
+          - INVITED
+          - ONBOARDING
+          - ACTIVE
+          - REVOKED
+          example: ONBOARDING
+        invitationId:
+          type: integer
+          format: int64
+          description: Invitation row id
+          example: 42
+        redeemedAt:
+          type: string
+          format: date-time
+          description: Redemption timestamp (ISO-8601 instant)
     ApiResponsePagedResponseVisitSummaryDto:
       type: object
       properties:

@@ -45,6 +45,10 @@ public final class MobileApiErrorResponses {
 
 	public static final String KEY_INVITATION_UNAVAILABLE = "error.invitation.invalid_or_expired";
 
+	public static final String KEY_INVITATION_REDEEM_CONFLICT = "error.invitation.redeem_conflict";
+
+	public static final String KEY_INVITATION_PATIENT_STATUS = "error.invitation.patient_status";
+
 	private final MessageSource messageSource;
 
 	private final ObjectMapper objectMapper;

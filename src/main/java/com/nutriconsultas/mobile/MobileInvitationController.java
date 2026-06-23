@@ -17,10 +17,13 @@ import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.CreatePatientInvitationRequest;
 import com.nutriconsultas.mobile.dto.CreatedPatientInvitationDto;
 import com.nutriconsultas.mobile.dto.PatientInvitationPreviewDto;
+import com.nutriconsultas.mobile.dto.RedeemedPatientInvitationDto;
 import com.nutriconsultas.paciente.invitation.CreatedPatientInvitationResult;
 import com.nutriconsultas.paciente.invitation.PatientInvitationCreateService;
 import com.nutriconsultas.paciente.invitation.PatientInvitationPreviewResult;
 import com.nutriconsultas.paciente.invitation.PatientInvitationPreviewService;
+import com.nutriconsultas.paciente.invitation.PatientInvitationRedeemResult;
+import com.nutriconsultas.paciente.invitation.PatientInvitationRedeemService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
@@ -41,12 +44,20 @@ public class MobileInvitationController {
 
 	private final PatientInvitationPreviewRateLimiter patientInvitationPreviewRateLimiter;
 
+	private final PatientInvitationRedeemService patientInvitationRedeemService;
+
+	private final PatientInvitationRedeemRateLimiter patientInvitationRedeemRateLimiter;
+
 	public MobileInvitationController(final PatientInvitationCreateService patientInvitationCreateService,
 			final PatientInvitationPreviewService patientInvitationPreviewService,
-			final PatientInvitationPreviewRateLimiter patientInvitationPreviewRateLimiter) {
+			final PatientInvitationPreviewRateLimiter patientInvitationPreviewRateLimiter,
+			final PatientInvitationRedeemService patientInvitationRedeemService,
+			final PatientInvitationRedeemRateLimiter patientInvitationRedeemRateLimiter) {
 		this.patientInvitationCreateService = patientInvitationCreateService;
 		this.patientInvitationPreviewService = patientInvitationPreviewService;
 		this.patientInvitationPreviewRateLimiter = patientInvitationPreviewRateLimiter;
+		this.patientInvitationRedeemService = patientInvitationRedeemService;
+		this.patientInvitationRedeemRateLimiter = patientInvitationRedeemRateLimiter;
 	}
 
 	@PostMapping
@@ -84,6 +95,24 @@ public class MobileInvitationController {
 		final PatientInvitationPreviewResult preview = patientInvitationPreviewRateLimiter.execute(clientKey,
 				() -> patientInvitationPreviewService.preview(token));
 		return ApiResponse.ok(PatientInvitationPreviewDto.from(preview));
+	}
+
+	@PostMapping("/{token}/redeem")
+	@Operation(summary = "Redeem patient invitation",
+			description = "Patient JWT binds Auth0 sub to pre-created Paciente; authoritative onboarding gate.")
+	@MobileOpenApiResponses.AuthenticatedPatientRedeem
+	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",
+			description = "Invitation redeemed or idempotent retry by same sub")
+	public ApiResponse<RedeemedPatientInvitationDto> redeemInvitation(@PathVariable("token") final String token,
+			@AuthenticationPrincipal final Jwt jwt) {
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile invitation redeem request from patient sub present={}",
+					jwt != null && jwt.getSubject() != null);
+		}
+		final String patientAuthSub = requireSubject(jwt);
+		final PatientInvitationRedeemResult redeemed = patientInvitationRedeemRateLimiter.execute(patientAuthSub,
+				() -> patientInvitationRedeemService.redeem(token, patientAuthSub));
+		return ApiResponse.ok(RedeemedPatientInvitationDto.from(redeemed));
 	}
 
 	private static String requireSubject(final Jwt jwt) {

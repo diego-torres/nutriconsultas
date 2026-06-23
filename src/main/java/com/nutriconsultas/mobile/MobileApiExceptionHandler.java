@@ -95,10 +95,30 @@ public class MobileApiExceptionHandler {
 	public ResponseEntity<ApiResponse<Void>> handleInvitationUnavailable(
 			final PatientInvitationUnavailableException ex) {
 		if (log.isDebugEnabled()) {
-			log.debug("Mobile API invitation preview unavailable");
+			log.debug("Mobile API invitation unavailable");
 		}
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
 			.body(errorResponses.error(MobileApiErrorResponses.KEY_INVITATION_UNAVAILABLE));
+	}
+
+	@ExceptionHandler(PatientInvitationRedeemConflictException.class)
+	public ResponseEntity<ApiResponse<Void>> handleInvitationRedeemConflict(
+			final PatientInvitationRedeemConflictException ex) {
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile API invitation redeem conflict");
+		}
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+			.body(errorResponses.error(MobileApiErrorResponses.KEY_INVITATION_REDEEM_CONFLICT));
+	}
+
+	@ExceptionHandler(PatientInvitationPatientStatusException.class)
+	public ResponseEntity<ApiResponse<Void>> handleInvitationPatientStatus(
+			final PatientInvitationPatientStatusException ex) {
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile API invitation patient status guard");
+		}
+		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+			.body(errorResponses.error(MobileApiErrorResponses.KEY_INVITATION_PATIENT_STATUS));
 	}
 
 	@ExceptionHandler(RequestNotPermitted.class)
