@@ -57,7 +57,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | **API surface** | All mobile endpoints live under `/rest/mobile/patient/` as plain JSON (not DataTables-shaped like the admin `*RestController`s). |
 | **Identity (security-critical)** | JWT `sub` → **`Paciente.patientAuthSub`** (#107 ✓ PR #117). **Never `Paciente.userId`** — that is the NUTRITIONIST's Auth0 sub / tenant owner (ALIGNMENT-SPEC §F2). `PatientLinkageFilter` returns **403** if no linked `Paciente`. |
 | **Ownership / IDOR** | Return only the authenticated patient's rows. On an ownership miss prefer **404** (not 403) so existence isn't leaked (esp. #92). Never return cross-tenant data. |
-| **Backend state** | **Phase 0 done** (#107, #109, #110). **All endpoints #91–#99 done** on `main`. **Cross-cutting done** (#111–#116). **#156**, **#46**, **#132**, **#133**, **#134** done. **NEXT:** #135 invitation preview. Requires `AUTH_AUDIENCE` env var. |
+| **Backend state** | **Phase 0 done** (#107, #109, #110). **All endpoints #91–#99 done** on `main`. **Cross-cutting done** (#111–#116). **#156**, **#46**, **#132–#141** done. **Phase 2 invitation onboarding complete.** Next mobile work requires new issues. Requires `AUTH_AUDIENCE` env var. |
 | **DTO envelope** | `ApiResponse<T>`; lists in `PagedResponse<T>` or `CursorPagedResponse<T>` (messages); ISO-8601 date strings. See #110. |
 | **Schema ground truth** | ALIGNMENT-SPEC §F8 field-name map (`nombre→dietaName`, `energia→totalKcal`, `lipidos→totalGrasas`, `hidratosDeCarbono→totalCarbohidratos`, `Ingesta.nombre→tipo`); enums `EventStatus`/`PacienteDietaStatus` (no INACTIVE)/`NivelPeso`. Serialization aliases only — **no DB schema changes** for field renames. |
 | **PHI & logging** | No patient names/emails/DOB in unstructured logs. `LogRedaction` + `PhiLogTurboFilter`; CI runs `scripts/audit-logging.sh` and `scripts/audit-mobile-logging.sh` (#115 done). |
@@ -107,7 +107,7 @@ flowchart LR
    - **#113 (rate limit)** should land with or before **#97** (write endpoint).
    - **#114 (nutritionist reply) is web-only** — do not expose it under `/rest/mobile/**`.
    - **#46 (Liquibase)** ✓ — all schema/catalog changes are incremental changesets (see [Liquibase section](#liquibase--entity-schema-and-catalog-data)).
-   - **#134 (create invitation)** ✓ — merged PR #319. **NEXT:** #135 public preview endpoint.
+   - **Phase 2 invitation onboarding** ✓ — #134–#141 all merged (PRs #319, #324–#333). **Phase 2 complete.** No NEXT in the mobile track — new issues required for additional work.
    - If a dependency is still `open`, complete it first or document the blocker in the plan (Phase 2) and stop.
 5. **Update local registry** when remote state drifted (issue closed on GitHub but still `open` here, or vice versa). `ISSUE.md` must match GitHub before proceeding.
 
