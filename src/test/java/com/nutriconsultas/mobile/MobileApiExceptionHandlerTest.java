@@ -69,6 +69,20 @@ class MobileApiExceptionHandlerTest {
 	}
 
 	@Test
+	void handlePatientOnboardingRequiredReturnsLocalized403() {
+		LocaleContextHolder.setLocale(Locale.ENGLISH);
+		when(messageSource.getMessage(MobileApiErrorResponses.KEY_PATIENT_ONBOARDING_REQUIRED, null, Locale.ENGLISH))
+			.thenReturn("Complete onboarding to access this resource.");
+
+		final ResponseEntity<ApiResponse<Void>> response = handler
+			.handlePatientOnboardingRequired(new PatientOnboardingRequiredException());
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().message()).isEqualTo("Complete onboarding to access this resource.");
+	}
+
+	@Test
 	void handleResponseStatusNotFoundReturnsLocalized404() {
 		LocaleContextHolder.setLocale(Locale.forLanguageTag("es-MX"));
 		when(messageSource.getMessage(MobileApiErrorResponses.KEY_RESOURCE_NOT_FOUND, null,

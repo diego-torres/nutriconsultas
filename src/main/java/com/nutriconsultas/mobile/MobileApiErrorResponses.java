@@ -29,6 +29,8 @@ public final class MobileApiErrorResponses {
 
 	public static final String KEY_PATIENT_NOT_LINKED = "error.patient.not.linked";
 
+	public static final String KEY_PATIENT_ONBOARDING_REQUIRED = "error.patient.onboarding.required";
+
 	public static final String KEY_RESOURCE_NOT_FOUND = "error.resource.not.found";
 
 	public static final String KEY_MESSAGE_TOO_LONG = "error.message.too.long";

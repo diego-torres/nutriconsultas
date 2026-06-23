@@ -162,6 +162,11 @@ class PatientAuthLinkageServiceTest {
 			public String getUserId() {
 				return entity.getUserId();
 			}
+
+			@Override
+			public com.nutriconsultas.paciente.PacienteStatus getStatus() {
+				return entity.getStatus();
+			}
 		};
 	}
 

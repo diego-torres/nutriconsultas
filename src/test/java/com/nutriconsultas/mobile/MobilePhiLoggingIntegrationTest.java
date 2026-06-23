@@ -88,6 +88,11 @@ class MobilePhiLoggingIntegrationTest {
 			public String getUserId() {
 				return "auth0|nutritionist-owner";
 			}
+
+			@Override
+			public com.nutriconsultas.paciente.PacienteStatus getStatus() {
+				return com.nutriconsultas.paciente.PacienteStatus.ACTIVE;
+			}
 		};
 		final Paciente pacienteRef = new Paciente();
 		pacienteRef.setId(12L);

@@ -150,22 +150,7 @@ class MobilePatientMessageServiceTest {
 	}
 
 	private static PacienteAuthView authView(final Long id, final String userId, final String patientAuthSub) {
-		return new PacienteAuthView() {
-			@Override
-			public Long getId() {
-				return id;
-			}
-
-			@Override
-			public String getPatientAuthSub() {
-				return patientAuthSub;
-			}
-
-			@Override
-			public String getUserId() {
-				return userId;
-			}
-		};
+		return MobileTestPacienteAuthViews.authView(id, patientAuthSub, userId);
 	}
 
 	private static PatientMessage sampleMessage(final Long id, final String body) {

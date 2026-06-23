@@ -1,6 +1,7 @@
 package com.nutriconsultas.mobile;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -12,28 +13,29 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.nutriconsultas.mobile.MobilePatientAccessRules.Decision;
+import com.nutriconsultas.paciente.projection.PacienteAuthView;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
 public class PatientLinkageFilter extends OncePerRequestFilter {
 
-	private static final String PATIENT_API_PREFIX = "/rest/mobile/patient/";
-
-	private final PatientAuthService patientAuthService;
+	private final CurrentPatientService currentPatientService;
 
 	private final MobileApiErrorResponses errorResponses;
 
-	public PatientLinkageFilter(final PatientAuthService patientAuthService,
+	public PatientLinkageFilter(final CurrentPatientService currentPatientService,
 			final MobileApiErrorResponses errorResponses) {
-		this.patientAuthService = patientAuthService;
+		this.currentPatientService = currentPatientService;
 		this.errorResponses = errorResponses;
 	}
 
 	@Override
 	protected boolean shouldNotFilter(final HttpServletRequest request) {
 		final String path = request.getRequestURI();
-		return path == null || !path.startsWith(PATIENT_API_PREFIX);
+		return path == null || !path.startsWith(MobilePatientAccessRules.PATIENT_API_PREFIX);
 	}
 
 	@Override
@@ -45,23 +47,25 @@ public class PatientLinkageFilter extends OncePerRequestFilter {
 		}
 
 		final Jwt jwt = jwtAuth.getToken();
-		try {
-			final PatientPrincipal principal = patientAuthService.resolvePrincipal(jwt);
-			jwtAuth.setDetails(principal);
-			filterChain.doFilter(request, response);
-		}
-		catch (PatientNotLinkedException ex) {
+		final String path = request.getRequestURI();
+		final Optional<PacienteAuthView> authView = currentPatientService.findAuthViewByJwt(jwt);
+		final Decision decision = MobilePatientAccessRules.evaluatePatientApiAccess(authView, path);
+		if (decision == Decision.ONBOARDING_REQUIRED) {
 			if (log.isDebugEnabled()) {
-				log.debug("Mobile JWT sub has no linked Paciente.patientAuthSub");
+				log.debug("Mobile patient API blocked by onboarding gate");
 			}
-			writeForbidden(request, response);
+			writeOnboardingRequired(request, response);
+			return;
 		}
+
+		authView.map(CurrentPatient::from).map(CurrentPatient::toPrincipal).ifPresent(jwtAuth::setDetails);
+		filterChain.doFilter(request, response);
 	}
 
-	private void writeForbidden(final HttpServletRequest request, final HttpServletResponse response)
+	private void writeOnboardingRequired(final HttpServletRequest request, final HttpServletResponse response)
 			throws IOException {
 		errorResponses.writeJson(response, HttpServletResponse.SC_FORBIDDEN,
-				errorResponses.error(MobileApiErrorResponses.KEY_PATIENT_NOT_LINKED, request));
+				errorResponses.error(MobileApiErrorResponses.KEY_PATIENT_ONBOARDING_REQUIRED, request));
 	}
 
 }

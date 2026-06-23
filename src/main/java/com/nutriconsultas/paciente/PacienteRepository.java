@@ -50,8 +50,8 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 	List<PacienteListView> findListViewsByUserIdAndSearchTerm(@Param("userId") String userId,
 			@Param("searchTerm") String searchTerm);
 
-	@Query("SELECT p.id AS id, p.patientAuthSub AS patientAuthSub, p.userId AS userId FROM Paciente p "
-			+ "WHERE p.patientAuthSub = :patientAuthSub")
+	@Query("SELECT p.id AS id, p.patientAuthSub AS patientAuthSub, p.userId AS userId, p.status AS status "
+			+ "FROM Paciente p WHERE p.patientAuthSub = :patientAuthSub")
 	Optional<PacienteAuthView> findAuthViewByPatientAuthSub(@Param("patientAuthSub") String patientAuthSub);
 
 	@Query("SELECT p.id AS id, p.name AS name, p.dob AS dob, p.gender AS gender FROM Paciente p "
