@@ -41,7 +41,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (public booking):** None — epic ~~#245~~ **done**; ~~#246~~, ~~#247~~, ~~#248~~, ~~#297~~, ~~#300~~, ~~#302~~ done. Deferred follow-ups need new issues. See [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md).
 
-**Current next issue (mobile):** [#137 — CurrentPatient resolver + onboarding data gate](https://github.com/diego-torres/nutriconsultas/issues/137) (**in-progress**). ~~#136~~ done (PR [#325](https://github.com/diego-torres/nutriconsultas/pull/325)).
+**Current next issue (mobile):** [#138 — GET/PATCH /rest/mobile/patient/me](https://github.com/diego-torres/nutriconsultas/issues/138) (**NEXT**). ~~#137~~ done (PR [#326](https://github.com/diego-torres/nutriconsultas/pull/326)).
 
 **Current next issue (subscription):** Registered track **complete** (~~#244~~ ✓ on `subscription/244-contact-form-prefill`). Triage open `[Subscription]` GitHub issues. See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md).
 
@@ -408,8 +408,8 @@ gh pr create ...
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | [#137 — CurrentPatient resolver + onboarding data gate](https://github.com/diego-torres/nutriconsultas/issues/137) |
-| **Status** | **in-progress** — branch `mobile-api/137-current-patient-gate` |
+| **Next issue** | [#138 — GET/PATCH /rest/mobile/patient/me](https://github.com/diego-torres/nutriconsultas/issues/138) |
+| **Status** | **NEXT** — unblocked on `main` |
 | **Just completed** | [#135 preview](https://github.com/diego-torres/nutriconsultas/issues/135) — PR [#324](https://github.com/diego-torres/nutriconsultas/pull/324) |
 
 ### Upcoming gates
@@ -427,7 +427,7 @@ gh pr create ...
 
 **Patient mobile API on `main`:** Phase 0 + endpoints **#91–#99** done; cross-cutting **#111–#116** done. Onboarding **#132** + token service **#133 done** (PR #229, deployed EC2).
 
-**Next (mobile):** **#137** CurrentPatient gate → #138 profile.
+**Next (mobile):** **#138** profile → #139/#140.
 
 **Schema track:** ~~#46~~ Liquibase baseline (PR #196). Changesets **003–007** on `main` (subscription, patient invitation). All new edits → forward changesets only.
 
