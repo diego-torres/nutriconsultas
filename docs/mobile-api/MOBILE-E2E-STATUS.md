@@ -218,4 +218,4 @@ Optional backend script (requires access token from the app):
 
 ---
 
-*Updated 2026-06-19: ~~#133~~ token service on `main` (PR #229, EC2); **NEXT:** #134 create invitation.*
+*Updated 2026-06-23: Phase 2 invitation onboarding **#132–#141 complete** on `main` (PRs #319, #324–#333).*

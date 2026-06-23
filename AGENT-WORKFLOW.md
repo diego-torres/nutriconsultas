@@ -421,11 +421,11 @@ gh pr create ...
 | Endpoints | ~~#91–#99~~ ✓ | **Done** (PR #153) |
 | Cross-cutting | ~~#111~~ ✓, ~~#112~~ ✓ (OpenAPI), ~~#115~~ ✓ (PHI audit) | **Done** |
 | Hardening / additive | ~~#113~~ ✓, ~~#116~~ ✓ (`senderDisplayName`), ~~#114~~ ✓ (nutritionist reply) | **Done** |
-| Schema / Liquibase | ~~**#46**~~ ✓ (PR #196) → ~~**#132**~~ ✓ (PR #214) → ~~**#133**~~ ✓ (PR #229) → **#134–#141** | **#134 NEXT** — incremental changesets per [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) |
+| Schema / Liquibase | ~~**#46**~~ ✓ (PR #196) → ~~**#132**~~ ✓ (PR #214) → ~~**#133–#141**~~ ✓ (PRs #229, #319, #324–#333) | **Done** — forward changesets per [`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md) |
 
-### Status snapshot (2026-06-19)
+### Status snapshot (2026-06-23)
 
-**Patient mobile API on `main`:** Phase 0 + endpoints **#91–#99** done; cross-cutting **#111–#116** done. Onboarding **#132** + token service **#133 done** (PR #229, deployed EC2).
+**Patient mobile API on `main`:** Phase 0 + endpoints **#91–#99** done; cross-cutting **#111–#116** done. Phase 2 invitation onboarding **#132–#141 complete** (PRs #214, #229, #319, #324–#333).
 
 **Next (mobile):** Phase 2 invitation onboarding **complete** (~~#141~~).
 

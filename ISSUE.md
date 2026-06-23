@@ -10,7 +10,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116, #132–#141 invitation onboarding) plus the directly-related `[Dashboard]` IMC gauge (#106) and **integration prerequisites** that gate schema work (#156, #46). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
-> **GitHub sync note (2026-06-19):** **#133** closed (PR #229). **NEXT:** #134. ~~#97~~, ~~#111~~ closed on GitHub (PRs #147, #151).
+> **GitHub sync note (2026-06-23):** Phase 2 invitation onboarding **#134–#141 complete** (PRs #319, #324–#333). ~~#133~~ closed (PR #229). ~~#97~~, ~~#111~~ closed (PRs #147, #151).
 
 ---
 
