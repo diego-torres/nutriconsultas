@@ -9,6 +9,8 @@ public interface PatientInvitationRepository extends JpaRepository<PatientInvita
 
 	Optional<PatientInvitation> findByTokenHash(String tokenHash);
 
+	Optional<PatientInvitation> findByIdAndNutritionistUserId(Long id, String nutritionistUserId);
+
 	List<PatientInvitation> findByPacienteId(Long pacienteId);
 
 	List<PatientInvitation> findByNutritionistUserIdAndStatus(String nutritionistUserId,

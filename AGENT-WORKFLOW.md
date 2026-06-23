@@ -41,7 +41,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (public booking):** None — epic ~~#245~~ **done**; ~~#246~~, ~~#247~~, ~~#248~~, ~~#297~~, ~~#300~~, ~~#302~~ done. Deferred follow-ups need new issues. See [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md).
 
-**Current next issue (mobile):** [#139 — POST /rest/mobile/invitations/{id}/revoke](https://github.com/diego-torres/nutriconsultas/issues/139) (**NEXT**). ~~#138~~ done (PR [#328](https://github.com/diego-torres/nutriconsultas/pull/328)).
+**Current next issue (mobile):** [#139 — POST /rest/mobile/invitations/{id}/revoke](https://github.com/diego-torres/nutriconsultas/issues/139) (**in-progress**). ~~#138~~ done (PR [#328](https://github.com/diego-torres/nutriconsultas/pull/328)).
 
 **Current next issue (subscription):** Registered track **complete** (~~#244~~ ✓ on `subscription/244-contact-form-prefill`). Triage open `[Subscription]` GitHub issues. See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md).
 
@@ -409,7 +409,7 @@ gh pr create ...
 | Field | Value |
 |-------|-------|
 | **Next issue** | [#139 — POST /rest/mobile/invitations/{id}/revoke](https://github.com/diego-torres/nutriconsultas/issues/139) |
-| **Status** | **NEXT** — unblocked on `main` |
+| **Status** | **in-progress** — branch `mobile-api/139-invitation-revoke` |
 | **Just completed** | [#135 preview](https://github.com/diego-torres/nutriconsultas/issues/135) — PR [#324](https://github.com/diego-torres/nutriconsultas/pull/324) |
 
 ### Upcoming gates

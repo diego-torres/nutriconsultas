@@ -192,6 +192,46 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseRedeemedPatientInvitationDto"
+  /rest/mobile/invitations/{id}/revoke:
+    post:
+      tags:
+      - Mobile Invitations
+      summary: Revoke patient invitation
+      description: Nutritionist JWT invalidates an outstanding pending invitation;
+        idempotent when already revoked.
+      operationId: revokeInvitation
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Invitation revoked or already revoked
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseRevokedPatientInvitationDto"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseRevokedPatientInvitationDto"
+        "403":
+          description: Subscription limit or entitlement denied
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseRevokedPatientInvitationDto"
+        "404":
+          description: Resource not found or not owned by patient
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseRevokedPatientInvitationDto"
   /rest/mobile/patient/me:
     get:
       tags:
@@ -789,6 +829,39 @@ components:
           type: string
           format: date-time
           description: Redemption timestamp (ISO-8601 instant)
+    ApiResponseRevokedPatientInvitationDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/RevokedPatientInvitationDto"
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    RevokedPatientInvitationDto:
+      type: object
+      description: Revoked patient invitation
+      properties:
+        invitationId:
+          type: integer
+          format: int64
+          description: Invitation row id
+          example: 42
+        pacienteId:
+          type: integer
+          format: int64
+          description: Linked Paciente id
+          example: 1001
+        status:
+          type: string
+          description: Invitation status after revoke
+          enum:
+          - PENDING
+          - REDEEMED
+          - EXPIRED
+          - REVOKED
+          example: REVOKED
     PatchPatientOnboardingProfileRequest:
       type: object
       description: Patch patient onboarding profile

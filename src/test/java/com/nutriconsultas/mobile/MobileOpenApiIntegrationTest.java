@@ -33,7 +33,8 @@ class MobileOpenApiIntegrationTest {
 			"/rest/mobile/patient/diet-plans/{assignmentId}", "/rest/mobile/patient/diet-plans/{assignmentId}/pdf",
 			"/rest/mobile/patient/messages", "/rest/mobile/patient/progress",
 			"/rest/mobile/patient/progress/measurements", "/rest/mobile/patient/me", "/rest/mobile/invitations",
-			"/rest/mobile/invitations/{token}/preview", "/rest/mobile/invitations/{token}/redeem");
+			"/rest/mobile/invitations/{token}/preview", "/rest/mobile/invitations/{token}/redeem",
+			"/rest/mobile/invitations/{id}/revoke");
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -58,6 +59,7 @@ class MobileOpenApiIntegrationTest {
 		assertThat(paths.path("/rest/mobile/patient/messages").has("post")).isTrue();
 		assertThat(paths.path("/rest/mobile/patient/me").has("get")).isTrue();
 		assertThat(paths.path("/rest/mobile/patient/me").has("patch")).isTrue();
+		assertThat(paths.path("/rest/mobile/invitations/{id}/revoke").has("post")).isTrue();
 	}
 
 	@Test

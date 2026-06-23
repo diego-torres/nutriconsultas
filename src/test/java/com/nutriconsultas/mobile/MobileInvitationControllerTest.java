@@ -18,13 +18,17 @@ import com.nutriconsultas.mobile.dto.CreatePatientInvitationRequest;
 import com.nutriconsultas.mobile.dto.CreatedPatientInvitationDto;
 import com.nutriconsultas.mobile.dto.PatientInvitationPreviewDto;
 import com.nutriconsultas.mobile.dto.RedeemedPatientInvitationDto;
+import com.nutriconsultas.mobile.dto.RevokedPatientInvitationDto;
 import com.nutriconsultas.paciente.PacienteStatus;
+import com.nutriconsultas.paciente.PatientInvitationStatus;
 import com.nutriconsultas.paciente.invitation.CreatedPatientInvitationResult;
 import com.nutriconsultas.paciente.invitation.PatientInvitationCreateService;
 import com.nutriconsultas.paciente.invitation.PatientInvitationPreviewResult;
 import com.nutriconsultas.paciente.invitation.PatientInvitationPreviewService;
 import com.nutriconsultas.paciente.invitation.PatientInvitationRedeemResult;
 import com.nutriconsultas.paciente.invitation.PatientInvitationRedeemService;
+import com.nutriconsultas.paciente.invitation.PatientInvitationRevokeResult;
+import com.nutriconsultas.paciente.invitation.PatientInvitationRevokeService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -52,6 +56,9 @@ class MobileInvitationControllerTest {
 
 	@Mock
 	private PatientInvitationRedeemRateLimiter patientInvitationRedeemRateLimiter;
+
+	@Mock
+	private PatientInvitationRevokeService patientInvitationRevokeService;
 
 	@Mock
 	private HttpServletRequest httpServletRequest;
@@ -108,6 +115,21 @@ class MobileInvitationControllerTest {
 		assertThat(response.data().pacienteStatus()).isEqualTo(PacienteStatus.ONBOARDING);
 		assertThat(response.data().invitationId()).isEqualTo(1L);
 		verify(patientInvitationRedeemService).redeem("url-token-value", PATIENT_SUB);
+	}
+
+	@Test
+	void revokeInvitation_returnsApiResponseEnvelope() {
+		final PatientInvitationRevokeResult result = new PatientInvitationRevokeResult(7L, 100L,
+				PatientInvitationStatus.REVOKED);
+		final Jwt jwt = Jwt.withTokenValue("token").header("alg", "none").subject(NUTRITIONIST_SUB).build();
+		when(patientInvitationRevokeService.revoke(7L, NUTRITIONIST_SUB)).thenReturn(result);
+
+		final ApiResponse<RevokedPatientInvitationDto> response = controller.revokeInvitation(7L, jwt);
+
+		assertThat(response.data().invitationId()).isEqualTo(7L);
+		assertThat(response.data().pacienteId()).isEqualTo(100L);
+		assertThat(response.data().status()).isEqualTo(PatientInvitationStatus.REVOKED);
+		verify(patientInvitationRevokeService).revoke(7L, NUTRITIONIST_SUB);
 	}
 
 }
