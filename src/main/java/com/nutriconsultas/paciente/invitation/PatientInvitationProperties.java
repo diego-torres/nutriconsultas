@@ -20,10 +20,15 @@ public class PatientInvitationProperties {
 	private String jwsSecret = "";
 
 	/**
-	 * Base URL for patient invite deep links ({@code {baseUrl}/i/{token}}). Production
-	 * typically uses the links subdomain (e.g. {@code https://links.minutriporcion.com}).
+	 * Base URL for patient invite deep links ({@code {baseUrl}/links/i/{token}}).
+	 * Production typically uses the main site or links subdomain (e.g.
+	 * {@code https://minutriporcion.com}).
 	 */
 	private String baseUrl = "http://localhost:3000";
+
+	private String iosAppStoreUrl = "";
+
+	private String androidPlayStoreUrl = "";
 
 	public int getExpiryDays() {
 		return expiryDays;
@@ -61,9 +66,25 @@ public class PatientInvitationProperties {
 		this.baseUrl = baseUrl;
 	}
 
+	public String getIosAppStoreUrl() {
+		return iosAppStoreUrl;
+	}
+
+	public void setIosAppStoreUrl(final String iosAppStoreUrl) {
+		this.iosAppStoreUrl = iosAppStoreUrl;
+	}
+
+	public String getAndroidPlayStoreUrl() {
+		return androidPlayStoreUrl;
+	}
+
+	public void setAndroidPlayStoreUrl(final String androidPlayStoreUrl) {
+		this.androidPlayStoreUrl = androidPlayStoreUrl;
+	}
+
 	public String buildInviteUrl(final String rawUrlToken) {
 		final String normalizedBase = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
-		return normalizedBase + "/i/" + rawUrlToken;
+		return normalizedBase + "/links/i/" + rawUrlToken;
 	}
 
 }

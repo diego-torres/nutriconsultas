@@ -2,6 +2,7 @@ package com.nutriconsultas.paciente.invitation;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.Base64;
 
 /**
  * Crockford-style human invitation codes (e.g. {@code NUTRI-7F3K-9Q2X}) derived from the
@@ -12,6 +13,14 @@ final class PatientInvitationHumanCode {
 	private static final String ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 
 	private PatientInvitationHumanCode() {
+	}
+
+	static String fromUrlToken(final String rawUrlToken, final String prefix) {
+		if (!PatientInvitationUrlTokens.isWellFormed(rawUrlToken)) {
+			throw new IllegalArgumentException("invalid invitation URL token");
+		}
+		final byte[] secret = Base64.getUrlDecoder().decode(rawUrlToken);
+		return format(secret, prefix);
 	}
 
 	static String format(final byte[] secret, final String prefix) {

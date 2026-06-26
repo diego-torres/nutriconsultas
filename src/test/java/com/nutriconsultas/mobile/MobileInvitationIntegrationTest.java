@@ -115,7 +115,7 @@ class MobileInvitationIntegrationTest {
 		final String humanCode = data.path("humanCode").asText();
 		final String rawToken = inviteUrl.substring(inviteUrl.lastIndexOf('/') + 1);
 
-		assertThat(inviteUrl).contains("/i/");
+		assertThat(inviteUrl).contains("/links/i/");
 		assertThat(humanCode).matches("NUTRI-[0-9A-Z]{4}-[0-9A-Z]{4}");
 
 		final var paciente = pacienteRepository.findById(pacienteId).orElseThrow();

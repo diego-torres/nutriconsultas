@@ -27,7 +27,7 @@ public final class PhiLogTurboFilter extends TurboFilter {
 
 	private static final Pattern HUMAN_INVITATION_CODE = Pattern.compile("NUTRI-[0-9A-Z]{4}-[0-9A-Z]{4}");
 
-	private static final Pattern INVITE_URL_TOKEN = Pattern.compile("/i/[A-Za-z0-9_-]{40,50}\\b");
+	private static final Pattern INVITE_URL_TOKEN = Pattern.compile("(?:/links)?/i/[A-Za-z0-9_-]{40,50}\\b");
 
 	private static final Pattern STANDALONE_URL_TOKEN = Pattern.compile("\\b[A-Za-z0-9_-]{43}\\b");
 

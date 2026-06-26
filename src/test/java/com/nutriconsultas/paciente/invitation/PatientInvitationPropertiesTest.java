@@ -11,7 +11,7 @@ class PatientInvitationPropertiesTest {
 		final PatientInvitationProperties properties = new PatientInvitationProperties();
 		properties.setBaseUrl("https://links.minutriporcion.com");
 
-		assertThat(properties.buildInviteUrl("abc123")).isEqualTo("https://links.minutriporcion.com/i/abc123");
+		assertThat(properties.buildInviteUrl("abc123")).isEqualTo("https://links.minutriporcion.com/links/i/abc123");
 	}
 
 	@Test
@@ -19,7 +19,7 @@ class PatientInvitationPropertiesTest {
 		final PatientInvitationProperties properties = new PatientInvitationProperties();
 		properties.setBaseUrl("http://localhost:3000/");
 
-		assertThat(properties.buildInviteUrl("abc123")).isEqualTo("http://localhost:3000/i/abc123");
+		assertThat(properties.buildInviteUrl("abc123")).isEqualTo("http://localhost:3000/links/i/abc123");
 	}
 
 }

@@ -89,7 +89,7 @@ class PatientInvitationCreateServiceTest {
 
 		assertThat(created.invitationId()).isEqualTo(55L);
 		assertThat(created.pacienteId()).isEqualTo(100L);
-		assertThat(created.inviteUrl()).isEqualTo("https://links.test.example/i/url-token-value");
+		assertThat(created.inviteUrl()).isEqualTo("https://links.test.example/links/i/url-token-value");
 		assertThat(created.humanCode()).isEqualTo("NUTRI-ABCD-EFGH");
 		assertThat(created.expiresAt()).isAfter(Instant.now());
 
@@ -107,7 +107,7 @@ class PatientInvitationCreateServiceTest {
 		assertThat(invitationCaptor.getValue().getNutritionistUserId()).isEqualTo(NUTRITIONIST_SUB);
 
 		verify(patientInvitationEmailSender).sendPatientInvitation(eq("maria@example.com"), eq("NUTRI-ABCD-EFGH"),
-				eq("https://links.test.example/i/url-token-value"));
+				eq("https://links.test.example/links/i/url-token-value"));
 		verify(subscriptionEntitlementService).assertCanCreatePatient(NUTRITIONIST_SUB);
 	}
 
