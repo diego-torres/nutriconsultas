@@ -24,10 +24,14 @@ public class PatientInvitationPreviewServiceImpl implements PatientInvitationPre
 
 	private final NutritionistProfileRepository nutritionistProfileRepository;
 
+	private final PatientInvitationProperties invitationProperties;
+
 	public PatientInvitationPreviewServiceImpl(final PatientInvitationRepository patientInvitationRepository,
-			final NutritionistProfileRepository nutritionistProfileRepository) {
+			final NutritionistProfileRepository nutritionistProfileRepository,
+			final PatientInvitationProperties invitationProperties) {
 		this.patientInvitationRepository = patientInvitationRepository;
 		this.nutritionistProfileRepository = nutritionistProfileRepository;
+		this.invitationProperties = invitationProperties;
 	}
 
 	@Override
@@ -41,6 +45,24 @@ public class PatientInvitationPreviewServiceImpl implements PatientInvitationPre
 			.filter(this::isPreviewable)
 			.orElseThrow(PatientInvitationUnavailableException::new);
 
+		return toPreviewResult(invitation);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public PatientInvitationPreviewResult previewByHumanCode(final String humanCode) {
+		if (!PatientInvitationHumanCodes.isWellFormed(humanCode, invitationProperties.getHumanCodePrefix())) {
+			throw new PatientInvitationUnavailableException();
+		}
+		final String normalizedCode = PatientInvitationHumanCodes.normalize(humanCode);
+		final PatientInvitation invitation = patientInvitationRepository.findByHumanCode(normalizedCode)
+			.filter(this::isPreviewable)
+			.orElseThrow(PatientInvitationUnavailableException::new);
+
+		return toPreviewResult(invitation);
+	}
+
+	private PatientInvitationPreviewResult toPreviewResult(final PatientInvitation invitation) {
 		final String inviterDisplayName = nutritionistProfileRepository.findByUserId(invitation.getNutritionistUserId())
 			.map(profile -> NutritionistBrandingHelper.resolveDisplayName(profile, null))
 			.orElse(null);

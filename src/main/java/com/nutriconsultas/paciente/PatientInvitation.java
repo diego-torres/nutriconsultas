@@ -36,6 +36,9 @@ public class PatientInvitation {
 	@Column(name = "token_hash", nullable = false, length = 64, unique = true)
 	private String tokenHash;
 
+	@Column(name = "human_code", length = 20, unique = true)
+	private String humanCode;
+
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "paciente_id", nullable = false)
 	private Paciente paciente;

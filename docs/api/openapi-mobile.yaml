@@ -661,6 +661,46 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiResponsePatientInvitationPreviewDto"
       security: []
+  /rest/mobile/invitations/by-code/{code}/preview:
+    get:
+      tags:
+      - Mobile Invitations
+      summary: Preview patient invitation by human code
+      description: "Public, rate-limited preview keyed by human-readable code (e.g.\
+        \ NUTRI-ABCD-EFGH)."
+      operationId: previewInvitationByHumanCode
+      parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Invitation preview when code is valid and pending
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePatientInvitationPreviewDto"
+        "400":
+          description: Malformed invitation token
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePatientInvitationPreviewDto"
+        "404":
+          description: Invalid or expired invitation
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePatientInvitationPreviewDto"
+        "429":
+          description: "Rate limit exceeded (Retry-After: 60)"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePatientInvitationPreviewDto"
+      security: []
 components:
   schemas:
     SendPatientMessageRequest:

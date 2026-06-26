@@ -86,6 +86,24 @@ public class MobileInvitationController {
 		return ApiResponse.ok(CreatedPatientInvitationDto.from(created));
 	}
 
+	@GetMapping("/by-code/{code}/preview")
+	@Operation(summary = "Preview patient invitation by human code",
+			description = "Public, rate-limited preview keyed by human-readable code (e.g. NUTRI-ABCD-EFGH).")
+	@SecurityRequirements
+	@MobileOpenApiResponses.PublicInvitationPreview
+	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",
+			description = "Invitation preview when code is valid and pending")
+	public ApiResponse<PatientInvitationPreviewDto> previewInvitationByHumanCode(
+			@PathVariable("code") final String code, final HttpServletRequest httpRequest) {
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile invitation preview by human code request received");
+		}
+		final String clientKey = ClientIpResolver.resolve(httpRequest);
+		final PatientInvitationPreviewResult preview = patientInvitationPreviewRateLimiter.execute(clientKey,
+				() -> patientInvitationPreviewService.previewByHumanCode(code));
+		return ApiResponse.ok(PatientInvitationPreviewDto.from(preview));
+	}
+
 	@GetMapping("/{token}/preview")
 	@Operation(summary = "Preview patient invitation",
 			description = "Public, rate-limited preview returning inviter display name only (no patient PII).")

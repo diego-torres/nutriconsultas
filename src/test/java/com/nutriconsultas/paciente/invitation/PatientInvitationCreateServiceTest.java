@@ -103,6 +103,7 @@ class PatientInvitationCreateServiceTest {
 		final ArgumentCaptor<PatientInvitation> invitationCaptor = ArgumentCaptor.forClass(PatientInvitation.class);
 		verify(patientInvitationRepository).save(invitationCaptor.capture());
 		assertThat(invitationCaptor.getValue().getTokenHash()).isEqualTo("abc123hash");
+		assertThat(invitationCaptor.getValue().getHumanCode()).isEqualTo("NUTRI-ABCD-EFGH");
 		assertThat(invitationCaptor.getValue().getStatus()).isEqualTo(PatientInvitationStatus.PENDING);
 		assertThat(invitationCaptor.getValue().getNutritionistUserId()).isEqualTo(NUTRITIONIST_SUB);
 

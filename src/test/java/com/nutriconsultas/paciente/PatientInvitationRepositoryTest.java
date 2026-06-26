@@ -22,6 +22,8 @@ class PatientInvitationRepositoryTest {
 
 	private static final String TOKEN_HASH = "a".repeat(64);
 
+	private static final String HUMAN_CODE = "NUTRI-ABCD-EFGH";
+
 	@Autowired
 	private PacienteRepository pacienteRepository;
 
@@ -35,6 +37,14 @@ class PatientInvitationRepositoryTest {
 		patientInvitationRepository.saveAndFlush(invitation);
 
 		assertThat(patientInvitationRepository.findByTokenHash(TOKEN_HASH)).isPresent();
+	}
+
+	@Test
+	void findByHumanCode_returnsInvitationWhenPresent() {
+		final Paciente paciente = pacienteRepository.save(invitedPaciente());
+		patientInvitationRepository.saveAndFlush(sampleInvitation(paciente));
+
+		assertThat(patientInvitationRepository.findByHumanCode(HUMAN_CODE)).isPresent();
 	}
 
 	@Test
@@ -79,6 +89,7 @@ class PatientInvitationRepositoryTest {
 		invitation.setPaciente(paciente);
 		invitation.setNutritionistUserId(NUTRITIONIST_SUB);
 		invitation.setTokenHash(TOKEN_HASH);
+		invitation.setHumanCode(HUMAN_CODE);
 		invitation.setStatus(PatientInvitationStatus.PENDING);
 		invitation.setExpiresAt(Instant.now().plus(14, ChronoUnit.DAYS));
 		invitation.setMaxUses(1);
