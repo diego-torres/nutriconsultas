@@ -15,6 +15,8 @@ public interface PatientInvitationRepository extends JpaRepository<PatientInvita
 
 	List<PatientInvitation> findByPacienteId(Long pacienteId);
 
+	List<PatientInvitation> findByPacienteIdAndStatus(Long pacienteId, PatientInvitationStatus status);
+
 	List<PatientInvitation> findByNutritionistUserIdAndStatus(String nutritionistUserId,
 			PatientInvitationStatus status);
 

@@ -115,6 +115,9 @@ public class PacienteController extends AbstractAuthorizedController {
 	@Autowired
 	private PacienteMpxImportService pacienteMpxImportService;
 
+	@Autowired
+	private com.nutriconsultas.paciente.invitation.PatientMobileInvitationService patientMobileInvitationService;
+
 	/**
 	 * Gets the user ID from the OAuth2 principal.
 	 * @param principal the OAuth2 principal
@@ -337,6 +340,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		model.addAttribute("paciente", paciente);
 		model.addAttribute("mobileAuth",
 				PatientMobileAuthStatus.of(paciente.getPatientAuthSub(), auth0UserLookup.isConfigured()));
+		model.addAttribute("mobileInvitation", patientMobileInvitationService.getStatus(id, userId));
 		return "sbadmin/pacientes/afiliacion";
 	}
 

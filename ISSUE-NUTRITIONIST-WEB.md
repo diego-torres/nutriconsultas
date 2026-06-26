@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-21 — ~~#242~~ **done** (branch `issue-242-anthropometric-field-edit`). ~~#241~~ **done** (PR [#291](https://github.com/diego-torres/nutriconsultas/pull/291)). Patient UX epic **complete** (#241–#242). ~~#272~~ **done** (PR [#289](https://github.com/diego-torres/nutriconsultas/pull/289)). ~~#271~~ **done** (PR [#288](https://github.com/diego-torres/nutriconsultas/pull/288)).
+**Last updated:** 2026-06-26 — ~~#341~~ **done** (branch `issue-341-web-mobile-invitation`, 38f358e). ~~#242~~ **done** (branch `issue-242-anthropometric-field-edit`). ~~#241~~ **done** (PR [#291](https://github.com/diego-torres/nutriconsultas/pull/291)). Patient UX epic **complete** (#241–#242). ~~#272~~ **done** (PR [#289](https://github.com/diego-torres/nutriconsultas/pull/289)). ~~#271~~ **done** (PR [#288](https://github.com/diego-torres/nutriconsultas/pull/288)).
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -190,6 +190,16 @@ Inline **cantidad** editing on the catalog platillo form (`/admin/platillos/{id}
 
 ---
 
+## Epic — Web mobile app invitation (#341)
+
+Nutritionist sends patient mobile onboarding invitations from the **patient grid** and **Afiliación** profile without a mobile JWT.
+
+| # | Title | URL | State | Depends on | Notes |
+|---|-------|-----|-------|-----------|-------|
+| **341** | Patient grid + profile — send mobile app invitation | https://github.com/diego-torres/nutriconsultas/issues/341 | **done** | #134, #336 | Branch `issue-341-web-mobile-invitation` (38f358e); grid badge + afiliación send/resend/revoke; SweetAlert |
+
+---
+
 ## Bugs
 
 | # | Title | URL | State | Depends on | Notes |
@@ -215,6 +225,7 @@ Inline **cantidad** editing on the catalog platillo form (`/admin/platillos/{id}
 | #109 Mobile linkage | Delete clears `patientAuthSub`; not stored in `.mpx` |
 | ~~#220~~ Retention purge | Platform admin purge of **revoked** nutritionists — ~~#220~~ PR [#313](https://github.com/diego-torres/nutriconsultas/pull/313); orthogonal to nutritionist-initiated patient delete |
 | #132 Patient invitations | Onboarding `Paciente.status` — import creates `ACTIVE` patient unless product specifies otherwise |
+| **#341** Web mobile invite UI | Session REST `/rest/pacientes/{id}/mobile-invitation`; grid badge + afiliación send/resend/revoke (#341) |
 | #183 Platform admin | System diet edit (#232), create (#272); system platillo edit (#257), create (#271) |
 | #187 Branded PDF | Logo profile (#236) and PDF sizing (#237) |
 | #198 Diet templates | System diets seeded; editable (#232) and creatable (#272) by admin |

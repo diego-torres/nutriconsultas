@@ -2,6 +2,8 @@ package com.nutriconsultas.paciente.projection;
 
 import java.util.Date;
 
+import com.nutriconsultas.paciente.PacienteStatus;
+
 /**
  * Read-only projection for patient grid and search — excludes heavy TEXT and
  * energy-preference columns (#156 Phase A).
@@ -21,5 +23,9 @@ public interface PacienteListView {
 	String getGender();
 
 	String getResponsibleName();
+
+	PacienteStatus getStatus();
+
+	String getPatientAuthSub();
 
 }

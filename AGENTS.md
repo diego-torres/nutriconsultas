@@ -604,6 +604,8 @@ Issue registry: [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md). Plan: 
 
 **Bug ~~#250~~** (2026-06-19): diet ingesta platillo name links to wrong catalog platillo — **done** (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)).
 
+**Epic ~~#341~~** (2026-06-26): nutritionist web mobile app invitation — ~~#341~~ **done** (branch `issue-341-web-mobile-invitation`, 38f358e): session REST `/rest/pacientes/{id}/mobile-invitation`, patient grid **App móvil** column, Afiliación send/resend/revoke. See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
+
 ## Public booking (tracking)
 
 Issue registry: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Epic ~~**#245**~~ **done** (v1 shipped, 2026-06-19): shareable `/consultas/{id}/agendar-cita` link. ~~#246~~ **done**; ~~#247~~ **done** (PR [#295](https://github.com/diego-torres/nutriconsultas/pull/295)); ~~#248~~ **done** (PR [#298](https://github.com/diego-torres/nutriconsultas/pull/298)); ~~#297~~ **done** (PR [#299](https://github.com/diego-torres/nutriconsultas/pull/299)); ~~#300~~ **done** (PR [#301](https://github.com/diego-torres/nutriconsultas/pull/301)); ~~#302~~ **done** (PR [#303](https://github.com/diego-torres/nutriconsultas/pull/303)). Track complete; deferred follow-ups (verification, SMTP) need new issues.

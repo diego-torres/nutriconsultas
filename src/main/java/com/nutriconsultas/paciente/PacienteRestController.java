@@ -36,6 +36,7 @@ import com.nutriconsultas.dataTables.paging.Direction;
 import com.nutriconsultas.dataTables.paging.Order;
 import com.nutriconsultas.dataTables.paging.PageArray;
 import com.nutriconsultas.dataTables.paging.PagingRequest;
+import com.nutriconsultas.paciente.invitation.PatientMobileInvitationUiSupport;
 import com.nutriconsultas.paciente.projection.PacienteListView;
 import com.nutriconsultas.util.LogRedaction;
 
@@ -62,6 +63,7 @@ public class PacienteRestController extends AbstractGridController<PacienteListV
 		COLUMN_TO_FIELD_MAP.put("phone", "phone");
 		COLUMN_TO_FIELD_MAP.put("gender", "gender");
 		COLUMN_TO_FIELD_MAP.put("responsible", "responsibleName");
+		COLUMN_TO_FIELD_MAP.put("mobileApp", "status");
 	}
 
 	/**
@@ -184,11 +186,21 @@ public class PacienteRestController extends AbstractGridController<PacienteListV
 				row.getEmail(), //
 				row.getPhone(), //
 				row.getGender(), //
-				row.getResponsibleName(), buildPacienteActions(row.getId()));
+				row.getResponsibleName(), //
+				PatientMobileInvitationUiSupport.gridBadgeHtml(row.getStatus(), row.getPatientAuthSub()),
+				buildPacienteActions(row));
 	}
 
-	private String buildPacienteActions(final Long pacienteId) {
-		return "<button type='button' class='btn action-btn btn-outline-primary btn-sm paciente-export-btn' "
+	private String buildPacienteActions(final PacienteListView row) {
+		final Long pacienteId = row.getId();
+		final String inviteButton = PatientMobileInvitationUiSupport.canInviteFromGrid(row.getStatus(), row
+			.getPatientAuthSub(), PatientMobileInvitationUiSupport.resolveRecipientEmailFromListRow(row))
+					? "<button type='button' class='btn action-btn btn-outline-success btn-sm paciente-mobile-invite-btn' "
+							+ "data-id='" + pacienteId
+							+ "' title='Invitar a la app'><i class='fas fa-mobile-alt'></i></button> "
+					: "";
+		return inviteButton
+				+ "<button type='button' class='btn action-btn btn-outline-primary btn-sm paciente-export-btn' "
 				+ "data-id='" + pacienteId + "' title='Exportar registro'><i class='fas fa-download'></i></button> "
 				+ "<button type='button' class='btn action-btn btn-danger btn-sm paciente-delete-btn' data-id='"
 				+ pacienteId + "' title='Eliminar paciente'><i class='fas fa-trash'></i></button>";
@@ -226,7 +238,7 @@ public class PacienteRestController extends AbstractGridController<PacienteListV
 	@Override
 	protected List<Column> getColumns() {
 		log.debug("getting Paciente columns.");
-		return Stream.of("nombre", "dob", "email", "phone", "gender", "responsible", "acciones")
+		return Stream.of("nombre", "dob", "email", "phone", "gender", "responsible", "mobileApp", "acciones")
 			.map(Column::new)
 			.collect(Collectors.toList());
 	}
