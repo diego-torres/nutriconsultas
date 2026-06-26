@@ -41,10 +41,11 @@ public final class PatientInvitationHumanCodes {
 				return false;
 			}
 		}
-		return payload.charAt(7) == checksum(payload.substring(0, 7).toCharArray());
+		return payload.charAt(7) == checksum(payload.charAt(0), payload.charAt(1), payload.charAt(2), payload.charAt(3),
+				payload.charAt(4), payload.charAt(5), payload.charAt(6));
 	}
 
-	private static char checksum(final char[] payload) {
+	private static char checksum(final char... payload) {
 		int sum = 0;
 		for (int index = 0; index < 7; index++) {
 			sum += ALPHABET.indexOf(payload[index]);
