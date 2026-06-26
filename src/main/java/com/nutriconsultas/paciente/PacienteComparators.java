@@ -41,6 +41,11 @@ public final class PacienteComparators {
 			.comparing(PacienteListView::getResponsibleName, Comparator.nullsLast(Comparator.naturalOrder())));
 		MAP.put(new ComparatorKey("responsible", Direction.desc), Comparator
 			.comparing(PacienteListView::getResponsibleName, Comparator.nullsLast(Comparator.reverseOrder())));
+
+		MAP.put(new ComparatorKey("mobileApp", Direction.asc),
+				Comparator.comparing(PacienteListView::getStatus, Comparator.nullsLast(Comparator.naturalOrder())));
+		MAP.put(new ComparatorKey("mobileApp", Direction.desc),
+				Comparator.comparing(PacienteListView::getStatus, Comparator.nullsLast(Comparator.reverseOrder())));
 	}
 
 	public static Comparator<PacienteListView> getComparator(String name, Direction dir) {

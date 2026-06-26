@@ -48,6 +48,8 @@ class PacienteProjectionRepositoryTest {
 		assertThat(view.getPhone()).isEqualTo("5551234");
 		assertThat(view.getGender()).isEqualTo("F");
 		assertThat(view.getResponsibleName()).isEqualTo("Tutor Test");
+		assertThat(view.getStatus()).isEqualTo(PacienteStatus.ACTIVE);
+		assertThat(view.getPatientAuthSub()).isEqualTo(PATIENT_SUB);
 	}
 
 	@Test

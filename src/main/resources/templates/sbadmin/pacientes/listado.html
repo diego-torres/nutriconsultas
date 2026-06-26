@@ -90,6 +90,7 @@
                         <th>Tel&eacute;fono</th>
                         <th>Género</th>
                         <th>Responsable</th>
+                        <th>App móvil</th>
                         <th>Acciones</th>
                       </tr>
                     </thead>
@@ -125,6 +126,7 @@
     <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
     <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
     <script th:src="@{/sbadmin/js/paciente-mpx-actions.js}"></script>
+    <script th:src="@{/sbadmin/js/paciente-mobile-invitation.js}"></script>
     <script lang="javascript">
       'use strict';
       (function ($) {
@@ -172,6 +174,14 @@
         if (window.PacienteMpxActions) {
           PacienteMpxActions.bind({
             onDeleted: function () {
+              $('#mainGrid').DataTable().ajax.reload(null, false);
+            }
+          });
+        }
+
+        if (window.PacienteMobileInvitation) {
+          PacienteMobileInvitation.bindGrid({
+            onChanged: function () {
               $('#mainGrid').DataTable().ajax.reload(null, false);
             }
           });

@@ -16,6 +16,7 @@ import com.nutriconsultas.clinical.exam.ClinicalExam;
 import com.nutriconsultas.dieta.Dieta;
 import com.nutriconsultas.validation.template.BaseTemplateValidator;
 import com.nutriconsultas.mobile.PatientMobileAuthStatus;
+import com.nutriconsultas.paciente.invitation.PatientMobileInvitationStatus;
 
 /**
  * Validator for paciente (patient) templates. Provides mock variables for patient
@@ -35,6 +36,8 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		final Paciente paciente = createMockPaciente();
 		variables.put("paciente", paciente);
 		variables.put("mobileAuth", PatientMobileAuthStatus.of(null, false));
+		variables.put("mobileInvitation", new PatientMobileInvitationStatus("NONE", "Sin app", true, false, false, null,
+				null, null, "j***@example.com"));
 		variables.put("avatarImageUrl", PacienteAvatarCatalog.resolveImagePath(paciente));
 		variables.put("selectedAvatarId", PacienteAvatarCatalog.resolveSelectedId(paciente));
 		variables.put("avatarOptions", PacienteAvatarCatalog.allOptions());

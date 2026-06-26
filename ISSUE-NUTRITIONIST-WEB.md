@@ -190,6 +190,16 @@ Inline **cantidad** editing on the catalog platillo form (`/admin/platillos/{id}
 
 ---
 
+## Epic — Web mobile app invitation (#341)
+
+Nutritionist sends patient mobile onboarding invitations from the **patient grid** and **Afiliación** profile without a mobile JWT.
+
+| # | Title | URL | State | Depends on | Notes |
+|---|-------|-----|-------|-----------|-------|
+| **341** | Patient grid + profile — send mobile app invitation | https://github.com/diego-torres/nutriconsultas/issues/341 | **in-progress** | #134, #336 | Branch `issue-341-web-mobile-invitation`; `PatientMobileInvitationService`; SweetAlert |
+
+---
+
 ## Bugs
 
 | # | Title | URL | State | Depends on | Notes |
@@ -215,6 +225,7 @@ Inline **cantidad** editing on the catalog platillo form (`/admin/platillos/{id}
 | #109 Mobile linkage | Delete clears `patientAuthSub`; not stored in `.mpx` |
 | ~~#220~~ Retention purge | Platform admin purge of **revoked** nutritionists — ~~#220~~ PR [#313](https://github.com/diego-torres/nutriconsultas/pull/313); orthogonal to nutritionist-initiated patient delete |
 | #132 Patient invitations | Onboarding `Paciente.status` — import creates `ACTIVE` patient unless product specifies otherwise |
+| **#341** Web mobile invite UI | Session REST `/rest/pacientes/{id}/mobile-invitation`; grid badge + afiliación send/resend/revoke (#341) |
 | #183 Platform admin | System diet edit (#232), create (#272); system platillo edit (#257), create (#271) |
 | #187 Branded PDF | Logo profile (#236) and PDF sizing (#237) |
 | #198 Diet templates | System diets seeded; editable (#232) and creatable (#272) by admin |

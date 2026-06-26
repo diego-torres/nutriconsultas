@@ -20,7 +20,8 @@ import com.nutriconsultas.paciente.projection.PacienteListView;
 public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 
 	String LIST_VIEW_SELECT = "SELECT p.id AS id, p.name AS name, p.email AS email, p.phone AS phone, "
-			+ "p.dob AS dob, p.gender AS gender, p.responsibleName AS responsibleName ";
+			+ "p.dob AS dob, p.gender AS gender, p.responsibleName AS responsibleName, "
+			+ "p.status AS status, p.patientAuthSub AS patientAuthSub ";
 
 	List<Paciente> findByUserId(String userId);
 

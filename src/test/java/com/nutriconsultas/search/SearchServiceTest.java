@@ -26,6 +26,7 @@ import com.nutriconsultas.clinical.exam.ClinicalExam;
 import com.nutriconsultas.clinical.exam.ClinicalExamRepository;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.paciente.PacienteStatus;
 import com.nutriconsultas.paciente.projection.PacienteListView;
 import com.nutriconsultas.platillos.Platillo;
 import com.nutriconsultas.platillos.PlatilloRepository;
@@ -269,6 +270,16 @@ public class SearchServiceTest {
 			@Override
 			public String getResponsibleName() {
 				return entity.getResponsibleName();
+			}
+
+			@Override
+			public PacienteStatus getStatus() {
+				return entity.getStatus();
+			}
+
+			@Override
+			public String getPatientAuthSub() {
+				return entity.getPatientAuthSub();
 			}
 		};
 	}

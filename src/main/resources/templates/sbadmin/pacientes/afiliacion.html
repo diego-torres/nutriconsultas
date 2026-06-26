@@ -101,6 +101,44 @@
                     </form>
                   </div>
 
+                  <!-- Mobile app invitation (#341) -->
+                  <div class="info-form p-5 border-top" th:if="${paciente != null and paciente.id != null}">
+                    <h5 class="text-gray-800 mb-3">Invitación a la app móvil</h5>
+                    <p class="text-muted small">
+                      Envíe un correo al paciente para que se registre en la app móvil de Minutriporcion.
+                    </p>
+                    <div class="mb-3">
+                      <span class="font-weight-bold">Estado:</span>
+                      <span id="mobile-invitation-status-badge" class="badge badge-secondary"
+                        th:text="${mobileInvitation != null ? mobileInvitation.stateLabel : 'Sin app'}">Sin app</span>
+                    </div>
+                    <p id="mobile-invitation-details" class="text-muted small"
+                      th:classappend="${mobileInvitation == null or (mobileInvitation.humanCode == null and mobileInvitation.expiresAt == null and mobileInvitation.recipientEmailRedacted == null)} ? ' d-none' : ''">
+                      <span th:if="${mobileInvitation != null and mobileInvitation.humanCode != null}"
+                        th:text="'Código: ' + ${mobileInvitation.humanCode}"></span>
+                      <span th:if="${mobileInvitation != null and mobileInvitation.expiresAt != null}"
+                        th:text="' · Vence: ' + ${mobileInvitation.expiresAt}"></span>
+                      <span th:if="${mobileInvitation != null and mobileInvitation.recipientEmailRedacted != null}"
+                        th:text="' · Correo: ' + ${mobileInvitation.recipientEmailRedacted}"></span>
+                    </p>
+                    <div class="mb-3">
+                      <button type="button" class="btn btn-success btn-sm" id="mobile-invitation-send-btn"
+                        th:classappend="${mobileInvitation == null or !mobileInvitation.canSend} ? ' d-none' : ''"
+                        th:attr="data-recipient=${mobileInvitation != null ? mobileInvitation.recipientEmailRedacted : ''}">
+                        Enviar invitación
+                      </button>
+                      <button type="button" class="btn btn-outline-success btn-sm" id="mobile-invitation-resend-btn"
+                        th:classappend="${mobileInvitation == null or !mobileInvitation.canResend} ? ' d-none' : ''"
+                        th:attr="data-recipient=${mobileInvitation != null ? mobileInvitation.recipientEmailRedacted : ''}">
+                        Reenviar invitación
+                      </button>
+                      <button type="button" class="btn btn-outline-danger btn-sm" id="mobile-invitation-revoke-btn"
+                        th:classappend="${mobileInvitation == null or !mobileInvitation.canRevoke} ? ' d-none' : ''">
+                        Revocar invitación
+                      </button>
+                    </div>
+                  </div>
+
                   <!-- Mobile app Auth0 linkage (#109) -->
                   <div class="info-form p-5 border-top" th:if="${paciente != null and paciente.id != null}">
                     <h5 class="text-gray-800 mb-3">App móvil del paciente</h5>
@@ -175,6 +213,7 @@
     <!-- Custom scripts for all pages-->
     <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
     <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
+    <script th:src="@{/sbadmin/js/paciente-mobile-invitation.js}"></script>
 
     <script th:inline="javascript">
       (function () {
@@ -302,6 +341,10 @@
               });
             });
           });
+        }
+
+        if (window.PacienteMobileInvitation) {
+          PacienteMobileInvitation.bindProfile(pacienteId);
         }
       })();
     </script>
