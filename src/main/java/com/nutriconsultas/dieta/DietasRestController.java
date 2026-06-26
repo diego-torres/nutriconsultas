@@ -385,7 +385,11 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	}
 
 	private String getIngestas(final Dieta row) {
-		return row.getIngestas().stream().map(Ingesta::getNombre).collect(Collectors.joining(", "));
+		return row.getIngestas()
+			.stream()
+			.sorted(IngestaComparators.BY_DISPLAY_ORDER)
+			.map(Ingesta::getNombre)
+			.collect(Collectors.joining(", "));
 	}
 
 	private String getDist(final Dieta row) {

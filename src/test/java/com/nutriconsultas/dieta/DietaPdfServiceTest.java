@@ -4,14 +4,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -19,9 +22,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
+import com.nutriconsultas.paciente.PacienteRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,6 +43,9 @@ public class DietaPdfServiceTest {
 
 	@Mock
 	private PacienteDietaRepository pacienteDietaRepository;
+
+	@Mock
+	private PacienteRepository pacienteRepository;
 
 	@Mock
 	private DietaService dietaService;
@@ -189,6 +197,26 @@ public class DietaPdfServiceTest {
 
 		assertThat(pdfBytes).isNotNull();
 		assertThat(pdfBytes.length).isGreaterThan(0);
+	}
+
+	@Test
+	public void testGeneratePdfForPatientAssignmentDietaLoadsPacienteFromDieta() {
+		dieta.setPacienteId(3L);
+		final Paciente paciente = new Paciente();
+		paciente.setId(3L);
+		paciente.setName("Cesar Torres");
+
+		when(dietaService.getDieta(1L)).thenReturn(dieta);
+		when(pacienteDietaRepository.findByDietaId(1L)).thenReturn(new ArrayList<>());
+		when(pacienteRepository.findById(3L)).thenReturn(Optional.of(paciente));
+		when(templateEngine.process(eq("sbadmin/dietas/printable"), any(Context.class)))
+			.thenReturn("<html><body>Test</body></html>");
+
+		final ArgumentCaptor<Context> contextCaptor = ArgumentCaptor.forClass(Context.class);
+		dietaPdfService.generatePdf(1L, true);
+
+		verify(templateEngine).process(eq("sbadmin/dietas/printable"), contextCaptor.capture());
+		assertThat(contextCaptor.getValue().getVariable("paciente")).isEqualTo(paciente);
 	}
 
 	@Test

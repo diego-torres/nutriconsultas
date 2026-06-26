@@ -87,7 +87,8 @@ class PhiLogTurboFilterTest {
 	@Test
 	void deniesStandaloneUrlTokenInPatientInvitationPackage() {
 		filter.start();
-		final Logger invitationLogger = logger("com.nutriconsultas.paciente.invitation.PatientInvitationCreateServiceImpl");
+		final Logger invitationLogger = logger(
+				"com.nutriconsultas.paciente.invitation.PatientInvitationCreateServiceImpl");
 
 		final FilterReply reply = filter.decide(null, invitationLogger, Level.INFO, "token={}",
 				new Object[] { "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG" }, null);

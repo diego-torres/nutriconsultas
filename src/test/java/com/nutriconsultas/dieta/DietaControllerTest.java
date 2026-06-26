@@ -2,6 +2,8 @@ package com.nutriconsultas.dieta;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -9,6 +11,8 @@ import static org.mockito.Mockito.when;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
@@ -585,7 +589,7 @@ public class DietaControllerTest {
 		log.info("Starting testPrintDieta");
 
 		final byte[] pdfBytes = "PDF content".getBytes();
-		// When accessed from diet list, patient info should be excluded
+		when(dietaService.getDieta(1L)).thenReturn(dieta);
 		when(dietaPdfService.generatePdf(1L, false)).thenReturn(pdfBytes);
 
 		// Perform GET request
@@ -604,24 +608,30 @@ public class DietaControllerTest {
 
 	@Test
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testPrintPatientAssignmentDietaIncludesPatientInfo() throws Exception {
+		dieta.setPacienteId(3L);
+		final byte[] pdfBytes = "PDF content".getBytes();
+		when(dietaService.getDieta(1L)).thenReturn(dieta);
+		when(dietaPdfService.generatePdf(1L, true)).thenReturn(pdfBytes);
+
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/1/print"))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_PDF))
+			.andExpect(MockMvcResultMatchers.content().bytes(pdfBytes));
+
+		verify(dietaPdfService, times(1)).generatePdf(1L, true);
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	public void testPrintDietaNotFound() throws Exception {
 		log.info("Starting testPrintDietaNotFound");
 
-		when(dietaPdfService.generatePdf(999L, false))
-			.thenThrow(new IllegalArgumentException("Dieta with id 999 not found"));
+		when(dietaService.getDieta(999L)).thenReturn(null);
 
-		// Perform GET request - exception will be wrapped in ServletException
-		try {
-			mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/999/print"))
-				.andExpect(status().isInternalServerError());
-		}
-		catch (Exception e) {
-			// Expected - exception is thrown during request processing
-			assertThat(e).hasRootCauseInstanceOf(IllegalArgumentException.class);
-		}
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/999/print")).andExpect(status().isNotFound());
 
-		// Verify that service was called with includePatientInfo = false
-		verify(dietaPdfService, times(1)).generatePdf(999L, false);
+		verify(dietaPdfService, never()).generatePdf(999L, false);
 
 		log.info("Finishing testPrintDietaNotFound");
 	}
@@ -1035,6 +1045,38 @@ public class DietaControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/8").with(oidcLogin(TEST_USER_ID)))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.model().attribute("isOwner", false));
+	}
+
+	@Test
+	public void testReorderIngestasSuccess() throws Exception {
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/ingestas/reorder")
+				.with(oidcLogin(TEST_USER_ID))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("[1]"))
+			.andExpect(status().isOk())
+			.andExpect(content().json("{\"status\":\"ok\"}"));
+
+		verify(dietaService).reorderIngestas(eq(1L), eq(List.of(1L)));
+	}
+
+	@Test
+	public void testSaveIngestaDuplicateNameSetsFlashError() throws Exception {
+		doThrow(new IllegalArgumentException("Ya existe una ingesta con ese nombre en este plan alimentario"))
+			.when(dietaService)
+			.addIngesta(eq(1L), eq("Colacion"));
+
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/ingestas/save")
+				.with(oidcLogin(TEST_USER_ID))
+				.param("ingestaId", "0")
+				.param("ingesta", "Colacion"))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(redirectedUrl("/admin/dietas/1"))
+			.andExpect(
+					flash().attribute("ingestaError", "Ya existe una ingesta con ese nombre en este plan alimentario"));
+
+		verify(dietaService).addIngesta(eq(1L), eq("Colacion"));
 	}
 
 }

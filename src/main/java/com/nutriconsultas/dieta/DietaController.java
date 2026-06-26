@@ -1,7 +1,7 @@
 package com.nutriconsultas.dieta;
 
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -20,7 +20,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.alimentos.AlimentoService;
@@ -134,12 +137,12 @@ public class DietaController extends AbstractAuthorizedController {
 
 		final List<Ingesta> sortedIngestas = dieta.getIngestas()
 			.stream()
-			.sorted(Comparator.comparingLong(Ingesta::getId))
+			.sorted(IngestaComparators.BY_DISPLAY_ORDER)
 			.collect(Collectors.toList());
 		model.addAttribute("ingestas", sortedIngestas);
 
-		final Long minId = sortedIngestas.isEmpty() ? Long.valueOf(0L) : sortedIngestas.get(0).getId();
-		model.addAttribute("minId", minId);
+		final Long activeIngestaId = sortedIngestas.isEmpty() ? Long.valueOf(0L) : sortedIngestas.get(0).getId();
+		model.addAttribute("activeIngestaId", activeIngestaId);
 
 		model.addAttribute("platillos", platilloService.findAll());
 		model.addAttribute("alimentos", alimentoService.findAll());
@@ -212,10 +215,13 @@ public class DietaController extends AbstractAuthorizedController {
 	 */
 	@GetMapping(path = "/admin/dietas/{id}/print")
 	public ResponseEntity<byte[]> printDieta(@PathVariable @NonNull final Long id) {
-		LOGGER.debug("Generating PDF for dieta with id {} (generic, no patient info)", id);
-		// Generate generic PDF without patient information when accessed from diet list
-		final byte[] pdfBytes = dietaPdfService.generatePdf(id, false);
 		final Dieta dieta = dietaService.getDieta(id);
+		if (dieta == null) {
+			return ResponseEntity.notFound().build();
+		}
+		final boolean includePatientInfo = DietaCatalogConstants.isPatientAssignment(dieta);
+		LOGGER.debug("Generating PDF for dieta with id {} (includePatientInfo: {})", id, includePatientInfo);
+		final byte[] pdfBytes = dietaPdfService.generatePdf(id, includePatientInfo);
 		final String fileName = (dieta != null && dieta.getNombre() != null ? dieta.getNombre() : "dieta") + ".pdf";
 		return ResponseEntity.ok()
 			.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
@@ -225,33 +231,44 @@ public class DietaController extends AbstractAuthorizedController {
 
 	@PostMapping(path = "/admin/dietas/{id}/ingestas/save")
 	public String saveIngesta(@PathVariable @NonNull final Long id, @ModelAttribute final IngestaFormModel ingesta,
-			final Model model, @AuthenticationPrincipal final OidcUser principal) {
+			final Model model, @AuthenticationPrincipal final OidcUser principal,
+			final RedirectAttributes redirectAttributes) {
 		LOGGER.debug("Agregar ingesta {} a dieta con id {}", ingesta, id);
 		model.addAttribute("activeMenu", "dietas");
 
 		final Dieta dieta = loadDietaForMutation(id, principal);
 
-		String result;
-		if (ingesta.getIngestaId() == 0) {
-			LOGGER.debug("nueva ingesta en dieta, agregar");
-			dietaService.addIngesta(id, ingesta.getIngesta());
-			dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.ingestas.save");
-			result = "redirect:/admin/dietas/" + id;
-		}
-		else {
-			LOGGER.debug("Ingesta existente, cambiar nombre");
+		try {
 			final Long ingestaId = ingesta.getIngestaId();
-			if (ingestaId == null) {
-				LOGGER.error("Ingesta ID is null, cannot rename");
-				result = "redirect:/admin/dietas/" + id;
+			if (ingestaId == null || ingestaId == 0L) {
+				LOGGER.debug("nueva ingesta en dieta, agregar");
+				dietaService.addIngesta(id, ingesta.getIngesta());
+				dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.ingestas.save");
 			}
 			else {
+				LOGGER.debug("Ingesta existente, cambiar nombre");
 				dietaService.renameIngesta(id, ingestaId, ingesta.getIngesta());
 				dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.ingestas.save");
-				result = "redirect:/admin/dietas/" + id;
 			}
 		}
-		return result;
+		catch (IllegalArgumentException exception) {
+			redirectAttributes.addFlashAttribute("ingestaError", exception.getMessage());
+		}
+		return "redirect:/admin/dietas/" + id;
+	}
+
+	@PostMapping(path = "/admin/dietas/{id}/ingestas/reorder", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public ResponseEntity<Map<String, String>> reorderIngestas(@PathVariable @NonNull final Long id,
+			@RequestBody final List<Long> orderedIngestaIds, @AuthenticationPrincipal final OidcUser principal) {
+		loadDietaForMutation(id, principal);
+		try {
+			dietaService.reorderIngestas(id, orderedIngestaIds);
+			return ResponseEntity.ok(Map.of("status", "ok"));
+		}
+		catch (IllegalArgumentException exception) {
+			return ResponseEntity.badRequest().body(Map.of("message", exception.getMessage()));
+		}
 	}
 
 	@PostMapping(path = "/admin/dietas/{id}/ingestas/delete")

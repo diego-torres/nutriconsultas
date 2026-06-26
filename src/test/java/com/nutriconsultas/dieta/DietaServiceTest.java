@@ -1,6 +1,7 @@
 package com.nutriconsultas.dieta;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -73,6 +74,7 @@ public class DietaServiceTest {
 		ingesta = new Ingesta();
 		ingesta.setId(1L);
 		ingesta.setNombre("Desayuno");
+		ingesta.setOrden(0);
 		ingesta.setDieta(originalDieta);
 		ingesta.setEnergia(500);
 		ingesta.setProteina(25.0);
@@ -530,6 +532,52 @@ public class DietaServiceTest {
 		assertThat(platillo.getIngredientes()).hasSize(1);
 		assertThat(platillo.getProteina()).isEqualTo(4.0);
 		assertThat(platillo.getEnergia()).isEqualTo(90);
+	}
+
+	@Test
+	public void testAddIngestaRejectsDuplicateNameCaseInsensitive() {
+		when(dietaRepository.findById(1L)).thenReturn(Optional.of(originalDieta));
+
+		assertThatThrownBy(() -> dietaService.addIngesta(1L, "desayuno")).isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("Ya existe una ingesta con ese nombre");
+
+		verify(dietaRepository, never()).save(any());
+	}
+
+	@Test
+	public void testAddIngestaAssignsNextOrden() {
+		when(dietaRepository.findById(1L)).thenReturn(Optional.of(originalDieta));
+		when(dietaRepository.save(any(Dieta.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		dietaService.addIngesta(1L, "Colacion");
+
+		assertThat(originalDieta.getIngestas()).hasSize(2);
+		final Ingesta added = originalDieta.getIngestas()
+			.stream()
+			.filter(candidate -> "Colacion".equals(candidate.getNombre()))
+			.findFirst()
+			.orElseThrow();
+		assertThat(added.getOrden()).isEqualTo(1);
+		verify(dietaRepository).save(originalDieta);
+	}
+
+	@Test
+	public void testReorderIngestasUpdatesOrden() {
+		final Ingesta comida = new Ingesta();
+		comida.setId(2L);
+		comida.setNombre("Comida");
+		comida.setOrden(1);
+		comida.setDieta(originalDieta);
+		originalDieta.getIngestas().add(comida);
+
+		when(dietaRepository.findById(1L)).thenReturn(Optional.of(originalDieta));
+		when(dietaRepository.save(any(Dieta.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		dietaService.reorderIngestas(1L, List.of(2L, 1L));
+
+		assertThat(comida.getOrden()).isEqualTo(0);
+		assertThat(ingesta.getOrden()).isEqualTo(1);
+		verify(dietaRepository).save(originalDieta);
 	}
 
 }
