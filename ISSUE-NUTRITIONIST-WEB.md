@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-21 — ~~#242~~ **done** (branch `issue-242-anthropometric-field-edit`). ~~#241~~ **done** (PR [#291](https://github.com/diego-torres/nutriconsultas/pull/291)). Patient UX epic **complete** (#241–#242). ~~#272~~ **done** (PR [#289](https://github.com/diego-torres/nutriconsultas/pull/289)). ~~#271~~ **done** (PR [#288](https://github.com/diego-torres/nutriconsultas/pull/288)).
+**Last updated:** 2026-06-26 — ~~#341~~ **done** (branch `issue-341-web-mobile-invitation`, 38f358e). ~~#242~~ **done** (branch `issue-242-anthropometric-field-edit`). ~~#241~~ **done** (PR [#291](https://github.com/diego-torres/nutriconsultas/pull/291)). Patient UX epic **complete** (#241–#242). ~~#272~~ **done** (PR [#289](https://github.com/diego-torres/nutriconsultas/pull/289)). ~~#271~~ **done** (PR [#288](https://github.com/diego-torres/nutriconsultas/pull/288)).
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -196,7 +196,7 @@ Nutritionist sends patient mobile onboarding invitations from the **patient grid
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| **341** | Patient grid + profile — send mobile app invitation | https://github.com/diego-torres/nutriconsultas/issues/341 | **in-progress** | #134, #336 | Branch `issue-341-web-mobile-invitation`; `PatientMobileInvitationService`; SweetAlert |
+| **341** | Patient grid + profile — send mobile app invitation | https://github.com/diego-torres/nutriconsultas/issues/341 | **done** | #134, #336 | Branch `issue-341-web-mobile-invitation` (38f358e); grid badge + afiliación send/resend/revoke; SweetAlert |
 
 ---
 
