@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
@@ -200,6 +203,16 @@ public class DietaPdfService {
 			throw new IllegalArgumentException("Dieta with id " + dietaId + " not found");
 		}
 		return buildPdf(dieta, assignment);
+	}
+
+	public ResponseEntity<byte[]> buildAssignmentPdfResponse(@NonNull final PacienteDieta assignment) {
+		final byte[] pdfBytes = generatePdfForAssignment(assignment);
+		final Dieta dieta = assignment.getDieta();
+		final String fileName = (dieta != null && dieta.getNombre() != null ? dieta.getNombre() : "dieta") + ".pdf";
+		return ResponseEntity.ok()
+			.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+			.contentType(MediaType.parseMediaType("application/pdf"))
+			.body(pdfBytes);
 	}
 
 	private byte[] buildPdf(final Dieta dieta, final PacienteDieta assignment) {

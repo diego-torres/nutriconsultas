@@ -16,16 +16,13 @@ public final class IngestaNames {
 	}
 
 	public static boolean isBlank(final String nombre) {
-		return nombre == null || nombre.trim().isEmpty();
+		return nombre == null || nombre.isBlank();
 	}
 
 	public static boolean hasDuplicateName(final Collection<Ingesta> ingestas, final String nombre,
 			final Long excludeIngestaId) {
 		final String key = normalizeKey(nombre);
-		if (key.isEmpty()) {
-			return false;
-		}
-		return ingestas.stream()
+		return !key.isEmpty() && ingestas.stream()
 			.filter(ingesta -> excludeIngestaId == null || !excludeIngestaId.equals(ingesta.getId()))
 			.anyMatch(ingesta -> key.equals(normalizeKey(ingesta.getNombre())));
 	}
