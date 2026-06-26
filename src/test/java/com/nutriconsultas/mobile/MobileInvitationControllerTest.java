@@ -100,6 +100,23 @@ class MobileInvitationControllerTest {
 	}
 
 	@Test
+	void previewInvitationByHumanCode_returnsApiResponseEnvelope() throws Exception {
+		final PatientInvitationPreviewResult preview = new PatientInvitationPreviewResult("Lic. Ana López");
+		when(httpServletRequest.getRemoteAddr()).thenReturn("127.0.0.1");
+		when(patientInvitationPreviewRateLimiter.execute(org.mockito.ArgumentMatchers.eq("127.0.0.1"),
+				org.mockito.ArgumentMatchers.any()))
+			.thenAnswer(invocation -> ((java.util.concurrent.Callable<?>) invocation.getArgument(1)).call());
+		when(patientInvitationPreviewService.previewByHumanCode("NUTRI-WXYZ-1234")).thenReturn(preview);
+
+		final ApiResponse<PatientInvitationPreviewDto> response = controller
+			.previewInvitationByHumanCode("NUTRI-WXYZ-1234", httpServletRequest);
+
+		assertThat(response.data().inviterDisplayName()).isEqualTo("Lic. Ana López");
+		assertThat(response.timestamp()).isNotNull();
+		verify(patientInvitationPreviewService).previewByHumanCode("NUTRI-WXYZ-1234");
+	}
+
+	@Test
 	void redeemInvitation_returnsApiResponseEnvelope() throws Exception {
 		final PatientInvitationRedeemResult result = new PatientInvitationRedeemResult(100L, PacienteStatus.ONBOARDING,
 				1L, Instant.parse("2026-06-01T12:00:00Z"));

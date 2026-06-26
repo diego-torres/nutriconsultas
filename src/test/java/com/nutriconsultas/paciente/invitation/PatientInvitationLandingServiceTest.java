@@ -48,7 +48,7 @@ class PatientInvitationLandingServiceTest {
 		invitationProperties.setBaseUrl("https://minutriporcion.com");
 		tokenService = new PatientInvitationTokenServiceImpl(invitationProperties);
 		final PatientInvitationPreviewService previewService = new PatientInvitationPreviewServiceImpl(
-				patientInvitationRepository, nutritionistProfileRepository);
+				patientInvitationRepository, nutritionistProfileRepository, invitationProperties);
 		service = new PatientInvitationLandingServiceImpl(previewService, patientInvitationPreviewRateLimiter,
 				invitationProperties);
 		when(patientInvitationPreviewRateLimiter.execute(any(), any())).thenAnswer(invocation -> {

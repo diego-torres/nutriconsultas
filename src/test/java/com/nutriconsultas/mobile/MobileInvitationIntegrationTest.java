@@ -197,6 +197,50 @@ class MobileInvitationIntegrationTest {
 	}
 
 	@Test
+	void previewInvitationByHumanCode_withoutJwt_returnsInviterDisplayName() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		seedPendingInvitation(bundle, NUTRITIONIST_SUB);
+		seedNutritionistProfile(NUTRITIONIST_SUB, "Lic. Human Code Nutri");
+
+		mockMvc.perform(get("/rest/mobile/invitations/by-code/{code}/preview", bundle.humanCode()))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.inviterDisplayName").value("Lic. Human Code Nutri"))
+			.andExpect(jsonPath("$.timestamp").exists());
+	}
+
+	@Test
+	void previewInvitationByHumanCode_withUnknownCode_returnsGenericNotFound() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+
+		mockMvc.perform(get("/rest/mobile/invitations/by-code/{code}/preview", bundle.humanCode()))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.message").value("La invitación no es válida o ha expirado."));
+	}
+
+	@Test
+	void previewInvitationByHumanCode_withMalformedCode_returnsGenericNotFound() throws Exception {
+		mockMvc.perform(get("/rest/mobile/invitations/by-code/{code}/preview", "not-a-code"))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.message").value("La invitación no es válida o ha expirado."));
+	}
+
+	@Test
+	void previewInvitationByHumanCode_whenRateLimited_returns429WithRetryAfter() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		seedPendingInvitation(bundle, NUTRITIONIST_SUB);
+
+		for (int attempt = 0; attempt < 2; attempt++) {
+			mockMvc.perform(get("/rest/mobile/invitations/by-code/{code}/preview", bundle.humanCode()))
+				.andExpect(status().isOk());
+		}
+
+		mockMvc.perform(get("/rest/mobile/invitations/by-code/{code}/preview", bundle.humanCode()))
+			.andExpect(status().isTooManyRequests())
+			.andExpect(header().string("Retry-After", "60"))
+			.andExpect(jsonPath("$.message").value("Demasiadas solicitudes. Inténtalo de nuevo en un minuto."));
+	}
+
+	@Test
 	void redeemInvitation_withUnknownToken_returnsGenericNotFound() throws Exception {
 		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
 
@@ -370,6 +414,7 @@ class MobileInvitationIntegrationTest {
 
 		final PatientInvitation invitation = new PatientInvitation();
 		invitation.setTokenHash(bundle.tokenHash());
+		invitation.setHumanCode(bundle.humanCode());
 		invitation.setPaciente(savedPaciente);
 		invitation.setNutritionistUserId(nutritionistUserId);
 		invitation.setStatus(PatientInvitationStatus.PENDING);
@@ -379,6 +424,13 @@ class MobileInvitationIntegrationTest {
 	}
 
 	private void seedNutritionistProfile(final String nutritionistUserId, final String displayName) {
+		final var existing = nutritionistProfileRepository.findByUserId(nutritionistUserId);
+		if (existing.isPresent()) {
+			final NutritionistProfile profile = existing.get();
+			profile.setDisplayName(displayName);
+			nutritionistProfileRepository.saveAndFlush(profile);
+			return;
+		}
 		final NutritionistProfile profile = new NutritionistProfile();
 		profile.setUserId(nutritionistUserId);
 		profile.setPublicBookingId(UUID.randomUUID().toString());

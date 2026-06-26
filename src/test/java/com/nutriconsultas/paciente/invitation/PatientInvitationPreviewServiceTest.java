@@ -42,7 +42,8 @@ class PatientInvitationPreviewServiceTest {
 	@BeforeEach
 	void setUp() {
 		tokenService = new PatientInvitationTokenServiceImpl(new PatientInvitationProperties());
-		service = new PatientInvitationPreviewServiceImpl(patientInvitationRepository, nutritionistProfileRepository);
+		service = new PatientInvitationPreviewServiceImpl(patientInvitationRepository, nutritionistProfileRepository,
+				new PatientInvitationProperties());
 	}
 
 	@Test
@@ -111,6 +112,48 @@ class PatientInvitationPreviewServiceTest {
 			.isExactlyInstanceOf(PatientInvitationUnavailableException.class);
 		assertThatThrownBy(() -> service.preview(expiredToken))
 			.isExactlyInstanceOf(PatientInvitationUnavailableException.class);
+	}
+
+	@Test
+	void previewByHumanCode_withValidPendingInvitation_returnsInviterDisplayName() {
+		final PatientInvitationTokenBundle bundle = tokenService.generate();
+		final PatientInvitation invitation = pendingInvitation(bundle.tokenHash());
+		invitation.setHumanCode(bundle.humanCode());
+		when(patientInvitationRepository.findByHumanCode(bundle.humanCode())).thenReturn(Optional.of(invitation));
+		final NutritionistProfile profile = new NutritionistProfile();
+		profile.setDisplayName("Lic. Ana López");
+		when(nutritionistProfileRepository.findByUserId(NUTRITIONIST_SUB)).thenReturn(Optional.of(profile));
+
+		final PatientInvitationPreviewResult result = service.previewByHumanCode(bundle.humanCode());
+
+		assertThat(result.inviterDisplayName()).isEqualTo("Lic. Ana López");
+	}
+
+	@Test
+	void previewByHumanCode_withUnknownCode_throwsUnavailable() {
+		final PatientInvitationTokenBundle bundle = tokenService.generate();
+		when(patientInvitationRepository.findByHumanCode(bundle.humanCode())).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.previewByHumanCode(bundle.humanCode()))
+			.isInstanceOf(PatientInvitationUnavailableException.class);
+	}
+
+	@Test
+	void previewByHumanCode_withMalformedCode_throwsUnavailable() {
+		assertThatThrownBy(() -> service.previewByHumanCode("not-a-code"))
+			.isInstanceOf(PatientInvitationUnavailableException.class);
+	}
+
+	@Test
+	void previewByHumanCode_withExpiredInvitation_throwsUnavailable() {
+		final PatientInvitationTokenBundle bundle = tokenService.generate();
+		final PatientInvitation invitation = pendingInvitation(bundle.tokenHash());
+		invitation.setHumanCode(bundle.humanCode());
+		invitation.setExpiresAt(Instant.now().minus(1, ChronoUnit.HOURS));
+		when(patientInvitationRepository.findByHumanCode(bundle.humanCode())).thenReturn(Optional.of(invitation));
+
+		assertThatThrownBy(() -> service.previewByHumanCode(bundle.humanCode()))
+			.isInstanceOf(PatientInvitationUnavailableException.class);
 	}
 
 	private PatientInvitation pendingInvitation(final String tokenHash) {

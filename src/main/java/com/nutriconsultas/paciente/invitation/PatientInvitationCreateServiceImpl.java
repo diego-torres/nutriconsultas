@@ -73,6 +73,7 @@ public class PatientInvitationCreateServiceImpl implements PatientInvitationCrea
 
 		final PatientInvitation invitation = new PatientInvitation();
 		invitation.setTokenHash(tokenBundle.tokenHash());
+		invitation.setHumanCode(tokenBundle.humanCode());
 		invitation.setPaciente(savedPaciente);
 		invitation.setNutritionistUserId(nutritionistUserId);
 		invitation.setStatus(PatientInvitationStatus.PENDING);

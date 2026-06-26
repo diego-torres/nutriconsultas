@@ -14,7 +14,7 @@ Canonical cross-repo contracts for the `[Mobile API]` track. Indexed from [`../.
 | [`../auth0/PATIENT-POST-LOGIN-GATE.md`](../auth0/PATIENT-POST-LOGIN-GATE.md) | Auth0 Post-Login invitation gate (#140) — Action script + deployment |
 | [`../api/openapi-mobile.yaml`](../api/openapi-mobile.yaml) | OpenAPI 3.1 export (#112, PR #164); regen: `scripts/export-openapi-mobile.sh` |
 
-**Status (2026-06-26):** ~~#132~~–~~#141~~ **done** — Phase 2 invitation onboarding complete ([`INVITATION-SECURITY-AUDIT.md`](INVITATION-SECURITY-AUDIT.md)). ~~#337~~ **done** — public web landing at `GET /links/i/{token}` (not-installed fallback).
+**Status (2026-06-26):** ~~#132~~–~~#141~~ **done** — Phase 2 invitation onboarding complete ([`INVITATION-SECURITY-AUDIT.md`](INVITATION-SECURITY-AUDIT.md)). ~~#336~~ **done** — `GET /rest/mobile/invitations/by-code/{code}/preview`. ~~#337~~ **done** — public web landing at `GET /links/i/{token}` (not-installed fallback).
 
 ## Related registries (same repo)
 

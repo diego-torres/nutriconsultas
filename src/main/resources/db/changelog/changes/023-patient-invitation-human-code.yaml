@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 023-patient-invitation-human-code-column
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: patient_invitation
+              columnName: human_code
+      changes:
+        - addColumn:
+            tableName: patient_invitation
+            columns:
+              - column:
+                  name: human_code
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: true
+                    unique: true
+        - createIndex:
+            indexName: idx_patient_invitation_human_code
+            tableName: patient_invitation
+            columns:
+              - column:
+                  name: human_code
