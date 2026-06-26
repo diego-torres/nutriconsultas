@@ -12,8 +12,11 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
+import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
+import com.nutriconsultas.paciente.PacienteDietaStatus;
+import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.profile.NutritionistBrandingHelper;
 import com.nutriconsultas.profile.NutritionistProfile;
 import com.nutriconsultas.profile.NutritionistProfileService;
@@ -86,6 +89,9 @@ public class DietaPdfService {
 	private PacienteDietaRepository pacienteDietaRepository;
 
 	@Autowired
+	private PacienteRepository pacienteRepository;
+
+	@Autowired
 	private DietaService dietaService;
 
 	@Autowired
@@ -146,17 +152,31 @@ public class DietaPdfService {
 		}
 
 		// Find patient assignment if exists and if patient info should be included
-		// This determines if we're generating a patient-specific or generic PDF
-		PacienteDieta activeAssignment = null;
-		if (includePatientInfo) {
-			final List<PacienteDieta> assignments = pacienteDietaRepository.findByDietaId(dietaId);
-			activeAssignment = assignments.stream()
-				.filter(a -> a.getStatus() != null && "ACTIVE".equals(a.getStatus().name()))
+		final PacienteDieta activeAssignment = includePatientInfo ? resolveAssignmentForPdf(dieta, dietaId) : null;
+
+		return buildPdf(dieta, activeAssignment);
+	}
+
+	private PacienteDieta resolveAssignmentForPdf(final Dieta dieta, final Long dietaId) {
+		final List<PacienteDieta> assignments = pacienteDietaRepository.findByDietaId(dietaId);
+		final PacienteDieta activeAssignment = assignments.stream()
+			.filter(a -> PacienteDietaStatus.ACTIVE.equals(a.getStatus()))
+			.findFirst()
+			.orElse(null);
+		if (activeAssignment != null) {
+			return activeAssignment;
+		}
+		if (!assignments.isEmpty()) {
+			return assignments.get(0);
+		}
+		if (DietaCatalogConstants.isPatientAssignment(dieta) && dieta.getPacienteId() != null) {
+			return pacienteDietaRepository.findByPacienteId(dieta.getPacienteId())
+				.stream()
+				.filter(a -> a.getDieta() != null && dietaId.equals(a.getDieta().getId()))
 				.findFirst()
 				.orElse(null);
 		}
-
-		return buildPdf(dieta, activeAssignment);
+		return null;
 	}
 
 	/**
@@ -189,7 +209,7 @@ public class DietaPdfService {
 		final Context context = new Context();
 		context.setVariable("dieta", dieta);
 		context.setVariable("pacienteDieta", assignment);
-		context.setVariable("paciente", assignment != null ? assignment.getPaciente() : null);
+		context.setVariable("paciente", resolvePaciente(dieta, assignment));
 
 		// Sort ingestas by id
 		final List<Ingesta> sortedIngestas = dieta.getIngestas()
@@ -232,6 +252,16 @@ public class DietaPdfService {
 
 		// Convert HTML to PDF using Flying Saucer
 		return htmlToPdf(html);
+	}
+
+	private Paciente resolvePaciente(final Dieta dieta, final PacienteDieta assignment) {
+		if (assignment != null && assignment.getPaciente() != null) {
+			return assignment.getPaciente();
+		}
+		if (DietaCatalogConstants.isPatientAssignment(dieta) && dieta.getPacienteId() != null) {
+			return pacienteRepository.findById(dieta.getPacienteId()).orElse(null);
+		}
+		return null;
 	}
 
 	private byte[] htmlToPdf(final String html) {

@@ -1037,7 +1037,8 @@ public class PacienteController extends AbstractAuthorizedController {
 			return ResponseEntity.notFound().build();
 		}
 		// Generate PDF with patient information included
-		final byte[] pdfBytes = dietaPdfService.generatePdf(dietaId, true);
+		pacienteDieta.setPaciente(paciente);
+		final byte[] pdfBytes = dietaPdfService.generatePdfForAssignment(pacienteDieta);
 		final com.nutriconsultas.dieta.Dieta dieta = dietaService.getDieta(dietaId);
 		final String fileName = (dieta != null && dieta.getNombre() != null ? dieta.getNombre() : "dieta") + ".pdf";
 		return ResponseEntity.ok()

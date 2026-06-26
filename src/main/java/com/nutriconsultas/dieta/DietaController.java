@@ -212,10 +212,13 @@ public class DietaController extends AbstractAuthorizedController {
 	 */
 	@GetMapping(path = "/admin/dietas/{id}/print")
 	public ResponseEntity<byte[]> printDieta(@PathVariable @NonNull final Long id) {
-		LOGGER.debug("Generating PDF for dieta with id {} (generic, no patient info)", id);
-		// Generate generic PDF without patient information when accessed from diet list
-		final byte[] pdfBytes = dietaPdfService.generatePdf(id, false);
 		final Dieta dieta = dietaService.getDieta(id);
+		if (dieta == null) {
+			return ResponseEntity.notFound().build();
+		}
+		final boolean includePatientInfo = DietaCatalogConstants.isPatientAssignment(dieta);
+		LOGGER.debug("Generating PDF for dieta with id {} (includePatientInfo: {})", id, includePatientInfo);
+		final byte[] pdfBytes = dietaPdfService.generatePdf(id, includePatientInfo);
 		final String fileName = (dieta != null && dieta.getNombre() != null ? dieta.getNombre() : "dieta") + ".pdf";
 		return ResponseEntity.ok()
 			.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")

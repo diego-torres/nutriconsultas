@@ -585,7 +585,7 @@ public class DietaControllerTest {
 		log.info("Starting testPrintDieta");
 
 		final byte[] pdfBytes = "PDF content".getBytes();
-		// When accessed from diet list, patient info should be excluded
+		when(dietaService.getDieta(1L)).thenReturn(dieta);
 		when(dietaPdfService.generatePdf(1L, false)).thenReturn(pdfBytes);
 
 		// Perform GET request
@@ -604,24 +604,31 @@ public class DietaControllerTest {
 
 	@Test
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testPrintPatientAssignmentDietaIncludesPatientInfo() throws Exception {
+		dieta.setPacienteId(3L);
+		final byte[] pdfBytes = "PDF content".getBytes();
+		when(dietaService.getDieta(1L)).thenReturn(dieta);
+		when(dietaPdfService.generatePdf(1L, true)).thenReturn(pdfBytes);
+
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/1/print"))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_PDF))
+			.andExpect(MockMvcResultMatchers.content().bytes(pdfBytes));
+
+		verify(dietaPdfService, times(1)).generatePdf(1L, true);
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	public void testPrintDietaNotFound() throws Exception {
 		log.info("Starting testPrintDietaNotFound");
 
-		when(dietaPdfService.generatePdf(999L, false))
-			.thenThrow(new IllegalArgumentException("Dieta with id 999 not found"));
+		when(dietaService.getDieta(999L)).thenReturn(null);
 
-		// Perform GET request - exception will be wrapped in ServletException
-		try {
-			mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/999/print"))
-				.andExpect(status().isInternalServerError());
-		}
-		catch (Exception e) {
-			// Expected - exception is thrown during request processing
-			assertThat(e).hasRootCauseInstanceOf(IllegalArgumentException.class);
-		}
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/999/print"))
+			.andExpect(status().isNotFound());
 
-		// Verify that service was called with includePatientInfo = false
-		verify(dietaPdfService, times(1)).generatePdf(999L, false);
+		verify(dietaPdfService, never()).generatePdf(999L, false);
 
 		log.info("Finishing testPrintDietaNotFound");
 	}
