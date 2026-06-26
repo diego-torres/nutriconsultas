@@ -43,6 +43,7 @@ class PatientInvitationTokenServiceTest {
 		final byte[] secret = java.util.Base64.getUrlDecoder().decode(bundle.urlToken());
 
 		assertThat(PatientInvitationHumanCode.matchesSecret(secret, "NUTRI", bundle.humanCode())).isTrue();
+		assertThat(PatientInvitationHumanCode.fromUrlToken(bundle.urlToken(), "NUTRI")).isEqualTo(bundle.humanCode());
 	}
 
 	@Test

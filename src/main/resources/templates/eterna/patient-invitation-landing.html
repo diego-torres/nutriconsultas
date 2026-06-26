@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title th:text="${valid} ? 'Invitación — Minutriporcion' : 'Invitación no disponible — Minutriporcion'">
+    Invitación — Minutriporcion
+  </title>
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+  <link th:href="@{/eterna/assets/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+  <link th:href="@{/eterna/assets/vendor/bootstrap-icons/bootstrap-icons.css}" rel="stylesheet">
+  <link th:href="@{/eterna/assets/css/style.css}" rel="stylesheet">
+  <style>
+    #main { padding-top: 120px; }
+    .invitation-hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 0.75rem;
+      box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+      background-color: transparent;
+      background-size: cover;
+      background-position: center right;
+      background-repeat: no-repeat;
+      min-height: 32rem;
+    }
+    .invitation-hero-copy {
+      padding: 2.5rem 2rem;
+      background: transparent;
+    }
+    @media (min-width: 992px) {
+      .invitation-hero {
+        min-height: 36rem;
+      }
+      .invitation-hero-copy {
+        padding: 3rem 2.5rem 3rem 3rem;
+        max-width: 58%;
+      }
+    }
+    .invitation-features {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 1.75rem;
+    }
+    .invitation-features li {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+    .invitation-features li:last-child {
+      margin-bottom: 0;
+    }
+    .invitation-features .feature-icon {
+      flex-shrink: 0;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: rgba(8, 128, 232, 0.12);
+      color: #0880e8;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+    .invitation-features strong {
+      display: block;
+      color: #444;
+      margin-bottom: 0.15rem;
+    }
+    .human-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 1.35rem;
+      letter-spacing: 0.05em;
+    }
+    .invitation-code-box {
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(4px);
+      border-radius: 0.5rem;
+      padding: 1.25rem 1.5rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header id="header" class="d-flex align-items-center">
+    <div class="container d-flex justify-content-between align-items-center">
+      <div class="logo">
+        <a th:href="@{/}" class="d-flex align-items-center">
+          <img th:src="@{/eterna/assets/img/favicon.png}" alt="Minutriporcion" style="height: 40px; margin-right: 10px;">
+          <h1 class="mb-0">Minutriporcion</h1>
+        </a>
+      </div>
+      <nav id="navbar" class="navbar">
+        <ul>
+          <li><a th:href="@{/}">Inicio</a></li>
+          <li><a th:href="@{/contact}">Contacto</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="contact">
+      <div class="container col-lg-10">
+
+        <div th:if="${valid}" class="invitation-hero"
+             th:style="|background-image: url('@{/eterna/assets/img/app-invitation-bg.png}');|">
+          <div class="invitation-hero-copy">
+            <h2 class="mb-2">Te invitaron a Minutriporcion</h2>
+            <p class="text-muted mb-4" th:if="${inviterDisplayName != null}" th:text="${inviterDisplayName}">
+              Nutricionista
+            </p>
+            <p class="lead mb-4">
+              Descarga la app para completar tu registro y conectar con tu nutricionista.
+            </p>
+
+            <ul class="invitation-features">
+              <li>
+                <span class="feature-icon" aria-hidden="true"><i class="bi bi-phone"></i></span>
+                <span>
+                  <strong>Tu plan en tu bolsillo</strong>
+                  Accede a tu plan nutricional, metas y recomendaciones
+                </span>
+              </li>
+              <li>
+                <span class="feature-icon" aria-hidden="true"><i class="bi bi-graph-up-arrow"></i></span>
+                <span>
+                  <strong>Monitorea tu progreso</strong>
+                  Monitorea tu progreso, hábitos, alimentos y logros
+                </span>
+              </li>
+              <li>
+                <span class="feature-icon" aria-hidden="true"><i class="bi bi-chat-dots"></i></span>
+                <span>
+                  <strong>Mantente en contacto</strong>
+                  Comunícate con tu nutriólogo cuando lo necesites
+                </span>
+              </li>
+            </ul>
+
+            <div class="invitation-code-box mb-4">
+              <h3 class="h6 mb-2">Tu código de invitación</h3>
+              <p class="text-muted small mb-2">Ingresa este código en la app si se te solicita:</p>
+              <p class="human-code mb-0"><code th:text="${humanCode}">NUTRI-XXXX-XXXX</code></p>
+            </div>
+
+            <div class="d-flex flex-wrap gap-3 mb-3"
+                 th:if="${!#strings.isEmpty(iosAppStoreUrl) or !#strings.isEmpty(androidPlayStoreUrl)}">
+              <a th:if="${!#strings.isEmpty(iosAppStoreUrl) and (platform == 'IOS' or platform == 'OTHER')}"
+                 th:href="${iosAppStoreUrl}" class="btn btn-dark" target="_blank" rel="noopener noreferrer">
+                <i class="bi bi-apple me-1"></i> App Store
+              </a>
+              <a th:if="${!#strings.isEmpty(androidPlayStoreUrl) and (platform == 'ANDROID' or platform == 'OTHER')}"
+                 th:href="${androidPlayStoreUrl}" class="btn btn-success" target="_blank" rel="noopener noreferrer">
+                <i class="bi bi-google-play me-1"></i> Google Play
+              </a>
+            </div>
+
+            <div th:if="${inviteUrl != null}">
+              <button type="button" class="btn btn-outline-primary btn-sm" id="copyInviteLink">
+                Copiar enlace de invitación
+              </button>
+              <span class="text-success ms-2 d-none" id="copySuccess" aria-live="polite">¡Copiado!</span>
+            </div>
+          </div>
+        </div>
+
+        <div th:unless="${valid}">
+          <section class="breadcrumbs mb-4">
+            <h2>Invitación no disponible</h2>
+          </section>
+          <div class="alert alert-warning" role="alert">
+            <strong th:if="${rateLimited}">Demasiados intentos.</strong>
+            <strong th:unless="${rateLimited}">Este enlace ya no está disponible.</strong>
+            <span th:if="${rateLimited}"> Espera un momento e inténtalo de nuevo.</span>
+            <span th:unless="${rateLimited}">
+              Puede haber expirado o ya haber sido utilizado. Pide a tu nutricionista que te envíe una nueva invitación.
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer id="footer">
+    <div class="container">
+      <div class="copyright">
+        &copy; Minutriporcion
+      </div>
+    </div>
+  </footer>
+
+  <script th:if="${valid and inviteUrl != null}" th:inline="javascript">
+    (function () {
+      var inviteUrl = /*[[${inviteUrl}]]*/ '';
+      var copyButton = document.getElementById('copyInviteLink');
+      var copySuccess = document.getElementById('copySuccess');
+      if (!copyButton || !inviteUrl) {
+        return;
+      }
+      copyButton.addEventListener('click', function () {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(inviteUrl).then(function () {
+            copySuccess.classList.remove('d-none');
+          });
+        }
+      });
+    })();
+  </script>
+
+</body>
+</html>

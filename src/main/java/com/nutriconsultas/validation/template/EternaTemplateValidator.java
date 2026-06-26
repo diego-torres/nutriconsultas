@@ -22,6 +22,14 @@ public class EternaTemplateValidator extends BaseTemplateValidator {
 		variables.put("minAdvanceDays", 2);
 		variables.put("minBookableDate", "2026-06-22");
 		variables.put("advanceNotice", "Las citas requieren al menos 2 días de anticipación.");
+		variables.put("valid", true);
+		variables.put("rateLimited", false);
+		variables.put("inviterDisplayName", "Dra. Ejemplo");
+		variables.put("humanCode", "NUTRI-7F3K-9Q2X");
+		variables.put("inviteUrl", "http://localhost:3000/links/i/mock-token");
+		variables.put("platform", "OTHER");
+		variables.put("iosAppStoreUrl", "https://apps.apple.com/app/example");
+		variables.put("androidPlayStoreUrl", "https://play.google.com/store/apps/details?id=example");
 		return variables;
 	}
 

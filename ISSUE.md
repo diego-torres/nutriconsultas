@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Subscription (parallel):** [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) · **Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-22 — ~~#141~~ **done** (branch `mobile-api/141-invitation-security-hardening`). **Phase 2 invitation onboarding complete.**
+**Last updated:** 2026-06-26 — ~~#141~~ **done** (branch `mobile-api/141-invitation-security-hardening`). **Phase 2 invitation onboarding complete.** ~~#337~~ web landing **done**.
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116, #132–#141 invitation onboarding) plus the directly-related `[Dashboard]` IMC gauge (#106) and **integration prerequisites** that gate schema work (#156, #46). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -138,7 +138,7 @@ Schema-affecting work must respect mobile DTO contracts (§F8). These issues are
 
 ## Phase 2 — Invitation onboarding (P1 · ~~#132~~ ✓ ~~#133~~ ✓ → #134–#141)
 
-Invite-only patient onboarding replaces manual Afiliación linkage (#109) for new patients. **Phase 2 complete** — #141 hardening done.
+Invite-only patient onboarding replaces manual Afiliación linkage (#109) for new patients. **Phase 2 complete** — #141 hardening done. ~~#337~~ web landing **done**.
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
@@ -151,8 +151,9 @@ Invite-only patient onboarding replaces manual Afiliación linkage (#109) for ne
 | 139 | `POST /rest/mobile/invitations/{id}/revoke` — nutritionist invalidates invite | https://github.com/diego-torres/nutriconsultas/issues/139 | **done** | ~~132~~ ✓, 134 | Merged PR [#330](https://github.com/diego-torres/nutriconsultas/pull/330) |
 | 140 | Auth0 Post-Login Action gate — first-login invitation validation | https://github.com/diego-torres/nutriconsultas/issues/140 | **done** | ~~133~~ ✓, 136 | Post-Login Action + [`docs/auth0/PATIENT-POST-LOGIN-GATE.md`](docs/auth0/PATIENT-POST-LOGIN-GATE.md); Option B social cleanup |
 | 141 | Invitation security hardening — rate limits, enumeration protection, no-token logging | https://github.com/diego-torres/nutriconsultas/issues/141 | **done** | ~~133~~ ✓, 135, 136 | [`INVITATION-SECURITY-AUDIT.md`](docs/mobile-api/INVITATION-SECURITY-AUDIT.md) acceptance audit |
+| 337 | B2 — Invitation web landing page `GET /links/i/{token}` | https://github.com/diego-torres/nutriconsultas/issues/337 | **done** | ~~135~~ ✓ | Public Thymeleaf landing (`/links/i/{token}`, `/i/{token}` alias); hero image, human code, store URLs; `buildInviteUrl()` → `/links/i/` |
 
-**Suggested build order (after ~~#133~~ ✓):** #134/#135 → #136 → #137 → #138 → #139/#140 → #141.
+**Suggested build order (after ~~#133~~ ✓):** #134/#135 → #136 → #137 → #138 → #139/#140 → #141 → #337.
 
 ---
 
