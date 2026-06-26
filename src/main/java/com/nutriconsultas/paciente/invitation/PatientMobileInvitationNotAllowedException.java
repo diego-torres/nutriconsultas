@@ -5,6 +5,8 @@ package com.nutriconsultas.paciente.invitation;
  */
 public final class PatientMobileInvitationNotAllowedException extends RuntimeException {
 
+	private static final long serialVersionUID = 1L;
+
 	private final String messageKey;
 
 	public PatientMobileInvitationNotAllowedException(final String messageKey) {
