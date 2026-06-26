@@ -83,17 +83,32 @@
       .patient-caloric-indicator {
         position: fixed;
         bottom: 1.5rem;
-        right: 1.5rem;
+        left: 1.5rem;
         z-index: 1050;
         min-width: 18rem;
         max-width: 22rem;
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
       }
+      .patient-caloric-indicator__drag-handle {
+        align-items: center;
+        border-bottom: 1px solid #e3e6f0;
+        color: #858796;
+        cursor: grab;
+        display: flex;
+        font-size: 0.75rem;
+        gap: 0.35rem;
+        justify-content: center;
+        padding: 0.35rem 0.5rem;
+        touch-action: none;
+        user-select: none;
+      }
+      .patient-caloric-indicator--dragging .patient-caloric-indicator__drag-handle {
+        cursor: grabbing;
+      }
       @media (max-width: 576px) {
         .patient-caloric-indicator {
           left: 1rem;
-          right: 1rem;
-          max-width: none;
+          max-width: calc(100% - 2rem);
         }
       }
       .platillo-ingredientes-panel {
@@ -2263,6 +2278,79 @@
             }
           }
 
+          function initPatientCaloricIndicatorDrag() {
+            var indicator = document.getElementById('patientCaloricIndicator');
+            if (!indicator) {
+              return;
+            }
+            var dragHandle = indicator.querySelector('[data-role="drag-handle"]');
+            if (!dragHandle) {
+              return;
+            }
+
+            var dragging = false;
+            var activePointerId = null;
+            var offsetX = 0;
+            var offsetY = 0;
+
+            function clampPosition(left, top) {
+              var rect = indicator.getBoundingClientRect();
+              var maxLeft = Math.max(0, window.innerWidth - rect.width);
+              var maxTop = Math.max(0, window.innerHeight - rect.height);
+              return {
+                left: Math.min(Math.max(0, left), maxLeft),
+                top: Math.min(Math.max(0, top), maxTop)
+              };
+            }
+
+            function setIndicatorPosition(left, top) {
+              var position = clampPosition(left, top);
+              indicator.style.left = position.left + 'px';
+              indicator.style.top = position.top + 'px';
+              indicator.style.right = 'auto';
+              indicator.style.bottom = 'auto';
+            }
+
+            function stopDragging(event) {
+              if (!dragging || event.pointerId !== activePointerId) {
+                return;
+              }
+              dragging = false;
+              activePointerId = null;
+              indicator.classList.remove('patient-caloric-indicator--dragging');
+              if (dragHandle.hasPointerCapture(event.pointerId)) {
+                dragHandle.releasePointerCapture(event.pointerId);
+              }
+            }
+
+            dragHandle.addEventListener('pointerdown', function (event) {
+              if (event.button !== undefined && event.button !== 0) {
+                return;
+              }
+              dragging = true;
+              activePointerId = event.pointerId;
+              var rect = indicator.getBoundingClientRect();
+              offsetX = event.clientX - rect.left;
+              offsetY = event.clientY - rect.top;
+              setIndicatorPosition(rect.left, rect.top);
+              dragHandle.setPointerCapture(event.pointerId);
+              indicator.classList.add('patient-caloric-indicator--dragging');
+              event.preventDefault();
+            });
+
+            dragHandle.addEventListener('pointermove', function (event) {
+              if (!dragging || event.pointerId !== activePointerId) {
+                return;
+              }
+              setIndicatorPosition(event.clientX - offsetX, event.clientY - offsetY);
+            });
+
+            dragHandle.addEventListener('pointerup', stopDragging);
+            dragHandle.addEventListener('pointercancel', stopDragging);
+          }
+
+          initPatientCaloricIndicatorDrag();
+
           var nutrientFieldDecimals = {
             energia: 0,
             proteina: 2,
@@ -2442,6 +2530,10 @@
     <div th:if="${patientDiet != null && patientDiet && requerimientoKcal != null}"
          id="patientCaloricIndicator"
          class="card patient-caloric-indicator border-left-primary">
+      <div class="patient-caloric-indicator__drag-handle" data-role="drag-handle" title="Arrastrar para mover">
+        <i class="fas fa-grip-horizontal" aria-hidden="true"></i>
+        <span class="sr-only">Arrastrar para mover</span>
+      </div>
       <div class="card-body py-3">
         <div class="small text-muted mb-1">Requerimiento calórico del paciente</div>
         <div class="font-weight-bold mb-2" data-role="req-kcal"
