@@ -3,6 +3,7 @@ package com.nutriconsultas.dieta;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -165,34 +166,56 @@ public class DietaServiceImpl implements DietaService {
 	@Override
 	public void addIngesta(@NonNull final Long id, final String nombreIngesta) {
 		log.info("Adding ingesta to dieta with id: " + id);
-		final Dieta dieta = dietaRepository.findById(id).orElse(null);
-		if (dieta != null) {
-			final Ingesta ingesta = new Ingesta();
-			ingesta.setNombre(nombreIngesta);
-			ingesta.setDieta(dieta);
-			dieta.getIngestas().add(ingesta);
-			dietaRepository.save(dieta);
-		}
+		final Dieta dieta = dietaRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("Dieta no encontrada"));
+		IngestaNames.validateForDieta(dieta.getIngestas(), nombreIngesta, null);
+		final Ingesta ingesta = new Ingesta();
+		ingesta.setNombre(nombreIngesta.trim());
+		ingesta.setOrden(nextIngestaOrden(dieta));
+		ingesta.setDieta(dieta);
+		dieta.getIngestas().add(ingesta);
+		dietaRepository.save(dieta);
 	}
 
 	@Override
 	public void renameIngesta(@NonNull final Long id, @NonNull final Long ingestaId, final String nombreIngesta) {
 		log.info("Renaming ingesta in dieta with id: " + id);
-		final Dieta dieta = dietaRepository.findById(id).orElse(null);
-		if (dieta != null) {
-			log.debug("dieta: {}", dieta);
-			dieta.getIngestas().forEach(ingesta -> {
-				if (ingesta.getId() != null && ingesta.getId().equals(ingestaId)) {
-					log.debug("Renaming ingesta with id: {}", id);
-					ingesta.setNombre(nombreIngesta);
-				}
-			});
-			log.debug("Saving dieta with updated ingesta {}", dieta);
-			dietaRepository.save(dieta);
+		final Dieta dieta = dietaRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("Dieta no encontrada"));
+		IngestaNames.validateForDieta(dieta.getIngestas(), nombreIngesta, ingestaId);
+		final Ingesta ingesta = dieta.getIngestas()
+			.stream()
+			.filter(candidate -> ingestaId.equals(candidate.getId()))
+			.findFirst()
+			.orElseThrow(() -> new IllegalArgumentException("Ingesta no encontrada"));
+		ingesta.setNombre(nombreIngesta.trim());
+		dietaRepository.save(dieta);
+	}
+
+	@Override
+	public void reorderIngestas(@NonNull final Long id, @NonNull final List<Long> orderedIngestaIds) {
+		log.info("Reordering ingestas for dieta with id: {}", id);
+		final Dieta dieta = dietaRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("Dieta no encontrada"));
+		final java.util.Map<Long, Ingesta> ingestasById = dieta.getIngestas()
+			.stream()
+			.collect(java.util.stream.Collectors.toMap(Ingesta::getId, ingesta -> ingesta));
+		if (orderedIngestaIds.size() != ingestasById.size() || !ingestasById.keySet().containsAll(orderedIngestaIds)) {
+			throw new IllegalArgumentException("Lista de ingestas inválida");
 		}
-		else {
-			log.warn("Dieta with id {} not found in an attempt to rename one of its ingestas", id);
+		for (int index = 0; index < orderedIngestaIds.size(); index++) {
+			ingestasById.get(orderedIngestaIds.get(index)).setOrden(index);
 		}
+		dietaRepository.save(dieta);
+	}
+
+	private int nextIngestaOrden(final Dieta dieta) {
+		return dieta.getIngestas()
+			.stream()
+			.map(Ingesta::getOrden)
+			.filter(Objects::nonNull)
+			.max(Integer::compareTo)
+			.orElse(-1) + 1;
 	}
 
 	@Override
@@ -476,9 +499,14 @@ public class DietaServiceImpl implements DietaService {
 		newDieta.setHidratosDeCarbono(originalDieta.getHidratosDeCarbono());
 
 		final List<Ingesta> newIngestas = new ArrayList<>();
-		for (final Ingesta originalIngesta : originalDieta.getIngestas()) {
+		final List<Ingesta> sortedOriginalIngestas = originalDieta.getIngestas()
+			.stream()
+			.sorted(IngestaComparators.BY_DISPLAY_ORDER)
+			.toList();
+		for (final Ingesta originalIngesta : sortedOriginalIngestas) {
 			final Ingesta newIngesta = new Ingesta();
 			newIngesta.setNombre(originalIngesta.getNombre());
+			newIngesta.setOrden(originalIngesta.getOrden());
 			newIngesta.setDieta(newDieta);
 
 			newIngesta.setEnergia(originalIngesta.getEnergia());

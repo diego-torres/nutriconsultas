@@ -1,7 +1,6 @@
 package com.nutriconsultas.dieta;
 
 import java.io.ByteArrayOutputStream;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -211,10 +210,10 @@ public class DietaPdfService {
 		context.setVariable("pacienteDieta", assignment);
 		context.setVariable("paciente", resolvePaciente(dieta, assignment));
 
-		// Sort ingestas by id
+		// Sort ingestas by display order
 		final List<Ingesta> sortedIngestas = dieta.getIngestas()
 			.stream()
-			.sorted(Comparator.comparingLong(Ingesta::getId))
+			.sorted(IngestaComparators.BY_DISPLAY_ORDER)
 			.collect(Collectors.toList());
 		context.setVariable("ingestas", sortedIngestas);
 

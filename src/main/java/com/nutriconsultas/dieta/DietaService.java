@@ -26,6 +26,8 @@ public interface DietaService {
 
 	void renameIngesta(@NonNull Long id, @NonNull Long ingestaId, String nombreIngesta);
 
+	void reorderIngestas(@NonNull Long id, @NonNull List<Long> orderedIngestaIds);
+
 	void recalculateAlimentoIngestaNutrients(@NonNull AlimentoIngesta alimentoIngesta, @NonNull Integer portions);
 
 	void recalculatePlatilloIngestaNutrients(@NonNull PlatilloIngesta platilloIngesta, @NonNull Integer portions);

@@ -2,13 +2,12 @@ package com.nutriconsultas.mobile.dto;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.nutriconsultas.dieta.Dieta;
-import com.nutriconsultas.dieta.Ingesta;
+import com.nutriconsultas.dieta.IngestaComparators;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
 
@@ -28,7 +27,7 @@ public record DietPlanDetailDto(Long assignmentId, PacienteDietaStatus status, L
 		final Dieta dieta = assignment.getDieta();
 		final List<DietIngestaDto> ingestas = dieta != null && dieta.getIngestas() != null ? dieta.getIngestas()
 			.stream()
-			.sorted(Comparator.comparingLong(Ingesta::getId))
+			.sorted(IngestaComparators.BY_DISPLAY_ORDER)
 			.map(DietIngestaDto::fromEntity)
 			.toList() : List.of();
 		return new DietPlanDetailDto(assignment.getId(), assignment.getStatus(), toLocalDate(assignment.getStartDate()),

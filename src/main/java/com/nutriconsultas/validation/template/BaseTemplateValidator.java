@@ -34,7 +34,7 @@ public abstract class BaseTemplateValidator implements TemplateValidator {
 		variables.put("alimentos", new ArrayList<>());
 
 		// Common numeric attributes
-		variables.put("minId", 0L);
+		variables.put("activeIngestaId", 0L);
 
 		// Mock #fields object for form validation (used in templates with
 		// th:if="${#fields.hasErrors(...)}")

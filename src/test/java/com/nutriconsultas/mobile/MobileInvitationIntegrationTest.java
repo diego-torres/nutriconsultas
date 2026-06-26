@@ -228,7 +228,8 @@ class MobileInvitationIntegrationTest {
 		final String patientSub = "auth0|patient-redeem-rate-limit";
 
 		for (int attempt = 0; attempt < 2; attempt++) {
-			mockMvc.perform(post("/rest/mobile/invitations/{token}/redeem", bundle.urlToken()).with(mobileJwt(patientSub)))
+			mockMvc
+				.perform(post("/rest/mobile/invitations/{token}/redeem", bundle.urlToken()).with(mobileJwt(patientSub)))
 				.andExpect(status().isOk());
 		}
 

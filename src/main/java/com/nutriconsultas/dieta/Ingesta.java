@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.nutriconsultas.model.AbstractMacroNutrible;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -32,6 +33,9 @@ public class Ingesta extends AbstractMacroNutrible {
 	private Long id;
 
 	private String nombre;
+
+	@Column(nullable = false)
+	private Integer orden = 0;
 
 	public Ingesta(String nombre) {
 		this.nombre = nombre;

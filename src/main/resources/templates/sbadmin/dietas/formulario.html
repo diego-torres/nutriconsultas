@@ -49,8 +49,47 @@
         min-height: inherit;
         padding-bottom: 0.75rem;
       }
-      .dieta-editor-row .dieta-ingestas-card .tab-content {
+      .dieta-editor-row .dieta-ingestas-card .ingesta-panes {
         flex: 1 1 auto;
+      }
+      .ingesta-pane {
+        display: none;
+      }
+      .ingesta-pane.ingesta-pane--active {
+        display: block;
+      }
+      .ingesta-order-panel {
+        max-height: calc(100vh - 26rem);
+        overflow-y: auto;
+      }
+      .ingesta-order-item {
+        cursor: default;
+        padding: 0.5rem 0.75rem;
+      }
+      .ingesta-order-item.active {
+        background-color: #eaecf4;
+        border-color: #4e73df;
+      }
+      .ingesta-order-item--dragging {
+        opacity: 0.5;
+      }
+      .ingesta-order-item--drop-target {
+        border-top: 2px solid #4e73df;
+      }
+      .ingesta-order-handle {
+        cursor: grab;
+      }
+      .ingesta-order-item--dragging .ingesta-order-handle {
+        cursor: grabbing;
+      }
+      .ingesta-order-select {
+        color: #3a3b45;
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .ingesta-order-select:hover {
+        color: #4e73df;
+        text-decoration: none;
       }
       .dieta-name-toolbar .form-control {
         max-width: 100%;
@@ -294,7 +333,7 @@
               </div>
               <div class="modal-body">
                 <form th:action="@{/admin/dietas/{id}/ingestas/save(id=${dieta != null ? dieta.id : 0})}" method="post">
-                  <input type="hidden" id="ingestaId" name="ingestaId" />
+                  <input type="hidden" id="ingestaId" name="ingestaId" value="0" />
                   <div class="form-group">
                     <label for="nombre">Nombre</label>
                     <input
@@ -823,28 +862,40 @@
                 </form>
                 <div class="card shadow mb-4 dieta-ingestas-card">
                   <div class="card-body">
-                        <ul class="nav nav-tabs" id="ingestaTab" role="tablist">
-                          <li th:each="ingesta : ${ingestas}" class="nav-item">
-                            <a 
-                              th:id="'ingesta-tab-' + ${ingesta.id}" 
-                              th:attr="data-target='#ingesta-' + ${ingesta.id}, 
-                                      aria-controls='ingesta-' + ${ingesta.id}, 
-                                      aria-selected=${ingesta.id == minId ? 'true' : 'false'}"
-                              class="nav-link"
-                              th:classappend="${ingesta.id == minId ? 'active' : ''}" 
-                              data-toggle="tab" 
-                              th:href="'#ingesta-' + ${ingesta.id}" 
-                              role="tab" 
-                              th:text="${ingesta.nombre}"></a>
-                          </li>
-                        </ul>
-                        <!-- tab content per ingesta, should include a grid with platillos -->
-                        <div class="tab-content" id="ingestaTabContent">
-                          <div th:each="ingesta : ${dieta.ingestas}" 
-                            th:id="'ingesta-' + ${ingesta.id}" 
-                            th:classappend="${ingesta.id == minId ? 'tab-pane fade show active' : 'tab-pane fade'}" 
-                            role="tabpanel" 
-                            th:aria-labelledby="'ingesta-tab-' + ${ingesta.id}">
+                    <div id="ingestaErrorMessage" th:if="${ingestaError}" th:text="${ingestaError}" class="d-none"></div>
+                    <div class="ingesta-editor row">
+                      <div class="col-lg-3 col-md-4 mb-3 mb-md-0">
+                        <div
+                          class="list-group ingesta-order-panel"
+                          id="ingestaOrderList"
+                          th:attr="data-dieta-id=${dieta.id},data-can-reorder=${isOwner == null || isOwner}">
+                          <div
+                            th:each="ingesta, iterStat : ${ingestas}"
+                            class="list-group-item ingesta-order-item d-flex align-items-center"
+                            th:classappend="${ingesta.id == activeIngestaId ? 'active' : ''}"
+                            th:attr="data-ingesta-id=${ingesta.id},draggable=${isOwner == null || isOwner ? 'true' : 'false'}">
+                            <span class="ingesta-order-handle text-muted mr-2" title="Arrastrar para reordenar">
+                              <i class="fas fa-grip-vertical"></i>
+                            </span>
+                            <button
+                              type="button"
+                              class="btn btn-link btn-sm ingesta-order-select p-0 text-left flex-grow-1"
+                              th:attr="data-ingesta-id=${ingesta.id}"
+                              th:text="${ingesta.nombre}"></button>
+                          </div>
+                        </div>
+                        <p class="text-muted small mb-0 mt-2" th:if="${isOwner == null || isOwner}">
+                          Arrastra las ingestas para cambiar el orden.
+                        </p>
+                      </div>
+                      <div class="col-lg-9 col-md-8">
+                        <div class="ingesta-panes" id="ingestaPanes">
+                          <div
+                            th:each="ingesta : ${ingestas}"
+                            th:id="'ingesta-' + ${ingesta.id}"
+                            class="ingesta-pane"
+                            th:classappend="${ingesta.id == activeIngestaId ? 'ingesta-pane--active' : ''}"
+                            th:attr="data-ingesta-id=${ingesta.id}">
                             <!-- ingesta action buttons -->
                             <div class="d-flex flex-wrap align-items-center mb-3 mt-3">
                               <button
@@ -1127,9 +1178,12 @@
                             </div>
                             <!-- end ingesta-items-scroll -->
                           </div>
-                          <!-- end tab pane -->
+                          <!-- end ingesta pane -->
                         </div>
-                        <!-- end tab content per ingesta -->
+                        <!-- end ingesta panes -->
+                      </div>
+                    </div>
+                    <!-- end ingesta editor -->
                   </div>
                   <!-- end card body -->
                 </div>
@@ -1206,6 +1260,122 @@
         }
         
         $(document).ready(function () {
+          var ingestaErrorEl = document.getElementById('ingestaErrorMessage');
+          if (ingestaErrorEl) {
+            swal({
+              title: 'No se pudo guardar la ingesta',
+              text: ingestaErrorEl.textContent,
+              type: 'warning',
+              timer: 5000,
+            });
+          }
+
+          function initIngestaOrderList() {
+            var orderList = document.getElementById('ingestaOrderList');
+            if (!orderList) {
+              return;
+            }
+            var canReorder = orderList.getAttribute('data-can-reorder') === 'true';
+            var dietaId = orderList.getAttribute('data-dieta-id');
+            var draggedItem = null;
+            var panesContainer = document.getElementById('ingestaPanes');
+
+            function selectIngesta(ingestaId) {
+              $('#ingestaOrderList .ingesta-order-item').removeClass('active');
+              $('#ingestaOrderList .ingesta-order-item[data-ingesta-id="' + ingestaId + '"]').addClass('active');
+              $('.ingesta-pane').removeClass('ingesta-pane--active');
+              $('#ingesta-' + ingestaId).addClass('ingesta-pane--active');
+            }
+
+            $(document).on('click', '.ingesta-order-select', function () {
+              selectIngesta($(this).data('ingesta-id'));
+            });
+
+            function reorderIngestaPanes() {
+              if (!panesContainer) {
+                return;
+              }
+              Array.from(orderList.querySelectorAll('.ingesta-order-item')).forEach(function (item) {
+                var ingestaId = item.getAttribute('data-ingesta-id');
+                var pane = document.getElementById('ingesta-' + ingestaId);
+                if (pane) {
+                  panesContainer.appendChild(pane);
+                }
+              });
+            }
+
+            function persistIngestaOrder() {
+              var orderedIds = Array.from(orderList.querySelectorAll('.ingesta-order-item')).map(function (item) {
+                return parseInt(item.getAttribute('data-ingesta-id'), 10);
+              });
+              $.ajax({
+                url: '/admin/dietas/' + dietaId + '/ingestas/reorder',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(orderedIds),
+                error: function (error) {
+                  swal({
+                    title: 'Error',
+                    text: error.responseJSON && error.responseJSON.message
+                      ? error.responseJSON.message
+                      : 'No se pudo reordenar las ingestas.',
+                    type: 'error',
+                    timer: 5000,
+                  });
+                  window.location.reload();
+                }
+              });
+            }
+
+            if (!canReorder) {
+              return;
+            }
+
+            orderList.querySelectorAll('.ingesta-order-item').forEach(function (item) {
+              item.addEventListener('dragstart', function (event) {
+                draggedItem = item;
+                item.classList.add('ingesta-order-item--dragging');
+                event.dataTransfer.effectAllowed = 'move';
+              });
+              item.addEventListener('dragend', function () {
+                item.classList.remove('ingesta-order-item--dragging');
+                orderList.querySelectorAll('.ingesta-order-item').forEach(function (element) {
+                  element.classList.remove('ingesta-order-item--drop-target');
+                });
+                draggedItem = null;
+              });
+              item.addEventListener('dragover', function (event) {
+                event.preventDefault();
+                if (!draggedItem || draggedItem === item) {
+                  return;
+                }
+                item.classList.add('ingesta-order-item--drop-target');
+              });
+              item.addEventListener('dragleave', function () {
+                item.classList.remove('ingesta-order-item--drop-target');
+              });
+              item.addEventListener('drop', function (event) {
+                event.preventDefault();
+                item.classList.remove('ingesta-order-item--drop-target');
+                if (!draggedItem || draggedItem === item) {
+                  return;
+                }
+                var items = Array.from(orderList.querySelectorAll('.ingesta-order-item'));
+                var draggedIndex = items.indexOf(draggedItem);
+                var targetIndex = items.indexOf(item);
+                if (draggedIndex < targetIndex) {
+                  orderList.insertBefore(draggedItem, item.nextSibling);
+                } else {
+                  orderList.insertBefore(draggedItem, item);
+                }
+                reorderIngestaPanes();
+                persistIngestaOrder();
+              });
+            });
+          }
+
+          initIngestaOrderList();
+
           // initialize select2 for platillo
           $('#platillo').select2({
             placeholder: 'Selecciona un platillo',

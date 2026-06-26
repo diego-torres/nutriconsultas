@@ -62,3 +62,6 @@ databaseChangeLog:
   - include:
       file: changes/021-seed-high-kcal-dieta-templates.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/022-ingesta-orden.yaml
+      relativeToChangelogFile: true

@@ -1,0 +1,30 @@
+databaseChangeLog:
+  - changeSet:
+      id: 022-ingesta-orden-column
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: ingesta
+              columnName: orden
+      changes:
+        - addColumn:
+            tableName: ingesta
+            columns:
+              - column:
+                  name: orden
+                  type: INT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              UPDATE ingesta i
+              SET orden = (
+                SELECT COUNT(*)
+                FROM ingesta i2
+                WHERE i2.dieta_id = i.dieta_id AND i2.id < i.id
+              );

@@ -17,13 +17,13 @@ import org.junit.jupiter.api.Test;
  */
 class InvitationPackageLoggingAuditTest {
 
-	private static final Path INVITATION_SRC = Path.of("src", "main", "java", "com", "nutriconsultas",
-			"paciente", "invitation");
+	private static final Path INVITATION_SRC = Path.of("src", "main", "java", "com", "nutriconsultas", "paciente",
+			"invitation");
 
 	private static final Pattern LOG_STATEMENT = Pattern.compile("log\\.(info|debug|warn|error|trace)\\(");
 
-	private static final Pattern FORBIDDEN_TOKEN_PLACEHOLDER = Pattern.compile(
-			"log\\.(info|warn|error)\\([^)]*\\b(urlToken|rawUrlToken|humanCode|inviteUrl|tokenHash)\\b");
+	private static final Pattern FORBIDDEN_TOKEN_PLACEHOLDER = Pattern
+		.compile("log\\.(info|warn|error)\\([^)]*\\b(urlToken|rawUrlToken|humanCode|inviteUrl|tokenHash)\\b");
 
 	@Test
 	void invitationPackageHasNoTokenLoggingViolations() throws IOException {

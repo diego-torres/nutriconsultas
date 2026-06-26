@@ -2,6 +2,8 @@ package com.nutriconsultas.dieta;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -9,6 +11,8 @@ import static org.mockito.Mockito.when;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
@@ -625,8 +629,7 @@ public class DietaControllerTest {
 
 		when(dietaService.getDieta(999L)).thenReturn(null);
 
-		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/999/print"))
-			.andExpect(status().isNotFound());
+		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/999/print")).andExpect(status().isNotFound());
 
 		verify(dietaPdfService, never()).generatePdf(999L, false);
 
@@ -1042,6 +1045,38 @@ public class DietaControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.get("/admin/dietas/8").with(oidcLogin(TEST_USER_ID)))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.model().attribute("isOwner", false));
+	}
+
+	@Test
+	public void testReorderIngestasSuccess() throws Exception {
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/ingestas/reorder")
+				.with(oidcLogin(TEST_USER_ID))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("[1]"))
+			.andExpect(status().isOk())
+			.andExpect(content().json("{\"status\":\"ok\"}"));
+
+		verify(dietaService).reorderIngestas(eq(1L), eq(List.of(1L)));
+	}
+
+	@Test
+	public void testSaveIngestaDuplicateNameSetsFlashError() throws Exception {
+		doThrow(new IllegalArgumentException("Ya existe una ingesta con ese nombre en este plan alimentario"))
+			.when(dietaService)
+			.addIngesta(eq(1L), eq("Colacion"));
+
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/ingestas/save")
+				.with(oidcLogin(TEST_USER_ID))
+				.param("ingestaId", "0")
+				.param("ingesta", "Colacion"))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(redirectedUrl("/admin/dietas/1"))
+			.andExpect(
+					flash().attribute("ingestaError", "Ya existe una ingesta con ese nombre en este plan alimentario"));
+
+		verify(dietaService).addIngesta(eq(1L), eq("Colacion"));
 	}
 
 }
