@@ -50,6 +50,9 @@ public final class PhiLogTurboFilter extends TurboFilter {
 		if (RAW_AUTH0_SUB.matcher(message).find() && !message.contains("REDACTED")) {
 			return FilterReply.DENY;
 		}
+		if (message.startsWith("PATIENT_INVITATION_LINK=")) {
+			return FilterReply.NEUTRAL;
+		}
 		if (HUMAN_INVITATION_CODE.matcher(message).find()) {
 			return FilterReply.DENY;
 		}

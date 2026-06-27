@@ -73,6 +73,19 @@ class PhiLogTurboFilterTest {
 	}
 
 	@Test
+	void allowsPatientInvitationLinkDevLogLine() {
+		filter.start();
+		final Logger invitationLogger = logger(
+				"com.nutriconsultas.paciente.invitation.ConsolePatientInvitationEmailSender");
+		final String inviteUrl = "http://10.0.2.2:3000/links/i/abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
+
+		final FilterReply reply = filter.decide(null, invitationLogger, Level.INFO, "PATIENT_INVITATION_LINK={}",
+				new Object[] { inviteUrl }, null);
+
+		assertThat(reply).isEqualTo(FilterReply.NEUTRAL);
+	}
+
+	@Test
 	void deniesHumanInvitationCodeInPatientInvitationPackage() {
 		filter.start();
 		final Logger invitationLogger = logger(

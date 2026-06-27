@@ -2,11 +2,14 @@ package com.nutriconsultas.paciente.invitation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +29,7 @@ import com.nutriconsultas.paciente.PacienteStatus;
 import com.nutriconsultas.paciente.PatientInvitation;
 import com.nutriconsultas.paciente.PatientInvitationRepository;
 import com.nutriconsultas.paciente.PatientInvitationStatus;
+import com.nutriconsultas.paciente.projection.PacienteAuthView;
 
 @ExtendWith(MockitoExtension.class)
 class PatientInvitationRedeemServiceTest {
@@ -191,6 +195,55 @@ class PatientInvitationRedeemServiceTest {
 		assertThat(result.pacienteId()).isEqualTo(100L);
 		assertThat(result.pacienteStatus()).isEqualTo(PacienteStatus.ONBOARDING);
 		assertThat(paciente.getPatientAuthSub()).isEqualTo(PATIENT_SUB);
+	}
+
+	@Test
+	void reconcile_withMatchingEmailPendingInvitation_bindsSub() {
+		final PatientInvitationTokenBundle bundle = tokenService.generate();
+		final Paciente paciente = invitedPaciente(100L);
+		paciente.setEmail("luis.garcia@test.net");
+		final PatientInvitation invitation = pendingInvitation(bundle.tokenHash(), paciente);
+		when(pacienteRepository.findAuthViewByPatientAuthSub(PATIENT_SUB)).thenReturn(Optional.empty());
+		when(patientInvitationRepository.findRedeemedByPatientAuthSub(PATIENT_SUB, PatientInvitationStatus.REDEEMED))
+			.thenReturn(List.of());
+		when(patientInvitationRepository.findRedeemablePendingByPacienteEmail(eq("luis.garcia@test.net"), any(),
+				eq(PatientInvitationStatus.PENDING), eq(PacienteStatus.INVITED)))
+			.thenReturn(List.of(invitation));
+		when(pacienteRepository.findByPatientAuthSub(PATIENT_SUB)).thenReturn(Optional.empty());
+		when(pacienteRepository.findById(100L)).thenReturn(Optional.of(paciente));
+
+		final PatientInvitationRedeemResult result = service.reconcile(PATIENT_SUB, "luis.garcia@test.net", null, null);
+
+		assertThat(result.pacienteStatus()).isEqualTo(PacienteStatus.ONBOARDING);
+		assertThat(paciente.getPatientAuthSub()).isEqualTo(PATIENT_SUB);
+	}
+
+	@Test
+	void reconcile_whenAlreadyLinked_isIdempotent() {
+		final PacienteAuthView linkedView = org.mockito.Mockito.mock(PacienteAuthView.class);
+		when(linkedView.getId()).thenReturn(100L);
+		when(linkedView.getStatus()).thenReturn(PacienteStatus.ONBOARDING);
+		when(pacienteRepository.findAuthViewByPatientAuthSub(PATIENT_SUB)).thenReturn(Optional.of(linkedView));
+		when(patientInvitationRepository.findByPacienteIdAndStatus(100L, PatientInvitationStatus.REDEEMED))
+			.thenReturn(List.of());
+
+		final PatientInvitationRedeemResult result = service.reconcile(PATIENT_SUB, "any@example.com", null, null);
+
+		assertThat(result.pacienteId()).isEqualTo(100L);
+		assertThat(result.pacienteStatus()).isEqualTo(PacienteStatus.ONBOARDING);
+	}
+
+	@Test
+	void reconcile_withNoMatch_throwsUnavailable() {
+		when(pacienteRepository.findAuthViewByPatientAuthSub(PATIENT_SUB)).thenReturn(Optional.empty());
+		when(patientInvitationRepository.findRedeemedByPatientAuthSub(PATIENT_SUB, PatientInvitationStatus.REDEEMED))
+			.thenReturn(List.of());
+		when(patientInvitationRepository.findRedeemablePendingByPacienteEmail(eq("unknown@example.com"), any(),
+				eq(PatientInvitationStatus.PENDING), eq(PacienteStatus.INVITED)))
+			.thenReturn(List.of());
+
+		assertThatThrownBy(() -> service.reconcile(PATIENT_SUB, "unknown@example.com", null, null))
+			.isInstanceOf(PatientInvitationUnavailableException.class);
 	}
 
 	private static Paciente invitedPaciente(final Long id) {
