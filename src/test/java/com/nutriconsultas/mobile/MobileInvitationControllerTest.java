@@ -117,6 +117,24 @@ class MobileInvitationControllerTest {
 	}
 
 	@Test
+	void redeemInvitationByHumanCode_returnsApiResponseEnvelope() throws Exception {
+		final PatientInvitationRedeemResult result = new PatientInvitationRedeemResult(100L, PacienteStatus.ONBOARDING,
+				1L, Instant.parse("2026-06-01T12:00:00Z"));
+		final Jwt jwt = Jwt.withTokenValue("token").header("alg", "none").subject(PATIENT_SUB).build();
+		when(patientInvitationRedeemRateLimiter.execute(org.mockito.ArgumentMatchers.eq(PATIENT_SUB),
+				org.mockito.ArgumentMatchers.any()))
+			.thenAnswer(invocation -> ((java.util.concurrent.Callable<?>) invocation.getArgument(1)).call());
+		when(patientInvitationRedeemService.redeemByHumanCode("NUTRI-WXYZ-1234", PATIENT_SUB)).thenReturn(result);
+
+		final ApiResponse<RedeemedPatientInvitationDto> response = controller
+			.redeemInvitationByHumanCode("NUTRI-WXYZ-1234", jwt);
+
+		assertThat(response.data().pacienteId()).isEqualTo(100L);
+		assertThat(response.data().pacienteStatus()).isEqualTo(PacienteStatus.ONBOARDING);
+		verify(patientInvitationRedeemService).redeemByHumanCode("NUTRI-WXYZ-1234", PATIENT_SUB);
+	}
+
+	@Test
 	void redeemInvitation_returnsApiResponseEnvelope() throws Exception {
 		final PatientInvitationRedeemResult result = new PatientInvitationRedeemResult(100L, PacienteStatus.ONBOARDING,
 				1L, Instant.parse("2026-06-01T12:00:00Z"));

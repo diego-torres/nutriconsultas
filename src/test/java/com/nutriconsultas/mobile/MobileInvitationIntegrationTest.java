@@ -306,6 +306,26 @@ class MobileInvitationIntegrationTest {
 	}
 
 	@Test
+	void redeemInvitationByHumanCode_withPatientJwt_bindsSubAndTransitionsToOnboarding() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		final PatientInvitation invitation = seedPendingInvitation(bundle, NUTRITIONIST_SUB);
+		final String patientSub = "auth0|patient-redeem-by-code";
+
+		mockMvc
+			.perform(post("/rest/mobile/invitations/by-code/{code}/redeem", bundle.humanCode())
+				.with(mobileJwt(patientSub)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.pacienteId").value(invitation.getPaciente().getId()))
+			.andExpect(jsonPath("$.data.pacienteStatus").value("ONBOARDING"))
+			.andExpect(jsonPath("$.data.invitationId").value(invitation.getId()))
+			.andExpect(jsonPath("$.data.redeemedAt").exists());
+
+		final var paciente = pacienteRepository.findById(invitation.getPaciente().getId()).orElseThrow();
+		assertThat(paciente.getPatientAuthSub()).isEqualTo(patientSub);
+		assertThat(paciente.getStatus()).isEqualTo(PacienteStatus.ONBOARDING);
+	}
+
+	@Test
 	void redeemInvitation_withoutJwt_returnsUnauthorized() throws Exception {
 		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
 		seedPendingInvitation(bundle, NUTRITIONIST_SUB);
