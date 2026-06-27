@@ -9,4 +9,12 @@ public interface PatientInvitationRedeemService {
 
 	PatientInvitationRedeemResult redeemByHumanCode(String humanCode, String patientAuthSub);
 
+	/**
+	 * Links an authenticated patient JWT to a pending invitation when redeem did not run
+	 * (e.g. returning Auth0 user without stored credential). Matches JWT email to INVITED
+	 * Paciente with a non-expired pending invitation, or repairs linkage from a prior
+	 * redeem.
+	 */
+	PatientInvitationRedeemResult reconcile(PatientInvitationReconcileInput input);
+
 }

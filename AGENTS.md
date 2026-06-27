@@ -604,7 +604,7 @@ Issue registry: [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md). Plan: 
 
 **Bug ~~#250~~** (2026-06-19): diet ingesta platillo name links to wrong catalog platillo — **done** (PR [#256](https://github.com/diego-torres/nutriconsultas/pull/256)).
 
-**Epic ~~#341~~** (2026-06-26): nutritionist web mobile app invitation — ~~#341~~ **done** (branch `issue-341-web-mobile-invitation`, 38f358e): session REST `/rest/pacientes/{id}/mobile-invitation`, patient grid **App móvil** column, Afiliación send/resend/revoke. See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
+**Epic ~~#341~~** (2026-06-26): nutritionist web mobile app invitation — ~~#341~~ **done** (branch `issue-341-web-mobile-invitation`, 38f358e): session REST `/rest/pacientes/{id}/mobile-invitation`, patient grid **App móvil** column, Afiliación send/resend/revoke. Post-login linkage: `POST /rest/mobile/invitations/reconcile` (branch `feat/invitation-redeem-by-human-code`). See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 
 ## Public booking (tracking)
 

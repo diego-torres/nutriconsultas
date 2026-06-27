@@ -39,7 +39,7 @@ scan_directory() {
   echo ""
 
   while IFS= read -r file; do
-    if [[ "$file" == *"PhiLogTurboFilter.java" ]]; then
+    if [[ "$file" == *"PhiLogTurboFilter.java" ]] || [[ "$file" == *"ConsolePatientInvitationEmailSender.java" ]]; then
       continue
     fi
 

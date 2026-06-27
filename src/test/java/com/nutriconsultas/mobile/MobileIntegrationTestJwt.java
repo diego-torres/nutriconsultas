@@ -18,11 +18,17 @@ public final class MobileIntegrationTestJwt {
 	}
 
 	public static RequestPostProcessor mobileJwt(final String subject) {
+		return mobileJwt(subject, null);
+	}
+
+	public static RequestPostProcessor mobileJwt(final String subject, final String email) {
 		final String tokenValue = TestMobileJwtDecoderConfig.TOKEN_PREFIX + subject;
-		return jwt().jwt(j -> j.tokenValue(tokenValue)
-			.subject(subject)
-			.issuer(TEST_ISSUER)
-			.claim("aud", List.of(TEST_AUDIENCE)));
+		return jwt().jwt(j -> {
+			j.tokenValue(tokenValue).subject(subject).issuer(TEST_ISSUER).claim("aud", List.of(TEST_AUDIENCE));
+			if (email != null && !email.isBlank()) {
+				j.claim("email", email);
+			}
+		});
 	}
 
 }

@@ -17,12 +17,14 @@ import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.CreatePatientInvitationRequest;
 import com.nutriconsultas.mobile.dto.CreatedPatientInvitationDto;
 import com.nutriconsultas.mobile.dto.PatientInvitationPreviewDto;
+import com.nutriconsultas.mobile.dto.PatientInvitationReconcileRequest;
 import com.nutriconsultas.mobile.dto.RedeemedPatientInvitationDto;
 import com.nutriconsultas.mobile.dto.RevokedPatientInvitationDto;
 import com.nutriconsultas.paciente.invitation.CreatedPatientInvitationResult;
 import com.nutriconsultas.paciente.invitation.PatientInvitationCreateService;
 import com.nutriconsultas.paciente.invitation.PatientInvitationPreviewResult;
 import com.nutriconsultas.paciente.invitation.PatientInvitationPreviewService;
+import com.nutriconsultas.paciente.invitation.PatientInvitationReconcileInput;
 import com.nutriconsultas.paciente.invitation.PatientInvitationRedeemResult;
 import com.nutriconsultas.paciente.invitation.PatientInvitationRedeemService;
 import com.nutriconsultas.paciente.invitation.PatientInvitationRevokeResult;
@@ -138,6 +140,30 @@ public class MobileInvitationController {
 		final PatientInvitationRedeemResult redeemed = patientInvitationRedeemRateLimiter.execute(patientAuthSub,
 				() -> patientInvitationRedeemService.redeemByHumanCode(code, patientAuthSub));
 		return ApiResponse.ok(RedeemedPatientInvitationDto.from(redeemed));
+	}
+
+	@PostMapping("/reconcile")
+	@Operation(summary = "Reconcile patient invitation linkage",
+			description = "Patient JWT links Auth0 sub to a pending invitation when redeem did not run "
+					+ "(e.g. returning user). Matches JWT email to INVITED Paciente or optional credential in body.")
+	@MobileOpenApiResponses.AuthenticatedPatientRedeem
+	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",
+			description = "Patient linked or already linked")
+	public ApiResponse<RedeemedPatientInvitationDto> reconcileInvitation(@AuthenticationPrincipal final Jwt jwt,
+			@RequestBody(required = false) final PatientInvitationReconcileRequest request) {
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile invitation reconcile request from patient sub present={}",
+					jwt != null && jwt.getSubject() != null);
+		}
+		final String patientAuthSub = requireSubject(jwt);
+		final String email = MobileJwtEmailResolver.resolveEmail(jwt).orElse(null);
+		final String token = request != null ? request.token() : null;
+		final String humanCode = request != null ? request.humanCode() : null;
+		final PatientInvitationReconcileInput reconcileInput = new PatientInvitationReconcileInput(patientAuthSub,
+				email, token, humanCode);
+		final PatientInvitationRedeemResult reconciled = patientInvitationRedeemRateLimiter.execute(patientAuthSub,
+				() -> patientInvitationRedeemService.reconcile(reconcileInput));
+		return ApiResponse.ok(RedeemedPatientInvitationDto.from(reconciled));
 	}
 
 	@PostMapping("/{token}/redeem")

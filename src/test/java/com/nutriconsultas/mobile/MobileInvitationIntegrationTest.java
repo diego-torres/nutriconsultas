@@ -83,6 +83,10 @@ class MobileInvitationIntegrationTest {
 			.remove(PatientInvitationRedeemRateLimiter.PATIENT_INVITATION_REDEEM + ":auth0|patient-redeem-integration");
 		rateLimiterRegistry
 			.remove(PatientInvitationRedeemRateLimiter.PATIENT_INVITATION_REDEEM + ":auth0|patient-redeem-rate-limit");
+		rateLimiterRegistry
+			.remove(PatientInvitationRedeemRateLimiter.PATIENT_INVITATION_REDEEM + ":auth0|patient-reconcile-email");
+		rateLimiterRegistry
+			.remove(PatientInvitationRedeemRateLimiter.PATIENT_INVITATION_REDEEM + ":auth0|patient-reconcile-linked");
 	}
 
 	@Test
@@ -421,12 +425,72 @@ class MobileInvitationIntegrationTest {
 			.andExpect(status().isUnauthorized());
 	}
 
+	@Test
+	void reconcileInvitation_withJwtEmailMatchingInvitedPatient_bindsSub() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		final String email = "reconcile." + UUID.randomUUID() + "@example.com";
+		final PatientInvitation invitation = seedPendingInvitation(bundle, NUTRITIONIST_SUB, email);
+		final String patientSub = "auth0|patient-reconcile-email";
+
+		mockMvc
+			.perform(post("/rest/mobile/invitations/reconcile").with(mobileJwt(patientSub, email))
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.pacienteId").value(invitation.getPaciente().getId()))
+			.andExpect(jsonPath("$.data.pacienteStatus").value("ONBOARDING"))
+			.andExpect(jsonPath("$.data.invitationId").value(invitation.getId()));
+
+		final var paciente = pacienteRepository.findById(invitation.getPaciente().getId()).orElseThrow();
+		assertThat(paciente.getPatientAuthSub()).isEqualTo(patientSub);
+		assertThat(paciente.getStatus()).isEqualTo(PacienteStatus.ONBOARDING);
+	}
+
+	@Test
+	void reconcileInvitation_whenAlreadyLinked_returnsOk() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		final String email = "reconcile.linked." + UUID.randomUUID() + "@example.com";
+		final PatientInvitation invitation = seedPendingInvitation(bundle, NUTRITIONIST_SUB, email);
+		final String patientSub = "auth0|patient-reconcile-linked";
+
+		mockMvc
+			.perform(post("/rest/mobile/invitations/reconcile").with(mobileJwt(patientSub, email))
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk());
+
+		mockMvc
+			.perform(post("/rest/mobile/invitations/reconcile").with(mobileJwt(patientSub, email))
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.pacienteStatus").value("ONBOARDING"));
+	}
+
+	@Test
+	void reconcileInvitation_withNoMatchingInvitation_returnsNotFound() throws Exception {
+		mockMvc
+			.perform(post("/rest/mobile/invitations/reconcile")
+				.with(mobileJwt("auth0|patient-reconcile-none", "nobody@example.com"))
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.message").value("La invitación no es válida o ha expirado."));
+	}
+
+	@Test
+	void reconcileInvitation_withoutJwt_returnsUnauthorized() throws Exception {
+		mockMvc.perform(post("/rest/mobile/invitations/reconcile").contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isUnauthorized());
+	}
+
 	private PatientInvitation seedPendingInvitation(final PatientInvitationTokenBundle bundle,
 			final String nutritionistUserId) {
+		return seedPendingInvitation(bundle, nutritionistUserId, "preview." + UUID.randomUUID() + "@example.com");
+	}
+
+	private PatientInvitation seedPendingInvitation(final PatientInvitationTokenBundle bundle,
+			final String nutritionistUserId, final String email) {
 		final Paciente paciente = new Paciente();
 		paciente.setUserId(nutritionistUserId);
 		paciente.setName("Preview Patient");
-		paciente.setEmail("preview." + UUID.randomUUID() + "@example.com");
+		paciente.setEmail(email);
 		paciente.setStatus(PacienteStatus.INVITED);
 		paciente.setGender("F");
 		paciente.setDob(Date.from(LocalDate.of(1990, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()));

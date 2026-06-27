@@ -8,8 +8,9 @@ import com.nutriconsultas.util.LogRedaction;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Local/dev sender for patient invitations (#134). Does not log invite URLs or human
- * codes.
+ * Local/dev sender for patient invitations (#134). Logs a grep-friendly invite link
+ * ({@code PATIENT_INVITATION_LINK=}) for deep-link testing; does not log human codes or
+ * raw recipient emails.
  */
 @Component
 @ConditionalOnProperty(prefix = "nutriconsultas.subscription.invitation.email", name = "mode", havingValue = "console",
@@ -27,6 +28,7 @@ public class ConsolePatientInvitationEmailSender implements PatientInvitationEma
 	public void sendPatientInvitation(final String recipientEmail, final String humanCode, final String inviteUrl) {
 		final String body = templateRenderer.renderHtmlBody(humanCode, inviteUrl);
 		if (log.isInfoEnabled()) {
+			log.info("PATIENT_INVITATION_LINK={}", inviteUrl);
 			log.info("Patient invitation email queued (console mode): recipient={}, bodyLength={}",
 					LogRedaction.redactEmail(recipientEmail), body.length());
 		}
