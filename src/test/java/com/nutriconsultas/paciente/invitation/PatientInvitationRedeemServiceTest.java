@@ -47,7 +47,8 @@ class PatientInvitationRedeemServiceTest {
 	@BeforeEach
 	void setUp() {
 		tokenService = new PatientInvitationTokenServiceImpl(new PatientInvitationProperties());
-		service = new PatientInvitationRedeemServiceImpl(patientInvitationRepository, pacienteRepository);
+		service = new PatientInvitationRedeemServiceImpl(patientInvitationRepository, pacienteRepository,
+				new PatientInvitationProperties());
 	}
 
 	@Test
@@ -173,6 +174,23 @@ class PatientInvitationRedeemServiceTest {
 		final ArgumentCaptor<Paciente> captor = ArgumentCaptor.forClass(Paciente.class);
 		verify(pacienteRepository).save(captor.capture());
 		assertThat(captor.getValue().getPatientAuthSub()).isEqualTo(PATIENT_SUB);
+	}
+
+	@Test
+	void redeemByHumanCode_withValidPendingInvitation_bindsSubAndTransitionsStatus() {
+		final PatientInvitationTokenBundle bundle = tokenService.generate();
+		final Paciente paciente = invitedPaciente(100L);
+		final PatientInvitation invitation = pendingInvitation(bundle.tokenHash(), paciente);
+		invitation.setHumanCode(bundle.humanCode());
+		when(patientInvitationRepository.findByHumanCode(bundle.humanCode())).thenReturn(Optional.of(invitation));
+		when(pacienteRepository.findByPatientAuthSub(PATIENT_SUB)).thenReturn(Optional.empty());
+		when(pacienteRepository.findById(100L)).thenReturn(Optional.of(paciente));
+
+		final PatientInvitationRedeemResult result = service.redeemByHumanCode(bundle.humanCode(), PATIENT_SUB);
+
+		assertThat(result.pacienteId()).isEqualTo(100L);
+		assertThat(result.pacienteStatus()).isEqualTo(PacienteStatus.ONBOARDING);
+		assertThat(paciente.getPatientAuthSub()).isEqualTo(PATIENT_SUB);
 	}
 
 	private static Paciente invitedPaciente(final Long id) {

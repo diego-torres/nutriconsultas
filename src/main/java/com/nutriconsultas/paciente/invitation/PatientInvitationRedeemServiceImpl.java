@@ -29,10 +29,13 @@ public class PatientInvitationRedeemServiceImpl implements PatientInvitationRede
 
 	private final PacienteRepository pacienteRepository;
 
+	private final PatientInvitationProperties invitationProperties;
+
 	public PatientInvitationRedeemServiceImpl(final PatientInvitationRepository patientInvitationRepository,
-			final PacienteRepository pacienteRepository) {
+			final PacienteRepository pacienteRepository, final PatientInvitationProperties invitationProperties) {
 		this.patientInvitationRepository = patientInvitationRepository;
 		this.pacienteRepository = pacienteRepository;
+		this.invitationProperties = invitationProperties;
 	}
 
 	@Override
@@ -47,7 +50,26 @@ public class PatientInvitationRedeemServiceImpl implements PatientInvitationRede
 		final String tokenHash = InvitationTokenHasher.hashToken(rawUrlToken);
 		final PatientInvitation invitation = patientInvitationRepository.findByTokenHash(tokenHash)
 			.orElseThrow(PatientInvitationUnavailableException::new);
+		return redeemInvitation(invitation, patientAuthSub);
+	}
 
+	@Override
+	@Transactional
+	public PatientInvitationRedeemResult redeemByHumanCode(final String humanCode, final String patientAuthSub) {
+		if (!StringUtils.hasText(patientAuthSub)) {
+			throw new IllegalArgumentException("patientAuthSub is required");
+		}
+		if (!PatientInvitationHumanCodes.isWellFormed(humanCode, invitationProperties.getHumanCodePrefix())) {
+			throw new PatientInvitationInvalidTokenException();
+		}
+		final String normalizedCode = PatientInvitationHumanCodes.normalize(humanCode);
+		final PatientInvitation invitation = patientInvitationRepository.findByHumanCode(normalizedCode)
+			.orElseThrow(PatientInvitationUnavailableException::new);
+		return redeemInvitation(invitation, patientAuthSub);
+	}
+
+	private PatientInvitationRedeemResult redeemInvitation(final PatientInvitation invitation,
+			final String patientAuthSub) {
 		if (invitation.getStatus() == PatientInvitationStatus.REDEEMED) {
 			return handleAlreadyRedeemed(invitation, patientAuthSub);
 		}

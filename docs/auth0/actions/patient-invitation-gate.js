@@ -88,6 +88,27 @@ async function validateViaPreview(apiBaseUrl, rawUrlToken) {
 	return response.ok;
 }
 
+async function validateViaHumanCodePreview(apiBaseUrl, humanCode) {
+	if (!apiBaseUrl || !humanCode) {
+		return false;
+	}
+	const base = apiBaseUrl.replace(/\/$/, '');
+	const url = base + '/rest/mobile/invitations/by-code/' + encodeURIComponent(humanCode.trim()) + '/preview';
+	const response = await fetch(url, {
+		method: 'GET',
+		headers: { Accept: 'application/json' },
+	});
+	return response.ok;
+}
+
+function isHumanCode(value) {
+	if (!value || typeof value !== 'string') {
+		return false;
+	}
+	const trimmed = value.trim().toUpperCase();
+	return /^[A-Z0-9]+-[0-9A-Z]{4}-[0-9A-Z]{4}$/.test(trimmed);
+}
+
 async function validateInvitationToken(event) {
 	const token = event.request?.query?.invitation_token;
 	if (!token || typeof token !== 'string' || token.trim() === '') {
@@ -99,6 +120,9 @@ async function validateInvitationToken(event) {
 		return verifyOfflineJws(jwsSecret, trimmed) !== null;
 	}
 	const apiBaseUrl = event.secrets?.API_BASE_URL;
+	if (apiBaseUrl && isHumanCode(trimmed)) {
+		return validateViaHumanCodePreview(apiBaseUrl, trimmed);
+	}
 	if (apiBaseUrl) {
 		return validateViaPreview(apiBaseUrl, trimmed);
 	}

@@ -122,6 +122,24 @@ public class MobileInvitationController {
 		return ApiResponse.ok(PatientInvitationPreviewDto.from(preview));
 	}
 
+	@PostMapping("/by-code/{code}/redeem")
+	@Operation(summary = "Redeem patient invitation by human code",
+			description = "Patient JWT binds Auth0 sub using human-readable code (e.g. NUTRI-ABCD-EFGH).")
+	@MobileOpenApiResponses.AuthenticatedPatientRedeem
+	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",
+			description = "Invitation redeemed or idempotent retry by same sub")
+	public ApiResponse<RedeemedPatientInvitationDto> redeemInvitationByHumanCode(
+			@PathVariable("code") final String code, @AuthenticationPrincipal final Jwt jwt) {
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile invitation redeem by human code request from patient sub present={}",
+					jwt != null && jwt.getSubject() != null);
+		}
+		final String patientAuthSub = requireSubject(jwt);
+		final PatientInvitationRedeemResult redeemed = patientInvitationRedeemRateLimiter.execute(patientAuthSub,
+				() -> patientInvitationRedeemService.redeemByHumanCode(code, patientAuthSub));
+		return ApiResponse.ok(RedeemedPatientInvitationDto.from(redeemed));
+	}
+
 	@PostMapping("/{token}/redeem")
 	@Operation(summary = "Redeem patient invitation",
 			description = "Patient JWT binds Auth0 sub to pre-created Paciente; authoritative onboarding gate.")
