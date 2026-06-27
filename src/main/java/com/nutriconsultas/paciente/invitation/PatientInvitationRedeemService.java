@@ -15,6 +15,6 @@ public interface PatientInvitationRedeemService {
 	 * Paciente with a non-expired pending invitation, or repairs linkage from a prior
 	 * redeem.
 	 */
-	PatientInvitationRedeemResult reconcile(String patientAuthSub, String email, String rawUrlToken, String humanCode);
+	PatientInvitationRedeemResult reconcile(PatientInvitationReconcileInput input);
 
 }

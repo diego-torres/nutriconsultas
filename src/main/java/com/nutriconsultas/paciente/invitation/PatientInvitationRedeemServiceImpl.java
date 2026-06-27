@@ -73,11 +73,11 @@ public class PatientInvitationRedeemServiceImpl implements PatientInvitationRede
 
 	@Override
 	@Transactional
-	public PatientInvitationRedeemResult reconcile(final String patientAuthSub, final String email,
-			final String rawUrlToken, final String humanCode) {
-		if (!StringUtils.hasText(patientAuthSub)) {
+	public PatientInvitationRedeemResult reconcile(final PatientInvitationReconcileInput input) {
+		if (!StringUtils.hasText(input.patientAuthSub())) {
 			throw new IllegalArgumentException("patientAuthSub is required");
 		}
+		final String patientAuthSub = input.patientAuthSub();
 
 		final Optional<PacienteAuthView> linkedPatient = pacienteRepository
 			.findAuthViewByPatientAuthSub(patientAuthSub);
@@ -85,11 +85,11 @@ public class PatientInvitationRedeemServiceImpl implements PatientInvitationRede
 			return alreadyLinkedResult(linkedPatient.get());
 		}
 
-		if (StringUtils.hasText(rawUrlToken)) {
-			return redeem(rawUrlToken, patientAuthSub);
+		if (StringUtils.hasText(input.rawUrlToken())) {
+			return redeem(input.rawUrlToken(), patientAuthSub);
 		}
-		if (StringUtils.hasText(humanCode)) {
-			return redeemByHumanCode(humanCode, patientAuthSub);
+		if (StringUtils.hasText(input.humanCode())) {
+			return redeemByHumanCode(input.humanCode(), patientAuthSub);
 		}
 
 		final List<PatientInvitation> redeemedInvitations = patientInvitationRepository
@@ -98,12 +98,12 @@ public class PatientInvitationRedeemServiceImpl implements PatientInvitationRede
 			return repairPacienteLinkage(redeemedInvitations.get(0), patientAuthSub);
 		}
 
-		if (!StringUtils.hasText(email)) {
+		if (!StringUtils.hasText(input.email())) {
 			throw new PatientInvitationUnavailableException();
 		}
 
 		final List<PatientInvitation> pendingInvitations = patientInvitationRepository
-			.findRedeemablePendingByPacienteEmail(email.trim(), Instant.now(), PatientInvitationStatus.PENDING,
+			.findRedeemablePendingByPacienteEmail(input.email().trim(), Instant.now(), PatientInvitationStatus.PENDING,
 					PacienteStatus.INVITED);
 		if (pendingInvitations.isEmpty()) {
 			throw new PatientInvitationUnavailableException();

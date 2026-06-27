@@ -24,6 +24,7 @@ import com.nutriconsultas.paciente.invitation.CreatedPatientInvitationResult;
 import com.nutriconsultas.paciente.invitation.PatientInvitationCreateService;
 import com.nutriconsultas.paciente.invitation.PatientInvitationPreviewResult;
 import com.nutriconsultas.paciente.invitation.PatientInvitationPreviewService;
+import com.nutriconsultas.paciente.invitation.PatientInvitationReconcileInput;
 import com.nutriconsultas.paciente.invitation.PatientInvitationRedeemResult;
 import com.nutriconsultas.paciente.invitation.PatientInvitationRedeemService;
 import com.nutriconsultas.paciente.invitation.PatientInvitationRevokeResult;
@@ -158,8 +159,10 @@ public class MobileInvitationController {
 		final String email = MobileJwtEmailResolver.resolveEmail(jwt).orElse(null);
 		final String token = request != null ? request.token() : null;
 		final String humanCode = request != null ? request.humanCode() : null;
+		final PatientInvitationReconcileInput reconcileInput = new PatientInvitationReconcileInput(patientAuthSub,
+				email, token, humanCode);
 		final PatientInvitationRedeemResult reconciled = patientInvitationRedeemRateLimiter.execute(patientAuthSub,
-				() -> patientInvitationRedeemService.reconcile(patientAuthSub, email, token, humanCode));
+				() -> patientInvitationRedeemService.reconcile(reconcileInput));
 		return ApiResponse.ok(RedeemedPatientInvitationDto.from(reconciled));
 	}
 
