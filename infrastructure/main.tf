@@ -258,6 +258,13 @@ resource "aws_instance" "app" {
         auth0_mgmt_client_id_b64     = base64encode(var.auth0_mgmt_client_id)
         auth0_mgmt_client_secret_b64 = base64encode(var.auth0_mgmt_client_secret)
         auth0_mgmt_domain_b64        = base64encode(var.auth0_mgmt_domain != "" ? var.auth0_mgmt_domain : var.auth_issuer)
+        auth0_mobile_native_client_id_b64     = base64encode(var.auth0_mobile_native_client_id)
+        auth0_patient_broker_client_id_b64    = base64encode(var.auth0_patient_broker_client_id)
+        auth0_patient_broker_client_secret_b64 = base64encode(var.auth0_patient_broker_client_secret)
+        auth0_patient_broker_domain_b64 = base64encode(
+          var.auth0_patient_broker_domain != "" ? var.auth0_patient_broker_domain : var.auth_issuer
+        )
+        auth0_patient_broker_connection_b64 = base64encode(var.auth0_patient_broker_connection)
         payment_provider_b64         = base64encode(var.payment_provider)
         stripe_secret_key_b64        = base64encode(var.stripe_secret_key)
         stripe_webhook_secret_b64    = base64encode(var.stripe_webhook_secret)
