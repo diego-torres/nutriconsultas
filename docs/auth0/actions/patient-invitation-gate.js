@@ -109,12 +109,24 @@ function isHumanCode(value) {
 	return /^[A-Z0-9]+-[0-9A-Z]{4}-[0-9A-Z]{4}$/.test(trimmed);
 }
 
+function readInvitationToken(event) {
+	const queryToken = event.request?.query?.invitation_token;
+	if (queryToken && typeof queryToken === 'string' && queryToken.trim() !== '') {
+		return queryToken.trim();
+	}
+	const bodyToken = event.request?.body?.invitation_token;
+	if (bodyToken && typeof bodyToken === 'string' && bodyToken.trim() !== '') {
+		return bodyToken.trim();
+	}
+	return null;
+}
+
 async function validateInvitationToken(event) {
-	const token = event.request?.query?.invitation_token;
-	if (!token || typeof token !== 'string' || token.trim() === '') {
+	const token = readInvitationToken(event);
+	if (!token) {
 		return false;
 	}
-	const trimmed = token.trim();
+	const trimmed = token;
 	const jwsSecret = event.secrets?.PATIENT_INVITATION_JWS_SECRET;
 	if (isCompactJws(trimmed) && jwsSecret) {
 		return verifyOfflineJws(jwsSecret, trimmed) !== null;

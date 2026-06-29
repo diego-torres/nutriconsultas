@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.nutriconsultas.auth0.Auth0PatientAuthenticationException;
 import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.subscription.SubscriptionErrorResponses;
 import com.nutriconsultas.subscription.SubscriptionLimitExceededException;
@@ -159,6 +160,43 @@ public class MobileApiExceptionHandler {
 		}
 		return ResponseEntity.status(HttpStatus.CONFLICT)
 			.body(errorResponses.error(MobileApiErrorResponses.KEY_INVITATION_REVOKE_NOT_ALLOWED));
+	}
+
+	@ExceptionHandler(PatientAuthBrokerNotConfiguredException.class)
+	public ResponseEntity<ApiResponse<Void>> handleAuthBrokerNotConfigured(
+			final PatientAuthBrokerNotConfiguredException ex) {
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile API patient auth broker not configured");
+		}
+		return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+			.body(errorResponses.error(MobileApiErrorResponses.KEY_AUTH_BROKER_NOT_CONFIGURED));
+	}
+
+	@ExceptionHandler(PatientAuthEmailMismatchException.class)
+	public ResponseEntity<ApiResponse<Void>> handleAuthEmailMismatch(final PatientAuthEmailMismatchException ex) {
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile API signup email mismatch");
+		}
+		return ResponseEntity.badRequest().body(errorResponses.error(MobileApiErrorResponses.KEY_AUTH_EMAIL_MISMATCH));
+	}
+
+	@ExceptionHandler(Auth0PatientAuthenticationException.class)
+	public ResponseEntity<ApiResponse<Void>> handleAuth0PatientAuthentication(
+			final Auth0PatientAuthenticationException ex) {
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile API Auth0 patient authentication failed code={}", ex.getErrorCode());
+		}
+		final String messageKey = switch (ex.getErrorCode()) {
+			case Auth0PatientAuthenticationException.CODE_INVALID_CREDENTIALS ->
+				MobileApiErrorResponses.KEY_AUTH_INVALID_CREDENTIALS;
+			case Auth0PatientAuthenticationException.CODE_EMAIL_IN_USE -> MobileApiErrorResponses.KEY_AUTH_EMAIL_IN_USE;
+			case Auth0PatientAuthenticationException.CODE_WEAK_PASSWORD ->
+				MobileApiErrorResponses.KEY_AUTH_WEAK_PASSWORD;
+			case Auth0PatientAuthenticationException.CODE_INVITATION_REQUIRED ->
+				MobileApiErrorResponses.KEY_INVITATION_UNAVAILABLE;
+			default -> MobileApiErrorResponses.KEY_AUTH_FAILED;
+		};
+		return ResponseEntity.status(ex.getStatusCode()).body(errorResponses.error(messageKey));
 	}
 
 	@ExceptionHandler(RequestNotPermitted.class)

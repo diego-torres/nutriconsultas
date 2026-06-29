@@ -55,6 +55,18 @@ public final class MobileApiErrorResponses {
 
 	public static final String KEY_INVITATION_REVOKE_NOT_ALLOWED = "error.invitation.revoke_not_allowed";
 
+	public static final String KEY_AUTH_INVALID_CREDENTIALS = "error.auth.invalid_credentials";
+
+	public static final String KEY_AUTH_EMAIL_IN_USE = "error.auth.email_in_use";
+
+	public static final String KEY_AUTH_WEAK_PASSWORD = "error.auth.weak_password";
+
+	public static final String KEY_AUTH_EMAIL_MISMATCH = "error.auth.email_mismatch";
+
+	public static final String KEY_AUTH_BROKER_NOT_CONFIGURED = "error.auth.broker_not_configured";
+
+	public static final String KEY_AUTH_FAILED = "error.auth.failed";
+
 	private final MessageSource messageSource;
 
 	private final ObjectMapper objectMapper;
