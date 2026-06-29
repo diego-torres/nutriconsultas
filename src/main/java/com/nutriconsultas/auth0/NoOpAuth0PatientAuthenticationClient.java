@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnMissingBean(Auth0PatientAuthenticationClient.class)
+@ConditionalOnMissingBean(Auth0PatientAuthenticationClientImpl.class)
 public class NoOpAuth0PatientAuthenticationClient implements Auth0PatientAuthenticationClient {
 
 	@Override
