@@ -31,10 +31,7 @@ public final class PatientAuthRateLimiter {
 			throw ex;
 		}
 		catch (final Exception ex) {
-			if (ex.getCause() instanceof RuntimeException runtime) {
-				throw runtime;
-			}
-			throw new IllegalStateException(ex);
+			throw new IllegalStateException("Rate-limited patient auth call failed", ex);
 		}
 	}
 

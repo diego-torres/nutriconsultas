@@ -9,14 +9,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.nutriconsultas.auth0.Auth0PatientAuthenticationClient;
-import com.nutriconsultas.auth0.Auth0PatientAuthenticationException;
 import com.nutriconsultas.auth0.Auth0PatientTokenResponse;
 import com.nutriconsultas.mobile.PatientAuthBrokerNotConfiguredException;
 import com.nutriconsultas.mobile.PatientAuthEmailMismatchException;
 import com.nutriconsultas.mobile.dto.PatientAuthTokensDto;
+import com.nutriconsultas.mobile.dto.PatientLoginRequest;
+import com.nutriconsultas.mobile.dto.PatientSignupRequest;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PatientInvitation;
-import com.nutriconsultas.paciente.PatientInvitationStatus;
 import com.nutriconsultas.paciente.invitation.PatientInvitationHumanCodes;
 import com.nutriconsultas.paciente.invitation.PatientInvitationProperties;
 import com.nutriconsultas.paciente.invitation.PatientInvitationUrlTokens;
@@ -42,25 +42,24 @@ public class PatientMobileAuthService {
 		this.invitationProperties = invitationProperties;
 	}
 
-	public PatientAuthTokensDto signUp(final String email, final String password, final String displayName,
-			final String rawUrlToken, final String humanCode) {
+	public PatientAuthTokensDto signUp(final PatientSignupRequest request) {
 		requireBrokerConfigured();
-		final PatientInvitation invitation = resolvePendingInvitation(rawUrlToken, humanCode);
-		assertEmailMatchesInvitation(email, invitation);
-		final String invitationToken = resolveInvitationToken(rawUrlToken, humanCode);
-		final Map<String, String> metadata = StringUtils.hasText(displayName) ? Map.of("name", displayName.trim())
-				: Map.of();
-		auth0PatientAuthenticationClient.signUpDatabaseUser(normalizeEmail(email), password, metadata);
-		return toDto(
-				auth0PatientAuthenticationClient.loginWithPassword(normalizeEmail(email), password, invitationToken));
+		final PatientInvitation invitation = resolvePendingInvitation(request.token(), request.humanCode());
+		assertEmailMatchesInvitation(request.email(), invitation);
+		final String invitationToken = resolveInvitationToken(request.token(), request.humanCode());
+		final Map<String, String> metadata = StringUtils.hasText(request.displayName())
+				? Map.of("name", request.displayName().trim()) : Map.of();
+		auth0PatientAuthenticationClient.signUpDatabaseUser(normalizeEmail(request.email()), request.password(),
+				metadata);
+		return toDto(auth0PatientAuthenticationClient.loginWithPassword(normalizeEmail(request.email()),
+				request.password(), invitationToken));
 	}
 
-	public PatientAuthTokensDto login(final String email, final String password, final String rawUrlToken,
-			final String humanCode) {
+	public PatientAuthTokensDto login(final PatientLoginRequest request) {
 		requireBrokerConfigured();
-		final String invitationToken = resolveOptionalInvitationToken(rawUrlToken, humanCode);
-		return toDto(
-				auth0PatientAuthenticationClient.loginWithPassword(normalizeEmail(email), password, invitationToken));
+		final String invitationToken = resolveOptionalInvitationToken(request.token(), request.humanCode());
+		return toDto(auth0PatientAuthenticationClient.loginWithPassword(normalizeEmail(request.email()),
+				request.password(), invitationToken));
 	}
 
 	private void requireBrokerConfigured() {

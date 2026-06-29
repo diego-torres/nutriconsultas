@@ -52,8 +52,8 @@ public class MobileAuthController {
 		if (log.isDebugEnabled()) {
 			log.debug("Mobile patient signup broker request from clientKey={}", clientKey);
 		}
-		final PatientAuthTokensDto tokens = patientAuthRateLimiter.execute(clientKey, () -> patientMobileAuthService
-			.signUp(request.email(), request.password(), request.displayName(), request.token(), request.humanCode()));
+		final PatientAuthTokensDto tokens = patientAuthRateLimiter.execute(clientKey,
+				() -> patientMobileAuthService.signUp(request));
 		return ApiResponse.ok(tokens);
 	}
 
@@ -69,8 +69,8 @@ public class MobileAuthController {
 		if (log.isDebugEnabled()) {
 			log.debug("Mobile patient login broker request from clientKey={}", clientKey);
 		}
-		final PatientAuthTokensDto tokens = patientAuthRateLimiter.execute(clientKey, () -> patientMobileAuthService
-			.login(request.email(), request.password(), request.token(), request.humanCode()));
+		final PatientAuthTokensDto tokens = patientAuthRateLimiter.execute(clientKey,
+				() -> patientMobileAuthService.login(request));
 		return ApiResponse.ok(tokens);
 	}
 

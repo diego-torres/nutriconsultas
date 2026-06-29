@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
 public class PatientAuthBrokerNotConfiguredException extends RuntimeException {
 
+	private static final long serialVersionUID = 1L;
+
 	public PatientAuthBrokerNotConfiguredException() {
 		super("Patient auth broker is not configured");
 	}

@@ -8,6 +8,8 @@ import org.springframework.web.server.ResponseStatusException;
  */
 public final class Auth0PatientAuthenticationException extends ResponseStatusException {
 
+	private static final long serialVersionUID = 1L;
+
 	public static final String CODE_INVALID_CREDENTIALS = "invalid_credentials";
 
 	public static final String CODE_EMAIL_IN_USE = "email_in_use";

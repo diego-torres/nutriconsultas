@@ -1,7 +1,6 @@
 package com.nutriconsultas.mobile.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.nutriconsultas.auth0.Auth0PatientTokenResponse;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;

@@ -19,6 +19,7 @@ import com.nutriconsultas.auth0.Auth0PatientAuthenticationClient;
 import com.nutriconsultas.auth0.Auth0PatientTokenResponse;
 import com.nutriconsultas.mobile.PatientAuthEmailMismatchException;
 import com.nutriconsultas.mobile.dto.PatientAuthTokensDto;
+import com.nutriconsultas.mobile.dto.PatientSignupRequest;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PatientInvitation;
 import com.nutriconsultas.paciente.PatientInvitationStatus;
@@ -49,7 +50,8 @@ class PatientMobileAuthServiceTest {
 		final PatientInvitation invitation = invitation(HUMAN_CODE, "patient@example.com");
 		when(invitationAuthRepository.findPendingByHumanCode(HUMAN_CODE)).thenReturn(java.util.Optional.of(invitation));
 
-		assertThatThrownBy(() -> service.signUp("other@example.com", "Test@1234", "Patient", null, HUMAN_CODE))
+		assertThatThrownBy(() -> service
+			.signUp(new PatientSignupRequest("other@example.com", "Test@1234", "Patient", null, HUMAN_CODE)))
 			.isInstanceOf(PatientAuthEmailMismatchException.class);
 	}
 
@@ -61,8 +63,8 @@ class PatientMobileAuthServiceTest {
 				eq(HUMAN_CODE)))
 			.thenReturn(new Auth0PatientTokenResponse("access", "id", "refresh", 3600L, "Bearer"));
 
-		final PatientAuthTokensDto tokens = service.signUp("patient@example.com", "Test@1234", "Patient Name", null,
-				HUMAN_CODE);
+		final PatientAuthTokensDto tokens = service
+			.signUp(new PatientSignupRequest("patient@example.com", "Test@1234", "Patient Name", null, HUMAN_CODE));
 
 		verify(auth0PatientAuthenticationClient).signUpDatabaseUser(eq("patient@example.com"), eq("Test@1234"),
 				eq(Map.of("name", "Patient Name")));
