@@ -114,6 +114,41 @@ variable "auth0_mgmt_domain" {
   sensitive   = false
 }
 
+variable "auth0_mobile_native_client_id" {
+  type        = string
+  description = "Auth0 Native app client ID for patient mobile signup (/dbconnections/signup). AUTH0_MOBILE_NATIVE_CLIENT_ID."
+  default     = ""
+  sensitive   = true
+}
+
+variable "auth0_patient_broker_client_id" {
+  type        = string
+  description = "Confidential Auth0 app client ID for server-side password-realm login. AUTH0_PATIENT_BROKER_CLIENT_ID."
+  default     = ""
+  sensitive   = true
+}
+
+variable "auth0_patient_broker_client_secret" {
+  type        = string
+  description = "Confidential Auth0 app client secret for patient auth broker. AUTH0_PATIENT_BROKER_CLIENT_SECRET."
+  default     = ""
+  sensitive   = true
+}
+
+variable "auth0_patient_broker_domain" {
+  type        = string
+  description = "Auth0 tenant domain for patient broker (AUTH0_PATIENT_BROKER_DOMAIN). Defaults to auth_issuer when empty."
+  default     = ""
+  sensitive   = false
+}
+
+variable "auth0_patient_broker_connection" {
+  type        = string
+  description = "Auth0 database connection name for patient signup/login. AUTH0_PATIENT_BROKER_CONNECTION."
+  default     = "Username-Password-Authentication"
+  sensitive   = false
+}
+
 variable "aws_bucket" {
   type        = string
   description = "S3 bucket name for application uploads (amazon.s3.bucket). Terraform creates this bucket (see s3-app-uploads.tf). If it already exists, run: terraform import aws_s3_bucket.app_uploads NAME"

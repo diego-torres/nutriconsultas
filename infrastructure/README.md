@@ -158,6 +158,26 @@ bash infrastructure/scripts/ssm-update-stripe-keys.sh
 
 Full runbook: [`docs/subscription/STRIPE-OPS.md`](../docs/subscription/STRIPE-OPS.md). Webhook URL: `https://minutriporcion.com/rest/subscription/payment/webhook`.
 
+**Patient mobile auth broker** — required for `POST /rest/mobile/auth/signup` and `/login` (Flutter email/password registration). Without these, production returns HTTP 503 *El registro no está disponible por ahora*.
+
+| Variable | Purpose |
+|----------|---------|
+| `AUTH0_MOBILE_NATIVE_CLIENT_ID` | Native app client id (`/dbconnections/signup`) |
+| `AUTH0_PATIENT_BROKER_CLIENT_ID` | Confidential Auth0 app (password-realm grant) |
+| `AUTH0_PATIENT_BROKER_CLIENT_SECRET` | Broker client secret |
+| `AUTH0_PATIENT_BROKER_DOMAIN` | Auth0 tenant URL (defaults to `AUTH_ISSUER`) |
+| `AUTH0_PATIENT_BROKER_CONNECTION` | Database connection (default `Username-Password-Authentication`) |
+
+Set in gitignored `terraform.tfvars` (`auth0_mobile_native_client_id`, `auth0_patient_broker_*`) for new instances, or on a running host:
+
+```bash
+export AWS_PROFILE=minutriporcion AWS_DEFAULT_REGION=us-east-1
+set -a && source .env && set +a
+bash infrastructure/scripts/ssm-update-patient-broker.sh
+```
+
+Verify: signup probe should **not** return HTTP 503 (400/403/409 is OK for a dummy email).
+
 **Invitation email (#209)** — nutritionist invite delivery (SES prod / console local):
 
 | Variable | Purpose |

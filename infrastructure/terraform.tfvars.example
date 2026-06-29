@@ -29,6 +29,12 @@ ebs_root_volume_size_gb = 30
 # auth0_mgmt_client_id     = "from-auth0-m2m-app"   # M2M app with read:users on Management API (#109)
 # auth0_mgmt_client_secret = "from-auth0-m2m-app"
 # auth0_mgmt_domain        = ""   # optional; defaults to auth_issuer when empty
+# Patient mobile auth broker (POST /rest/mobile/auth/signup|login):
+# auth0_mobile_native_client_id      = "CmZd..."   # minutriporcion-native; same as Flutter AUTH0_CLIENT_ID
+# auth0_patient_broker_client_id     = "confidential-app-client-id"
+# auth0_patient_broker_client_secret = "confidential-app-client-secret"
+# auth0_patient_broker_domain        = ""   # optional; defaults to auth_issuer
+# auth0_patient_broker_connection    = "Username-Password-Authentication"
 # aws_bucket             = "your-s3-bucket"   # Terraform creates this bucket; import if it already exists
 # aws_key                = "AKIA..."
 # aws_secret             = "..."

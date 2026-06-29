@@ -64,6 +64,21 @@ install -d -o root -g nutri -m 750 /opt/nutriconsultas
   echo -n "AUTH0_MGMT_DOMAIN="
   printf '%s' '${auth0_mgmt_domain_b64}' | base64 -d
   echo
+  echo -n "AUTH0_MOBILE_NATIVE_CLIENT_ID="
+  printf '%s' '${auth0_mobile_native_client_id_b64}' | base64 -d
+  echo
+  echo -n "AUTH0_PATIENT_BROKER_CLIENT_ID="
+  printf '%s' '${auth0_patient_broker_client_id_b64}' | base64 -d
+  echo
+  echo -n "AUTH0_PATIENT_BROKER_CLIENT_SECRET="
+  printf '%s' '${auth0_patient_broker_client_secret_b64}' | base64 -d
+  echo
+  echo -n "AUTH0_PATIENT_BROKER_DOMAIN="
+  printf '%s' '${auth0_patient_broker_domain_b64}' | base64 -d
+  echo
+  echo -n "AUTH0_PATIENT_BROKER_CONNECTION="
+  printf '%s' '${auth0_patient_broker_connection_b64}' | base64 -d
+  echo
   echo -n "PAYMENT_PROVIDER="
   printf '%s' '${payment_provider_b64}' | base64 -d
   echo
