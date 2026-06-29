@@ -23,6 +23,12 @@ public interface PatientInvitationRepository extends JpaRepository<PatientInvita
 	List<PatientInvitation> findByNutritionistUserIdAndStatus(String nutritionistUserId,
 			PatientInvitationStatus status);
 
+	@Query("SELECT pi FROM PatientInvitation pi JOIN FETCH pi.paciente WHERE pi.tokenHash = :tokenHash")
+	Optional<PatientInvitation> findWithPacienteByTokenHash(@Param("tokenHash") String tokenHash);
+
+	@Query("SELECT pi FROM PatientInvitation pi JOIN FETCH pi.paciente WHERE pi.humanCode = :humanCode")
+	Optional<PatientInvitation> findWithPacienteByHumanCode(@Param("humanCode") String humanCode);
+
 	@Query("SELECT pi FROM PatientInvitation pi JOIN pi.paciente p WHERE pi.redeemedBySub = :patientAuthSub "
 			+ "AND pi.status = :redeemedStatus ORDER BY pi.redeemedAt DESC")
 	List<PatientInvitation> findRedeemedByPatientAuthSub(@Param("patientAuthSub") String patientAuthSub,

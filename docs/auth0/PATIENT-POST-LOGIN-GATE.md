@@ -105,7 +105,7 @@ In Dashboard → Actions → *patient-invitation-gate* → Settings → Secrets:
 
 ### 4. Mobile app (`invitation_token` custom param)
 
-Pass on Auth0 authorize (React Native / Expo example):
+Pass on Auth0 authorize (social / legacy Universal Login) **or** on Authentication API `login` parameters (in-app email/password):
 
 ```javascript
 await authorize({
@@ -117,7 +117,18 @@ await authorize({
 });
 ```
 
-Auth0 forwards custom authorize params to `event.request.query` in Post-Login Actions.
+```dart
+// In-app database signup/login (auth0_flutter Authentication API)
+await auth0.api.login(
+  usernameOrEmail: email,
+  password: password,
+  connectionOrRealm: 'Username-Password-Authentication',
+  audience: apiAudience,
+  parameters: {'invitation_token': humanCodeOrUrlToken},
+);
+```
+
+Auth0 forwards custom authorize params to `event.request.query` in Post-Login Actions. Password-grant `login` parameters appear in `event.request.body` — the gate script reads both.
 
 ### 5. Disable public signup (nutritionist web)
 

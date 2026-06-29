@@ -212,8 +212,8 @@ class PatientInvitationRedeemServiceTest {
 		when(pacienteRepository.findByPatientAuthSub(PATIENT_SUB)).thenReturn(Optional.empty());
 		when(pacienteRepository.findById(100L)).thenReturn(Optional.of(paciente));
 
-		final PatientInvitationRedeemResult result = service.reconcile(
-				new PatientInvitationReconcileInput(PATIENT_SUB, "luis.garcia@test.net", null, null));
+		final PatientInvitationRedeemResult result = service
+			.reconcile(new PatientInvitationReconcileInput(PATIENT_SUB, "luis.garcia@test.net", null, null));
 
 		assertThat(result.pacienteStatus()).isEqualTo(PacienteStatus.ONBOARDING);
 		assertThat(paciente.getPatientAuthSub()).isEqualTo(PATIENT_SUB);
@@ -228,8 +228,8 @@ class PatientInvitationRedeemServiceTest {
 		when(patientInvitationRepository.findByPacienteIdAndStatus(100L, PatientInvitationStatus.REDEEMED))
 			.thenReturn(List.of());
 
-		final PatientInvitationRedeemResult result = service.reconcile(
-				new PatientInvitationReconcileInput(PATIENT_SUB, "any@example.com", null, null));
+		final PatientInvitationRedeemResult result = service
+			.reconcile(new PatientInvitationReconcileInput(PATIENT_SUB, "any@example.com", null, null));
 
 		assertThat(result.pacienteId()).isEqualTo(100L);
 		assertThat(result.pacienteStatus()).isEqualTo(PacienteStatus.ONBOARDING);
@@ -244,8 +244,8 @@ class PatientInvitationRedeemServiceTest {
 				eq(PatientInvitationStatus.PENDING), eq(PacienteStatus.INVITED)))
 			.thenReturn(List.of());
 
-		assertThatThrownBy(() -> service.reconcile(
-				new PatientInvitationReconcileInput(PATIENT_SUB, "unknown@example.com", null, null)))
+		assertThatThrownBy(() -> service
+			.reconcile(new PatientInvitationReconcileInput(PATIENT_SUB, "unknown@example.com", null, null)))
 			.isInstanceOf(PatientInvitationUnavailableException.class);
 	}
 
