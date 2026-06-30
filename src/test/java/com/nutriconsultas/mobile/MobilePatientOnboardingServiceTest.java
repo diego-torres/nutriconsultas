@@ -26,6 +26,8 @@ import com.nutriconsultas.paciente.PacienteAvatarCatalog;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
 import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.paciente.PacienteStatus;
+import com.nutriconsultas.profile.NutritionistProfile;
+import com.nutriconsultas.profile.NutritionistProfileRepository;
 
 @ExtendWith(MockitoExtension.class)
 class MobilePatientOnboardingServiceTest {
@@ -35,6 +37,9 @@ class MobilePatientOnboardingServiceTest {
 
 	@Mock
 	private PacienteDietaRepository pacienteDietaRepository;
+
+	@Mock
+	private NutritionistProfileRepository nutritionistProfileRepository;
 
 	@InjectMocks
 	private MobilePatientOnboardingService service;
@@ -75,6 +80,23 @@ class MobilePatientOnboardingServiceTest {
 		when(pacienteRepository.findById(9L)).thenReturn(Optional.of(paciente));
 
 		assertThatThrownBy(() -> service.getProfile(9L)).isInstanceOf(PatientOnboardingRequiredException.class);
+	}
+
+	@Test
+	void getProfile_includesNutritionistDisplayName() {
+		final Paciente paciente = sampleOnboardingPaciente(9L);
+		when(pacienteRepository.findById(9L)).thenReturn(Optional.of(paciente));
+		when(pacienteDietaRepository.findByPacienteIdAndStatus(9L,
+				com.nutriconsultas.paciente.PacienteDietaStatus.ACTIVE))
+			.thenReturn(List.of());
+		final NutritionistProfile profile = new NutritionistProfile();
+		profile.setUserId("nutritionist-sub");
+		profile.setDisplayName("Lic. Ana López");
+		when(nutritionistProfileRepository.findByUserId("nutritionist-sub")).thenReturn(Optional.of(profile));
+
+		final PatientOnboardingProfileDto result = service.getProfile(9L);
+
+		assertThat(result.nutritionistDisplayName()).isEqualTo("Lic. Ana López");
 	}
 
 	private static Paciente sampleOnboardingPaciente(final Long id) {
