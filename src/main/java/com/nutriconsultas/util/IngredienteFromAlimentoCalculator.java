@@ -6,6 +6,7 @@ import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.dieta.IngredientePlatilloIngesta;
 import com.nutriconsultas.model.AbstractFraccionable;
 import com.nutriconsultas.platillos.Ingrediente;
+import com.nutriconsultas.util.FractionQuantityParser;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -81,7 +82,11 @@ public final class IngredienteFromAlimentoCalculator {
 
 	private static void calculateFromCantidadChange(final String given, final AbstractFraccionable ingrediente,
 			final Alimento alimento) {
-		final double parsedQuantity = parseFractionalQuantity(given);
+		final Double parsedQuantityValue = FractionQuantityParser.parseFractionalQuantity(given);
+		if (parsedQuantityValue == null) {
+			throw new IllegalArgumentException("Cantidad inválida: " + given);
+		}
+		final double parsedQuantity = parsedQuantityValue;
 		final double factor = parsedQuantity / alimento.getCantSugerida();
 		applyNutrientFactor(ingrediente, alimento, factor);
 		ingrediente.setCantSugerida(parsedQuantity);
@@ -171,20 +176,6 @@ public final class IngredienteFromAlimentoCalculator {
 		if (alimento.getPesoNeto() != null) {
 			ingrediente.setPesoNeto((int) Math.round(alimento.getPesoNeto() * factor));
 		}
-	}
-
-	private static double parseFractionalQuantity(final String given) {
-		final String trimmedGiven = given.trim();
-		final boolean hasInteger = trimmedGiven.contains(" ") || !trimmedGiven.contains("/");
-		final boolean hasFraction = trimmedGiven.contains("/");
-		final int givenIntPart = hasInteger ? Integer.parseInt(trimmedGiven.split(" ")[0]) : 0;
-		final int givenNumeratorPart = hasInteger
-				? hasFraction ? Integer.parseInt(trimmedGiven.split(" ")[1].split("/")[0]) : 0
-				: Integer.parseInt(trimmedGiven.split("/")[0]);
-		final int givenDenominatorPart = hasInteger
-				? hasFraction ? Integer.parseInt(trimmedGiven.split(" ")[1].split("/")[1]) : 0
-				: Integer.parseInt(trimmedGiven.split("/")[1]);
-		return givenIntPart + (hasFraction ? (givenNumeratorPart / (double) givenDenominatorPart) : 0d);
 	}
 
 }
