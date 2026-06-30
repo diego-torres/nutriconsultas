@@ -32,8 +32,8 @@ public final class DietGroceryListAggregator {
 		}
 		return items.values()
 			.stream()
-			.sorted(Comparator.comparing(MutableGroceryItem::nombre, String.CASE_INSENSITIVE_ORDER))
 			.map(MutableGroceryItem::toDto)
+			.sorted(Comparator.comparing(DietGroceryListItemDto::nombre, String.CASE_INSENSITIVE_ORDER))
 			.toList();
 	}
 
@@ -64,10 +64,10 @@ public final class DietGroceryListAggregator {
 			final IngredientePlatilloIngesta ingrediente, final int portions) {
 		final Alimento alimento = ingrediente.getAlimento();
 		final String nombre = alimento != null ? alimento.getNombreAlimento() : ingrediente.getDescription();
-		final String unidad = ingrediente.getUnidad();
 		if (nombre == null || nombre.isBlank()) {
 			return;
 		}
+		final String unidad = ingrediente.getUnidad();
 		final Long alimentoId = alimento != null ? alimento.getId() : null;
 		final String categoria = alimento != null ? alimento.getClasificacion() : null;
 		final String key = buildKey(alimentoId, nombre, unidad);
@@ -89,10 +89,10 @@ public final class DietGroceryListAggregator {
 			final Map<String, MutableGroceryItem> items) {
 		final Alimento alimento = alimentoIngesta.getAlimento();
 		final String nombre = alimento != null ? alimento.getNombreAlimento() : alimentoIngesta.getName();
-		final String unidad = alimentoIngesta.getUnidad();
 		if (nombre == null || nombre.isBlank()) {
 			return;
 		}
+		final String unidad = alimentoIngesta.getUnidad();
 		final Long alimentoId = alimento != null ? alimento.getId() : null;
 		final String categoria = alimento != null ? alimento.getClasificacion() : null;
 		final String key = buildKey(alimentoId, nombre, unidad);
@@ -147,10 +147,6 @@ public final class DietGroceryListAggregator {
 		private void addGramQuantity(final int grams) {
 			usesGramQuantity = true;
 			gramQuantity += grams;
-		}
-
-		private String nombre() {
-			return nombre;
 		}
 
 		private DietGroceryListItemDto toDto() {
