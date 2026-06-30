@@ -21,6 +21,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
+import com.nutriconsultas.mobile.dto.DietPlatilloDetailDto;
 import com.nutriconsultas.mobile.dto.PagedResponse;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
 import com.nutriconsultas.paciente.projection.PacienteAuthView;
@@ -56,6 +57,23 @@ class MobilePatientDietPlanControllerTest {
 		assertThat(response.data().content().get(0).dietaName()).isEqualTo("Plan A");
 		assertThat(response.timestamp()).isNotNull();
 		verify(mobilePatientDietPlanService).listDietPlans(3L, 0, 20, true);
+	}
+
+	@Test
+	void getPlatilloDetail_returnsApiResponseEnvelope() {
+		final DietPlatilloDetailDto detail = new DietPlatilloDetailDto(30L, "Avena", 2, "/img.jpg", "Prep", null, null,
+				List.of(), null);
+		final Jwt jwt = jwtWithSub(PATIENT_SUB);
+
+		when(patientAuthService.requireAuthViewByJwt(jwt)).thenReturn(authView(3L));
+		when(mobilePatientDietPlanService.getPlatilloDetail(3L, 7L, 30L)).thenReturn(detail);
+
+		final ApiResponse<DietPlatilloDetailDto> response = controller.getPlatilloDetail(jwt, 7L, 30L);
+
+		assertThat(response.data().id()).isEqualTo(30L);
+		assertThat(response.data().nombre()).isEqualTo("Avena");
+		assertThat(response.timestamp()).isNotNull();
+		verify(mobilePatientDietPlanService).getPlatilloDetail(3L, 7L, 30L);
 	}
 
 	@Test

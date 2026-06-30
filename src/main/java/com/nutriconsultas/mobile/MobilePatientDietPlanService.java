@@ -13,9 +13,13 @@ import org.springframework.web.server.ResponseStatusException;
 import com.nutriconsultas.dieta.Dieta;
 import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.Ingesta;
+import com.nutriconsultas.dieta.IngredientePlatilloIngesta;
+import com.nutriconsultas.dieta.PlatilloIngesta;
+import com.nutriconsultas.dieta.PlatilloIngestaRepository;
 import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
 import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
+import com.nutriconsultas.mobile.dto.DietPlatilloDetailDto;
 import com.nutriconsultas.mobile.dto.PagedResponse;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
@@ -32,11 +36,14 @@ public class MobilePatientDietPlanService {
 
 	private final PacienteDietaRepository pacienteDietaRepository;
 
+	private final PlatilloIngestaRepository platilloIngestaRepository;
+
 	private final DietaPdfService dietaPdfService;
 
 	public MobilePatientDietPlanService(final PacienteDietaRepository pacienteDietaRepository,
-			final DietaPdfService dietaPdfService) {
+			final PlatilloIngestaRepository platilloIngestaRepository, final DietaPdfService dietaPdfService) {
 		this.pacienteDietaRepository = pacienteDietaRepository;
+		this.platilloIngestaRepository = platilloIngestaRepository;
 		this.dietaPdfService = dietaPdfService;
 	}
 
@@ -70,6 +77,21 @@ public class MobilePatientDietPlanService {
 	}
 
 	@Transactional(readOnly = true)
+	public DietPlatilloDetailDto getPlatilloDetail(final Long pacienteId, final Long assignmentId,
+			final Long platilloIngestaId) {
+		final PlatilloIngesta platillo = platilloIngestaRepository
+			.findByIdForPatientAssignment(platilloIngestaId, assignmentId, pacienteId)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		initializePlatilloDetail(platillo);
+		if (log.isDebugEnabled()) {
+			log.debug("Loaded mobile platillo detail platilloIngestaId={} assignmentId={} for patient {}",
+					platilloIngestaId, LogRedaction.redactPacienteDieta(assignmentId),
+					LogRedaction.redactPaciente(pacienteId));
+		}
+		return DietPlatilloDetailDto.fromEntity(platillo);
+	}
+
+	@Transactional(readOnly = true)
 	public DietPlanPdfResult generateDietPlanPdf(final Long pacienteId, final Long assignmentId) {
 		final PacienteDieta assignment = pacienteDietaRepository.findByIdAndPacienteId(assignmentId, pacienteId)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -81,6 +103,17 @@ public class MobilePatientDietPlanService {
 					LogRedaction.redactPacienteDieta(assignmentId), LogRedaction.redactPaciente(pacienteId));
 		}
 		return new DietPlanPdfResult(pdfBytes, filename);
+	}
+
+	private static void initializePlatilloDetail(final PlatilloIngesta platillo) {
+		if (platillo.getIngredientes() != null) {
+			Hibernate.initialize(platillo.getIngredientes());
+			for (final IngredientePlatilloIngesta ingrediente : platillo.getIngredientes()) {
+				if (ingrediente.getAlimento() != null) {
+					Hibernate.initialize(ingrediente.getAlimento());
+				}
+			}
+		}
 	}
 
 	private static void initializeDietaTree(final Dieta dieta) {

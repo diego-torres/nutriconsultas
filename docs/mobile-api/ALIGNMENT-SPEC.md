@@ -148,8 +148,9 @@ Add to each a short "Backend dependency" line per the cross-reference table, e.g
 | `Dieta.hidratosDeCarbono` | `totalCarbohidratos` |
 | `Ingesta.nombre` | `tipo` |
 | `PlatilloIngesta.name` / `portions` / `energia` | `nombre` / `porciones` / `kcal` |
-| `PlatilloIngesta.hidratosDeCarbono` / `lipidos` | `carbohidratos` / `grasas` |
-| `AlimentoIngesta.*` | same translations as PlatilloIngesta |
+| `PlatilloIngesta.id` | `id` (platilloIngestaId for detail deep links, #354) |
+| `PlatilloIngesta.proteina` / `hidratosDeCarbono` / `lipidos` | `proteina` / `carbohidratos` / `grasas` |
+| `AlimentoIngesta.*` | same translations as PlatilloIngesta (macros optional when null, #354) |
 
 ### F8.2 — Enums (mobile must handle ALL values)
 - `EventStatus`: SCHEDULED / COMPLETED / CANCELLED

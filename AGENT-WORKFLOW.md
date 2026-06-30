@@ -41,7 +41,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (public booking):** None — epic ~~#245~~ **done**; ~~#246~~, ~~#247~~, ~~#248~~, ~~#297~~, ~~#300~~, ~~#302~~ done. Deferred follow-ups need new issues. See [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md).
 
-**Current next issue (mobile):** [#349 — Invitation preview auth routing hints](https://github.com/diego-torres/nutriconsultas/issues/349) (`in-progress`). Open follow-ups: #352, #353, #354.
+**Current next issue (mobile):** [#352 — Patient platillo detail endpoint](https://github.com/diego-torres/nutriconsultas/issues/352) (`in-progress`). ~~#354~~ **done**. Open follow-up: #353.
 
 **Current next issue (subscription):** Registered track **complete** (~~#244~~ ✓ on `subscription/244-contact-form-prefill`). Triage open `[Subscription]` GitHub issues. See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md).
 

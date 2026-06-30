@@ -16,6 +16,7 @@ import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
 import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
+import com.nutriconsultas.mobile.dto.DietPlatilloDetailDto;
 import com.nutriconsultas.mobile.dto.PagedResponse;
 import com.nutriconsultas.util.LogRedaction;
 
@@ -75,6 +76,27 @@ public class MobilePatientDietPlanController extends AbstractMobilePatientContro
 		}
 		final DietPlanDetailDto plan = mobilePatientDietPlanService.getDietPlanDetail(pacienteId, assignmentId);
 		return ApiResponse.ok(plan);
+	}
+
+	@GetMapping("/{assignmentId}/platillos/{platilloIngestaId}")
+	@Operation(summary = "Get platillo detail",
+			description = "Returns ingredients, preparation, and nutrition for a platillo in the patient's assignment.")
+	@MobileOpenApiResponses.AuthenticatedPatient
+	@MobileOpenApiResponses.NotFoundWhenMissing
+	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",
+			description = "Platillo detail with ingredients and nutrition facts")
+	public ApiResponse<DietPlatilloDetailDto> getPlatilloDetail(@AuthenticationPrincipal final Jwt jwt,
+			@Parameter(description = "PacienteDieta assignment identifier") @PathVariable final Long assignmentId,
+			@Parameter(
+					description = "PlatilloIngesta identifier within the assignment") @PathVariable final Long platilloIngestaId) {
+		final Long pacienteId = getAuthenticatedPacienteId(jwt);
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile get platillo {} assignment {} for patient {}", platilloIngestaId,
+					LogRedaction.redactPacienteDieta(assignmentId), LogRedaction.redactPaciente(pacienteId));
+		}
+		final DietPlatilloDetailDto detail = mobilePatientDietPlanService.getPlatilloDetail(pacienteId, assignmentId,
+				platilloIngestaId);
+		return ApiResponse.ok(detail);
 	}
 
 	@GetMapping(value = "/{assignmentId}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)

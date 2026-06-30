@@ -25,12 +25,16 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.nutriconsultas.alimentos.Alimento;
+import com.nutriconsultas.alimentos.AlimentosRepository;
 import com.nutriconsultas.dieta.AlimentoIngesta;
 import com.nutriconsultas.dieta.Dieta;
 import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.DietaRepository;
 import com.nutriconsultas.dieta.Ingesta;
+import com.nutriconsultas.dieta.IngredientePlatilloIngesta;
 import com.nutriconsultas.dieta.PlatilloIngesta;
+import com.nutriconsultas.dieta.PlatilloIngestaRepository;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
@@ -56,12 +60,20 @@ class MobilePatientDietPlanIntegrationTest {
 	@Autowired
 	private PacienteDietaRepository pacienteDietaRepository;
 
+	@Autowired
+	private AlimentosRepository alimentosRepository;
+
 	@MockBean
 	private DietaPdfService dietaPdfService;
 
 	private Paciente linkedPaciente;
 
 	private PacienteDieta linkedAssignment;
+
+	private Long linkedPlatilloId;
+
+	@Autowired
+	private PlatilloIngestaRepository platilloIngestaRepository;
 
 	@BeforeEach
 	void seedData() {
@@ -70,6 +82,10 @@ class MobilePatientDietPlanIntegrationTest {
 			return pacienteRepository.saveAndFlush(paciente);
 		});
 		linkedAssignment = ensureAssignmentWithMealTree();
+		linkedPlatilloId = platilloIngestaRepository
+			.findByPatientAssignment(linkedAssignment.getId(), linkedPaciente.getId())
+			.get(0)
+			.getId();
 	}
 
 	private PacienteDieta ensureAssignmentWithMealTree() {
@@ -101,8 +117,28 @@ class MobilePatientDietPlanIntegrationTest {
 		platillo.setName("Huevos revueltos");
 		platillo.setPortions(1);
 		platillo.setEnergia(280);
+		platillo.setProteina(18.0);
+		platillo.setHidratosDeCarbono(4.0);
+		platillo.setLipidos(20.0);
 		platillo.setRecommendations("Con verduras");
+		platillo.setVideoUrl("https://video.example/huevos");
+		platillo.setPdfUrl("/uploads/recetas/huevos.pdf");
+		platillo.setPdfUrl("/uploads/recetas/huevos.pdf");
 		platillo.setIngesta(ingesta);
+
+		final Alimento catalogAlimento = new Alimento();
+		catalogAlimento.setNombreAlimento("Huevo");
+		catalogAlimento.setClasificacion("Proteínas");
+		catalogAlimento.setCantSugerida(1.0);
+		catalogAlimento.setUnidad("pieza");
+		final Alimento savedAlimento = alimentosRepository.saveAndFlush(catalogAlimento);
+
+		final IngredientePlatilloIngesta ingrediente = new IngredientePlatilloIngesta();
+		ingrediente.setAlimento(savedAlimento);
+		ingrediente.setCantSugerida(2.0);
+		ingrediente.setUnidad("pieza");
+		ingrediente.setPlatillo(platillo);
+		platillo.setIngredientes(new java.util.ArrayList<>(List.of(ingrediente)));
 
 		final AlimentoIngesta alimento = new AlimentoIngesta();
 		alimento.setName("Pan integral");
@@ -153,10 +189,75 @@ class MobilePatientDietPlanIntegrationTest {
 			.andExpect(jsonPath("$.data.dietaName").value("Dieta integración"))
 			.andExpect(jsonPath("$.data.totalKcal").value(1900))
 			.andExpect(jsonPath("$.data.ingestas[0].tipo").value("Desayuno"))
+			.andExpect(jsonPath("$.data.ingestas[0].platillos[0].id").exists())
 			.andExpect(jsonPath("$.data.ingestas[0].platillos[0].nombre").value("Huevos revueltos"))
 			.andExpect(jsonPath("$.data.ingestas[0].platillos[0].porciones").value(1))
+			.andExpect(jsonPath("$.data.ingestas[0].platillos[0].proteina").value(18.0))
+			.andExpect(jsonPath("$.data.ingestas[0].platillos[0].carbohidratos").value(4.0))
+			.andExpect(jsonPath("$.data.ingestas[0].platillos[0].grasas").value(20.0))
 			.andExpect(jsonPath("$.data.ingestas[0].alimentos[0].nombre").value("Pan integral"))
 			.andExpect(jsonPath("$.timestamp").exists());
+	}
+
+	@Test
+	void getPlatilloDetailWithLinkedJwtReturnsIngredientsAndNutrition() throws Exception {
+		mockMvc
+			.perform(get(
+					"/rest/mobile/patient/diet-plans/" + linkedAssignment.getId() + "/platillos/" + linkedPlatilloId)
+				.with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.id").value(linkedPlatilloId))
+			.andExpect(jsonPath("$.data.nombre").value("Huevos revueltos"))
+			.andExpect(jsonPath("$.data.description").value("Con verduras"))
+			.andExpect(jsonPath("$.data.videoUrl").value("https://video.example/huevos"))
+			.andExpect(jsonPath("$.data.pdfUrl").value("/uploads/recetas/huevos.pdf"))
+			.andExpect(jsonPath("$.data.ingredientes[0].nombre").value("Huevo"))
+			.andExpect(jsonPath("$.data.ingredientes[0].cantidad").value("2"))
+			.andExpect(jsonPath("$.data.ingredientes[0].unidad").value("pieza"))
+			.andExpect(jsonPath("$.data.nutritionFacts.kcal").value(280))
+			.andExpect(jsonPath("$.data.nutritionFacts.proteina").value(18.0))
+			.andExpect(jsonPath("$.timestamp").exists());
+	}
+
+	@Test
+	void getPlatilloDetailForOtherPatientsAssignmentReturnsNotFound() throws Exception {
+		final Paciente otherPatient = pacienteRepository.findByPatientAuthSub("auth0|mobile-diet-plan-other")
+			.orElseGet(() -> {
+				final Paciente paciente = samplePaciente("auth0|mobile-diet-plan-other");
+				return pacienteRepository.saveAndFlush(paciente);
+			});
+		final PacienteDieta otherAssignment = pacienteDietaRepository.findByPacienteId(otherPatient.getId())
+			.stream()
+			.findFirst()
+			.orElseGet(() -> {
+				final Dieta dieta = new Dieta();
+				dieta.setNombre("Dieta ajena");
+				dieta.setUserId("nutritionist-sub");
+				dieta.setEnergia(1500);
+				final Dieta savedDieta = dietaRepository.saveAndFlush(dieta);
+
+				final PacienteDieta assignment = new PacienteDieta();
+				assignment.setPaciente(otherPatient);
+				assignment.setDieta(savedDieta);
+				assignment.setStatus(PacienteDietaStatus.ACTIVE);
+				assignment.setStartDate(
+						Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+				return pacienteDietaRepository.saveAndFlush(assignment);
+			});
+
+		mockMvc
+			.perform(
+					get("/rest/mobile/patient/diet-plans/" + otherAssignment.getId() + "/platillos/" + linkedPlatilloId)
+						.with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void getPlatilloDetailForMissingPlatilloReturnsNotFound() throws Exception {
+		mockMvc
+			.perform(get("/rest/mobile/patient/diet-plans/" + linkedAssignment.getId() + "/platillos/999999")
+				.with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isNotFound());
 	}
 
 	@Test
