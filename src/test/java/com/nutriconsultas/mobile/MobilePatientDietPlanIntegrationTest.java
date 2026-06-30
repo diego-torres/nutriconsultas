@@ -200,6 +200,50 @@ class MobilePatientDietPlanIntegrationTest {
 	}
 
 	@Test
+	void getGroceryListWithLinkedJwtReturnsAggregatedItems() throws Exception {
+		mockMvc
+			.perform(get("/rest/mobile/patient/diet-plans/" + linkedAssignment.getId() + "/grocery-list")
+				.with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.items").isArray())
+			.andExpect(jsonPath("$.data.items[?(@.nombre == 'Huevo')].cantidad").value("2"))
+			.andExpect(jsonPath("$.data.items[?(@.nombre == 'Huevo')].unidad").value("pieza"))
+			.andExpect(jsonPath("$.timestamp").exists());
+	}
+
+	@Test
+	void getGroceryListForOtherPatientsAssignmentReturnsNotFound() throws Exception {
+		final Paciente otherPatient = pacienteRepository.findByPatientAuthSub("auth0|mobile-diet-plan-other")
+			.orElseGet(() -> {
+				final Paciente paciente = samplePaciente("auth0|mobile-diet-plan-other");
+				return pacienteRepository.saveAndFlush(paciente);
+			});
+		final PacienteDieta otherAssignment = pacienteDietaRepository.findByPacienteId(otherPatient.getId())
+			.stream()
+			.findFirst()
+			.orElseGet(() -> {
+				final Dieta dieta = new Dieta();
+				dieta.setNombre("Dieta ajena");
+				dieta.setUserId("nutritionist-sub");
+				dieta.setEnergia(1500);
+				final Dieta savedDieta = dietaRepository.saveAndFlush(dieta);
+
+				final PacienteDieta assignment = new PacienteDieta();
+				assignment.setPaciente(otherPatient);
+				assignment.setDieta(savedDieta);
+				assignment.setStatus(PacienteDietaStatus.ACTIVE);
+				assignment.setStartDate(
+						Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+				return pacienteDietaRepository.saveAndFlush(assignment);
+			});
+
+		mockMvc
+			.perform(get("/rest/mobile/patient/diet-plans/" + otherAssignment.getId() + "/grocery-list")
+				.with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isNotFound());
+	}
+
+	@Test
 	void getPlatilloDetailWithLinkedJwtReturnsIngredientsAndNutrition() throws Exception {
 		mockMvc
 			.perform(get(

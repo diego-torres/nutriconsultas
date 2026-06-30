@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nutriconsultas.mobile.config.MobileOpenApiResponses;
 import com.nutriconsultas.mobile.dto.ApiResponse;
+import com.nutriconsultas.mobile.dto.DietGroceryListDto;
 import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
 import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
@@ -97,6 +98,27 @@ public class MobilePatientDietPlanController extends AbstractMobilePatientContro
 		final DietPlatilloDetailDto detail = mobilePatientDietPlanService.getPlatilloDetail(pacienteId, assignmentId,
 				platilloIngestaId);
 		return ApiResponse.ok(detail);
+	}
+
+	@GetMapping("/{assignmentId}/grocery-list")
+	@Operation(summary = "Get grocery list",
+			description = "Returns a deduplicated shopping list aggregated from the patient's diet assignment.")
+	@MobileOpenApiResponses.AuthenticatedPatient
+	@MobileOpenApiResponses.NotFoundWhenMissing
+	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",
+			description = "Grocery list items for the full plan")
+	public ApiResponse<DietGroceryListDto> getGroceryList(@AuthenticationPrincipal final Jwt jwt,
+			@Parameter(description = "PacienteDieta assignment identifier") @PathVariable final Long assignmentId,
+			@Parameter(description = "Week scope; only current (full plan) is supported") @RequestParam(
+					defaultValue = "current") final String week) {
+		final Long pacienteId = getAuthenticatedPacienteId(jwt);
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile get grocery list assignment {} for patient {}",
+					LogRedaction.redactPacienteDieta(assignmentId), LogRedaction.redactPaciente(pacienteId));
+		}
+		final DietGroceryListDto groceryList = mobilePatientDietPlanService.getGroceryList(pacienteId, assignmentId,
+				week);
+		return ApiResponse.ok(groceryList);
 	}
 
 	@GetMapping(value = "/{assignmentId}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)

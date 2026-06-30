@@ -10,12 +10,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.nutriconsultas.dieta.AlimentoIngesta;
 import com.nutriconsultas.dieta.Dieta;
 import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.Ingesta;
 import com.nutriconsultas.dieta.IngredientePlatilloIngesta;
 import com.nutriconsultas.dieta.PlatilloIngesta;
 import com.nutriconsultas.dieta.PlatilloIngestaRepository;
+import com.nutriconsultas.mobile.dto.DietGroceryListDto;
 import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
 import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
@@ -92,6 +94,21 @@ public class MobilePatientDietPlanService {
 	}
 
 	@Transactional(readOnly = true)
+	public DietGroceryListDto getGroceryList(final Long pacienteId, final Long assignmentId, final String week) {
+		final PacienteDieta assignment = pacienteDietaRepository.findByIdAndPacienteId(assignmentId, pacienteId)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		if (week != null && !week.isBlank() && !"current".equalsIgnoreCase(week)) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+		}
+		initializeGroceryTree(assignment.getDieta());
+		if (log.isDebugEnabled()) {
+			log.debug("Loaded mobile grocery list assignmentId={} for patient {}",
+					LogRedaction.redactPacienteDieta(assignmentId), LogRedaction.redactPaciente(pacienteId));
+		}
+		return new DietGroceryListDto(DietGroceryListAggregator.aggregate(assignment.getDieta()));
+	}
+
+	@Transactional(readOnly = true)
 	public DietPlanPdfResult generateDietPlanPdf(final Long pacienteId, final Long assignmentId) {
 		final PacienteDieta assignment = pacienteDietaRepository.findByIdAndPacienteId(assignmentId, pacienteId)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -103,6 +120,28 @@ public class MobilePatientDietPlanService {
 					LogRedaction.redactPacienteDieta(assignmentId), LogRedaction.redactPaciente(pacienteId));
 		}
 		return new DietPlanPdfResult(pdfBytes, filename);
+	}
+
+	private static void initializeGroceryTree(final Dieta dieta) {
+		if (dieta == null || dieta.getIngestas() == null) {
+			return;
+		}
+		for (final Ingesta ingesta : dieta.getIngestas()) {
+			if (ingesta.getPlatillos() != null) {
+				Hibernate.initialize(ingesta.getPlatillos());
+				for (final PlatilloIngesta platillo : ingesta.getPlatillos()) {
+					initializePlatilloDetail(platillo);
+				}
+			}
+			if (ingesta.getAlimentos() != null) {
+				Hibernate.initialize(ingesta.getAlimentos());
+				for (final AlimentoIngesta alimentoIngesta : ingesta.getAlimentos()) {
+					if (alimentoIngesta.getAlimento() != null) {
+						Hibernate.initialize(alimentoIngesta.getAlimento());
+					}
+				}
+			}
+		}
 	}
 
 	private static void initializePlatilloDetail(final PlatilloIngesta platillo) {
