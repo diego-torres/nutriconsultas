@@ -24,8 +24,10 @@ import com.nutriconsultas.dieta.Dieta;
 import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.Ingesta;
 import com.nutriconsultas.dieta.PlatilloIngesta;
+import com.nutriconsultas.dieta.PlatilloIngestaRepository;
 import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
 import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
+import com.nutriconsultas.mobile.dto.DietPlatilloDetailDto;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
@@ -43,6 +45,34 @@ class MobilePatientDietPlanServiceTest {
 	@Mock
 	private DietaPdfService dietaPdfService;
 
+	@Mock
+	private PlatilloIngestaRepository platilloIngestaRepository;
+
+	@Test
+	void getPlatilloDetail_returnsDetailWhenOwnedByPatient() {
+		final PacienteDieta assignment = sampleAssignment(5L, 1L);
+		final PlatilloIngesta platillo = assignment.getDieta().getIngestas().get(0).getPlatillos().get(0);
+		when(platilloIngestaRepository.findByIdForPatientAssignment(30L, 5L, 1L)).thenReturn(Optional.of(platillo));
+
+		final DietPlatilloDetailDto result = service.getPlatilloDetail(1L, 5L, 30L);
+
+		assertThat(result.id()).isEqualTo(30L);
+		assertThat(result.nombre()).isEqualTo("Avena con fruta");
+		assertThat(result.porciones()).isEqualTo(2);
+		assertThat(result.description()).isEqualTo("Servir tibia");
+		assertThat(result.nutritionFacts().kcal()).isEqualTo(320);
+		assertThat(result.nutritionFacts().proteina()).isEqualTo(12.5);
+	}
+
+	@Test
+	void getPlatilloDetail_throwsNotFoundWhenMissingOrNotOwned() {
+		when(platilloIngestaRepository.findByIdForPatientAssignment(99L, 5L, 1L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.getPlatilloDetail(1L, 5L, 99L)).isInstanceOf(ResponseStatusException.class)
+			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+			.isEqualTo(HttpStatus.NOT_FOUND);
+	}
+
 	@Test
 	void getDietPlanDetail_returnsStructuredMealTreeWhenOwnedByPatient() {
 		final PacienteDieta assignment = sampleAssignment(5L, 1L);
@@ -56,12 +86,17 @@ class MobilePatientDietPlanServiceTest {
 		assertThat(result.ingestas()).hasSize(1);
 		assertThat(result.ingestas().get(0).tipo()).isEqualTo("Desayuno");
 		assertThat(result.ingestas().get(0).platillos()).hasSize(1);
+		assertThat(result.ingestas().get(0).platillos().get(0).id()).isEqualTo(30L);
 		assertThat(result.ingestas().get(0).platillos().get(0).nombre()).isEqualTo("Avena con fruta");
 		assertThat(result.ingestas().get(0).platillos().get(0).porciones()).isEqualTo(2);
 		assertThat(result.ingestas().get(0).platillos().get(0).kcal()).isEqualTo(320);
+		assertThat(result.ingestas().get(0).platillos().get(0).proteina()).isEqualTo(12.5);
+		assertThat(result.ingestas().get(0).platillos().get(0).carbohidratos()).isEqualTo(48.0);
+		assertThat(result.ingestas().get(0).platillos().get(0).grasas()).isEqualTo(8.0);
 		assertThat(result.ingestas().get(0).alimentos()).hasSize(1);
 		assertThat(result.ingestas().get(0).alimentos().get(0).nombre()).isEqualTo("Manzana");
 		assertThat(result.ingestas().get(0).alimentos().get(0).unidad()).isEqualTo("pieza");
+		assertThat(result.ingestas().get(0).alimentos().get(0).proteina()).isEqualTo(0.3);
 	}
 
 	@Test
@@ -122,6 +157,9 @@ class MobilePatientDietPlanServiceTest {
 		platillo.setName("Avena con fruta");
 		platillo.setPortions(2);
 		platillo.setEnergia(320);
+		platillo.setProteina(12.5);
+		platillo.setHidratosDeCarbono(48.0);
+		platillo.setLipidos(8.0);
 		platillo.setRecommendations("Servir tibia");
 		platillo.setIngesta(ingesta);
 
@@ -131,6 +169,9 @@ class MobilePatientDietPlanServiceTest {
 		alimento.setPortions(1);
 		alimento.setEnergia(52);
 		alimento.setUnidad("pieza");
+		alimento.setProteina(0.3);
+		alimento.setHidratosDeCarbono(14.0);
+		alimento.setLipidos(0.2);
 		alimento.setIngesta(ingesta);
 
 		ingesta.setPlatillos(List.of(platillo));

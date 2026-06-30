@@ -14,7 +14,7 @@ Canonical cross-repo contracts for the `[Mobile API]` track. Indexed from [`../.
 | [`../auth0/PATIENT-POST-LOGIN-GATE.md`](../auth0/PATIENT-POST-LOGIN-GATE.md) | Auth0 Post-Login invitation gate (#140) — Action script + deployment |
 | [`../api/openapi-mobile.yaml`](../api/openapi-mobile.yaml) | OpenAPI 3.1 export (#112, PR #164); regen: `scripts/export-openapi-mobile.sh` |
 
-**Status (2026-06-30):** ~~#349~~ **in-progress** — invitation preview auth routing hints. ~~#132~~–~~#141~~ **done** — Phase 2 invitation onboarding complete ([`INVITATION-SECURITY-AUDIT.md`](INVITATION-SECURITY-AUDIT.md)). ~~#336~~ **done** — `GET /rest/mobile/invitations/by-code/{code}/preview`. ~~#337~~ **done** — public web landing at `GET /links/i/{token}` (not-installed fallback).
+**Status (2026-06-30):** ~~#352~~ **in-progress** — platillo detail endpoint. ~~#354~~ **done** — `DietPlatilloDto` id + macros. ~~#349~~ **done** (PR [#356](https://github.com/diego-torres/nutriconsultas/pull/356)).
 
 ## Related registries (same repo)
 
