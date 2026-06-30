@@ -1574,7 +1574,7 @@ components:
           type: string
         imageUrl:
           type: string
-    ApiResponseDietPlatilloDetailDto:
+          description: Relative URL; defaults to `/sbadmin/img/plato-vacio.jpg` when unset (#355)
       type: object
       properties:
         data:
@@ -1597,6 +1597,7 @@ components:
           format: int32
         imageUrl:
           type: string
+          description: Relative URL; defaults to `/sbadmin/img/plato-vacio.jpg` when unset (#355)
         description:
           type: string
           description: Preparation instructions (from PlatilloIngesta.recommendations)

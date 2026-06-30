@@ -168,6 +168,7 @@ Extended diet plan DTOs and endpoints for mobile home/diet detail flows.
 | 354 | Extend `DietPlatilloDto` with id and per-dish macros | https://github.com/diego-torres/nutriconsultas/issues/354 | **done** | ~~94~~ ✓ | Merged PR [#357](https://github.com/diego-torres/nutriconsultas/pull/357) |
 | 352 | Patient platillo detail endpoint (ingredients, prep, nutrition) | https://github.com/diego-torres/nutriconsultas/issues/352 | **done** | ~~94~~ ✓, ~~354~~ ✓ | Merged PR [#357](https://github.com/diego-torres/nutriconsultas/pull/357) |
 | 353 | Grocery list for patient diet plan | https://github.com/diego-torres/nutriconsultas/issues/353 | **in-progress** | ~~94~~ ✓ | `GET /rest/mobile/patient/diet-plans/{assignmentId}/grocery-list` |
+| 355 | Add default platillo image `plato-vacio.jpg` to static resources | https://github.com/diego-torres/nutriconsultas/issues/355 | **in-progress** | — | Serves `/sbadmin/img/plato-vacio.jpg`; OpenAPI `imageUrl` documented |
 
 ---
 
