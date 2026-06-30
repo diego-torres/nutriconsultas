@@ -606,6 +606,12 @@ Issue registry: [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md). Plan: 
 
 **Epic ~~#341~~** (2026-06-26): nutritionist web mobile app invitation — ~~#341~~ **done** (branch `issue-341-web-mobile-invitation`, 38f358e): session REST `/rest/pacientes/{id}/mobile-invitation`, patient grid **App móvil** column, Afiliación send/resend/revoke. Post-login linkage: `POST /rest/mobile/invitations/reconcile` (branch `feat/invitation-redeem-by-human-code`). See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 
+## AI Nutrition Assistant (tracking)
+
+Issue registry: [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md). Plan: [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md). Workflow: [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md).
+
+**Epics #360–#409** (2026-06-30): OpenAI-backed chat for nutritionists to draft recipes, menus, and diet plans via backend catalog tools — **registered**, not started. **NEXT:** [#361](https://github.com/diego-torres/nutriconsultas/issues/361) functional scope (Phase 0). Plan gating: [#409](https://github.com/diego-torres/nutriconsultas/issues/409) (Plus + Consultorio). **All user-facing AI communications in Spanish (es-MX).** Milestones: M1 foundation (#360–#371) → M2 nutrition tools (#372–#382) → M3 chat UX (#383–#390) → M4 MCP (#391–#395) → M5 safety & release (#396–#408).
+
 ## Public booking (tracking)
 
 Issue registry: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Epic ~~**#245**~~ **done** (v1 shipped, 2026-06-19): shareable `/consultas/{id}/agendar-cita` link. ~~#246~~ **done**; ~~#247~~ **done** (PR [#295](https://github.com/diego-torres/nutriconsultas/pull/295)); ~~#248~~ **done** (PR [#298](https://github.com/diego-torres/nutriconsultas/pull/298)); ~~#297~~ **done** (PR [#299](https://github.com/diego-torres/nutriconsultas/pull/299)); ~~#300~~ **done** (PR [#301](https://github.com/diego-torres/nutriconsultas/pull/301)); ~~#302~~ **done** (PR [#303](https://github.com/diego-torres/nutriconsultas/pull/303)). Track complete; deferred follow-ups (verification, SMTP) need new issues.
