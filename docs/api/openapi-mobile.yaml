@@ -1474,6 +1474,30 @@ components:
           type: string
           description: Nutritionist display name from profile
           example: Lic. Ana López
+        patientStatus:
+          type: string
+          description: Patient lifecycle status
+          enum:
+          - INVITED
+          - ONBOARDING
+          - ACTIVE
+          - REVOKED
+          example: INVITED
+        mobileAppLinked:
+          type: boolean
+          description: Whether the patient record is linked to a mobile Auth0 account
+          example: false
+        authPath:
+          type: string
+          description: Suggested Auth0 flow for the mobile app
+          enum:
+          - CREATE_ACCOUNT
+          - SIGN_IN
+          example: CREATE_ACCOUNT
+        emailHint:
+          type: string
+          description: Masked email for optional pre-fill (never the full address)
+          example: p***@example.com
   securitySchemes:
     bearer-jwt:
       type: http

@@ -205,6 +205,20 @@ Source: `util/InvitationTokenHasher`, `paciente/invitation/PatientInvitationHuma
 | 422 | patient not in `INVITED` status at redeem | status guard |
 | 429 | rate limit on `preview`/`redeem` | reuse #113 Resilience4j (`Retry-After`) |
 
+#### F8.6.5 — Invitation preview auth routing (#349)
+
+Both `GET /rest/mobile/invitations/{token}/preview` and `GET /rest/mobile/invitations/by-code/{code}/preview` return:
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `inviterDisplayName` | string | Nutritionist display name (existing) |
+| `patientStatus` | `INVITED` \| `ONBOARDING` \| `ACTIVE` \| `REVOKED` | From `Paciente.status` |
+| `mobileAppLinked` | boolean | `true` when `Paciente.patientAuthSub` is set |
+| `authPath` | `CREATE_ACCOUNT` \| `SIGN_IN` | `INVITED` + unlinked → `CREATE_ACCOUNT`; otherwise `SIGN_IN` |
+| `emailHint` | string (optional) | Masked email (`p***@example.com`) for optional pre-fill — never full address |
+
+No full email, patient name, or token values in response or logs.
+
 #### F8.6.4 — DoD controls every #134–#141 PR must satisfy (drift guard)
 
 These exit criteria live in the workflow but were not per-row in [`ISSUE.md`](../../ISSUE.md); enforce them here:

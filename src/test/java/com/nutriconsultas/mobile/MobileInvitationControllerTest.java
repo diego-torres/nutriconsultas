@@ -22,6 +22,7 @@ import com.nutriconsultas.mobile.dto.RevokedPatientInvitationDto;
 import com.nutriconsultas.paciente.PacienteStatus;
 import com.nutriconsultas.paciente.PatientInvitationStatus;
 import com.nutriconsultas.paciente.invitation.CreatedPatientInvitationResult;
+import com.nutriconsultas.paciente.invitation.InvitationAuthPath;
 import com.nutriconsultas.paciente.invitation.PatientInvitationCreateService;
 import com.nutriconsultas.paciente.invitation.PatientInvitationPreviewResult;
 import com.nutriconsultas.paciente.invitation.PatientInvitationPreviewService;
@@ -84,7 +85,8 @@ class MobileInvitationControllerTest {
 
 	@Test
 	void previewInvitation_returnsApiResponseEnvelope() throws Exception {
-		final PatientInvitationPreviewResult preview = new PatientInvitationPreviewResult("Lic. Ana López");
+		final PatientInvitationPreviewResult preview = new PatientInvitationPreviewResult("Lic. Ana López",
+				PacienteStatus.INVITED, false, InvitationAuthPath.CREATE_ACCOUNT, "l***@example.com");
 		when(httpServletRequest.getRemoteAddr()).thenReturn("127.0.0.1");
 		when(patientInvitationPreviewRateLimiter.execute(org.mockito.ArgumentMatchers.eq("127.0.0.1"),
 				org.mockito.ArgumentMatchers.any()))
@@ -101,7 +103,8 @@ class MobileInvitationControllerTest {
 
 	@Test
 	void previewInvitationByHumanCode_returnsApiResponseEnvelope() throws Exception {
-		final PatientInvitationPreviewResult preview = new PatientInvitationPreviewResult("Lic. Ana López");
+		final PatientInvitationPreviewResult preview = new PatientInvitationPreviewResult("Lic. Ana López",
+				PacienteStatus.INVITED, false, InvitationAuthPath.CREATE_ACCOUNT, "l***@example.com");
 		when(httpServletRequest.getRemoteAddr()).thenReturn("127.0.0.1");
 		when(patientInvitationPreviewRateLimiter.execute(org.mockito.ArgumentMatchers.eq("127.0.0.1"),
 				org.mockito.ArgumentMatchers.any()))

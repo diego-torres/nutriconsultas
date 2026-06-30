@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.nutriconsultas.mobile.PatientInvitationInvalidTokenException;
 import com.nutriconsultas.mobile.PatientInvitationUnavailableException;
+import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.PacienteStatus;
 import com.nutriconsultas.paciente.PatientInvitation;
 import com.nutriconsultas.paciente.PatientInvitationRepository;
 import com.nutriconsultas.paciente.PatientInvitationStatus;
@@ -66,12 +68,19 @@ public class PatientInvitationPreviewServiceImpl implements PatientInvitationPre
 		final String inviterDisplayName = nutritionistProfileRepository.findByUserId(invitation.getNutritionistUserId())
 			.map(profile -> NutritionistBrandingHelper.resolveDisplayName(profile, null))
 			.orElse(null);
+		final Paciente paciente = invitation.getPaciente();
+		final PacienteStatus patientStatus = paciente.getStatus();
+		final boolean mobileAppLinked = PatientInvitationAuthRouting.isMobileAppLinked(paciente);
+		final InvitationAuthPath authPath = PatientInvitationAuthRouting.resolveAuthPath(patientStatus,
+				mobileAppLinked);
+		final String emailHint = PatientInvitationAuthRouting.resolveEmailHint(paciente);
 
 		if (log.isDebugEnabled()) {
 			log.debug("Patient invitation preview resolved for invitationId={}", invitation.getId());
 		}
 
-		return new PatientInvitationPreviewResult(inviterDisplayName);
+		return new PatientInvitationPreviewResult(inviterDisplayName, patientStatus, mobileAppLinked, authPath,
+				emailHint);
 	}
 
 	private boolean isPreviewable(final PatientInvitation invitation) {
