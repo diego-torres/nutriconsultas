@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import com.nutriconsultas.mobile.dto.ApiResponse;
+import com.nutriconsultas.mobile.dto.DietGroceryListDto;
 import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
 import com.nutriconsultas.mobile.dto.DietPlatilloDetailDto;
@@ -57,6 +58,21 @@ class MobilePatientDietPlanControllerTest {
 		assertThat(response.data().content().get(0).dietaName()).isEqualTo("Plan A");
 		assertThat(response.timestamp()).isNotNull();
 		verify(mobilePatientDietPlanService).listDietPlans(3L, 0, 20, true);
+	}
+
+	@Test
+	void getGroceryList_returnsApiResponseEnvelope() {
+		final DietGroceryListDto groceryList = new DietGroceryListDto(List.of());
+		final Jwt jwt = jwtWithSub(PATIENT_SUB);
+
+		when(patientAuthService.requireAuthViewByJwt(jwt)).thenReturn(authView(3L));
+		when(mobilePatientDietPlanService.getGroceryList(3L, 7L, "current")).thenReturn(groceryList);
+
+		final ApiResponse<DietGroceryListDto> response = controller.getGroceryList(jwt, 7L, "current");
+
+		assertThat(response.data().items()).isEmpty();
+		assertThat(response.timestamp()).isNotNull();
+		verify(mobilePatientDietPlanService).getGroceryList(3L, 7L, "current");
 	}
 
 	@Test

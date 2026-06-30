@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Subscription (parallel):** [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) · **Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-06-30 — #352 platillo detail endpoint (`mobile-api/354-diet-platillo-dto-macros`). ~~#354~~ **in-progress**. ~~#349~~ **done** (PR [#356](https://github.com/diego-torres/nutriconsultas/pull/356)).
+**Last updated:** 2026-06-30 — #353 grocery list endpoint (`mobile-api/353-grocery-list`). ~~#354~~ ~~#352~~ **done** (PR [#357](https://github.com/diego-torres/nutriconsultas/pull/357)). ~~#349~~ **done** (PR [#356](https://github.com/diego-torres/nutriconsultas/pull/356)).
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116, #132–#141 invitation onboarding) plus the directly-related `[Dashboard]` IMC gauge (#106) and **integration prerequisites** that gate schema work (#156, #46). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -155,7 +155,7 @@ Invite-only patient onboarding replaces manual Afiliación linkage (#109) for ne
 | 337 | B2 — Invitation web landing page `GET /links/i/{token}` | https://github.com/diego-torres/nutriconsultas/issues/337 | **done** | ~~135~~ ✓ | Public Thymeleaf landing (`/links/i/{token}`, `/i/{token}` alias); hero image, human code, store URLs; `buildInviteUrl()` → `/links/i/` |
 | 349 | Invitation preview auth routing hints (signup vs login) | https://github.com/diego-torres/nutriconsultas/issues/349 | **done** | ~~135~~ ✓, ~~141~~ ✓ | Merged PR [#356](https://github.com/diego-torres/nutriconsultas/pull/356): `patientStatus`, `mobileAppLinked`, `authPath`, masked `emailHint` on both preview endpoints |
 
-**Suggested build order (after ~~#133~~ ✓):** … → ~~#349~~ ✓ → ~~#354~~ ✓ → #352 → #353.
+**Suggested build order (after ~~#133~~ ✓):** … → ~~#349~~ ✓ → ~~#354~~ ✓ → ~~#352~~ ✓ → #353.
 
 ---
 
@@ -165,9 +165,9 @@ Extended diet plan DTOs and endpoints for mobile home/diet detail flows.
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
-| 354 | Extend `DietPlatilloDto` with id and per-dish macros | https://github.com/diego-torres/nutriconsultas/issues/354 | **done** | ~~94~~ ✓ | `id`, `proteina`, `carbohidratos`, `grasas` on platillos; optional macros on `DietAlimentoDto`; OpenAPI updated |
-| 352 | Patient platillo detail endpoint (ingredients, prep, nutrition) | https://github.com/diego-torres/nutriconsultas/issues/352 | **in-progress** | ~~94~~ ✓, ~~354~~ ✓ | `GET /rest/mobile/patient/diet-plans/{assignmentId}/platillos/{platilloIngestaId}` |
-| 353 | Grocery list for patient diet plan | https://github.com/diego-torres/nutriconsultas/issues/353 | open | ~~94~~ ✓ | `GET /rest/mobile/patient/diet-plans/{assignmentId}/grocery-list` |
+| 354 | Extend `DietPlatilloDto` with id and per-dish macros | https://github.com/diego-torres/nutriconsultas/issues/354 | **done** | ~~94~~ ✓ | Merged PR [#357](https://github.com/diego-torres/nutriconsultas/pull/357) |
+| 352 | Patient platillo detail endpoint (ingredients, prep, nutrition) | https://github.com/diego-torres/nutriconsultas/issues/352 | **done** | ~~94~~ ✓, ~~354~~ ✓ | Merged PR [#357](https://github.com/diego-torres/nutriconsultas/pull/357) |
+| 353 | Grocery list for patient diet plan | https://github.com/diego-torres/nutriconsultas/issues/353 | **in-progress** | ~~94~~ ✓ | `GET /rest/mobile/patient/diet-plans/{assignmentId}/grocery-list` |
 
 ---
 

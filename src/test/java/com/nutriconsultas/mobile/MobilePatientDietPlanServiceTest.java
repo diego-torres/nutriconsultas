@@ -25,6 +25,7 @@ import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.Ingesta;
 import com.nutriconsultas.dieta.PlatilloIngesta;
 import com.nutriconsultas.dieta.PlatilloIngestaRepository;
+import com.nutriconsultas.mobile.dto.DietGroceryListDto;
 import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
 import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.mobile.dto.DietPlatilloDetailDto;
@@ -47,6 +48,38 @@ class MobilePatientDietPlanServiceTest {
 
 	@Mock
 	private PlatilloIngestaRepository platilloIngestaRepository;
+
+	@Test
+	void getGroceryList_returnsAggregatedItemsWhenOwnedByPatient() {
+		final PacienteDieta assignment = sampleAssignment(5L, 1L);
+		when(pacienteDietaRepository.findByIdAndPacienteId(5L, 1L)).thenReturn(Optional.of(assignment));
+
+		final DietGroceryListDto result = service.getGroceryList(1L, 5L, "current");
+
+		assertThat(result.items()).hasSize(1);
+		assertThat(result.items().get(0).nombre()).isEqualTo("Manzana");
+		assertThat(result.items().get(0).cantidad()).isEqualTo("1");
+		assertThat(result.items().get(0).unidad()).isEqualTo("pieza");
+	}
+
+	@Test
+	void getGroceryList_throwsNotFoundWhenMissingOrNotOwned() {
+		when(pacienteDietaRepository.findByIdAndPacienteId(99L, 1L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.getGroceryList(1L, 99L, "current")).isInstanceOf(ResponseStatusException.class)
+			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+			.isEqualTo(HttpStatus.NOT_FOUND);
+	}
+
+	@Test
+	void getGroceryList_throwsBadRequestForUnsupportedWeek() {
+		final PacienteDieta assignment = sampleAssignment(5L, 1L);
+		when(pacienteDietaRepository.findByIdAndPacienteId(5L, 1L)).thenReturn(Optional.of(assignment));
+
+		assertThatThrownBy(() -> service.getGroceryList(1L, 5L, "next")).isInstanceOf(ResponseStatusException.class)
+			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+			.isEqualTo(HttpStatus.BAD_REQUEST);
+	}
 
 	@Test
 	void getPlatilloDetail_returnsDetailWhenOwnedByPatient() {
