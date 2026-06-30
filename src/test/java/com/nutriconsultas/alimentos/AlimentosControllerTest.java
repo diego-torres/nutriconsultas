@@ -1,5 +1,6 @@
 package com.nutriconsultas.alimentos;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -99,7 +100,7 @@ public class AlimentosControllerTest {
 	@Test
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	public void testAgregarNuevoAlimento() throws Exception {
-		log.info("Starting testAgregarNuevoAlimento");
+		when(alimentoService.save(any(Alimento.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
 		mockMvc
 			.perform(MockMvcRequestBuilders.post("/admin/alimentos")
@@ -110,7 +111,41 @@ public class AlimentosControllerTest {
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
 			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/alimentos"));
-		log.info("Finishing testAgregarNuevoAlimento");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testAgregarNuevoAlimentoWithFractionalCantSugerida() throws Exception {
+		when(alimentoService.save(any(Alimento.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/alimentos")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("clasificacion", "LECHE SEMIDESCREMADA")
+				.param("unidad", "pieza")
+				.param("nombreAlimento", "Oikos estilo griego sabor natural")
+				.param("cantSugerida", "1/2")
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/alimentos"));
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testAgregarNuevoAlimentoShowsValidationErrors() throws Exception {
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/alimentos")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("clasificacion", "LECHE SEMIDESCREMADA")
+				.param("unidad", "pieza")
+				.param("nombreAlimento", "")
+				.param("cantSugerida", "1/2")
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.view().name("sbadmin/alimentos/formulario"))
+			.andExpect(MockMvcResultMatchers.model().attribute("activeMenu", "alimentos"))
+			.andExpect(
+					MockMvcResultMatchers.content().string(Matchers.containsString("No se pudo guardar el alimento")));
 	}
 
 }

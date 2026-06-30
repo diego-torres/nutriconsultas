@@ -18,17 +18,23 @@ public final class FractionQuantityParser {
 			return null;
 		}
 
-		final boolean hasInteger = trimmedGiven.contains(" ") || !trimmedGiven.contains("/");
-		final boolean hasFraction = trimmedGiven.contains("/");
+		if (!trimmedGiven.contains("/")) {
+			return Double.parseDouble(trimmedGiven.replace(',', '.'));
+		}
+
+		final boolean hasInteger = trimmedGiven.contains(" ");
 		final int integerPart = hasInteger ? Integer.parseInt(trimmedGiven.split(" ")[0]) : 0;
-		final int numeratorPart = hasInteger
-				? hasFraction ? Integer.parseInt(trimmedGiven.split(" ")[1].split("/")[0]) : 0
-				: Integer.parseInt(trimmedGiven.split("/")[0]);
-		final int denominatorPart = hasInteger
-				? hasFraction ? Integer.parseInt(trimmedGiven.split(" ")[1].split("/")[1]) : 0
-				: Integer.parseInt(trimmedGiven.split("/")[1]);
-		final double fractionalValue = hasFraction ? (double) numeratorPart / denominatorPart : 0d;
-		return integerPart + fractionalValue;
+		final String fractionPart = hasInteger ? trimmedGiven.split(" ")[1] : trimmedGiven;
+		final String[] fractionTokens = fractionPart.split("/");
+		if (fractionTokens.length != 2) {
+			throw new NumberFormatException("Invalid fraction: " + given);
+		}
+		final int numeratorPart = Integer.parseInt(fractionTokens[0]);
+		final int denominatorPart = Integer.parseInt(fractionTokens[1]);
+		if (denominatorPart == 0) {
+			throw new NumberFormatException("Invalid fraction denominator: " + given);
+		}
+		return integerPart + ((double) numeratorPart / denominatorPart);
 	}
 
 }

@@ -22,6 +22,12 @@ class FractionQuantityParserTest {
 	}
 
 	@Test
+	void parseFractionalQuantity_parsesDecimal() {
+		assertThat(FractionQuantityParser.parseFractionalQuantity("0.5")).isEqualTo(0.5d);
+		assertThat(FractionQuantityParser.parseFractionalQuantity("0,5")).isEqualTo(0.5d);
+	}
+
+	@Test
 	void parseFractionalQuantity_returnsNullForBlankInput() {
 		assertThat(FractionQuantityParser.parseFractionalQuantity("")).isNull();
 		assertThat(FractionQuantityParser.parseFractionalQuantity(null)).isNull();

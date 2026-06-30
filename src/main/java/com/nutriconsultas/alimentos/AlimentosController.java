@@ -9,8 +9,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.WebDataBinder;
 
 import com.nutriconsultas.controller.AbstractAuthorizedController;
 
@@ -20,6 +22,11 @@ public class AlimentosController extends AbstractAuthorizedController {
 
 	@Autowired
 	private AlimentoService alimentoService;
+
+	@InitBinder("alimento")
+	public void initAlimentoBinder(final WebDataBinder binder) {
+		binder.registerCustomEditor(Double.class, "cantSugerida", new FractionalQuantityPropertyEditor());
+	}
 
 	@GetMapping(path = "/admin/alimentos")
 	public String listado(final Model model) {
@@ -65,6 +72,7 @@ public class AlimentosController extends AbstractAuthorizedController {
 		String resultView;
 		if (result.hasErrors()) {
 			log.warn("Found {} errors on binding result", result.getErrorCount());
+			model.addAttribute("activeMenu", "alimentos");
 			resultView = "sbadmin/alimentos/formulario";
 		}
 		else {
