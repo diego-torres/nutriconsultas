@@ -6,7 +6,6 @@ import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.dieta.IngredientePlatilloIngesta;
 import com.nutriconsultas.model.AbstractFraccionable;
 import com.nutriconsultas.platillos.Ingrediente;
-import com.nutriconsultas.util.FractionQuantityParser;
 
 import lombok.extern.slf4j.Slf4j;
 
