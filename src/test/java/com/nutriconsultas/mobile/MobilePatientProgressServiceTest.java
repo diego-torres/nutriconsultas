@@ -118,8 +118,8 @@ class MobilePatientProgressServiceTest {
 		measurement.getCircumferences().setWaistCircumference(82.0);
 		measurement.getCircumferences().setHipCircumference(98.0);
 
-		when(bodyMetricRecordRepository.countPatientTimeline(eq(5L), isNull(), isNull())).thenReturn(2L);
-		when(bodyMetricRecordRepository.findPatientTimeline(eq(5L), isNull(), isNull(), any(Pageable.class)))
+		when(bodyMetricRecordRepository.countByPacienteId(5L)).thenReturn(2L);
+		when(bodyMetricRecordRepository.findByPacienteIdOrderByRecordedAtAscIdAsc(eq(5L), any(Pageable.class)))
 			.thenReturn(List.of(older, latest));
 		when(anthropometricMeasurementRepository.findByPacienteIdAndIdIn(5L, List.of(1L, 2L)))
 			.thenReturn(List.of(measurement));
@@ -136,8 +136,8 @@ class MobilePatientProgressServiceTest {
 
 	@Test
 	void listMeasurements_truncatesBeyondMaxRowsCap() {
-		when(bodyMetricRecordRepository.countPatientTimeline(eq(5L), isNull(), isNull())).thenReturn(400L);
-		when(bodyMetricRecordRepository.findPatientTimeline(eq(5L), isNull(), isNull(), any(Pageable.class)))
+		when(bodyMetricRecordRepository.countByPacienteId(5L)).thenReturn(400L);
+		when(bodyMetricRecordRepository.findByPacienteIdOrderByRecordedAtAscIdAsc(eq(5L), any(Pageable.class)))
 			.thenReturn(List.of(metricRecord(1L, 70.0, 1.70, 24.2, NivelPeso.NORMAL, null, 22.0,
 					Date.from(Instant.parse("2026-06-01T10:00:00Z")))));
 		when(anthropometricMeasurementRepository.findByPacienteIdAndIdIn(eq(5L), any())).thenReturn(List.of());

@@ -6,8 +6,6 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -27,14 +25,23 @@ public interface BodyMetricRecordRepository extends JpaRepository<BodyMetricReco
 
 	void deleteBySourceAndSourceId(BodyMetricSource source, Long sourceId);
 
-	@Query("SELECT b FROM BodyMetricRecord b WHERE b.paciente.id = :pacienteId "
-			+ "AND (:from IS NULL OR b.recordedAt >= :from) AND (:to IS NULL OR b.recordedAt <= :to) "
-			+ "ORDER BY b.recordedAt ASC, b.id ASC")
-	List<BodyMetricRecord> findPatientTimeline(@Param("pacienteId") Long pacienteId, @Param("from") Date from,
-			@Param("to") Date to, Pageable pageable);
+	long countByPacienteId(Long pacienteId);
 
-	@Query("SELECT COUNT(b) FROM BodyMetricRecord b WHERE b.paciente.id = :pacienteId "
-			+ "AND (:from IS NULL OR b.recordedAt >= :from) AND (:to IS NULL OR b.recordedAt <= :to)")
-	long countPatientTimeline(@Param("pacienteId") Long pacienteId, @Param("from") Date from, @Param("to") Date to);
+	long countByPacienteIdAndRecordedAtGreaterThanEqual(Long pacienteId, Date from);
+
+	long countByPacienteIdAndRecordedAtLessThanEqual(Long pacienteId, Date to);
+
+	long countByPacienteIdAndRecordedAtBetween(Long pacienteId, Date from, Date to);
+
+	List<BodyMetricRecord> findByPacienteIdOrderByRecordedAtAscIdAsc(Long pacienteId, Pageable pageable);
+
+	List<BodyMetricRecord> findByPacienteIdAndRecordedAtGreaterThanEqualOrderByRecordedAtAscIdAsc(Long pacienteId,
+			Date from, Pageable pageable);
+
+	List<BodyMetricRecord> findByPacienteIdAndRecordedAtLessThanEqualOrderByRecordedAtAscIdAsc(Long pacienteId,
+			Date to, Pageable pageable);
+
+	List<BodyMetricRecord> findByPacienteIdAndRecordedAtBetweenOrderByRecordedAtAscIdAsc(Long pacienteId, Date from,
+			Date to, Pageable pageable);
 
 }
