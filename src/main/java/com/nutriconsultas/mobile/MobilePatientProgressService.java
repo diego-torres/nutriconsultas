@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -103,9 +104,9 @@ public class MobilePatientProgressService {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 		}
 		final int safeMaxRows = resolveMaxRows(maxRows);
-		final long totalMatching = bodyMetricRecordRepository.countPatientTimeline(pacienteId, fromDate, toDate);
-		final List<BodyMetricRecord> records = bodyMetricRecordRepository.findPatientTimeline(pacienteId, fromDate,
-				toDate, PageRequest.of(0, safeMaxRows));
+		final Pageable page = PageRequest.of(0, safeMaxRows);
+		final long totalMatching = countPatientTimelineRecords(pacienteId, fromDate, toDate);
+		final List<BodyMetricRecord> records = findPatientTimelineRecords(pacienteId, fromDate, toDate, page);
 		final Map<Long, ProgressCircumferenceDto> circumferencesBySourceId = loadCircumferencesForRecords(pacienteId,
 				records);
 		final List<ProgressMeasurementPointDto> points = records.stream()
@@ -116,6 +117,36 @@ public class MobilePatientProgressService {
 					totalMatching > safeMaxRows, LogRedaction.redactPaciente(pacienteId));
 		}
 		return new ProgressMeasurementsDto(points, points.size(), totalMatching > safeMaxRows);
+	}
+
+	private long countPatientTimelineRecords(final Long pacienteId, final Date from, final Date to) {
+		if (from == null && to == null) {
+			return bodyMetricRecordRepository.countByPacienteId(pacienteId);
+		}
+		if (from != null && to != null) {
+			return bodyMetricRecordRepository.countByPacienteIdAndRecordedAtBetween(pacienteId, from, to);
+		}
+		if (from != null) {
+			return bodyMetricRecordRepository.countByPacienteIdAndRecordedAtGreaterThanEqual(pacienteId, from);
+		}
+		return bodyMetricRecordRepository.countByPacienteIdAndRecordedAtLessThanEqual(pacienteId, to);
+	}
+
+	private List<BodyMetricRecord> findPatientTimelineRecords(final Long pacienteId, final Date from, final Date to,
+			final Pageable pageable) {
+		if (from == null && to == null) {
+			return bodyMetricRecordRepository.findByPacienteIdOrderByRecordedAtAscIdAsc(pacienteId, pageable);
+		}
+		if (from != null && to != null) {
+			return bodyMetricRecordRepository.findByPacienteIdAndRecordedAtBetweenOrderByRecordedAtAscIdAsc(pacienteId,
+					from, to, pageable);
+		}
+		if (from != null) {
+			return bodyMetricRecordRepository
+				.findByPacienteIdAndRecordedAtGreaterThanEqualOrderByRecordedAtAscIdAsc(pacienteId, from, pageable);
+		}
+		return bodyMetricRecordRepository.findByPacienteIdAndRecordedAtLessThanEqualOrderByRecordedAtAscIdAsc(pacienteId,
+				to, pageable);
 	}
 
 	private static int resolveMaxRows(final Integer maxRows) {
