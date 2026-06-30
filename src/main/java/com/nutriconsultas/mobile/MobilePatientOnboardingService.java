@@ -21,6 +21,8 @@ import com.nutriconsultas.paciente.PacienteDietaRepository;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
 import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.paciente.PacienteStatus;
+import com.nutriconsultas.profile.NutritionistBrandingHelper;
+import com.nutriconsultas.profile.NutritionistProfileRepository;
 import com.nutriconsultas.util.LogRedaction;
 
 import lombok.extern.slf4j.Slf4j;
@@ -33,10 +35,14 @@ public class MobilePatientOnboardingService {
 
 	private final PacienteDietaRepository pacienteDietaRepository;
 
+	private final NutritionistProfileRepository nutritionistProfileRepository;
+
 	public MobilePatientOnboardingService(final PacienteRepository pacienteRepository,
-			final PacienteDietaRepository pacienteDietaRepository) {
+			final PacienteDietaRepository pacienteDietaRepository,
+			final NutritionistProfileRepository nutritionistProfileRepository) {
 		this.pacienteRepository = pacienteRepository;
 		this.pacienteDietaRepository = pacienteDietaRepository;
+		this.nutritionistProfileRepository = nutritionistProfileRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -46,10 +52,11 @@ public class MobilePatientOnboardingService {
 				PacienteDietaStatus.ACTIVE);
 		final AssignedDietPlanReferenceDto assignedDietPlan = PatientOnboardingProfileDto
 			.resolvePrimaryAssignment(activeAssignments);
+		final String nutritionistDisplayName = resolveNutritionistDisplayName(paciente);
 		if (log.isDebugEnabled()) {
 			log.debug("Loaded mobile onboarding profile for patient {}", LogRedaction.redactPaciente(pacienteId));
 		}
-		return PatientOnboardingProfileDto.fromEntity(paciente, assignedDietPlan);
+		return PatientOnboardingProfileDto.fromEntity(paciente, assignedDietPlan, nutritionistDisplayName);
 	}
 
 	@Transactional
@@ -111,6 +118,16 @@ public class MobilePatientOnboardingService {
 
 	private static Date toDate(final LocalDate dob) {
 		return Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant());
+	}
+
+	private String resolveNutritionistDisplayName(final Paciente paciente) {
+		final String nutritionistUserId = paciente.getUserId();
+		if (nutritionistUserId == null || nutritionistUserId.isBlank()) {
+			return null;
+		}
+		return nutritionistProfileRepository.findByUserId(nutritionistUserId)
+			.map(profile -> NutritionistBrandingHelper.resolveDisplayName(profile, null))
+			.orElse(null);
 	}
 
 }

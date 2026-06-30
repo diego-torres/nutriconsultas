@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,8 @@ import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteAvatarCatalog;
 import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.paciente.PacienteStatus;
+import com.nutriconsultas.profile.NutritionistProfile;
+import com.nutriconsultas.profile.NutritionistProfileRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -37,6 +40,9 @@ class MobilePatientOnboardingIntegrationTest {
 	@Autowired
 	private PacienteRepository pacienteRepository;
 
+	@Autowired
+	private NutritionistProfileRepository nutritionistProfileRepository;
+
 	@BeforeEach
 	void seedOnboardingPatient() {
 		final Paciente existing = pacienteRepository.findByPatientAuthSub(ONBOARDING_SUB).orElse(null);
@@ -45,7 +51,9 @@ class MobilePatientOnboardingIntegrationTest {
 			existing.setAvatarId(null);
 			existing.setName("María López");
 			existing.setDisplayName("María");
+			existing.setUserId("nutritionist-sub");
 			pacienteRepository.saveAndFlush(existing);
+			seedNutritionistProfile("nutritionist-sub", "Lic. Ana López");
 			return;
 		}
 		final Paciente paciente = new Paciente();
@@ -59,6 +67,7 @@ class MobilePatientOnboardingIntegrationTest {
 		final LocalDate dob = LocalDate.of(1990, 5, 15);
 		paciente.setDob(Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant()));
 		pacienteRepository.saveAndFlush(paciente);
+		seedNutritionistProfile("nutritionist-sub", "Lic. Ana López");
 	}
 
 	@Test
@@ -67,7 +76,8 @@ class MobilePatientOnboardingIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.status").value("ONBOARDING"))
 			.andExpect(jsonPath("$.data.profileComplete").value(false))
-			.andExpect(jsonPath("$.data.name").value("María López"));
+			.andExpect(jsonPath("$.data.name").value("María López"))
+			.andExpect(jsonPath("$.data.nutritionistDisplayName").value("Lic. Ana López"));
 	}
 
 	@Test
@@ -94,6 +104,21 @@ class MobilePatientOnboardingIntegrationTest {
 				.content("{\"avatarId\":\"invalid-avatar\"}"))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.message").value("Selecciona un avatar válido."));
+	}
+
+	private void seedNutritionistProfile(final String nutritionistUserId, final String displayName) {
+		final var existing = nutritionistProfileRepository.findByUserId(nutritionistUserId);
+		if (existing.isPresent()) {
+			final NutritionistProfile profile = existing.get();
+			profile.setDisplayName(displayName);
+			nutritionistProfileRepository.saveAndFlush(profile);
+			return;
+		}
+		final NutritionistProfile profile = new NutritionistProfile();
+		profile.setUserId(nutritionistUserId);
+		profile.setPublicBookingId(UUID.randomUUID().toString());
+		profile.setDisplayName(displayName);
+		nutritionistProfileRepository.saveAndFlush(profile);
 	}
 
 }

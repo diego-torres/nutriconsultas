@@ -31,14 +31,16 @@ public record PatientOnboardingProfileDto(@Schema(description = "Paciente id", e
 		@Schema(description = "Clinic-facing identifier", example = "P-CLINIC-001") String assignedId,
 		@Schema(description = "True when all required onboarding fields are present",
 				example = "false") boolean profileComplete,
+		@Schema(description = "Assigned nutritionist display name from profile",
+				example = "Lic. Ana López") String nutritionistDisplayName,
 		@Schema(description = "Primary active diet assignment, when present") AssignedDietPlanReferenceDto assignedDietPlan) {
 
 	public static PatientOnboardingProfileDto fromEntity(final Paciente paciente,
-			final AssignedDietPlanReferenceDto assignedDietPlan) {
+			final AssignedDietPlanReferenceDto assignedDietPlan, final String nutritionistDisplayName) {
 		return new PatientOnboardingProfileDto(paciente.getId(), paciente.getStatus(), paciente.getName(),
 				paciente.getDisplayName(), toLocalDate(paciente.getDob()), paciente.getGender(), paciente.getEmail(),
 				paciente.getPhone(), paciente.getAvatarId(), paciente.getAssignedId(),
-				PatientOnboardingCompleteness.isComplete(paciente), assignedDietPlan);
+				PatientOnboardingCompleteness.isComplete(paciente), nutritionistDisplayName, assignedDietPlan);
 	}
 
 	public static AssignedDietPlanReferenceDto toAssignedDietPlanReference(final PacienteDieta assignment) {

@@ -1032,6 +1032,10 @@ components:
           type: boolean
           description: True when all required onboarding fields are present
           example: false
+        nutritionistDisplayName:
+          type: string
+          description: Assigned nutritionist display name from profile
+          example: Lic. Ana López
         assignedDietPlan:
           $ref: "#/components/schemas/AssignedDietPlanReferenceDto"
           description: "Primary active diet assignment, when present"
