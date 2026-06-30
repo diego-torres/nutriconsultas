@@ -17,9 +17,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.nutriconsultas.mobile.PatientInvitationInvalidTokenException;
 import com.nutriconsultas.mobile.PatientInvitationUnavailableException;
 import com.nutriconsultas.paciente.Paciente;
+import com.nutriconsultas.paciente.PacienteStatus;
 import com.nutriconsultas.paciente.PatientInvitation;
 import com.nutriconsultas.paciente.PatientInvitationRepository;
 import com.nutriconsultas.paciente.PatientInvitationStatus;
+import com.nutriconsultas.paciente.invitation.InvitationAuthPath;
 import com.nutriconsultas.profile.NutritionistProfile;
 import com.nutriconsultas.profile.NutritionistProfileRepository;
 import com.nutriconsultas.util.InvitationTokenHasher;
@@ -58,6 +60,59 @@ class PatientInvitationPreviewServiceTest {
 		final PatientInvitationPreviewResult result = service.preview(bundle.urlToken());
 
 		assertThat(result.inviterDisplayName()).isEqualTo("Lic. Ana López");
+		assertThat(result.patientStatus()).isEqualTo(PacienteStatus.INVITED);
+		assertThat(result.mobileAppLinked()).isFalse();
+		assertThat(result.authPath()).isEqualTo(InvitationAuthPath.CREATE_ACCOUNT);
+		assertThat(result.emailHint()).isNull();
+	}
+
+	@Test
+	void preview_withInvitedUnlinkedPatient_returnsCreateAccountAuthPath() {
+		final PatientInvitationTokenBundle bundle = tokenService.generate();
+		final PatientInvitation invitation = pendingInvitation(bundle.tokenHash());
+		invitation.getPaciente().setEmail("patient@example.com");
+		when(patientInvitationRepository.findByTokenHash(bundle.tokenHash())).thenReturn(Optional.of(invitation));
+		when(nutritionistProfileRepository.findByUserId(NUTRITIONIST_SUB)).thenReturn(Optional.empty());
+
+		final PatientInvitationPreviewResult result = service.preview(bundle.urlToken());
+
+		assertThat(result.authPath()).isEqualTo(InvitationAuthPath.CREATE_ACCOUNT);
+		assertThat(result.mobileAppLinked()).isFalse();
+		assertThat(result.emailHint()).isEqualTo("p***@example.com");
+	}
+
+	@Test
+	void preview_withOnboardingLinkedPatient_returnsSignInAuthPath() {
+		final PatientInvitationTokenBundle bundle = tokenService.generate();
+		final PatientInvitation invitation = pendingInvitation(bundle.tokenHash());
+		final Paciente paciente = invitation.getPaciente();
+		paciente.setStatus(PacienteStatus.ONBOARDING);
+		paciente.setPatientAuthSub("auth0|linked-patient");
+		paciente.setEmail("linked@example.com");
+		when(patientInvitationRepository.findByTokenHash(bundle.tokenHash())).thenReturn(Optional.of(invitation));
+		when(nutritionistProfileRepository.findByUserId(NUTRITIONIST_SUB)).thenReturn(Optional.empty());
+
+		final PatientInvitationPreviewResult result = service.preview(bundle.urlToken());
+
+		assertThat(result.patientStatus()).isEqualTo(PacienteStatus.ONBOARDING);
+		assertThat(result.mobileAppLinked()).isTrue();
+		assertThat(result.authPath()).isEqualTo(InvitationAuthPath.SIGN_IN);
+		assertThat(result.emailHint()).isEqualTo("l***@example.com");
+	}
+
+	@Test
+	void previewByHumanCode_withInvitedUnlinkedPatient_returnsCreateAccountAuthPath() {
+		final PatientInvitationTokenBundle bundle = tokenService.generate();
+		final PatientInvitation invitation = pendingInvitation(bundle.tokenHash());
+		invitation.setHumanCode(bundle.humanCode());
+		invitation.getPaciente().setEmailHint("hint@example.com");
+		when(patientInvitationRepository.findByHumanCode(bundle.humanCode())).thenReturn(Optional.of(invitation));
+		when(nutritionistProfileRepository.findByUserId(NUTRITIONIST_SUB)).thenReturn(Optional.empty());
+
+		final PatientInvitationPreviewResult result = service.previewByHumanCode(bundle.humanCode());
+
+		assertThat(result.authPath()).isEqualTo(InvitationAuthPath.CREATE_ACCOUNT);
+		assertThat(result.emailHint()).isEqualTo("h***@example.com");
 	}
 
 	@Test
@@ -159,6 +214,7 @@ class PatientInvitationPreviewServiceTest {
 	private PatientInvitation pendingInvitation(final String tokenHash) {
 		final Paciente paciente = new Paciente();
 		paciente.setId(100L);
+		paciente.setStatus(PacienteStatus.INVITED);
 		final PatientInvitation invitation = new PatientInvitation();
 		invitation.setId(1L);
 		invitation.setTokenHash(tokenHash);

@@ -153,7 +153,29 @@ class MobileInvitationIntegrationTest {
 		mockMvc.perform(get("/rest/mobile/invitations/{token}/preview", bundle.urlToken()))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.inviterDisplayName").value("Lic. Preview Nutri"))
+			.andExpect(jsonPath("$.data.patientStatus").value("INVITED"))
+			.andExpect(jsonPath("$.data.mobileAppLinked").value(false))
+			.andExpect(jsonPath("$.data.authPath").value("CREATE_ACCOUNT"))
+			.andExpect(jsonPath("$.data.emailHint").exists())
 			.andExpect(jsonPath("$.timestamp").exists());
+	}
+
+	@Test
+	void previewInvitation_withLinkedOnboardingPatient_returnsSignInAuthPath() throws Exception {
+		final PatientInvitationTokenBundle bundle = patientInvitationTokenService.generate();
+		final String email = "onboarding.linked." + UUID.randomUUID() + "@example.com";
+		final PatientInvitation invitation = seedPendingInvitation(bundle, NUTRITIONIST_SUB, email);
+		final Paciente paciente = invitation.getPaciente();
+		paciente.setStatus(PacienteStatus.ONBOARDING);
+		paciente.setPatientAuthSub("auth0|preview-onboarding-linked");
+		pacienteRepository.saveAndFlush(paciente);
+		seedNutritionistProfile(NUTRITIONIST_SUB, "Lic. Preview Nutri");
+
+		mockMvc.perform(get("/rest/mobile/invitations/{token}/preview", bundle.urlToken()))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.patientStatus").value("ONBOARDING"))
+			.andExpect(jsonPath("$.data.mobileAppLinked").value(true))
+			.andExpect(jsonPath("$.data.authPath").value("SIGN_IN"));
 	}
 
 	@Test
@@ -209,6 +231,9 @@ class MobileInvitationIntegrationTest {
 		mockMvc.perform(get("/rest/mobile/invitations/by-code/{code}/preview", bundle.humanCode()))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.inviterDisplayName").value("Lic. Human Code Nutri"))
+			.andExpect(jsonPath("$.data.patientStatus").value("INVITED"))
+			.andExpect(jsonPath("$.data.mobileAppLinked").value(false))
+			.andExpect(jsonPath("$.data.authPath").value("CREATE_ACCOUNT"))
 			.andExpect(jsonPath("$.timestamp").exists());
 	}
 
