@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-06-30 — ~~#362~~ data access rules **done**. **NEXT:** #363.
+**Last updated:** 2026-06-30 — ~~#363~~ tool contract **done**. **NEXT:** #364.
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -59,9 +59,9 @@ Document architecture, security model, data flow, and first implementation scope
 | **360** | Epic — Discovery and Architecture (Phase 0) | https://github.com/diego-torres/nutriconsultas/issues/360 | **open** | — | Milestone 1 |
 | **361** | Define AI Assistant Functional Scope | https://github.com/diego-torres/nutriconsultas/issues/361 | **done** | **360** | [`docs/ai/FUNCTIONAL-SCOPE.md`](docs/ai/FUNCTIONAL-SCOPE.md) |
 | **362** | Define AI Data Access Rules | https://github.com/diego-torres/nutriconsultas/issues/362 | **done** | **360** | [`docs/ai/DATA-ACCESS-RULES.md`](docs/ai/DATA-ACCESS-RULES.md) |
-| **363** | Design AI Tool Contract | https://github.com/diego-torres/nutriconsultas/issues/363 | **NEXT** | **360**, **362** | Tool schemas; read vs draft |
+| **363** | Design AI Tool Contract | https://github.com/diego-torres/nutriconsultas/issues/363 | **done** | **360**, **362** | [`docs/ai/TOOL-CONTRACT.md`](docs/ai/TOOL-CONTRACT.md) |
 
-**Suggested order:** #361 + #362 parallel → #363.
+**Suggested order:** #361 + #362 parallel → ~~#363~~.
 
 ---
 
@@ -71,7 +71,7 @@ Backend-only OpenAI configuration and client service.
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
-| **364** | Epic — Backend OpenAI Integration (Phase 1) | https://github.com/diego-torres/nutriconsultas/issues/364 | **open** | **363** | Milestone 1 |
+| **364** | Epic — Backend OpenAI Integration (Phase 1) | https://github.com/diego-torres/nutriconsultas/issues/364 | **NEXT** | **363** | Milestone 1 |
 | **365** | Add OpenAI Configuration Properties | https://github.com/diego-torres/nutriconsultas/issues/365 | **open** | **364**, **363** | `AI_ENABLED`, `OPENAI_*` |
 | **366** | Add OpenAI Java Client or HTTP Client Integration | https://github.com/diego-torres/nutriconsultas/issues/366 | **open** | **365** | `OpenAiClientService` |
 | **367** | Create AI System Prompt Template | https://github.com/diego-torres/nutriconsultas/issues/367 | **open** | **364**, **361** | Server-side safety prompt; **respond in Spanish** |

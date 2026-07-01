@@ -247,7 +247,7 @@ Rotate keys if exposed. Use separate test keys locally; never commit `.env`.
 | Doc | Issue |
 |-----|-------|
 | [`FUNCTIONAL-SCOPE.md`](FUNCTIONAL-SCOPE.md) | Workflows and patient-linked UX |
-| Tool JSON schemas | #363 |
+| [`TOOL-CONTRACT.md`](TOOL-CONTRACT.md) | Tool JSON schemas (#363) |
 | Audit logging implementation | #397 |
 | Production setup | #406 |
 
