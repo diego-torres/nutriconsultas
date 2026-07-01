@@ -68,3 +68,6 @@ databaseChangeLog:
   - include:
       file: changes/023-patient-invitation-human-code.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/024-ai-chat-schema.yaml
+      relativeToChangelogFile: true
