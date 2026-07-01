@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#363 — Design AI Tool Contract](https://github.com/diego-torres/nutriconsultas/issues/363) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#362~~ data access: [`docs/ai/DATA-ACCESS-RULES.md`](docs/ai/DATA-ACCESS-RULES.md).
+**Current next issue:** [#364 — Epic Backend OpenAI Integration](https://github.com/diego-torres/nutriconsultas/issues/364) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#363~~ tool contract: [`docs/ai/TOOL-CONTRACT.md`](docs/ai/TOOL-CONTRACT.md).
 
 ---
 

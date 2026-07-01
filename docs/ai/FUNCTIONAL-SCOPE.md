@@ -309,7 +309,7 @@ Orchestration (#385) merges this context into the system prompt (#367) so the as
 |-----|-------|
 | [`AI-ASSISTANT-PLAN.md`](AI-ASSISTANT-PLAN.md) | Architecture |
 | [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md) | PHI, scoping, logging (#362) |
-| Tool JSON schemas (planned) | #363 |
+| [`TOOL-CONTRACT.md`](TOOL-CONTRACT.md) | Tool JSON schemas (#363) |
 | System prompt requirements | #367 |
 | Plan gating | #409 |
 
