@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#383 — Epic AI Chat REST API](https://github.com/diego-torres/nutriconsultas/issues/383) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#382~~ `AiDraftAcceptanceService` + REST accept/discard.
+**Current next issue:** [#384 — Create AI Chat Controller](https://github.com/diego-torres/nutriconsultas/issues/384) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#385~~ `AiOrchestrationService` + tool dispatcher.
 
 ---
 

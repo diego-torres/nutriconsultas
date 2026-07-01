@@ -90,6 +90,51 @@ class OpenAiClientServiceTest {
 	}
 
 	@Test
+	void chatCompletionSerializesAssistantToolCallsInRequest() {
+		final String responseJson = """
+				{
+				  "id": "chatcmpl-echo",
+				  "choices": [{
+				    "message": {
+				      "role": "assistant",
+				      "content": "Listo."
+				    },
+				    "finish_reason": "stop"
+				  }]
+				}
+				""";
+		mockServer.expect(requestTo("https://api.openai.com/v1/chat/completions"))
+			.andExpect(method(HttpMethod.POST))
+			.andExpect(content().json("""
+					{
+					  "model": "gpt-test",
+					  "messages": [
+					    {
+					      "role": "assistant",
+					      "tool_calls": [{
+					        "id": "call_abc",
+					        "type": "function",
+					        "function": {
+					          "name": "search_food_catalog",
+					          "arguments": "{\\"query\\":\\"avena\\"}"
+					        }
+					      }]
+					    }
+					  ],
+					  "store": false
+					}
+					""", false))
+			.andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
+
+		service.chatCompletion(new OpenAiChatCompletionRequest(
+				List.of(OpenAiChatMessage.assistantWithToolCalls(null,
+						List.of(new OpenAiToolCall("call_abc", "search_food_catalog", "{\"query\":\"avena\"}")))),
+				List.of()));
+
+		mockServer.verify();
+	}
+
+	@Test
 	void chatCompletionReturnsToolCalls() {
 		final String responseJson = """
 				{
