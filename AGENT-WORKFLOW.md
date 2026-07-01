@@ -55,7 +55,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (nutritionist web):** None — all registered epics complete: ~~#271~~ done (PR [#288](https://github.com/diego-torres/nutriconsultas/pull/288)) + ~~#272~~ done (PR [#289](https://github.com/diego-torres/nutriconsultas/pull/289)) system catalog create; ~~#241~~–~~#242~~ patient UX; ~~#232~~–~~#235~~ diet grid; ~~#236~~–~~#240~~ profile/PDF/nutrients; ~~#257~~–~~#259~~ platillo ownership; ~~#275~~, ~~#280~~–~~#281~~, ~~#285~~ diet/ingredient editing. Deferred follow-ups need new issues. See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 
-**Current next issue (AI assistant):** [#378 — Epic AI Draft Creation Tools](https://github.com/diego-torres/nutriconsultas/issues/378) (`NEXT`). ~~#377~~ **done** — Phase 3 complete. See [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md).
+**Current next issue (AI assistant):** [#380 — Implement Menu Draft Creation Tool](https://github.com/diego-torres/nutriconsultas/issues/380) (`NEXT`). ~~#379~~ **done** — `create_dish_draft`. See [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md).
 
 ---
 

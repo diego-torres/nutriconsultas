@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#378 — Epic AI Draft Creation Tools](https://github.com/diego-torres/nutriconsultas/issues/378) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#377~~ `ValidatePlanConstraintsToolService`; Phase 3 **complete**.
+**Current next issue:** [#380 — Implement Menu Draft Creation Tool](https://github.com/diego-torres/nutriconsultas/issues/380) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#379~~ `CreateDishDraftToolService`.
 
 ---
 
