@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#362 — Define AI Data Access Rules](https://github.com/diego-torres/nutriconsultas/issues/362) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). Issue #361 functional scope: [`docs/ai/FUNCTIONAL-SCOPE.md`](docs/ai/FUNCTIONAL-SCOPE.md).
+**Current next issue:** [#363 — Design AI Tool Contract](https://github.com/diego-torres/nutriconsultas/issues/363) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#362~~ data access: [`docs/ai/DATA-ACCESS-RULES.md`](docs/ai/DATA-ACCESS-RULES.md).
 
 ---
 
@@ -26,7 +26,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | **Feature flag** | `AI_ENABLED=false` by default until release checklist (#408) passes. |
 | **Drafts only** | AI creates `DRAFT` records; nutritionist must accept before real platillo/dieta/patient assignment. |
 | **Multi-tenant** | All catalog and patient-context tools scoped to authenticated nutritionist / clinic — same rules as [`Paciente.userId`](src/main/java/com/nutriconsultas/paciente/Paciente.java). |
-| **Privacy** | Minimum patient data to OpenAI; no names/emails/phones in prompts or unstructured logs; use `LogRedaction`. |
+| **Privacy** | Minimum patient data to OpenAI; no names/emails/phones in prompts or unstructured logs; see [`DATA-ACCESS-RULES.md`](docs/ai/DATA-ACCESS-RULES.md) (#362). |
 | **Schema gate** | #46 Liquibase baseline on `main`. All `ai_chat_*` tables → incremental changesets ([`docs/db/LIQUIBASE.md`](docs/db/LIQUIBASE.md)). |
 | **Medical safety** | Assistant is a **drafting tool** — include assumptions, warnings, clarifying questions; never auto-assign diets. |
 

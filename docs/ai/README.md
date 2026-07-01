@@ -4,6 +4,7 @@ Documentation for the **AI Nutrition Assistant** track.
 
 | Doc | Purpose |
 |-----|---------|
+| [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md) | PHI, scoping, OpenAI allow/deny lists, logging (#362) |
 | [`FUNCTIONAL-SCOPE.md`](FUNCTIONAL-SCOPE.md) | Supported workflows, prompts, confirmation rules (#361) |
 | [`AI-ASSISTANT-PLAN.md`](AI-ASSISTANT-PLAN.md) | Architecture, security, tools, milestones, definition of done |
 | [`../../ISSUE-AI-ASSISTANT.md`](../../ISSUE-AI-ASSISTANT.md) | GitHub issue registry (#360–#408) |
