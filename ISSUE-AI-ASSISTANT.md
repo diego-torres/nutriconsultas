@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-06-30 — ~~#375~~ dish catalog search **done**. **NEXT:** #376.
+**Last updated:** 2026-06-30 — ~~#376~~ recipe nutrient calc **done**. **NEXT:** #377.
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -105,10 +105,10 @@ Read-only catalog and validation tools for AI orchestration.
 | **373** | Implement Food Catalog Search Tool | https://github.com/diego-torres/nutriconsultas/issues/373 | **done** | **372** | `search_food_catalog` |
 | **374** | Implement Food Nutrient Lookup Tool | https://github.com/diego-torres/nutriconsultas/issues/374 | **done** | **372** | `get_food_nutrients` |
 | **375** | Implement Dish Catalog Search Tool | https://github.com/diego-torres/nutriconsultas/issues/375 | **done** | **372** | `search_dish_catalog` |
-| **376** | Implement Recipe Nutrient Calculation Tool | https://github.com/diego-torres/nutriconsultas/issues/376 | **NEXT** | **374** | `calculate_recipe_nutrients` |
-| **377** | Implement Plan Constraint Validation Tool | https://github.com/diego-torres/nutriconsultas/issues/377 | **open** | **376** | `validate_plan_constraints` |
+| **376** | Implement Recipe Nutrient Calculation Tool | https://github.com/diego-torres/nutriconsultas/issues/376 | **done** | **374** | `calculate_recipe_nutrients` |
+| **377** | Implement Plan Constraint Validation Tool | https://github.com/diego-torres/nutriconsultas/issues/377 | **NEXT** | **376** | `validate_plan_constraints` |
 
-**Suggested order:** ~~#375~~ → #376 → #377.
+**Suggested order:** ~~#376~~ → #377.
 
 ---
 

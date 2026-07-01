@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#376 — Implement Recipe Nutrient Calculation Tool](https://github.com/diego-torres/nutriconsultas/issues/376) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#375~~ `SearchDishCatalogToolService`.
+**Current next issue:** [#377 — Implement Plan Constraint Validation Tool](https://github.com/diego-torres/nutriconsultas/issues/377) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#376~~ `CalculateRecipeNutrientsToolService`.
 
 ---
 
