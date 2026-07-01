@@ -145,8 +145,8 @@ public class MobilePatientProgressService {
 			return bodyMetricRecordRepository
 				.findByPacienteIdAndRecordedAtGreaterThanEqualOrderByRecordedAtAscIdAsc(pacienteId, from, pageable);
 		}
-		return bodyMetricRecordRepository
-			.findByPacienteIdAndRecordedAtLessThanEqualOrderByRecordedAtAscIdAsc(pacienteId, to, pageable);
+		return bodyMetricRecordRepository.findByPacienteIdAndRecordedAtLessThanEqualOrderByRecordedAtAscIdAsc(pacienteId,
+				to, pageable);
 	}
 
 	private static int resolveMaxRows(final Integer maxRows) {

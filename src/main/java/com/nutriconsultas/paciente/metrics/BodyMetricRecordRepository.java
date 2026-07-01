@@ -38,8 +38,8 @@ public interface BodyMetricRecordRepository extends JpaRepository<BodyMetricReco
 	List<BodyMetricRecord> findByPacienteIdAndRecordedAtGreaterThanEqualOrderByRecordedAtAscIdAsc(Long pacienteId,
 			Date from, Pageable pageable);
 
-	List<BodyMetricRecord> findByPacienteIdAndRecordedAtLessThanEqualOrderByRecordedAtAscIdAsc(Long pacienteId, Date to,
-			Pageable pageable);
+	List<BodyMetricRecord> findByPacienteIdAndRecordedAtLessThanEqualOrderByRecordedAtAscIdAsc(Long pacienteId,
+			Date to, Pageable pageable);
 
 	List<BodyMetricRecord> findByPacienteIdAndRecordedAtBetweenOrderByRecordedAtAscIdAsc(Long pacienteId, Date from,
 			Date to, Pageable pageable);
