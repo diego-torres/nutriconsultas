@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-06-30 — ~~#380~~ menu draft creation **done**. **NEXT:** #381.
+**Last updated:** 2026-06-30 — ~~#381~~ diet plan draft creation **done**. **NEXT:** #382.
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -118,13 +118,13 @@ Draft-creation tools and acceptance flow (no direct patient assignment).
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
-| **378** | Epic — AI Draft Creation Tools (Phase 4) | https://github.com/diego-torres/nutriconsultas/issues/378 | **open** | **372** | Milestone 2 — ~~#379~~ ~~#380~~ |
+| **378** | Epic — AI Draft Creation Tools (Phase 4) | https://github.com/diego-torres/nutriconsultas/issues/378 | **open** | **372** | Milestone 2 — ~~#379–#381~~ |
 | **379** | Implement Dish Draft Creation Tool | https://github.com/diego-torres/nutriconsultas/issues/379 | **done** | **378**, **371** | `create_dish_draft` |
 | **380** | Implement Menu Draft Creation Tool | https://github.com/diego-torres/nutriconsultas/issues/380 | **done** | **378**, **371** | `create_menu_draft` |
-| **381** | Implement Diet Plan Draft Creation Tool | https://github.com/diego-torres/nutriconsultas/issues/381 | **NEXT** | **378**, **371** | `create_diet_plan_draft` |
-| **382** | Implement Draft Acceptance Flow | https://github.com/diego-torres/nutriconsultas/issues/382 | **open** | **379**, **380**, **381** | Convert draft → real record |
+| **381** | Implement Diet Plan Draft Creation Tool | https://github.com/diego-torres/nutriconsultas/issues/381 | **done** | **378**, **371** | `create_diet_plan_draft` |
+| **382** | Implement Draft Acceptance Flow | https://github.com/diego-torres/nutriconsultas/issues/382 | **NEXT** | **379**, **380**, **381** | Convert draft → real record |
 
-**Suggested order:** ~~#379~~ ~~#380~~ → #381 → #382.
+**Suggested order:** ~~#379–#381~~ → #382 (closes epic #378).
 
 ---
 
