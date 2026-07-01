@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-06-30 — ~~#367~~ system prompt **done**. **NEXT:** #368.
+**Last updated:** 2026-06-30 — ~~#369~~ AI chat schema **done**. **NEXT:** #371.
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -86,12 +86,12 @@ Store chat threads, messages, and generated drafts.
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
-| **368** | Epic — AI Chat Persistence and Draft Storage (Phase 2) | https://github.com/diego-torres/nutriconsultas/issues/368 | **NEXT** | **364** | Milestone 1 |
-| **369** | Add Liquibase Schema for AI Chat Tables | https://github.com/diego-torres/nutriconsultas/issues/369 | **open** | **368**, #46 | `ai_chat_*` tables |
-| **370** | Implement AI Chat Domain Entities and Repositories | https://github.com/diego-torres/nutriconsultas/issues/370 | **open** | **369** | JPA + scoped repos |
-| **371** | Implement AI Draft Lifecycle | https://github.com/diego-torres/nutriconsultas/issues/371 | **open** | **370** | DRAFT / ACCEPTED / DISCARDED |
+| **368** | Epic — AI Chat Persistence and Draft Storage (Phase 2) | https://github.com/diego-torres/nutriconsultas/issues/368 | **open** | **364** | Milestone 1 — ~~#369–#370~~ |
+| **369** | Add Liquibase Schema for AI Chat Tables | https://github.com/diego-torres/nutriconsultas/issues/369 | **done** | **368**, #46 | `024-ai-chat-schema.yaml` |
+| **370** | Implement AI Chat Domain Entities and Repositories | https://github.com/diego-torres/nutriconsultas/issues/370 | **done** | **369** | `com.nutriconsultas.ai` entities/repos |
+| **371** | Implement AI Draft Lifecycle | https://github.com/diego-torres/nutriconsultas/issues/371 | **NEXT** | **370** | DRAFT / ACCEPTED / DISCARDED |
 
-**Suggested order:** #369 → #370 → #371.
+**Suggested order:** ~~#369~~ → ~~#370~~ → #371.
 
 ---
 

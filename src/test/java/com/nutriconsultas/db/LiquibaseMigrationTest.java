@@ -102,4 +102,11 @@ public class LiquibaseMigrationTest {
 			.isEqualTo(97L);
 	}
 
+	@Test
+	public void testAiChatSchemaTablesExist() {
+		assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM ai_chat_thread", Long.class)).isEqualTo(0L);
+		assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM ai_chat_message", Long.class)).isEqualTo(0L);
+		assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM ai_generated_draft", Long.class)).isEqualTo(0L);
+	}
+
 }
