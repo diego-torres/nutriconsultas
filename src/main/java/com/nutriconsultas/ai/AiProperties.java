@@ -84,6 +84,12 @@ public class AiProperties {
 
 		private boolean store;
 
+		private String baseUrl = "https://api.openai.com";
+
+		private int connectTimeoutMs = 5_000;
+
+		private int readTimeoutMs = 120_000;
+
 		public String getApiKey() {
 			return apiKey;
 		}
@@ -116,6 +122,35 @@ public class AiProperties {
 
 		public void setStore(final boolean store) {
 			this.store = store;
+		}
+
+		public String getBaseUrl() {
+			return baseUrl;
+		}
+
+		public void setBaseUrl(final String baseUrl) {
+			if (StringUtils.hasText(baseUrl)) {
+				this.baseUrl = baseUrl.trim().replaceAll("/+$", "");
+			}
+			else {
+				this.baseUrl = "https://api.openai.com";
+			}
+		}
+
+		public int getConnectTimeoutMs() {
+			return connectTimeoutMs;
+		}
+
+		public void setConnectTimeoutMs(final int connectTimeoutMs) {
+			this.connectTimeoutMs = Math.max(connectTimeoutMs, 1_000);
+		}
+
+		public int getReadTimeoutMs() {
+			return readTimeoutMs;
+		}
+
+		public void setReadTimeoutMs(final int readTimeoutMs) {
+			this.readTimeoutMs = Math.max(readTimeoutMs, 5_000);
 		}
 
 	}

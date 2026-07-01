@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#366 — Add OpenAI Java Client](https://github.com/diego-torres/nutriconsultas/issues/366) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#365~~ config: `com.nutriconsultas.ai.AiProperties`.
+**Current next issue:** [#367 — Create AI System Prompt Template](https://github.com/diego-torres/nutriconsultas/issues/367) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#366~~ client: `OpenAiClientService`.
 
 ---
 
