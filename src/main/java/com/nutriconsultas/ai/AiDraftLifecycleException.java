@@ -11,4 +11,8 @@ public class AiDraftLifecycleException extends RuntimeException {
 		super(message);
 	}
 
+	public AiDraftLifecycleException(final String message, final Throwable cause) {
+		super(message, cause);
+	}
+
 }
