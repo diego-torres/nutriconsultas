@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-06-30 — ~~#362~~ data access rules **done**. **NEXT:** #363.
+**Last updated:** 2026-06-30 — ~~#365~~ OpenAI config properties **done**. **NEXT:** #366.
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -72,11 +72,11 @@ Backend-only OpenAI configuration and client service.
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
 | **364** | Epic — Backend OpenAI Integration (Phase 1) | https://github.com/diego-torres/nutriconsultas/issues/364 | **open** | **363** | Milestone 1 |
-| **365** | Add OpenAI Configuration Properties | https://github.com/diego-torres/nutriconsultas/issues/365 | **open** | **364**, **363** | `AI_ENABLED`, `OPENAI_*` |
-| **366** | Add OpenAI Java Client or HTTP Client Integration | https://github.com/diego-torres/nutriconsultas/issues/366 | **open** | **365** | `OpenAiClientService` |
+| **365** | Add OpenAI Configuration Properties | https://github.com/diego-torres/nutriconsultas/issues/365 | **done** | **364**, **363** | `AiProperties`, `application.properties` |
+| **366** | Add OpenAI Java Client or HTTP Client Integration | https://github.com/diego-torres/nutriconsultas/issues/366 | **NEXT** | **365** | `OpenAiClientService` |
 | **367** | Create AI System Prompt Template | https://github.com/diego-torres/nutriconsultas/issues/367 | **open** | **364**, **361** | Server-side safety prompt; **respond in Spanish** |
 
-**Suggested order:** #365 → #366; #367 after #361.
+**Suggested order:** ~~#365~~ → #366; #367 after #361.
 
 ---
 
