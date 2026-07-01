@@ -58,7 +58,7 @@ public final class AiOpenAiToolCatalog {
 	private static OpenAiToolDefinition validatePlanConstraints() {
 		final Map<String, Object> properties = new LinkedHashMap<>();
 		properties.put("planType", Map.of("type", "string", "enum", List.of("MENU", "DIET_PLAN", "DISH")));
-		properties.put("targetKcal", Map.of("type", "number", "minimum", 500, "maximum", 10000));
+		properties.put("targetKcal", Map.of("type", "number", "minimum", 500, "maximum", 10_000));
 		properties.put("targetProteinaG", Map.of("type", "number", "minimum", 0));
 		properties.put("targetLipidosG", Map.of("type", "number", "minimum", 0));
 		properties.put("targetHidratosG", Map.of("type", "number", "minimum", 0));
