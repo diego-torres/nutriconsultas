@@ -94,7 +94,7 @@ The backend owns all sensitive logic. The frontend is only a chat interface and 
 
 ## Privacy
 
-- Send **minimum** patient data to OpenAI.
+- Send **minimum** patient data to OpenAI — see [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md) (#362).
 - Avoid names, emails, phone numbers, free-text notes unless strictly required.
 - Prefer internal IDs and structured clinical/nutrition constraints.
 - Store chat history and drafts in PostgreSQL with retention rules.

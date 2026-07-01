@@ -261,23 +261,22 @@ Used when:
 - **Patient diet editor** — [`DietaController`](../../src/main/java/com/nutriconsultas/dieta/DietaController.java) when `Dieta.pacienteId` is set
 - **Diet picker REST** — `GET /rest/dietas/picker?requerimientoKcal=…` via [`DietasRestController`](../../src/main/java/com/nutriconsultas/dieta/DietasRestController.java)
 
-**Note:** `resolveRequerimientoKcal` uses **GET+TEF** (`totalAdjustedKcal`), not `finalTotalKcal` (which adds stress). Profile and antropométricos UI show both; AI context should expose **`finalTotalKcal` when stress is active**, or document which target the nutritionist expects (#362).
+**Note:** `resolveRequerimientoKcal` uses **GET+TEF** (`totalAdjustedKcal`), not `finalTotalKcal` (which adds stress). When stress is active, AI context should prefer `finalTotalKcal` — see [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md).
 
 ### Suggested AI patient context (for prompt / tools)
 
-When `patient_id` is set on the thread, backend builds a **structured, redacted** object (no name/email/phone in the OpenAI prompt — see #362):
+When `patient_id` is set on the thread, backend builds **`AiPatientContext`** per [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md) (#362) — not the full `Paciente` entity.
 
 | Include | Source | Example use |
 |---------|--------|-------------|
 | `requerimientoKcal` | Same as `resolveRequerimientoKcal` | Default calorie target for menus/plans |
 | `finalTotalKcal` | `Paciente.finalTotalKcal` | When `physiologicalStressActive` |
 | Pathology booleans | `PacienteMedicalHistory` | Constraint validation, stress awareness |
-| `alergias` | text | Excluded foods — **minimum necessary text** |
-| `pregnancy`, `nivelPeso`, `imc` | demographics / snapshot | Clarifying questions |
-| `historialAlimenticio` | text | Optional summary only if short — redact in #362 |
+| `alergias` | text (max 500 chars) | Excluded foods |
+| `pregnancy`, `nivelPeso`, `imc`, `gender` | demographics / snapshot | Clarifying questions |
 | Activity / stress enums | `PacienteEnergyPreferences` | Explain GET calculation assumptions |
 
-**Do not** send full `antecedentesPatologicosPersonales` free text to OpenAI by default; prefer booleans + `alergias` + nutritionist-stated constraints in chat.
+**Exclude** name, email, phone, DOB, `assignedId`, `patientAuthSub`, and free-text antecedents — see deny list in DATA-ACCESS-RULES.
 
 ### Entry points (v1 UI)
 
@@ -300,7 +299,7 @@ Orchestration (#385) merges this context into the system prompt (#367) so the as
 | Image generation for platillos | Future issue |
 | Import from photo or PDF | Future issue |
 | Multi-language assistant | Future — v1 es-MX only |
-| Clinic director acting on behalf of member | Define in #362 if needed |
+| Clinic director AI on member patients | Future — v1 owner nutritionist only ([#362](DATA-ACCESS-RULES.md)) |
 
 ---
 
@@ -309,7 +308,7 @@ Orchestration (#385) merges this context into the system prompt (#367) so the as
 | Doc | Issue |
 |-----|-------|
 | [`AI-ASSISTANT-PLAN.md`](AI-ASSISTANT-PLAN.md) | Architecture |
-| Data access rules (planned) | #362 |
+| [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md) | PHI, scoping, logging (#362) |
 | Tool JSON schemas (planned) | #363 |
 | System prompt requirements | #367 |
 | Plan gating | #409 |
