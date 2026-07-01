@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
  */
 public class OpenAiClientException extends RuntimeException {
 
+	private static final long serialVersionUID = 1L;
+
 	public enum ErrorKind {
 
 		NOT_CONFIGURED, AUTH, RATE_LIMIT, MODEL_NOT_FOUND, TIMEOUT, UNAVAILABLE, INVALID_REQUEST, UNKNOWN
