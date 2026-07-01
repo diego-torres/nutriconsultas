@@ -61,6 +61,26 @@ public final class AiNutrientToolSupport {
 				divideDouble(summary.sodioMg(), portions), divideDouble(summary.potasioMg(), portions));
 	}
 
+	public static NutrientSummary addNutrientSummaries(final NutrientSummary left, final NutrientSummary right) {
+		return new NutrientSummary(addInteger(left.energiaKcal(), right.energiaKcal()),
+				addDouble(left.proteinaG(), right.proteinaG()), addDouble(left.lipidosG(), right.lipidosG()),
+				addDouble(left.hidratosDeCarbonoG(), right.hidratosDeCarbonoG()),
+				addDouble(left.fibraG(), right.fibraG()), addDouble(left.sodioMg(), right.sodioMg()),
+				addDouble(left.potasioMg(), right.potasioMg()));
+	}
+
+	public static NutrientSummary emptyNutrientSummary() {
+		return new NutrientSummary(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+	}
+
+	public static NutrientSummary platilloNutrients(final com.nutriconsultas.platillos.Platillo platillo,
+			final int portions) {
+		final NutrientSummary perPortion = new NutrientSummary(platillo.getEnergia(), platillo.getProteina(),
+				platillo.getLipidos(), platillo.getHidratosDeCarbono(), platillo.getFibra(), platillo.getSodio(),
+				platillo.getPotasio());
+		return scaleNutrientSummary(perPortion, portions);
+	}
+
 	@Nullable
 	private static Integer scaleInteger(@Nullable final Integer value, final int portions) {
 		if (value == null) {
@@ -91,6 +111,23 @@ public final class AiNutrientToolSupport {
 			return null;
 		}
 		return value / portions;
+	}
+
+	@Nullable
+	private static Integer addInteger(@Nullable final Integer left, @Nullable final Integer right) {
+		return safeInt(left) + safeInt(right);
+	}
+
+	private static double addDouble(@Nullable final Double left, @Nullable final Double right) {
+		return safeDouble(left) + safeDouble(right);
+	}
+
+	private static int safeInt(@Nullable final Integer value) {
+		return value != null ? value : 0;
+	}
+
+	private static double safeDouble(@Nullable final Double value) {
+		return value != null ? value : 0.0;
 	}
 
 }
