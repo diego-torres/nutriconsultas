@@ -148,7 +148,7 @@ Issue **#409**: dedicated `Entitlement.AI_ASSISTANT` for **Plus and Consultorio*
 | `create_menu_draft` | draft | Store daily/weekly menu draft |
 | `create_diet_plan_draft` | draft | Store diet plan draft |
 
-**No tool** may assign a final plan to a patient.
+**No tool** may assign a final plan to a patient. Schemas and auth rules: [`TOOL-CONTRACT.md`](TOOL-CONTRACT.md) (#363).
 
 MCP names (Phase 7): `catalog.search_foods`, `catalog.get_food_nutrients`, `catalog.search_dishes`, `nutrition.calculate_recipe`, `nutrition.validate_menu`, `draft.create_dish`, `draft.create_menu`, `draft.create_diet_plan`.
 

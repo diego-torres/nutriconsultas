@@ -59,9 +59,9 @@ Document architecture, security model, data flow, and first implementation scope
 | **360** | Epic — Discovery and Architecture (Phase 0) | https://github.com/diego-torres/nutriconsultas/issues/360 | **open** | — | Milestone 1 |
 | **361** | Define AI Assistant Functional Scope | https://github.com/diego-torres/nutriconsultas/issues/361 | **done** | **360** | [`docs/ai/FUNCTIONAL-SCOPE.md`](docs/ai/FUNCTIONAL-SCOPE.md) |
 | **362** | Define AI Data Access Rules | https://github.com/diego-torres/nutriconsultas/issues/362 | **done** | **360** | [`docs/ai/DATA-ACCESS-RULES.md`](docs/ai/DATA-ACCESS-RULES.md) |
-| **363** | Design AI Tool Contract | https://github.com/diego-torres/nutriconsultas/issues/363 | **NEXT** | **360**, **362** | Tool schemas; read vs draft |
+| **363** | Design AI Tool Contract | https://github.com/diego-torres/nutriconsultas/issues/363 | **done** | **360**, **362** | [`docs/ai/TOOL-CONTRACT.md`](docs/ai/TOOL-CONTRACT.md) |
 
-**Suggested order:** #361 + #362 parallel → #363.
+**Suggested order:** #361 + #362 parallel → ~~#363~~.
 
 ---
 
