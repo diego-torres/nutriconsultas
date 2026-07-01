@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-06-30 — ~~#369~~ AI chat schema **done**. **NEXT:** #371.
+**Last updated:** 2026-06-30 — ~~#371~~ draft lifecycle **done**. **NEXT:** #372.
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -86,12 +86,12 @@ Store chat threads, messages, and generated drafts.
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
-| **368** | Epic — AI Chat Persistence and Draft Storage (Phase 2) | https://github.com/diego-torres/nutriconsultas/issues/368 | **open** | **364** | Milestone 1 — ~~#369–#370~~ |
+| **368** | Epic — AI Chat Persistence and Draft Storage (Phase 2) | https://github.com/diego-torres/nutriconsultas/issues/368 | **done** | **364** | Milestone 1 — ~~#369–#371~~ |
 | **369** | Add Liquibase Schema for AI Chat Tables | https://github.com/diego-torres/nutriconsultas/issues/369 | **done** | **368**, #46 | `024-ai-chat-schema.yaml` |
 | **370** | Implement AI Chat Domain Entities and Repositories | https://github.com/diego-torres/nutriconsultas/issues/370 | **done** | **369** | `com.nutriconsultas.ai` entities/repos |
-| **371** | Implement AI Draft Lifecycle | https://github.com/diego-torres/nutriconsultas/issues/371 | **NEXT** | **370** | DRAFT / ACCEPTED / DISCARDED |
+| **371** | Implement AI Draft Lifecycle | https://github.com/diego-torres/nutriconsultas/issues/371 | **done** | **370** | `AiDraftLifecycleService` |
 
-**Suggested order:** ~~#369~~ → ~~#370~~ → #371.
+**Suggested order:** ~~#371~~.
 
 ---
 
@@ -101,7 +101,7 @@ Read-only catalog and validation tools for AI orchestration.
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
-| **372** | Epic — Backend Nutrition Tool Services (Phase 3) | https://github.com/diego-torres/nutriconsultas/issues/372 | **open** | **363**, **371** | Milestone 2 |
+| **372** | Epic — Backend Nutrition Tool Services (Phase 3) | https://github.com/diego-torres/nutriconsultas/issues/372 | **NEXT** | **363**, **371** | Milestone 2 |
 | **373** | Implement Food Catalog Search Tool | https://github.com/diego-torres/nutriconsultas/issues/373 | **open** | **372** | `search_food_catalog` |
 | **374** | Implement Food Nutrient Lookup Tool | https://github.com/diego-torres/nutriconsultas/issues/374 | **open** | **372** | `get_food_nutrients` |
 | **375** | Implement Dish Catalog Search Tool | https://github.com/diego-torres/nutriconsultas/issues/375 | **open** | **372** | `search_dish_catalog` |
