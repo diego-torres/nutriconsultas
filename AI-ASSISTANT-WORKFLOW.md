@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#372 — Epic Backend Nutrition Tool Services](https://github.com/diego-torres/nutriconsultas/issues/372) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#371~~ lifecycle: `AiDraftLifecycleService`.
+**Current next issue:** [#374 — Implement Food Nutrient Lookup Tool](https://github.com/diego-torres/nutriconsultas/issues/374) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#373~~ `SearchFoodCatalogToolService`.
 
 ---
 
