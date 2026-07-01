@@ -22,6 +22,8 @@ Implementation: system prompt (#367) must require Spanish output; UI follows exi
 
 ---
 
+## Objective
+
 Add an AI chat feature so nutritionists can draft:
 
 - Dish recipes
@@ -30,6 +32,8 @@ Add an AI chat feature so nutritionists can draft:
 - Dietary plan drafts
 
 The assistant uses existing **food, dish, recipe, nutrient, diet, and patient-context** data through controlled backend tools. It must **not** directly save or assign final diets to patients without explicit nutritionist review and approval.
+
+Functional scope (workflows, prompts, patient context): [`FUNCTIONAL-SCOPE.md`](FUNCTIONAL-SCOPE.md) (#361).
 
 ---
 

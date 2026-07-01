@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-06-30 — track registered (#360–#409). **NEXT:** #361.
+**Last updated:** 2026-06-30 — ~~#361~~ functional scope **done**. **NEXT:** #362.
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -57,8 +57,8 @@ Document architecture, security model, data flow, and first implementation scope
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
 | **360** | Epic — Discovery and Architecture (Phase 0) | https://github.com/diego-torres/nutriconsultas/issues/360 | **open** | — | Milestone 1 |
-| **361** | Define AI Assistant Functional Scope | https://github.com/diego-torres/nutriconsultas/issues/361 | **NEXT** | **360** | Supported/unsupported prompts; **Spanish-only** comms |
-| **362** | Define AI Data Access Rules | https://github.com/diego-torres/nutriconsultas/issues/362 | **open** | **360** | PHI redaction, scoping |
+| **361** | Define AI Assistant Functional Scope | https://github.com/diego-torres/nutriconsultas/issues/361 | **done** | **360** | [`docs/ai/FUNCTIONAL-SCOPE.md`](docs/ai/FUNCTIONAL-SCOPE.md) |
+| **362** | Define AI Data Access Rules | https://github.com/diego-torres/nutriconsultas/issues/362 | **NEXT** | **360** | PHI redaction, scoping |
 | **363** | Design AI Tool Contract | https://github.com/diego-torres/nutriconsultas/issues/363 | **open** | **360**, **362** | Tool schemas; read vs draft |
 
 **Suggested order:** #361 + #362 parallel → #363.

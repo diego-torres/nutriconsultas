@@ -55,7 +55,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (nutritionist web):** None — all registered epics complete: ~~#271~~ done (PR [#288](https://github.com/diego-torres/nutriconsultas/pull/288)) + ~~#272~~ done (PR [#289](https://github.com/diego-torres/nutriconsultas/pull/289)) system catalog create; ~~#241~~–~~#242~~ patient UX; ~~#232~~–~~#235~~ diet grid; ~~#236~~–~~#240~~ profile/PDF/nutrients; ~~#257~~–~~#259~~ platillo ownership; ~~#275~~, ~~#280~~–~~#281~~, ~~#285~~ diet/ingredient editing. Deferred follow-ups need new issues. See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 
-**Current next issue (AI assistant):** [#361 — Define AI Assistant Functional Scope](https://github.com/diego-torres/nutriconsultas/issues/361) (`NEXT`). Track registered 2026-06-30 (#360–#409). See [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md).
+**Current next issue (AI assistant):** [#362 — Define AI Data Access Rules](https://github.com/diego-torres/nutriconsultas/issues/362) (`NEXT`). ~~#361~~ **done** — [`docs/ai/FUNCTIONAL-SCOPE.md`](docs/ai/FUNCTIONAL-SCOPE.md). See [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md).
 
 ---
 

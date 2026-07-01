@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#361 — Define AI Assistant Functional Scope](https://github.com/diego-torres/nutriconsultas/issues/361) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)).
+**Current next issue:** [#362 — Define AI Data Access Rules](https://github.com/diego-torres/nutriconsultas/issues/362) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). Issue #361 functional scope: [`docs/ai/FUNCTIONAL-SCOPE.md`](docs/ai/FUNCTIONAL-SCOPE.md).
 
 ---
 
