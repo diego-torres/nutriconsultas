@@ -5,7 +5,6 @@ import org.springframework.lang.Nullable;
 /**
  * Nutritionist-scoped AI chat thread operations (#384).
  */
-@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface AiChatService {
 
 	AiChatThread startThread(String nutritionistId, @Nullable String title, @Nullable Long patientId,

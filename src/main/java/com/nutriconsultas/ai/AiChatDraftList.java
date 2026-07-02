@@ -1,6 +1,5 @@
 package com.nutriconsultas.ai;
 
-import java.time.Instant;
 import java.util.List;
 
 /**
