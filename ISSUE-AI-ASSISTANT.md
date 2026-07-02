@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-06-30 — ~~#384~~ AI chat REST controller **done**. **NEXT:** #386.
+**Last updated:** 2026-06-30 — ~~#386~~ AI chat rate limiting **done**. **NEXT:** #387.
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -124,7 +124,7 @@ Draft-creation tools and acceptance flow (no direct patient assignment).
 | **381** | Implement Diet Plan Draft Creation Tool | https://github.com/diego-torres/nutriconsultas/issues/381 | **done** | **378**, **371** | `create_diet_plan_draft` |
 | **382** | Implement Draft Acceptance Flow | https://github.com/diego-torres/nutriconsultas/issues/382 | **done** | **379**, **380**, **381** | Convert draft → real record |
 
-**Phase 4 complete.** Epic #383 **open** — ~~#384~~ chat REST **done**. **NEXT:** #386.
+**Phase 4 complete.** Epic #383 **done** — ~~#384–#386~~ REST API complete. **NEXT:** #387.
 
 ---
 
@@ -134,12 +134,12 @@ Authenticated endpoints for chat and draft management.
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
-| **383** | Epic — AI Chat REST API (Phase 5) | https://github.com/diego-torres/nutriconsultas/issues/383 | **open** | **366**, **382** | Milestone 3 |
+| **383** | Epic — AI Chat REST API (Phase 5) | https://github.com/diego-torres/nutriconsultas/issues/383 | **done** | **366**, **382** | Milestone 3 — ~~#384–#386~~ |
 | **384** | Create AI Chat Controller | https://github.com/diego-torres/nutriconsultas/issues/384 | **done** | **383**, **385** | `AiChatRestController` |
 | **385** | Implement AI Orchestration Service | https://github.com/diego-torres/nutriconsultas/issues/385 | **done** | **366**, **372**, **378** | `AiOrchestrationService` |
-| **386** | Add Rate Limiting for AI Chat | https://github.com/diego-torres/nutriconsultas/issues/386 | **NEXT** | **385** | Resilience4j |
+| **386** | Add Rate Limiting for AI Chat | https://github.com/diego-torres/nutriconsultas/issues/386 | **done** | **385** | `AiChatRateLimiter` |
 
-**Suggested order:** ~~#384~~ → **#386**.
+**Suggested order:** ~~#386~~ → **#387**.
 
 ---
 
@@ -149,7 +149,7 @@ Thymeleaf chat window and draft preview.
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
-| **387** | Epic — Nutritionist AI Chat UI (Phase 6) | https://github.com/diego-torres/nutriconsultas/issues/387 | **open** | **384** | Milestone 3 |
+| **387** | Epic — Nutritionist AI Chat UI (Phase 6) | https://github.com/diego-torres/nutriconsultas/issues/387 | **NEXT** | **384** | Milestone 3 |
 | **388** | Add AI Chat Entry Point to Nutritionist UI | https://github.com/diego-torres/nutriconsultas/issues/388 | **open** | **387**, **365** | Gated by `AI_ENABLED` |
 | **389** | Build AI Chat Window | https://github.com/diego-torres/nutriconsultas/issues/389 | **open** | **388**, **384** | Chat UI + loading/errors |
 | **390** | Build Draft Preview UI | https://github.com/diego-torres/nutriconsultas/issues/390 | **open** | **389**, **382** | Accept/discard + SweetAlert |

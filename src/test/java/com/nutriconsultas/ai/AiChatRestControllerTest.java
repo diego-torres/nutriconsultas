@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +22,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 
 @ExtendWith(MockitoExtension.class)
 class AiChatRestControllerTest {
@@ -34,6 +37,9 @@ class AiChatRestControllerTest {
 
 	@Mock
 	private AiChatService chatService;
+
+	@Mock
+	private AiChatRateLimiter aiChatRateLimiter;
 
 	@Test
 	void startChatReturnsCreatedThread() {
@@ -53,13 +59,17 @@ class AiChatRestControllerTest {
 	}
 
 	@Test
-	void sendMessageReturnsAssistantReply() {
+	void sendMessageReturnsAssistantReply() throws Exception {
 		final AiChatMessage assistant = new AiChatMessage();
 		assistant.setId(99L);
 		assistant.setRole(AiChatMessageRole.ASSISTANT);
 		assistant.setContent("Aquí tienes una sugerencia.");
 		when(chatService.sendMessage(NUTRITIONIST_ID, 5L, "Hola"))
 			.thenReturn(new AiOrchestrationResult(5L, assistant, 1, new OpenAiTokenUsage(10, 8, 18)));
+		when(aiChatRateLimiter.executeMessage(eq(NUTRITIONIST_ID), any())).thenAnswer(invocation -> {
+			final Callable<?> callable = invocation.getArgument(1);
+			return callable.call();
+		});
 
 		final ResponseEntity<Map<String, Object>> response = controller
 			.sendMessage(new AiSendMessageRequest(5L, "Hola"), principal(NUTRITIONIST_ID));
@@ -106,15 +116,33 @@ class AiChatRestControllerTest {
 	}
 
 	@Test
-	void sendMessageMapsOpenAiRateLimit() {
+	void sendMessageMapsOpenAiRateLimit() throws Exception {
 		when(chatService.sendMessage(any(), eq(5L), any()))
 			.thenThrow(new OpenAiClientException(OpenAiClientException.ErrorKind.RATE_LIMIT,
 					HttpStatus.TOO_MANY_REQUESTS, "El servicio de IA está saturado.", "rate limit", null));
+		when(aiChatRateLimiter.executeMessage(eq(NUTRITIONIST_ID), any())).thenAnswer(invocation -> {
+			final Callable<?> callable = invocation.getArgument(1);
+			return callable.call();
+		});
 
 		final ResponseEntity<Map<String, Object>> response = controller
 			.sendMessage(new AiSendMessageRequest(5L, "Hola"), principal(NUTRITIONIST_ID));
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+	}
+
+	@Test
+	void sendMessageReturns429WhenAppRateLimitExceeded() {
+		when(aiChatRateLimiter.executeMessage(eq(NUTRITIONIST_ID), any())).thenThrow(RequestNotPermitted
+			.createRequestNotPermitted(io.github.resilience4j.ratelimiter.RateLimiter.ofDefaults("aiChatMessage")));
+
+		final ResponseEntity<Map<String, Object>> response = controller
+			.sendMessage(new AiSendMessageRequest(5L, "Hola"), principal(NUTRITIONIST_ID));
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+		assertThat(response.getBody()).containsEntry("success", false)
+			.containsEntry("errorCode", AiToolErrorCode.RATE_LIMIT.name())
+			.containsEntry("message", AiChatRateLimiter.RATE_LIMIT_USER_MESSAGE);
 	}
 
 	@Test
