@@ -77,7 +77,16 @@ public class OpenAiClientServiceImpl implements OpenAiClientService {
 	private OpenAiApiRequest toApiRequest(final OpenAiChatCompletionRequest request) {
 		final List<OpenAiApiMessage> messages = new ArrayList<>();
 		for (final OpenAiChatMessage message : request.messages()) {
-			messages.add(new OpenAiApiMessage(message.role(), message.content(), message.toolCallId(), message.name()));
+			List<OpenAiApiToolCall> apiToolCalls = null;
+			if (message.toolCalls() != null && !message.toolCalls().isEmpty()) {
+				apiToolCalls = new ArrayList<>();
+				for (final OpenAiToolCall toolCall : message.toolCalls()) {
+					apiToolCalls.add(new OpenAiApiToolCall(toolCall.id(), "function",
+							new OpenAiApiFunctionCall(toolCall.name(), toolCall.argumentsJson())));
+				}
+			}
+			messages.add(new OpenAiApiMessage(message.role(), message.content(), message.toolCallId(), message.name(),
+					apiToolCalls));
 		}
 		final List<OpenAiApiTool> tools = new ArrayList<>();
 		for (final OpenAiToolDefinition tool : request.tools()) {
@@ -129,7 +138,15 @@ public class OpenAiClientServiceImpl implements OpenAiClientService {
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private record OpenAiApiMessage(String role, String content, @JsonProperty("tool_call_id") String toolCallId,
-			String name) {
+			String name, @JsonProperty("tool_calls") List<OpenAiApiToolCall> toolCalls) {
+	}
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private record OpenAiApiToolCall(String id, String type, @JsonProperty("function") OpenAiApiFunctionCall function) {
+	}
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private record OpenAiApiFunctionCall(String name, String arguments) {
 	}
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)

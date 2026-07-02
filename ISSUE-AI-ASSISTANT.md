@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-06-30 — ~~#382~~ draft acceptance flow **done**. **NEXT:** #383.
+**Last updated:** 2026-06-30 — ~~#385~~ AI orchestration service **done**. **NEXT:** #384.
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -124,7 +124,7 @@ Draft-creation tools and acceptance flow (no direct patient assignment).
 | **381** | Implement Diet Plan Draft Creation Tool | https://github.com/diego-torres/nutriconsultas/issues/381 | **done** | **378**, **371** | `create_diet_plan_draft` |
 | **382** | Implement Draft Acceptance Flow | https://github.com/diego-torres/nutriconsultas/issues/382 | **done** | **379**, **380**, **381** | Convert draft → real record |
 
-**Phase 4 complete.** **NEXT:** #383 (AI Chat REST API epic).
+**Phase 4 complete.** Epic #383 **open** — ~~#385~~ orchestration **done**. **NEXT:** #384.
 
 ---
 
@@ -135,11 +135,11 @@ Authenticated endpoints for chat and draft management.
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
 | **383** | Epic — AI Chat REST API (Phase 5) | https://github.com/diego-torres/nutriconsultas/issues/383 | **open** | **366**, **382** | Milestone 3 |
-| **384** | Create AI Chat Controller | https://github.com/diego-torres/nutriconsultas/issues/384 | **open** | **383**, **385** | `/nutritionist/ai/**` |
-| **385** | Implement AI Orchestration Service | https://github.com/diego-torres/nutriconsultas/issues/385 | **open** | **366**, **372**, **378** | OpenAI + tools |
+| **384** | Create AI Chat Controller | https://github.com/diego-torres/nutriconsultas/issues/384 | **NEXT** | **383**, **385** | `/nutritionist/ai/**` |
+| **385** | Implement AI Orchestration Service | https://github.com/diego-torres/nutriconsultas/issues/385 | **done** | **366**, **372**, **378** | `AiOrchestrationService` |
 | **386** | Add Rate Limiting for AI Chat | https://github.com/diego-torres/nutriconsultas/issues/386 | **open** | **385** | Resilience4j |
 
-**Suggested order:** #385 → #384 + #386.
+**Suggested order:** ~~#385~~ → **#384** + #386.
 
 ---
 
