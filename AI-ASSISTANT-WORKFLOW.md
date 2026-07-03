@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#386 — Add Rate Limiting for AI Chat](https://github.com/diego-torres/nutriconsultas/issues/386) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#384~~ `AiChatRestController` + patient context resolver.
+**Current next issue:** [#387 — Epic Nutritionist AI Chat UI](https://github.com/diego-torres/nutriconsultas/issues/387) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#386~~ `AiChatRateLimiter` per-nutritionist on `POST /message`.
 
 ---
 

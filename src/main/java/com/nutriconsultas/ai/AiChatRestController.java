@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -26,8 +27,11 @@ public class AiChatRestController {
 
 	private final AiChatService chatService;
 
-	public AiChatRestController(final AiChatService chatService) {
+	private final AiChatRateLimiter aiChatRateLimiter;
+
+	public AiChatRestController(final AiChatService chatService, final AiChatRateLimiter aiChatRateLimiter) {
 		this.chatService = chatService;
+		this.aiChatRateLimiter = aiChatRateLimiter;
 	}
 
 	@PostMapping("/start")
@@ -67,8 +71,8 @@ public class AiChatRestController {
 			return errorResponse(HttpStatus.BAD_REQUEST, AiToolErrorCode.VALIDATION, "Solicitud no válida.");
 		}
 		try {
-			final AiOrchestrationResult result = chatService.sendMessage(nutritionistId, request.threadId(),
-					request.message());
+			final AiOrchestrationResult result = aiChatRateLimiter.executeMessage(nutritionistId,
+					() -> chatService.sendMessage(nutritionistId, request.threadId(), request.message()));
 			final Map<String, Object> response = successBody();
 			response.put("threadId", result.threadId());
 			response.put("assistantMessageId", result.assistantMessage().getId());
@@ -87,6 +91,13 @@ public class AiChatRestController {
 		}
 		catch (final OpenAiClientException ex) {
 			return mapOpenAiException(ex);
+		}
+		catch (final RequestNotPermitted ex) {
+			if (log.isDebugEnabled()) {
+				log.debug("AI chat message rate limit exceeded");
+			}
+			return errorResponse(HttpStatus.TOO_MANY_REQUESTS, AiToolErrorCode.RATE_LIMIT,
+					AiChatRateLimiter.RATE_LIMIT_USER_MESSAGE);
 		}
 	}
 
