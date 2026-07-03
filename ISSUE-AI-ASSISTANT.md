@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-07-03 — ~~#388~~ AI chat entry point **done**. **NEXT:** #389.
+**Last updated:** 2026-07-03 — ~~#389~~ AI chat window **done**. **NEXT:** #390.
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -149,12 +149,12 @@ Thymeleaf chat window and draft preview.
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
-| **387** | Epic — Nutritionist AI Chat UI (Phase 6) | https://github.com/diego-torres/nutriconsultas/issues/387 | **open** | **384** | Milestone 3 — ~~#388~~ entry point **done** |
+| **387** | Epic — Nutritionist AI Chat UI (Phase 6) | https://github.com/diego-torres/nutriconsultas/issues/387 | **open** | **384** | ~~#388–#389~~ |
 | **388** | Add AI Chat Entry Point to Nutritionist UI | https://github.com/diego-torres/nutriconsultas/issues/388 | **done** | **387**, **365** | Sidebar + `/admin/ai`, gated by `AI_ENABLED` |
-| **389** | Build AI Chat Window | https://github.com/diego-torres/nutriconsultas/issues/389 | **NEXT** | **388**, **384** | Chat UI + loading/errors |
-| **390** | Build Draft Preview UI | https://github.com/diego-torres/nutriconsultas/issues/390 | **open** | **389**, **382** | Accept/discard + SweetAlert |
+| **389** | Build AI Chat Window | https://github.com/diego-torres/nutriconsultas/issues/389 | **done** | **388**, **384** | `ai-chat.js` + REST integration |
+| **390** | Build Draft Preview UI | https://github.com/diego-torres/nutriconsultas/issues/390 | **NEXT** | **389**, **382** | Accept/discard + SweetAlert |
 
-**Suggested order:** ~~#388~~ → **#389** → #390.
+**Suggested order:** ~~#389~~ → **#390**.
 
 ---
 

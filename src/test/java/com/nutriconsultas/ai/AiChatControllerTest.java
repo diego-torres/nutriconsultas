@@ -26,18 +26,30 @@ class AiChatControllerTest {
 		when(aiProperties.isEnabled()).thenReturn(true);
 		final ExtendedModelMap model = new ExtendedModelMap();
 
-		final String view = controller.chatHome(model);
+		final String view = controller.chatHome(null, model);
 
 		assertThat(view).isEqualTo("sbadmin/ai/chat");
 		assertThat(model.getAttribute("activeMenu")).isEqualTo("ai");
+		assertThat(model.getAttribute("initialThreadId")).isNull();
 		assertThat(model.asMap()).doesNotContainKeys("openaiApiKey", "openaiModel", "apiKey");
+	}
+
+	@Test
+	void chatHomePassesThreadIdToModel() {
+		when(aiProperties.isEnabled()).thenReturn(true);
+		final ExtendedModelMap model = new ExtendedModelMap();
+
+		final String view = controller.chatHome(12L, model);
+
+		assertThat(view).isEqualTo("sbadmin/ai/chat");
+		assertThat(model.getAttribute("initialThreadId")).isEqualTo(12L);
 	}
 
 	@Test
 	void chatHomeReturnsNotFoundWhenDisabled() {
 		when(aiProperties.isEnabled()).thenReturn(false);
 
-		assertThatThrownBy(() -> controller.chatHome(new ExtendedModelMap()))
+		assertThatThrownBy(() -> controller.chatHome(null, new ExtendedModelMap()))
 			.isInstanceOf(ResponseStatusException.class)
 			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode().value())
 			.isEqualTo(404);

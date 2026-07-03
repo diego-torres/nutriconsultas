@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#389 — Build AI Chat Window](https://github.com/diego-torres/nutriconsultas/issues/389) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#388~~ sidebar + dashboard button + `/admin/ai` gated by `AI_ENABLED`.
+**Current next issue:** [#390 — Build Draft Preview UI](https://github.com/diego-torres/nutriconsultas/issues/390) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#389~~ interactive chat at `/admin/ai`.
 
 ---
 

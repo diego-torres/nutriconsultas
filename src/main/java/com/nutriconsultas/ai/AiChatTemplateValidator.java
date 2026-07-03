@@ -18,6 +18,7 @@ public class AiChatTemplateValidator extends BaseTemplateValidator {
 		variables.put("platformAdmin", false);
 		variables.put("clinicDirector", false);
 		variables.put("activeMenu", "ai");
+		variables.put("initialThreadId", null);
 		return variables;
 	}
 
