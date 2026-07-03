@@ -6,12 +6,30 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 
 | File | Purpose |
 |------|---------|
-| [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md) | `[AI Assistant]` issues #360–#409, states, dependencies |
+| [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md) | `[AI Assistant]` issues #360–#442, states, dependencies |
 | [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md) | Architecture, security, tools, milestones |
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#390 — Build Draft Preview UI](https://github.com/diego-torres/nutriconsultas/issues/390) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#389~~ interactive chat at `/admin/ai`.
+**Current next issue:** [#390 — Build Draft Preview UI](https://github.com/diego-torres/nutriconsultas/issues/390) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#389~~ interactive chat at `/admin/ai`. **#442** floating widget in PR #432.
+
+**Registered backlog (2026-07-03):** Epic [#433](https://github.com/diego-torres/nutriconsultas/issues/433) chat UX (#434 markdown, #435 streaming, #436 stop, #437 edit/resubmit). Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438) prompt security (#439–#441). See registry for suggested order.
+
+---
+
+## Recommended delivery sequence (post-#390)
+
+| Wave | Issues | Outcome |
+|------|--------|---------|
+| **A — Drafts** | **#390** | Accept/discard draft preview |
+| **A — Widget** | **#442** | Close when PR #432 merges |
+| **B — Display** | **#434** | Markdown rendering (chat + widget) |
+| **B — Streaming** | **#435** → **#436** | SSE tokens, then cancel/stop |
+| **C — Controls** | **#437** | Edit message and resubmit |
+| **D — Security** | **#439** → **#440** → **#441** | Injection, jailbreak, defense-in-depth |
+| **E — Release** | **#409**, **#408**, **#397–#399** | Plan gate, checklist, observability |
+
+Wave **B** may run **#434** in parallel with **#435**. Wave **D** should complete before production `AI_ENABLED=true` (with #408).
 
 ---
 
@@ -143,9 +161,10 @@ mvn test
 |------|-----------------|
 | M1 complete | Any live OpenAI call in staging |
 | M2 complete | Orchestration tool loop (#385) |
-| M3 complete | Nutritionist beta (`AI_ENABLED=true` staging) |
+| M3 complete | Nutritionist beta (`AI_ENABLED=true` staging); **#433** UX enhancements optional for beta |
+| M3b complete | Markdown + streaming + message controls (#434–#437) |
 | M4 complete | External MCP clients |
-| M5 + #408 | Production `AI_ENABLED=true` |
+| M5 + #408 + **#438** | Production `AI_ENABLED=true` — prompt security required |
 
 ---
 

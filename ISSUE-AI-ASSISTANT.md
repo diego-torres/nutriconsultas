@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-07-03 — ~~#389~~ AI chat window **done**. **NEXT:** #390.
+**Last updated:** 2026-07-03 — ~~#389~~ AI chat window **done**. **NEXT:** #390. Registered **#433–#442** (chat UX enhancements + prompt security + floating widget).
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -42,9 +42,9 @@ Applies to every issue in this track unless explicitly noted otherwise.
 |-----------|-------|-------------|---------|
 | **1 — AI Foundation** | Phase 0–2 | #360–#371 | Design + OpenAI backend + DB persistence |
 | **2 — Nutrition Tools** | Phase 3–4 | #372–#382 | Catalog tools + draft creation |
-| **3 — Chat UX** | Phase 5–6 | #383–#390 | REST API + Thymeleaf chat UI |
+| **3 — Chat UX** | Phase 5–6, 6b | #383–#390, **#433–#437**, **#442** | REST API + Thymeleaf chat UI + controls + streaming |
 | **4 — MCP** | Phase 7 | #391–#395 | MCP tool server |
-| **5 — Safety & Release** | Phase 8–10 | #396–#408 | Audit, evaluation, docs, rollout |
+| **5 — Safety & Release** | Phase 8–10, 8b | #396–#408, **#438–#441** | Audit, **prompt security**, evaluation, docs, rollout |
 
 **Suggested order:** Milestone 1 → 2 → 3 → 4 (optional parallel after M2) → 5.
 
@@ -153,8 +153,25 @@ Thymeleaf chat window and draft preview.
 | **388** | Add AI Chat Entry Point to Nutritionist UI | https://github.com/diego-torres/nutriconsultas/issues/388 | **done** | **387**, **365** | Sidebar + `/admin/ai`, gated by `AI_ENABLED` |
 | **389** | Build AI Chat Window | https://github.com/diego-torres/nutriconsultas/issues/389 | **done** | **388**, **384** | `ai-chat.js` + REST integration |
 | **390** | Build Draft Preview UI | https://github.com/diego-torres/nutriconsultas/issues/390 | **NEXT** | **389**, **382** | Accept/discard + SweetAlert |
+| **442** | Floating context-aware AI assistant widget | https://github.com/diego-torres/nutriconsultas/issues/442 | **in-progress** | **388**, **384**, **389** | PR #432; patient/dieta/platillo context |
 
-**Suggested order:** ~~#389~~ → **#390**.
+**Suggested order:** ~~#389~~ → **#390** → close **#442** when PR #432 merges → epic **#433**.
+
+---
+
+## Epic — AI Chat UX Enhancements (Phase 6b)
+
+Markdown, streaming, and message controls for full-page chat and floating widget.
+
+| # | Title | URL | State | Depends on | Notes |
+|---|-------|-----|-------|------------|-------|
+| **433** | Epic — AI Chat UX Enhancements (Phase 6b) | https://github.com/diego-torres/nutriconsultas/issues/433 | **open** | **387**, **390** | Parent for #434–#437 |
+| **434** | Render markdown in assistant chat responses | https://github.com/diego-torres/nutriconsultas/issues/434 | **open** | **433**, **389** | XSS-safe MD in chat + widget |
+| **435** | Stream assistant responses (SSE) | https://github.com/diego-torres/nutriconsultas/issues/435 | **open** | **433**, **385**, **389** | Backend SSE + incremental UI |
+| **436** | Stop and cancel in-flight AI generation | https://github.com/diego-torres/nutriconsultas/issues/436 | **open** | **433**, **389** | `AbortController`; after #435 |
+| **437** | Edit user message and resubmit | https://github.com/diego-torres/nutriconsultas/issues/437 | **open** | **433**, **384**, **389** | Thread truncate + SweetAlert |
+
+**Suggested order:** #434 ∥ #435 → #436 → #437. Epic **#387** closes when #390 and #433 children are done (or defer controls post-M3 beta).
 
 ---
 
@@ -185,7 +202,22 @@ Audit logging, metrics, and error UX.
 | **398** | Add AI Usage Metrics | https://github.com/diego-torres/nutriconsultas/issues/398 | **open** | **396** | No PHI in metrics |
 | **399** | Add AI Error Handling UX | https://github.com/diego-torres/nutriconsultas/issues/399 | **open** | **389**, **385** | Friendly errors |
 
-**Suggested order:** #397 + #398 parallel with #399 after #389.
+**Suggested order:** #397 + #398 parallel with #399 after #389. Prompt hardening epic **#438** before production (see below).
+
+---
+
+## Epic — Prompt Security Hardening (Phase 8b)
+
+Injection, jailbreak, and defense-in-depth guardrails for orchestration (#385).
+
+| # | Title | URL | State | Depends on | Notes |
+|---|-------|-----|-------|------------|-------|
+| **438** | Epic — Prompt Security Hardening (Phase 8b) | https://github.com/diego-torres/nutriconsultas/issues/438 | **open** | **396**, **385**, **362** | Required before prod `AI_ENABLED=true` |
+| **439** | Prompt injection input guardrails | https://github.com/diego-torres/nutriconsultas/issues/439 | **open** | **438**, **385** | Sanitize user input; `docs/ai/PROMPT-SECURITY.md` |
+| **440** | Jailbreak and role-override defenses | https://github.com/diego-torres/nutriconsultas/issues/440 | **open** | **438**, **439**, **367** | Refusal corpus + system prompt hardening |
+| **441** | Defense-in-depth prompt engineering guardrails | https://github.com/diego-torres/nutriconsultas/issues/441 | **open** | **438**, **439**, **440**, **372** | Delimiters, tool allowlist, output validation |
+
+**Suggested order:** #439 → #440 → #441; extend #401 golden prompts with security cases. Gate with #408 release checklist.
 
 ---
 

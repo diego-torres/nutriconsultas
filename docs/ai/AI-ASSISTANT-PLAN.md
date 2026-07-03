@@ -4,7 +4,7 @@ Canonical design for the **AI-powered chat assistant** for licensed nutritionist
 
 **Issue registry:** [`ISSUE-AI-ASSISTANT.md`](../../ISSUE-AI-ASSISTANT.md)  
 **Agent workflow:** [`AI-ASSISTANT-WORKFLOW.md`](../../AI-ASSISTANT-WORKFLOW.md)  
-**Epic range:** GitHub #360–#409
+**Epic range:** GitHub #360–#442
 
 ---
 
