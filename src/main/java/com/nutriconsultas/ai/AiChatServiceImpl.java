@@ -32,26 +32,37 @@ public class AiChatServiceImpl implements AiChatService {
 
 	private final AiPatientPromptContextResolver patientContextResolver;
 
+	private final AiDietaPromptContextResolver dietaContextResolver;
+
+	private final AiPlatilloPromptContextResolver platilloContextResolver;
+
 	private final PacienteRepository pacienteRepository;
 
 	public AiChatServiceImpl(final AiChatThreadRepository threadRepository,
 			final AiChatMessageRepository messageRepository, final AiGeneratedDraftRepository draftRepository,
 			final AiOrchestrationService orchestrationService,
-			final AiPatientPromptContextResolver patientContextResolver, final PacienteRepository pacienteRepository) {
+			final AiPatientPromptContextResolver patientContextResolver,
+			final AiDietaPromptContextResolver dietaContextResolver,
+			final AiPlatilloPromptContextResolver platilloContextResolver,
+			final PacienteRepository pacienteRepository) {
 		this.threadRepository = threadRepository;
 		this.messageRepository = messageRepository;
 		this.draftRepository = draftRepository;
 		this.orchestrationService = orchestrationService;
 		this.patientContextResolver = patientContextResolver;
+		this.dietaContextResolver = dietaContextResolver;
+		this.platilloContextResolver = platilloContextResolver;
 		this.pacienteRepository = pacienteRepository;
 	}
 
 	@Override
 	@Transactional
 	public AiChatThread startThread(@NonNull final String nutritionistId, @Nullable final String title,
-			@Nullable final Long patientId, @Nullable final Long clinicId) {
+			@Nullable final Long patientId, @Nullable final Long clinicId, final AiChatPromptContext promptContext) {
 		assertNutritionistId(nutritionistId);
-		final Paciente patient = resolveOwnedPatient(patientId, nutritionistId);
+		final AiChatPromptContext resolvedPromptContext = mergePromptContext(promptContext, null);
+		final Long linkedPatientId = patientId != null ? patientId : resolvedPromptContext.patientId();
+		final Paciente patient = resolveOwnedPatient(linkedPatientId, nutritionistId);
 		final AiChatThread thread = new AiChatThread();
 		thread.setNutritionistId(nutritionistId);
 		thread.setTitle(resolveTitle(title));
@@ -91,17 +102,36 @@ public class AiChatServiceImpl implements AiChatService {
 	@Override
 	@Transactional
 	public AiOrchestrationResult sendMessage(@NonNull final String nutritionistId, final long threadId,
-			final String message) {
+			final String message, final AiChatPromptContext promptContext) {
 		assertNutritionistId(nutritionistId);
 		if (!StringUtils.hasText(message)) {
 			throw new AiChatException(org.springframework.http.HttpStatus.BAD_REQUEST, AiToolErrorCode.VALIDATION,
 					"El mensaje no puede estar vacío.");
 		}
 		final AiChatThread thread = loadOwnedThread(threadId, nutritionistId);
-		final AiPatientPromptContext patientContext = patientContextResolver.resolve(patientId(thread), nutritionistId)
-			.orElse(null);
-		final AiOrchestrationContext context = new AiOrchestrationContext(nutritionistId, threadId, patientContext);
+		final AiChatPromptContext mergedContext = mergePromptContext(promptContext, patientId(thread));
+		final AiOrchestrationContext context = buildOrchestrationContext(nutritionistId, threadId, mergedContext);
 		return orchestrationService.processUserMessage(context, message.trim());
+	}
+
+	private AiOrchestrationContext buildOrchestrationContext(final String nutritionistId, final long threadId,
+			final AiChatPromptContext promptContext) {
+		final AiPatientPromptContext patientContext = patientContextResolver
+			.resolve(promptContext.patientId(), nutritionistId)
+			.orElse(null);
+		final AiDietaPromptContext dietaContext = dietaContextResolver.resolve(promptContext.dietaId(), nutritionistId)
+			.orElse(null);
+		final AiPlatilloPromptContext platilloContext = platilloContextResolver
+			.resolve(promptContext.platilloId(), nutritionistId)
+			.orElse(null);
+		return new AiOrchestrationContext(nutritionistId, threadId, patientContext, dietaContext, platilloContext);
+	}
+
+	private static AiChatPromptContext mergePromptContext(final AiChatPromptContext requestContext,
+			@Nullable final Long threadPatientId) {
+		final AiChatPromptContext safeRequest = requestContext != null ? requestContext : AiChatPromptContext.empty();
+		final Long patientId = safeRequest.patientId() != null ? safeRequest.patientId() : threadPatientId;
+		return new AiChatPromptContext(patientId, safeRequest.dietaId(), safeRequest.platilloId());
 	}
 
 	private AiChatThread loadOwnedThread(final long threadId, final String nutritionistId) {

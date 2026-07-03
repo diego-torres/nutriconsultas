@@ -610,7 +610,7 @@ Issue registry: [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md). Plan: 
 
 Issue registry: [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md). Plan: [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md). Workflow: [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md).
 
-**Epics #360–#409** (2026-06-30): OpenAI-backed chat for nutritionists to draft recipes, menus, and diet plans via backend catalog tools — **registered**, not started. **NEXT:** [#361](https://github.com/diego-torres/nutriconsultas/issues/361) functional scope (Phase 0). Plan gating: [#409](https://github.com/diego-torres/nutriconsultas/issues/409) (Plus + Consultorio). **All user-facing AI communications in Spanish (es-MX).** Milestones: M1 foundation (#360–#371) → M2 nutrition tools (#372–#382) → M3 chat UX (#383–#390) → M4 MCP (#391–#395) → M5 safety & release (#396–#408).
+**Epics #360–#442** (2026-07-03): OpenAI-backed chat for nutritionists — M1–M2 **done** on `main`; M3 **in progress** (**NEXT:** [#390](https://github.com/diego-torres/nutriconsultas/issues/390) draft preview). Registered **#433–#437** (markdown, streaming, stop, edit/resubmit), **#438–#441** (prompt injection/jailbreak/defense-in-depth), **#442** floating context widget (PR #432). Plan gating: [#409](https://github.com/diego-torres/nutriconsultas/issues/409). **Spanish (es-MX)** for all user-facing AI copy. See [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md).
 
 ## Public booking (tracking)
 

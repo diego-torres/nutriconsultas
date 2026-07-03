@@ -193,7 +193,7 @@ class AiOrchestrationServiceTest {
 	}
 
 	private static AiOrchestrationContext context() {
-		return new AiOrchestrationContext(NUTRITIONIST_ID, THREAD_ID, null);
+		return new AiOrchestrationContext(NUTRITIONIST_ID, THREAD_ID, null, null, null);
 	}
 
 	private static AiChatMessage message(final AiChatMessageRole role, final String content) {

@@ -67,7 +67,7 @@ class AiOrchestrationToolDispatcherTest {
 	}
 
 	private static AiOrchestrationContext context() {
-		return new AiOrchestrationContext(NUTRITIONIST_ID, THREAD_ID, null);
+		return new AiOrchestrationContext(NUTRITIONIST_ID, THREAD_ID, null, null, null);
 	}
 
 }

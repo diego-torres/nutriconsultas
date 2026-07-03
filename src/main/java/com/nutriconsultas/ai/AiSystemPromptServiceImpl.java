@@ -39,7 +39,9 @@ public class AiSystemPromptServiceImpl implements AiSystemPromptService {
 		final String localeTag = resolved.locale().toLanguageTag();
 		return baseTemplate.replace("{{LOCALE}}", localeTag)
 			.replace("{{NUTRITIONIST_CONTEXT}}", formatNutritionistContext(resolved))
-			.replace("{{PATIENT_CONTEXT}}", formatPatientContext(resolved.patientContext()));
+			.replace("{{PATIENT_CONTEXT}}", formatPatientContext(resolved.patientContext()))
+			.replace("{{DIETA_CONTEXT}}", formatDietaContext(resolved.dietaContext()))
+			.replace("{{PLATILLO_CONTEXT}}", formatPlatilloContext(resolved.platilloContext()));
 	}
 
 	private String formatNutritionistContext(final AiSystemPromptContext context) {
@@ -99,6 +101,65 @@ public class AiSystemPromptServiceImpl implements AiSystemPromptService {
 			}
 		}
 		section.append("- No preguntes de nuevo el objetivo calórico ni las alergias listadas arriba.\n");
+		return section.toString().trim();
+	}
+
+	private String formatDietaContext(final AiDietaPromptContext dieta) {
+		if (dieta == null) {
+			return "";
+		}
+		final StringBuilder section = new StringBuilder(512);
+		section.append("CONTEXTO DE LA DIETA EN PANTALLA\n- dietaId interno: ").append(dieta.dietaId()).append('\n');
+		if (StringUtils.hasText(dieta.nombre())) {
+			section.append("- Nombre: ").append(dieta.nombre().trim()).append('\n');
+		}
+		if (dieta.energiaKcal() != null && dieta.energiaKcal() > 0) {
+			section.append("- Energía total: ").append(dieta.energiaKcal()).append(" kcal\n");
+		}
+		section
+			.append(String.format("- Proteína: %s g · Lípidos: %s g · H. de carbono: %s g%n",
+					formatNumber(dieta.proteinaGrams()), formatNumber(dieta.lipidosGrams()),
+					formatNumber(dieta.hidratosDeCarbonoGrams())))
+			.append("- Ingestas configuradas: ")
+			.append(dieta.ingestaCount())
+			.append('\n');
+		if (!dieta.ingestaNames().isEmpty()) {
+			section.append("- Ingestas: ").append(String.join(", ", dieta.ingestaNames())).append('\n');
+		}
+		if (dieta.patientAssignment()) {
+			section.append("- Dieta asignada a paciente (patientId interno: ")
+				.append(dieta.linkedPatientId())
+				.append(")\n");
+		}
+		section.append("- Usa esta dieta como punto de partida; propón ajustes como borrador.\n");
+		return section.toString().trim();
+	}
+
+	private String formatPlatilloContext(final AiPlatilloPromptContext platillo) {
+		if (platillo == null) {
+			return "";
+		}
+		final StringBuilder section = new StringBuilder(512);
+		section.append("CONTEXTO DEL PLATILLO EN PANTALLA\n- platilloId interno: ")
+			.append(platillo.platilloId())
+			.append('\n');
+		if (StringUtils.hasText(platillo.name())) {
+			section.append("- Nombre: ").append(platillo.name().trim()).append('\n');
+		}
+		if (StringUtils.hasText(platillo.descriptionSummary())) {
+			section.append("- Descripción: ").append(platillo.descriptionSummary().trim()).append('\n');
+		}
+		if (platillo.energiaKcal() != null && platillo.energiaKcal() > 0) {
+			section.append("- Energía por porción: ").append(platillo.energiaKcal()).append(" kcal\n");
+		}
+		section.append("- Ingredientes registrados: ").append(platillo.ingredientCount()).append('\n');
+		if (!platillo.ingredientNames().isEmpty()) {
+			section.append("- Ingredientes: ").append(String.join(", ", platillo.ingredientNames())).append('\n');
+		}
+		if (StringUtils.hasText(platillo.ingestasSugeridas())) {
+			section.append("- Ingestas sugeridas: ").append(platillo.ingestasSugeridas().trim()).append('\n');
+		}
+		section.append("- Usa este platillo como referencia; propón variantes como borrador.\n");
 		return section.toString().trim();
 	}
 

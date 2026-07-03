@@ -1,0 +1,51 @@
+<div th:fragment="widget">
+  <link rel="stylesheet" th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" />
+  <link rel="stylesheet" th:href="@{/sbadmin/css/ai-assistant-widget.css}" />
+  <div id="aiAssistantRoot" aria-live="polite">
+    <div id="aiAssistantPanel" hidden>
+      <div id="aiAssistantHeader">
+        <div id="aiAssistantHeaderText">
+          <h2 id="aiAssistantTitle">Asistente IA</h2>
+          <p id="aiAssistantScope" th:text="${aiAssistantWidgetContext.scopeLabel()}">Contexto</p>
+        </div>
+        <div id="aiAssistantHeaderActions">
+          <a id="aiAssistantOpenFull" th:href="@{/admin/ai}" class="ai-assistant-icon-btn" title="Abrir chat completo">
+            <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+          </a>
+          <button type="button" id="aiAssistantNewBtn" class="ai-assistant-icon-btn" title="Nueva conversación">
+            <i class="fas fa-plus" aria-hidden="true"></i>
+          </button>
+          <button type="button" id="aiAssistantClose" class="ai-assistant-icon-btn" title="Cerrar">
+            <i class="fas fa-times" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <div id="aiAssistantBody">
+        <div id="aiAssistantMessages"></div>
+        <form id="aiAssistantForm">
+          <label class="sr-only" for="aiAssistantInput">Mensaje para el asistente de IA</label>
+          <textarea id="aiAssistantInput" rows="2" maxlength="4000"
+            placeholder="Pide un borrador usando el contexto de esta pantalla…" required></textarea>
+          <button type="submit" id="aiAssistantSendBtn">
+            <i class="fas fa-paper-plane" aria-hidden="true"></i>
+            <span>Enviar</span>
+          </button>
+        </form>
+      </div>
+    </div>
+    <button type="button" id="aiAssistantToggle" title="Asistente de IA" aria-label="Asistente de IA">
+      <i class="fas fa-robot fa-lg" aria-hidden="true"></i>
+    </button>
+  </div>
+  <script th:inline="javascript">
+    window.AI_ASSISTANT_WIDGET_CONTEXT = {
+      scopeLabel: /*[[${aiAssistantWidgetContext.scopeLabel()}]]*/ '',
+      patientId: /*[[${aiAssistantWidgetContext.patientId()}]]*/ null,
+      dietaId: /*[[${aiAssistantWidgetContext.dietaId()}]]*/ null,
+      platilloId: /*[[${aiAssistantWidgetContext.platilloId()}]]*/ null,
+      storageScopeKey: /*[[${aiAssistantWidgetContext.storageScopeKey()}]]*/ 'general'
+    };
+  </script>
+  <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
+  <script th:src="@{/sbadmin/js/ai-assistant-widget.js}" defer></script>
+</div>

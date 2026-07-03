@@ -102,7 +102,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		final AiSystemPromptContext promptContext = new AiSystemPromptContext(
 				Locale.forLanguageTag(AiSystemPromptContext.DEFAULT_LOCALE_TAG),
 				"El nutriólogo autenticado es el único dueño de los datos y borradores de esta sesión.",
-				context.patientContext());
+				context.patientContext(), context.dietaContext(), context.platilloContext());
 		final List<OpenAiChatMessage> messages = new ArrayList<>();
 		messages.add(OpenAiChatMessage.system(systemPromptService.buildSystemPrompt(promptContext)));
 		appendPersistedHistory(messages, thread.getId());

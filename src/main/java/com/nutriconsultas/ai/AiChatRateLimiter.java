@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
-import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 
 /**
  * Per-nutritionist rate limiting for AI chat message orchestration (#386).
@@ -37,7 +36,7 @@ public final class AiChatRateLimiter {
 		try {
 			return RateLimiter.decorateCallable(limiter, callable).call();
 		}
-		catch (RequestNotPermitted ex) {
+		catch (RuntimeException ex) {
 			throw ex;
 		}
 		catch (Exception ex) {

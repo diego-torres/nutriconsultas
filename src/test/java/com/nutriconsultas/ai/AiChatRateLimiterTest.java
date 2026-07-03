@@ -7,6 +7,8 @@ import java.time.Duration;
 
 import org.junit.jupiter.api.Test;
 
+import org.springframework.http.HttpStatus;
+
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
@@ -36,6 +38,19 @@ class AiChatRateLimiterTest {
 
 		final String otherResult = liveLimiter.executeMessage("auth0|other-nutritionist", () -> "other");
 		assertThat(otherResult).isEqualTo("other");
+	}
+
+	@Test
+	void executeMessagePropagatesOpenAiClientException() {
+		final RateLimiterRegistry registry = registryWithLimit(5);
+		final AiChatRateLimiter liveLimiter = new AiChatRateLimiter(registry);
+		final OpenAiClientException openAiEx = new OpenAiClientException(OpenAiClientException.ErrorKind.RATE_LIMIT,
+				HttpStatus.TOO_MANY_REQUESTS, "El servicio de IA está saturado. Intenta de nuevo en unos minutos.",
+				"OpenAI rate limit status=429", null);
+
+		assertThatThrownBy(() -> liveLimiter.executeMessage(NUTRITIONIST_ID, () -> {
+			throw openAiEx;
+		})).isSameAs(openAiEx);
 	}
 
 	private static RateLimiterRegistry registryWithLimit(final int limitForPeriod) {
