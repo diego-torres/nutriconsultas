@@ -1,6 +1,7 @@
 <div th:fragment="widget">
   <link rel="stylesheet" th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" />
   <link rel="stylesheet" th:href="@{/sbadmin/css/ai-assistant-widget.css}" />
+  <link rel="stylesheet" th:href="@{/sbadmin/css/ai-markdown.css}" />
   <div id="aiAssistantRoot" aria-live="polite">
     <div id="aiAssistantPanel" hidden>
       <div id="aiAssistantHeader">
@@ -47,5 +48,8 @@
     };
   </script>
   <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
+  <script th:src="@{/sbadmin/vendor/marked/marked.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/dompurify/purify.min.js}"></script>
+  <script th:src="@{/sbadmin/js/ai-markdown.js}"></script>
   <script th:src="@{/sbadmin/js/ai-assistant-widget.js}" defer></script>
 </div>

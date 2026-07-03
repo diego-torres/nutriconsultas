@@ -23,9 +23,19 @@
   }
 
   function escapeHtml(text) {
+    if (window.NutriAiMarkdown && window.NutriAiMarkdown.escapeHtml) {
+      return window.NutriAiMarkdown.escapeHtml(text);
+    }
     var div = document.createElement('div');
     div.textContent = text == null ? '' : String(text);
     return div.innerHTML;
+  }
+
+  function formatMessageBubbleContent(message) {
+    if (window.NutriAiMarkdown && window.NutriAiMarkdown.formatMessageContent) {
+      return window.NutriAiMarkdown.formatMessageContent(message.role, message.content);
+    }
+    return escapeHtml(message.content);
   }
 
   function formatTime(iso) {
@@ -448,7 +458,7 @@
     var html = items.map(function (message) {
       var roleClass = message.role === 'USER' ? 'user' : 'assistant';
       return '<article class="ai-chat-message ' + roleClass + '" aria-label="' + roleLabel(message.role) + '">' +
-        '<div class="ai-chat-bubble">' + escapeHtml(message.content) + '</div>' +
+        '<div class="ai-chat-bubble">' + formatMessageBubbleContent(message) + '</div>' +
         '<div class="ai-chat-meta">' + escapeHtml(roleLabel(message.role)) +
         (message.createdAt ? ' · ' + formatTime(message.createdAt) : '') + '</div>' +
         '</article>';

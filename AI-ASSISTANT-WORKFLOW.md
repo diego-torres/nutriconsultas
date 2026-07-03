@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#390 — Build Draft Preview UI](https://github.com/diego-torres/nutriconsultas/issues/390) (`NEXT` in [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md)). ~~#389~~ interactive chat at `/admin/ai`. **#442** floating widget in PR #432.
+**Current next issue:** [#434 — Render markdown in assistant chat responses](https://github.com/diego-torres/nutriconsultas/issues/434) (`in-progress` on `issue-434-ai-chat-markdown`). ~~#390~~ draft preview merged (PR #443).
 
 **Registered backlog (2026-07-03):** Epic [#433](https://github.com/diego-torres/nutriconsultas/issues/433) chat UX (#434 markdown, #435 streaming, #436 stop, #437 edit/resubmit). Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438) prompt security (#439–#441). See registry for suggested order.
 
