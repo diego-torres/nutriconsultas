@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-07-03 — ~~#389~~ ~~#442~~ merged. **#390** in progress on `issue-390-draft-preview-ui`.
+**Last updated:** 2026-07-03 — ~~#389~~ ~~#390~~ ~~#442~~ merged. **#434** in progress on `issue-434-ai-chat-markdown`.
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -152,10 +152,10 @@ Thymeleaf chat window and draft preview.
 | **387** | Epic — Nutritionist AI Chat UI (Phase 6) | https://github.com/diego-torres/nutriconsultas/issues/387 | **open** | **384** | ~~#388–#389~~ |
 | **388** | Add AI Chat Entry Point to Nutritionist UI | https://github.com/diego-torres/nutriconsultas/issues/388 | **done** | **387**, **365** | Sidebar + `/admin/ai`, gated by `AI_ENABLED` |
 | **389** | Build AI Chat Window | https://github.com/diego-torres/nutriconsultas/issues/389 | **done** | **388**, **384** | `ai-chat.js` + REST integration |
-| **390** | Build Draft Preview UI | https://github.com/diego-torres/nutriconsultas/issues/390 | **in-progress** | **389**, **382** | Accept/discard + SweetAlert |
+| **390** | Build Draft Preview UI | https://github.com/diego-torres/nutriconsultas/issues/390 | **done** | **389**, **382** | PR #443 |
 | **442** | Floating context-aware AI assistant widget | https://github.com/diego-torres/nutriconsultas/issues/442 | **done** | **388**, **384**, **389** | Merged with PR #432 |
 
-**Suggested order:** ~~#389~~ → **#390** → close **#442** when PR #432 merges → epic **#433**.
+**Suggested order:** ~~#389~~ ~~#390~~ ~~#442~~ → **#434** (in progress) → **#435**.
 
 ---
 
@@ -166,7 +166,7 @@ Markdown, streaming, and message controls for full-page chat and floating widget
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
 | **433** | Epic — AI Chat UX Enhancements (Phase 6b) | https://github.com/diego-torres/nutriconsultas/issues/433 | **open** | **387**, **390** | Parent for #434–#437 |
-| **434** | Render markdown in assistant chat responses | https://github.com/diego-torres/nutriconsultas/issues/434 | **open** | **433**, **389** | XSS-safe MD in chat + widget |
+| **434** | Render markdown in assistant chat responses | https://github.com/diego-torres/nutriconsultas/issues/434 | **in-progress** | **433**, **389** | XSS-safe MD in chat + widget |
 | **435** | Stream assistant responses (SSE) | https://github.com/diego-torres/nutriconsultas/issues/435 | **open** | **433**, **385**, **389** | Backend SSE + incremental UI |
 | **436** | Stop and cancel in-flight AI generation | https://github.com/diego-torres/nutriconsultas/issues/436 | **open** | **433**, **389** | `AbortController`; after #435 |
 | **437** | Edit user message and resubmit | https://github.com/diego-torres/nutriconsultas/issues/437 | **open** | **433**, **384**, **389** | Thread truncate + SweetAlert |
