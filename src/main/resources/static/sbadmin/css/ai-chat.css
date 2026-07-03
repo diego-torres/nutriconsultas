@@ -119,6 +119,125 @@
   margin-top: 0.5rem;
 }
 
+.ai-chat-columns {
+  min-height: 28rem;
+}
+
+.ai-chat-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 28rem;
+}
+
+.ai-chat-drafts-column {
+  margin-top: 1rem;
+}
+
+.ai-chat-drafts-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 20rem;
+  max-height: calc(100vh - 14rem);
+  border: 1px solid #e3e6f0;
+  border-radius: 0.35rem;
+  background: #fff;
+  padding: 0.85rem;
+}
+
+.ai-chat-drafts-header {
+  margin-bottom: 0.75rem;
+}
+
+.ai-chat-drafts-subtitle {
+  font-size: 0.75rem;
+  color: #e74a3b;
+  font-weight: 600;
+}
+
+.ai-chat-draft-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 0.75rem;
+}
+
+.ai-chat-draft-card {
+  width: 100%;
+  text-align: left;
+  border: 1px solid #e3e6f0;
+  border-radius: 0.35rem;
+  background: #f8f9fc;
+  padding: 0.55rem 0.65rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+}
+
+.ai-chat-draft-card:hover,
+.ai-chat-draft-card.active {
+  border-color: #4e73df;
+  background: #fff;
+}
+
+.ai-chat-draft-card-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #3a3b45;
+  margin: 0 0 0.15rem;
+}
+
+.ai-chat-draft-card-meta {
+  font-size: 0.72rem;
+  color: #858796;
+}
+
+.ai-chat-draft-preview {
+  border-top: 1px solid #e3e6f0;
+  padding-top: 0.75rem;
+  overflow-y: auto;
+  max-height: 55%;
+}
+
+.ai-chat-draft-review-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #e74a3b;
+  margin-bottom: 0.35rem;
+}
+
+.ai-chat-draft-section {
+  margin-bottom: 0.65rem;
+  font-size: 0.85rem;
+}
+
+.ai-chat-draft-section h5 {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #5a5c69;
+  margin-bottom: 0.25rem;
+}
+
+.ai-chat-draft-section ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.ai-chat-draft-empty {
+  color: #858796;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 1rem 0.5rem;
+}
+
+.ai-chat-draft-actions .btn {
+  margin-right: 0.35rem;
+}
+
+@media (min-width: 992px) {
+  .ai-chat-drafts-column {
+    margin-top: 0;
+  }
+}
+
 @media (max-width: 576px) {
   .ai-chat-layout {
     max-height: none;

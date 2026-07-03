@@ -4,12 +4,17 @@
   'use strict';
 
   var API_BASE = '/rest/nutritionist/ai/chat';
+  var DRAFT_API = '/rest/nutritionist/ai/drafts';
   var STORAGE_KEY = 'nutriconsultas.ai.threadId';
+  var REVIEW_LABEL = 'Borrador IA — revisión del nutriólogo requerida';
 
   var state = {
     threadId: null,
     threadTitle: null,
     messages: [],
+    drafts: [],
+    selectedDraftId: null,
+    selectedPreview: null,
     busy: false
   };
 
@@ -80,6 +85,304 @@
     } else {
       window.alert(message);
     }
+  }
+
+  function draftTypeLabel(type) {
+    if (type === 'DISH') {
+      return 'Platillo (receta)';
+    }
+    if (type === 'MENU') {
+      return 'Menú';
+    }
+    if (type === 'DIET_PLAN') {
+      return 'Plan alimentario';
+    }
+    return type;
+  }
+
+  function draftStatusLabel(status) {
+    if (status === 'DRAFT') {
+      return 'Pendiente de revisión';
+    }
+    if (status === 'ACCEPTED') {
+      return 'Aceptado';
+    }
+    if (status === 'DISCARDED') {
+      return 'Descartado';
+    }
+    return status;
+  }
+
+  function formatNutrients(nutrients) {
+    if (!nutrients) {
+      return '';
+    }
+    var parts = [];
+    if (nutrients.energiaKcal != null) {
+      parts.push(nutrients.energiaKcal + ' kcal');
+    }
+    if (nutrients.proteinaG != null) {
+      parts.push('Proteína ' + nutrients.proteinaG + ' g');
+    }
+    if (nutrients.lipidosG != null) {
+      parts.push('Lípidos ' + nutrients.lipidosG + ' g');
+    }
+    if (nutrients.hidratosDeCarbonoG != null) {
+      parts.push('H. de carbono ' + nutrients.hidratosDeCarbonoG + ' g');
+    }
+    return parts.join(' · ');
+  }
+
+  function renderListSection(title, items) {
+    if (!items || items.length === 0) {
+      return '';
+    }
+    return '<section class="ai-chat-draft-section"><h5>' + escapeHtml(title) + '</h5><ul>' +
+      items.map(function (item) {
+        return '<li>' + escapeHtml(String(item)) + '</li>';
+      }).join('') +
+      '</ul></section>';
+  }
+
+  function renderDraftList() {
+    var container = $('#aiChatDraftList');
+    if (!container) {
+      return;
+    }
+    if (!state.threadId) {
+      container.innerHTML = '<p class="ai-chat-draft-empty">Inicia una conversación para ver borradores.</p>';
+      hideDraftPreview();
+      return;
+    }
+    if (!state.drafts || state.drafts.length === 0) {
+      container.innerHTML = '<p class="ai-chat-draft-empty">Aún no hay borradores en esta conversación.</p>';
+      hideDraftPreview();
+      return;
+    }
+    container.innerHTML = state.drafts.map(function (draft) {
+      var active = state.selectedDraftId === draft.draftId ? ' active' : '';
+      var title = draft.summary || draftTypeLabel(draft.draftType);
+      return '<button type="button" class="ai-chat-draft-card' + active + '" data-draft-id="' + draft.draftId + '">' +
+        '<p class="ai-chat-draft-card-title">' + escapeHtml(title) + '</p>' +
+        '<p class="ai-chat-draft-card-meta">' + escapeHtml(draftTypeLabel(draft.draftType)) +
+        ' · ' + escapeHtml(draftStatusLabel(draft.status)) + '</p></button>';
+    }).join('');
+    container.querySelectorAll('[data-draft-id]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        selectDraft(Number(button.getAttribute('data-draft-id')));
+      });
+    });
+  }
+
+  function hideDraftPreview() {
+    state.selectedDraftId = null;
+    state.selectedPreview = null;
+    var panel = $('#aiChatDraftPreview');
+    if (panel) {
+      panel.hidden = true;
+    }
+  }
+
+  function renderDraftPreview(preview) {
+    var panel = $('#aiChatDraftPreview');
+    var body = $('#aiChatDraftPreviewBody');
+    var reviewLabel = $('#aiChatDraftReviewLabel');
+    var titleEl = $('#aiChatDraftPreviewTitle');
+    var typeEl = $('#aiChatDraftPreviewType');
+    var actions = $('#aiChatDraftActions');
+    if (!panel || !body) {
+      return;
+    }
+    panel.hidden = false;
+    if (reviewLabel) {
+      reviewLabel.textContent = preview.reviewLabel || REVIEW_LABEL;
+    }
+    if (titleEl) {
+      titleEl.textContent = preview.title || preview.summary || draftTypeLabel(preview.draftType);
+    }
+    if (typeEl) {
+      typeEl.textContent = (preview.draftTypeLabel || draftTypeLabel(preview.draftType)) +
+        ' · ' + draftStatusLabel(preview.status);
+    }
+
+    var html = '';
+    if (preview.portions != null) {
+      html += '<section class="ai-chat-draft-section"><h5>Porciones</h5><p>' +
+        escapeHtml(String(preview.portions)) + '</p></section>';
+    }
+    if (preview.dayCount != null) {
+      html += '<section class="ai-chat-draft-section"><h5>Días</h5><p>' +
+        escapeHtml(String(preview.dayCount)) + '</p></section>';
+    }
+    var nutrientsText = formatNutrients(preview.nutrients);
+    if (nutrientsText) {
+      html += '<section class="ai-chat-draft-section"><h5>Nutrientes</h5><p>' +
+        escapeHtml(nutrientsText) + '</p></section>';
+    }
+    if (preview.ingredients && preview.ingredients.length > 0) {
+      html += '<section class="ai-chat-draft-section"><h5>Ingredientes</h5><ul>' +
+        preview.ingredients.map(function (line) {
+          var text = 'Alimento #' + line.alimentoId + ': ' + line.cantidad;
+          if (line.unidad) {
+            text += ' ' + line.unidad;
+          }
+          return '<li>' + escapeHtml(text) + '</li>';
+        }).join('') + '</ul></section>';
+    }
+    if (preview.mealSlots && preview.mealSlots.length > 0) {
+      html += '<section class="ai-chat-draft-section"><h5>Ingestas / comidas</h5><ul>' +
+        preview.mealSlots.map(function (slot) {
+          if (slot.ingestas) {
+            var dayLabel = slot.label || ('Día ' + slot.dayIndex);
+            return '<li>' + escapeHtml(String(dayLabel)) + ': ' + slot.ingestas.length + ' ingestas</li>';
+          }
+          var ingestaName = slot.nombre || ('Ingesta ' + (slot.orden != null ? slot.orden : ''));
+          var itemCount = slot.items ? slot.items.length : 0;
+          return '<li>' + escapeHtml(String(ingestaName)) + ' (' + itemCount + ' ítems)</li>';
+        }).join('') + '</ul></section>';
+    }
+    html += renderListSection('Pasos de preparación', preview.preparationSteps);
+    html += renderListSection('Supuestos', preview.assumptions);
+    html += renderListSection('Advertencias', preview.warnings);
+    if (preview.validationSummary) {
+      html += '<section class="ai-chat-draft-section"><h5>Validación</h5><p>' +
+        escapeHtml(preview.validationSummary) + '</p></section>';
+    }
+    body.innerHTML = html;
+
+    if (actions) {
+      actions.hidden = preview.status !== 'DRAFT';
+    }
+  }
+
+  function loadDrafts(threadId) {
+    if (!threadId) {
+      state.drafts = [];
+      renderDraftList();
+      return Promise.resolve();
+    }
+    return requestJson(API_BASE + '/' + threadId + '/drafts', { method: 'GET' })
+      .then(function (data) {
+        state.drafts = data.drafts || [];
+        if (state.selectedDraftId && !state.drafts.some(function (d) {
+          return d.draftId === state.selectedDraftId;
+        })) {
+          hideDraftPreview();
+        }
+        renderDraftList();
+        if (state.selectedDraftId) {
+          return loadDraftPreview(state.selectedDraftId);
+        }
+        return null;
+      })
+      .catch(function (error) {
+        showError(error.message);
+      });
+  }
+
+  function loadDraftPreview(draftId) {
+    return requestJson(DRAFT_API + '/' + draftId, { method: 'GET' })
+      .then(function (preview) {
+        state.selectedDraftId = draftId;
+        state.selectedPreview = preview;
+        renderDraftList();
+        renderDraftPreview(preview);
+      })
+      .catch(function (error) {
+        showError(error.message);
+      });
+  }
+
+  function selectDraft(draftId) {
+    if (state.busy) {
+      return;
+    }
+    loadDraftPreview(draftId);
+  }
+
+  function confirmDraftAction(options, onConfirm) {
+    if (typeof swal === 'function') {
+      swal({
+        title: options.title,
+        text: options.text,
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: options.confirmColor || '#1cc88a',
+        confirmButtonText: options.confirmText,
+        cancelButtonText: 'Cancelar',
+        closeOnConfirm: true
+      }, function (isConfirm) {
+        if (isConfirm) {
+          onConfirm();
+        }
+      });
+    } else if (window.confirm(options.text)) {
+      onConfirm();
+    }
+  }
+
+  function acceptSelectedDraft() {
+    if (!state.selectedDraftId || !state.selectedPreview || state.selectedPreview.status !== 'DRAFT') {
+      return;
+    }
+    confirmDraftAction({
+      title: '¿Aceptar borrador?',
+      text: 'Se creará un registro en tu catálogo a partir de este borrador. Revisa que los datos sean correctos.',
+      confirmText: 'Sí, aceptar',
+      confirmColor: '#1cc88a'
+    }, function () {
+      setBusy(true);
+      requestJson(DRAFT_API + '/' + state.selectedDraftId + '/accept', { method: 'POST' })
+        .then(function (data) {
+          if (typeof swal === 'function') {
+            swal({
+              title: 'Borrador aceptado',
+              text: data.summary || 'El borrador se guardó en tu catálogo.',
+              type: 'success',
+              timer: 2500
+            });
+          }
+          return loadDrafts(state.threadId);
+        })
+        .catch(function (error) {
+          showError(error.message);
+        })
+        .finally(function () {
+          setBusy(false);
+        });
+    });
+  }
+
+  function discardSelectedDraft() {
+    if (!state.selectedDraftId || !state.selectedPreview || state.selectedPreview.status !== 'DRAFT') {
+      return;
+    }
+    confirmDraftAction({
+      title: '¿Descartar borrador?',
+      text: 'Esta acción no se puede deshacer.',
+      confirmText: 'Sí, descartar',
+      confirmColor: '#e74a3b'
+    }, function () {
+      setBusy(true);
+      requestJson(DRAFT_API + '/' + state.selectedDraftId + '/discard', { method: 'POST' })
+        .then(function () {
+          if (typeof swal === 'function') {
+            swal({
+              title: 'Borrador descartado',
+              type: 'success',
+              timer: 2000
+            });
+          }
+          hideDraftPreview();
+          return loadDrafts(state.threadId);
+        })
+        .catch(function (error) {
+          showError(error.message);
+        })
+        .finally(function () {
+          setBusy(false);
+        });
+    });
   }
 
   function setBusy(busy) {
@@ -167,6 +470,7 @@
     updateThreadTitle(data.title);
     state.messages = data.messages || [];
     renderMessages(false);
+    loadDrafts(data.threadId);
   }
 
   function loadThread(threadId) {
@@ -246,6 +550,7 @@
           createdAt: new Date().toISOString()
         });
         renderMessages(false);
+        loadDrafts(data.threadId);
       })
       .catch(function (error) {
         state.showLoading = false;
@@ -288,6 +593,9 @@
   function resetConversation() {
     persistThreadId(null);
     state.messages = [];
+    state.drafts = [];
+    hideDraftPreview();
+    renderDraftList();
     updateThreadTitle(null);
     renderMessages(false);
     var textarea = $('#aiChatInput');
@@ -312,6 +620,8 @@
     var form = $('#aiChatForm');
     var textarea = $('#aiChatInput');
     var newBtn = $('#aiChatNewBtn');
+    var acceptBtn = $('#aiChatDraftAcceptBtn');
+    var discardBtn = $('#aiChatDraftDiscardBtn');
 
     if (form) {
       form.addEventListener('submit', function (event) {
@@ -332,6 +642,12 @@
     if (newBtn) {
       newBtn.addEventListener('click', startNewConversation);
     }
+    if (acceptBtn) {
+      acceptBtn.addEventListener('click', acceptSelectedDraft);
+    }
+    if (discardBtn) {
+      discardBtn.addEventListener('click', discardSelectedDraft);
+    }
   }
 
   function init() {
@@ -341,6 +657,7 @@
       loadThread(threadId);
     } else {
       renderMessages(false);
+      renderDraftList();
     }
   }
 

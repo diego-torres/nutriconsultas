@@ -34,6 +34,27 @@ class AiDraftRestControllerTest {
 	@Mock
 	private AiDraftLifecycleService draftLifecycleService;
 
+	@Mock
+	private AiDraftPreviewService draftPreviewService;
+
+	@Test
+	void getDraftPreviewReturnsStructuredBody() {
+		final AiDraftPreviewView preview = new AiDraftPreviewView(10L, 5L, AiDraftType.DISH, AiDraftStatus.DRAFT,
+				"Platillo (receta)", AiDraftSummaryExtractor.REVIEW_LABEL, "Tacos", "Resumen", 2, null,
+				new NutrientSummary(250, 20.0, 8.0, 30.0, null, null, null), List.of(), List.of(), List.of("Paso 1"),
+				List.of("Supuesto"), List.of("Advertencia"), null);
+		when(draftPreviewService.getPreview(10L, NUTRITIONIST_ID)).thenReturn(preview);
+
+		final ResponseEntity<Map<String, Object>> response = controller.getDraftPreview(10L, principal());
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).containsEntry("success", true)
+			.containsEntry("draftId", 10L)
+			.containsEntry("draftType", "DISH")
+			.containsEntry("reviewLabel", AiDraftSummaryExtractor.REVIEW_LABEL)
+			.containsEntry("title", "Tacos");
+	}
+
 	@Test
 	void acceptDraftReturnsCreatedEntity() {
 		when(draftAcceptanceService.accept(eq(10L), eq(NUTRITIONIST_ID), any()))
