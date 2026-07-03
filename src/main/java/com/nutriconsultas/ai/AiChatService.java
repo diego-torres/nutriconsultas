@@ -1,6 +1,7 @@
 package com.nutriconsultas.ai;
 
 import org.springframework.lang.Nullable;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
  * Nutritionist-scoped AI chat thread operations (#384).
@@ -16,5 +17,7 @@ public interface AiChatService {
 
 	AiOrchestrationResult sendMessage(String nutritionistId, long threadId, String message,
 			AiChatPromptContext promptContext);
+
+	void streamMessage(String nutritionistId, AiSendMessageRequest request, SseEmitter emitter);
 
 }

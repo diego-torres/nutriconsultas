@@ -6,6 +6,7 @@ import java.util.Locale;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -33,10 +34,14 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 
 	private final AiOrchestrationToolDispatcher toolDispatcher;
 
+	private final TransactionTemplate transactionTemplate;
+
+	private static final int STREAM_CHUNK_SIZE = 32;
+
 	public AiOrchestrationServiceImpl(final AiProperties properties, final OpenAiClientService openAiClientService,
 			final AiSystemPromptService systemPromptService, final AiChatThreadRepository threadRepository,
 			final AiChatMessageRepository messageRepository, final AiOpenAiToolCatalog toolCatalog,
-			final AiOrchestrationToolDispatcher toolDispatcher) {
+			final AiOrchestrationToolDispatcher toolDispatcher, final TransactionTemplate transactionTemplate) {
 		this.properties = properties;
 		this.openAiClientService = openAiClientService;
 		this.systemPromptService = systemPromptService;
@@ -44,6 +49,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		this.messageRepository = messageRepository;
 		this.toolCatalog = toolCatalog;
 		this.toolDispatcher = toolDispatcher;
+		this.transactionTemplate = transactionTemplate;
 	}
 
 	@Override
@@ -55,7 +61,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		persistUserMessage(thread, userMessage.trim());
 
 		final List<OpenAiChatMessage> conversation = buildConversation(context, thread);
-		final ToolLoopOutcome loopOutcome = runToolLoop(context, conversation);
+		final ToolLoopOutcome loopOutcome = runToolLoop(context, conversation, null);
 		final AiChatMessage assistantMessage = persistAssistantMessage(thread, loopOutcome.assistantContent());
 		persistToolAuditMessages(thread, loopOutcome.toolAuditEntries());
 		touchThread(thread);
@@ -65,6 +71,52 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		}
 		return new AiOrchestrationResult(thread.getId(), assistantMessage, loopOutcome.toolCallsExecuted(),
 				loopOutcome.tokenUsage());
+	}
+
+	@Override
+	public void processUserMessageStreaming(final AiOrchestrationContext context, final String userMessage,
+			final AiStreamEventConsumer streamConsumer) {
+		assertOperational();
+		validateUserMessage(userMessage);
+		final AiChatThread thread = transactionTemplate.execute(status -> {
+			final AiChatThread loaded = loadThread(context);
+			persistUserMessage(loaded, userMessage.trim());
+			return loaded;
+		});
+		if (thread == null) {
+			throw new AiOrchestrationException("No se pudo guardar el mensaje.");
+		}
+
+		final List<OpenAiChatMessage> conversation = buildConversation(context, thread);
+		streamConsumer.onStatus("thinking", "El asistente está pensando…");
+		final ToolLoopOutcome loopOutcome = runToolLoop(context, conversation, streamConsumer);
+		emitContentDeltas(loopOutcome.assistantContent(), streamConsumer);
+
+		final AiOrchestrationResult result = transactionTemplate.execute(status -> {
+			final AiChatMessage assistantMessage = persistAssistantMessage(thread, loopOutcome.assistantContent());
+			persistToolAuditMessages(thread, loopOutcome.toolAuditEntries());
+			touchThread(thread);
+			if (log.isInfoEnabled()) {
+				log.info("AI streaming orchestration threadId={} toolCalls={}", thread.getId(),
+						loopOutcome.toolCallsExecuted());
+			}
+			return new AiOrchestrationResult(thread.getId(), assistantMessage, loopOutcome.toolCallsExecuted(),
+					loopOutcome.tokenUsage());
+		});
+		if (result == null) {
+			throw new AiOrchestrationException("No se pudo guardar la respuesta del asistente.");
+		}
+		streamConsumer.onComplete(result);
+	}
+
+	private void emitContentDeltas(final String content, final AiStreamEventConsumer streamConsumer) {
+		if (!StringUtils.hasText(content)) {
+			return;
+		}
+		for (int index = 0; index < content.length(); index += STREAM_CHUNK_SIZE) {
+			final int end = Math.min(index + STREAM_CHUNK_SIZE, content.length());
+			streamConsumer.onDelta(content.substring(index, end));
+		}
 	}
 
 	private void assertOperational() {
@@ -122,7 +174,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 	}
 
 	private ToolLoopOutcome runToolLoop(final AiOrchestrationContext context,
-			final List<OpenAiChatMessage> conversation) {
+			final List<OpenAiChatMessage> conversation, final AiStreamEventConsumer streamConsumer) {
 		int toolCallsExecuted = 0;
 		OpenAiTokenUsage accumulatedUsage = null;
 		final List<ToolAuditEntry> toolAuditEntries = new ArrayList<>();
@@ -136,6 +188,9 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 
 			if (!response.hasToolCalls()) {
 				break;
+			}
+			if (streamConsumer != null) {
+				streamConsumer.onStatus("tools", "Consultando catálogo nutricional…");
 			}
 			if (toolCallsExecuted >= properties.getMaxToolCalls()) {
 				assistantContent = TOOL_LIMIT_MESSAGE;

@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-07-03 — ~~#389~~ ~~#390~~ ~~#442~~ merged. **#434** in progress on `issue-434-ai-chat-markdown`.
+**Last updated:** 2026-07-03 — ~~#390~~ ~~#434~~ merged. **#435** in progress on `issue-435-ai-chat-streaming`.
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -166,12 +166,12 @@ Markdown, streaming, and message controls for full-page chat and floating widget
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
 | **433** | Epic — AI Chat UX Enhancements (Phase 6b) | https://github.com/diego-torres/nutriconsultas/issues/433 | **open** | **387**, **390** | Parent for #434–#437 |
-| **434** | Render markdown in assistant chat responses | https://github.com/diego-torres/nutriconsultas/issues/434 | **in-progress** | **433**, **389** | XSS-safe MD in chat + widget |
-| **435** | Stream assistant responses (SSE) | https://github.com/diego-torres/nutriconsultas/issues/435 | **open** | **433**, **385**, **389** | Backend SSE + incremental UI |
+| **434** | Render markdown in assistant chat responses | https://github.com/diego-torres/nutriconsultas/issues/434 | **done** | **433**, **389** | PR #444 |
+| **435** | Stream assistant responses (SSE) | https://github.com/diego-torres/nutriconsultas/issues/435 | **in-progress** | **433**, **385**, **389** | Backend SSE + incremental UI |
 | **436** | Stop and cancel in-flight AI generation | https://github.com/diego-torres/nutriconsultas/issues/436 | **open** | **433**, **389** | `AbortController`; after #435 |
 | **437** | Edit user message and resubmit | https://github.com/diego-torres/nutriconsultas/issues/437 | **open** | **433**, **384**, **389** | Thread truncate + SweetAlert |
 
-**Suggested order:** #434 ∥ #435 → #436 → #437. Epic **#387** closes when #390 and #433 children are done (or defer controls post-M3 beta).
+**Suggested order:** #434 ∥ **#435** (in progress) → #436 → #437. Epic **#387** closes when #433 children are done (or defer controls post-M3 beta).
 
 ---
 

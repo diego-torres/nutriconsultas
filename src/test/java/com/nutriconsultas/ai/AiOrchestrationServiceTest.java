@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,6 +19,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class AiOrchestrationServiceTest {
@@ -50,6 +53,9 @@ class AiOrchestrationServiceTest {
 	@Mock
 	private AiOrchestrationToolDispatcher toolDispatcher;
 
+	@Mock
+	private TransactionTemplate transactionTemplate;
+
 	private AiChatThread thread;
 
 	@BeforeEach
@@ -57,6 +63,11 @@ class AiOrchestrationServiceTest {
 		thread = new AiChatThread();
 		thread.setId(THREAD_ID);
 		thread.setNutritionistId(NUTRITIONIST_ID);
+		lenient().when(transactionTemplate.execute(org.mockito.ArgumentMatchers.<TransactionCallback<Object>>any()))
+			.thenAnswer(invocation -> {
+				final TransactionCallback<?> callback = invocation.getArgument(0);
+				return callback.doInTransaction(null);
+			});
 	}
 
 	private void stubAiEnabled() {
@@ -190,6 +201,40 @@ class AiOrchestrationServiceTest {
 		assertThat(messages).anyMatch(message -> "Mensaje anterior".equals(message.content()));
 		assertThat(messages).anyMatch(message -> "Respuesta anterior".equals(message.content()));
 		assertThat(messages).anyMatch(message -> "Siguiente pregunta".equals(message.content()));
+	}
+
+	@Test
+	void processUserMessageStreamingEmitsDeltasAndCompletes() {
+		stubOperational();
+		when(threadRepository.findByIdAndNutritionistId(THREAD_ID, NUTRITIONIST_ID)).thenReturn(Optional.of(thread));
+		when(messageRepository.findByThreadIdOrderByCreatedAtAscIdAsc(THREAD_ID))
+			.thenReturn(List.of(message(AiChatMessageRole.USER, "Hola")));
+		when(openAiClientService.chatCompletion(any())).thenReturn(new OpenAiChatCompletionResponse("id-1", "assistant",
+				"Respuesta en streaming para prueba.", List.of(), "stop", null));
+
+		final StringBuilder deltas = new StringBuilder();
+		final AiOrchestrationResult[] completed = new AiOrchestrationResult[1];
+		service.processUserMessageStreaming(context(), "Hola", new AiStreamEventConsumer() {
+			@Override
+			public void onStatus(final String phase, final String message) {
+				/* no-op for test */
+			}
+
+			@Override
+			public void onDelta(final String contentDelta) {
+				deltas.append(contentDelta);
+			}
+
+			@Override
+			public void onComplete(final AiOrchestrationResult result) {
+				completed[0] = result;
+			}
+		});
+
+		assertThat(deltas.toString()).isEqualTo("Respuesta en streaming para prueba.");
+		assertThat(completed[0]).isNotNull();
+		assertThat(completed[0].assistantMessage().getContent()).isEqualTo("Respuesta en streaming para prueba.");
+		verify(messageRepository, times(2)).save(any(AiChatMessage.class));
 	}
 
 	private static AiOrchestrationContext context() {

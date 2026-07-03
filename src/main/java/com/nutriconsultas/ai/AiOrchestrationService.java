@@ -14,4 +14,11 @@ public interface AiOrchestrationService {
 	 */
 	AiOrchestrationResult processUserMessage(AiOrchestrationContext context, String userMessage);
 
+	/**
+	 * Processes one user turn and emits assistant text incrementally after the tool loop
+	 * completes (#435).
+	 */
+	void processUserMessageStreaming(AiOrchestrationContext context, String userMessage,
+			AiStreamEventConsumer streamConsumer);
+
 }

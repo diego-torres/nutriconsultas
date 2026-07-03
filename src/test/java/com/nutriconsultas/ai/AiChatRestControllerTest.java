@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
@@ -146,6 +147,20 @@ class AiChatRestControllerTest {
 		assertThat(response.getBody()).containsEntry("success", false)
 			.containsEntry("errorCode", AiToolErrorCode.RATE_LIMIT.name())
 			.containsEntry("message", AiChatRateLimiter.RATE_LIMIT_USER_MESSAGE);
+	}
+
+	@Test
+	void streamMessageReturnsSseEmitter() throws Exception {
+		when(aiChatRateLimiter.executeMessage(eq(NUTRITIONIST_ID), any())).thenAnswer(invocation -> {
+			final Callable<?> callable = invocation.getArgument(1);
+			return callable.call();
+		});
+
+		final SseEmitter emitter = controller.streamMessage(new AiSendMessageRequest(5L, "Hola"),
+				principal(NUTRITIONIST_ID));
+
+		assertThat(emitter).isNotNull();
+		verify(chatService).streamMessage(eq(NUTRITIONIST_ID), any(AiSendMessageRequest.class), any(SseEmitter.class));
 	}
 
 	@Test

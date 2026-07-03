@@ -8,6 +8,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
@@ -112,6 +113,84 @@ public class AiChatServiceImpl implements AiChatService {
 		final AiChatPromptContext mergedContext = mergePromptContext(promptContext, patientId(thread));
 		final AiOrchestrationContext context = buildOrchestrationContext(nutritionistId, threadId, mergedContext);
 		return orchestrationService.processUserMessage(context, message.trim());
+	}
+
+	@Override
+	public void streamMessage(@NonNull final String nutritionistId, final AiSendMessageRequest request,
+			final SseEmitter emitter) {
+		assertNutritionistId(nutritionistId);
+		if (request == null || !StringUtils.hasText(request.message())) {
+			completeStreamWithError(emitter, "El mensaje no puede estar vacío.");
+			return;
+		}
+		try {
+			final AiChatPromptContext promptContext = new AiChatPromptContext(request.patientId(), request.dietaId(),
+					request.platilloId());
+			final AiChatThread thread = loadOwnedThread(request.threadId(), nutritionistId);
+			final AiChatPromptContext mergedContext = mergePromptContext(promptContext, patientId(thread));
+			final AiOrchestrationContext context = buildOrchestrationContext(nutritionistId, request.threadId(),
+					mergedContext);
+			orchestrationService.processUserMessageStreaming(context, request.message().trim(),
+					streamConsumerFor(emitter));
+			AiChatSseSupport.completeQuietly(emitter);
+		}
+		catch (final AiChatException | AiOrchestrationException ex) {
+			completeStreamWithError(emitter, ex.getMessage());
+		}
+		catch (final OpenAiClientException ex) {
+			completeStreamWithError(emitter, ex.getUserMessage());
+		}
+		catch (final AiStreamDeliveryException ex) {
+			if (log.isWarnEnabled()) {
+				log.warn("AI chat stream delivery failed threadId={}", request.threadId());
+			}
+			AiChatSseSupport.completeQuietly(emitter);
+		}
+	}
+
+	private AiStreamEventConsumer streamConsumerFor(final SseEmitter emitter) {
+		return new AiStreamEventConsumer() {
+			@Override
+			public void onStatus(final String phase, final String message) {
+				try {
+					AiChatSseSupport.sendStatus(emitter, phase, message);
+				}
+				catch (Exception ex) {
+					throw new AiStreamDeliveryException("Stream status failed", ex);
+				}
+			}
+
+			@Override
+			public void onDelta(final String contentDelta) {
+				try {
+					AiChatSseSupport.sendDelta(emitter, contentDelta);
+				}
+				catch (Exception ex) {
+					throw new AiStreamDeliveryException("Stream delta failed", ex);
+				}
+			}
+
+			@Override
+			public void onComplete(final AiOrchestrationResult result) {
+				try {
+					AiChatSseSupport.sendDone(emitter, result);
+				}
+				catch (Exception ex) {
+					throw new AiStreamDeliveryException("Stream done failed", ex);
+				}
+			}
+		};
+	}
+
+	private static void completeStreamWithError(final SseEmitter emitter, final String message) {
+		try {
+			AiChatSseSupport.sendError(emitter, message);
+		}
+		catch (Exception ex) {
+			emitter.completeWithError(ex);
+			return;
+		}
+		AiChatSseSupport.completeQuietly(emitter);
 	}
 
 	private AiOrchestrationContext buildOrchestrationContext(final String nutritionistId, final long threadId,

@@ -259,25 +259,64 @@
 
     var payload = promptContextPayload();
     payload.message = trimmed;
+    var assistantIndex = null;
+
+    function appendAssistantDelta(content) {
+      state.showLoading = false;
+      if (assistantIndex === null) {
+        state.messages.push({
+          role: 'ASSISTANT',
+          content: content,
+          createdAt: new Date().toISOString()
+        });
+        assistantIndex = state.messages.length - 1;
+      } else {
+        state.messages[assistantIndex].content += content;
+      }
+      renderMessages();
+    }
+
+    function finalizeAssistant(data) {
+      state.showLoading = false;
+      if (data && data.content != null) {
+        if (assistantIndex === null) {
+          state.messages.push({
+            role: 'ASSISTANT',
+            content: data.content,
+            createdAt: new Date().toISOString()
+          });
+        } else {
+          state.messages[assistantIndex].content = data.content;
+        }
+      }
+      if (data && data.threadId) {
+        persistThreadId(data.threadId);
+      }
+      renderMessages();
+    }
 
     ensureThread()
       .then(function (threadId) {
         payload.threadId = threadId;
+        if (window.NutriAiChatStream && typeof NutriAiChatStream.streamMessage === 'function') {
+          return NutriAiChatStream.streamMessage(API_BASE + '/message/stream', payload, {
+            onStatus: function () {
+              renderMessages();
+            },
+            onDelta: appendAssistantDelta,
+            onDone: finalizeAssistant,
+            onError: function (message) {
+              throw new Error(message);
+            }
+          });
+        }
         return requestJson(API_BASE + '/message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
+        }).then(function (data) {
+          finalizeAssistant(data);
         });
-      })
-      .then(function (data) {
-        state.showLoading = false;
-        persistThreadId(data.threadId);
-        state.messages.push({
-          role: 'ASSISTANT',
-          content: data.content,
-          createdAt: new Date().toISOString()
-        });
-        renderMessages();
       })
       .catch(function (error) {
         state.showLoading = false;
