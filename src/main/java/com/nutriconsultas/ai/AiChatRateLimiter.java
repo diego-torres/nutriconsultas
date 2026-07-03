@@ -40,6 +40,9 @@ public final class AiChatRateLimiter {
 		catch (RequestNotPermitted ex) {
 			throw ex;
 		}
+		catch (RuntimeException ex) {
+			throw ex;
+		}
 		catch (Exception ex) {
 			throw new IllegalStateException("Rate-limited AI chat call failed", ex);
 		}

@@ -119,7 +119,8 @@ class AiChatRestControllerTest {
 	void sendMessageMapsOpenAiRateLimit() throws Exception {
 		when(chatService.sendMessage(any(), eq(5L), any()))
 			.thenThrow(new OpenAiClientException(OpenAiClientException.ErrorKind.RATE_LIMIT,
-					HttpStatus.TOO_MANY_REQUESTS, "El servicio de IA está saturado.", "rate limit", null));
+					HttpStatus.TOO_MANY_REQUESTS, "El servicio de IA está saturado. Intenta de nuevo en unos minutos.",
+					"rate limit", null));
 		when(aiChatRateLimiter.executeMessage(eq(NUTRITIONIST_ID), any())).thenAnswer(invocation -> {
 			final Callable<?> callable = invocation.getArgument(1);
 			return callable.call();
@@ -129,6 +130,8 @@ class AiChatRestControllerTest {
 			.sendMessage(new AiSendMessageRequest(5L, "Hola"), principal(NUTRITIONIST_ID));
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+		assertThat(response.getBody()).containsEntry("message",
+				"El servicio de IA está saturado. Intenta de nuevo en unos minutos.");
 	}
 
 	@Test
