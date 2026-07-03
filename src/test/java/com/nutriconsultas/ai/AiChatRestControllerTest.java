@@ -49,10 +49,11 @@ class AiChatRestControllerTest {
 		thread.setNutritionistId(NUTRITIONIST_ID);
 		thread.setCreatedAt(Instant.parse("2026-06-30T12:00:00Z"));
 		thread.setUpdatedAt(Instant.parse("2026-06-30T12:00:00Z"));
-		when(chatService.startThread(eq(NUTRITIONIST_ID), eq("Menú semanal"), eq(10L), eq(null))).thenReturn(thread);
+		when(chatService.startThread(eq(NUTRITIONIST_ID), eq("Menú semanal"), eq(10L), eq(null), any()))
+			.thenReturn(thread);
 
 		final ResponseEntity<Map<String, Object>> response = controller
-			.startChat(new AiStartChatRequest("Menú semanal", 10L, null), principal(NUTRITIONIST_ID));
+			.startChat(new AiStartChatRequest("Menú semanal", 10L, null, null, null), principal(NUTRITIONIST_ID));
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 		assertThat(response.getBody()).containsEntry("success", true).containsEntry("threadId", 5L);
@@ -64,7 +65,7 @@ class AiChatRestControllerTest {
 		assistant.setId(99L);
 		assistant.setRole(AiChatMessageRole.ASSISTANT);
 		assistant.setContent("Aquí tienes una sugerencia.");
-		when(chatService.sendMessage(NUTRITIONIST_ID, 5L, "Hola"))
+		when(chatService.sendMessage(eq(NUTRITIONIST_ID), eq(5L), eq("Hola"), any()))
 			.thenReturn(new AiOrchestrationResult(5L, assistant, 1, new OpenAiTokenUsage(10, 8, 18)));
 		when(aiChatRateLimiter.executeMessage(eq(NUTRITIONIST_ID), any())).thenAnswer(invocation -> {
 			final Callable<?> callable = invocation.getArgument(1);
@@ -76,7 +77,7 @@ class AiChatRestControllerTest {
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getBody()).containsEntry("assistantMessageId", 99L).containsEntry("toolCallsExecuted", 1);
-		verify(chatService).sendMessage(NUTRITIONIST_ID, 5L, "Hola");
+		verify(chatService).sendMessage(eq(NUTRITIONIST_ID), eq(5L), eq("Hola"), any());
 	}
 
 	@Test
@@ -117,10 +118,9 @@ class AiChatRestControllerTest {
 
 	@Test
 	void sendMessageMapsOpenAiRateLimit() throws Exception {
-		when(chatService.sendMessage(any(), eq(5L), any()))
-			.thenThrow(new OpenAiClientException(OpenAiClientException.ErrorKind.RATE_LIMIT,
-					HttpStatus.TOO_MANY_REQUESTS, "El servicio de IA está saturado. Intenta de nuevo en unos minutos.",
-					"rate limit", null));
+		when(chatService.sendMessage(any(), eq(5L), any(), any())).thenThrow(
+				new OpenAiClientException(OpenAiClientException.ErrorKind.RATE_LIMIT, HttpStatus.TOO_MANY_REQUESTS,
+						"El servicio de IA está saturado. Intenta de nuevo en unos minutos.", "rate limit", null));
 		when(aiChatRateLimiter.executeMessage(eq(NUTRITIONIST_ID), any())).thenAnswer(invocation -> {
 			final Callable<?> callable = invocation.getArgument(1);
 			return callable.call();

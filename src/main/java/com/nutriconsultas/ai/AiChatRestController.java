@@ -42,10 +42,13 @@ public class AiChatRestController {
 		if (nutritionistId == null) {
 			return unauthorized();
 		}
-		final AiStartChatRequest body = request != null ? request : new AiStartChatRequest(null, null, null);
+		final AiStartChatRequest body = request != null ? request
+				: new AiStartChatRequest(null, null, null, null, null);
 		try {
+			final AiChatPromptContext promptContext = new AiChatPromptContext(body.patientId(), body.dietaId(),
+					body.platilloId());
 			final AiChatThread thread = chatService.startThread(nutritionistId, body.title(), body.patientId(),
-					body.clinicId());
+					body.clinicId(), promptContext);
 			final Map<String, Object> response = successBody();
 			response.put("threadId", thread.getId());
 			response.put("title", thread.getTitle());
@@ -71,8 +74,10 @@ public class AiChatRestController {
 			return errorResponse(HttpStatus.BAD_REQUEST, AiToolErrorCode.VALIDATION, "Solicitud no válida.");
 		}
 		try {
-			final AiOrchestrationResult result = aiChatRateLimiter.executeMessage(nutritionistId,
-					() -> chatService.sendMessage(nutritionistId, request.threadId(), request.message()));
+			final AiChatPromptContext promptContext = new AiChatPromptContext(request.patientId(), request.dietaId(),
+					request.platilloId());
+			final AiOrchestrationResult result = aiChatRateLimiter.executeMessage(nutritionistId, () -> chatService
+				.sendMessage(nutritionistId, request.threadId(), request.message(), promptContext));
 			final Map<String, Object> response = successBody();
 			response.put("threadId", result.threadId());
 			response.put("assistantMessageId", result.assistantMessage().getId());

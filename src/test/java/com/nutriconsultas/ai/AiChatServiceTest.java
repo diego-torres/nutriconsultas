@@ -48,6 +48,12 @@ class AiChatServiceTest {
 	private AiPatientPromptContextResolver patientContextResolver;
 
 	@Mock
+	private AiDietaPromptContextResolver dietaContextResolver;
+
+	@Mock
+	private AiPlatilloPromptContextResolver platilloContextResolver;
+
+	@Mock
 	private PacienteRepository pacienteRepository;
 
 	@Test
@@ -63,7 +69,8 @@ class AiChatServiceTest {
 			return thread;
 		});
 
-		final AiChatThread thread = service.startThread(NUTRITIONIST_ID, "Menú", 10L, null);
+		final AiChatThread thread = service.startThread(NUTRITIONIST_ID, "Menú", 10L, null,
+				AiChatPromptContext.empty());
 
 		assertThat(thread.getId()).isEqualTo(5L);
 		assertThat(thread.getPatient()).isNotNull();
@@ -74,7 +81,7 @@ class AiChatServiceTest {
 	void startThreadRejectsForeignPatient() {
 		when(pacienteRepository.findByIdAndUserId(10L, NUTRITIONIST_ID)).thenReturn(Optional.empty());
 
-		assertThatThrownBy(() -> service.startThread(NUTRITIONIST_ID, null, 10L, null))
+		assertThatThrownBy(() -> service.startThread(NUTRITIONIST_ID, null, 10L, null, AiChatPromptContext.empty()))
 			.isInstanceOf(AiChatException.class)
 			.extracting(ex -> ((AiChatException) ex).getHttpStatus())
 			.isEqualTo(HttpStatus.NOT_FOUND);
@@ -110,10 +117,14 @@ class AiChatServiceTest {
 		final AiChatThread thread = sampleThread(5L, NUTRITIONIST_ID);
 		when(threadRepository.findByIdAndNutritionistId(5L, NUTRITIONIST_ID)).thenReturn(Optional.of(thread));
 		final AiChatMessage assistant = message(99L, AiChatMessageRole.ASSISTANT, "Listo");
+		when(patientContextResolver.resolve(null, NUTRITIONIST_ID)).thenReturn(Optional.empty());
+		when(dietaContextResolver.resolve(null, NUTRITIONIST_ID)).thenReturn(Optional.empty());
+		when(platilloContextResolver.resolve(null, NUTRITIONIST_ID)).thenReturn(Optional.empty());
 		when(orchestrationService.processUserMessage(any(), eq("Crea un menú")))
 			.thenReturn(new AiOrchestrationResult(5L, assistant, 2, null));
 
-		final AiOrchestrationResult result = service.sendMessage(NUTRITIONIST_ID, 5L, "Crea un menú");
+		final AiOrchestrationResult result = service.sendMessage(NUTRITIONIST_ID, 5L, "Crea un menú",
+				AiChatPromptContext.empty());
 
 		assertThat(result.toolCallsExecuted()).isEqualTo(2);
 		verify(orchestrationService).processUserMessage(any(), eq("Crea un menú"));
@@ -140,7 +151,8 @@ class AiChatServiceTest {
 
 	@Test
 	void sendMessageRejectsBlankMessage() {
-		assertThatThrownBy(() -> service.sendMessage(NUTRITIONIST_ID, 5L, "  ")).isInstanceOf(AiChatException.class);
+		assertThatThrownBy(() -> service.sendMessage(NUTRITIONIST_ID, 5L, "  ", AiChatPromptContext.empty()))
+			.isInstanceOf(AiChatException.class);
 		verify(orchestrationService, never()).processUserMessage(any(), any());
 	}
 
