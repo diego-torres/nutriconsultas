@@ -132,11 +132,8 @@ public class AiAssistantWidgetAdvice {
 	}
 
 	private boolean canAccessDieta(final Dieta dieta, final String userId) {
-		if (DietaCatalogConstants.isPatientAssignment(dieta)) {
-			return dieta.getPacienteId() != null
-					&& pacienteRepository.findByIdAndUserId(dieta.getPacienteId(), userId).isPresent();
-		}
-		return true;
+		return !DietaCatalogConstants.isPatientAssignment(dieta) || (dieta.getPacienteId() != null
+				&& pacienteRepository.findByIdAndUserId(dieta.getPacienteId(), userId).isPresent());
 	}
 
 	@Nullable

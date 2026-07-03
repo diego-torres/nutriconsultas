@@ -37,10 +37,7 @@ public final class AiChatRateLimiter {
 		try {
 			return RateLimiter.decorateCallable(limiter, callable).call();
 		}
-		catch (RequestNotPermitted ex) {
-			throw ex;
-		}
-		catch (RuntimeException ex) {
+		catch (RequestNotPermitted | RuntimeException ex) {
 			throw ex;
 		}
 		catch (Exception ex) {

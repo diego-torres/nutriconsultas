@@ -1,7 +1,6 @@
 package com.nutriconsultas.ai;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,11 +46,8 @@ public class AiDietaPromptContextResolverImpl implements AiDietaPromptContextRes
 	}
 
 	private boolean canAccess(final Dieta dieta, final String nutritionistId) {
-		if (DietaCatalogConstants.isPatientAssignment(dieta)) {
-			return dieta.getPacienteId() != null
-					&& pacienteRepository.findByIdAndUserId(dieta.getPacienteId(), nutritionistId).isPresent();
-		}
-		return true;
+		return !DietaCatalogConstants.isPatientAssignment(dieta) || (dieta.getPacienteId() != null
+				&& pacienteRepository.findByIdAndUserId(dieta.getPacienteId(), nutritionistId).isPresent());
 	}
 
 	private AiDietaPromptContext toPromptContext(final Dieta dieta) {

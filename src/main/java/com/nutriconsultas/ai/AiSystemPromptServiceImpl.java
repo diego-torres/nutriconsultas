@@ -109,22 +109,20 @@ public class AiSystemPromptServiceImpl implements AiSystemPromptService {
 			return "";
 		}
 		final StringBuilder section = new StringBuilder(512);
-		section.append("CONTEXTO DE LA DIETA EN PANTALLA\n");
-		section.append("- dietaId interno: ").append(dieta.dietaId()).append('\n');
+		section.append("CONTEXTO DE LA DIETA EN PANTALLA\n- dietaId interno: ").append(dieta.dietaId()).append('\n');
 		if (StringUtils.hasText(dieta.nombre())) {
 			section.append("- Nombre: ").append(dieta.nombre().trim()).append('\n');
 		}
 		if (dieta.energiaKcal() != null && dieta.energiaKcal() > 0) {
 			section.append("- Energía total: ").append(dieta.energiaKcal()).append(" kcal\n");
 		}
-		section.append("- Proteína: ")
-			.append(formatNumber(dieta.proteinaGrams()))
-			.append(" g · Lípidos: ")
-			.append(formatNumber(dieta.lipidosGrams()))
-			.append(" g · H. de carbono: ")
-			.append(formatNumber(dieta.hidratosDeCarbonoGrams()))
-			.append(" g\n");
-		section.append("- Ingestas configuradas: ").append(dieta.ingestaCount()).append('\n');
+		section
+			.append(String.format("- Proteína: %s g · Lípidos: %s g · H. de carbono: %s g%n",
+					formatNumber(dieta.proteinaGrams()), formatNumber(dieta.lipidosGrams()),
+					formatNumber(dieta.hidratosDeCarbonoGrams())))
+			.append("- Ingestas configuradas: ")
+			.append(dieta.ingestaCount())
+			.append('\n');
 		if (!dieta.ingestaNames().isEmpty()) {
 			section.append("- Ingestas: ").append(String.join(", ", dieta.ingestaNames())).append('\n');
 		}
@@ -142,8 +140,9 @@ public class AiSystemPromptServiceImpl implements AiSystemPromptService {
 			return "";
 		}
 		final StringBuilder section = new StringBuilder(512);
-		section.append("CONTEXTO DEL PLATILLO EN PANTALLA\n");
-		section.append("- platilloId interno: ").append(platillo.platilloId()).append('\n');
+		section.append("CONTEXTO DEL PLATILLO EN PANTALLA\n- platilloId interno: ")
+			.append(platillo.platilloId())
+			.append('\n');
 		if (StringUtils.hasText(platillo.name())) {
 			section.append("- Nombre: ").append(platillo.name().trim()).append('\n');
 		}
