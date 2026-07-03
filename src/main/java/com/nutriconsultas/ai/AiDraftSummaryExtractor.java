@@ -7,7 +7,9 @@ import org.springframework.util.StringUtils;
  */
 public final class AiDraftSummaryExtractor {
 
-	private static final String DEFAULT_LABEL = "Borrador IA — revisión del nutriólogo requerida";
+	public static final String REVIEW_LABEL = "Borrador IA — revisión del nutriólogo requerida";
+
+	private static final String DEFAULT_LABEL = REVIEW_LABEL;
 
 	private AiDraftSummaryExtractor() {
 	}

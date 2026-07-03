@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,10 +25,47 @@ public class AiDraftRestController {
 
 	private final AiDraftLifecycleService draftLifecycleService;
 
+	private final AiDraftPreviewService draftPreviewService;
+
 	public AiDraftRestController(final AiDraftAcceptanceService draftAcceptanceService,
-			final AiDraftLifecycleService draftLifecycleService) {
+			final AiDraftLifecycleService draftLifecycleService, final AiDraftPreviewService draftPreviewService) {
 		this.draftAcceptanceService = draftAcceptanceService;
 		this.draftLifecycleService = draftLifecycleService;
+		this.draftPreviewService = draftPreviewService;
+	}
+
+	@GetMapping("/{draftId}")
+	public ResponseEntity<Map<String, Object>> getDraftPreview(@PathVariable @NonNull final Long draftId,
+			@AuthenticationPrincipal final OidcUser principal) {
+		if (principal == null) {
+			return errorResponse(HttpStatus.UNAUTHORIZED, "Sesión no válida.");
+		}
+		try {
+			final AiDraftPreviewView preview = draftPreviewService.getPreview(draftId, principal.getSubject());
+			final Map<String, Object> body = new LinkedHashMap<>();
+			body.put("success", true);
+			body.put("draftId", preview.draftId());
+			body.put("threadId", preview.threadId());
+			body.put("draftType", preview.draftType().name());
+			body.put("status", preview.status().name());
+			body.put("draftTypeLabel", preview.draftTypeLabel());
+			body.put("reviewLabel", preview.reviewLabel());
+			body.put("title", preview.title());
+			body.put("summary", preview.summary());
+			body.put("portions", preview.portions());
+			body.put("dayCount", preview.dayCount());
+			body.put("nutrients", preview.nutrients());
+			body.put("ingredients", preview.ingredients());
+			body.put("mealSlots", preview.mealSlots());
+			body.put("preparationSteps", preview.preparationSteps());
+			body.put("assumptions", preview.assumptions());
+			body.put("warnings", preview.warnings());
+			body.put("validationSummary", preview.validationSummary());
+			return ResponseEntity.ok(body);
+		}
+		catch (AiDraftLifecycleException ex) {
+			return mapLifecycleException(ex);
+		}
 	}
 
 	@PostMapping("/{draftId}/accept")

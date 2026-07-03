@@ -50,27 +50,55 @@
               </button>
             </div>
             <div class="card-body ai-chat-layout">
-              <div class="ai-chat-toolbar">
-                <p class="ai-chat-thread-title mb-0" id="aiChatThreadTitle">Nueva conversación</p>
-              </div>
+              <div class="row ai-chat-columns">
+                <div class="col-lg-7 ai-chat-main">
+                  <div class="ai-chat-toolbar">
+                    <p class="ai-chat-thread-title mb-0" id="aiChatThreadTitle">Nueva conversación</p>
+                  </div>
 
-              <div id="aiChatMessages" class="ai-chat-messages" role="log" aria-live="polite"
-                aria-relevant="additions" aria-label="Mensajes del chat">
-              </div>
+                  <div id="aiChatMessages" class="ai-chat-messages" role="log" aria-live="polite"
+                    aria-relevant="additions" aria-label="Mensajes del chat">
+                  </div>
 
-              <form id="aiChatForm" class="ai-chat-composer" novalidate>
-                <label class="sr-only" for="aiChatInput">Mensaje para el asistente de IA</label>
-                <textarea id="aiChatInput" class="form-control" rows="2"
-                  placeholder="Describe la receta, menú o plan que necesitas…"
-                  aria-label="Mensaje para el asistente de IA" maxlength="4000" required></textarea>
-                <button type="submit" class="btn btn-primary btn-send" id="aiChatSendBtn"
-                  aria-label="Enviar mensaje al asistente">
-                  <i class="fas fa-paper-plane mr-1" aria-hidden="true"></i>Enviar
-                </button>
-              </form>
-              <p class="ai-chat-hint mb-0">
-                Enter para enviar · Shift+Enter para nueva línea · Los borradores requieren tu revisión antes de usarse.
-              </p>
+                  <form id="aiChatForm" class="ai-chat-composer" novalidate>
+                    <label class="sr-only" for="aiChatInput">Mensaje para el asistente de IA</label>
+                    <textarea id="aiChatInput" class="form-control" rows="2"
+                      placeholder="Describe la receta, menú o plan que necesitas…"
+                      aria-label="Mensaje para el asistente de IA" maxlength="4000" required></textarea>
+                    <button type="submit" class="btn btn-primary btn-send" id="aiChatSendBtn"
+                      aria-label="Enviar mensaje al asistente">
+                      <i class="fas fa-paper-plane mr-1" aria-hidden="true"></i>Enviar
+                    </button>
+                  </form>
+                  <p class="ai-chat-hint mb-0">
+                    Enter para enviar · Shift+Enter para nueva línea · Los borradores requieren tu revisión antes de usarse.
+                  </p>
+                </div>
+
+                <div class="col-lg-5 ai-chat-drafts-column">
+                  <aside id="aiChatDraftsPanel" class="ai-chat-drafts-panel" aria-label="Borradores generados por IA">
+                    <div class="ai-chat-drafts-header">
+                      <h3 class="h6 font-weight-bold text-primary mb-0">Borradores IA</h3>
+                      <p class="ai-chat-drafts-subtitle mb-0">Borrador IA — revisión del nutriólogo requerida</p>
+                    </div>
+                    <div id="aiChatDraftList" class="ai-chat-draft-list"></div>
+                    <div id="aiChatDraftPreview" class="ai-chat-draft-preview" hidden>
+                      <p class="ai-chat-draft-review-label" id="aiChatDraftReviewLabel"></p>
+                      <h4 class="h6 font-weight-bold mb-1" id="aiChatDraftPreviewTitle"></h4>
+                      <p class="ai-chat-draft-type text-muted mb-2" id="aiChatDraftPreviewType"></p>
+                      <div id="aiChatDraftPreviewBody"></div>
+                      <div class="ai-chat-draft-actions mt-3" id="aiChatDraftActions">
+                        <button type="button" class="btn btn-success btn-sm" id="aiChatDraftAcceptBtn">
+                          <i class="fas fa-check mr-1" aria-hidden="true"></i>Aceptar
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-sm" id="aiChatDraftDiscardBtn">
+                          <i class="fas fa-times mr-1" aria-hidden="true"></i>Descartar
+                        </button>
+                      </div>
+                    </div>
+                  </aside>
+                </div>
+              </div>
             </div>
           </div>
         </div>
