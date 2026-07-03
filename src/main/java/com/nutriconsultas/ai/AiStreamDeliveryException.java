@@ -5,6 +5,8 @@ package com.nutriconsultas.ai;
  */
 public class AiStreamDeliveryException extends RuntimeException {
 
+	private static final long serialVersionUID = 1L;
+
 	public AiStreamDeliveryException(final String message, final Throwable cause) {
 		super(message, cause);
 	}

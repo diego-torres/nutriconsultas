@@ -3,7 +3,6 @@ package com.nutriconsultas.ai;
 /**
  * OpenAI chat orchestration for nutritionist AI assistant (#385).
  */
-@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface AiOrchestrationService {
 
 	/**
