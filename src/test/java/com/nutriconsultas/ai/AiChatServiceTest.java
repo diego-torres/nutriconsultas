@@ -18,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
@@ -55,6 +56,9 @@ class AiChatServiceTest {
 
 	@Mock
 	private PacienteRepository pacienteRepository;
+
+	@Mock
+	private TransactionTemplate transactionTemplate;
 
 	@Test
 	void startThreadPersistsOwnedPatient() {

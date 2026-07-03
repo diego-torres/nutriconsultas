@@ -87,7 +87,13 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 			throw new AiOrchestrationException("No se pudo guardar el mensaje.");
 		}
 
-		final List<OpenAiChatMessage> conversation = buildConversation(context, thread);
+		final List<OpenAiChatMessage> conversation = transactionTemplate.execute(status -> {
+			final AiChatThread loadedThread = loadThread(context);
+			return buildConversation(context, loadedThread);
+		});
+		if (conversation == null) {
+			throw new AiOrchestrationException("No se pudo cargar el historial de la conversación.");
+		}
 		streamConsumer.onStatus("thinking", "El asistente está pensando…");
 		final ToolLoopOutcome loopOutcome = runToolLoop(context, conversation, streamConsumer);
 		emitContentDeltas(loopOutcome.assistantContent(), streamConsumer);

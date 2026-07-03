@@ -7,6 +7,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -39,13 +40,15 @@ public class AiChatServiceImpl implements AiChatService {
 
 	private final PacienteRepository pacienteRepository;
 
+	private final TransactionTemplate transactionTemplate;
+
 	public AiChatServiceImpl(final AiChatThreadRepository threadRepository,
 			final AiChatMessageRepository messageRepository, final AiGeneratedDraftRepository draftRepository,
 			final AiOrchestrationService orchestrationService,
 			final AiPatientPromptContextResolver patientContextResolver,
 			final AiDietaPromptContextResolver dietaContextResolver,
 			final AiPlatilloPromptContextResolver platilloContextResolver,
-			final PacienteRepository pacienteRepository) {
+			final PacienteRepository pacienteRepository, final TransactionTemplate transactionTemplate) {
 		this.threadRepository = threadRepository;
 		this.messageRepository = messageRepository;
 		this.draftRepository = draftRepository;
@@ -54,6 +57,7 @@ public class AiChatServiceImpl implements AiChatService {
 		this.dietaContextResolver = dietaContextResolver;
 		this.platilloContextResolver = platilloContextResolver;
 		this.pacienteRepository = pacienteRepository;
+		this.transactionTemplate = transactionTemplate;
 	}
 
 	@Override
@@ -126,8 +130,11 @@ public class AiChatServiceImpl implements AiChatService {
 		try {
 			final AiChatPromptContext promptContext = new AiChatPromptContext(request.patientId(), request.dietaId(),
 					request.platilloId());
-			final AiChatThread thread = loadOwnedThread(request.threadId(), nutritionistId);
-			final AiChatPromptContext mergedContext = mergePromptContext(promptContext, patientId(thread));
+			final Long threadPatientId = transactionTemplate.execute(status -> {
+				final AiChatThread ownedThread = loadOwnedThread(request.threadId(), nutritionistId);
+				return patientId(ownedThread);
+			});
+			final AiChatPromptContext mergedContext = mergePromptContext(promptContext, threadPatientId);
 			final AiOrchestrationContext context = buildOrchestrationContext(nutritionistId, request.threadId(),
 					mergedContext);
 			orchestrationService.processUserMessageStreaming(context, request.message().trim(),

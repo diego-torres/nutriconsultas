@@ -136,7 +136,7 @@ public class AiChatRestController {
 		}
 		catch (final RuntimeException ex) {
 			if (log.isWarnEnabled()) {
-				log.warn("AI chat stream failed unexpectedly");
+				log.warn("AI chat stream failed unexpectedly", ex);
 			}
 			completeStreamError(emitter, "No se pudo completar la solicitud.");
 		}
