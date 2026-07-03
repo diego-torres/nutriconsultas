@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.nutriconsultas.alimentos.AlimentoTemplateValidator;
+import com.nutriconsultas.ai.AiChatTemplateValidator;
 import com.nutriconsultas.calendar.CalendarTemplateValidator;
 import com.nutriconsultas.contact.ContactInquiryTemplateValidator;
 import com.nutriconsultas.dieta.DietaTemplateValidator;
@@ -36,6 +37,7 @@ public class TemplateValidatorRegistry {
 		register(new DietaTemplateValidator());
 		register(new AlimentoTemplateValidator());
 		register(new ReportTemplateValidator());
+		register(new AiChatTemplateValidator());
 		register(new SearchTemplateValidator());
 		register(new ProfileTemplateValidator());
 		register(new PlatformAdminTemplateValidator());

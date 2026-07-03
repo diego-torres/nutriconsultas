@@ -27,6 +27,11 @@ public abstract class BaseTemplateValidator implements TemplateValidator {
 		// Common menu attribute
 		variables.put("activeMenu", "");
 
+		// Sidebar feature flags (#388, platform admin, clinic director)
+		variables.put("aiEnabled", false);
+		variables.put("platformAdmin", false);
+		variables.put("clinicDirector", false);
+
 		// Common list attributes
 		variables.put("ingestas", new ArrayList<>());
 		variables.put("platillos", new ArrayList<>());

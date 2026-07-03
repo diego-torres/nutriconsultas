@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
+
+  <title>Minutriporcion - Asistente IA</title>
+
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+
+</head>
+
+<body id="page-top">
+
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/sidebar :: sidebar}"></div>
+
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+
+        <div class="container-fluid">
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">
+              <i class="fas fa-robot mr-2" aria-hidden="true"></i>
+              Asistente de IA
+            </h1>
+          </div>
+
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h2 class="h6 m-0 font-weight-bold text-primary">Chat nutricional</h2>
+            </div>
+            <div class="card-body" id="ai-chat-root" aria-live="polite">
+              <p class="text-muted mb-0">
+                Usa el asistente para redactar recetas, menús y planes dietéticos como borradores.
+                El contenido generado requiere tu revisión antes de guardarse o asignarse a pacientes.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="sticky-footer bg-white">
+        <div class="container my-auto">
+          <div class="copyright text-center my-auto">
+            <span>Copyright &copy; Minutriporcion 2026</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+  </a>
+
+  <div th:insert="~{sbadmin/logout-modal :: logout}"></div>
+
+  <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+  <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+
+</body>
+
+</html>
