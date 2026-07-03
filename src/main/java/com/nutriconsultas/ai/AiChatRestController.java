@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import lombok.extern.slf4j.Slf4j;
@@ -104,6 +106,52 @@ public class AiChatRestController {
 			return errorResponse(HttpStatus.TOO_MANY_REQUESTS, AiToolErrorCode.RATE_LIMIT,
 					AiChatRateLimiter.RATE_LIMIT_USER_MESSAGE);
 		}
+	}
+
+	@PostMapping(value = "/message/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+	public SseEmitter streamMessage(@RequestBody final AiSendMessageRequest request,
+			@AuthenticationPrincipal final OidcUser principal) {
+		final SseEmitter emitter = new SseEmitter(300_000L);
+		emitter.onTimeout(emitter::complete);
+		final String nutritionistId = nutritionistId(principal);
+		if (nutritionistId == null) {
+			completeStreamError(emitter, "Sesión no válida.");
+			return emitter;
+		}
+		if (request == null) {
+			completeStreamError(emitter, "Solicitud no válida.");
+			return emitter;
+		}
+		try {
+			aiChatRateLimiter.executeMessage(nutritionistId, () -> {
+				chatService.streamMessage(nutritionistId, request, emitter);
+				return null;
+			});
+		}
+		catch (final RequestNotPermitted ex) {
+			if (log.isDebugEnabled()) {
+				log.debug("AI chat stream rate limit exceeded");
+			}
+			completeStreamError(emitter, AiChatRateLimiter.RATE_LIMIT_USER_MESSAGE);
+		}
+		catch (final RuntimeException ex) {
+			if (log.isWarnEnabled()) {
+				log.warn("AI chat stream failed unexpectedly", ex);
+			}
+			completeStreamError(emitter, "No se pudo completar la solicitud.");
+		}
+		return emitter;
+	}
+
+	private static void completeStreamError(final SseEmitter emitter, final String message) {
+		try {
+			AiChatSseSupport.sendError(emitter, message);
+		}
+		catch (Exception ex) {
+			emitter.completeWithError(ex);
+			return;
+		}
+		AiChatSseSupport.completeQuietly(emitter);
 	}
 
 	@GetMapping("/{threadId}")

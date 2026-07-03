@@ -3,7 +3,6 @@ package com.nutriconsultas.ai;
 /**
  * OpenAI chat orchestration for nutritionist AI assistant (#385).
  */
-@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface AiOrchestrationService {
 
 	/**
@@ -13,5 +12,12 @@ public interface AiOrchestrationService {
 	 * @throws OpenAiClientException when OpenAI returns an error
 	 */
 	AiOrchestrationResult processUserMessage(AiOrchestrationContext context, String userMessage);
+
+	/**
+	 * Processes one user turn and emits assistant text incrementally after the tool loop
+	 * completes (#435).
+	 */
+	void processUserMessageStreaming(AiOrchestrationContext context, String userMessage,
+			AiStreamEventConsumer streamConsumer);
 
 }
