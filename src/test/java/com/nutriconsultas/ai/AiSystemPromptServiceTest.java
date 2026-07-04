@@ -34,6 +34,8 @@ class AiSystemPromptServiceTest {
 		assertThat(prompt).contains(AiSystemPromptServiceImpl.SAFETY_MARKER_LIMITED_CAPABILITIES);
 		assertThat(prompt.toLowerCase(Locale.ROOT)).contains("código");
 		assertThat(prompt.toLowerCase(Locale.ROOT)).contains("investigación profunda");
+		assertThat(prompt).contains(AiSystemPromptServiceImpl.SAFETY_MARKER_JAILBREAK_DEFENSE);
+		assertThat(prompt.toLowerCase(Locale.ROOT)).contains("no puedo cambiar mi rol");
 		assertThat(prompt).contains("<mensaje_nutriologo>");
 	}
 

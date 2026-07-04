@@ -29,6 +29,8 @@ public class AiSystemPromptServiceImpl implements AiSystemPromptService {
 
 	static final String SAFETY_MARKER_LIMITED_CAPABILITIES = "CAPACIDADES LIMITADAS";
 
+	static final String SAFETY_MARKER_JAILBREAK_DEFENSE = "DEFENSA ANTE JAILBREAK";
+
 	private static final String TEMPLATE_PATH = "ai/system-prompt-base.txt";
 
 	private final String baseTemplate;

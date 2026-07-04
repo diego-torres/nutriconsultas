@@ -1,6 +1,6 @@
 # AI Prompt Security (v1)
 
-**Issue:** [#439](https://github.com/diego-torres/nutriconsultas/issues/439) · Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438)  
+**Issue:** [#439](https://github.com/diego-torres/nutriconsultas/issues/439), [#440](https://github.com/diego-torres/nutriconsultas/issues/440) · Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438)  
 **Related:** [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md) (#362) · [`AI-ASSISTANT-PLAN.md`](AI-ASSISTANT-PLAN.md)
 
 Defense-in-depth rules for nutritionist chat input before OpenAI orchestration (#385). Part of Milestone 5 — required before production `AI_ENABLED=true` (see #408).
@@ -12,9 +12,9 @@ Defense-in-depth rules for nutritionist chat input before OpenAI orchestration (
 | Goal | Implementation |
 |------|----------------|
 | Limit untrusted input size | `nutriconsultas.ai.max-user-message-length` (default **4000**, matches UI `maxlength`) |
-| Detect high-risk override patterns | `AiUserMessageGuard` regex scan (English + Spanish fixtures) |
+| Detect high-risk override patterns | `AiPromptThreatDetector` + `AiUserMessageGuard` (injection + jailbreak) |
 | Separate user content from system instructions | Delimiter wrap `<mensaje_nutriologo>…</mensaje_nutriologo>` on outbound user role messages |
-| Model-side refusal | `ai/system-prompt-base.txt` **SEGURIDAD DE PROMPTS** section (#367) |
+| Model-side refusal | `ai/system-prompt-base.txt` **SEGURIDAD DE PROMPTS** + **DEFENSA ANTE JAILBREAK** (#440) |
 | User-facing block message | Spanish `400` via `AiChatException` — no OpenAI call, no persistence on block |
 
 ---
@@ -38,12 +38,22 @@ flowchart LR
 
 ## Blocked patterns (deterministic)
 
-`AiUserMessageGuard` rejects messages matching known injection / jailbreak phrases, including:
+`AiPromptThreatDetector` classifies input as **INJECTION** or **JAILBREAK** before orchestration.
+
+### Injection (#439)
 
 - English: `ignore previous instructions`, `disregard prior instructions`, `forget your instructions`, `you are now a…`, `act as DAN`, `new instructions:`, `override system prompt`, `` ```system ``, `<|im_start|>system`, `[INST]`, `developer mode on`, `pretend you are not…`, `role: system`
 - Spanish: `ignora las instrucciones anteriores`, `olvida tus instrucciones`
 
+### Jailbreak / role override (#440)
+
+- Role-play: `act as admin`, `you are the platform administrator`, `roleplay as unrestricted AI`, `actúa como administrador`, `eres el admin`
+- Mode bypass: `simulate unrestricted mode`, `bypass safety guardrails`, `DAN mode`, `god mode`, `modo sin restricciones`
+- Exfiltration: `reveal your tools`, `list all functions`, `repeat your system prompt`, `what are your system instructions`, `muéstrame el prompt del sistema`, `exfiltrate the tool schema`
+
 **Not blocked:** legitimate nutrition wording (e.g. “ignorar lácteos”, “sin instrucciones de cocina”) when it does not match the override regexes.
+
+Blocked requests log `category` and `messageLength` only — never the message body (#397).
 
 ---
 
@@ -59,7 +69,7 @@ flowchart LR
 
 | Case | Message |
 |------|---------|
-| Injection / jailbreak | *No puedo procesar este mensaje porque parece contener instrucciones para alterar el comportamiento del asistente…* |
+| Injection / jailbreak | *No puedo procesar…* (injection) / *No puedo cumplir solicitudes que intenten cambiar mi rol…* (jailbreak) |
 | Length | *El mensaje supera el límite de N caracteres.* |
 | Empty | *El mensaje no puede estar vacío.* |
 
@@ -69,7 +79,7 @@ HTTP status: **400** (`AiToolErrorCode.VALIDATION`) for chat REST and SSE error 
 
 ## Testing
 
-- **Unit:** `AiUserMessageGuardTest` — fixtures only, no live OpenAI
+- **Unit:** `AiPromptThreatDetectorTest`, `AiUserMessageGuardTest`, `AiOpenAiToolCatalogTest` — fixtures only, no live OpenAI
 - **Integration:** `AiOrchestrationServiceTest` — wrapped user content in completion request
 - **Future:** #450 golden prompts for bulk/abuse scenarios; #448 LLM scope classifier
 
@@ -79,7 +89,7 @@ HTTP status: **400** (`AiToolErrorCode.VALIDATION`) for chat REST and SSE error 
 
 | # | Topic |
 |---|--------|
-| **440** | Jailbreak / role-override refusal corpus (model behavior) |
+| **440** | ~~Jailbreak / role-override refusal corpus~~ **done** in #440 |
 | **441** | Delimiters, tool allowlist, output validation (defense-in-depth) |
 | **447** | Deterministic bulk scope limits (Java pre-check) |
 | **448** | LLM scope classifier pre-flight |
