@@ -216,8 +216,12 @@ Injection, jailbreak, and defense-in-depth guardrails for orchestration (#385).
 | **439** | Prompt injection input guardrails | https://github.com/diego-torres/nutriconsultas/issues/439 | **open** | **438**, **385** | Sanitize user input; `docs/ai/PROMPT-SECURITY.md` |
 | **440** | Jailbreak and role-override defenses | https://github.com/diego-torres/nutriconsultas/issues/440 | **open** | **438**, **439**, **367** | Refusal corpus + system prompt hardening |
 | **441** | Defense-in-depth prompt engineering guardrails | https://github.com/diego-torres/nutriconsultas/issues/441 | **open** | **438**, **439**, **440**, **372** | Delimiters, tool allowlist, output validation |
+| **447** | Deterministic request scope limits (bulk generation guard) | https://github.com/diego-torres/nutriconsultas/issues/447 | **open** | **438**, **385** | Java pre-check before orchestration; align with tool caps (14 days, 1 dish/turn) |
+| **448** | LLM scope classifier pre-flight | https://github.com/diego-torres/nutriconsultas/issues/448 | **open** | **438**, **447**, **366** | Structured ALLOW/REFUSE/CLARIFY before tool loop |
+| **449** | System prompt volume limits and bulk refusal corpus | https://github.com/diego-torres/nutriconsultas/issues/449 | **open** | **438**, **367**, **447** | `system-prompt-base.txt` + `FUNCTIONAL-SCOPE.md` |
+| **450** | Golden prompts for excessive bulk AI requests | https://github.com/diego-torres/nutriconsultas/issues/450 | **open** | **400**, **401**, **447** | Refuse «1000 planes» / allow «7 días» scenarios |
 
-**Suggested order:** #439 → #440 → #441; extend #401 golden prompts with security cases. Gate with #408 release checklist.
+**Suggested order:** #439 → #440 → **#447** → **#449** → **#448** → **#450** → #441; extend #401 golden prompts with security cases. Gate with #408 release checklist.
 
 ---
 
