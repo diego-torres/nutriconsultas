@@ -1,7 +1,7 @@
 # AI Prompt Security (v1)
 
-**Issue:** [#439](https://github.com/diego-torres/nutriconsultas/issues/439), [#440](https://github.com/diego-torres/nutriconsultas/issues/440), [#447](https://github.com/diego-torres/nutriconsultas/issues/447), [#448](https://github.com/diego-torres/nutriconsultas/issues/448), [#449](https://github.com/diego-torres/nutriconsultas/issues/449), [#450](https://github.com/diego-torres/nutriconsultas/issues/450) · Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438)  
-**Related:** [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md) (#362) · [`AI-ASSISTANT-PLAN.md`](AI-ASSISTANT-PLAN.md) · [`FUNCTIONAL-SCOPE.md`](FUNCTIONAL-SCOPE.md) (#361) · [`BULK-SCOPE-GOLDEN-PROMPTS.md`](BULK-SCOPE-GOLDEN-PROMPTS.md) (#450)
+**Issue:** [#439](https://github.com/diego-torres/nutriconsultas/issues/439), [#440](https://github.com/diego-torres/nutriconsultas/issues/440), [#447](https://github.com/diego-torres/nutriconsultas/issues/447), [#448](https://github.com/diego-torres/nutriconsultas/issues/448), [#449](https://github.com/diego-torres/nutriconsultas/issues/449), [#450](https://github.com/diego-torres/nutriconsultas/issues/450), [#441](https://github.com/diego-torres/nutriconsultas/issues/441) · Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438)  
+**Related:** [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md) (#362) · [`AI-ASSISTANT-PLAN.md`](AI-ASSISTANT-PLAN.md) · [`FUNCTIONAL-SCOPE.md`](FUNCTIONAL-SCOPE.md) (#361) · [`BULK-SCOPE-GOLDEN-PROMPTS.md`](BULK-SCOPE-GOLDEN-PROMPTS.md) (#450) · [`SECURITY-GOLDEN-PROMPTS.md`](SECURITY-GOLDEN-PROMPTS.md) (#441)
 
 Defense-in-depth rules for nutritionist chat input before OpenAI orchestration (#385). Part of Milestone 5 — required before production `AI_ENABLED=true` (see #408).
 
@@ -14,6 +14,11 @@ Defense-in-depth rules for nutritionist chat input before OpenAI orchestration (
 | Limit untrusted input size | `nutriconsultas.ai.max-user-message-length` (default **4000**, matches UI `maxlength`) |
 | Detect high-risk override patterns | `AiPromptThreatDetector` + `AiUserMessageGuard` (injection + jailbreak) |
 | Separate user content from system instructions | Delimiter wrap `<mensaje_nutriologo>…</mensaje_nutriologo>` on outbound user role messages |
+| Structured session context | `<contexto_*>` blocks in system prompt (#441) |
+| Tool output isolation | `<resultado_herramienta>` wrap + disclaimer on tool JSON (#441) |
+| Server-side tool allowlist | `AiToolAllowlist` rejects unknown tool names before dispatch (#441) |
+| Assistant output validation | `AiAssistantOutputValidator` redacts API keys and unexpected PII (#441) |
+| Indirect injection in catalog data | `AiToolResultSanitizer` filters threat patterns in tool JSON (#441) |
 | Model-side refusal | `ai/system-prompt-base.txt` **SEGURIDAD DE PROMPTS** + **DEFENSA ANTE JAILBREAK** (#440) + **VOLUMEN Y LÍMITES** (#449) |
 | User-facing block message | Spanish `400` via `AiChatException` — no OpenAI call, no persistence on block |
 | Bulk generation limits (#447) | `AiRequestScopeGuard` before orchestration — persist user + assistant refusal, no OpenAI/tools |
@@ -34,6 +39,8 @@ flowchart LR
   C -->|REFUSE/CLARIFY| R
   C -->|ALLOW/disabled| E[buildConversation wraps USER rows]
   E --> F[OpenAI chat completion + tools]
+  F --> G[AiToolAllowlist + AiToolResultSanitizer]
+  G --> H[AiAssistantOutputValidator on reply]
 ```
 
 **Edit/resubmit (#437):** validation runs **before** thread truncation so a blocked edit cannot delete history.
@@ -123,6 +130,22 @@ Classifier failures **fail open** (allow request) with warn log. Decisions log `
 
 ---
 
+## Defense-in-depth guardrails (#441)
+
+After scope checks pass and during orchestration:
+
+| Layer | Class | Behavior |
+|-------|-------|----------|
+| Context delimiters | `AiPromptDelimiters`, `AiSystemPromptServiceImpl` | Wrap nutritionist/patient/dieta/platillo blocks in `<contexto_*>` tags |
+| User delimiters | `AiUserMessageGuard` | Wrap persisted user rows in `<mensaje_nutriologo>` for OpenAI only |
+| Tool allowlist | `AiToolAllowlist` | Reject tool names not in `AiOpenAiToolCatalog`; Spanish error JSON to model |
+| Tool result sanitize | `AiToolResultSanitizer` | Wrap in `<resultado_herramienta>`, filter injection / `"role":"system"` in catalog JSON |
+| Output validation | `AiAssistantOutputValidator` | Redact `sk-*`, AWS keys, Bearer tokens, emails, phone numbers before persist |
+
+Golden scenarios: [`SECURITY-GOLDEN-PROMPTS.md`](SECURITY-GOLDEN-PROMPTS.md).
+
+---
+
 ## Configuration
 
 | Property | Env | Default |
@@ -151,8 +174,9 @@ HTTP status: **400** (`AiToolErrorCode.VALIDATION`) for injection/jailbreak/leng
 
 ## Testing
 
-- **Unit:** `AiPromptThreatDetectorTest`, `AiUserMessageGuardTest`, `AiRequestScopeGuardTest`, `AiRequestScopeClassifierTest`, `AiOpenAiToolCatalogTest` — fixtures only, no live OpenAI
+- **Unit:** `AiPromptThreatDetectorTest`, `AiUserMessageGuardTest`, `AiRequestScopeGuardTest`, `AiRequestScopeClassifierTest`, `AiOpenAiToolCatalogTest`, `AiToolAllowlistTest`, `AiToolResultSanitizerTest`, `AiAssistantOutputValidatorTest` — fixtures only, no live OpenAI
 - **Golden (#450):** `AiBulkScopeGoldenPromptTest` — bulk refuse/allow matrix; see [`BULK-SCOPE-GOLDEN-PROMPTS.md`](BULK-SCOPE-GOLDEN-PROMPTS.md)
+- **Golden (#441):** `AiSecurityGoldenPromptTest` — allowlist, output redaction, tool sanitization; see [`SECURITY-GOLDEN-PROMPTS.md`](SECURITY-GOLDEN-PROMPTS.md)
 - **Integration:** `AiOrchestrationServiceTest` — wrapped user content; scope/classifier short-circuit without tool loop
 
 ---
@@ -162,7 +186,7 @@ HTTP status: **400** (`AiToolErrorCode.VALIDATION`) for injection/jailbreak/leng
 | # | Topic |
 |---|--------|
 | **440** | ~~Jailbreak / role-override refusal corpus~~ **done** in #440 |
-| **441** | Delimiters, tool allowlist, output validation (defense-in-depth) |
+| **441** | ~~Delimiters, tool allowlist, output validation (defense-in-depth)~~ **done** in #441 |
 | **447** | ~~Deterministic bulk scope limits (Java pre-check)~~ **done** in #447 |
 | **449** | ~~System prompt volume limits and bulk refusal corpus~~ **done** in #449 |
 | **448** | ~~LLM scope classifier pre-flight~~ **done** in #448 |

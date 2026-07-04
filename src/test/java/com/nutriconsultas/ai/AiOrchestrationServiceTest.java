@@ -69,6 +69,9 @@ class AiOrchestrationServiceTest {
 	@Mock
 	private AiRequestScopePipeline requestScopePipeline;
 
+	@Mock
+	private AiOrchestrationGuardrails guardrails;
+
 	private AiUserMessageGuard realUserMessageGuard;
 
 	private AiRequestScopeGuard realRequestScopeGuard;
@@ -92,6 +95,14 @@ class AiOrchestrationServiceTest {
 		lenient().when(chatPersistence.getTransactionTemplate()).thenReturn(transactionTemplate);
 		lenient().when(orchestrationTools.getToolCatalog()).thenReturn(toolCatalog);
 		lenient().when(orchestrationTools.getToolDispatcher()).thenReturn(toolDispatcher);
+		lenient().when(orchestrationTools.getGuardrails()).thenReturn(guardrails);
+		lenient().when(guardrails.isToolAllowed(org.mockito.ArgumentMatchers.anyString())).thenReturn(true);
+		lenient()
+			.when(guardrails.sanitizeToolResult(org.mockito.ArgumentMatchers.anyString(),
+					org.mockito.ArgumentMatchers.anyString()))
+			.thenAnswer(invocation -> invocation.getArgument(1));
+		lenient().when(guardrails.validateAssistantOutput(org.mockito.ArgumentMatchers.anyString()))
+			.thenAnswer(invocation -> invocation.getArgument(0));
 		lenient().when(requestScopePipeline.evaluate(any(String.class))).thenAnswer(invocation -> {
 			final Optional<AiRequestScopeViolation> violation = realRequestScopeGuard
 				.evaluate(invocation.getArgument(0));

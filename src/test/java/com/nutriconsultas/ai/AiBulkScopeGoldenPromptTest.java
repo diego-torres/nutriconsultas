@@ -18,7 +18,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.nutriconsultas.ai.AiBulkScopeGoldenPrompt.Scenario;
 
 /**
- * Golden prompt evaluation for bulk scope guards (#450). Uses mocked OpenAI only — no live API calls.
+ * Golden prompt evaluation for bulk scope guards (#450). Uses mocked OpenAI only — no
+ * live API calls.
  */
 class AiBulkScopeGoldenPromptTest {
 
@@ -63,8 +64,9 @@ class AiBulkScopeGoldenPromptTest {
 			AiBulkScopeGoldenPrompt.assertConstructiveAlternative(guardOutcome.orElseThrow().refusalMessage());
 			return;
 		}
-		when(classifier.evaluate(scenario.prompt())).thenReturn(Optional.of(new AiRequestScopeClassifierOutcome(
-				AiRequestScopeDecision.CLARIFY, "¿Para cuántos días quieres el borrador de ejemplo?", null)));
+		when(classifier.evaluate(scenario.prompt()))
+			.thenReturn(Optional.of(new AiRequestScopeClassifierOutcome(AiRequestScopeDecision.CLARIFY,
+					"¿Para cuántos días quieres el borrador de ejemplo?", null)));
 
 		final Optional<AiRequestScopePipeline.ScopeShortCircuit> shortCircuit = pipeline.evaluate(scenario.prompt());
 
@@ -106,11 +108,11 @@ class AiBulkScopeGoldenPromptTest {
 			.orElseThrow();
 		assertThat(guard.evaluate(scenario.prompt())).isEmpty();
 
-		when(classifier.evaluate(scenario.prompt())).thenReturn(Optional.of(new AiRequestScopeClassifierOutcome(
-				AiRequestScopeDecision.REFUSE,
-				"No puedo generar planes para todos tus pacientes en un solo turno. "
-						+ "Puedo ayudarte con 1 borrador de ejemplo que revises y apruebes.",
-				new AiRequestScopeRequestedUnits(null, null, null, 0))));
+		when(classifier.evaluate(scenario.prompt()))
+			.thenReturn(Optional.of(new AiRequestScopeClassifierOutcome(AiRequestScopeDecision.REFUSE,
+					"No puedo generar planes para todos tus pacientes en un solo turno. "
+							+ "Puedo ayudarte con 1 borrador de ejemplo que revises y apruebes.",
+					new AiRequestScopeRequestedUnits(null, null, null, 0))));
 
 		final Optional<AiRequestScopePipeline.ScopeShortCircuit> shortCircuit = pipeline.evaluate(scenario.prompt());
 
@@ -174,9 +176,14 @@ class AiBulkScopeGoldenPromptTest {
 					mock(AiRequestScopeClassifier.class));
 			when(properties.isOperational()).thenReturn(true);
 			when(openAiClientService.isAvailable()).thenReturn(true);
+			final AiOrchestrationGuardrails guardrails = new AiOrchestrationGuardrails(
+					new AiToolAllowlist(new AiOpenAiToolCatalog()), new AiToolResultSanitizer(),
+					new AiAssistantOutputValidator());
 			service = new AiOrchestrationServiceImpl(properties, openAiClientService, systemPromptService,
-					new AiChatPersistence(threadRepository, messageRepository, mock(org.springframework.transaction.support.TransactionTemplate.class)),
-					new AiOrchestrationTools(toolCatalog, toolDispatcher), userMessageGuard, requestScopePipeline);
+					new AiChatPersistence(threadRepository, messageRepository,
+							mock(org.springframework.transaction.support.TransactionTemplate.class)),
+					new AiOrchestrationTools(toolCatalog, toolDispatcher, guardrails), userMessageGuard,
+					requestScopePipeline);
 		}
 
 		private OpenAiClientService openAiClientService() {

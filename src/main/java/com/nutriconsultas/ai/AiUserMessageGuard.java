@@ -13,9 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AiUserMessageGuard {
 
-	static final String USER_MESSAGE_OPEN = "<mensaje_nutriologo>";
+	static final String USER_MESSAGE_OPEN = AiPromptDelimiters.USER_MESSAGE_OPEN;
 
-	static final String USER_MESSAGE_CLOSE = "</mensaje_nutriologo>";
+	static final String USER_MESSAGE_CLOSE = AiPromptDelimiters.USER_MESSAGE_CLOSE;
 
 	static final String INJECTION_REFUSAL_MESSAGE = "No puedo procesar este mensaje porque parece contener "
 			+ "instrucciones para alterar el comportamiento del asistente. "
@@ -55,7 +55,7 @@ public class AiUserMessageGuard {
 	}
 
 	public String wrapForModel(final String sanitizedUserContent) {
-		return USER_MESSAGE_OPEN + "\n" + sanitizedUserContent + "\n" + USER_MESSAGE_CLOSE;
+		return AiPromptDelimiters.wrapUserMessage(sanitizedUserContent);
 	}
 
 	private static String refusalMessageFor(final AiPromptThreatCategory category) {

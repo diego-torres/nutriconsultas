@@ -25,4 +25,13 @@ class AiOpenAiToolCatalogTest {
 		}
 	}
 
+	@Test
+	void catalogToolNamesMatchAllowlist() {
+		final AiToolAllowlist allowlist = new AiToolAllowlist(catalog);
+		for (final OpenAiToolDefinition definition : catalog.definitions()) {
+			assertThat(allowlist.isAllowed(definition.name())).isTrue();
+		}
+		assertThat(allowlist.allowedToolNames()).hasSameSizeAs(catalog.definitions());
+	}
+
 }
