@@ -1,7 +1,7 @@
 # AI Prompt Security (v1)
 
-**Issue:** [#439](https://github.com/diego-torres/nutriconsultas/issues/439), [#440](https://github.com/diego-torres/nutriconsultas/issues/440), [#447](https://github.com/diego-torres/nutriconsultas/issues/447), [#448](https://github.com/diego-torres/nutriconsultas/issues/448), [#449](https://github.com/diego-torres/nutriconsultas/issues/449) · Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438)  
-**Related:** [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md) (#362) · [`AI-ASSISTANT-PLAN.md`](AI-ASSISTANT-PLAN.md) · [`FUNCTIONAL-SCOPE.md`](FUNCTIONAL-SCOPE.md) (#361)
+**Issue:** [#439](https://github.com/diego-torres/nutriconsultas/issues/439), [#440](https://github.com/diego-torres/nutriconsultas/issues/440), [#447](https://github.com/diego-torres/nutriconsultas/issues/447), [#448](https://github.com/diego-torres/nutriconsultas/issues/448), [#449](https://github.com/diego-torres/nutriconsultas/issues/449), [#450](https://github.com/diego-torres/nutriconsultas/issues/450) · Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438)  
+**Related:** [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md) (#362) · [`AI-ASSISTANT-PLAN.md`](AI-ASSISTANT-PLAN.md) · [`FUNCTIONAL-SCOPE.md`](FUNCTIONAL-SCOPE.md) (#361) · [`BULK-SCOPE-GOLDEN-PROMPTS.md`](BULK-SCOPE-GOLDEN-PROMPTS.md) (#450)
 
 Defense-in-depth rules for nutritionist chat input before OpenAI orchestration (#385). Part of Milestone 5 — required before production `AI_ENABLED=true` (see #408).
 
@@ -152,8 +152,8 @@ HTTP status: **400** (`AiToolErrorCode.VALIDATION`) for injection/jailbreak/leng
 ## Testing
 
 - **Unit:** `AiPromptThreatDetectorTest`, `AiUserMessageGuardTest`, `AiRequestScopeGuardTest`, `AiRequestScopeClassifierTest`, `AiOpenAiToolCatalogTest` — fixtures only, no live OpenAI
+- **Golden (#450):** `AiBulkScopeGoldenPromptTest` — bulk refuse/allow matrix; see [`BULK-SCOPE-GOLDEN-PROMPTS.md`](BULK-SCOPE-GOLDEN-PROMPTS.md)
 - **Integration:** `AiOrchestrationServiceTest` — wrapped user content; scope/classifier short-circuit without tool loop
-- **Future:** #450 golden prompts for bulk/abuse scenarios
 
 ---
 
@@ -166,6 +166,7 @@ HTTP status: **400** (`AiToolErrorCode.VALIDATION`) for injection/jailbreak/leng
 | **447** | ~~Deterministic bulk scope limits (Java pre-check)~~ **done** in #447 |
 | **449** | ~~System prompt volume limits and bulk refusal corpus~~ **done** in #449 |
 | **448** | ~~LLM scope classifier pre-flight~~ **done** in #448 |
+| **450** | ~~Golden prompts for excessive bulk requests~~ **done** in #450 |
 
 ---
 
