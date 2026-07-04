@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-07-04 — ~~#441~~ merged (PR #464). Epic **#438** prompt security **complete**. Next: **#401** (golden prompt test cases).
+**Last updated:** 2026-07-04 — ~~#401~~ merged (PR #466). Next: **#402** (structured output validation).
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -221,7 +221,7 @@ Injection, jailbreak, and defense-in-depth guardrails for orchestration (#385).
 | **449** | System prompt volume limits and bulk refusal corpus | https://github.com/diego-torres/nutriconsultas/issues/449 | **done** | **438**, **367**, **447** | PR #458 — `VOLUMEN Y LÍMITES`, `FUNCTIONAL-SCOPE.md`, bulk corpus |
 | **450** | Golden prompts for excessive bulk AI requests | https://github.com/diego-torres/nutriconsultas/issues/450 | **done** | **400**, **401**, **447** | PR #462 — `AiBulkScopeGoldenPromptTest`, docs |
 
-**Suggested order:** ~~#439~~ ~~#440~~ ~~#447~~ ~~#449~~ ~~#448~~ ~~#450~~ ~~#441~~ **done** — epic **#438** complete. Next: **#401** golden prompts; gate with #408 release checklist.
+**Suggested order:** ~~#401~~ **done**. Next: **#402** structured output validation; **#403** E2E draft flow. Gate with #408 release checklist.
 
 ---
 
@@ -232,11 +232,11 @@ Golden prompts, schema validation, E2E tests.
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
 | **400** | Epic — AI Nutrition Evaluation Suite (Phase 9) | https://github.com/diego-torres/nutriconsultas/issues/400 | **open** | **382**, **385** | Milestone 5 |
-| **401** | Add Golden Prompt Test Cases | https://github.com/diego-torres/nutriconsultas/issues/401 | **open** | **400**, **361** | Documented scenarios |
+| **401** | Add Golden Prompt Test Cases | https://github.com/diego-torres/nutriconsultas/issues/401 | **done** | **400**, **361** | PR #466 — `AiNutritionGoldenPromptTest`, docs |
 | **402** | Add Structured Output Validation | https://github.com/diego-torres/nutriconsultas/issues/402 | **open** | **379**, **380**, **381** | JSON schemas |
 | **403** | Add End-to-End AI Draft Flow Test | https://github.com/diego-torres/nutriconsultas/issues/403 | **open** | **384**, **390** | Mock OpenAI + IDOR |
 
-**Suggested order:** #402 after draft tools; #403 after UI; #401 anytime in M5.
+**Suggested order:** #402 after draft tools; #403 after UI; ~~#401~~ **done** (PR #466).
 
 ---
 
