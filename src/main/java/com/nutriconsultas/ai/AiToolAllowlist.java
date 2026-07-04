@@ -14,21 +14,21 @@ public final class AiToolAllowlist {
 
 	static final String REJECTION_MESSAGE = "Herramienta no permitida.";
 
-	private final Set<String> allowedToolNames;
+	private final Set<String> registeredToolNames;
 
 	public AiToolAllowlist(final AiOpenAiToolCatalog catalog) {
-		this.allowedToolNames = catalog.definitions()
+		this.registeredToolNames = catalog.definitions()
 			.stream()
 			.map(OpenAiToolDefinition::name)
 			.collect(Collectors.toUnmodifiableSet());
 	}
 
 	public boolean isAllowed(final String toolName) {
-		return toolName != null && allowedToolNames.contains(toolName);
+		return toolName != null && registeredToolNames.contains(toolName);
 	}
 
 	public Set<String> allowedToolNames() {
-		return allowedToolNames;
+		return registeredToolNames;
 	}
 
 }
