@@ -6,14 +6,14 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 
 | File | Purpose |
 |------|---------|
-| [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md) | `[AI Assistant]` issues #360–#442, states, dependencies |
+| [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md) | `[AI Assistant]` issues #360–#450, states, dependencies |
 | [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md) | Architecture, security, tools, milestones |
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#435 — Stream assistant responses (SSE)](https://github.com/diego-torres/nutriconsultas/issues/435) (`in-progress` on `issue-435-ai-chat-streaming`). ~~#434~~ markdown merged (PR #444).
+**Current next issue:** [#436 — Stop and cancel in-flight AI generation](https://github.com/diego-torres/nutriconsultas/issues/436) (`in-progress` on `issue-436-ai-chat-cancel`). ~~#435~~ SSE merged (PR #445).
 
-**Registered backlog (2026-07-03):** Epic [#433](https://github.com/diego-torres/nutriconsultas/issues/433) chat UX (#434 markdown, #435 streaming, #436 stop, #437 edit/resubmit). Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438) prompt security (#439–#441). See registry for suggested order.
+**Registered backlog (2026-07-04):** Epic [#433](https://github.com/diego-torres/nutriconsultas/issues/433) chat UX (#434–#437). Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438) prompt security (#439–#441, **#447–#450** bulk scope guards). See registry for suggested order.
 
 ---
 
@@ -26,7 +26,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | **B — Display** | **#434** | Markdown rendering (chat + widget) |
 | **B — Streaming** | **#435** → **#436** | SSE tokens, then cancel/stop |
 | **C — Controls** | **#437** | Edit message and resubmit |
-| **D — Security** | **#439** → **#440** → **#441** | Injection, jailbreak, defense-in-depth |
+| **D — Security** | **#439** → **#440** → **#447** → **#449** → **#448** → **#450** → **#441** | Injection, bulk scope guards, defense-in-depth |
 | **E — Release** | **#409**, **#408**, **#397–#399** | Plan gate, checklist, observability |
 
 Wave **B** may run **#434** in parallel with **#435**. Wave **D** should complete before production `AI_ENABLED=true` (with #408).

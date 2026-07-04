@@ -5,6 +5,8 @@
 
   var API_BASE = '/rest/nutritionist/ai/chat';
   var STORAGE_PREFIX = 'nutriconsultas.ai.widget.thread.';
+  var ASSISTANT_NAME = 'Mina';
+  var WELCOME_MESSAGE = 'Hola, soy Mina';
 
   var state = {
     threadId: null,
@@ -13,7 +15,9 @@
     open: false,
     context: null,
     showLoading: false,
-    loadingThread: false
+    loadingThread: false,
+    activeStreamRequest: null,
+    cancelling: false
   };
 
   function $(selector) {
@@ -57,7 +61,7 @@
       return 'Tú';
     }
     if (role === 'ASSISTANT') {
-      return 'Asistente';
+      return ASSISTANT_NAME;
     }
     return role;
   }
@@ -124,14 +128,63 @@
     if (!sendBtn) {
       return;
     }
-    sendBtn.disabled = busy;
+    var canCancel = busy && state.activeStreamRequest;
+    sendBtn.disabled = busy && !canCancel;
+    if (canCancel) {
+      sendBtn.innerHTML = '<i class="fas fa-stop" aria-hidden="true"></i><span> Detener</span>';
+      sendBtn.setAttribute('aria-busy', 'true');
+      sendBtn.setAttribute('aria-label', 'Detener generación');
+      return;
+    }
     if (busy && state.showLoading) {
       sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span> Enviando…</span>';
       sendBtn.setAttribute('aria-busy', 'true');
+      sendBtn.setAttribute('aria-label', 'Enviando mensaje');
       return;
     }
     sendBtn.innerHTML = '<i class="fas fa-paper-plane" aria-hidden="true"></i><span> Enviar</span>';
     sendBtn.removeAttribute('aria-busy');
+    sendBtn.setAttribute('aria-label', 'Enviar mensaje');
+  }
+
+  function showCancelledNotice() {
+    if (typeof swal === 'function') {
+      swal({
+        title: 'Generación cancelada',
+        text: 'Puedes enviar un nuevo mensaje cuando quieras.',
+        type: 'info',
+        timer: 2500
+      });
+    }
+  }
+
+  function cancelActiveStream() {
+    if (!state.activeStreamRequest) {
+      return;
+    }
+    state.cancelling = true;
+    state.activeStreamRequest.abort();
+  }
+
+  function handleStreamAbort(assistantIndex) {
+    state.showLoading = false;
+    if (assistantIndex !== null && assistantIndex < state.messages.length) {
+      state.messages.splice(assistantIndex, 1);
+    }
+    state.activeStreamRequest = null;
+    state.cancelling = false;
+    setBusy(false);
+    showCancelledNotice();
+  }
+
+  function renderWelcomeMessage() {
+    return '<article class="ai-assistant-message assistant" aria-label="' + ASSISTANT_NAME + '">' +
+      '<div class="ai-assistant-bubble">' + formatMessageBubbleContent({
+        role: 'ASSISTANT',
+        content: WELCOME_MESSAGE
+      }) + '</div>' +
+      '<div class="ai-assistant-meta">' + escapeHtml(ASSISTANT_NAME) + '</div>' +
+      '</article>';
   }
 
   function setBusy(busy) {
@@ -158,8 +211,9 @@
     var loadingThread = state.loadingThread === true;
     var items = visibleMessages(state.messages);
     if (items.length === 0 && !waitingForAssistant && !loadingThread) {
-      container.innerHTML = '<p class="ai-assistant-empty">Pregunta sobre el contexto de esta pantalla. ' +
-        'El asistente usará los datos del paciente, dieta o platillo activo para redactar borradores.</p>';
+      container.innerHTML = renderWelcomeMessage() +
+        '<p class="ai-assistant-empty">Pregunta sobre el contexto de esta pantalla. ' +
+        'Usaré los datos del paciente, dieta o platillo activo para redactar borradores.</p>';
       return;
     }
 
@@ -177,7 +231,7 @@
         'aria-label="Generando respuesta">' +
         '<div class="ai-assistant-bubble ai-assistant-loading-bubble">' +
         '<i class="fas fa-spinner fa-spin ai-assistant-loading-icon" aria-hidden="true"></i>' +
-        '<span class="ai-assistant-loading-text">El asistente está pensando…</span>' +
+        '<span class="ai-assistant-loading-text">Mina está pensando…</span>' +
         '</div></article>';
     } else if (loadingThread) {
       html += '<article class="ai-assistant-message assistant loading" aria-live="polite" aria-busy="true" ' +
@@ -299,16 +353,22 @@
       .then(function (threadId) {
         payload.threadId = threadId;
         if (window.NutriAiChatStream && typeof NutriAiChatStream.streamMessage === 'function') {
-          return NutriAiChatStream.streamMessage(API_BASE + '/message/stream', payload, {
+          var streamRequest = NutriAiChatStream.streamMessage(API_BASE + '/message/stream', payload, {
             onStatus: function () {
               renderMessages();
             },
             onDelta: appendAssistantDelta,
             onDone: finalizeAssistant,
+            onAbort: function () {
+              handleStreamAbort(assistantIndex);
+            },
             onError: function (message) {
               throw new Error(message);
             }
           });
+          state.activeStreamRequest = streamRequest;
+          setBusy(true);
+          return streamRequest;
         }
         return requestJson(API_BASE + '/message', {
           method: 'POST',
@@ -319,6 +379,9 @@
         });
       })
       .catch(function (error) {
+        if (state.cancelling) {
+          return;
+        }
         state.showLoading = false;
         state.messages.pop();
         renderMessages();
@@ -326,6 +389,8 @@
       })
       .finally(function () {
         state.showLoading = false;
+        state.activeStreamRequest = null;
+        state.cancelling = false;
         setBusy(false);
         if (textarea) {
           textarea.focus();
@@ -383,6 +448,7 @@
     var closeBtn = $('#aiAssistantClose');
     var form = $('#aiAssistantForm');
     var textarea = $('#aiAssistantInput');
+    var sendBtn = $('#aiAssistantSendBtn');
     var newBtn = $('#aiAssistantNewBtn');
 
     if (toggleBtn) {
@@ -398,7 +464,19 @@
     if (form) {
       form.addEventListener('submit', function (event) {
         event.preventDefault();
+        if (state.busy && state.activeStreamRequest) {
+          cancelActiveStream();
+          return;
+        }
         sendMessage(textarea ? textarea.value : '');
+      });
+    }
+    if (sendBtn) {
+      sendBtn.addEventListener('click', function (event) {
+        if (state.busy && state.activeStreamRequest) {
+          event.preventDefault();
+          cancelActiveStream();
+        }
       });
     }
     if (textarea) {

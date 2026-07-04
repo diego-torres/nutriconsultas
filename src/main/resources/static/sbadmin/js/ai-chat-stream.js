@@ -1,4 +1,4 @@
-/* AI chat SSE streaming client (#435) */
+/* AI chat SSE streaming client (#435, #436) */
 
 (function (global) {
   'use strict';
@@ -47,10 +47,16 @@
     }
   }
 
+  function isAbortError(error) {
+    return error && (error.name === 'AbortError' || error.code === 20);
+  }
+
   function streamMessage(url, payload, handlers) {
-    return fetch(url, {
+    var controller = new AbortController();
+    var fetchPromise = fetch(url, {
       method: 'POST',
       credentials: 'same-origin',
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         Accept: 'text/event-stream'
@@ -95,10 +101,24 @@
       }
 
       return readNext();
+    }).catch(function (error) {
+      if (isAbortError(error)) {
+        if (handlers.onAbort) {
+          handlers.onAbort();
+        }
+        return null;
+      }
+      throw error;
     });
+
+    fetchPromise.abort = function () {
+      controller.abort();
+    };
+    return fetchPromise;
   }
 
   global.NutriAiChatStream = {
-    streamMessage: streamMessage
+    streamMessage: streamMessage,
+    isAbortError: isAbortError
   };
 })(typeof window !== 'undefined' ? window : this);

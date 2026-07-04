@@ -15,7 +15,10 @@
     drafts: [],
     selectedDraftId: null,
     selectedPreview: null,
-    busy: false
+    busy: false,
+    showLoading: false,
+    activeStreamRequest: null,
+    cancelling: false
   };
 
   function $(selector) {
@@ -404,15 +407,53 @@
       textarea.disabled = busy;
     }
     if (sendBtn) {
-      sendBtn.disabled = busy;
-      sendBtn.innerHTML = busy
-        ? '<span class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span>Enviando…'
-        : '<i class="fas fa-paper-plane mr-1" aria-hidden="true"></i>Enviar';
+      var canCancel = busy && state.activeStreamRequest;
+      sendBtn.disabled = busy && !canCancel;
+      if (canCancel) {
+        sendBtn.innerHTML = '<i class="fas fa-stop mr-1" aria-hidden="true"></i>Detener';
+        sendBtn.setAttribute('aria-label', 'Detener generación');
+      } else if (busy) {
+        sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span>Enviando…';
+        sendBtn.setAttribute('aria-label', 'Enviando mensaje al asistente');
+      } else {
+        sendBtn.innerHTML = '<i class="fas fa-paper-plane mr-1" aria-hidden="true"></i>Enviar';
+        sendBtn.setAttribute('aria-label', 'Enviar mensaje al asistente');
+      }
     }
     if (newBtn) {
       newBtn.disabled = busy;
     }
     renderMessages(state.showLoading === true);
+  }
+
+  function showCancelledNotice() {
+    if (typeof swal === 'function') {
+      swal({
+        title: 'Generación cancelada',
+        text: 'Puedes enviar un nuevo mensaje cuando quieras.',
+        type: 'info',
+        timer: 2500
+      });
+    }
+  }
+
+  function cancelActiveStream() {
+    if (!state.activeStreamRequest) {
+      return;
+    }
+    state.cancelling = true;
+    state.activeStreamRequest.abort();
+  }
+
+  function handleStreamAbort(assistantIndex) {
+    state.showLoading = false;
+    if (assistantIndex !== null && assistantIndex < state.messages.length) {
+      state.messages.splice(assistantIndex, 1);
+    }
+    state.activeStreamRequest = null;
+    state.cancelling = false;
+    setBusy(false);
+    showCancelledNotice();
   }
 
   function persistThreadId(threadId) {
@@ -583,7 +624,7 @@
     ensureThread()
       .then(function (threadId) {
         if (window.NutriAiChatStream && typeof NutriAiChatStream.streamMessage === 'function') {
-          return NutriAiChatStream.streamMessage(API_BASE + '/message/stream', {
+          var streamRequest = NutriAiChatStream.streamMessage(API_BASE + '/message/stream', {
             threadId: threadId,
             message: trimmed
           }, {
@@ -592,10 +633,16 @@
             },
             onDelta: appendAssistantDelta,
             onDone: finalizeAssistant,
+            onAbort: function () {
+              handleStreamAbort(assistantIndex);
+            },
             onError: function (message) {
               throw new Error(message);
             }
           });
+          state.activeStreamRequest = streamRequest;
+          setBusy(true);
+          return streamRequest;
         }
         return requestJson(API_BASE + '/message', {
           method: 'POST',
@@ -606,6 +653,9 @@
         });
       })
       .catch(function (error) {
+        if (state.cancelling) {
+          return;
+        }
         state.showLoading = false;
         state.messages.pop();
         renderMessages(false);
@@ -613,6 +663,8 @@
       })
       .finally(function () {
         state.showLoading = false;
+        state.activeStreamRequest = null;
+        state.cancelling = false;
         setBusy(false);
         if (textarea) {
           textarea.focus();
@@ -672,6 +724,7 @@
   function bindEvents() {
     var form = $('#aiChatForm');
     var textarea = $('#aiChatInput');
+    var sendBtn = $('#aiChatSendBtn');
     var newBtn = $('#aiChatNewBtn');
     var acceptBtn = $('#aiChatDraftAcceptBtn');
     var discardBtn = $('#aiChatDraftDiscardBtn');
@@ -679,7 +732,20 @@
     if (form) {
       form.addEventListener('submit', function (event) {
         event.preventDefault();
+        if (state.busy && state.activeStreamRequest) {
+          cancelActiveStream();
+          return;
+        }
         sendMessage(textarea ? textarea.value : '');
+      });
+    }
+
+    if (sendBtn) {
+      sendBtn.addEventListener('click', function (event) {
+        if (state.busy && state.activeStreamRequest) {
+          event.preventDefault();
+          cancelActiveStream();
+        }
       });
     }
 

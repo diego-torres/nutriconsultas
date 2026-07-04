@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-07-03 — ~~#390~~ ~~#434~~ merged. **#435** in progress on `issue-435-ai-chat-streaming`.
+**Last updated:** 2026-07-04 — ~~#435~~ merged. **#436** in progress on `issue-436-ai-chat-cancel`.
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -167,11 +167,11 @@ Markdown, streaming, and message controls for full-page chat and floating widget
 |---|-------|-----|-------|------------|-------|
 | **433** | Epic — AI Chat UX Enhancements (Phase 6b) | https://github.com/diego-torres/nutriconsultas/issues/433 | **open** | **387**, **390** | Parent for #434–#437 |
 | **434** | Render markdown in assistant chat responses | https://github.com/diego-torres/nutriconsultas/issues/434 | **done** | **433**, **389** | PR #444 |
-| **435** | Stream assistant responses (SSE) | https://github.com/diego-torres/nutriconsultas/issues/435 | **in-progress** | **433**, **385**, **389** | Backend SSE + incremental UI |
-| **436** | Stop and cancel in-flight AI generation | https://github.com/diego-torres/nutriconsultas/issues/436 | **open** | **433**, **389** | `AbortController`; after #435 |
+| **435** | Stream assistant responses (SSE) | https://github.com/diego-torres/nutriconsultas/issues/435 | **done** | **433**, **385**, **389** | PR #445 |
+| **436** | Stop and cancel in-flight AI generation | https://github.com/diego-torres/nutriconsultas/issues/436 | **in-progress** | **433**, **389** | AbortController + SSE cancel; after #435 |
 | **437** | Edit user message and resubmit | https://github.com/diego-torres/nutriconsultas/issues/437 | **open** | **433**, **384**, **389** | Thread truncate + SweetAlert |
 
-**Suggested order:** #434 ∥ **#435** (in progress) → #436 → #437. Epic **#387** closes when #433 children are done (or defer controls post-M3 beta).
+**Suggested order:** ~~#434~~ ~~#435~~ → **#436** (in progress) → #437. Epic **#387** closes when #433 children are done (or defer controls post-M3 beta).
 
 ---
 
@@ -216,8 +216,12 @@ Injection, jailbreak, and defense-in-depth guardrails for orchestration (#385).
 | **439** | Prompt injection input guardrails | https://github.com/diego-torres/nutriconsultas/issues/439 | **open** | **438**, **385** | Sanitize user input; `docs/ai/PROMPT-SECURITY.md` |
 | **440** | Jailbreak and role-override defenses | https://github.com/diego-torres/nutriconsultas/issues/440 | **open** | **438**, **439**, **367** | Refusal corpus + system prompt hardening |
 | **441** | Defense-in-depth prompt engineering guardrails | https://github.com/diego-torres/nutriconsultas/issues/441 | **open** | **438**, **439**, **440**, **372** | Delimiters, tool allowlist, output validation |
+| **447** | Deterministic request scope limits (bulk generation guard) | https://github.com/diego-torres/nutriconsultas/issues/447 | **open** | **438**, **385** | Java pre-check before orchestration; align with tool caps (14 days, 1 dish/turn) |
+| **448** | LLM scope classifier pre-flight | https://github.com/diego-torres/nutriconsultas/issues/448 | **open** | **438**, **447**, **366** | Structured ALLOW/REFUSE/CLARIFY before tool loop |
+| **449** | System prompt volume limits and bulk refusal corpus | https://github.com/diego-torres/nutriconsultas/issues/449 | **open** | **438**, **367**, **447** | `system-prompt-base.txt` + `FUNCTIONAL-SCOPE.md` |
+| **450** | Golden prompts for excessive bulk AI requests | https://github.com/diego-torres/nutriconsultas/issues/450 | **open** | **400**, **401**, **447** | Refuse «1000 planes» / allow «7 días» scenarios |
 
-**Suggested order:** #439 → #440 → #441; extend #401 golden prompts with security cases. Gate with #408 release checklist.
+**Suggested order:** #439 → #440 → **#447** → **#449** → **#448** → **#450** → #441; extend #401 golden prompts with security cases. Gate with #408 release checklist.
 
 ---
 
