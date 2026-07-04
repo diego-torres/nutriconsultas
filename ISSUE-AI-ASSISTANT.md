@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-07-04 — ~~#450~~ merged (PR #462). Next: **#441** (defense-in-depth guardrails).
+**Last updated:** 2026-07-04 — ~~#441~~ merged (PR #464). Epic **#438** prompt security **complete**. Next: **#401** (golden prompt test cases).
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -215,13 +215,13 @@ Injection, jailbreak, and defense-in-depth guardrails for orchestration (#385).
 | **438** | Epic — Prompt Security Hardening (Phase 8b) | https://github.com/diego-torres/nutriconsultas/issues/438 | **open** | **396**, **385**, **362** | Required before prod `AI_ENABLED=true` |
 | **439** | Prompt injection input guardrails | https://github.com/diego-torres/nutriconsultas/issues/439 | **done** | **438**, **385** | PR #452 — `AiUserMessageGuard`, `docs/ai/PROMPT-SECURITY.md` |
 | **440** | Jailbreak and role-override defenses | https://github.com/diego-torres/nutriconsultas/issues/440 | **done** | **438**, **439**, **367** | PR #454 — `AiPromptThreatDetector`, tool hardening |
-| **441** | Defense-in-depth prompt engineering guardrails | https://github.com/diego-torres/nutriconsultas/issues/441 | **open** | **438**, **439**, **440**, **372** | Delimiters, tool allowlist, output validation |
+| **441** | Defense-in-depth prompt engineering guardrails | https://github.com/diego-torres/nutriconsultas/issues/441 | **done** | **438**, **439**, **440**, **372** | PR #464 — delimiters, tool allowlist, output validation |
 | **447** | Deterministic request scope limits (bulk generation guard) | https://github.com/diego-torres/nutriconsultas/issues/447 | **done** | **438**, **385** | PR #456 — `AiRequestScopeGuard`, configurable thresholds |
 | **448** | LLM scope classifier pre-flight | https://github.com/diego-torres/nutriconsultas/issues/448 | **done** | **438**, **447**, **366** | PR #460 — `AiRequestScopeClassifier`, JSON pre-flight |
 | **449** | System prompt volume limits and bulk refusal corpus | https://github.com/diego-torres/nutriconsultas/issues/449 | **done** | **438**, **367**, **447** | PR #458 — `VOLUMEN Y LÍMITES`, `FUNCTIONAL-SCOPE.md`, bulk corpus |
 | **450** | Golden prompts for excessive bulk AI requests | https://github.com/diego-torres/nutriconsultas/issues/450 | **done** | **400**, **401**, **447** | PR #462 — `AiBulkScopeGoldenPromptTest`, docs |
 
-**Suggested order:** ~~#439~~ ~~#440~~ ~~#447~~ ~~#449~~ ~~#448~~ ~~#450~~ → **#441**; extend #401 golden prompts with nutrition workflows. Gate with #408 release checklist.
+**Suggested order:** ~~#439~~ ~~#440~~ ~~#447~~ ~~#449~~ ~~#448~~ ~~#450~~ ~~#441~~ **done** — epic **#438** complete. Next: **#401** golden prompts; gate with #408 release checklist.
 
 ---
 
