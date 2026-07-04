@@ -26,6 +26,12 @@ public class AiProperties {
 
 	private int maxUserMessageLength = DEFAULT_MAX_USER_MESSAGE_LENGTH;
 
+	private int maxDaysPerTurn = CreateDietPlanDraftToolServiceImpl.MAX_DAYS;
+
+	private int maxDishesPerTurn = 1;
+
+	private int maxMenuDaysPerTurn = 7;
+
 	public boolean isEnabled() {
 		return enabled;
 	}
@@ -64,6 +70,40 @@ public class AiProperties {
 
 	public void setMaxUserMessageLength(final int maxUserMessageLength) {
 		this.maxUserMessageLength = AiUserMessageGuard.clampMaxUserMessageLength(maxUserMessageLength);
+	}
+
+	public int getMaxDaysPerTurn() {
+		return maxDaysPerTurn;
+	}
+
+	public void setMaxDaysPerTurn(final int maxDaysPerTurn) {
+		this.maxDaysPerTurn = clampScopeLimit(maxDaysPerTurn, 1, CreateDietPlanDraftToolServiceImpl.MAX_DAYS);
+	}
+
+	public int getMaxDishesPerTurn() {
+		return maxDishesPerTurn;
+	}
+
+	public void setMaxDishesPerTurn(final int maxDishesPerTurn) {
+		this.maxDishesPerTurn = clampScopeLimit(maxDishesPerTurn, 1, 5);
+	}
+
+	public int getMaxMenuDaysPerTurn() {
+		return maxMenuDaysPerTurn;
+	}
+
+	public void setMaxMenuDaysPerTurn(final int maxMenuDaysPerTurn) {
+		this.maxMenuDaysPerTurn = clampScopeLimit(maxMenuDaysPerTurn, 1, CreateDietPlanDraftToolServiceImpl.MAX_DAYS);
+	}
+
+	private static int clampScopeLimit(final int value, final int minimum, final int maximum) {
+		if (value < minimum) {
+			return minimum;
+		}
+		if (value > maximum) {
+			return maximum;
+		}
+		return value;
 	}
 
 	public boolean isOpenAiConfigured() {

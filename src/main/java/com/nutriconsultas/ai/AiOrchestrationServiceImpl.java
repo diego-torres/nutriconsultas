@@ -3,6 +3,7 @@ package com.nutriconsultas.ai;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,13 +39,15 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 
 	private final AiUserMessageGuard userMessageGuard;
 
+	private final AiRequestScopeGuard requestScopeGuard;
+
 	private static final int STREAM_CHUNK_SIZE = 32;
 
 	public AiOrchestrationServiceImpl(final AiProperties properties, final OpenAiClientService openAiClientService,
 			final AiSystemPromptService systemPromptService, final AiChatThreadRepository threadRepository,
 			final AiChatMessageRepository messageRepository, final AiOpenAiToolCatalog toolCatalog,
 			final AiOrchestrationToolDispatcher toolDispatcher, final TransactionTemplate transactionTemplate,
-			final AiUserMessageGuard userMessageGuard) {
+			final AiUserMessageGuard userMessageGuard, final AiRequestScopeGuard requestScopeGuard) {
 		this.properties = properties;
 		this.openAiClientService = openAiClientService;
 		this.systemPromptService = systemPromptService;
@@ -54,6 +57,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		this.toolDispatcher = toolDispatcher;
 		this.transactionTemplate = transactionTemplate;
 		this.userMessageGuard = userMessageGuard;
+		this.requestScopeGuard = requestScopeGuard;
 	}
 
 	@Override
@@ -63,6 +67,11 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		final String sanitizedMessage = validateUserMessage(userMessage);
 		final AiChatThread thread = loadThread(context);
 		persistUserMessage(thread, sanitizedMessage);
+
+		final Optional<AiRequestScopeViolation> scopeViolation = requestScopeGuard.evaluate(sanitizedMessage);
+		if (scopeViolation.isPresent()) {
+			return completeScopeRefusal(thread, scopeViolation.get());
+		}
 
 		final List<OpenAiChatMessage> conversation = buildConversation(context, thread);
 		final ToolLoopOutcome loopOutcome = runToolLoop(context, conversation, null);
@@ -97,6 +106,11 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		});
 		if (conversation == null) {
 			throw new AiOrchestrationException("No se pudo cargar el historial de la conversación.");
+		}
+		final Optional<AiRequestScopeViolation> scopeViolation = requestScopeGuard.evaluate(sanitizedMessage);
+		if (scopeViolation.isPresent()) {
+			completeScopeRefusalStreaming(thread, scopeViolation.get(), streamConsumer);
+			return;
 		}
 		streamConsumer.onStatus("thinking", "El asistente está pensando…");
 		streamConsumer.throwIfCancelled();
@@ -147,6 +161,35 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 
 	private String validateUserMessage(final String userMessage) {
 		return userMessageGuard.validateAndSanitize(userMessage);
+	}
+
+	private AiOrchestrationResult completeScopeRefusal(final AiChatThread thread,
+			final AiRequestScopeViolation violation) {
+		final AiChatMessage assistantMessage = persistAssistantMessage(thread, violation.refusalMessage());
+		touchThread(thread);
+		if (log.isInfoEnabled()) {
+			log.info("AI orchestration scope refusal threadId={} kind={}", thread.getId(), violation.kind());
+		}
+		return new AiOrchestrationResult(thread.getId(), assistantMessage, 0, null);
+	}
+
+	private void completeScopeRefusalStreaming(final AiChatThread thread, final AiRequestScopeViolation violation,
+			final AiStreamEventConsumer streamConsumer) {
+		streamConsumer.throwIfCancelled();
+		emitContentDeltas(violation.refusalMessage(), streamConsumer);
+		streamConsumer.throwIfCancelled();
+		final AiOrchestrationResult result = transactionTemplate.execute(status -> {
+			final AiChatMessage assistantMessage = persistAssistantMessage(thread, violation.refusalMessage());
+			touchThread(thread);
+			if (log.isInfoEnabled()) {
+				log.info("AI streaming scope refusal threadId={} kind={}", thread.getId(), violation.kind());
+			}
+			return new AiOrchestrationResult(thread.getId(), assistantMessage, 0, null);
+		});
+		if (result == null) {
+			throw new AiOrchestrationException("No se pudo guardar la respuesta del asistente.");
+		}
+		streamConsumer.onComplete(result);
 	}
 
 	private AiChatThread loadThread(final AiOrchestrationContext context) {

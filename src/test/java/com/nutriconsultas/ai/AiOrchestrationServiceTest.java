@@ -60,7 +60,12 @@ class AiOrchestrationServiceTest {
 	@Mock
 	private AiUserMessageGuard userMessageGuard;
 
+	@Mock
+	private AiRequestScopeGuard requestScopeGuard;
+
 	private AiUserMessageGuard realUserMessageGuard;
+
+	private AiRequestScopeGuard realRequestScopeGuard;
 
 	private AiChatThread thread;
 
@@ -71,10 +76,13 @@ class AiOrchestrationServiceTest {
 		thread.setNutritionistId(NUTRITIONIST_ID);
 		final AiProperties guardProperties = new AiProperties();
 		realUserMessageGuard = new AiUserMessageGuard(guardProperties);
+		realRequestScopeGuard = new AiRequestScopeGuard(guardProperties);
 		lenient().when(userMessageGuard.validateAndSanitize(any(String.class)))
 			.thenAnswer(invocation -> realUserMessageGuard.validateAndSanitize(invocation.getArgument(0)));
 		lenient().when(userMessageGuard.wrapForModel(any(String.class)))
 			.thenAnswer(invocation -> realUserMessageGuard.wrapForModel(invocation.getArgument(0)));
+		lenient().when(requestScopeGuard.evaluate(any(String.class)))
+			.thenAnswer(invocation -> realRequestScopeGuard.evaluate(invocation.getArgument(0)));
 		lenient().when(transactionTemplate.execute(org.mockito.ArgumentMatchers.<TransactionCallback<Object>>any()))
 			.thenAnswer(invocation -> {
 				final TransactionCallback<?> callback = invocation.getArgument(0);
@@ -229,6 +237,66 @@ class AiOrchestrationServiceTest {
 
 		verify(messageRepository, never()).save(any(AiChatMessage.class));
 		verify(openAiClientService, never()).chatCompletion(any());
+	}
+
+	@Test
+	void processUserMessageScopeRefusalPersistsWithoutOpenAi() {
+		stubAiEnabled();
+		when(threadRepository.findByIdAndNutritionistId(THREAD_ID, NUTRITIONIST_ID)).thenReturn(Optional.of(thread));
+		when(messageRepository.save(any(AiChatMessage.class))).thenAnswer(invocation -> {
+			final AiChatMessage message = invocation.getArgument(0);
+			if (message.getId() == null) {
+				message.setId(100L);
+			}
+			return message;
+		});
+
+		final AiOrchestrationResult result = service.processUserMessage(context(), "Genera 100 platillos con pollo");
+
+		assertThat(result.toolCallsExecuted()).isZero();
+		assertThat(result.tokenUsage()).isNull();
+		assertThat(result.assistantMessage().getRole()).isEqualTo(AiChatMessageRole.ASSISTANT);
+		assertThat(result.assistantMessage().getContent()).contains("100").contains("platillos");
+		verify(openAiClientService, never()).chatCompletion(any());
+		verify(messageRepository, times(2)).save(any(AiChatMessage.class));
+	}
+
+	@Test
+	void processUserMessageStreamingScopeRefusalEmitsDeltasWithoutOpenAi() {
+		stubAiEnabled();
+		when(threadRepository.findByIdAndNutritionistId(THREAD_ID, NUTRITIONIST_ID)).thenReturn(Optional.of(thread));
+		when(messageRepository.save(any(AiChatMessage.class))).thenAnswer(invocation -> {
+			final AiChatMessage message = invocation.getArgument(0);
+			if (message.getId() == null) {
+				message.setId(100L);
+			}
+			return message;
+		});
+
+		final StringBuilder deltas = new StringBuilder();
+		final AiOrchestrationResult[] completed = new AiOrchestrationResult[1];
+		service.processUserMessageStreaming(context(), "Genera un menú de 30 días", new AiStreamEventConsumer() {
+			@Override
+			public void onStatus(final String phase, final String message) {
+				/* no-op for test */
+			}
+
+			@Override
+			public void onDelta(final String contentDelta) {
+				deltas.append(contentDelta);
+			}
+
+			@Override
+			public void onComplete(final AiOrchestrationResult result) {
+				completed[0] = result;
+			}
+		});
+
+		assertThat(deltas.toString()).contains("30").contains("menú");
+		assertThat(completed[0]).isNotNull();
+		assertThat(completed[0].assistantMessage().getContent()).contains("30");
+		verify(openAiClientService, never()).chatCompletion(any());
+		verify(messageRepository, times(2)).save(any(AiChatMessage.class));
 	}
 
 	@Test
