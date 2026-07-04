@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://minutriporcion.local/ai/schemas/draft-tool-input-schemas.json",
+  "definitions": {
+    "NutrientSummary": {
+      "type": "object",
+      "properties": {
+        "energiaKcal": { "type": "number" },
+        "proteinaG": { "type": "number" },
+        "lipidosG": { "type": "number" },
+        "hidratosDeCarbonoG": { "type": "number" },
+        "fibraG": { "type": "number" },
+        "sodioMg": { "type": "number" },
+        "potasioMg": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "RecipeIngredientInput": {
+      "type": "object",
+      "properties": {
+        "alimentoId": { "type": "integer" },
+        "cantidad": { "type": "string", "minLength": 1 },
+        "pesoNetoG": { "type": "integer", "minimum": 1 },
+        "unidad": { "type": "string", "maxLength": 40 }
+      },
+      "required": ["alimentoId", "cantidad"],
+      "additionalProperties": false
+    },
+    "IngestaSlotItem": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["PLATILLO", "ALIMENTO", "RECIPE"] },
+        "platilloId": { "type": "integer" },
+        "alimentoId": { "type": "integer" },
+        "portions": { "type": "integer", "minimum": 1 },
+        "ingredients": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 40,
+          "items": { "$ref": "#/definitions/RecipeIngredientInput" }
+        }
+      },
+      "required": ["type"],
+      "additionalProperties": false
+    },
+    "IngestaSlot": {
+      "type": "object",
+      "properties": {
+        "nombre": { "type": "string", "maxLength": 80 },
+        "orden": { "type": "integer" },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/IngestaSlotItem" }
+        }
+      },
+      "required": ["items"],
+      "additionalProperties": false
+    },
+    "DietPlanDayInput": {
+      "type": "object",
+      "properties": {
+        "dayIndex": { "type": "integer", "minimum": 1 },
+        "label": { "type": "string", "maxLength": 80 },
+        "ingestas": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": { "$ref": "#/definitions/IngestaSlot" }
+        }
+      },
+      "required": ["dayIndex", "ingestas"],
+      "additionalProperties": false
+    },
+    "DishDraftInput": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "preparationSteps": {
+          "type": "array",
+          "maxItems": 30,
+          "items": { "type": "string", "maxLength": 500 }
+        },
+        "ingestasSugeridas": { "type": "string", "maxLength": 80 },
+        "ingredients": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 40,
+          "items": { "$ref": "#/definitions/RecipeIngredientInput" }
+        },
+        "portions": { "type": "integer", "minimum": 1 },
+        "nutrientsPerPortion": { "$ref": "#/definitions/NutrientSummary" },
+        "assumptions": {
+          "type": "array",
+          "items": { "type": "string", "maxLength": 300 }
+        },
+        "warnings": {
+          "type": "array",
+          "items": { "type": "string", "maxLength": 300 }
+        }
+      },
+      "required": ["name", "ingredients"],
+      "additionalProperties": false
+    },
+    "MenuDraftInput": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 120 },
+        "targetKcal": { "type": "number" },
+        "ingestas": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": { "$ref": "#/definitions/IngestaSlot" }
+        },
+        "validationSummary": { "type": "string", "maxLength": 1000 },
+        "assumptions": {
+          "type": "array",
+          "items": { "type": "string", "maxLength": 300 }
+        },
+        "warnings": {
+          "type": "array",
+          "items": { "type": "string", "maxLength": 300 }
+        }
+      },
+      "required": ["ingestas"],
+      "additionalProperties": false
+    },
+    "DietPlanDraftInput": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 120 },
+        "dayCount": { "type": "integer", "minimum": 1, "maximum": 14 },
+        "targetKcalPerDay": { "type": "number" },
+        "days": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 14,
+          "items": { "$ref": "#/definitions/DietPlanDayInput" }
+        },
+        "validationSummary": { "type": "string", "maxLength": 2000 },
+        "assumptions": {
+          "type": "array",
+          "items": { "type": "string", "maxLength": 300 }
+        },
+        "warnings": {
+          "type": "array",
+          "items": { "type": "string", "maxLength": 300 }
+        }
+      },
+      "required": ["days"],
+      "additionalProperties": false
+    }
+  }
+}
