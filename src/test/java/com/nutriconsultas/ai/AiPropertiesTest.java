@@ -72,6 +72,20 @@ class AiPropertiesTest {
 	}
 
 	@Test
+	void maxUserMessageLengthClampedToSafeRange() {
+		final AiProperties properties = new AiProperties();
+
+		properties.setMaxUserMessageLength(100);
+		assertThat(properties.getMaxUserMessageLength()).isEqualTo(500);
+
+		properties.setMaxUserMessageLength(10_000);
+		assertThat(properties.getMaxUserMessageLength()).isEqualTo(8000);
+
+		properties.setMaxUserMessageLength(4000);
+		assertThat(properties.getMaxUserMessageLength()).isEqualTo(4000);
+	}
+
+	@Test
 	void misconfigurationUserMessageIsSpanish() {
 		final AiProperties properties = new AiProperties();
 

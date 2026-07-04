@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#437 — Edit user message and resubmit](https://github.com/diego-torres/nutriconsultas/issues/437) (`in-progress` on `issue-437-ai-chat-edit-resubmit`). ~~#436~~ merged (PR #446).
+**Current next issue:** [#439 — Prompt injection input guardrails](https://github.com/diego-torres/nutriconsultas/issues/439) (`in-progress` on `issue-439-prompt-injection-guardrails`). ~~#437~~ merged (PR #451); epic **#433** complete.
 
 **Registered backlog (2026-07-04):** Epic [#433](https://github.com/diego-torres/nutriconsultas/issues/433) chat UX (#434–#437). Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438) prompt security (#439–#441, **#447–#450** bulk scope guards). See registry for suggested order.
 
