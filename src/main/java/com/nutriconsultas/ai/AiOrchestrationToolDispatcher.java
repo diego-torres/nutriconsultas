@@ -1,6 +1,7 @@
 package com.nutriconsultas.ai;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,8 @@ public class AiOrchestrationToolDispatcher {
 
 	private final CreateDietPlanDraftToolService createDietPlanDraftToolService;
 
+	private final AiDraftToolSchemaValidator draftToolSchemaValidator;
+
 	public AiOrchestrationToolDispatcher(final SearchFoodCatalogToolService searchFoodCatalogToolService,
 			final GetFoodNutrientsToolService getFoodNutrientsToolService,
 			final SearchDishCatalogToolService searchDishCatalogToolService,
@@ -35,7 +38,8 @@ public class AiOrchestrationToolDispatcher {
 			final ValidatePlanConstraintsToolService validatePlanConstraintsToolService,
 			final CreateDishDraftToolService createDishDraftToolService,
 			final CreateMenuDraftToolService createMenuDraftToolService,
-			final CreateDietPlanDraftToolService createDietPlanDraftToolService) {
+			final CreateDietPlanDraftToolService createDietPlanDraftToolService,
+			final AiDraftToolSchemaValidator draftToolSchemaValidator) {
 		this.searchFoodCatalogToolService = searchFoodCatalogToolService;
 		this.getFoodNutrientsToolService = getFoodNutrientsToolService;
 		this.searchDishCatalogToolService = searchDishCatalogToolService;
@@ -44,6 +48,7 @@ public class AiOrchestrationToolDispatcher {
 		this.createDishDraftToolService = createDishDraftToolService;
 		this.createMenuDraftToolService = createMenuDraftToolService;
 		this.createDietPlanDraftToolService = createDietPlanDraftToolService;
+		this.draftToolSchemaValidator = draftToolSchemaValidator;
 	}
 
 	public String dispatch(final AiOrchestrationContext context, final String toolName, final String argumentsJson) {
@@ -126,18 +131,30 @@ public class AiOrchestrationToolDispatcher {
 
 	private AiToolResult<AiDraftCreationData> createDishDraft(final AiOrchestrationContext context,
 			final String argumentsJson) {
+		final Optional<String> schemaViolation = draftToolSchemaValidator.validateDishDraftArguments(argumentsJson);
+		if (schemaViolation.isPresent()) {
+			return AiToolResult.error(AiToolErrorCode.VALIDATION, schemaViolation.get());
+		}
 		final DishDraftInput input = AiToolJsonSerializer.fromJson(argumentsJson, DishDraftInput.class);
 		return createDishDraftToolService.createDraft(context.nutritionistId(), context.threadId(), input);
 	}
 
 	private AiToolResult<AiDraftCreationData> createMenuDraft(final AiOrchestrationContext context,
 			final String argumentsJson) {
+		final Optional<String> schemaViolation = draftToolSchemaValidator.validateMenuDraftArguments(argumentsJson);
+		if (schemaViolation.isPresent()) {
+			return AiToolResult.error(AiToolErrorCode.VALIDATION, schemaViolation.get());
+		}
 		final MenuDraftInput input = AiToolJsonSerializer.fromJson(argumentsJson, MenuDraftInput.class);
 		return createMenuDraftToolService.createDraft(context.nutritionistId(), context.threadId(), input);
 	}
 
 	private AiToolResult<AiDraftCreationData> createDietPlanDraft(final AiOrchestrationContext context,
 			final String argumentsJson) {
+		final Optional<String> schemaViolation = draftToolSchemaValidator.validateDietPlanDraftArguments(argumentsJson);
+		if (schemaViolation.isPresent()) {
+			return AiToolResult.error(AiToolErrorCode.VALIDATION, schemaViolation.get());
+		}
 		final DietPlanDraftInput input = AiToolJsonSerializer.fromJson(argumentsJson, DietPlanDraftInput.class);
 		return createDietPlanDraftToolService.createDraft(context.nutritionistId(), context.threadId(), input);
 	}

@@ -45,6 +45,9 @@ class AiOrchestrationToolDispatcherTest {
 	@Mock
 	private CreateDietPlanDraftToolService createDietPlanDraftToolService;
 
+	@Mock
+	private AiDraftToolSchemaValidator draftToolSchemaValidator;
+
 	@Test
 	void dispatchSearchFoodCatalog() {
 		final FoodCatalogSearchData data = new FoodCatalogSearchData(java.util.List.of(), 0, false);
@@ -64,6 +67,42 @@ class AiOrchestrationToolDispatcherTest {
 
 		assertThat(json).contains("\"success\":false");
 		assertThat(json).contains("Herramienta no reconocida");
+	}
+
+	@Test
+	void dispatchDishDraftRejectsSchemaViolationBeforeService() {
+		when(draftToolSchemaValidator.validateDishDraftArguments(org.mockito.ArgumentMatchers.anyString())).thenReturn(
+				java.util.Optional.of("Argumentos de herramienta no válidos: falta el campo obligatorio (name)."));
+
+		final String json = dispatcher.dispatch(context(), CreateDishDraftToolService.TOOL_NAME,
+				"{\"ingredients\":[{\"alimentoId\":1,\"cantidad\":\"1\"}]}");
+
+		assertThat(json).contains("\"success\":false");
+		assertThat(json).contains("obligatorio");
+		org.mockito.Mockito.verify(createDishDraftToolService, org.mockito.Mockito.never())
+			.createDraft(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyLong(),
+					org.mockito.ArgumentMatchers.any());
+	}
+
+	@Test
+	void dispatchDishDraftUsesRealSchemaValidatorWhenConfigured() {
+		final AiOrchestrationToolDispatcher realSchemaDispatcher = new AiOrchestrationToolDispatcher(
+				searchFoodCatalogToolService, getFoodNutrientsToolService, searchDishCatalogToolService,
+				calculateRecipeNutrientsToolService, validatePlanConstraintsToolService, createDishDraftToolService,
+				createMenuDraftToolService, createDietPlanDraftToolService, new AiDraftToolSchemaValidator());
+		when(createDishDraftToolService.createDraft(org.mockito.ArgumentMatchers.eq(NUTRITIONIST_ID),
+				org.mockito.ArgumentMatchers.eq(THREAD_ID), org.mockito.ArgumentMatchers.any()))
+			.thenReturn(AiToolResult
+				.success(new AiDraftCreationData(1L, AiDraftType.DISH, AiDraftStatus.DRAFT, "Borrador IA — Tacos")));
+
+		final String json = realSchemaDispatcher.dispatch(context(), CreateDishDraftToolService.TOOL_NAME, """
+				{
+				  "name": "Tacos",
+				  "ingredients": [{ "alimentoId": 1, "cantidad": "1" }]
+				}
+				""");
+
+		assertThat(json).contains("\"success\":true");
 	}
 
 	private static AiOrchestrationContext context() {

@@ -21,6 +21,7 @@
     <spotbugs.version>4.9.8.2</spotbugs.version>
     <pmd.version>3.28.0</pmd.version>
     <spring-javaformat.version>0.0.47</spring-javaformat.version>
+    <json-schema-validator.version>1.5.6</json-schema-validator.version>
   </properties>
 
   <parent>
@@ -114,6 +115,11 @@
       <artifactId>lombok</artifactId>
       <version>1.18.38</version>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.networknt</groupId>
+      <artifactId>json-schema-validator</artifactId>
+      <version>${json-schema-validator.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.security</groupId>
