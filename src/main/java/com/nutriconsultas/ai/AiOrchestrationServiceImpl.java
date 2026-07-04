@@ -95,8 +95,11 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 			throw new AiOrchestrationException("No se pudo cargar el historial de la conversación.");
 		}
 		streamConsumer.onStatus("thinking", "El asistente está pensando…");
+		streamConsumer.throwIfCancelled();
 		final ToolLoopOutcome loopOutcome = runToolLoop(context, conversation, streamConsumer);
+		streamConsumer.throwIfCancelled();
 		emitContentDeltas(loopOutcome.assistantContent(), streamConsumer);
+		streamConsumer.throwIfCancelled();
 
 		final AiOrchestrationResult result = transactionTemplate.execute(status -> {
 			final AiChatMessage assistantMessage = persistAssistantMessage(thread, loopOutcome.assistantContent());
@@ -120,6 +123,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 			return;
 		}
 		for (int index = 0; index < content.length(); index += STREAM_CHUNK_SIZE) {
+			streamConsumer.throwIfCancelled();
 			final int end = Math.min(index + STREAM_CHUNK_SIZE, content.length());
 			streamConsumer.onDelta(content.substring(index, end));
 		}
@@ -187,6 +191,9 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		String assistantContent = null;
 
 		while (true) {
+			if (streamConsumer != null) {
+				streamConsumer.throwIfCancelled();
+			}
 			final OpenAiChatCompletionResponse response = openAiClientService
 				.chatCompletion(new OpenAiChatCompletionRequest(List.copyOf(conversation), toolCatalog.definitions()));
 			accumulatedUsage = mergeUsage(accumulatedUsage, response.usage());

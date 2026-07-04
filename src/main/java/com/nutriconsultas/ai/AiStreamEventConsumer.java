@@ -7,6 +7,16 @@ import org.springframework.lang.Nullable;
  */
 public interface AiStreamEventConsumer {
 
+	default boolean isCancelled() {
+		return false;
+	}
+
+	default void throwIfCancelled() {
+		if (isCancelled()) {
+			throw new AiStreamCancelledException();
+		}
+	}
+
 	void onStatus(String phase, @Nullable String message);
 
 	void onDelta(String contentDelta);

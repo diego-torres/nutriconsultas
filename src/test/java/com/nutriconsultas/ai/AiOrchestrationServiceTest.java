@@ -237,6 +237,45 @@ class AiOrchestrationServiceTest {
 		verify(messageRepository, times(2)).save(any(AiChatMessage.class));
 	}
 
+	@Test
+	void processUserMessageStreamingSkipsPersistWhenCancelledBeforeDone() {
+		stubOperational();
+		when(threadRepository.findByIdAndNutritionistId(THREAD_ID, NUTRITIONIST_ID)).thenReturn(Optional.of(thread));
+		when(messageRepository.findByThreadIdOrderByCreatedAtAscIdAsc(THREAD_ID))
+			.thenReturn(List.of(message(AiChatMessageRole.USER, "Hola")));
+		when(openAiClientService.chatCompletion(any())).thenReturn(new OpenAiChatCompletionResponse("id-1", "assistant",
+				"Respuesta cancelada con suficiente longitud.", List.of(), "stop", null));
+
+		final int[] deltaCount = { 0 };
+		final AiStreamEventConsumer cancellingConsumer = new AiStreamEventConsumer() {
+			@Override
+			public boolean isCancelled() {
+				return deltaCount[0] > 0;
+			}
+
+			@Override
+			public void onStatus(final String phase, final String message) {
+				/* no-op */
+			}
+
+			@Override
+			public void onDelta(final String contentDelta) {
+				deltaCount[0]++;
+			}
+
+			@Override
+			public void onComplete(final AiOrchestrationResult result) {
+				/* no-op */
+			}
+		};
+
+		assertThatThrownBy(() -> service.processUserMessageStreaming(context(), "Hola", cancellingConsumer))
+			.isInstanceOf(AiStreamCancelledException.class);
+
+		verify(openAiClientService).chatCompletion(any());
+		verify(messageRepository, times(1)).save(any(AiChatMessage.class));
+	}
+
 	private static AiOrchestrationContext context() {
 		return new AiOrchestrationContext(NUTRITIONIST_ID, THREAD_ID, null, null, null);
 	}

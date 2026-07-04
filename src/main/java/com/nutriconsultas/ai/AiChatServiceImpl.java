@@ -128,6 +128,10 @@ public class AiChatServiceImpl implements AiChatService {
 			return;
 		}
 		try {
+			final AiStreamCancellation cancellation = new AiStreamCancellation();
+			emitter.onCompletion(cancellation::cancel);
+			emitter.onTimeout(cancellation::cancel);
+			emitter.onError(ex -> cancellation.cancel());
 			final AiChatPromptContext promptContext = new AiChatPromptContext(request.patientId(), request.dietaId(),
 					request.platilloId());
 			final Long threadPatientId = transactionTemplate.execute(status -> {
@@ -138,7 +142,13 @@ public class AiChatServiceImpl implements AiChatService {
 			final AiOrchestrationContext context = buildOrchestrationContext(nutritionistId, request.threadId(),
 					mergedContext);
 			orchestrationService.processUserMessageStreaming(context, request.message().trim(),
-					streamConsumerFor(emitter));
+					streamConsumerFor(emitter, cancellation));
+			AiChatSseSupport.completeQuietly(emitter);
+		}
+		catch (final AiStreamCancelledException ex) {
+			if (log.isDebugEnabled()) {
+				log.debug("AI chat stream cancelled threadId={}", request.threadId());
+			}
 			AiChatSseSupport.completeQuietly(emitter);
 		}
 		catch (final AiChatException | AiOrchestrationException ex) {
@@ -155,8 +165,14 @@ public class AiChatServiceImpl implements AiChatService {
 		}
 	}
 
-	private AiStreamEventConsumer streamConsumerFor(final SseEmitter emitter) {
+	private AiStreamEventConsumer streamConsumerFor(final SseEmitter emitter,
+			final AiStreamCancellation cancellation) {
 		return new AiStreamEventConsumer() {
+			@Override
+			public boolean isCancelled() {
+				return cancellation.isCancelled();
+			}
+
 			@Override
 			public void onStatus(final String phase, final String message) {
 				try {

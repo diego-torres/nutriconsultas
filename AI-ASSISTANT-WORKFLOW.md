@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#435 — Stream assistant responses (SSE)](https://github.com/diego-torres/nutriconsultas/issues/435) (`in-progress` on `issue-435-ai-chat-streaming`). ~~#434~~ markdown merged (PR #444).
+**Current next issue:** [#436 — Stop and cancel in-flight AI generation](https://github.com/diego-torres/nutriconsultas/issues/436) (`in-progress` on `issue-436-ai-chat-cancel`). ~~#435~~ SSE merged (PR #445).
 
 **Registered backlog (2026-07-03):** Epic [#433](https://github.com/diego-torres/nutriconsultas/issues/433) chat UX (#434 markdown, #435 streaming, #436 stop, #437 edit/resubmit). Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438) prompt security (#439–#441). See registry for suggested order.
 
