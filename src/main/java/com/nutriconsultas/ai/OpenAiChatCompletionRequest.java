@@ -5,7 +5,13 @@ import java.util.List;
 /**
  * Request to {@link OpenAiClientService#chatCompletion(OpenAiChatCompletionRequest)}.
  */
-public record OpenAiChatCompletionRequest(List<OpenAiChatMessage> messages, List<OpenAiToolDefinition> tools) {
+public record OpenAiChatCompletionRequest(List<OpenAiChatMessage> messages, List<OpenAiToolDefinition> tools,
+		OpenAiCompletionParameters parameters) {
+
+	public OpenAiChatCompletionRequest(final List<OpenAiChatMessage> messages,
+			final List<OpenAiToolDefinition> tools) {
+		this(messages, tools, OpenAiCompletionParameters.none());
+	}
 
 	public OpenAiChatCompletionRequest {
 		if (messages == null || messages.isEmpty()) {
@@ -13,6 +19,9 @@ public record OpenAiChatCompletionRequest(List<OpenAiChatMessage> messages, List
 		}
 		messages = List.copyOf(messages);
 		tools = tools == null ? List.of() : List.copyOf(tools);
+		if (parameters == null) {
+			parameters = OpenAiCompletionParameters.none();
+		}
 	}
 
 }

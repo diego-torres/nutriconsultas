@@ -97,7 +97,15 @@ public class OpenAiClientServiceImpl implements OpenAiClientService {
 			tools.add(new OpenAiApiTool("function", function));
 		}
 		return new OpenAiApiRequest(properties.getOpenai().getModel(), messages, tools.isEmpty() ? null : tools,
-				properties.getOpenai().isStore());
+				properties.getOpenai().isStore(), request.parameters().temperature(),
+				request.parameters().maxTokens(), responseFormat(request.parameters().responseFormatType()));
+	}
+
+	private static Map<String, String> responseFormat(final String type) {
+		if (!org.springframework.util.StringUtils.hasText(type)) {
+			return null;
+		}
+		return Map.of("type", type);
 	}
 
 	private OpenAiChatCompletionResponse toCompletionResponse(final OpenAiApiResponse response) {
@@ -133,7 +141,8 @@ public class OpenAiClientServiceImpl implements OpenAiClientService {
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private record OpenAiApiRequest(String model, List<OpenAiApiMessage> messages, List<OpenAiApiTool> tools,
-			boolean store) {
+			boolean store, Double temperature, @JsonProperty("max_tokens") Integer maxTokens,
+			@JsonProperty("response_format") Map<String, String> responseFormat) {
 	}
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)

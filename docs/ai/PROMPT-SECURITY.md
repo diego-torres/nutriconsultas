@@ -1,6 +1,6 @@
 # AI Prompt Security (v1)
 
-**Issue:** [#439](https://github.com/diego-torres/nutriconsultas/issues/439), [#440](https://github.com/diego-torres/nutriconsultas/issues/440), [#447](https://github.com/diego-torres/nutriconsultas/issues/447), [#449](https://github.com/diego-torres/nutriconsultas/issues/449) · Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438)  
+**Issue:** [#439](https://github.com/diego-torres/nutriconsultas/issues/439), [#440](https://github.com/diego-torres/nutriconsultas/issues/440), [#447](https://github.com/diego-torres/nutriconsultas/issues/447), [#448](https://github.com/diego-torres/nutriconsultas/issues/448), [#449](https://github.com/diego-torres/nutriconsultas/issues/449) · Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438)  
 **Related:** [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md) (#362) · [`AI-ASSISTANT-PLAN.md`](AI-ASSISTANT-PLAN.md) · [`FUNCTIONAL-SCOPE.md`](FUNCTIONAL-SCOPE.md) (#361)
 
 Defense-in-depth rules for nutritionist chat input before OpenAI orchestration (#385). Part of Milestone 5 — required before production `AI_ENABLED=true` (see #408).
@@ -17,6 +17,7 @@ Defense-in-depth rules for nutritionist chat input before OpenAI orchestration (
 | Model-side refusal | `ai/system-prompt-base.txt` **SEGURIDAD DE PROMPTS** + **DEFENSA ANTE JAILBREAK** (#440) + **VOLUMEN Y LÍMITES** (#449) |
 | User-facing block message | Spanish `400` via `AiChatException` — no OpenAI call, no persistence on block |
 | Bulk generation limits (#447) | `AiRequestScopeGuard` before orchestration — persist user + assistant refusal, no OpenAI/tools |
+| Ambiguous bulk scope (#448) | `AiRequestScopeClassifier` — cheap JSON OpenAI call after deterministic guard passes |
 
 ---
 
@@ -29,8 +30,10 @@ flowchart LR
   B -->|allowed| D[Persist sanitized text in ai_chat_message]
   D --> S[AiRequestScopeGuard.evaluate]
   S -->|scope exceeded| R[Persist assistant refusal — no OpenAI]
-  S -->|allowed| E[buildConversation wraps USER rows]
-  E --> F[OpenAI chat completion]
+  S -->|allowed| C[AiRequestScopeClassifier.evaluate]
+  C -->|REFUSE/CLARIFY| R
+  C -->|ALLOW/disabled| E[buildConversation wraps USER rows]
+  E --> F[OpenAI chat completion + tools]
 ```
 
 **Edit/resubmit (#437):** validation runs **before** thread truncation so a blocked edit cannot delete history.
@@ -99,6 +102,27 @@ Examples the assistant (and `AiRequestScopeGuard`) should refuse — offer **1 b
 
 ---
 
+## LLM scope classifier (#448)
+
+`AiRequestScopeClassifier` runs **after** `AiRequestScopeGuard` passes and **before** the main tool loop. Skipped when the deterministic guard already refused (no double pre-flight cost for obvious bulk).
+
+| Setting | Env | Default |
+|---------|-----|---------|
+| `nutriconsultas.ai.scope-classifier-enabled` | `AI_SCOPE_CLASSIFIER_ENABLED` | `true` |
+| `nutriconsultas.ai.scope-classifier-max-tokens` | `AI_SCOPE_CLASSIFIER_MAX_TOKENS` | `200` |
+
+Single OpenAI call: **no tools**, temperature **0**, JSON object response (`ALLOW` \| `REFUSE` \| `CLARIFY`). Prompt: `ai/scope-classifier-prompt.txt`.
+
+| Decision | Behavior |
+|----------|----------|
+| **ALLOW** | Proceed to orchestration |
+| **REFUSE** | Spanish refusal aligned with #447 (`refusalMessageForUnits`) |
+| **CLARIFY** | One follow-up question (`suggestedPrompt`); no drafts yet |
+
+Classifier failures **fail open** (allow request) with warn log. Decisions log `decision` + unit counts only — never message body.
+
+---
+
 ## Configuration
 
 | Property | Env | Default |
@@ -107,6 +131,8 @@ Examples the assistant (and `AiRequestScopeGuard`) should refuse — offer **1 b
 | `nutriconsultas.ai.max-days-per-turn` | `AI_MAX_DAYS_PER_TURN` | `14` |
 | `nutriconsultas.ai.max-dishes-per-turn` | `AI_MAX_DISHES_PER_TURN` | `1` |
 | `nutriconsultas.ai.max-menu-days-per-turn` | `AI_MAX_MENU_DAYS_PER_TURN` | `7` |
+| `nutriconsultas.ai.scope-classifier-enabled` | `AI_SCOPE_CLASSIFIER_ENABLED` | `true` |
+| `nutriconsultas.ai.scope-classifier-max-tokens` | `AI_SCOPE_CLASSIFIER_MAX_TOKENS` | `200` |
 
 ---
 
@@ -125,9 +151,9 @@ HTTP status: **400** (`AiToolErrorCode.VALIDATION`) for injection/jailbreak/leng
 
 ## Testing
 
-- **Unit:** `AiPromptThreatDetectorTest`, `AiUserMessageGuardTest`, `AiRequestScopeGuardTest`, `AiOpenAiToolCatalogTest` — fixtures only, no live OpenAI
-- **Integration:** `AiOrchestrationServiceTest` — wrapped user content; scope refusal without OpenAI
-- **Future:** #450 golden prompts for bulk/abuse scenarios; #448 LLM scope classifier
+- **Unit:** `AiPromptThreatDetectorTest`, `AiUserMessageGuardTest`, `AiRequestScopeGuardTest`, `AiRequestScopeClassifierTest`, `AiOpenAiToolCatalogTest` — fixtures only, no live OpenAI
+- **Integration:** `AiOrchestrationServiceTest` — wrapped user content; scope/classifier short-circuit without tool loop
+- **Future:** #450 golden prompts for bulk/abuse scenarios
 
 ---
 
@@ -139,7 +165,7 @@ HTTP status: **400** (`AiToolErrorCode.VALIDATION`) for injection/jailbreak/leng
 | **441** | Delimiters, tool allowlist, output validation (defense-in-depth) |
 | **447** | ~~Deterministic bulk scope limits (Java pre-check)~~ **done** in #447 |
 | **449** | ~~System prompt volume limits and bulk refusal corpus~~ **done** in #449 |
-| **448** | LLM scope classifier pre-flight |
+| **448** | ~~LLM scope classifier pre-flight~~ **done** in #448 |
 
 ---
 

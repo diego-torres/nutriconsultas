@@ -7,7 +7,6 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -27,37 +26,27 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 
 	private final AiSystemPromptService systemPromptService;
 
-	private final AiChatThreadRepository threadRepository;
+	private final AiChatPersistence chatPersistence;
 
-	private final AiChatMessageRepository messageRepository;
-
-	private final AiOpenAiToolCatalog toolCatalog;
-
-	private final AiOrchestrationToolDispatcher toolDispatcher;
-
-	private final TransactionTemplate transactionTemplate;
+	private final AiOrchestrationTools orchestrationTools;
 
 	private final AiUserMessageGuard userMessageGuard;
 
-	private final AiRequestScopeGuard requestScopeGuard;
+	private final AiRequestScopePipeline requestScopePipeline;
 
 	private static final int STREAM_CHUNK_SIZE = 32;
 
 	public AiOrchestrationServiceImpl(final AiProperties properties, final OpenAiClientService openAiClientService,
-			final AiSystemPromptService systemPromptService, final AiChatThreadRepository threadRepository,
-			final AiChatMessageRepository messageRepository, final AiOpenAiToolCatalog toolCatalog,
-			final AiOrchestrationToolDispatcher toolDispatcher, final TransactionTemplate transactionTemplate,
-			final AiUserMessageGuard userMessageGuard, final AiRequestScopeGuard requestScopeGuard) {
+			final AiSystemPromptService systemPromptService, final AiChatPersistence chatPersistence,
+			final AiOrchestrationTools orchestrationTools, final AiUserMessageGuard userMessageGuard,
+			final AiRequestScopePipeline requestScopePipeline) {
 		this.properties = properties;
 		this.openAiClientService = openAiClientService;
 		this.systemPromptService = systemPromptService;
-		this.threadRepository = threadRepository;
-		this.messageRepository = messageRepository;
-		this.toolCatalog = toolCatalog;
-		this.toolDispatcher = toolDispatcher;
-		this.transactionTemplate = transactionTemplate;
+		this.chatPersistence = chatPersistence;
+		this.orchestrationTools = orchestrationTools;
 		this.userMessageGuard = userMessageGuard;
-		this.requestScopeGuard = requestScopeGuard;
+		this.requestScopePipeline = requestScopePipeline;
 	}
 
 	@Override
@@ -68,9 +57,10 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		final AiChatThread thread = loadThread(context);
 		persistUserMessage(thread, sanitizedMessage);
 
-		final Optional<AiRequestScopeViolation> scopeViolation = requestScopeGuard.evaluate(sanitizedMessage);
-		if (scopeViolation.isPresent()) {
-			return completeScopeRefusal(thread, scopeViolation.get());
+		final Optional<AiRequestScopePipeline.ScopeShortCircuit> scopeShortCircuit = requestScopePipeline
+			.evaluate(sanitizedMessage);
+		if (scopeShortCircuit.isPresent()) {
+			return completeScopeShortCircuit(thread, scopeShortCircuit.get());
 		}
 
 		final List<OpenAiChatMessage> conversation = buildConversation(context, thread);
@@ -91,7 +81,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 			final AiStreamEventConsumer streamConsumer) {
 		assertOperational();
 		final String sanitizedMessage = validateUserMessage(userMessage);
-		final AiChatThread thread = transactionTemplate.execute(status -> {
+		final AiChatThread thread = chatPersistence.getTransactionTemplate().execute(status -> {
 			final AiChatThread loaded = loadThread(context);
 			persistUserMessage(loaded, sanitizedMessage);
 			return loaded;
@@ -100,17 +90,19 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 			throw new AiOrchestrationException("No se pudo guardar el mensaje.");
 		}
 
-		final List<OpenAiChatMessage> conversation = transactionTemplate.execute(status -> {
+		final Optional<AiRequestScopePipeline.ScopeShortCircuit> scopeShortCircuit = requestScopePipeline
+			.evaluate(sanitizedMessage);
+		if (scopeShortCircuit.isPresent()) {
+			completeScopeShortCircuitStreaming(thread, scopeShortCircuit.get(), streamConsumer);
+			return;
+		}
+
+		final List<OpenAiChatMessage> conversation = chatPersistence.getTransactionTemplate().execute(status -> {
 			final AiChatThread loadedThread = loadThread(context);
 			return buildConversation(context, loadedThread);
 		});
 		if (conversation == null) {
 			throw new AiOrchestrationException("No se pudo cargar el historial de la conversación.");
-		}
-		final Optional<AiRequestScopeViolation> scopeViolation = requestScopeGuard.evaluate(sanitizedMessage);
-		if (scopeViolation.isPresent()) {
-			completeScopeRefusalStreaming(thread, scopeViolation.get(), streamConsumer);
-			return;
 		}
 		streamConsumer.onStatus("thinking", "El asistente está pensando…");
 		streamConsumer.throwIfCancelled();
@@ -119,7 +111,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		emitContentDeltas(loopOutcome.assistantContent(), streamConsumer);
 		streamConsumer.throwIfCancelled();
 
-		final AiOrchestrationResult result = transactionTemplate.execute(status -> {
+		final AiOrchestrationResult result = chatPersistence.getTransactionTemplate().execute(status -> {
 			final AiChatMessage assistantMessage = persistAssistantMessage(thread, loopOutcome.assistantContent());
 			persistToolAuditMessages(thread, loopOutcome.toolAuditEntries());
 			touchThread(thread);
@@ -163,26 +155,34 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		return userMessageGuard.validateAndSanitize(userMessage);
 	}
 
-	private AiOrchestrationResult completeScopeRefusal(final AiChatThread thread,
-			final AiRequestScopeViolation violation) {
-		final AiChatMessage assistantMessage = persistAssistantMessage(thread, violation.refusalMessage());
+	private AiOrchestrationResult completeScopeShortCircuit(final AiChatThread thread,
+			final AiRequestScopePipeline.ScopeShortCircuit shortCircuit) {
+		final AiChatMessage assistantMessage = persistAssistantMessage(thread, shortCircuit.assistantMessage());
 		touchThread(thread);
 		if (log.isInfoEnabled()) {
-			log.info("AI orchestration scope refusal threadId={} kind={}", thread.getId(), violation.kind());
+			log.info("AI orchestration {} short-circuit threadId={} detail={}", shortCircuit.sourceLabel(),
+					thread.getId(), shortCircuit.sourceDetail());
 		}
 		return new AiOrchestrationResult(thread.getId(), assistantMessage, 0, null);
 	}
 
-	private void completeScopeRefusalStreaming(final AiChatThread thread, final AiRequestScopeViolation violation,
-			final AiStreamEventConsumer streamConsumer) {
+	private void completeScopeShortCircuitStreaming(final AiChatThread thread,
+			final AiRequestScopePipeline.ScopeShortCircuit shortCircuit, final AiStreamEventConsumer streamConsumer) {
+		completePreOrchestrationReplyStreaming(thread, shortCircuit.assistantMessage(), shortCircuit.sourceLabel(),
+				shortCircuit.sourceDetail(), streamConsumer);
+	}
+
+	private void completePreOrchestrationReplyStreaming(final AiChatThread thread, final String assistantContent,
+			final String sourceLabel, final Object sourceDetail, final AiStreamEventConsumer streamConsumer) {
 		streamConsumer.throwIfCancelled();
-		emitContentDeltas(violation.refusalMessage(), streamConsumer);
+		emitContentDeltas(assistantContent, streamConsumer);
 		streamConsumer.throwIfCancelled();
-		final AiOrchestrationResult result = transactionTemplate.execute(status -> {
-			final AiChatMessage assistantMessage = persistAssistantMessage(thread, violation.refusalMessage());
+		final AiOrchestrationResult result = chatPersistence.getTransactionTemplate().execute(status -> {
+			final AiChatMessage assistantMessage = persistAssistantMessage(thread, assistantContent);
 			touchThread(thread);
 			if (log.isInfoEnabled()) {
-				log.info("AI streaming scope refusal threadId={} kind={}", thread.getId(), violation.kind());
+				log.info("AI streaming {} short-circuit threadId={} detail={}", sourceLabel, thread.getId(),
+						sourceDetail);
 			}
 			return new AiOrchestrationResult(thread.getId(), assistantMessage, 0, null);
 		});
@@ -193,7 +193,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 	}
 
 	private AiChatThread loadThread(final AiOrchestrationContext context) {
-		return threadRepository.findByIdAndNutritionistId(context.threadId(), context.nutritionistId())
+		return chatPersistence.getThreadRepository().findByIdAndNutritionistId(context.threadId(), context.nutritionistId())
 			.orElseThrow(() -> new AiOrchestrationException("No se encontró la conversación."));
 	}
 
@@ -202,7 +202,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		message.setThread(thread);
 		message.setRole(AiChatMessageRole.USER);
 		message.setContent(content);
-		messageRepository.save(message);
+		chatPersistence.getMessageRepository().save(message);
 	}
 
 	private List<OpenAiChatMessage> buildConversation(final AiOrchestrationContext context, final AiChatThread thread) {
@@ -217,7 +217,8 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 	}
 
 	private void appendPersistedHistory(final List<OpenAiChatMessage> messages, final long threadId) {
-		final List<AiChatMessage> persisted = messageRepository.findByThreadIdOrderByCreatedAtAscIdAsc(threadId);
+		final List<AiChatMessage> persisted = chatPersistence.getMessageRepository()
+			.findByThreadIdOrderByCreatedAtAscIdAsc(threadId);
 		for (final AiChatMessage message : persisted) {
 			if (message.getRole() == AiChatMessageRole.USER) {
 				messages.add(OpenAiChatMessage.user(userMessageGuard.wrapForModel(message.getContent())));
@@ -240,7 +241,8 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 				streamConsumer.throwIfCancelled();
 			}
 			final OpenAiChatCompletionResponse response = openAiClientService
-				.chatCompletion(new OpenAiChatCompletionRequest(List.copyOf(conversation), toolCatalog.definitions()));
+				.chatCompletion(new OpenAiChatCompletionRequest(List.copyOf(conversation),
+						orchestrationTools.getToolCatalog().definitions()));
 			accumulatedUsage = mergeUsage(accumulatedUsage, response.usage());
 			assistantContent = response.content();
 
@@ -279,7 +281,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 
 	private String executeToolCall(final AiOrchestrationContext context, final OpenAiToolCall toolCall) {
 		try {
-			return toolDispatcher.dispatch(context, toolCall.name(), toolCall.argumentsJson());
+			return orchestrationTools.getToolDispatcher().dispatch(context, toolCall.name(), toolCall.argumentsJson());
 		}
 		catch (final AiOrchestrationException ex) {
 			if (log.isWarnEnabled()) {
@@ -294,7 +296,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		message.setThread(thread);
 		message.setRole(AiChatMessageRole.ASSISTANT);
 		message.setContent(content);
-		return messageRepository.save(message);
+		return chatPersistence.getMessageRepository().save(message);
 	}
 
 	private void persistToolAuditMessages(final AiChatThread thread, final List<ToolAuditEntry> entries) {
@@ -304,12 +306,12 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 			message.setRole(AiChatMessageRole.TOOL);
 			message.setToolName(entry.toolName());
 			message.setContent(truncateForAudit(entry.resultJson()));
-			messageRepository.save(message);
+			chatPersistence.getMessageRepository().save(message);
 		}
 	}
 
 	private void touchThread(final AiChatThread thread) {
-		threadRepository.save(thread);
+		chatPersistence.getThreadRepository().save(thread);
 	}
 
 	private static String truncateForAudit(final String json) {

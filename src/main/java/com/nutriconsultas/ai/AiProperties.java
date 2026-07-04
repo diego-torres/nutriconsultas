@@ -32,6 +32,10 @@ public class AiProperties {
 
 	private int maxMenuDaysPerTurn = 7;
 
+	private boolean scopeClassifierEnabled = true;
+
+	private int scopeClassifierMaxTokens = 200;
+
 	public boolean isEnabled() {
 		return enabled;
 	}
@@ -94,6 +98,22 @@ public class AiProperties {
 
 	public void setMaxMenuDaysPerTurn(final int maxMenuDaysPerTurn) {
 		this.maxMenuDaysPerTurn = clampScopeLimit(maxMenuDaysPerTurn, 1, CreateDietPlanDraftToolServiceImpl.MAX_DAYS);
+	}
+
+	public boolean isScopeClassifierEnabled() {
+		return scopeClassifierEnabled;
+	}
+
+	public void setScopeClassifierEnabled(final boolean scopeClassifierEnabled) {
+		this.scopeClassifierEnabled = scopeClassifierEnabled;
+	}
+
+	public int getScopeClassifierMaxTokens() {
+		return scopeClassifierMaxTokens;
+	}
+
+	public void setScopeClassifierMaxTokens(final int scopeClassifierMaxTokens) {
+		this.scopeClassifierMaxTokens = clampScopeLimit(scopeClassifierMaxTokens, 64, 512);
 	}
 
 	private static int clampScopeLimit(final int value, final int minimum, final int maximum) {
