@@ -111,13 +111,10 @@
       throw error;
     });
 
-    function cancellablePromise(onFulfilled, onRejected) {
-      return fetchPromise.then(onFulfilled, onRejected);
-    }
-    cancellablePromise.abort = function () {
+    fetchPromise.abort = function () {
       controller.abort();
     };
-    return cancellablePromise;
+    return fetchPromise;
   }
 
   global.NutriAiChatStream = {
