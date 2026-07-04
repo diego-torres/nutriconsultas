@@ -243,4 +243,35 @@ public class AiRequestScopeGuard {
 				+ "después puedes pedir variaciones o días adicionales en mensajes separados.";
 	}
 
+	/**
+	 * Builds deterministic refusal copy from classifier-estimated units (#448).
+	 */
+	public Optional<String> refusalMessageForUnits(final AiRequestScopeRequestedUnits units) {
+		if (units == null) {
+			return Optional.empty();
+		}
+		if (units.patients() != null && units.patients() > 1) {
+			return Optional.of("No puedo generar planes para " + units.patients() + " pacientes en un solo turno. "
+					+ "Trabajemos con un paciente o un borrador de ejemplo a la vez.");
+		}
+		if (units.patients() != null && units.patients() == 0) {
+			return Optional.of("No puedo generar planes para todos tus pacientes en un solo turno. "
+					+ "Trabajemos con un paciente o un borrador de ejemplo a la vez; "
+					+ "después puedes pedir variaciones en mensajes separados.");
+		}
+		if (units.dishes() != null && units.dishes() > properties.getMaxDishesPerTurn()) {
+			return Optional.of(refusalFor(AiRequestScopeKind.DISH_COUNT, units.dishes(), "platillos"));
+		}
+		if (units.plans() != null && units.plans() > 1) {
+			return Optional.of(refusalFor(AiRequestScopeKind.DIET_PLAN_DAYS, units.plans(), "planes nutricionales"));
+		}
+		if (units.days() != null && units.days() > properties.getMaxDaysPerTurn()) {
+			return Optional.of(refusalFor(AiRequestScopeKind.DIET_PLAN_DAYS, units.days(), "planes alimenticios"));
+		}
+		if (units.days() != null && units.days() > properties.getMaxMenuDaysPerTurn()) {
+			return Optional.of(refusalFor(AiRequestScopeKind.MENU_DAYS, units.days(), "menús"));
+		}
+		return Optional.empty();
+	}
+
 }

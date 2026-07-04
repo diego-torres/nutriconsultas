@@ -61,7 +61,13 @@ class AiOrchestrationServiceTest {
 	private AiUserMessageGuard userMessageGuard;
 
 	@Mock
-	private AiRequestScopeGuard requestScopeGuard;
+	private AiChatPersistence chatPersistence;
+
+	@Mock
+	private AiOrchestrationTools orchestrationTools;
+
+	@Mock
+	private AiRequestScopePipeline requestScopePipeline;
 
 	private AiUserMessageGuard realUserMessageGuard;
 
@@ -81,8 +87,21 @@ class AiOrchestrationServiceTest {
 			.thenAnswer(invocation -> realUserMessageGuard.validateAndSanitize(invocation.getArgument(0)));
 		lenient().when(userMessageGuard.wrapForModel(any(String.class)))
 			.thenAnswer(invocation -> realUserMessageGuard.wrapForModel(invocation.getArgument(0)));
-		lenient().when(requestScopeGuard.evaluate(any(String.class)))
-			.thenAnswer(invocation -> realRequestScopeGuard.evaluate(invocation.getArgument(0)));
+		lenient().when(chatPersistence.getThreadRepository()).thenReturn(threadRepository);
+		lenient().when(chatPersistence.getMessageRepository()).thenReturn(messageRepository);
+		lenient().when(chatPersistence.getTransactionTemplate()).thenReturn(transactionTemplate);
+		lenient().when(orchestrationTools.getToolCatalog()).thenReturn(toolCatalog);
+		lenient().when(orchestrationTools.getToolDispatcher()).thenReturn(toolDispatcher);
+		lenient().when(requestScopePipeline.evaluate(any(String.class))).thenAnswer(invocation -> {
+			final Optional<AiRequestScopeViolation> violation = realRequestScopeGuard
+				.evaluate(invocation.getArgument(0));
+			if (violation.isPresent()) {
+				final AiRequestScopeViolation scopeViolation = violation.get();
+				return Optional.of(new AiRequestScopePipeline.ScopeShortCircuit(scopeViolation.refusalMessage(),
+						"scope refusal", scopeViolation.kind()));
+			}
+			return Optional.empty();
+		});
 		lenient().when(transactionTemplate.execute(org.mockito.ArgumentMatchers.<TransactionCallback<Object>>any()))
 			.thenAnswer(invocation -> {
 				final TransactionCallback<?> callback = invocation.getArgument(0);
@@ -297,6 +316,47 @@ class AiOrchestrationServiceTest {
 		assertThat(completed[0].assistantMessage().getContent()).contains("30");
 		verify(openAiClientService, never()).chatCompletion(any());
 		verify(messageRepository, times(2)).save(any(AiChatMessage.class));
+	}
+
+	@Test
+	void processUserMessageClassifierRefusalPersistsWithoutToolLoop() {
+		stubAiEnabled();
+		when(threadRepository.findByIdAndNutritionistId(THREAD_ID, NUTRITIONIST_ID)).thenReturn(Optional.of(thread));
+		when(messageRepository.save(any(AiChatMessage.class))).thenAnswer(invocation -> {
+			final AiChatMessage message = invocation.getArgument(0);
+			if (message.getId() == null) {
+				message.setId(100L);
+			}
+			return message;
+		});
+		when(requestScopePipeline.evaluate("Plan muy completo para todo el consultorio"))
+			.thenReturn(Optional.of(new AiRequestScopePipeline.ScopeShortCircuit(
+					"No puedo generar planes para todos tus pacientes en un solo turno.", "classifier",
+					AiRequestScopeDecision.REFUSE)));
+
+		final AiOrchestrationResult result = service.processUserMessage(context(),
+				"Plan muy completo para todo el consultorio");
+
+		assertThat(result.toolCallsExecuted()).isZero();
+		assertThat(result.assistantMessage().getContent()).contains("todos tus pacientes");
+		verify(openAiClientService, never()).chatCompletion(any());
+		verify(messageRepository, times(2)).save(any(AiChatMessage.class));
+	}
+
+	@Test
+	void processUserMessageClassifierAllowProceedsToToolLoop() {
+		stubOperational();
+		when(threadRepository.findByIdAndNutritionistId(THREAD_ID, NUTRITIONIST_ID)).thenReturn(Optional.of(thread));
+		when(messageRepository.findByThreadIdOrderByCreatedAtAscIdAsc(THREAD_ID))
+			.thenReturn(List.of(message(AiChatMessageRole.USER, "Menú de 7 días")));
+		when(requestScopePipeline.evaluate("Menú de 7 días")).thenReturn(Optional.empty());
+		when(openAiClientService.chatCompletion(any())).thenReturn(new OpenAiChatCompletionResponse("id-1", "assistant",
+				"Aquí tienes el borrador.", List.of(), "stop", null));
+
+		final AiOrchestrationResult result = service.processUserMessage(context(), "Menú de 7 días");
+
+		assertThat(result.assistantMessage().getContent()).contains("borrador");
+		verify(openAiClientService).chatCompletion(any());
 	}
 
 	@Test

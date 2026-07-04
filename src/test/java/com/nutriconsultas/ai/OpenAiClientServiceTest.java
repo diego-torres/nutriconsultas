@@ -212,17 +212,32 @@ class OpenAiClientServiceTest {
 	}
 
 	@Test
-	void chatCompletionMapsModelNotFound() {
+	void chatCompletionSerializesOptionalParameters() {
 		mockServer.expect(requestTo("https://api.openai.com/v1/chat/completions"))
-			.andRespond(withStatus(HttpStatus.NOT_FOUND).body("""
-					{"error":{"message":"The model gpt-test does not exist","type":"invalid_request_error"}}
-					"""));
+			.andExpect(content().json("""
+					{
+					  "model": "gpt-test",
+					  "messages": [{"role":"user","content":"Clasifica"}],
+					  "store": false,
+					  "temperature": 0.0,
+					  "max_tokens": 200,
+					  "response_format": {"type":"json_object"}
+					}
+					""", false))
+			.andRespond(withSuccess("""
+					{
+					  "id": "chatcmpl-json",
+					  "choices": [{
+					    "message": {"role":"assistant","content":"{\\"decision\\":\\"ALLOW\\"}"},
+					    "finish_reason": "stop"
+					  }]
+					}
+					""", MediaType.APPLICATION_JSON));
 
-		assertThatThrownBy(() -> service
-			.chatCompletion(new OpenAiChatCompletionRequest(List.of(OpenAiChatMessage.user("Hola")), List.of())))
-			.isInstanceOf(OpenAiClientException.class)
-			.extracting(ex -> ((OpenAiClientException) ex).getKind())
-			.isEqualTo(OpenAiClientException.ErrorKind.MODEL_NOT_FOUND);
+		service.chatCompletion(new OpenAiChatCompletionRequest(List.of(OpenAiChatMessage.user("Clasifica")), List.of(),
+				OpenAiCompletionParameters.scopeClassifier(200)));
+
+		mockServer.verify();
 	}
 
 }

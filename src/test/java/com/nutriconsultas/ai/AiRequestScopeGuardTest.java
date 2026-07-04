@@ -57,6 +57,16 @@ class AiRequestScopeGuardTest {
 		assertThat(violation.requestedAmount()).isEqualTo(5);
 	}
 
+	@Test
+	void refusalMessageForUnitsMatchesRefusalFor() {
+		final AiProperties properties = new AiProperties();
+		final AiRequestScopeGuard scopeGuard = new AiRequestScopeGuard(properties);
+
+		assertThat(scopeGuard.refusalMessageForUnits(new AiRequestScopeRequestedUnits(null, 5, null, null)))
+			.get()
+			.isEqualTo(AiRequestScopeGuard.refusalFor(AiRequestScopeKind.DISH_COUNT, 5, "platillos"));
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings = { "Genera 100 platillos para la semana", "Crea cien recetas de desayuno",
 			"Genera 1000 planes nutricionales", "Genera un plan para todos mis pacientes" })
