@@ -81,13 +81,7 @@ public class AiChatRestController {
 			final AiOrchestrationResult result = aiChatRateLimiter.executeMessage(nutritionistId, () -> chatService
 				.sendMessage(nutritionistId, request.threadId(), request.message(), promptContext));
 			final Map<String, Object> response = successBody();
-			response.put("threadId", result.threadId());
-			response.put("assistantMessageId", result.assistantMessage().getId());
-			response.put("content", result.assistantMessage().getContent());
-			response.put("toolCallsExecuted", result.toolCallsExecuted());
-			if (result.tokenUsage() != null) {
-				response.put("tokenUsage", tokenUsageMap(result.tokenUsage()));
-			}
+			putOrchestrationFields(response, result);
 			return ResponseEntity.ok(response);
 		}
 		catch (final AiChatException ex) {
@@ -137,6 +131,78 @@ public class AiChatRestController {
 		catch (final RuntimeException ex) {
 			if (log.isWarnEnabled()) {
 				log.warn("AI chat stream failed unexpectedly", ex);
+			}
+			completeStreamError(emitter, "No se pudo completar la solicitud.");
+		}
+		return emitter;
+	}
+
+	@PostMapping("/message/edit")
+	public ResponseEntity<Map<String, Object>> editMessage(@RequestBody final AiEditMessageRequest request,
+			@AuthenticationPrincipal final OidcUser principal) {
+		final String nutritionistId = nutritionistId(principal);
+		if (nutritionistId == null) {
+			return unauthorized();
+		}
+		if (request == null) {
+			return errorResponse(HttpStatus.BAD_REQUEST, AiToolErrorCode.VALIDATION, "Solicitud no válida.");
+		}
+		try {
+			final AiEditResubmitResult result = aiChatRateLimiter.executeMessage(nutritionistId,
+					() -> chatService.editAndResubmitMessage(nutritionistId, request));
+			final Map<String, Object> response = successBody();
+			putOrchestrationFields(response, result.orchestration());
+			response.put("truncatedMessageCount", result.truncatedMessageCount());
+			response.put("discardedDraftIds", result.discardedDraftIds());
+			return ResponseEntity.ok(response);
+		}
+		catch (final AiChatException ex) {
+			return errorResponse(ex);
+		}
+		catch (final AiOrchestrationException ex) {
+			return errorResponse(HttpStatus.SERVICE_UNAVAILABLE, AiToolErrorCode.VALIDATION, ex.getMessage());
+		}
+		catch (final OpenAiClientException ex) {
+			return mapOpenAiException(ex);
+		}
+		catch (final RequestNotPermitted ex) {
+			if (log.isDebugEnabled()) {
+				log.debug("AI chat edit rate limit exceeded");
+			}
+			return errorResponse(HttpStatus.TOO_MANY_REQUESTS, AiToolErrorCode.RATE_LIMIT,
+					AiChatRateLimiter.RATE_LIMIT_USER_MESSAGE);
+		}
+	}
+
+	@PostMapping(value = "/message/edit/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+	public SseEmitter streamEditMessage(@RequestBody final AiEditMessageRequest request,
+			@AuthenticationPrincipal final OidcUser principal) {
+		final SseEmitter emitter = new SseEmitter(300_000L);
+		emitter.onTimeout(emitter::complete);
+		final String nutritionistId = nutritionistId(principal);
+		if (nutritionistId == null) {
+			completeStreamError(emitter, "Sesión no válida.");
+			return emitter;
+		}
+		if (request == null) {
+			completeStreamError(emitter, "Solicitud no válida.");
+			return emitter;
+		}
+		try {
+			aiChatRateLimiter.executeMessage(nutritionistId, () -> {
+				chatService.streamEditMessage(nutritionistId, request, emitter);
+				return null;
+			});
+		}
+		catch (final RequestNotPermitted ex) {
+			if (log.isDebugEnabled()) {
+				log.debug("AI chat edit stream rate limit exceeded");
+			}
+			completeStreamError(emitter, AiChatRateLimiter.RATE_LIMIT_USER_MESSAGE);
+		}
+		catch (final RuntimeException ex) {
+			if (log.isWarnEnabled()) {
+				log.warn("AI chat edit stream failed unexpectedly", ex);
 			}
 			completeStreamError(emitter, "No se pudo completar la solicitud.");
 		}
@@ -243,6 +309,16 @@ public class AiChatRestController {
 		map.put("completionTokens", usage.completionTokens());
 		map.put("totalTokens", usage.totalTokens());
 		return map;
+	}
+
+	private static void putOrchestrationFields(final Map<String, Object> response, final AiOrchestrationResult result) {
+		response.put("threadId", result.threadId());
+		response.put("assistantMessageId", result.assistantMessage().getId());
+		response.put("content", result.assistantMessage().getContent());
+		response.put("toolCallsExecuted", result.toolCallsExecuted());
+		if (result.tokenUsage() != null) {
+			response.put("tokenUsage", tokenUsageMap(result.tokenUsage()));
+		}
 	}
 
 	private static List<Map<String, Object>> toMessageMaps(final List<AiChatMessageView> messages) {

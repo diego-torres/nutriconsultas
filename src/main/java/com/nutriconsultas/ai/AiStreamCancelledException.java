@@ -1,7 +1,8 @@
 package com.nutriconsultas.ai;
 
 /**
- * Raised when an AI chat stream is cancelled before the assistant reply is persisted (#436).
+ * Raised when an AI chat stream is cancelled before the assistant reply is persisted
+ * (#436).
  */
 public class AiStreamCancelledException extends RuntimeException {
 

@@ -18,7 +18,9 @@
     busy: false,
     showLoading: false,
     activeStreamRequest: null,
-    cancelling: false
+    cancelling: false,
+    editingMessageId: null,
+    editingMessageIndex: null
   };
 
   function $(selector) {
@@ -71,6 +73,67 @@
     return (messages || []).filter(function (message) {
       return message.role === 'USER' || message.role === 'ASSISTANT';
     });
+  }
+
+  function findMessageIndexById(messageId) {
+    var items = visibleMessages(state.messages);
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].id === messageId) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  function updateComposerForEditMode() {
+    var textarea = $('#aiChatInput');
+    var hint = document.querySelector('.ai-chat-hint');
+    if (state.editingMessageId) {
+      if (textarea) {
+        textarea.placeholder = 'Edita tu mensaje y reenvía…';
+      }
+      if (hint) {
+        hint.textContent = 'Editando un mensaje anterior. Los mensajes posteriores se descartarán al reenviar.';
+      }
+    } else {
+      if (textarea) {
+        textarea.placeholder = 'Describe la receta, menú o plan que necesitas…';
+      }
+      if (hint) {
+        hint.textContent = 'Enter para enviar · Shift+Enter para nueva línea · Los borradores requieren tu revisión antes de usarse.';
+      }
+    }
+  }
+
+  function cancelEditMessage() {
+    state.editingMessageId = null;
+    state.editingMessageIndex = null;
+    var textarea = $('#aiChatInput');
+    if (textarea) {
+      textarea.value = '';
+    }
+    updateComposerForEditMode();
+    renderMessages(state.showLoading === true);
+  }
+
+  function startEditMessage(messageId) {
+    if (state.busy || !messageId) {
+      return;
+    }
+    var index = findMessageIndexById(messageId);
+    if (index < 0) {
+      return;
+    }
+    var message = visibleMessages(state.messages)[index];
+    state.editingMessageId = messageId;
+    state.editingMessageIndex = index;
+    var textarea = $('#aiChatInput');
+    if (textarea) {
+      textarea.value = message.content || '';
+      textarea.focus();
+    }
+    updateComposerForEditMode();
+    renderMessages(state.showLoading === true);
   }
 
   function requestJson(url, options) {
@@ -498,10 +561,15 @@
 
     var html = items.map(function (message) {
       var roleClass = message.role === 'USER' ? 'user' : 'assistant';
+      var editControl = '';
+      if (message.role === 'USER' && message.id && !state.busy && !state.editingMessageId) {
+        editControl = ' <button type="button" class="btn btn-link btn-sm ai-chat-edit-btn p-0 ml-2" ' +
+          'data-message-id="' + message.id + '" aria-label="Editar mensaje">Editar</button>';
+      }
       return '<article class="ai-chat-message ' + roleClass + '" aria-label="' + roleLabel(message.role) + '">' +
         '<div class="ai-chat-bubble">' + formatMessageBubbleContent(message) + '</div>' +
         '<div class="ai-chat-meta">' + escapeHtml(roleLabel(message.role)) +
-        (message.createdAt ? ' · ' + formatTime(message.createdAt) : '') + '</div>' +
+        (message.createdAt ? ' · ' + formatTime(message.createdAt) : '') + editControl + '</div>' +
         '</article>';
     }).join('');
 
@@ -566,12 +634,7 @@
     return startThread();
   }
 
-  function sendMessage(text) {
-    var trimmed = (text || '').trim();
-    if (!trimmed || state.busy) {
-      return;
-    }
-
+  function executeAssistantStream(threadId, trimmed, streamUrl, payload, onAfterTruncate) {
     var textarea = $('#aiChatInput');
     state.messages.push({
       role: 'USER',
@@ -621,13 +684,12 @@
       renderMessages(false);
     }
 
-    ensureThread()
-      .then(function (threadId) {
+    return ensureThread()
+      .then(function (resolvedThreadId) {
+        var effectiveThreadId = threadId || resolvedThreadId;
+        var body = payload || { threadId: effectiveThreadId, message: trimmed };
         if (window.NutriAiChatStream && typeof NutriAiChatStream.streamMessage === 'function') {
-          var streamRequest = NutriAiChatStream.streamMessage(API_BASE + '/message/stream', {
-            threadId: threadId,
-            message: trimmed
-          }, {
+          var streamRequest = NutriAiChatStream.streamMessage(streamUrl, body, {
             onStatus: function () {
               renderMessages(true);
             },
@@ -644,10 +706,10 @@
           setBusy(true);
           return streamRequest;
         }
-        return requestJson(API_BASE + '/message', {
+        return requestJson(streamUrl.replace('/stream', ''), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ threadId: threadId, message: trimmed })
+          body: JSON.stringify(body)
         }).then(function (data) {
           finalizeAssistant(data);
         });
@@ -666,10 +728,57 @@
         state.activeStreamRequest = null;
         state.cancelling = false;
         setBusy(false);
+        if (typeof onAfterTruncate === 'function') {
+          onAfterTruncate();
+        }
         if (textarea) {
           textarea.focus();
         }
       });
+  }
+
+  function resubmitEditedMessage(text) {
+    var trimmed = (text || '').trim();
+    if (!trimmed || state.busy || !state.editingMessageId || state.threadId == null) {
+      return;
+    }
+    var editIndex = state.editingMessageIndex;
+    var messageId = state.editingMessageId;
+    var hasLaterMessages = editIndex >= 0 &&
+      editIndex < visibleMessages(state.messages).length - 1;
+
+    function performResubmit() {
+      state.messages = state.messages.slice(0, editIndex);
+      cancelEditMessage();
+      executeAssistantStream(state.threadId, trimmed, API_BASE + '/message/edit/stream', {
+        threadId: state.threadId,
+        messageId: messageId,
+        message: trimmed
+      });
+    }
+
+    if (hasLaterMessages) {
+      confirmDraftAction({
+        title: '¿Reenviar mensaje editado?',
+        text: 'Se eliminarán este mensaje, las respuestas posteriores y los borradores pendientes generados después.',
+        confirmText: 'Sí, reenviar',
+        confirmColor: '#4e73df'
+      }, performResubmit);
+      return;
+    }
+    performResubmit();
+  }
+
+  function sendMessage(text) {
+    if (state.editingMessageId) {
+      resubmitEditedMessage(text);
+      return;
+    }
+    var trimmed = (text || '').trim();
+    if (!trimmed || state.busy) {
+      return;
+    }
+    executeAssistantStream(null, trimmed, API_BASE + '/message/stream', null);
   }
 
   function startNewConversation() {
@@ -699,6 +808,7 @@
     persistThreadId(null);
     state.messages = [];
     state.drafts = [];
+    cancelEditMessage();
     hideDraftPreview();
     renderDraftList();
     updateThreadTitle(null);
@@ -749,15 +859,6 @@
       });
     }
 
-    if (textarea) {
-      textarea.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter' && !event.shiftKey) {
-          event.preventDefault();
-          sendMessage(textarea.value);
-        }
-      });
-    }
-
     if (newBtn) {
       newBtn.addEventListener('click', startNewConversation);
     }
@@ -766,6 +867,34 @@
     }
     if (discardBtn) {
       discardBtn.addEventListener('click', discardSelectedDraft);
+    }
+
+    var messagesContainer = $('#aiChatMessages');
+    if (messagesContainer) {
+      messagesContainer.addEventListener('click', function (event) {
+        var target = event.target;
+        if (!target || !target.classList || !target.classList.contains('ai-chat-edit-btn')) {
+          return;
+        }
+        var messageId = Number(target.getAttribute('data-message-id'));
+        if (messageId) {
+          startEditMessage(messageId);
+        }
+      });
+    }
+
+    if (textarea) {
+      textarea.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && state.editingMessageId) {
+          event.preventDefault();
+          cancelEditMessage();
+          return;
+        }
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+          sendMessage(textarea.value);
+        }
+      });
     }
   }
 

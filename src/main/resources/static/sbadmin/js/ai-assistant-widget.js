@@ -17,7 +17,9 @@
     showLoading: false,
     loadingThread: false,
     activeStreamRequest: null,
-    cancelling: false
+    cancelling: false,
+    editingMessageId: null,
+    editingMessageIndex: null
   };
 
   function $(selector) {
@@ -70,6 +72,67 @@
     return (messages || []).filter(function (message) {
       return message.role === 'USER' || message.role === 'ASSISTANT';
     });
+  }
+
+  function findMessageIndexById(messageId) {
+    var items = visibleMessages(state.messages);
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].id === messageId) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  function cancelEditMessage() {
+    state.editingMessageId = null;
+    state.editingMessageIndex = null;
+    var textarea = $('#aiAssistantInput');
+    if (textarea) {
+      textarea.value = '';
+      textarea.placeholder = 'Pide un borrador usando el contexto de esta pantalla…';
+    }
+    renderMessages();
+  }
+
+  function startEditMessage(messageId) {
+    if (state.busy || !messageId) {
+      return;
+    }
+    var index = findMessageIndexById(messageId);
+    if (index < 0) {
+      return;
+    }
+    var message = visibleMessages(state.messages)[index];
+    state.editingMessageId = messageId;
+    state.editingMessageIndex = index;
+    var textarea = $('#aiAssistantInput');
+    if (textarea) {
+      textarea.value = message.content || '';
+      textarea.placeholder = 'Edita tu mensaje y reenvía…';
+      textarea.focus();
+    }
+    renderMessages();
+  }
+
+  function confirmResubmit(onConfirm) {
+    if (typeof swal === 'function') {
+      swal({
+        title: '¿Reenviar mensaje editado?',
+        text: 'Se eliminarán este mensaje, las respuestas posteriores y los borradores pendientes generados después.',
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, reenviar',
+        cancelButtonText: 'Cancelar',
+        closeOnConfirm: true
+      }, function (isConfirm) {
+        if (isConfirm) {
+          onConfirm();
+        }
+      });
+    } else if (window.confirm('¿Reenviar mensaje editado?')) {
+      onConfirm();
+    }
   }
 
   function requestJson(url, options) {
@@ -219,10 +282,15 @@
 
     var html = items.map(function (message) {
       var roleClass = message.role === 'USER' ? 'user' : 'assistant';
+      var editControl = '';
+      if (message.role === 'USER' && message.id && !state.busy && !state.editingMessageId) {
+        editControl = ' <button type="button" class="btn btn-link btn-sm ai-assistant-edit-btn p-0 ml-1" ' +
+          'data-message-id="' + message.id + '" aria-label="Editar mensaje">Editar</button>';
+      }
       return '<article class="ai-assistant-message ' + roleClass + '" aria-label="' + roleLabel(message.role) + '">' +
         '<div class="ai-assistant-bubble">' + formatMessageBubbleContent(message) + '</div>' +
         '<div class="ai-assistant-meta">' + escapeHtml(roleLabel(message.role)) +
-        (message.createdAt ? ' · ' + formatTime(message.createdAt) : '') + '</div>' +
+        (message.createdAt ? ' · ' + formatTime(message.createdAt) : '') + editControl + '</div>' +
         '</article>';
     }).join('');
 
@@ -294,6 +362,41 @@
   }
 
   function sendMessage(text) {
+    if (state.editingMessageId) {
+      resubmitEditedMessage(text);
+      return;
+    }
+    executeAssistantStream(text, API_BASE + '/message/stream', null);
+  }
+
+  function resubmitEditedMessage(text) {
+    var trimmed = (text || '').trim();
+    if (!trimmed || state.busy || !state.editingMessageId || state.threadId == null) {
+      return;
+    }
+    var editIndex = state.editingMessageIndex;
+    var messageId = state.editingMessageId;
+    var hasLaterMessages = editIndex >= 0 &&
+      editIndex < visibleMessages(state.messages).length - 1;
+
+    function performResubmit() {
+      state.messages = state.messages.slice(0, editIndex);
+      cancelEditMessage();
+      var payload = promptContextPayload();
+      payload.threadId = state.threadId;
+      payload.messageId = messageId;
+      payload.message = trimmed;
+      executeAssistantStream(trimmed, API_BASE + '/message/edit/stream', payload);
+    }
+
+    if (hasLaterMessages) {
+      confirmResubmit(performResubmit);
+      return;
+    }
+    performResubmit();
+  }
+
+  function executeAssistantStream(text, streamUrl, payloadOverride) {
     var trimmed = (text || '').trim();
     if (!trimmed || state.busy) {
       return;
@@ -307,11 +410,12 @@
     });
     if (textarea) {
       textarea.value = '';
+      textarea.placeholder = 'Pide un borrador usando el contexto de esta pantalla…';
     }
     state.showLoading = true;
     setBusy(true);
 
-    var payload = promptContextPayload();
+    var payload = payloadOverride || promptContextPayload();
     payload.message = trimmed;
     var assistantIndex = null;
 
@@ -351,9 +455,11 @@
 
     ensureThread()
       .then(function (threadId) {
-        payload.threadId = threadId;
+        if (!payload.threadId) {
+          payload.threadId = threadId;
+        }
         if (window.NutriAiChatStream && typeof NutriAiChatStream.streamMessage === 'function') {
-          var streamRequest = NutriAiChatStream.streamMessage(API_BASE + '/message/stream', payload, {
+          var streamRequest = NutriAiChatStream.streamMessage(streamUrl, payload, {
             onStatus: function () {
               renderMessages();
             },
@@ -370,7 +476,7 @@
           setBusy(true);
           return streamRequest;
         }
-        return requestJson(API_BASE + '/message', {
+        return requestJson(streamUrl.replace('/stream', ''), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -401,6 +507,7 @@
   function resetConversation() {
     persistThreadId(null);
     state.messages = [];
+    cancelEditMessage();
     renderMessages();
   }
 
@@ -481,9 +588,27 @@
     }
     if (textarea) {
       textarea.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && state.editingMessageId) {
+          event.preventDefault();
+          cancelEditMessage();
+          return;
+        }
         if (event.key === 'Enter' && !event.shiftKey) {
           event.preventDefault();
           sendMessage(textarea.value);
+        }
+      });
+    }
+    var messagesContainer = $('#aiAssistantMessages');
+    if (messagesContainer) {
+      messagesContainer.addEventListener('click', function (event) {
+        var target = event.target;
+        if (!target || !target.classList || !target.classList.contains('ai-assistant-edit-btn')) {
+          return;
+        }
+        var messageId = Number(target.getAttribute('data-message-id'));
+        if (messageId) {
+          startEditMessage(messageId);
         }
       });
     }

@@ -1,5 +1,6 @@
 package com.nutriconsultas.ai;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,5 +17,8 @@ public interface AiGeneratedDraftRepository extends JpaRepository<AiGeneratedDra
 			@Param("nutritionistId") String nutritionistId);
 
 	List<AiGeneratedDraft> findByThreadIdAndStatusOrderByCreatedAtDescIdDesc(Long threadId, AiDraftStatus status);
+
+	List<AiGeneratedDraft> findByThreadIdAndStatusAndCreatedAtGreaterThanEqual(Long threadId, AiDraftStatus status,
+			Instant createdAt);
 
 }

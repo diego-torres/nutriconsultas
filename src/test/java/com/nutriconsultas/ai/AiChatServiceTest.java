@@ -160,6 +160,60 @@ class AiChatServiceTest {
 		verify(orchestrationService, never()).processUserMessage(any(), any());
 	}
 
+	@Test
+	void editAndResubmitTruncatesAndDelegatesToOrchestration() {
+		final AiChatThread thread = sampleThread(5L, NUTRITIONIST_ID);
+		when(threadRepository.findByIdAndNutritionistId(5L, NUTRITIONIST_ID)).thenReturn(Optional.of(thread));
+		final AiChatMessage anchor = message(10L, AiChatMessageRole.USER, "Original");
+		anchor.setThread(thread);
+		anchor.setCreatedAt(Instant.parse("2026-06-30T12:00:00Z"));
+		when(messageRepository.findByIdAndThreadNutritionistId(10L, NUTRITIONIST_ID)).thenReturn(Optional.of(anchor));
+		when(draftRepository.findByThreadIdAndStatusAndCreatedAtGreaterThanEqual(5L, AiDraftStatus.DRAFT,
+				anchor.getCreatedAt()))
+			.thenReturn(List.of());
+		when(messageRepository.deleteByThreadIdAndIdGreaterThanEqual(5L, 10L)).thenReturn(3);
+		final AiChatMessage assistant = message(99L, AiChatMessageRole.ASSISTANT, "Nueva respuesta");
+		when(patientContextResolver.resolve(null, NUTRITIONIST_ID)).thenReturn(Optional.empty());
+		when(dietaContextResolver.resolve(null, NUTRITIONIST_ID)).thenReturn(Optional.empty());
+		when(platilloContextResolver.resolve(null, NUTRITIONIST_ID)).thenReturn(Optional.empty());
+		when(orchestrationService.processUserMessage(any(), eq("Texto editado")))
+			.thenReturn(new AiOrchestrationResult(5L, assistant, 1, null));
+
+		final AiEditResubmitResult result = service.editAndResubmitMessage(NUTRITIONIST_ID,
+				new AiEditMessageRequest(5L, 10L, "Texto editado", null, null, null));
+
+		assertThat(result.truncatedMessageCount()).isEqualTo(3);
+		assertThat(result.orchestration().assistantMessage().getContent()).isEqualTo("Nueva respuesta");
+		verify(orchestrationService).processUserMessage(any(), eq("Texto editado"));
+	}
+
+	@Test
+	void editAndResubmitRejectsAssistantAnchor() {
+		final AiChatThread thread = sampleThread(5L, NUTRITIONIST_ID);
+		final AiChatMessage anchor = message(10L, AiChatMessageRole.ASSISTANT, "Respuesta");
+		anchor.setThread(thread);
+		when(messageRepository.findByIdAndThreadNutritionistId(10L, NUTRITIONIST_ID)).thenReturn(Optional.of(anchor));
+
+		assertThatThrownBy(() -> service.editAndResubmitMessage(NUTRITIONIST_ID,
+				new AiEditMessageRequest(5L, 10L, "Texto editado", null, null, null)))
+			.isInstanceOf(AiChatException.class)
+			.extracting(ex -> ((AiChatException) ex).getHttpStatus())
+			.isEqualTo(HttpStatus.BAD_REQUEST);
+		verify(orchestrationService, never()).processUserMessage(any(), any());
+	}
+
+	@Test
+	void editAndResubmitDeniesForeignMessage() {
+		when(messageRepository.findByIdAndThreadNutritionistId(10L, OTHER_NUTRITIONIST_ID))
+			.thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.editAndResubmitMessage(OTHER_NUTRITIONIST_ID,
+				new AiEditMessageRequest(5L, 10L, "Texto editado", null, null, null)))
+			.isInstanceOf(AiChatException.class)
+			.extracting(ex -> ((AiChatException) ex).getHttpStatus())
+			.isEqualTo(HttpStatus.NOT_FOUND);
+	}
+
 	private static AiChatThread sampleThread(final long id, final String nutritionistId) {
 		final AiChatThread thread = new AiChatThread();
 		thread.setId(id);

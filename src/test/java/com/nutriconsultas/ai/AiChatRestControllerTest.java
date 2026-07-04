@@ -164,6 +164,43 @@ class AiChatRestControllerTest {
 	}
 
 	@Test
+	void editMessageReturnsAssistantReply() throws Exception {
+		final AiChatMessage assistant = new AiChatMessage();
+		assistant.setId(99L);
+		assistant.setRole(AiChatMessageRole.ASSISTANT);
+		assistant.setContent("Respuesta editada.");
+		when(chatService.editAndResubmitMessage(eq(NUTRITIONIST_ID), any(AiEditMessageRequest.class)))
+			.thenReturn(new AiEditResubmitResult(new AiOrchestrationResult(5L, assistant, 0, null), 2, List.of(11L)));
+		when(aiChatRateLimiter.executeMessage(eq(NUTRITIONIST_ID), any())).thenAnswer(invocation -> {
+			final Callable<?> callable = invocation.getArgument(1);
+			return callable.call();
+		});
+
+		final ResponseEntity<Map<String, Object>> response = controller.editMessage(
+				new AiEditMessageRequest(5L, 10L, "Texto editado", null, null, null), principal(NUTRITIONIST_ID));
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).containsEntry("assistantMessageId", 99L)
+			.containsEntry("truncatedMessageCount", 2)
+			.containsEntry("discardedDraftIds", List.of(11L));
+	}
+
+	@Test
+	void streamEditMessageReturnsSseEmitter() throws Exception {
+		when(aiChatRateLimiter.executeMessage(eq(NUTRITIONIST_ID), any())).thenAnswer(invocation -> {
+			final Callable<?> callable = invocation.getArgument(1);
+			return callable.call();
+		});
+
+		final SseEmitter emitter = controller.streamEditMessage(
+				new AiEditMessageRequest(5L, 10L, "Texto editado", null, null, null), principal(NUTRITIONIST_ID));
+
+		assertThat(emitter).isNotNull();
+		verify(chatService).streamEditMessage(eq(NUTRITIONIST_ID), any(AiEditMessageRequest.class),
+				any(SseEmitter.class));
+	}
+
+	@Test
 	void startChatRequiresAuthentication() {
 		final ResponseEntity<Map<String, Object>> response = controller.startChat(null, null);
 
