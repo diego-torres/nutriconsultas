@@ -65,4 +65,4 @@ mvn test -Dtest=AiBulkScopeGoldenPromptTest
 2. Extend `AiBulkScopeGoldenPromptTest` if a new expectation type is needed.
 3. Prefer phrasing that matches production guard/classifier policy in [`PROMPT-SECURITY.md`](PROMPT-SECURITY.md).
 
-Future [#401](https://github.com/diego-torres/nutriconsultas/issues/401) golden prompts for nutrition workflows should reuse this fixture pattern.
+Future nutrition workflow scenarios: [`NUTRITION-GOLDEN-PROMPTS.md`](NUTRITION-GOLDEN-PROMPTS.md) (#401).

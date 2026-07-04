@@ -44,4 +44,4 @@ System prompt **SEGURIDAD DE PROMPTS** instructs the model to treat delimiter bl
 | `AiToolResultSanitizerTest` | Indirect injection in tool JSON |
 | `AiAssistantOutputValidatorTest` | Secret / PII redaction |
 
-Future [#401](https://github.com/diego-torres/nutriconsultas/issues/401) nutrition workflow golden prompts should reuse this fixture pattern alongside bulk scope cases (#450).
+Nutrition workflow scenarios: [`NUTRITION-GOLDEN-PROMPTS.md`](NUTRITION-GOLDEN-PROMPTS.md) (#401).
