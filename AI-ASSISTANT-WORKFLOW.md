@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#447 — Deterministic request scope limits](https://github.com/diego-torres/nutriconsultas/issues/447) (`open`). ~~#440~~ merged (PR #454).
+**Current next issue:** [#449 — System prompt volume limits and bulk refusal corpus](https://github.com/diego-torres/nutriconsultas/issues/449) (`open`). ~~#447~~ merged (PR #456).
 
 **Registered backlog (2026-07-04):** Epic [#433](https://github.com/diego-torres/nutriconsultas/issues/433) chat UX (#434–#437). Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438) prompt security (#439–#441, **#447–#450** bulk scope guards). See registry for suggested order.
 
@@ -26,7 +26,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | **B — Display** | **#434** | Markdown rendering (chat + widget) |
 | **B — Streaming** | **#435** → **#436** | SSE tokens, then cancel/stop |
 | **C — Controls** | **#437** | Edit message and resubmit |
-| **D — Security** | **#439** → **#440** → **#447** → **#449** → **#448** → **#450** → **#441** | Injection, bulk scope guards, defense-in-depth |
+| **D — Security** | **#439** → **#440** → ~~**#447**~~ → **#449** → **#448** → **#450** → **#441** | Injection, bulk scope guards, defense-in-depth |
 | **E — Release** | **#409**, **#408**, **#397–#399** | Plan gate, checklist, observability |
 
 Wave **B** may run **#434** in parallel with **#435**. Wave **D** should complete before production `AI_ENABLED=true` (with #408).

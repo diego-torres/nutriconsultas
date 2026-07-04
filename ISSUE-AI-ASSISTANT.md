@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-07-04 — ~~#440~~ merged (PR #454). Next: **#447** (bulk scope limits).
+**Last updated:** 2026-07-04 — ~~#447~~ merged (PR #456). Next: **#449** (system prompt volume limits).
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -216,12 +216,12 @@ Injection, jailbreak, and defense-in-depth guardrails for orchestration (#385).
 | **439** | Prompt injection input guardrails | https://github.com/diego-torres/nutriconsultas/issues/439 | **done** | **438**, **385** | PR #452 — `AiUserMessageGuard`, `docs/ai/PROMPT-SECURITY.md` |
 | **440** | Jailbreak and role-override defenses | https://github.com/diego-torres/nutriconsultas/issues/440 | **done** | **438**, **439**, **367** | PR #454 — `AiPromptThreatDetector`, tool hardening |
 | **441** | Defense-in-depth prompt engineering guardrails | https://github.com/diego-torres/nutriconsultas/issues/441 | **open** | **438**, **439**, **440**, **372** | Delimiters, tool allowlist, output validation |
-| **447** | Deterministic request scope limits (bulk generation guard) | https://github.com/diego-torres/nutriconsultas/issues/447 | **open** | **438**, **385** | Java pre-check before orchestration; align with tool caps (14 days, 1 dish/turn) |
+| **447** | Deterministic request scope limits (bulk generation guard) | https://github.com/diego-torres/nutriconsultas/issues/447 | **done** | **438**, **385** | PR #456 — `AiRequestScopeGuard`, configurable thresholds |
 | **448** | LLM scope classifier pre-flight | https://github.com/diego-torres/nutriconsultas/issues/448 | **open** | **438**, **447**, **366** | Structured ALLOW/REFUSE/CLARIFY before tool loop |
 | **449** | System prompt volume limits and bulk refusal corpus | https://github.com/diego-torres/nutriconsultas/issues/449 | **open** | **438**, **367**, **447** | `system-prompt-base.txt` + `FUNCTIONAL-SCOPE.md` |
 | **450** | Golden prompts for excessive bulk AI requests | https://github.com/diego-torres/nutriconsultas/issues/450 | **open** | **400**, **401**, **447** | Refuse «1000 planes» / allow «7 días» scenarios |
 
-**Suggested order:** ~~#439~~ ~~#440~~ → **#447** → **#449** → **#448** → **#450** → #441; extend #401 golden prompts with security cases. Gate with #408 release checklist.
+**Suggested order:** ~~#439~~ ~~#440~~ ~~#447~~ → **#449** → **#448** → **#450** → #441; extend #401 golden prompts with security cases. Gate with #408 release checklist.
 
 ---
 
