@@ -115,7 +115,8 @@ public final class AiDraftToolSchemaValidator {
 	}
 
 	private static String loadSchemaContent() {
-		try (InputStream inputStream = AiDraftToolSchemaValidator.class.getClassLoader()
+		try (InputStream inputStream = Thread.currentThread()
+			.getContextClassLoader()
 			.getResourceAsStream(SCHEMA_RESOURCE)) {
 			if (inputStream == null) {
 				throw new IllegalStateException("Missing draft tool schema resource: " + SCHEMA_RESOURCE);
