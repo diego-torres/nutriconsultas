@@ -75,26 +75,7 @@ public class AiUserMessageGuard {
 	}
 
 	private static String sanitize(final String rawMessage) {
-		final String trimmed = rawMessage.trim();
-		final StringBuilder builder = new StringBuilder(trimmed.length());
-		for (int index = 0; index < trimmed.length(); index++) {
-			final char character = trimmed.charAt(index);
-			if (character == '\0') {
-				continue;
-			}
-			if (character == '\r') {
-				if (index + 1 < trimmed.length() && trimmed.charAt(index + 1) == '\n') {
-					builder.append('\n');
-					index++;
-				}
-				else {
-					builder.append('\n');
-				}
-				continue;
-			}
-			builder.append(character);
-		}
-		return builder.toString();
+		return rawMessage.trim().replace("\0", "").replace("\r\n", "\n").replace("\r", "\n");
 	}
 
 	private static boolean matchesInjectionPattern(final String sanitizedMessage) {

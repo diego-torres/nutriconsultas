@@ -150,7 +150,7 @@ public class AiChatServiceImpl implements AiChatService {
 					streamConsumerFor(emitter, cancellation));
 			AiChatSseSupport.completeQuietly(emitter);
 		}
-		catch (final AiChatException ex) {
+		catch (final AiChatException | AiOrchestrationException ex) {
 			completeStreamWithError(emitter, ex.getMessage());
 		}
 		catch (final AiStreamCancelledException ex) {
@@ -158,9 +158,6 @@ public class AiChatServiceImpl implements AiChatService {
 				log.debug("AI chat stream cancelled threadId={}", request.threadId());
 			}
 			AiChatSseSupport.completeQuietly(emitter);
-		}
-		catch (final AiOrchestrationException ex) {
-			completeStreamWithError(emitter, ex.getMessage());
 		}
 		catch (final OpenAiClientException ex) {
 			completeStreamWithError(emitter, ex.getUserMessage());
@@ -386,8 +383,10 @@ public class AiChatServiceImpl implements AiChatService {
 			return userMessageGuard.validateAndSanitize(message);
 		}
 		catch (final AiOrchestrationException ex) {
-			throw new AiChatException(org.springframework.http.HttpStatus.BAD_REQUEST, AiToolErrorCode.VALIDATION,
-					ex.getMessage());
+			final AiChatException chatException = new AiChatException(org.springframework.http.HttpStatus.BAD_REQUEST,
+					AiToolErrorCode.VALIDATION, ex.getMessage());
+			chatException.initCause(ex);
+			throw chatException;
 		}
 	}
 
