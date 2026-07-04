@@ -36,12 +36,15 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 
 	private final TransactionTemplate transactionTemplate;
 
+	private final AiUserMessageGuard userMessageGuard;
+
 	private static final int STREAM_CHUNK_SIZE = 32;
 
 	public AiOrchestrationServiceImpl(final AiProperties properties, final OpenAiClientService openAiClientService,
 			final AiSystemPromptService systemPromptService, final AiChatThreadRepository threadRepository,
 			final AiChatMessageRepository messageRepository, final AiOpenAiToolCatalog toolCatalog,
-			final AiOrchestrationToolDispatcher toolDispatcher, final TransactionTemplate transactionTemplate) {
+			final AiOrchestrationToolDispatcher toolDispatcher, final TransactionTemplate transactionTemplate,
+			final AiUserMessageGuard userMessageGuard) {
 		this.properties = properties;
 		this.openAiClientService = openAiClientService;
 		this.systemPromptService = systemPromptService;
@@ -50,15 +53,16 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		this.toolCatalog = toolCatalog;
 		this.toolDispatcher = toolDispatcher;
 		this.transactionTemplate = transactionTemplate;
+		this.userMessageGuard = userMessageGuard;
 	}
 
 	@Override
 	@Transactional
 	public AiOrchestrationResult processUserMessage(final AiOrchestrationContext context, final String userMessage) {
 		assertOperational();
-		validateUserMessage(userMessage);
+		final String sanitizedMessage = validateUserMessage(userMessage);
 		final AiChatThread thread = loadThread(context);
-		persistUserMessage(thread, userMessage.trim());
+		persistUserMessage(thread, sanitizedMessage);
 
 		final List<OpenAiChatMessage> conversation = buildConversation(context, thread);
 		final ToolLoopOutcome loopOutcome = runToolLoop(context, conversation, null);
@@ -77,10 +81,10 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 	public void processUserMessageStreaming(final AiOrchestrationContext context, final String userMessage,
 			final AiStreamEventConsumer streamConsumer) {
 		assertOperational();
-		validateUserMessage(userMessage);
+		final String sanitizedMessage = validateUserMessage(userMessage);
 		final AiChatThread thread = transactionTemplate.execute(status -> {
 			final AiChatThread loaded = loadThread(context);
-			persistUserMessage(loaded, userMessage.trim());
+			persistUserMessage(loaded, sanitizedMessage);
 			return loaded;
 		});
 		if (thread == null) {
@@ -141,10 +145,8 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		}
 	}
 
-	private void validateUserMessage(final String userMessage) {
-		if (!StringUtils.hasText(userMessage)) {
-			throw new AiOrchestrationException("El mensaje no puede estar vacío.");
-		}
+	private String validateUserMessage(final String userMessage) {
+		return userMessageGuard.validateAndSanitize(userMessage);
 	}
 
 	private AiChatThread loadThread(final AiOrchestrationContext context) {
@@ -175,7 +177,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		final List<AiChatMessage> persisted = messageRepository.findByThreadIdOrderByCreatedAtAscIdAsc(threadId);
 		for (final AiChatMessage message : persisted) {
 			if (message.getRole() == AiChatMessageRole.USER) {
-				messages.add(OpenAiChatMessage.user(message.getContent()));
+				messages.add(OpenAiChatMessage.user(userMessageGuard.wrapForModel(message.getContent())));
 			}
 			else if (message.getRole() == AiChatMessageRole.ASSISTANT) {
 				messages.add(OpenAiChatMessage.assistant(message.getContent()));

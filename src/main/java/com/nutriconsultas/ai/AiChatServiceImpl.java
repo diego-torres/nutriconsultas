@@ -42,13 +42,15 @@ public class AiChatServiceImpl implements AiChatService {
 
 	private final TransactionTemplate transactionTemplate;
 
+	private final AiUserMessageGuard userMessageGuard;
+
 	public AiChatServiceImpl(final AiChatThreadRepository threadRepository,
 			final AiChatMessageRepository messageRepository, final AiGeneratedDraftRepository draftRepository,
 			final AiOrchestrationService orchestrationService,
 			final AiPatientPromptContextResolver patientContextResolver,
 			final AiDietaPromptContextResolver dietaContextResolver,
 			final AiPlatilloPromptContextResolver platilloContextResolver, final PacienteRepository pacienteRepository,
-			final TransactionTemplate transactionTemplate) {
+			final TransactionTemplate transactionTemplate, final AiUserMessageGuard userMessageGuard) {
 		this.threadRepository = threadRepository;
 		this.messageRepository = messageRepository;
 		this.draftRepository = draftRepository;
@@ -58,6 +60,7 @@ public class AiChatServiceImpl implements AiChatService {
 		this.platilloContextResolver = platilloContextResolver;
 		this.pacienteRepository = pacienteRepository;
 		this.transactionTemplate = transactionTemplate;
+		this.userMessageGuard = userMessageGuard;
 	}
 
 	@Override
@@ -113,10 +116,11 @@ public class AiChatServiceImpl implements AiChatService {
 			throw new AiChatException(org.springframework.http.HttpStatus.BAD_REQUEST, AiToolErrorCode.VALIDATION,
 					"El mensaje no puede estar vacío.");
 		}
+		final String sanitizedMessage = validateUserMessageContent(message);
 		final AiChatThread thread = loadOwnedThread(threadId, nutritionistId);
 		final AiChatPromptContext mergedContext = mergePromptContext(promptContext, patientId(thread));
 		final AiOrchestrationContext context = buildOrchestrationContext(nutritionistId, threadId, mergedContext);
-		return orchestrationService.processUserMessage(context, message.trim());
+		return orchestrationService.processUserMessage(context, sanitizedMessage);
 	}
 
 	@Override
@@ -128,6 +132,7 @@ public class AiChatServiceImpl implements AiChatService {
 			return;
 		}
 		try {
+			final String sanitizedMessage = validateUserMessageContent(request.message());
 			final AiStreamCancellation cancellation = new AiStreamCancellation();
 			emitter.onCompletion(cancellation::cancel);
 			emitter.onTimeout(cancellation::cancel);
@@ -141,18 +146,18 @@ public class AiChatServiceImpl implements AiChatService {
 			final AiChatPromptContext mergedContext = mergePromptContext(promptContext, threadPatientId);
 			final AiOrchestrationContext context = buildOrchestrationContext(nutritionistId, request.threadId(),
 					mergedContext);
-			orchestrationService.processUserMessageStreaming(context, request.message().trim(),
+			orchestrationService.processUserMessageStreaming(context, sanitizedMessage,
 					streamConsumerFor(emitter, cancellation));
 			AiChatSseSupport.completeQuietly(emitter);
+		}
+		catch (final AiChatException | AiOrchestrationException ex) {
+			completeStreamWithError(emitter, ex.getMessage());
 		}
 		catch (final AiStreamCancelledException ex) {
 			if (log.isDebugEnabled()) {
 				log.debug("AI chat stream cancelled threadId={}", request.threadId());
 			}
 			AiChatSseSupport.completeQuietly(emitter);
-		}
-		catch (final AiChatException | AiOrchestrationException ex) {
-			completeStreamWithError(emitter, ex.getMessage());
 		}
 		catch (final OpenAiClientException ex) {
 			completeStreamWithError(emitter, ex.getUserMessage());
@@ -171,6 +176,7 @@ public class AiChatServiceImpl implements AiChatService {
 			final AiEditMessageRequest request) {
 		assertNutritionistId(nutritionistId);
 		assertEditRequest(request);
+		final String sanitizedMessage = validateUserMessageContent(request.message());
 		final AiChatPromptContext promptContext = new AiChatPromptContext(request.patientId(), request.dietaId(),
 				request.platilloId());
 		final TruncateOutcome truncateOutcome = truncateThreadFromMessage(nutritionistId, request.threadId(),
@@ -179,8 +185,7 @@ public class AiChatServiceImpl implements AiChatService {
 		final AiChatPromptContext mergedContext = mergePromptContext(promptContext, patientId(thread));
 		final AiOrchestrationContext context = buildOrchestrationContext(nutritionistId, request.threadId(),
 				mergedContext);
-		final AiOrchestrationResult orchestration = orchestrationService.processUserMessage(context,
-				request.message().trim());
+		final AiOrchestrationResult orchestration = orchestrationService.processUserMessage(context, sanitizedMessage);
 		return new AiEditResubmitResult(orchestration, truncateOutcome.truncatedMessageCount(),
 				truncateOutcome.discardedDraftIds());
 	}
@@ -195,12 +200,7 @@ public class AiChatServiceImpl implements AiChatService {
 		}
 		try {
 			assertEditRequest(request);
-		}
-		catch (final AiChatException ex) {
-			completeStreamWithError(emitter, ex.getMessage());
-			return;
-		}
-		try {
+			final String sanitizedMessage = validateUserMessageContent(request.message());
 			final AiStreamCancellation cancellation = new AiStreamCancellation();
 			emitter.onCompletion(cancellation::cancel);
 			emitter.onTimeout(cancellation::cancel);
@@ -220,7 +220,7 @@ public class AiChatServiceImpl implements AiChatService {
 			final AiChatPromptContext mergedContext = mergePromptContext(promptContext, threadPatientId);
 			final AiOrchestrationContext context = buildOrchestrationContext(nutritionistId, request.threadId(),
 					mergedContext);
-			orchestrationService.processUserMessageStreaming(context, request.message().trim(),
+			orchestrationService.processUserMessageStreaming(context, sanitizedMessage,
 					streamConsumerFor(emitter, cancellation));
 			if (log.isInfoEnabled()) {
 				log.info("AI chat edit-resubmit stream threadId={} truncatedMessages={} discardedDrafts={}",
@@ -375,6 +375,18 @@ public class AiChatServiceImpl implements AiChatService {
 		if (!StringUtils.hasText(request.message())) {
 			throw new AiChatException(org.springframework.http.HttpStatus.BAD_REQUEST, AiToolErrorCode.VALIDATION,
 					"El mensaje no puede estar vacío.");
+		}
+	}
+
+	private String validateUserMessageContent(final String message) {
+		try {
+			return userMessageGuard.validateAndSanitize(message);
+		}
+		catch (final AiOrchestrationException ex) {
+			final AiChatException chatException = new AiChatException(org.springframework.http.HttpStatus.BAD_REQUEST,
+					AiToolErrorCode.VALIDATION, ex.getMessage());
+			chatException.initCause(ex);
+			throw chatException;
 		}
 	}
 

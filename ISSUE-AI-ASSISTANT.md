@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-07-04 — ~~#436~~ merged (PR #446). **#437** in progress on `issue-437-ai-chat-edit-resubmit`.
+**Last updated:** 2026-07-04 — ~~#437~~ merged (PR #451). Epic **#433** complete. **#439** in progress on `issue-439-prompt-injection-guardrails`.
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -165,13 +165,13 @@ Markdown, streaming, and message controls for full-page chat and floating widget
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
-| **433** | Epic — AI Chat UX Enhancements (Phase 6b) | https://github.com/diego-torres/nutriconsultas/issues/433 | **open** | **387**, **390** | Parent for #434–#437 |
+| **433** | Epic — AI Chat UX Enhancements (Phase 6b) | https://github.com/diego-torres/nutriconsultas/issues/433 | **done** | **387**, **390** | ~~#434–#437~~ merged |
 | **434** | Render markdown in assistant chat responses | https://github.com/diego-torres/nutriconsultas/issues/434 | **done** | **433**, **389** | PR #444 |
 | **435** | Stream assistant responses (SSE) | https://github.com/diego-torres/nutriconsultas/issues/435 | **done** | **433**, **385**, **389** | PR #445 |
 | **436** | Stop and cancel in-flight AI generation | https://github.com/diego-torres/nutriconsultas/issues/436 | **done** | **433**, **389** | PR #446 |
-| **437** | Edit user message and resubmit | https://github.com/diego-torres/nutriconsultas/issues/437 | **in-progress** | **433**, **384**, **389** | Thread truncate + SweetAlert |
+| **437** | Edit user message and resubmit | https://github.com/diego-torres/nutriconsultas/issues/437 | **done** | **433**, **384**, **389** | PR #451 |
 
-**Suggested order:** ~~#434~~ ~~#435~~ ~~#436~~ → **#437** (in progress). Epic **#387** closes when #433 children are done (or defer controls post-M3 beta).
+**Suggested order:** Epic **#433** complete. Next: **#439** (prompt security).
 
 ---
 
@@ -213,7 +213,7 @@ Injection, jailbreak, and defense-in-depth guardrails for orchestration (#385).
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
 | **438** | Epic — Prompt Security Hardening (Phase 8b) | https://github.com/diego-torres/nutriconsultas/issues/438 | **open** | **396**, **385**, **362** | Required before prod `AI_ENABLED=true` |
-| **439** | Prompt injection input guardrails | https://github.com/diego-torres/nutriconsultas/issues/439 | **open** | **438**, **385** | Sanitize user input; `docs/ai/PROMPT-SECURITY.md` |
+| **439** | Prompt injection input guardrails | https://github.com/diego-torres/nutriconsultas/issues/439 | **in-progress** | **438**, **385** | `AiUserMessageGuard`, `docs/ai/PROMPT-SECURITY.md` |
 | **440** | Jailbreak and role-override defenses | https://github.com/diego-torres/nutriconsultas/issues/440 | **open** | **438**, **439**, **367** | Refusal corpus + system prompt hardening |
 | **441** | Defense-in-depth prompt engineering guardrails | https://github.com/diego-torres/nutriconsultas/issues/441 | **open** | **438**, **439**, **440**, **372** | Delimiters, tool allowlist, output validation |
 | **447** | Deterministic request scope limits (bulk generation guard) | https://github.com/diego-torres/nutriconsultas/issues/447 | **open** | **438**, **385** | Java pre-check before orchestration; align with tool caps (14 days, 1 dish/turn) |

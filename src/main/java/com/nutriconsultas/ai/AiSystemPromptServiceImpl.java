@@ -25,6 +25,10 @@ public class AiSystemPromptServiceImpl implements AiSystemPromptService {
 
 	static final String SAFETY_MARKER_NO_CLINICAL_CLAIM = "requiere revisión profesional del nutriólogo";
 
+	static final String SAFETY_MARKER_PROMPT_SECURITY = "SEGURIDAD DE PROMPTS";
+
+	static final String SAFETY_MARKER_LIMITED_CAPABILITIES = "CAPACIDADES LIMITADAS";
+
 	private static final String TEMPLATE_PATH = "ai/system-prompt-base.txt";
 
 	private final String baseTemplate;

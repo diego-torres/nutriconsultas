@@ -16,11 +16,15 @@ public class AiProperties {
 
 	private static final int MAX_MAX_TOOL_CALLS = 32;
 
+	private static final int DEFAULT_MAX_USER_MESSAGE_LENGTH = AiUserMessageGuard.defaultMaxUserMessageLength();
+
 	private boolean enabled;
 
 	private OpenAi openai = new OpenAi();
 
 	private int maxToolCalls = DEFAULT_MAX_TOOL_CALLS;
+
+	private int maxUserMessageLength = DEFAULT_MAX_USER_MESSAGE_LENGTH;
 
 	public boolean isEnabled() {
 		return enabled;
@@ -52,6 +56,14 @@ public class AiProperties {
 		else {
 			this.maxToolCalls = maxToolCalls;
 		}
+	}
+
+	public int getMaxUserMessageLength() {
+		return maxUserMessageLength;
+	}
+
+	public void setMaxUserMessageLength(final int maxUserMessageLength) {
+		this.maxUserMessageLength = AiUserMessageGuard.clampMaxUserMessageLength(maxUserMessageLength);
 	}
 
 	public boolean isOpenAiConfigured() {

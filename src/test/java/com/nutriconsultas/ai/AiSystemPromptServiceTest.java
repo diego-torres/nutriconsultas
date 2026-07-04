@@ -30,6 +30,11 @@ class AiSystemPromptServiceTest {
 		assertThat(prompt.toLowerCase(Locale.ROOT)).contains(AiSystemPromptServiceImpl.SAFETY_MARKER_NO_CLINICAL_CLAIM);
 		assertThat(prompt.toLowerCase(Locale.ROOT)).contains("no diagnostiques");
 		assertThat(prompt.toLowerCase(Locale.ROOT)).contains("borrador");
+		assertThat(prompt).contains(AiSystemPromptServiceImpl.SAFETY_MARKER_PROMPT_SECURITY);
+		assertThat(prompt).contains(AiSystemPromptServiceImpl.SAFETY_MARKER_LIMITED_CAPABILITIES);
+		assertThat(prompt.toLowerCase(Locale.ROOT)).contains("código");
+		assertThat(prompt.toLowerCase(Locale.ROOT)).contains("investigación profunda");
+		assertThat(prompt).contains("<mensaje_nutriologo>");
 	}
 
 	@Test
