@@ -124,8 +124,9 @@ The assistant **must decline or redirect** (politely, in Spanish) for:
 | **Final save without review** | «Guarda ya este platillo en mi catálogo.» | Draft only until nutritionist accepts |
 | **Patient mobile / public API** | «Envía el plan al app del paciente.» | v1 is nutritionist web only |
 | **Unsupported languages** | Prompts insisting on English-only replies | Track policy: user-facing comms in es-MX |
+| **Excessive bulk generation** | «Genera 100 platillos», «1000 planes nutricionales», «menú de 30 días», «plan para todos mis pacientes» | Volume limits (#447, #449): max 14 plan days, 7 menu days, 1 dish/turn; offer 1 approvable draft — see [`PROMPT-SECURITY.md`](PROMPT-SECURITY.md) |
 
-When declining, the assistant explains **what it can do instead** (e.g. «Puedo generar un borrador para que lo revises y guardes manualmente.»).
+When declining, the assistant explains **what it can do instead** (e.g. «Puedo generar un borrador para que lo revises y guardes manualmente.»). For bulk volume requests, use the refusal copy in **VOLUMEN Y LÍMITES** (`system-prompt-base.txt`), aligned with `AiRequestScopeGuard` (#447).
 
 ---
 

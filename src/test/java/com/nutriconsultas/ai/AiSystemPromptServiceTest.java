@@ -36,6 +36,11 @@ class AiSystemPromptServiceTest {
 		assertThat(prompt.toLowerCase(Locale.ROOT)).contains("investigación profunda");
 		assertThat(prompt).contains(AiSystemPromptServiceImpl.SAFETY_MARKER_JAILBREAK_DEFENSE);
 		assertThat(prompt.toLowerCase(Locale.ROOT)).contains("no puedo cambiar mi rol");
+		assertThat(prompt).contains(AiSystemPromptServiceImpl.SAFETY_MARKER_VOLUME_LIMITS);
+		assertThat(prompt).contains("14 días");
+		assertThat(prompt.toLowerCase(Locale.ROOT)).contains("1 platillo");
+		assertThat(prompt).contains("Puedo ayudarte con 1 borrador de ejemplo que revises y apruebes");
+		assertThat(prompt).contains("todos tus pacientes en un solo turno");
 		assertThat(prompt).contains("<mensaje_nutriologo>");
 	}
 
@@ -89,11 +94,19 @@ class AiSystemPromptServiceTest {
 	}
 
 	@Test
-	void nullContextUsesDefaults() {
-		final String prompt = service.buildSystemPrompt(null);
+	void volumeLimitsSectionAlignsWithScopeGuardRefusalCopy() {
+		final String prompt = service.buildSystemPrompt(AiSystemPromptContext.defaultNutritionist());
+		final String dishRefusal = new AiRequestScopeGuard(new AiProperties()).evaluate("Genera 5 platillos")
+			.orElseThrow()
+			.refusalMessage();
+		final String planRefusal = new AiRequestScopeGuard(new AiProperties()).evaluate("Genera un plan de 20 días")
+			.orElseThrow()
+			.refusalMessage();
 
-		assertThat(prompt).contains("es-MX");
-		assertThat(prompt).contains(AiSystemPromptServiceImpl.SAFETY_MARKER_DRAFT_LABEL);
+		assertThat(prompt).contains("No puedo generar N platillos en un solo turno");
+		assertThat(prompt).contains("Puedo ayudarte con 1 borrador de ejemplo que revises y apruebes");
+		assertThat(dishRefusal).contains("Puedo ayudarte con 1 borrador de ejemplo que revises y apruebes");
+		assertThat(planRefusal).contains("Puedo ayudarte con 1 borrador de ejemplo que revises y apruebes");
 	}
 
 }
