@@ -61,6 +61,8 @@ class AiSystemPromptServiceTest {
 			.buildSystemPrompt(new AiSystemPromptContext(Locale.forLanguageTag("es-MX"), null, patient, null, null));
 
 		assertThat(prompt).contains("CONTEXTO DEL PACIENTE");
+		assertThat(prompt).contains(AiPromptDelimiters.PATIENT_CONTEXT_OPEN);
+		assertThat(prompt).contains(AiPromptDelimiters.PATIENT_CONTEXT_CLOSE);
 		assertThat(prompt).contains("1800.0 kcal");
 		assertThat(prompt).contains("2000.0 kcal");
 		assertThat(prompt).contains("Mariscos");
@@ -77,6 +79,7 @@ class AiSystemPromptServiceTest {
 			.buildSystemPrompt(new AiSystemPromptContext(Locale.forLanguageTag("es-MX"), null, null, dieta, null));
 
 		assertThat(prompt).contains("CONTEXTO DE LA DIETA EN PANTALLA");
+		assertThat(prompt).contains(AiPromptDelimiters.DIETA_CONTEXT_OPEN);
 		assertThat(prompt).contains("Plan 1800");
 		assertThat(prompt).contains("Desayuno");
 	}
@@ -91,6 +94,14 @@ class AiSystemPromptServiceTest {
 		assertThat(prompt).contains("CONTEXTO DEL PLATILLO EN PANTALLA");
 		assertThat(prompt).contains("Ensalada verde");
 		assertThat(prompt).contains("Lechuga");
+	}
+
+	@Test
+	void promptDocumentsToolResultDelimiters() {
+		final String prompt = service.buildSystemPrompt(AiSystemPromptContext.defaultNutritionist());
+
+		assertThat(prompt).contains("<resultado_herramienta");
+		assertThat(prompt).contains("<contexto_paciente>");
 	}
 
 	@Test

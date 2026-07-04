@@ -12,9 +12,13 @@ public class AiOrchestrationTools {
 
 	private final AiOrchestrationToolDispatcher dispatcher;
 
-	public AiOrchestrationTools(final AiOpenAiToolCatalog catalog, final AiOrchestrationToolDispatcher dispatcher) {
+	private final AiOrchestrationGuardrails guardrails;
+
+	public AiOrchestrationTools(final AiOpenAiToolCatalog catalog, final AiOrchestrationToolDispatcher dispatcher,
+			final AiOrchestrationGuardrails guardrails) {
 		this.catalog = catalog;
 		this.dispatcher = dispatcher;
+		this.guardrails = guardrails;
 	}
 
 	public AiOpenAiToolCatalog getToolCatalog() {
@@ -23,6 +27,10 @@ public class AiOrchestrationTools {
 
 	public AiOrchestrationToolDispatcher getToolDispatcher() {
 		return dispatcher;
+	}
+
+	public AiOrchestrationGuardrails getGuardrails() {
+		return guardrails;
 	}
 
 }

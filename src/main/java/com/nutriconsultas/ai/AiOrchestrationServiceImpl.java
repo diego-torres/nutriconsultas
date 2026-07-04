@@ -193,7 +193,8 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 	}
 
 	private AiChatThread loadThread(final AiOrchestrationContext context) {
-		return chatPersistence.getThreadRepository().findByIdAndNutritionistId(context.threadId(), context.nutritionistId())
+		return chatPersistence.getThreadRepository()
+			.findByIdAndNutritionistId(context.threadId(), context.nutritionistId())
 			.orElseThrow(() -> new AiOrchestrationException("No se encontró la conversación."));
 	}
 
@@ -276,12 +277,22 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		if (!StringUtils.hasText(assistantContent)) {
 			assistantContent = "No pude generar una respuesta en este momento. Intenta reformular tu solicitud.";
 		}
+		assistantContent = orchestrationTools.getGuardrails().validateAssistantOutput(assistantContent);
 		return new ToolLoopOutcome(assistantContent, toolCallsExecuted, accumulatedUsage, toolAuditEntries);
 	}
 
 	private String executeToolCall(final AiOrchestrationContext context, final OpenAiToolCall toolCall) {
+		if (!orchestrationTools.getGuardrails().isToolAllowed(toolCall.name())) {
+			if (log.isWarnEnabled()) {
+				log.warn("AI tool call rejected tool={} threadId={}", toolCall.name(), context.threadId());
+			}
+			return AiToolJsonSerializer
+				.toJson(AiToolResult.error(AiToolErrorCode.VALIDATION, AiToolAllowlist.REJECTION_MESSAGE));
+		}
 		try {
-			return orchestrationTools.getToolDispatcher().dispatch(context, toolCall.name(), toolCall.argumentsJson());
+			final String rawResult = orchestrationTools.getToolDispatcher()
+				.dispatch(context, toolCall.name(), toolCall.argumentsJson());
+			return orchestrationTools.getGuardrails().sanitizeToolResult(toolCall.name(), rawResult);
 		}
 		catch (final AiOrchestrationException ex) {
 			if (log.isWarnEnabled()) {
@@ -295,7 +306,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		final AiChatMessage message = new AiChatMessage();
 		message.setThread(thread);
 		message.setRole(AiChatMessageRole.ASSISTANT);
-		message.setContent(content);
+		message.setContent(orchestrationTools.getGuardrails().validateAssistantOutput(content));
 		return chatPersistence.getMessageRepository().save(message);
 	}
 

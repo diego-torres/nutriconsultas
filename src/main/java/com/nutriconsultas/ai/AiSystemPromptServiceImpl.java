@@ -56,7 +56,9 @@ public class AiSystemPromptServiceImpl implements AiSystemPromptService {
 		if (!StringUtils.hasText(context.nutritionistScopeHint())) {
 			return "";
 		}
-		return "CONTEXTO DEL NUTRIÓLOGO\n- " + context.nutritionistScopeHint().trim();
+		final String inner = "CONTEXTO DEL NUTRIÓLOGO\n- " + context.nutritionistScopeHint().trim();
+		return AiPromptDelimiters.wrapSection(AiPromptDelimiters.NUTRITIONIST_CONTEXT_OPEN,
+				AiPromptDelimiters.NUTRITIONIST_CONTEXT_CLOSE, inner);
 	}
 
 	private String formatPatientContext(final AiPatientPromptContext patient) {
@@ -109,7 +111,8 @@ public class AiSystemPromptServiceImpl implements AiSystemPromptService {
 			}
 		}
 		section.append("- No preguntes de nuevo el objetivo calórico ni las alergias listadas arriba.\n");
-		return section.toString().trim();
+		return AiPromptDelimiters.wrapSection(AiPromptDelimiters.PATIENT_CONTEXT_OPEN,
+				AiPromptDelimiters.PATIENT_CONTEXT_CLOSE, section.toString().trim());
 	}
 
 	private String formatDietaContext(final AiDietaPromptContext dieta) {
@@ -140,7 +143,8 @@ public class AiSystemPromptServiceImpl implements AiSystemPromptService {
 				.append(")\n");
 		}
 		section.append("- Usa esta dieta como punto de partida; propón ajustes como borrador.\n");
-		return section.toString().trim();
+		return AiPromptDelimiters.wrapSection(AiPromptDelimiters.DIETA_CONTEXT_OPEN,
+				AiPromptDelimiters.DIETA_CONTEXT_CLOSE, section.toString().trim());
 	}
 
 	private String formatPlatilloContext(final AiPlatilloPromptContext platillo) {
@@ -168,7 +172,8 @@ public class AiSystemPromptServiceImpl implements AiSystemPromptService {
 			section.append("- Ingestas sugeridas: ").append(platillo.ingestasSugeridas().trim()).append('\n');
 		}
 		section.append("- Usa este platillo como referencia; propón variantes como borrador.\n");
-		return section.toString().trim();
+		return AiPromptDelimiters.wrapSection(AiPromptDelimiters.PLATILLO_CONTEXT_OPEN,
+				AiPromptDelimiters.PLATILLO_CONTEXT_CLOSE, section.toString().trim());
 	}
 
 	private static String formatNumber(final Number value) {
