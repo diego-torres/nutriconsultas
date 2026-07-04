@@ -20,4 +20,8 @@ public interface AiChatService {
 
 	void streamMessage(String nutritionistId, AiSendMessageRequest request, SseEmitter emitter);
 
+	AiEditResubmitResult editAndResubmitMessage(String nutritionistId, AiEditMessageRequest request);
+
+	void streamEditMessage(String nutritionistId, AiEditMessageRequest request, SseEmitter emitter);
+
 }

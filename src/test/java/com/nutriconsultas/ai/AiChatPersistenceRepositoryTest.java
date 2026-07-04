@@ -13,9 +13,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 @DataJpaTest
 @ActiveProfiles("test")
+@Transactional
 class AiChatPersistenceRepositoryTest {
 
 	private static final String NUTRITIONIST_A = "auth0|nutritionist-ai-a";
@@ -110,6 +112,34 @@ class AiChatPersistenceRepositoryTest {
 
 		assertThat(threads).hasSizeGreaterThanOrEqualTo(2);
 		assertThat(threads.getFirst().getTitle()).isEqualTo("Reciente");
+	}
+
+	@Test
+	void deleteByThreadIdAndIdGreaterThanEqualRemovesAnchorAndLaterMessages() {
+		final AiChatThread thread = threadRepository.saveAndFlush(sampleThread(NUTRITIONIST_A, "Editar mensaje"));
+		final AiChatMessage firstUser = persistMessage(thread, AiChatMessageRole.USER, "Primero");
+		final AiChatMessage firstAssistant = persistMessage(thread, AiChatMessageRole.ASSISTANT, "Respuesta 1");
+		final AiChatMessage secondUser = persistMessage(thread, AiChatMessageRole.USER, "Segundo");
+
+		messageRepository.deleteByThreadIdAndIdGreaterThanEqual(thread.getId(), secondUser.getId());
+		entityManager.flush();
+		entityManager.clear();
+
+		final List<AiChatMessage> remaining = messageRepository.findByThreadIdOrderByCreatedAtAscIdAsc(thread.getId());
+		assertThat(remaining).hasSize(2);
+		assertThat(remaining.get(0).getContent()).isEqualTo("Primero");
+		assertThat(remaining.get(1).getContent()).isEqualTo("Respuesta 1");
+		assertThat(firstAssistant.getId()).isGreaterThan(firstUser.getId());
+		assertThat(secondUser.getId()).isGreaterThan(firstAssistant.getId());
+	}
+
+	private AiChatMessage persistMessage(final AiChatThread thread, final AiChatMessageRole role,
+			final String content) {
+		final AiChatMessage message = new AiChatMessage();
+		message.setThread(thread);
+		message.setRole(role);
+		message.setContent(content);
+		return messageRepository.saveAndFlush(message);
 	}
 
 	private static AiChatThread sampleThread(final String nutritionistId, final String title) {

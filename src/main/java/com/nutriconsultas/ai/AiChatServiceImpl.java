@@ -47,8 +47,8 @@ public class AiChatServiceImpl implements AiChatService {
 			final AiOrchestrationService orchestrationService,
 			final AiPatientPromptContextResolver patientContextResolver,
 			final AiDietaPromptContextResolver dietaContextResolver,
-			final AiPlatilloPromptContextResolver platilloContextResolver,
-			final PacienteRepository pacienteRepository, final TransactionTemplate transactionTemplate) {
+			final AiPlatilloPromptContextResolver platilloContextResolver, final PacienteRepository pacienteRepository,
+			final TransactionTemplate transactionTemplate) {
 		this.threadRepository = threadRepository;
 		this.messageRepository = messageRepository;
 		this.draftRepository = draftRepository;
@@ -165,8 +165,91 @@ public class AiChatServiceImpl implements AiChatService {
 		}
 	}
 
-	private AiStreamEventConsumer streamConsumerFor(final SseEmitter emitter,
-			final AiStreamCancellation cancellation) {
+	@Override
+	@Transactional
+	public AiEditResubmitResult editAndResubmitMessage(@NonNull final String nutritionistId,
+			final AiEditMessageRequest request) {
+		assertNutritionistId(nutritionistId);
+		assertEditRequest(request);
+		final AiChatPromptContext promptContext = new AiChatPromptContext(request.patientId(), request.dietaId(),
+				request.platilloId());
+		final TruncateOutcome truncateOutcome = truncateThreadFromMessage(nutritionistId, request.threadId(),
+				request.messageId());
+		final AiChatThread thread = loadOwnedThread(request.threadId(), nutritionistId);
+		final AiChatPromptContext mergedContext = mergePromptContext(promptContext, patientId(thread));
+		final AiOrchestrationContext context = buildOrchestrationContext(nutritionistId, request.threadId(),
+				mergedContext);
+		final AiOrchestrationResult orchestration = orchestrationService.processUserMessage(context,
+				request.message().trim());
+		return new AiEditResubmitResult(orchestration, truncateOutcome.truncatedMessageCount(),
+				truncateOutcome.discardedDraftIds());
+	}
+
+	@Override
+	public void streamEditMessage(@NonNull final String nutritionistId, final AiEditMessageRequest request,
+			final SseEmitter emitter) {
+		assertNutritionistId(nutritionistId);
+		if (request == null) {
+			completeStreamWithError(emitter, "Solicitud no válida.");
+			return;
+		}
+		try {
+			assertEditRequest(request);
+		}
+		catch (final AiChatException ex) {
+			completeStreamWithError(emitter, ex.getMessage());
+			return;
+		}
+		try {
+			final AiStreamCancellation cancellation = new AiStreamCancellation();
+			emitter.onCompletion(cancellation::cancel);
+			emitter.onTimeout(cancellation::cancel);
+			emitter.onError(ex -> cancellation.cancel());
+			final AiChatPromptContext promptContext = new AiChatPromptContext(request.patientId(), request.dietaId(),
+					request.platilloId());
+			final TruncateOutcome truncateOutcome = transactionTemplate
+				.execute(status -> truncateThreadFromMessage(nutritionistId, request.threadId(), request.messageId()));
+			if (truncateOutcome == null) {
+				completeStreamWithError(emitter, "No se pudo actualizar la conversación.");
+				return;
+			}
+			final Long threadPatientId = transactionTemplate.execute(status -> {
+				final AiChatThread ownedThread = loadOwnedThread(request.threadId(), nutritionistId);
+				return patientId(ownedThread);
+			});
+			final AiChatPromptContext mergedContext = mergePromptContext(promptContext, threadPatientId);
+			final AiOrchestrationContext context = buildOrchestrationContext(nutritionistId, request.threadId(),
+					mergedContext);
+			orchestrationService.processUserMessageStreaming(context, request.message().trim(),
+					streamConsumerFor(emitter, cancellation));
+			if (log.isInfoEnabled()) {
+				log.info("AI chat edit-resubmit stream threadId={} truncatedMessages={} discardedDrafts={}",
+						request.threadId(), truncateOutcome.truncatedMessageCount(),
+						truncateOutcome.discardedDraftIds().size());
+			}
+			AiChatSseSupport.completeQuietly(emitter);
+		}
+		catch (final AiStreamCancelledException ex) {
+			if (log.isDebugEnabled()) {
+				log.debug("AI chat edit-resubmit stream cancelled threadId={}", request.threadId());
+			}
+			AiChatSseSupport.completeQuietly(emitter);
+		}
+		catch (final AiChatException | AiOrchestrationException ex) {
+			completeStreamWithError(emitter, ex.getMessage());
+		}
+		catch (final OpenAiClientException ex) {
+			completeStreamWithError(emitter, ex.getUserMessage());
+		}
+		catch (final AiStreamDeliveryException ex) {
+			if (log.isWarnEnabled()) {
+				log.warn("AI chat edit-resubmit stream delivery failed threadId={}", request.threadId());
+			}
+			AiChatSseSupport.completeQuietly(emitter);
+		}
+	}
+
+	private AiStreamEventConsumer streamConsumerFor(final SseEmitter emitter, final AiStreamCancellation cancellation) {
 		return new AiStreamEventConsumer() {
 			@Override
 			public boolean isCancelled() {
@@ -282,6 +365,51 @@ public class AiChatServiceImpl implements AiChatService {
 			throw new AiChatException(org.springframework.http.HttpStatus.UNAUTHORIZED, AiToolErrorCode.VALIDATION,
 					"Sesión no válida.");
 		}
+	}
+
+	private static void assertEditRequest(final AiEditMessageRequest request) {
+		if (request == null) {
+			throw new AiChatException(org.springframework.http.HttpStatus.BAD_REQUEST, AiToolErrorCode.VALIDATION,
+					"Solicitud no válida.");
+		}
+		if (!StringUtils.hasText(request.message())) {
+			throw new AiChatException(org.springframework.http.HttpStatus.BAD_REQUEST, AiToolErrorCode.VALIDATION,
+					"El mensaje no puede estar vacío.");
+		}
+	}
+
+	private TruncateOutcome truncateThreadFromMessage(final String nutritionistId, final long threadId,
+			final long messageId) {
+		final AiChatMessage anchor = messageRepository.findByIdAndThreadNutritionistId(messageId, nutritionistId)
+			.orElseThrow(() -> new AiChatException(org.springframework.http.HttpStatus.NOT_FOUND,
+					AiToolErrorCode.NOT_FOUND, "No se encontró el mensaje."));
+		if (anchor.getThread() == null || anchor.getThread().getId() == null
+				|| anchor.getThread().getId() != threadId) {
+			throw new AiChatException(org.springframework.http.HttpStatus.BAD_REQUEST, AiToolErrorCode.VALIDATION,
+					"El mensaje no pertenece a esta conversación.");
+		}
+		if (anchor.getRole() != AiChatMessageRole.USER) {
+			throw new AiChatException(org.springframework.http.HttpStatus.BAD_REQUEST, AiToolErrorCode.VALIDATION,
+					"Solo puedes editar mensajes enviados por ti.");
+		}
+		final java.time.Instant anchorCreatedAt = anchor.getCreatedAt();
+		final List<Long> discardedDraftIds = new ArrayList<>();
+		for (final AiGeneratedDraft draft : draftRepository
+			.findByThreadIdAndStatusAndCreatedAtGreaterThanEqual(threadId, AiDraftStatus.DRAFT, anchorCreatedAt)) {
+			draft.setStatus(AiDraftStatus.DISCARDED);
+			draftRepository.save(draft);
+			discardedDraftIds.add(draft.getId());
+		}
+		final int truncatedMessageCount = messageRepository.deleteByThreadIdAndIdGreaterThanEqual(threadId,
+				anchor.getId());
+		if (log.isInfoEnabled()) {
+			log.info("AI chat truncated threadId={} fromMessageId={} removedMessages={} discardedDrafts={}", threadId,
+					messageId, truncatedMessageCount, discardedDraftIds.size());
+		}
+		return new TruncateOutcome(truncatedMessageCount, List.copyOf(discardedDraftIds));
+	}
+
+	private record TruncateOutcome(int truncatedMessageCount, List<Long> discardedDraftIds) {
 	}
 
 }
