@@ -1,7 +1,7 @@
 # Local AI setup (#405)
 
 **Issue:** [#405](https://github.com/diego-torres/nutriconsultas/issues/405) · Epic [#404](https://github.com/diego-torres/nutriconsultas/issues/404)  
-**Production counterpart:** [#406](https://github.com/diego-torres/nutriconsultas/issues/406) (EC2 `app.env`)
+**Production counterpart:** [`PRODUCTION-AI-SETUP.md`](PRODUCTION-AI-SETUP.md) (#406)
 
 How to enable or disable the **AI Nutrition Assistant** on a developer machine. OpenAI credentials stay **server-side only** — never in Git, the browser, or logs.
 
@@ -175,6 +175,6 @@ For evaluation scenarios without live API, see [`NUTRITION-GOLDEN-PROMPTS.md`](N
 | [`AI-ASSISTANT-PLAN.md`](AI-ASSISTANT-PLAN.md) | Architecture and milestones |
 | [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md) | PHI, logging, `OPENAI_STORE` |
 | [`FUNCTIONAL-SCOPE.md`](FUNCTIONAL-SCOPE.md) | Supported workflows |
-| [`../../AI-ASSISTANT-WORKFLOW.md`](../../AI-ASSISTANT-WORKFLOW.md) | Agent workflow and env summary |
+| [`PRODUCTION-AI-SETUP.md`](PRODUCTION-AI-SETUP.md) | Production EC2, SSM, spend controls (#406) |
 
 **Note:** Plan-tier gating (`Entitlement.AI_ASSISTANT`, #409) is not required for basic local enablement today; production rollout must follow #408 and #409.
