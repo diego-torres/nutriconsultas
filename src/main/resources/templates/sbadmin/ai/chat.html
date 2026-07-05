@@ -42,6 +42,53 @@
             </h1>
           </div>
 
+          <div class="card shadow mb-3 ai-chat-guidance-card">
+            <div class="card-header py-2 px-3">
+              <button class="btn btn-link btn-block text-left p-0 font-weight-bold text-primary ai-chat-guidance-toggle"
+                type="button" data-toggle="collapse" data-target="#aiChatGuidance" aria-expanded="false"
+                aria-controls="aiChatGuidance" id="aiChatGuidanceToggle">
+                <i class="fas fa-info-circle mr-2" aria-hidden="true"></i>Cómo usar el asistente
+                <i class="fas fa-chevron-down float-right mt-1 ai-chat-guidance-chevron" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div id="aiChatGuidance" class="collapse" aria-labelledby="aiChatGuidanceToggle">
+              <div class="card-body ai-chat-guidance pt-3">
+                <div class="alert alert-warning py-2 mb-3" role="alert">
+                  <strong>Borradores, no decisiones finales.</strong> Todo lo que genera la IA es un
+                  <strong>borrador</strong> etiquetado como <em>Borrador IA — revisión del nutriólogo requerida</em>.
+                  Debes revisar porciones, alergias y objetivos clínicos antes de usarlo con pacientes. La IA
+                  <strong>no asigna</strong> dietas a pacientes.
+                </div>
+
+                <h3 class="h6 font-weight-bold text-gray-800">Ejemplos de buenos prompts</h3>
+                <ul class="small text-gray-700 mb-3">
+                  <li>«Genera un desayuno alto en proteína usando alimentos de mi catálogo.»</li>
+                  <li>«Menú de hoy: 1800 kcal, desayuno, comida, cena y dos colaciones, bajo en sodio.»</li>
+                  <li>«Plan semanal de 7 días, 1600 kcal, sin huevo.»</li>
+                  <li>«¿Cuántas kcal tiene 150 g de pechuga de pollo del catálogo?»</li>
+                </ul>
+                <p class="small text-muted mb-3">
+                  Incluye kcal objetivo, número de comidas y restricciones cuando puedas.
+                </p>
+
+                <h3 class="h6 font-weight-bold text-gray-800">Limitaciones</h3>
+                <ul class="small text-gray-700 mb-3">
+                  <li>No diagnostica ni prescribe tratamiento médico.</li>
+                  <li>No inventa nutrientes: usa alimentos y platillos de <strong>tu catálogo</strong>.</li>
+                  <li>No genera decenas de platillos o planes en un solo mensaje — pide un borrador a la vez.</li>
+                  <li>No guarda en catálogo hasta que tú pulses <strong>Aceptar</strong>.</li>
+                </ul>
+
+                <h3 class="h6 font-weight-bold text-gray-800">Aceptar o descartar</h3>
+                <ol class="small text-gray-700 mb-0">
+                  <li>Revisa el borrador en el panel <strong>Borradores IA</strong> (derecha).</li>
+                  <li><strong>Aceptar</strong> — confirmación → crea un platillo o dieta en tu catálogo (editable después).</li>
+                  <li><strong>Descartar</strong> — descarta el borrador sin cambiar tu catálogo.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
           <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex align-items-center justify-content-between">
               <h2 class="h6 m-0 font-weight-bold text-primary">Chat nutricional</h2>

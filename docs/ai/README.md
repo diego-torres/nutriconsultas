@@ -16,6 +16,7 @@ Documentation for the **AI Nutrition Assistant** track.
 | [`E2E-DRAFT-FLOW-TEST.md`](E2E-DRAFT-FLOW-TEST.md) | End-to-end draft flow integration test (#403) |
 | [`LOCAL-AI-SETUP.md`](LOCAL-AI-SETUP.md) | Local dev: `.env`, `AI_ENABLED`, OpenAI keys (#405) |
 | [`PRODUCTION-AI-SETUP.md`](PRODUCTION-AI-SETUP.md) | Production EC2 `app.env`, SSM, rollback (#406) |
+| [`NUTRITIONIST-USER-GUIDANCE.md`](NUTRITIONIST-USER-GUIDANCE.md) | Nutritionist-facing guidance — drafts, prompts, limits (#407) |
 | [`AI-ASSISTANT-PLAN.md`](AI-ASSISTANT-PLAN.md) | Architecture, security, tools, milestones, definition of done |
 | [`../../ISSUE-AI-ASSISTANT.md`](../../ISSUE-AI-ASSISTANT.md) | GitHub issue registry (#360–#408) |
 | [`../../AI-ASSISTANT-WORKFLOW.md`](../../AI-ASSISTANT-WORKFLOW.md) | Agent implementation workflow |

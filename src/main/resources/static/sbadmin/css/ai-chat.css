@@ -232,6 +232,27 @@
   margin-right: 0.35rem;
 }
 
+.ai-chat-guidance-card .card-header {
+  background-color: #f8f9fc;
+}
+
+.ai-chat-guidance-toggle {
+  text-decoration: none;
+}
+
+.ai-chat-guidance-toggle:hover,
+.ai-chat-guidance-toggle:focus {
+  text-decoration: none;
+}
+
+.ai-chat-guidance-toggle[aria-expanded="true"] .ai-chat-guidance-chevron {
+  transform: rotate(180deg);
+}
+
+.ai-chat-guidance-chevron {
+  transition: transform 0.2s ease;
+}
+
 @media (min-width: 992px) {
   .ai-chat-drafts-column {
     margin-top: 0;
