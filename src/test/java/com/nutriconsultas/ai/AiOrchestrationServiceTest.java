@@ -132,7 +132,7 @@ class AiOrchestrationServiceTest {
 	private void stubOperational() {
 		stubAiEnabled();
 		when(systemPromptService.buildSystemPrompt(any())).thenReturn("Eres un asistente nutricional.");
-		when(toolCatalog.definitions()).thenReturn(List.of());
+		when(toolCatalog.definitionsForSession(any())).thenReturn(List.of());
 		when(messageRepository.save(any(AiChatMessage.class))).thenAnswer(invocation -> {
 			final AiChatMessage message = invocation.getArgument(0);
 			if (message.getId() == null) {

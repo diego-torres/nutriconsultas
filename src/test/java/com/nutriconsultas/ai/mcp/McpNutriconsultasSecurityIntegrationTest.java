@@ -98,7 +98,7 @@ class McpNutriconsultasSecurityIntegrationTest {
 				.content(toolsListBody())
 				.with(oidcLogin().idToken(token -> token.subject(NUTRITIONIST_A))))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.result.tools.length()").value(8));
+			.andExpect(jsonPath("$.result.tools.length()").value(9));
 	}
 
 	@Test
