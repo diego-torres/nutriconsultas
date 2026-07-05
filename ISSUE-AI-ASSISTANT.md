@@ -221,7 +221,7 @@ Injection, jailbreak, and defense-in-depth guardrails for orchestration (#385).
 | **449** | System prompt volume limits and bulk refusal corpus | https://github.com/diego-torres/nutriconsultas/issues/449 | **done** | **438**, **367**, **447** | PR #458 — `VOLUMEN Y LÍMITES`, `FUNCTIONAL-SCOPE.md`, bulk corpus |
 | **450** | Golden prompts for excessive bulk AI requests | https://github.com/diego-torres/nutriconsultas/issues/450 | **done** | **400**, **401**, **447** | PR #462 — `AiBulkScopeGoldenPromptTest`, docs |
 
-**Suggested order:** ~~#401~~ ~~#402~~ ~~#403~~ **done**. Epic **#400** complete. Next: Phase 10 **#405**.
+**Suggested order:** ~~#401~~ ~~#402~~ ~~#403~~ **done**. Epic **#400** complete. Phase 10: ~~#405~~ ~~#406~~ **done**. Next: **#407**.
 
 ---
 
@@ -252,7 +252,7 @@ Setup docs, nutritionist guidance, release checklist.
 | **407** | Add Nutritionist User Guidance | https://github.com/diego-torres/nutriconsultas/issues/407 | **open** | **390** | In-app or docs |
 | **408** | Create AI Assistant Release Checklist | https://github.com/diego-torres/nutriconsultas/issues/408 | **open** | **404** | Rollout gate |
 
-**Suggested order:** #405 + #406 early; #407 + #408 before production enable.
+**Suggested order:** ~~#405~~ ~~#406~~ **done** (PR #472, #474). Next: **#407**; **#408** before production enable.
 
 ---
 
