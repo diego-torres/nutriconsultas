@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#409 — Gate AI assistant by plan](https://github.com/diego-torres/nutriconsultas/issues/409) (`open`). ~~#408~~ merged (PR #479) — [`RELEASE-CHECKLIST.md`](docs/ai/RELEASE-CHECKLIST.md).
+**Current next issue:** [#397 — Add AI Audit Logging](https://github.com/diego-torres/nutriconsultas/issues/397) (`open`). ~~#409~~ merged (PR #481) — `Entitlement.AI_ASSISTANT` plan gating.
 
 **Registered backlog (2026-07-04):** Epic [#433](https://github.com/diego-torres/nutriconsultas/issues/433) chat UX (#434–#437). Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438) prompt security (#439–#441, **#447–#450** bulk scope guards). See registry for suggested order.
 

@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-07-05 — ~~#408~~ merged (PR #479). Next: **#409** (plan gating).
+**Last updated:** 2026-07-05 — ~~#409~~ merged (PR #481). Next: **#397** (AI audit logging).
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -221,7 +221,7 @@ Injection, jailbreak, and defense-in-depth guardrails for orchestration (#385).
 | **449** | System prompt volume limits and bulk refusal corpus | https://github.com/diego-torres/nutriconsultas/issues/449 | **done** | **438**, **367**, **447** | PR #458 — `VOLUMEN Y LÍMITES`, `FUNCTIONAL-SCOPE.md`, bulk corpus |
 | **450** | Golden prompts for excessive bulk AI requests | https://github.com/diego-torres/nutriconsultas/issues/450 | **done** | **400**, **401**, **447** | PR #462 — `AiBulkScopeGoldenPromptTest`, docs |
 
-**Suggested order:** ~~#401~~ ~~#402~~ ~~#403~~ **done**. Epic **#400** complete. Phase 10: ~~#405~~ ~~#406~~ ~~#407~~ ~~#408~~ **done**. Next: **#409** before production enable.
+**Suggested order:** ~~#401~~ ~~#402~~ ~~#403~~ **done**. Epic **#400** complete. Phase 10: ~~#405~~ ~~#406~~ ~~#407~~ ~~#408~~ ~~#409~~ **done**. Next: **#397–#399** before production enable.
 
 ---
 
@@ -252,7 +252,7 @@ Setup docs, nutritionist guidance, release checklist.
 | **407** | Add Nutritionist User Guidance | https://github.com/diego-torres/nutriconsultas/issues/407 | **done** | **390** | PR #477 — in-app panel + [`NUTRITIONIST-USER-GUIDANCE.md`](docs/ai/NUTRITIONIST-USER-GUIDANCE.md) |
 | **408** | Create AI Assistant Release Checklist | https://github.com/diego-torres/nutriconsultas/issues/408 | **done** | **404** | PR #479 — [`RELEASE-CHECKLIST.md`](docs/ai/RELEASE-CHECKLIST.md) |
 
-**Suggested order:** ~~#405~~ ~~#406~~ ~~#407~~ ~~#408~~ **done** (PR #472, #474, #477, #479). Next: **#409** before production `AI_ENABLED=true`.
+**Suggested order:** ~~#405~~ ~~#406~~ ~~#407~~ ~~#408~~ ~~#409~~ **done** (PR #472, #474, #477, #479, #481). Next: **#397–#399** before production `AI_ENABLED=true`.
 
 ---
 
@@ -262,9 +262,9 @@ AI assistant is a **new entitlement** — do **not** replace `REPORTS_ADVANCED` 
 
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|------------|-------|
-| **409** | Gate AI assistant by plan — Plus and Consultorio only | https://github.com/diego-torres/nutriconsultas/issues/409 | **open** | #181, **384**, **388** | New `Entitlement.AI_ASSISTANT`; pricing row on `eterna/index.html` |
+| **409** | Gate AI assistant by plan — Plus and Consultorio only | https://github.com/diego-torres/nutriconsultas/issues/409 | **done** | #181, **384**, **388** | PR #481 — `Entitlement.AI_ASSISTANT`, pricing row on `eterna/index.html` |
 
-**Suggested order:** Implement #409 before or with #384/#388; required before production `AI_ENABLED=true`.
+**Suggested order:** ~~#409~~ **done** (PR #481). Next: **#397–#399** observability before production `AI_ENABLED=true`.
 
 ---
 
