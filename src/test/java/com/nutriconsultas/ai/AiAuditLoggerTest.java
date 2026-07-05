@@ -89,4 +89,19 @@ class AiAuditLoggerTest {
 		assertThat(formatted).doesNotContain("full-nutritionist-id");
 	}
 
+	@Test
+	void mcpToolCallLogsMetadataWithoutArgumentsOrFullUserId() {
+		auditLogger.logMcpToolCall(12L, "auth0|full-nutritionist-id", "catalog.search_foods", "search_food_catalog",
+				true);
+
+		assertThat(logAppender.list).hasSize(1);
+		final String formatted = logAppender.list.get(0).getFormattedMessage();
+		assertThat(formatted).contains("event=mcp_tool_call");
+		assertThat(formatted).contains("threadId=12");
+		assertThat(formatted).contains("mcpTool=catalog.search_foods");
+		assertThat(formatted).contains("internalTool=search_food_catalog");
+		assertThat(formatted).doesNotContain("full-nutritionist-id");
+		assertThat(formatted).doesNotContain("Juan Pérez");
+	}
+
 }

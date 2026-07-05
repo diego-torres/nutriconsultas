@@ -28,6 +28,8 @@ import com.nutriconsultas.ai.AiProperties;
 import com.nutriconsultas.ai.AiToolErrorCode;
 import com.nutriconsultas.ai.AiToolJsonSerializer;
 import com.nutriconsultas.ai.AiToolResult;
+import com.nutriconsultas.subscription.SubscriptionErrorResponses;
+import com.nutriconsultas.subscription.SubscriptionLimitExceededException;
 
 /**
  * MCP JSON-RPC dispatch to {@link AiOrchestrationToolDispatcher} (#394).
@@ -53,10 +55,13 @@ public final class McpToolDispatchService {
 
 	private final AiAuditLogger auditLogger;
 
+	private final SubscriptionErrorResponses subscriptionErrorResponses;
+
 	public McpToolDispatchService(final AiProperties aiProperties, final AiChatRequestGuards chatRequestGuards,
 			final McpToolDescriptorCatalog descriptorCatalog, final AiOrchestrationToolDispatcher toolDispatcher,
 			final AiOrchestrationGuardrails guardrails, final AiChatPromptContextResolvers contextResolvers,
-			final AiChatPersistence chatPersistence, final AiAuditLogger auditLogger) {
+			final AiChatPersistence chatPersistence, final AiAuditLogger auditLogger,
+			final SubscriptionErrorResponses subscriptionErrorResponses) {
 		this.aiProperties = aiProperties;
 		this.chatRequestGuards = chatRequestGuards;
 		this.descriptorCatalog = descriptorCatalog;
@@ -65,6 +70,7 @@ public final class McpToolDispatchService {
 		this.contextResolvers = contextResolvers;
 		this.chatPersistence = chatPersistence;
 		this.auditLogger = auditLogger;
+		this.subscriptionErrorResponses = subscriptionErrorResponses;
 	}
 
 	public Map<String, Object> handle(final String nutritionistId, final Map<String, Object> requestBody) {
@@ -157,6 +163,9 @@ public final class McpToolDispatchService {
 		}
 		catch (final AiChatException ex) {
 			throw new McpAccessException(ex.getHttpStatus(), ex.getMessage(), ex);
+		}
+		catch (final SubscriptionLimitExceededException ex) {
+			throw new McpAccessException(HttpStatus.FORBIDDEN, subscriptionErrorResponses.resolve(ex), ex);
 		}
 	}
 
