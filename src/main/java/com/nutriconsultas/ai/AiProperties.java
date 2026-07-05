@@ -145,7 +145,7 @@ public class AiProperties {
 	 * Spanish message for 503 responses when AI is enabled but not configured (#365).
 	 */
 	public String getMisconfigurationUserMessage() {
-		return "El asistente de IA no está disponible en este momento. " + "Contacta al administrador del sistema.";
+		return AiErrorMessages.MISCONFIGURATION;
 	}
 
 	public static class OpenAi {

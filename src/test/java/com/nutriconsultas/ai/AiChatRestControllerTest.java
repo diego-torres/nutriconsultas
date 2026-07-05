@@ -134,8 +134,45 @@ class AiChatRestControllerTest {
 			.sendMessage(new AiSendMessageRequest(5L, "Hola"), principal(NUTRITIONIST_ID));
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
-		assertThat(response.getBody()).containsEntry("message",
-				"El servicio de IA está saturado. Intenta de nuevo en unos minutos.");
+		assertThat(response.getBody())
+			.containsEntry("message", "El servicio de IA está saturado. Intenta de nuevo en unos minutos.")
+			.containsEntry("errorCode", AiToolErrorCode.RATE_LIMIT.name());
+	}
+
+	@Test
+	void sendMessageMapsOpenAiNotConfigured() throws Exception {
+		when(chatService.sendMessage(any(), eq(5L), any(), any()))
+			.thenThrow(new OpenAiClientException(OpenAiClientException.ErrorKind.NOT_CONFIGURED,
+					HttpStatus.SERVICE_UNAVAILABLE, AiErrorMessages.NOT_CONFIGURED, "not configured", null));
+		when(aiChatRateLimiter.executeMessage(eq(NUTRITIONIST_ID), any())).thenAnswer(invocation -> {
+			final Callable<?> callable = invocation.getArgument(1);
+			return callable.call();
+		});
+
+		final ResponseEntity<Map<String, Object>> response = controller
+			.sendMessage(new AiSendMessageRequest(5L, "Hola"), principal(NUTRITIONIST_ID));
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+		assertThat(response.getBody()).containsEntry("message", AiErrorMessages.NOT_CONFIGURED)
+			.containsEntry("errorCode", AiToolErrorCode.INTERNAL.name());
+	}
+
+	@Test
+	void sendMessageMapsOpenAiTimeout() throws Exception {
+		when(chatService.sendMessage(any(), eq(5L), any(), any()))
+			.thenThrow(new OpenAiClientException(OpenAiClientException.ErrorKind.TIMEOUT, HttpStatus.GATEWAY_TIMEOUT,
+					AiErrorMessages.OPENAI_TIMEOUT, "timeout", null));
+		when(aiChatRateLimiter.executeMessage(eq(NUTRITIONIST_ID), any())).thenAnswer(invocation -> {
+			final Callable<?> callable = invocation.getArgument(1);
+			return callable.call();
+		});
+
+		final ResponseEntity<Map<String, Object>> response = controller
+			.sendMessage(new AiSendMessageRequest(5L, "Hola"), principal(NUTRITIONIST_ID));
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.GATEWAY_TIMEOUT);
+		assertThat(response.getBody()).containsEntry("message", AiErrorMessages.OPENAI_TIMEOUT)
+			.containsEntry("errorCode", AiToolErrorCode.INTERNAL.name());
 	}
 
 	@Test

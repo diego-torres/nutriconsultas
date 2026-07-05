@@ -43,8 +43,14 @@ public final class AiChatSseSupport {
 	}
 
 	public static void sendError(final SseEmitter emitter, final String message) throws IOException {
+		sendError(emitter, AiToolErrorCode.INTERNAL, message);
+	}
+
+	public static void sendError(final SseEmitter emitter, final AiToolErrorCode errorCode, final String message)
+			throws IOException {
 		final Map<String, Object> payload = new LinkedHashMap<>();
 		payload.put("success", false);
+		payload.put("errorCode", errorCode.name());
 		payload.put("message", message);
 		emitter.send(SseEmitter.event().name("error").data(AiToolJsonSerializer.toJson(payload)));
 	}

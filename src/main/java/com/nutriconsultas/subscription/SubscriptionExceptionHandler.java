@@ -1,11 +1,14 @@
 package com.nutriconsultas.subscription;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import com.nutriconsultas.ai.AiToolErrorCode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,8 +31,13 @@ public class SubscriptionExceptionHandler {
 			log.debug("Subscription limit exceeded: messageKey={}", ex.getMessageKey());
 		}
 		final String message = errorResponses.resolve(ex);
-		return ResponseEntity.status(HttpStatus.FORBIDDEN)
-			.body(Map.of("success", false, "error", message, "code", ex.getMessageKey()));
+		final Map<String, Object> body = new LinkedHashMap<>();
+		body.put("success", false);
+		body.put("error", message);
+		body.put("message", message);
+		body.put("code", ex.getMessageKey());
+		body.put("errorCode", AiToolErrorCode.FORBIDDEN.name());
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
 	}
 
 }

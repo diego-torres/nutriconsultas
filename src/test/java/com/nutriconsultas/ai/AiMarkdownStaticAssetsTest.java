@@ -16,6 +16,7 @@ class AiMarkdownStaticAssetsTest {
 		assertThat(new ClassPathResource("static/sbadmin/vendor/dompurify/purify.min.js").exists()).isTrue();
 		assertThat(new ClassPathResource("static/sbadmin/js/ai-markdown.js").exists()).isTrue();
 		assertThat(new ClassPathResource("static/sbadmin/js/ai-chat-stream.js").exists()).isTrue();
+		assertThat(new ClassPathResource("static/sbadmin/js/ai-chat-errors.js").exists()).isTrue();
 		assertThat(new ClassPathResource("static/sbadmin/css/ai-markdown.css").exists()).isTrue();
 	}
 

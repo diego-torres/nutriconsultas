@@ -114,7 +114,7 @@ public class AiChatServiceImpl implements AiChatService {
 			final SseEmitter emitter) {
 		assertNutritionistAccess(nutritionistId);
 		if (request == null || !StringUtils.hasText(request.message())) {
-			completeStreamWithError(emitter, "El mensaje no puede estar vacío.");
+			completeStreamWithError(emitter, AiToolErrorCode.VALIDATION, AiErrorMessages.EMPTY_MESSAGE);
 			return;
 		}
 		try {
@@ -138,8 +138,11 @@ public class AiChatServiceImpl implements AiChatService {
 					streamConsumerFor(emitter, cancellation));
 			AiChatSseSupport.completeQuietly(emitter);
 		}
-		catch (final AiChatException | AiOrchestrationException ex) {
-			completeStreamWithError(emitter, ex.getMessage());
+		catch (final AiChatException ex) {
+			completeStreamWithError(emitter, ex.getErrorCode(), ex.getMessage());
+		}
+		catch (final AiOrchestrationException ex) {
+			completeStreamWithError(emitter, AiToolErrorCode.VALIDATION, ex.getMessage());
 		}
 		catch (final AiStreamCancelledException ex) {
 			if (log.isDebugEnabled()) {
@@ -148,7 +151,7 @@ public class AiChatServiceImpl implements AiChatService {
 			AiChatSseSupport.completeQuietly(emitter);
 		}
 		catch (final OpenAiClientException ex) {
-			completeStreamWithError(emitter, ex.getUserMessage());
+			completeStreamWithError(emitter, AiErrorMessages.errorCodeForOpenAi(ex.getKind()), ex.getUserMessage());
 		}
 		catch (final AiStreamDeliveryException ex) {
 			if (log.isWarnEnabled()) {
@@ -184,7 +187,7 @@ public class AiChatServiceImpl implements AiChatService {
 			final SseEmitter emitter) {
 		assertNutritionistAccess(nutritionistId);
 		if (request == null) {
-			completeStreamWithError(emitter, "Solicitud no válida.");
+			completeStreamWithError(emitter, AiToolErrorCode.VALIDATION, AiErrorMessages.INVALID_REQUEST);
 			return;
 		}
 		try {
@@ -199,7 +202,7 @@ public class AiChatServiceImpl implements AiChatService {
 			final TruncateOutcome truncateOutcome = chatPersistence.getTransactionTemplate()
 				.execute(status -> truncateThreadFromMessage(nutritionistId, request.threadId(), request.messageId()));
 			if (truncateOutcome == null) {
-				completeStreamWithError(emitter, "No se pudo actualizar la conversación.");
+				completeStreamWithError(emitter, AiToolErrorCode.INTERNAL, AiErrorMessages.THREAD_UPDATE_FAILED);
 				return;
 			}
 			final Long threadPatientId = chatPersistence.getTransactionTemplate().execute(status -> {
@@ -221,11 +224,14 @@ public class AiChatServiceImpl implements AiChatService {
 			}
 			AiChatSseSupport.completeQuietly(emitter);
 		}
-		catch (final AiChatException | AiOrchestrationException ex) {
-			completeStreamWithError(emitter, ex.getMessage());
+		catch (final AiChatException ex) {
+			completeStreamWithError(emitter, ex.getErrorCode(), ex.getMessage());
+		}
+		catch (final AiOrchestrationException ex) {
+			completeStreamWithError(emitter, AiToolErrorCode.VALIDATION, ex.getMessage());
 		}
 		catch (final OpenAiClientException ex) {
-			completeStreamWithError(emitter, ex.getUserMessage());
+			completeStreamWithError(emitter, AiErrorMessages.errorCodeForOpenAi(ex.getKind()), ex.getUserMessage());
 		}
 		catch (final AiStreamDeliveryException ex) {
 			if (log.isWarnEnabled()) {
@@ -274,9 +280,10 @@ public class AiChatServiceImpl implements AiChatService {
 		};
 	}
 
-	private static void completeStreamWithError(final SseEmitter emitter, final String message) {
+	private static void completeStreamWithError(final SseEmitter emitter, final AiToolErrorCode errorCode,
+			final String message) {
 		try {
-			AiChatSseSupport.sendError(emitter, message);
+			AiChatSseSupport.sendError(emitter, errorCode, message);
 		}
 		catch (Exception ex) {
 			emitter.completeWithError(ex);

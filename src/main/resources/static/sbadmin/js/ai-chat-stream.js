@@ -3,6 +3,8 @@
 (function (global) {
   'use strict';
 
+  var GENERIC = 'No se pudo completar la solicitud.';
+
   function parseEventBlock(block) {
     var lines = block.split('\n');
     var eventName = 'message';
@@ -25,6 +27,14 @@
     }
   }
 
+  function buildStreamError(data) {
+    if (global.NutriAiChatErrors && global.NutriAiChatErrors.createApiError) {
+      return global.NutriAiChatErrors.createApiError(data || {});
+    }
+    var message = data && data.message ? data.message : GENERIC;
+    return new Error(message);
+  }
+
   function dispatchEvent(parsed, handlers) {
     if (!parsed) {
       return;
@@ -42,8 +52,7 @@
       return;
     }
     if (parsed.event === 'error' && handlers.onError) {
-      var message = parsed.data && parsed.data.message ? parsed.data.message : 'No se pudo completar la solicitud.';
-      handlers.onError(message);
+      handlers.onError(buildStreamError(parsed.data));
     }
   }
 
@@ -67,10 +76,10 @@
       if (!response.ok) {
         if (contentType.indexOf('application/json') >= 0) {
           return response.json().then(function (data) {
-            throw new Error(data.message || 'No se pudo completar la solicitud.');
+            throw buildStreamError(data);
           });
         }
-        throw new Error('No se pudo completar la solicitud.');
+        throw new Error(GENERIC);
       }
       if (!response.body || !response.body.getReader) {
         throw new Error('Streaming no disponible en este navegador.');
