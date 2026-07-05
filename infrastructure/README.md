@@ -182,7 +182,7 @@ Verify: signup probe should **not** return HTTP 503 (400/403/409 is OK for a dum
 
 | Variable | Purpose |
 |----------|---------|
-| `AI_ENABLED` | Feature flag (`false` until release checklist #408) |
+| `AI_ENABLED` | Feature flag (`false` until [`RELEASE-CHECKLIST.md`](../docs/ai/RELEASE-CHECKLIST.md) #408 complete) |
 | `OPENAI_API_KEY` | Server-only OpenAI secret |
 | `OPENAI_MODEL` | Model id (e.g. `gpt-5-mini`) |
 | `OPENAI_STORE` | Keep `false` (no provider-side retention) |
@@ -194,7 +194,7 @@ export AI_ENABLED=true OPENAI_API_KEY='sk-proj-...' OPENAI_MODEL='gpt-5-mini'
 bash infrastructure/scripts/ssm-update-ai-openai.sh
 ```
 
-Disable quickly: `export AI_ENABLED=false` and run the same script. Runbook: [`docs/ai/PRODUCTION-AI-SETUP.md`](../docs/ai/PRODUCTION-AI-SETUP.md).
+Disable quickly: `export AI_ENABLED=false` and run the same script. Runbook: [`docs/ai/PRODUCTION-AI-SETUP.md`](../docs/ai/PRODUCTION-AI-SETUP.md). Rollout gate: [`docs/ai/RELEASE-CHECKLIST.md`](../docs/ai/RELEASE-CHECKLIST.md).
 
 **Invitation email (#209)** — nutritionist invite delivery (SES prod / console local):
 
