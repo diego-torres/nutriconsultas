@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-07-05 — ~~#406~~ merged (PR #474). Next: **#407** (nutritionist user guidance).
+**Last updated:** 2026-07-05 — ~~#407~~ merged (PR #477). Next: **#408** (release checklist).
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -221,7 +221,7 @@ Injection, jailbreak, and defense-in-depth guardrails for orchestration (#385).
 | **449** | System prompt volume limits and bulk refusal corpus | https://github.com/diego-torres/nutriconsultas/issues/449 | **done** | **438**, **367**, **447** | PR #458 — `VOLUMEN Y LÍMITES`, `FUNCTIONAL-SCOPE.md`, bulk corpus |
 | **450** | Golden prompts for excessive bulk AI requests | https://github.com/diego-torres/nutriconsultas/issues/450 | **done** | **400**, **401**, **447** | PR #462 — `AiBulkScopeGoldenPromptTest`, docs |
 
-**Suggested order:** ~~#401~~ ~~#402~~ ~~#403~~ **done**. Epic **#400** complete. Phase 10: ~~#405~~ ~~#406~~ **done**. Next: **#407**.
+**Suggested order:** ~~#401~~ ~~#402~~ ~~#403~~ **done**. Epic **#400** complete. Phase 10: ~~#405~~ ~~#406~~ ~~#407~~ **done**. Next: **#408**.
 
 ---
 
@@ -249,10 +249,10 @@ Setup docs, nutritionist guidance, release checklist.
 | **404** | Epic — AI Assistant Documentation and Release (Phase 10) | https://github.com/diego-torres/nutriconsultas/issues/404 | **open** | **396**, **403** | Milestone 5 |
 | **405** | Document Local AI Setup | https://github.com/diego-torres/nutriconsultas/issues/405 | **done** | **365** | PR #472 — [`docs/ai/LOCAL-AI-SETUP.md`](docs/ai/LOCAL-AI-SETUP.md) |
 | **406** | Document Production AI Setup | https://github.com/diego-torres/nutriconsultas/issues/406 | **done** | **365** | PR #474 — [`docs/ai/PRODUCTION-AI-SETUP.md`](docs/ai/PRODUCTION-AI-SETUP.md), `ssm-update-ai-openai.sh` |
-| **407** | Add Nutritionist User Guidance | https://github.com/diego-torres/nutriconsultas/issues/407 | **open** | **390** | In-app or docs |
+| **407** | Add Nutritionist User Guidance | https://github.com/diego-torres/nutriconsultas/issues/407 | **done** | **390** | PR #477 — in-app panel + [`NUTRITIONIST-USER-GUIDANCE.md`](docs/ai/NUTRITIONIST-USER-GUIDANCE.md) |
 | **408** | Create AI Assistant Release Checklist | https://github.com/diego-torres/nutriconsultas/issues/408 | **open** | **404** | Rollout gate |
 
-**Suggested order:** ~~#405~~ ~~#406~~ **done** (PR #472, #474). Next: **#407**; **#408** before production enable.
+**Suggested order:** ~~#405~~ ~~#406~~ ~~#407~~ **done** (PR #472, #474, #477). Next: **#408** before production enable.
 
 ---
 
