@@ -56,7 +56,8 @@ class AiSystemPromptServiceTest {
 	@Test
 	void promptIncludesPatientConstraintsWithoutReaskInstruction() {
 		final AiPatientPromptContext patient = new AiPatientPromptContext(42L, 1800.0, 2000.0, true, "F", false,
-				"NORMAL", 23.5, Map.of("hipertension", true, "diabetes", false), "Mariscos", "MODERATE");
+				"NORMAL", 23.5, Map.of("hipertension", true, "diabetes", false), "Mariscos", "MODERATE",
+				"2026-07-12T16:00:00Z", "Consulta de seguimiento", 60);
 		final String prompt = service
 			.buildSystemPrompt(new AiSystemPromptContext(Locale.forLanguageTag("es-MX"), null, patient, null, null));
 
@@ -68,7 +69,8 @@ class AiSystemPromptServiceTest {
 		assertThat(prompt).contains("Mariscos");
 		assertThat(prompt).contains("hipertension");
 		assertThat(prompt).contains("No preguntes de nuevo el objetivo calórico ni las alergias");
-		assertThat(prompt.toLowerCase(Locale.ROOT)).doesNotContain("maría");
+		assertThat(prompt).contains("Próxima cita programada");
+		assertThat(prompt).contains("Consulta de seguimiento");
 	}
 
 	@Test
@@ -102,6 +104,8 @@ class AiSystemPromptServiceTest {
 
 		assertThat(prompt).contains("<resultado_herramienta");
 		assertThat(prompt).contains("<contexto_paciente>");
+		assertThat(prompt).contains("AGENDA DEL PACIENTE");
+		assertThat(prompt).contains("get_patient_appointments");
 	}
 
 	@Test

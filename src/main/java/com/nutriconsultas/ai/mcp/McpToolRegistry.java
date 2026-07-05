@@ -11,6 +11,7 @@ import com.nutriconsultas.ai.CreateDietPlanDraftToolService;
 import com.nutriconsultas.ai.CreateDishDraftToolService;
 import com.nutriconsultas.ai.CreateMenuDraftToolService;
 import com.nutriconsultas.ai.GetFoodNutrientsToolService;
+import com.nutriconsultas.ai.GetPatientAppointmentsToolService;
 import com.nutriconsultas.ai.OpenAiToolDefinition;
 import com.nutriconsultas.ai.SearchDishCatalogToolService;
 import com.nutriconsultas.ai.SearchFoodCatalogToolService;
@@ -47,7 +48,11 @@ enum McpToolRegistry {
 
 	CREATE_DIET_PLAN("draft.create_diet_plan", CreateDietPlanDraftToolService.TOOL_NAME,
 			"Crear borrador de plan alimentario",
-			"Guarda un borrador de plan alimenticio multi-día. No asigna al paciente.", false, true);
+			"Guarda un borrador de plan alimenticio multi-día. No asigna al paciente.", false, true),
+
+	GET_PATIENT_APPOINTMENTS("calendar.get_patient_appointments", GetPatientAppointmentsToolService.TOOL_NAME,
+			"Consultar citas del paciente",
+			"Consulta citas programadas o pasadas del paciente vinculado a la conversación.", true, false);
 
 	private static final Map<String, McpToolRegistry> BY_MCP_NAME = Arrays.stream(values())
 		.collect(Collectors.toUnmodifiableMap(McpToolRegistry::mcpName, Function.identity()));

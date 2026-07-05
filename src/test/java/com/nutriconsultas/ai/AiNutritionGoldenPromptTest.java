@@ -263,7 +263,7 @@ class AiNutritionGoldenPromptTest {
 			return new AiOrchestrationContext(NUTRITIONIST_ID, THREAD_ID, null, null, null);
 		}
 		final AiPatientPromptContext patient = new AiPatientPromptContext(42L, 1800.0, null, false, "F", false,
-				"NORMAL", 23.5, Map.of(), "Huevo", "MODERATE");
+				"NORMAL", 23.5, Map.of(), "Huevo", "MODERATE", null, null, null);
 		return new AiOrchestrationContext(NUTRITIONIST_ID, THREAD_ID, patient, null, null);
 	}
 

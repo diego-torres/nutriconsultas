@@ -3,6 +3,8 @@ package com.nutriconsultas.ai;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -10,7 +12,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 
+import com.nutriconsultas.calendar.CalendarEvent;
+import com.nutriconsultas.calendar.CalendarEventRepository;
+import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
@@ -28,6 +34,9 @@ class AiPatientPromptContextResolverTest {
 
 	@Mock
 	private PacienteRepository pacienteRepository;
+
+	@Mock
+	private CalendarEventRepository calendarEventRepository;
 
 	@Test
 	void resolveBuildsRedactedContext() {
@@ -47,6 +56,10 @@ class AiPatientPromptContextResolverTest {
 		history.setAlergias("Mariscos");
 		paciente.setMedicalHistory(history);
 		when(pacienteRepository.findByIdAndUserId(42L, NUTRITIONIST_ID)).thenReturn(Optional.of(paciente));
+		when(calendarEventRepository.findUpcomingByPacienteId(org.mockito.ArgumentMatchers.eq(42L),
+				org.mockito.ArgumentMatchers.any(Date.class), org.mockito.ArgumentMatchers.eq(EventStatus.SCHEDULED),
+				org.mockito.ArgumentMatchers.any(Pageable.class)))
+			.thenReturn(List.of());
 
 		final Optional<AiPatientPromptContext> context = resolver.resolve(42L, NUTRITIONIST_ID);
 
@@ -55,6 +68,32 @@ class AiPatientPromptContextResolverTest {
 		assertThat(context.get().requerimientoKcal()).isEqualTo(1800.0);
 		assertThat(context.get().alergias()).isEqualTo("Mariscos");
 		assertThat(context.get().pathologyFlags()).containsEntry("hipertension", true);
+		assertThat(context.get().nextAppointmentAtIso()).isNull();
+	}
+
+	@Test
+	void resolveIncludesNextScheduledAppointment() {
+		final Paciente paciente = new Paciente();
+		paciente.setId(5L);
+		paciente.setBodySnapshot(new PacienteBodySnapshot());
+		final CalendarEvent next = new CalendarEvent();
+		next.setId(99L);
+		next.setTitle("Consulta inicial");
+		next.setDurationMinutes(60);
+		next.setStatus(EventStatus.SCHEDULED);
+		next.setEventDateTime(new Date(1_752_000_000_000L));
+		when(pacienteRepository.findByIdAndUserId(5L, NUTRITIONIST_ID)).thenReturn(Optional.of(paciente));
+		when(calendarEventRepository.findUpcomingByPacienteId(org.mockito.ArgumentMatchers.eq(5L),
+				org.mockito.ArgumentMatchers.any(Date.class), org.mockito.ArgumentMatchers.eq(EventStatus.SCHEDULED),
+				org.mockito.ArgumentMatchers.any(Pageable.class)))
+			.thenReturn(List.of(next));
+
+		final Optional<AiPatientPromptContext> context = resolver.resolve(5L, NUTRITIONIST_ID);
+
+		assertThat(context).isPresent();
+		assertThat(context.get().nextAppointmentTitle()).isEqualTo("Consulta inicial");
+		assertThat(context.get().nextAppointmentDurationMinutes()).isEqualTo(60);
+		assertThat(context.get().nextAppointmentAtIso()).isNotBlank();
 	}
 
 	@Test

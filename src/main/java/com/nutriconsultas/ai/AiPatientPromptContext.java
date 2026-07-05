@@ -8,7 +8,8 @@ import java.util.Map;
  */
 public record AiPatientPromptContext(Long patientId, Double requerimientoKcal, Double finalTotalKcal,
 		Boolean physiologicalStressActive, String gender, Boolean pregnancy, String nivelPeso, Double imc,
-		Map<String, Boolean> pathologyFlags, String alergias, String activityLevel) {
+		Map<String, Boolean> pathologyFlags, String alergias, String activityLevel, String nextAppointmentAtIso,
+		String nextAppointmentTitle, Integer nextAppointmentDurationMinutes) {
 
 	public AiPatientPromptContext {
 		pathologyFlags = pathologyFlags == null ? Map.of() : Map.copyOf(pathologyFlags);

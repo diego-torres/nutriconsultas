@@ -29,6 +29,8 @@ public class AiOrchestrationToolDispatcher {
 
 	private final CreateDietPlanDraftToolService createDietPlanDraftToolService;
 
+	private final GetPatientAppointmentsToolService getPatientAppointmentsToolService;
+
 	private final AiDraftToolSchemaValidator draftToolSchemaValidator;
 
 	public AiOrchestrationToolDispatcher(final SearchFoodCatalogToolService searchFoodCatalogToolService,
@@ -39,6 +41,7 @@ public class AiOrchestrationToolDispatcher {
 			final CreateDishDraftToolService createDishDraftToolService,
 			final CreateMenuDraftToolService createMenuDraftToolService,
 			final CreateDietPlanDraftToolService createDietPlanDraftToolService,
+			final GetPatientAppointmentsToolService getPatientAppointmentsToolService,
 			final AiDraftToolSchemaValidator draftToolSchemaValidator) {
 		this.searchFoodCatalogToolService = searchFoodCatalogToolService;
 		this.getFoodNutrientsToolService = getFoodNutrientsToolService;
@@ -48,6 +51,7 @@ public class AiOrchestrationToolDispatcher {
 		this.createDishDraftToolService = createDishDraftToolService;
 		this.createMenuDraftToolService = createMenuDraftToolService;
 		this.createDietPlanDraftToolService = createDietPlanDraftToolService;
+		this.getPatientAppointmentsToolService = getPatientAppointmentsToolService;
 		this.draftToolSchemaValidator = draftToolSchemaValidator;
 	}
 
@@ -80,6 +84,9 @@ public class AiOrchestrationToolDispatcher {
 		}
 		if (CreateDietPlanDraftToolService.TOOL_NAME.equals(toolName)) {
 			return createDietPlanDraft(context, argumentsJson);
+		}
+		if (GetPatientAppointmentsToolService.TOOL_NAME.equals(toolName)) {
+			return getPatientAppointments(context, argumentsJson);
 		}
 		return AiToolResult.error(AiToolErrorCode.VALIDATION, "Herramienta no reconocida: " + toolName);
 	}
@@ -157,6 +164,35 @@ public class AiOrchestrationToolDispatcher {
 		}
 		final DietPlanDraftInput input = AiToolJsonSerializer.fromJson(argumentsJson, DietPlanDraftInput.class);
 		return createDietPlanDraftToolService.createDraft(context.nutritionistId(), context.threadId(), input);
+	}
+
+	private AiToolResult<PatientAppointmentsData> getPatientAppointments(final AiOrchestrationContext context,
+			final String argumentsJson) {
+		if (context.patientContext() == null || context.patientContext().patientId() == null) {
+			return AiToolResult.error(AiToolErrorCode.VALIDATION,
+					"Esta conversación no tiene un paciente vinculado. Abre el chat desde el expediente del paciente.");
+		}
+		final JsonNode root = AiToolJsonSerializer.parseJson(argumentsJson);
+		final PatientAppointmentScope scope = parseAppointmentScope(root);
+		return getPatientAppointmentsToolService.getAppointments(context.nutritionistId(),
+				context.patientContext().patientId(), scope, optionalInteger(root, "limit"));
+	}
+
+	private static PatientAppointmentScope parseAppointmentScope(final JsonNode root) {
+		final JsonNode scopeNode = root.get("scope");
+		if (scopeNode == null || scopeNode.isNull() || !scopeNode.isTextual()) {
+			return null;
+		}
+		final String value = scopeNode.asText();
+		if (value.isBlank()) {
+			return null;
+		}
+		try {
+			return PatientAppointmentScope.valueOf(value);
+		}
+		catch (final IllegalArgumentException ex) {
+			throw new AiOrchestrationException("El campo 'scope' debe ser UPCOMING, PAST o ALL.", ex);
+		}
 	}
 
 	private static String requiredText(final JsonNode root, final String field) {

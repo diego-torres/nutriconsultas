@@ -58,7 +58,7 @@ class AiPlanConstraintEvaluatorTest {
 		final ValidatePlanConstraintsRequest request = new ValidatePlanConstraintsRequest(AiPlanType.MENU, null, null,
 				null, null, null, null, null, null, null, 50.0);
 		final AiPatientPromptContext patientContext = new AiPatientPromptContext(1L, 2000.0, 2200.0, true, "F", false,
-				null, null, Map.of(), null, null);
+				null, null, Map.of(), null, null, null, null, null);
 
 		final List<PlanConstraintWarning> warnings = AiPlanConstraintEvaluator.evaluate(computed, request,
 				patientContext, Set.of(), mock(AlimentosRepository.class));
@@ -77,7 +77,7 @@ class AiPlanConstraintEvaluatorTest {
 		when(repository.findById(5L)).thenReturn(java.util.Optional.of(mani));
 
 		final AiPatientPromptContext patientContext = new AiPatientPromptContext(1L, 2000.0, null, false, "F", false,
-				null, null, Map.of(), "cacahuate, mariscos", null);
+				null, null, Map.of(), "cacahuate, mariscos", null, null, null, null);
 		final ValidatePlanConstraintsRequest request = new ValidatePlanConstraintsRequest(AiPlanType.DISH, null, null,
 				null, null, null, null, null, null, null, null);
 
@@ -92,7 +92,7 @@ class AiPlanConstraintEvaluatorTest {
 	@Test
 	void evaluateAddsPathologyInfoNote() {
 		final AiPatientPromptContext patientContext = new AiPatientPromptContext(1L, 2000.0, null, false, "F", false,
-				null, null, Map.of("diabetes", true), null, null);
+				null, null, Map.of("diabetes", true), null, null, null, null, null);
 		final ValidatePlanConstraintsRequest request = new ValidatePlanConstraintsRequest(AiPlanType.MENU, null, null,
 				null, null, null, null, null, null, null, null);
 

@@ -152,7 +152,8 @@ Never serialize the full `Paciente` entity to OpenAI.
 | Read-only catalog | Food/dish IDs, names, nutrients, units | Authorized rows only; cap result count (e.g. 10–25) |
 | Nutrient calculation | Computed numbers from DB | Input food IDs validated against catalog |
 | Draft creation | Draft JSON stored in PostgreSQL | `nutritionistId` from session |
-| Patient clinical timeline | **Not exposed** | No `CalendarEvent`, `ClinicalExam`, `AnthropometricMeasurement` series, `PatientMessage` tools in v1 |
+| Patient clinical timeline | **Partial (v1.1)** | `get_patient_appointments` when thread has owned `patient_id`: date, title, duration, status only — no vitals, notes, or PHI |
+| `CalendarEvent` full clinical fields | **Not exposed** | No anthropometrics, `summaryNotes`, or cross-patient agenda |
 | Mobile / `patientAuthSub` | **Not exposed** | |
 
 System catalog platillos/dietas are readable like today’s web app; mutating system rows remains platform-admin only (unchanged).

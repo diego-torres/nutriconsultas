@@ -2,6 +2,8 @@ package com.nutriconsultas.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 
 class AiOpenAiToolCatalogTest {
@@ -32,6 +34,18 @@ class AiOpenAiToolCatalogTest {
 			assertThat(allowlist.isAllowed(definition.name())).isTrue();
 		}
 		assertThat(allowlist.allowedToolNames()).hasSameSizeAs(catalog.definitions());
+	}
+
+	@Test
+	void definitionsForSessionExcludePatientAppointmentsWithoutPatientContext() {
+		assertThat(catalog.definitionsForSession(null).stream().map(OpenAiToolDefinition::name))
+			.doesNotContain(GetPatientAppointmentsToolService.TOOL_NAME);
+		assertThat(catalog.definitionsForSession(null)).hasSize(catalog.definitions().size() - 1);
+
+		final AiPatientPromptContext patient = new AiPatientPromptContext(5L, 1800.0, null, false, "M", false, null,
+				null, Map.of(), null, null, null, null, null);
+		assertThat(catalog.definitionsForSession(patient).stream().map(OpenAiToolDefinition::name))
+			.contains(GetPatientAppointmentsToolService.TOOL_NAME);
 	}
 
 }
