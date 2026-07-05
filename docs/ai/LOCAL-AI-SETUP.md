@@ -168,6 +168,25 @@ For evaluation scenarios without live API, see [`NUTRITION-GOLDEN-PROMPTS.md`](N
 
 ---
 
+## MCP endpoint (optional)
+
+External agents can call the same nutrition tools via **`POST /mcp/nutriconsultas`** (JSON-RPC 2.0). Requires the same nutritionist OAuth2 session cookie as `/admin/ai` and Plus/Consultorio entitlement (#409).
+
+1. Log in at `http://localhost:3000` as an entitled nutritionist.
+2. Copy the session cookie from browser devtools.
+3. Example `tools/list` request:
+
+   ```bash
+   curl -s -X POST http://localhost:3000/mcp/nutriconsultas \
+     -H 'Content-Type: application/json' \
+     -H 'Cookie: SESSION=your-session-cookie' \
+     -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+   ```
+
+For draft tools, start a chat thread via REST first and pass `"_meta":{"threadId":<id>}` on `tools/call`. See [`MCP-SERVER-ENDPOINT.md`](MCP-SERVER-ENDPOINT.md).
+
+---
+
 ## Related documents
 
 | Doc | Topic |
@@ -176,5 +195,6 @@ For evaluation scenarios without live API, see [`NUTRITION-GOLDEN-PROMPTS.md`](N
 | [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md) | PHI, logging, `OPENAI_STORE` |
 | [`FUNCTIONAL-SCOPE.md`](FUNCTIONAL-SCOPE.md) | Supported workflows |
 | [`PRODUCTION-AI-SETUP.md`](PRODUCTION-AI-SETUP.md) | Production EC2, SSM, spend controls (#406) |
+| [`MCP-SERVER-ENDPOINT.md`](MCP-SERVER-ENDPOINT.md) | MCP JSON-RPC tool server (#391–#395) |
 
 **Note:** Plan-tier gating (`Entitlement.AI_ASSISTANT`, #409) is not required for basic local enablement today; production rollout must follow #408 and #409.

@@ -195,13 +195,14 @@ MCP (Phase 7): `POST /mcp/nutriconsultas` — see [`MCP-SERVER-ENDPOINT.md`](MCP
 
 ## Definition of done (whole project)
 
-- [ ] Nutritionists can open AI chat and request dish/menu/diet drafts
-- [ ] AI uses application tools for catalogs and nutrients
-- [ ] Clarifying questions when required
-- [ ] Drafts stored; accept/discard by owner nutritionist
-- [ ] No patient assignment without explicit approval
-- [ ] API key server-side only; endpoints authenticated and scoped
-- [ ] Liquibase migrations tested
-- [ ] Unit, integration, template, and security tests pass
-- [ ] Local, production, and nutritionist documentation complete
-- [ ] Feature disable via `AI_ENABLED=false`
+- [x] Nutritionists can open AI chat and request dish/menu/diet drafts
+- [x] AI uses application tools for catalogs and nutrients
+- [x] Clarifying questions when required
+- [x] Drafts stored; accept/discard by owner nutritionist
+- [x] No patient assignment without explicit approval
+- [x] API key server-side only; endpoints authenticated and scoped
+- [x] Liquibase migrations tested
+- [x] Unit, integration, template, and security tests pass
+- [x] Local, production, and nutritionist documentation complete
+- [x] Feature disable via `AI_ENABLED=false`
+- [x] MCP tool server for external agents (`POST /mcp/nutriconsultas`, #391–#395)

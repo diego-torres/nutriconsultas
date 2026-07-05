@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#395 — Add MCP Security Review](https://github.com/diego-torres/nutriconsultas/issues/395) (`in progress`, branch `issue-395-mcp-security-review`). ~~#394~~ merged (PR #488).
+**Current next issue:** None — registered `[AI Assistant]` implementation track **complete** (epics #360–#450). ~~#391~~ MCP Phase 7 **done** (PR #486–#489). Triage new GitHub issues or production rollout via [`RELEASE-CHECKLIST.md`](docs/ai/RELEASE-CHECKLIST.md) (#408).
 
 **Registered backlog (2026-07-04):** Epic [#433](https://github.com/diego-torres/nutriconsultas/issues/433) chat UX (#434–#437). Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438) prompt security (#439–#441, **#447–#450** bulk scope guards). See registry for suggested order.
 
@@ -163,7 +163,7 @@ mvn test
 | M2 complete | Orchestration tool loop (#385) |
 | M3 complete | Nutritionist beta (`AI_ENABLED=true` staging); **#433** UX enhancements optional for beta |
 | M3b complete | Markdown + streaming + message controls (#434–#437) |
-| M4 complete | External MCP clients |
+| M4 complete | External MCP clients — `POST /mcp/nutriconsultas` (#391–#395) |
 | M5 + #408 + **#438** | Production `AI_ENABLED=true` — prompt security required |
 
 ---
