@@ -36,6 +36,9 @@ class AiChatServiceTest {
 	private AiChatServiceImpl service;
 
 	@Mock
+	private AiChatPersistence chatPersistence;
+
+	@Mock
 	private AiChatThreadRepository threadRepository;
 
 	@Mock
@@ -48,13 +51,7 @@ class AiChatServiceTest {
 	private AiOrchestrationService orchestrationService;
 
 	@Mock
-	private AiPatientPromptContextResolver patientContextResolver;
-
-	@Mock
-	private AiDietaPromptContextResolver dietaContextResolver;
-
-	@Mock
-	private AiPlatilloPromptContextResolver platilloContextResolver;
+	private AiChatPromptContextResolvers promptContextResolvers;
 
 	@Mock
 	private PacienteRepository pacienteRepository;
@@ -63,22 +60,26 @@ class AiChatServiceTest {
 	private TransactionTemplate transactionTemplate;
 
 	@Mock
-	private AiUserMessageGuard userMessageGuard;
-
-	@Mock
-	private AiEntitlementGuard aiEntitlementGuard;
+	private AiChatRequestGuards chatRequestGuards;
 
 	@BeforeEach
-	void stubUserMessageGuard() {
+	void stubGuardsAndPersistence() {
+		org.mockito.Mockito.lenient().when(chatPersistence.getThreadRepository()).thenReturn(threadRepository);
+		org.mockito.Mockito.lenient().when(chatPersistence.getMessageRepository()).thenReturn(messageRepository);
+		org.mockito.Mockito.lenient().when(chatPersistence.getTransactionTemplate()).thenReturn(transactionTemplate);
 		final AiProperties properties = new AiProperties();
 		final AiUserMessageGuard realGuard = new AiUserMessageGuard(properties);
 		org.mockito.Mockito.lenient()
-			.when(userMessageGuard.validateAndSanitize(org.mockito.ArgumentMatchers.anyString()))
+			.when(chatRequestGuards.validateUserMessage(org.mockito.ArgumentMatchers.anyString()))
 			.thenAnswer(invocation -> realGuard.validateAndSanitize(invocation.getArgument(0)));
 		org.mockito.Mockito.lenient()
 			.doNothing()
-			.when(aiEntitlementGuard)
-			.assertCanUseAiAssistant(org.mockito.ArgumentMatchers.anyString());
+			.when(chatRequestGuards)
+			.assertNutritionistAccess(org.mockito.ArgumentMatchers.anyString());
+		org.mockito.Mockito.lenient()
+			.when(promptContextResolvers.buildOrchestrationContext(org.mockito.ArgumentMatchers.anyString(),
+					org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.any()))
+			.thenReturn(new AiOrchestrationContext(NUTRITIONIST_ID, 5L, null, null, null));
 	}
 
 	@Test
@@ -142,9 +143,6 @@ class AiChatServiceTest {
 		final AiChatThread thread = sampleThread(5L, NUTRITIONIST_ID);
 		when(threadRepository.findByIdAndNutritionistId(5L, NUTRITIONIST_ID)).thenReturn(Optional.of(thread));
 		final AiChatMessage assistant = message(99L, AiChatMessageRole.ASSISTANT, "Listo");
-		when(patientContextResolver.resolve(null, NUTRITIONIST_ID)).thenReturn(Optional.empty());
-		when(dietaContextResolver.resolve(null, NUTRITIONIST_ID)).thenReturn(Optional.empty());
-		when(platilloContextResolver.resolve(null, NUTRITIONIST_ID)).thenReturn(Optional.empty());
 		when(orchestrationService.processUserMessage(any(), eq("Crea un menú")))
 			.thenReturn(new AiOrchestrationResult(5L, assistant, 2, null));
 
@@ -194,9 +192,6 @@ class AiChatServiceTest {
 			.thenReturn(List.of());
 		when(messageRepository.deleteByThreadIdAndIdGreaterThanEqual(5L, 10L)).thenReturn(3);
 		final AiChatMessage assistant = message(99L, AiChatMessageRole.ASSISTANT, "Nueva respuesta");
-		when(patientContextResolver.resolve(null, NUTRITIONIST_ID)).thenReturn(Optional.empty());
-		when(dietaContextResolver.resolve(null, NUTRITIONIST_ID)).thenReturn(Optional.empty());
-		when(platilloContextResolver.resolve(null, NUTRITIONIST_ID)).thenReturn(Optional.empty());
 		when(orchestrationService.processUserMessage(any(), eq("Texto editado")))
 			.thenReturn(new AiOrchestrationResult(5L, assistant, 1, null));
 
@@ -239,8 +234,8 @@ class AiChatServiceTest {
 	void sendMessageDeniedWithoutAiAssistantEntitlement() {
 		doThrow(new com.nutriconsultas.subscription.SubscriptionLimitExceededException(
 				com.nutriconsultas.subscription.SubscriptionErrorResponses.KEY_AI_ASSISTANT_DENIED))
-			.when(aiEntitlementGuard)
-			.assertCanUseAiAssistant(NUTRITIONIST_ID);
+			.when(chatRequestGuards)
+			.assertNutritionistAccess(NUTRITIONIST_ID);
 
 		assertThatThrownBy(() -> service.sendMessage(NUTRITIONIST_ID, 5L, "Hola", null))
 			.isInstanceOf(com.nutriconsultas.subscription.SubscriptionLimitExceededException.class);

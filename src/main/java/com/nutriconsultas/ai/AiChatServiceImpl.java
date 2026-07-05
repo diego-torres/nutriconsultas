@@ -7,7 +7,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -24,47 +23,28 @@ public class AiChatServiceImpl implements AiChatService {
 
 	private static final String DEFAULT_TITLE = "Nueva conversación";
 
-	private final AiChatThreadRepository threadRepository;
-
-	private final AiChatMessageRepository messageRepository;
+	private final AiChatPersistence chatPersistence;
 
 	private final AiGeneratedDraftRepository draftRepository;
 
 	private final AiOrchestrationService orchestrationService;
 
-	private final AiPatientPromptContextResolver patientContextResolver;
-
-	private final AiDietaPromptContextResolver dietaContextResolver;
-
-	private final AiPlatilloPromptContextResolver platilloContextResolver;
+	private final AiChatPromptContextResolvers promptContextResolvers;
 
 	private final PacienteRepository pacienteRepository;
 
-	private final TransactionTemplate transactionTemplate;
+	private final AiChatRequestGuards chatRequestGuards;
 
-	private final AiUserMessageGuard userMessageGuard;
-
-	private final AiEntitlementGuard aiEntitlementGuard;
-
-	public AiChatServiceImpl(final AiChatThreadRepository threadRepository,
-			final AiChatMessageRepository messageRepository, final AiGeneratedDraftRepository draftRepository,
+	public AiChatServiceImpl(final AiChatPersistence chatPersistence, final AiGeneratedDraftRepository draftRepository,
 			final AiOrchestrationService orchestrationService,
-			final AiPatientPromptContextResolver patientContextResolver,
-			final AiDietaPromptContextResolver dietaContextResolver,
-			final AiPlatilloPromptContextResolver platilloContextResolver, final PacienteRepository pacienteRepository,
-			final TransactionTemplate transactionTemplate, final AiUserMessageGuard userMessageGuard,
-			final AiEntitlementGuard aiEntitlementGuard) {
-		this.threadRepository = threadRepository;
-		this.messageRepository = messageRepository;
+			final AiChatPromptContextResolvers promptContextResolvers, final PacienteRepository pacienteRepository,
+			final AiChatRequestGuards chatRequestGuards) {
+		this.chatPersistence = chatPersistence;
 		this.draftRepository = draftRepository;
 		this.orchestrationService = orchestrationService;
-		this.patientContextResolver = patientContextResolver;
-		this.dietaContextResolver = dietaContextResolver;
-		this.platilloContextResolver = platilloContextResolver;
+		this.promptContextResolvers = promptContextResolvers;
 		this.pacienteRepository = pacienteRepository;
-		this.transactionTemplate = transactionTemplate;
-		this.userMessageGuard = userMessageGuard;
-		this.aiEntitlementGuard = aiEntitlementGuard;
+		this.chatRequestGuards = chatRequestGuards;
 	}
 
 	@Override
@@ -80,7 +60,7 @@ public class AiChatServiceImpl implements AiChatService {
 		thread.setTitle(resolveTitle(title));
 		thread.setClinicId(clinicId);
 		thread.setPatient(patient);
-		final AiChatThread saved = threadRepository.save(thread);
+		final AiChatThread saved = chatPersistence.getThreadRepository().save(thread);
 		if (log.isInfoEnabled()) {
 			log.info("AI chat thread created id={} patientLinked={}", saved.getId(), patient != null);
 		}
@@ -93,7 +73,7 @@ public class AiChatServiceImpl implements AiChatService {
 		assertNutritionistAccess(nutritionistId);
 		final AiChatThread thread = loadOwnedThread(threadId, nutritionistId);
 		final List<AiChatMessageView> messages = toVisibleMessages(
-				messageRepository.findByThreadIdOrderByCreatedAtAscIdAsc(threadId));
+				chatPersistence.getMessageRepository().findByThreadIdOrderByCreatedAtAscIdAsc(threadId));
 		return new AiChatThreadDetail(thread.getId(), thread.getTitle(), patientId(thread), thread.getClinicId(),
 				thread.getCreatedAt(), thread.getUpdatedAt(), messages);
 	}
@@ -143,7 +123,7 @@ public class AiChatServiceImpl implements AiChatService {
 			emitter.onError(ex -> cancellation.cancel());
 			final AiChatPromptContext promptContext = new AiChatPromptContext(request.patientId(), request.dietaId(),
 					request.platilloId());
-			final Long threadPatientId = transactionTemplate.execute(status -> {
+			final Long threadPatientId = chatPersistence.getTransactionTemplate().execute(status -> {
 				final AiChatThread ownedThread = loadOwnedThread(request.threadId(), nutritionistId);
 				return patientId(ownedThread);
 			});
@@ -211,13 +191,13 @@ public class AiChatServiceImpl implements AiChatService {
 			emitter.onError(ex -> cancellation.cancel());
 			final AiChatPromptContext promptContext = new AiChatPromptContext(request.patientId(), request.dietaId(),
 					request.platilloId());
-			final TruncateOutcome truncateOutcome = transactionTemplate
+			final TruncateOutcome truncateOutcome = chatPersistence.getTransactionTemplate()
 				.execute(status -> truncateThreadFromMessage(nutritionistId, request.threadId(), request.messageId()));
 			if (truncateOutcome == null) {
 				completeStreamWithError(emitter, "No se pudo actualizar la conversación.");
 				return;
 			}
-			final Long threadPatientId = transactionTemplate.execute(status -> {
+			final Long threadPatientId = chatPersistence.getTransactionTemplate().execute(status -> {
 				final AiChatThread ownedThread = loadOwnedThread(request.threadId(), nutritionistId);
 				return patientId(ownedThread);
 			});
@@ -305,15 +285,7 @@ public class AiChatServiceImpl implements AiChatService {
 
 	private AiOrchestrationContext buildOrchestrationContext(final String nutritionistId, final long threadId,
 			final AiChatPromptContext promptContext) {
-		final AiPatientPromptContext patientContext = patientContextResolver
-			.resolve(promptContext.patientId(), nutritionistId)
-			.orElse(null);
-		final AiDietaPromptContext dietaContext = dietaContextResolver.resolve(promptContext.dietaId(), nutritionistId)
-			.orElse(null);
-		final AiPlatilloPromptContext platilloContext = platilloContextResolver
-			.resolve(promptContext.platilloId(), nutritionistId)
-			.orElse(null);
-		return new AiOrchestrationContext(nutritionistId, threadId, patientContext, dietaContext, platilloContext);
+		return promptContextResolvers.buildOrchestrationContext(nutritionistId, threadId, promptContext);
 	}
 
 	private static AiChatPromptContext mergePromptContext(final AiChatPromptContext requestContext,
@@ -324,7 +296,8 @@ public class AiChatServiceImpl implements AiChatService {
 	}
 
 	private AiChatThread loadOwnedThread(final long threadId, final String nutritionistId) {
-		return threadRepository.findByIdAndNutritionistId(threadId, nutritionistId)
+		return chatPersistence.getThreadRepository()
+			.findByIdAndNutritionistId(threadId, nutritionistId)
 			.orElseThrow(() -> new AiChatException(org.springframework.http.HttpStatus.NOT_FOUND,
 					AiToolErrorCode.NOT_FOUND, "No se encontró la conversación."));
 	}
@@ -365,15 +338,7 @@ public class AiChatServiceImpl implements AiChatService {
 	}
 
 	private void assertNutritionistAccess(final String nutritionistId) {
-		assertNutritionistId(nutritionistId);
-		aiEntitlementGuard.assertCanUseAiAssistant(nutritionistId);
-	}
-
-	private static void assertNutritionistId(final String nutritionistId) {
-		if (!StringUtils.hasText(nutritionistId)) {
-			throw new AiChatException(org.springframework.http.HttpStatus.UNAUTHORIZED, AiToolErrorCode.VALIDATION,
-					"Sesión no válida.");
-		}
+		chatRequestGuards.assertNutritionistAccess(nutritionistId);
 	}
 
 	private static void assertEditRequest(final AiEditMessageRequest request) {
@@ -389,7 +354,7 @@ public class AiChatServiceImpl implements AiChatService {
 
 	private String validateUserMessageContent(final String message) {
 		try {
-			return userMessageGuard.validateAndSanitize(message);
+			return chatRequestGuards.validateUserMessage(message);
 		}
 		catch (final AiOrchestrationException ex) {
 			final AiChatException chatException = new AiChatException(org.springframework.http.HttpStatus.BAD_REQUEST,
@@ -401,7 +366,8 @@ public class AiChatServiceImpl implements AiChatService {
 
 	private TruncateOutcome truncateThreadFromMessage(final String nutritionistId, final long threadId,
 			final long messageId) {
-		final AiChatMessage anchor = messageRepository.findByIdAndThreadNutritionistId(messageId, nutritionistId)
+		final AiChatMessage anchor = chatPersistence.getMessageRepository()
+			.findByIdAndThreadNutritionistId(messageId, nutritionistId)
 			.orElseThrow(() -> new AiChatException(org.springframework.http.HttpStatus.NOT_FOUND,
 					AiToolErrorCode.NOT_FOUND, "No se encontró el mensaje."));
 		if (anchor.getThread() == null || anchor.getThread().getId() == null
@@ -421,8 +387,8 @@ public class AiChatServiceImpl implements AiChatService {
 			draftRepository.save(draft);
 			discardedDraftIds.add(draft.getId());
 		}
-		final int truncatedMessageCount = messageRepository.deleteByThreadIdAndIdGreaterThanEqual(threadId,
-				anchor.getId());
+		final int truncatedMessageCount = chatPersistence.getMessageRepository()
+			.deleteByThreadIdAndIdGreaterThanEqual(threadId, anchor.getId());
 		if (log.isInfoEnabled()) {
 			log.info("AI chat truncated threadId={} fromMessageId={} removedMessages={} discardedDrafts={}", threadId,
 					messageId, truncatedMessageCount, discardedDraftIds.size());

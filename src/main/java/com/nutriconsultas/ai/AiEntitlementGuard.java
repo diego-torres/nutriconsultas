@@ -8,8 +8,8 @@ import com.nutriconsultas.subscription.Entitlement;
 import com.nutriconsultas.subscription.SubscriptionEntitlementService;
 
 /**
- * Plan-tier gate for the AI nutrition assistant (#409). {@code AI_ENABLED=true} alone does
- * not grant access — Plus and Consultorio only.
+ * Plan-tier gate for the AI nutrition assistant (#409). {@code AI_ENABLED=true} alone
+ * does not grant access — Plus and Consultorio only.
  */
 @Component
 public final class AiEntitlementGuard {
@@ -29,10 +29,8 @@ public final class AiEntitlementGuard {
 	}
 
 	public boolean canUseAiAssistant(@Nullable final String nutritionistId) {
-		if (!StringUtils.hasText(nutritionistId)) {
-			return false;
-		}
-		return subscriptionEntitlementService.hasEntitlement(nutritionistId, Entitlement.AI_ASSISTANT);
+		return StringUtils.hasText(nutritionistId)
+				&& subscriptionEntitlementService.hasEntitlement(nutritionistId, Entitlement.AI_ASSISTANT);
 	}
 
 }
