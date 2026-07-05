@@ -155,7 +155,7 @@ Thymeleaf chat window and draft preview.
 | **390** | Build Draft Preview UI | https://github.com/diego-torres/nutriconsultas/issues/390 | **done** | **389**, **382** | PR #443 |
 | **442** | Floating context-aware AI assistant widget | https://github.com/diego-torres/nutriconsultas/issues/442 | **done** | **388**, **384**, **389** | Merged with PR #432 |
 
-**Suggested order:** ~~#389~~ ~~#390~~ ~~#442~~ → **#434** (in progress) → **#435**.
+**Suggested order:** ~~#389~~ ~~#390~~ ~~#442~~ ~~#434–#437~~ **done**. Epic **#433** complete.
 
 ---
 
@@ -221,7 +221,7 @@ Injection, jailbreak, and defense-in-depth guardrails for orchestration (#385).
 | **449** | System prompt volume limits and bulk refusal corpus | https://github.com/diego-torres/nutriconsultas/issues/449 | **done** | **438**, **367**, **447** | PR #458 — `VOLUMEN Y LÍMITES`, `FUNCTIONAL-SCOPE.md`, bulk corpus |
 | **450** | Golden prompts for excessive bulk AI requests | https://github.com/diego-torres/nutriconsultas/issues/450 | **done** | **400**, **401**, **447** | PR #462 — `AiBulkScopeGoldenPromptTest`, docs |
 
-**Suggested order:** ~~#401~~ ~~#402~~ ~~#403~~ **done**. Epic **#400** complete. Phase 10: ~~#405~~ ~~#406~~ ~~#407~~ ~~#408~~ ~~#409~~ **done**. ~~#397~~ ~~#398~~ **done**. **#399** in progress before production enable.
+**Suggested order:** ~~#401~~ ~~#402~~ ~~#403~~ **done**. Epic **#400** complete. Phase 10: ~~#405~~ ~~#406~~ ~~#407~~ ~~#408~~ ~~#409~~ **done**. Epic **#396** complete. **#392** in progress (MCP Phase 7).
 
 ---
 
