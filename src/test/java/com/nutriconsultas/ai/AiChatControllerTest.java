@@ -48,6 +48,18 @@ class AiChatControllerTest {
 
 		assertThat(view).isEqualTo("sbadmin/ai/chat");
 		assertThat(model.getAttribute("activeMenu")).isEqualTo("ai");
+		assertThat(model.getAttribute("initialThreadId")).isNull();
+	}
+
+	@Test
+	void chatHomePassesInitialThreadIdWhenRequested() {
+		when(aiProperties.isEnabled()).thenReturn(true);
+		final ExtendedModelMap model = new ExtendedModelMap();
+
+		final String view = controller.chatHome(42L, model, principal());
+
+		assertThat(view).isEqualTo("sbadmin/ai/chat");
+		assertThat(model.getAttribute("initialThreadId")).isEqualTo(42L);
 	}
 
 	@Test
