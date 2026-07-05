@@ -81,6 +81,14 @@ public final class AiAuditLogger {
 		}
 	}
 
+	public void logMcpToolCall(final long threadId, final String nutritionistId, final String mcpToolName,
+			final String internalToolName, final boolean success) {
+		if (log.isInfoEnabled()) {
+			log.info("AI audit event=mcp_tool_call threadId={} nutritionist={} mcpTool={} internalTool={} success={}",
+					threadId, LogRedaction.redactUserId(nutritionistId), mcpToolName, internalToolName, success);
+		}
+	}
+
 	public void logMaxToolCallsReached(final long threadId, final int maxToolCalls) {
 		if (log.isWarnEnabled()) {
 			log.warn("AI audit event=max_tool_calls threadId={} maxToolCalls={}", threadId, maxToolCalls);

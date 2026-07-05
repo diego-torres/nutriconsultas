@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-07-05 — ~~#392~~ merged (PR #486). **#393** in progress (`issue-393-mcp-tool-descriptors`).
+**Last updated:** 2026-07-05 — ~~#393~~ merged (PR #487). **#394** in progress (`issue-394-mcp-tool-dispatch`).
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -183,11 +183,11 @@ MCP-compatible exposure of nutrition tools.
 |---|-------|-----|-------|------------|-------|
 | **391** | Epic — MCP Tool Server for Nutriconsultas (Phase 7) | https://github.com/diego-torres/nutriconsultas/issues/391 | **open** | **372**, **378** | Milestone 4 |
 | **392** | Design MCP Server Endpoint | https://github.com/diego-torres/nutriconsultas/issues/392 | **done** | **391**, **363** | PR #486 — [`MCP-SERVER-ENDPOINT.md`](docs/ai/MCP-SERVER-ENDPOINT.md) |
-| **393** | Implement MCP Tool Descriptors | https://github.com/diego-torres/nutriconsultas/issues/393 | **in progress** | **392** | Branch `issue-393-mcp-tool-descriptors` |
-| **394** | Implement MCP Tool Dispatch | https://github.com/diego-torres/nutriconsultas/issues/394 | **open** | **393**, **372** | Map to Spring services |
+| **393** | Implement MCP Tool Descriptors | https://github.com/diego-torres/nutriconsultas/issues/393 | **done** | **392** | PR #487 |
+| **394** | Implement MCP Tool Dispatch | https://github.com/diego-torres/nutriconsultas/issues/394 | **in progress** | **393**, **372** | Branch `issue-394-mcp-tool-dispatch` |
 | **395** | Add MCP Security Review | https://github.com/diego-torres/nutriconsultas/issues/395 | **open** | **394** | Auth + scoping tests |
 
-**Suggested order:** ~~#392~~ **done**. **#393** in progress → #394 → #395.
+**Suggested order:** ~~#392~~ ~~#393~~ **done**. **#394** in progress → #395.
 
 ---
 
@@ -202,7 +202,7 @@ Audit logging, metrics, and error UX.
 | **398** | Add AI Usage Metrics | https://github.com/diego-torres/nutriconsultas/issues/398 | **done** | **396** | PR #484 — Micrometer metrics |
 | **399** | Add AI Error Handling UX | https://github.com/diego-torres/nutriconsultas/issues/399 | **done** | **389**, **385** | PR #485 — Spanish errors + `errorCode` |
 
-**Suggested order:** Epic **#396** complete. ~~#392~~ **done**. **#393** in progress → #394 → #395 (MCP). Prompt hardening epic **#438** complete.
+**Suggested order:** Epic **#396** complete. ~~#392~~ ~~#393~~ **done**. **#394** in progress → #395 (MCP). Prompt hardening epic **#438** complete.
 
 ---
 
@@ -221,7 +221,7 @@ Injection, jailbreak, and defense-in-depth guardrails for orchestration (#385).
 | **449** | System prompt volume limits and bulk refusal corpus | https://github.com/diego-torres/nutriconsultas/issues/449 | **done** | **438**, **367**, **447** | PR #458 — `VOLUMEN Y LÍMITES`, `FUNCTIONAL-SCOPE.md`, bulk corpus |
 | **450** | Golden prompts for excessive bulk AI requests | https://github.com/diego-torres/nutriconsultas/issues/450 | **done** | **400**, **401**, **447** | PR #462 — `AiBulkScopeGoldenPromptTest`, docs |
 
-**Suggested order:** ~~#401~~ ~~#402~~ ~~#403~~ **done**. Epic **#400** complete. Phase 10: ~~#405~~ ~~#406~~ ~~#407~~ ~~#408~~ ~~#409~~ **done**. Epic **#396** complete. ~~#392~~ **done**. **#393** in progress (MCP Phase 7).
+**Suggested order:** ~~#401~~ ~~#402~~ ~~#403~~ **done**. Epic **#400** complete. Phase 10: ~~#405~~ ~~#406~~ ~~#407~~ ~~#408~~ ~~#409~~ **done**. Epic **#396** complete. ~~#392~~ ~~#393~~ **done**. **#394** in progress (MCP Phase 7).
 
 ---
 
@@ -252,7 +252,7 @@ Setup docs, nutritionist guidance, release checklist.
 | **407** | Add Nutritionist User Guidance | https://github.com/diego-torres/nutriconsultas/issues/407 | **done** | **390** | PR #477 — in-app panel + [`NUTRITIONIST-USER-GUIDANCE.md`](docs/ai/NUTRITIONIST-USER-GUIDANCE.md) |
 | **408** | Create AI Assistant Release Checklist | https://github.com/diego-torres/nutriconsultas/issues/408 | **done** | **404** | PR #479 — [`RELEASE-CHECKLIST.md`](docs/ai/RELEASE-CHECKLIST.md) |
 
-**Suggested order:** ~~#397~~ ~~#398~~ ~~#399~~ **done**. Epic **#396** complete. ~~#392~~ **done**. **#393** in progress → #394 → #395.
+**Suggested order:** ~~#397~~ ~~#398~~ ~~#399~~ **done**. Epic **#396** complete. ~~#392~~ ~~#393~~ **done**. **#394** in progress → #395.
 
 ---
 
@@ -264,7 +264,7 @@ AI assistant is a **new entitlement** — do **not** replace `REPORTS_ADVANCED` 
 |---|-------|-----|-------|------------|-------|
 | **409** | Gate AI assistant by plan — Plus and Consultorio only | https://github.com/diego-torres/nutriconsultas/issues/409 | **done** | #181, **384**, **388** | PR #481 — `Entitlement.AI_ASSISTANT`, pricing row on `eterna/index.html` |
 
-**Suggested order:** ~~#409~~ **done** (PR #481). ~~#397~~ ~~#398~~ ~~#399~~ **done** (PR #483–#485). ~~#392~~ **done** (PR #486). **#393** in progress (MCP Phase 7).
+**Suggested order:** ~~#409~~ **done** (PR #481). ~~#397~~ ~~#398~~ ~~#399~~ **done** (PR #483–#485). ~~#392~~ ~~#393~~ **done** (PR #486–#487). **#394** in progress (MCP Phase 7).
 
 ---
 

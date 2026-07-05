@@ -57,4 +57,8 @@ public final class McpToolDescriptorCatalog {
 		return McpToolRegistry.findByInternalName(internalToolName).map(McpToolRegistry::mcpName);
 	}
 
+	public boolean requiresThreadId(final String mcpToolName) {
+		return McpToolRegistry.findByMcpName(mcpToolName).map(McpToolRegistry::requiresThreadId).orElse(false);
+	}
+
 }

@@ -11,7 +11,7 @@ How AI agents (and humans) ship the **`[AI Assistant]`** track on **`diego-torre
 | [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) | Nutritionist web (draft acceptance may touch platillos/dietas) |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#393 — Implement MCP Tool Descriptors](https://github.com/diego-torres/nutriconsultas/issues/393) (`in progress`, branch `issue-393-mcp-tool-descriptors`). ~~#392~~ merged (PR #486).
+**Current next issue:** [#394 — Implement MCP Tool Dispatch](https://github.com/diego-torres/nutriconsultas/issues/394) (`in progress`, branch `issue-394-mcp-tool-dispatch`). ~~#393~~ merged (PR #487).
 
 **Registered backlog (2026-07-04):** Epic [#433](https://github.com/diego-torres/nutriconsultas/issues/433) chat UX (#434–#437). Epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438) prompt security (#439–#441, **#447–#450** bulk scope guards). See registry for suggested order.
 
