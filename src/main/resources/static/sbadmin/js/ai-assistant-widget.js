@@ -5,6 +5,7 @@
 
   var API_BASE = '/rest/nutritionist/ai/chat';
   var STORAGE_PREFIX = 'nutriconsultas.ai.widget.thread.';
+  var FULL_CHAT_THREAD_KEY = 'nutriconsultas.ai.threadId';
   var ASSISTANT_NAME = 'Mina';
   var WELCOME_MESSAGE = 'Hola, soy Mina';
 
@@ -180,6 +181,33 @@
     return STORAGE_PREFIX + scope;
   }
 
+  function fullChatBaseUrl() {
+    if (state.context && state.context.fullChatUrl) {
+      return state.context.fullChatUrl;
+    }
+    return '/admin/ai';
+  }
+
+  function updateOpenFullLink() {
+    var link = $('#aiAssistantOpenFull');
+    if (!link) {
+      return;
+    }
+    var base = fullChatBaseUrl();
+    if (state.threadId) {
+      var separator = base.indexOf('?') >= 0 ? '&' : '?';
+      link.href = base + separator + 'threadId=' + encodeURIComponent(String(state.threadId));
+    } else {
+      link.href = base;
+    }
+  }
+
+  function syncFullChatThreadStorage() {
+    if (state.threadId) {
+      sessionStorage.setItem(FULL_CHAT_THREAD_KEY, String(state.threadId));
+    }
+  }
+
   function persistThreadId(threadId) {
     state.threadId = threadId;
     if (threadId) {
@@ -187,6 +215,7 @@
     } else {
       sessionStorage.removeItem(storageKey());
     }
+    updateOpenFullLink();
   }
 
   function updateSendButton(busy) {
@@ -618,6 +647,10 @@
     if (newBtn) {
       newBtn.addEventListener('click', confirmNewConversation);
     }
+    var openFullLink = $('#aiAssistantOpenFull');
+    if (openFullLink) {
+      openFullLink.addEventListener('click', syncFullChatThreadStorage);
+    }
   }
 
   function init() {
@@ -629,7 +662,11 @@
     renderMessages();
     var stored = sessionStorage.getItem(storageKey());
     if (stored) {
+      state.threadId = Number(stored);
+      updateOpenFullLink();
       loadThread(Number(stored));
+    } else {
+      updateOpenFullLink();
     }
   }
 
