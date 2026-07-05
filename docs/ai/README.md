@@ -14,6 +14,7 @@ Documentation for the **AI Nutrition Assistant** track.
 | [`NUTRITION-GOLDEN-PROMPTS.md`](NUTRITION-GOLDEN-PROMPTS.md) | Golden prompt evaluation for nutrition workflows (#401) |
 | [`DRAFT-SCHEMA-VALIDATION.md`](DRAFT-SCHEMA-VALIDATION.md) | JSON Schema validation for draft tool arguments (#402) |
 | [`E2E-DRAFT-FLOW-TEST.md`](E2E-DRAFT-FLOW-TEST.md) | End-to-end draft flow integration test (#403) |
+| [`LOCAL-AI-SETUP.md`](LOCAL-AI-SETUP.md) | Local dev: `.env`, `AI_ENABLED`, OpenAI keys (#405) |
 | [`AI-ASSISTANT-PLAN.md`](AI-ASSISTANT-PLAN.md) | Architecture, security, tools, milestones, definition of done |
 | [`../../ISSUE-AI-ASSISTANT.md`](../../ISSUE-AI-ASSISTANT.md) | GitHub issue registry (#360–#408) |
 | [`../../AI-ASSISTANT-WORKFLOW.md`](../../AI-ASSISTANT-WORKFLOW.md) | Agent implementation workflow |

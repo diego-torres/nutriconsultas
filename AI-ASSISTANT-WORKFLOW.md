@@ -170,11 +170,12 @@ mvn test
 
 ## Local & production config
 
+Full local guide: [`docs/ai/LOCAL-AI-SETUP.md`](docs/ai/LOCAL-AI-SETUP.md) (#405). Production: #406.
+
 | Variable | Purpose |
 |----------|---------|
 | `AI_ENABLED` | Feature flag |
 | `OPENAI_API_KEY` / `OPEN_API_KEY` | Server secret |
-| `OPENAI_MODEL` | e.g. `gpt-5.5` |
-| `AI_MAX_TOOL_CALLS` | Orchestration limit (default 8) |
+| `OPENAI_MODEL` | e.g. `gpt-5-mini` |
 
 EC2: `/opt/nutriconsultas/app.env` — update via SSM (see #406).
