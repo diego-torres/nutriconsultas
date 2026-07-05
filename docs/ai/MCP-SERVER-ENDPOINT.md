@@ -5,7 +5,7 @@
 
 Design for exposing the existing nutrition tool layer through an **MCP-compatible HTTP endpoint** so external AI agents can reuse the same Spring services as the in-app OpenAI orchestrator (#385).
 
-**Implementation follow-ups:** #393 (tool descriptors) · #394 (dispatch) · #395 (security review)
+**Implementation follow-ups:** `McpToolDescriptorCatalog` (#393) · #394 (dispatch) · #395 (security review)
 
 ---
 
