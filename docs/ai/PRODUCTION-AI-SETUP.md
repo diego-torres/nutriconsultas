@@ -5,7 +5,7 @@
 
 How to configure the **AI Nutrition Assistant** on the production **app EC2** host. OpenAI credentials are **server-only** — loaded from `/opt/nutriconsultas/app.env` via systemd, never exposed to browsers or Git.
 
-**Before enabling in production:** complete release checklist **#408**, prompt security epic **#438**, and plan gating **#409** (see [Pre-production gates](#pre-production-gates)).
+**Before enabling in production:** complete [`RELEASE-CHECKLIST.md`](RELEASE-CHECKLIST.md) (**#408**), prompt security epic **#438**, and plan gating **#409** (see [Pre-production gates](#pre-production-gates)).
 
 ---
 
@@ -160,7 +160,7 @@ Do **not** set `AI_ENABLED=true` on production until:
 
 | Gate | Issue |
 |------|-------|
-| Release checklist | **#408** |
+| Release checklist | [`RELEASE-CHECKLIST.md`](RELEASE-CHECKLIST.md) (**#408**) |
 | Prompt security hardening | Epic **#438** |
 | Plan entitlement (Plus + Consultorio) | **#409** |
 
@@ -189,4 +189,5 @@ Staging may enable AI earlier for smoke tests; use a **separate OpenAI key** wit
 | [`infrastructure/README.md`](../../infrastructure/README.md) | EC2, SSM, CodePipeline |
 | [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md) | PHI, logging, retention |
 | [`PROMPT-SECURITY.md`](PROMPT-SECURITY.md) | Guardrails before prod enable |
+| [`RELEASE-CHECKLIST.md`](RELEASE-CHECKLIST.md) | Rollout gate, sign-off (#408) |
 | [`../../AI-ASSISTANT-WORKFLOW.md`](../../AI-ASSISTANT-WORKFLOW.md) | Milestones and env summary |
