@@ -47,4 +47,10 @@ public interface SubscriptionEntitlementService {
 	 */
 	void assertCanAccessFullReports(@NonNull String userId);
 
+	/**
+	 * Verifies the user may use the AI nutrition assistant (Plus and Consultorio only).
+	 * @throws SubscriptionLimitExceededException when blocked
+	 */
+	void assertCanUseAiAssistant(@NonNull String userId);
+
 }

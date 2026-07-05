@@ -26,14 +26,14 @@ public final class PlanEntitlements {
 			EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.CREATE_PATIENT, Entitlement.DIET_PLANS,
 					Entitlement.CALENDAR, Entitlement.REPORTS_BASIC, Entitlement.REPORTS_ADVANCED,
 					Entitlement.REPORTS_FULL, Entitlement.PDF_EXPORT, Entitlement.REPORTS_BRANDED,
-					Entitlement.PRIORITY_SUPPORT));
+					Entitlement.PRIORITY_SUPPORT, Entitlement.AI_ASSISTANT));
 
 	public static final PlanEntitlements CONSULTORIO = new PlanEntitlements(PlanTier.CONSULTORIO,
 			"director-consultorio", null, 20,
 			EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.CREATE_PATIENT, Entitlement.DIET_PLANS,
 					Entitlement.CALENDAR, Entitlement.REPORTS_BASIC, Entitlement.REPORTS_ADVANCED,
 					Entitlement.REPORTS_FULL, Entitlement.PDF_EXPORT, Entitlement.REPORTS_BRANDED,
-					Entitlement.PRIORITY_SUPPORT, Entitlement.USER_ADMINISTRATION));
+					Entitlement.PRIORITY_SUPPORT, Entitlement.USER_ADMINISTRATION, Entitlement.AI_ASSISTANT));
 
 	private final PlanTier planTier;
 

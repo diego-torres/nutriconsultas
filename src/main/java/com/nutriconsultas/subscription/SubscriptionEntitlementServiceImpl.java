@@ -139,6 +139,14 @@ public class SubscriptionEntitlementServiceImpl implements SubscriptionEntitleme
 		}
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public void assertCanUseAiAssistant(@NonNull final String userId) {
+		if (!hasEntitlement(userId, Entitlement.AI_ASSISTANT)) {
+			throw new SubscriptionLimitExceededException(SubscriptionErrorResponses.KEY_AI_ASSISTANT_DENIED);
+		}
+	}
+
 	private long countPatientsInClinicScope(final Long clinicId) {
 		final List<String> memberUserIds = clinicMemberRepository.findUserIdsByClinicIdAndMembershipStatus(clinicId,
 				MembershipStatus.ACTIVE);

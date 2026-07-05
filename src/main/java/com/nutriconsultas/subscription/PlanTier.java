@@ -22,13 +22,14 @@ public enum PlanTier {
 	PLUS("nutriologo-plus", null, 1,
 			EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.DIET_PLANS, Entitlement.CALENDAR,
 					Entitlement.REPORTS_BASIC, Entitlement.REPORTS_ADVANCED, Entitlement.REPORTS_FULL,
-					Entitlement.PDF_EXPORT, Entitlement.REPORTS_BRANDED, Entitlement.PRIORITY_SUPPORT)),
+					Entitlement.PDF_EXPORT, Entitlement.REPORTS_BRANDED, Entitlement.PRIORITY_SUPPORT,
+					Entitlement.AI_ASSISTANT)),
 
 	CONSULTORIO("director-consultorio", null, 20,
 			EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.DIET_PLANS, Entitlement.CALENDAR,
 					Entitlement.REPORTS_BASIC, Entitlement.REPORTS_ADVANCED, Entitlement.REPORTS_FULL,
 					Entitlement.PDF_EXPORT, Entitlement.REPORTS_BRANDED, Entitlement.PRIORITY_SUPPORT,
-					Entitlement.USER_ADMINISTRATION));
+					Entitlement.USER_ADMINISTRATION, Entitlement.AI_ASSISTANT));
 
 	private final String roleSlug;
 

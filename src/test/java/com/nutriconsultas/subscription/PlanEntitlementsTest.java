@@ -80,11 +80,12 @@ class PlanEntitlementsTest {
 			case PLUS -> EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.CREATE_PATIENT, Entitlement.DIET_PLANS,
 					Entitlement.CALENDAR, Entitlement.REPORTS_BASIC, Entitlement.REPORTS_ADVANCED,
 					Entitlement.REPORTS_FULL, Entitlement.PDF_EXPORT, Entitlement.REPORTS_BRANDED,
-					Entitlement.PRIORITY_SUPPORT);
+					Entitlement.PRIORITY_SUPPORT, Entitlement.AI_ASSISTANT);
 			case CONSULTORIO -> EnumSet.of(Entitlement.PATIENT_MANAGEMENT, Entitlement.CREATE_PATIENT,
 					Entitlement.DIET_PLANS, Entitlement.CALENDAR, Entitlement.REPORTS_BASIC,
 					Entitlement.REPORTS_ADVANCED, Entitlement.REPORTS_FULL, Entitlement.PDF_EXPORT,
-					Entitlement.REPORTS_BRANDED, Entitlement.PRIORITY_SUPPORT, Entitlement.USER_ADMINISTRATION);
+					Entitlement.REPORTS_BRANDED, Entitlement.PRIORITY_SUPPORT, Entitlement.USER_ADMINISTRATION,
+					Entitlement.AI_ASSISTANT);
 		};
 	}
 

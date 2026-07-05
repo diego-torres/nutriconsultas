@@ -33,6 +33,17 @@ class AiDraftLifecycleServiceTest {
 	@Mock
 	private AiGeneratedDraftRepository draftRepository;
 
+	@Mock
+	private AiEntitlementGuard aiEntitlementGuard;
+
+	@BeforeEach
+	void stubEntitlement() {
+		org.mockito.Mockito.lenient()
+			.doNothing()
+			.when(aiEntitlementGuard)
+			.assertCanUseAiAssistant(org.mockito.ArgumentMatchers.anyString());
+	}
+
 	private AiChatThread thread;
 
 	@BeforeEach

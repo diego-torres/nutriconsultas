@@ -42,12 +42,16 @@ public class AiAssistantWidgetAdvice {
 
 	private final PlatilloService platilloService;
 
+	private final AiEntitlementGuard aiEntitlementGuard;
+
 	public AiAssistantWidgetAdvice(final AiProperties aiProperties, final PacienteRepository pacienteRepository,
-			final DietaService dietaService, final PlatilloService platilloService) {
+			final DietaService dietaService, final PlatilloService platilloService,
+			final AiEntitlementGuard aiEntitlementGuard) {
 		this.aiProperties = aiProperties;
 		this.pacienteRepository = pacienteRepository;
 		this.dietaService = dietaService;
 		this.platilloService = platilloService;
+		this.aiEntitlementGuard = aiEntitlementGuard;
 	}
 
 	@ModelAttribute("aiAssistantWidgetContext")
@@ -55,6 +59,9 @@ public class AiAssistantWidgetAdvice {
 	public AiAssistantWidgetContext aiAssistantWidgetContext(final HttpServletRequest request,
 			@AuthenticationPrincipal final OidcUser principal) {
 		if (!aiProperties.isEnabled() || principal == null || principal.getSubject() == null) {
+			return null;
+		}
+		if (!aiEntitlementGuard.canUseAiAssistant(principal.getSubject())) {
 			return null;
 		}
 		final String path = normalizePath(request.getRequestURI());
