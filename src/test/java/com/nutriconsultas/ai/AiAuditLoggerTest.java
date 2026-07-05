@@ -27,7 +27,7 @@ class AiAuditLoggerTest {
 		logAppender.start();
 		logger.addAppender(logAppender);
 		logger.setLevel(Level.INFO);
-		auditLogger = new AiAuditLogger();
+		auditLogger = AiMetricsTestSupport.auditLogger();
 	}
 
 	@AfterEach

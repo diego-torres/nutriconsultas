@@ -37,7 +37,8 @@ class OpenAiClientServiceTest {
 		properties.getOpenai().setBaseUrl("https://api.openai.com");
 		final RestClient.Builder restClientBuilder = RestClient.builder().baseUrl(properties.getOpenai().getBaseUrl());
 		mockServer = MockRestServiceServer.bindTo(restClientBuilder).build();
-		service = new OpenAiClientServiceImpl(properties, restClientBuilder.build(), new AiAuditLogger());
+		service = new OpenAiClientServiceImpl(properties, restClientBuilder.build(),
+				AiMetricsTestSupport.auditLogger());
 	}
 
 	@Test

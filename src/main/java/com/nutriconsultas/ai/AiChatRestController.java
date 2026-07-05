@@ -31,9 +31,13 @@ public class AiChatRestController {
 
 	private final AiChatRateLimiter aiChatRateLimiter;
 
-	public AiChatRestController(final AiChatService chatService, final AiChatRateLimiter aiChatRateLimiter) {
+	private final AiUsageMetrics aiUsageMetrics;
+
+	public AiChatRestController(final AiChatService chatService, final AiChatRateLimiter aiChatRateLimiter,
+			final AiUsageMetrics aiUsageMetrics) {
 		this.chatService = chatService;
 		this.aiChatRateLimiter = aiChatRateLimiter;
+		this.aiUsageMetrics = aiUsageMetrics;
 	}
 
 	@PostMapping("/start")
@@ -94,9 +98,7 @@ public class AiChatRestController {
 			return mapOpenAiException(ex);
 		}
 		catch (final RequestNotPermitted ex) {
-			if (log.isDebugEnabled()) {
-				log.debug("AI chat message rate limit exceeded");
-			}
+			recordChatRateLimited("AI chat message rate limit exceeded");
 			return errorResponse(HttpStatus.TOO_MANY_REQUESTS, AiToolErrorCode.RATE_LIMIT,
 					AiChatRateLimiter.RATE_LIMIT_USER_MESSAGE);
 		}
@@ -123,9 +125,7 @@ public class AiChatRestController {
 			});
 		}
 		catch (final RequestNotPermitted ex) {
-			if (log.isDebugEnabled()) {
-				log.debug("AI chat stream rate limit exceeded");
-			}
+			recordChatRateLimited("AI chat stream rate limit exceeded");
 			completeStreamError(emitter, AiChatRateLimiter.RATE_LIMIT_USER_MESSAGE);
 		}
 		catch (final RuntimeException ex) {
@@ -166,9 +166,7 @@ public class AiChatRestController {
 			return mapOpenAiException(ex);
 		}
 		catch (final RequestNotPermitted ex) {
-			if (log.isDebugEnabled()) {
-				log.debug("AI chat edit rate limit exceeded");
-			}
+			recordChatRateLimited("AI chat edit rate limit exceeded");
 			return errorResponse(HttpStatus.TOO_MANY_REQUESTS, AiToolErrorCode.RATE_LIMIT,
 					AiChatRateLimiter.RATE_LIMIT_USER_MESSAGE);
 		}
@@ -195,9 +193,7 @@ public class AiChatRestController {
 			});
 		}
 		catch (final RequestNotPermitted ex) {
-			if (log.isDebugEnabled()) {
-				log.debug("AI chat edit stream rate limit exceeded");
-			}
+			recordChatRateLimited("AI chat edit stream rate limit exceeded");
 			completeStreamError(emitter, AiChatRateLimiter.RATE_LIMIT_USER_MESSAGE);
 		}
 		catch (final RuntimeException ex) {
@@ -260,6 +256,13 @@ public class AiChatRestController {
 		}
 		catch (final AiChatException ex) {
 			return errorResponse(ex);
+		}
+	}
+
+	private void recordChatRateLimited(final String debugMessage) {
+		aiUsageMetrics.recordChatRateLimited();
+		if (log.isDebugEnabled()) {
+			log.debug(debugMessage);
 		}
 	}
 

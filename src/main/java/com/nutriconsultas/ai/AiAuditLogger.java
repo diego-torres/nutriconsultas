@@ -19,6 +19,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public final class AiAuditLogger {
 
+	private final AiUsageMetrics usageMetrics;
+
+	public AiAuditLogger(final AiUsageMetrics usageMetrics) {
+		this.usageMetrics = usageMetrics;
+	}
+
 	public void logThreadCreated(final long threadId, @Nullable final String nutritionistId,
 			final boolean patientLinked) {
 		if (log.isInfoEnabled()) {
@@ -30,6 +36,7 @@ public final class AiAuditLogger {
 	public void logChatRequest(final long threadId, @Nullable final String nutritionistId, final AiChatRequestMode mode,
 			final int messageLength, final boolean patientContext, final boolean dietaContext,
 			final boolean platilloContext) {
+		usageMetrics.recordChatMessage(mode);
 		if (log.isInfoEnabled()) {
 			log.info(
 					"AI audit event=chat_request threadId={} nutritionist={} mode={} messageLength={} patientContext={} dietaContext={} platilloContext={}",
@@ -40,6 +47,8 @@ public final class AiAuditLogger {
 
 	public void logOrchestrationComplete(final long threadId, @Nullable final String nutritionistId,
 			final int toolCallCount, final List<String> toolNames, @Nullable final OpenAiTokenUsage tokenUsage) {
+		usageMetrics.recordToolCalls(toolNames);
+		usageMetrics.recordTokenUsage(tokenUsage);
 		if (log.isInfoEnabled()) {
 			final String tools = formatToolNames(toolNames);
 			final Integer promptTokens = tokenUsage != null ? tokenUsage.promptTokens() : null;
@@ -79,12 +88,14 @@ public final class AiAuditLogger {
 	}
 
 	public void logDraftCreated(final long draftId, final long threadId, final AiDraftType draftType) {
+		usageMetrics.recordDraftCreated(draftType);
 		if (log.isInfoEnabled()) {
 			log.info("AI audit event=draft_created draftId={} threadId={} type={}", draftId, threadId, draftType);
 		}
 	}
 
 	public void logDraftAccepted(final long draftId, final long threadId, final AiDraftStatus status) {
+		usageMetrics.recordDraftAccepted();
 		if (log.isInfoEnabled()) {
 			log.info("AI audit event=draft_accepted draftId={} threadId={} status={}", draftId, threadId, status);
 		}
@@ -99,6 +110,7 @@ public final class AiAuditLogger {
 	}
 
 	public void logDraftDiscarded(final long draftId, final long threadId) {
+		usageMetrics.recordDraftDiscarded();
 		if (log.isInfoEnabled()) {
 			log.info("AI audit event=draft_discarded draftId={} threadId={}", draftId, threadId);
 		}
@@ -112,6 +124,10 @@ public final class AiAuditLogger {
 	}
 
 	public void logOpenAiError(@Nullable final Long threadId, final String errorKind, final int httpStatus) {
+		usageMetrics.recordOpenAiError(errorKind);
+		if (OpenAiClientException.ErrorKind.RATE_LIMIT.name().equals(errorKind)) {
+			usageMetrics.recordOpenAiRateLimited();
+		}
 		if (log.isWarnEnabled()) {
 			log.warn("AI audit event=openai_error threadId={} errorKind={} httpStatus={}", threadId, errorKind,
 					httpStatus);
