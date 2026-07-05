@@ -23,6 +23,8 @@
     editingMessageIndex: null
   };
 
+  var pendingLoadThreadRequestId = 0;
+
   function $(selector) {
     return document.querySelector(selector);
   }
@@ -193,18 +195,39 @@
     if (!link) {
       return;
     }
-    var base = fullChatBaseUrl();
-    if (state.threadId) {
-      var separator = base.indexOf('?') >= 0 ? '&' : '?';
-      link.href = base + separator + 'threadId=' + encodeURIComponent(String(state.threadId));
-    } else {
-      link.href = base;
-    }
+    link.href = buildFullChatUrl(state.threadId);
   }
 
   function syncFullChatThreadStorage() {
     if (state.threadId) {
       sessionStorage.setItem(FULL_CHAT_THREAD_KEY, String(state.threadId));
+    } else {
+      sessionStorage.removeItem(FULL_CHAT_THREAD_KEY);
+    }
+  }
+
+  function invalidatePendingThreadLoads() {
+    pendingLoadThreadRequestId += 1;
+    state.loadingThread = false;
+  }
+
+  function buildFullChatUrl(threadId) {
+    var base = fullChatBaseUrl();
+    if (!threadId) {
+      return base;
+    }
+    var separator = base.indexOf('?') >= 0 ? '&' : '?';
+    return base + separator + 'threadId=' + encodeURIComponent(String(threadId));
+  }
+
+  function handleOpenFullChatClick(event) {
+    updateOpenFullLink();
+    syncFullChatThreadStorage();
+    if (state.threadId) {
+      if (event && typeof event.preventDefault === 'function') {
+        event.preventDefault();
+      }
+      window.location.href = buildFullChatUrl(state.threadId);
     }
   }
 
@@ -214,6 +237,7 @@
       sessionStorage.setItem(storageKey(), String(threadId));
     } else {
       sessionStorage.removeItem(storageKey());
+      sessionStorage.removeItem(FULL_CHAT_THREAD_KEY);
     }
     updateOpenFullLink();
   }
@@ -347,15 +371,22 @@
   }
 
   function loadThread(threadId) {
+    var requestId = ++pendingLoadThreadRequestId;
     state.loadingThread = true;
     setBusy(true);
     return requestJson(API_BASE + '/' + threadId, { method: 'GET' })
       .then(function (data) {
+        if (requestId !== pendingLoadThreadRequestId) {
+          return;
+        }
         persistThreadId(data.threadId);
         state.messages = data.messages || [];
         renderMessages();
       })
       .catch(function (error) {
+        if (requestId !== pendingLoadThreadRequestId) {
+          return;
+        }
         if (error.status === 404) {
           persistThreadId(null);
           state.messages = [];
@@ -365,12 +396,16 @@
         showError(error.message, error.title);
       })
       .finally(function () {
+        if (requestId !== pendingLoadThreadRequestId) {
+          return;
+        }
         state.loadingThread = false;
         setBusy(false);
       });
   }
 
   function startThread() {
+    invalidatePendingThreadLoads();
     var payload = promptContextPayload();
     payload.title = state.context && state.context.scopeLabel ? state.context.scopeLabel : 'Conversación';
     payload.clinicId = null;
@@ -537,6 +572,7 @@
   }
 
   function resetConversation() {
+    invalidatePendingThreadLoads();
     persistThreadId(null);
     state.messages = [];
     cancelEditMessage();
@@ -649,7 +685,7 @@
     }
     var openFullLink = $('#aiAssistantOpenFull');
     if (openFullLink) {
-      openFullLink.addEventListener('click', syncFullChatThreadStorage);
+      openFullLink.addEventListener('click', handleOpenFullChatClick);
     }
   }
 
