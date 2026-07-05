@@ -34,6 +34,8 @@ class SubscriptionExceptionHandlerTest {
 		assertThat(response.getBody()).containsEntry("success", false);
 		assertThat(response.getBody()).containsEntry("code", SubscriptionErrorResponses.KEY_PATIENT_LIMIT);
 		assertThat(response.getBody()).containsEntry("error", "Plan cap reached");
+		assertThat(response.getBody()).containsEntry("message", "Plan cap reached");
+		assertThat(response.getBody()).containsEntry("errorCode", "FORBIDDEN");
 	}
 
 }

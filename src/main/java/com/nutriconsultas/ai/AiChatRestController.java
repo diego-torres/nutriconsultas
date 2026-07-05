@@ -77,7 +77,7 @@ public class AiChatRestController {
 			return unauthorized();
 		}
 		if (request == null) {
-			return errorResponse(HttpStatus.BAD_REQUEST, AiToolErrorCode.VALIDATION, "Solicitud no válida.");
+			return errorResponse(HttpStatus.BAD_REQUEST, AiToolErrorCode.VALIDATION, AiErrorMessages.INVALID_REQUEST);
 		}
 		try {
 			final AiChatPromptContext promptContext = new AiChatPromptContext(request.patientId(), request.dietaId(),
@@ -111,11 +111,11 @@ public class AiChatRestController {
 		emitter.onTimeout(emitter::complete);
 		final String nutritionistId = nutritionistId(principal);
 		if (nutritionistId == null) {
-			completeStreamError(emitter, "Sesión no válida.");
+			completeStreamError(emitter, AiToolErrorCode.VALIDATION, AiErrorMessages.INVALID_SESSION);
 			return emitter;
 		}
 		if (request == null) {
-			completeStreamError(emitter, "Solicitud no válida.");
+			completeStreamError(emitter, AiToolErrorCode.VALIDATION, AiErrorMessages.INVALID_REQUEST);
 			return emitter;
 		}
 		try {
@@ -126,13 +126,13 @@ public class AiChatRestController {
 		}
 		catch (final RequestNotPermitted ex) {
 			recordChatRateLimited("AI chat stream rate limit exceeded");
-			completeStreamError(emitter, AiChatRateLimiter.RATE_LIMIT_USER_MESSAGE);
+			completeStreamError(emitter, AiToolErrorCode.RATE_LIMIT, AiErrorMessages.RATE_LIMIT);
 		}
 		catch (final RuntimeException ex) {
 			if (log.isWarnEnabled()) {
 				log.warn("AI chat stream failed unexpectedly", ex);
 			}
-			completeStreamError(emitter, "No se pudo completar la solicitud.");
+			completeStreamError(emitter, AiToolErrorCode.INTERNAL, AiErrorMessages.GENERIC);
 		}
 		return emitter;
 	}
@@ -145,7 +145,7 @@ public class AiChatRestController {
 			return unauthorized();
 		}
 		if (request == null) {
-			return errorResponse(HttpStatus.BAD_REQUEST, AiToolErrorCode.VALIDATION, "Solicitud no válida.");
+			return errorResponse(HttpStatus.BAD_REQUEST, AiToolErrorCode.VALIDATION, AiErrorMessages.INVALID_REQUEST);
 		}
 		try {
 			final AiEditResubmitResult result = aiChatRateLimiter.executeMessage(nutritionistId,
@@ -179,11 +179,11 @@ public class AiChatRestController {
 		emitter.onTimeout(emitter::complete);
 		final String nutritionistId = nutritionistId(principal);
 		if (nutritionistId == null) {
-			completeStreamError(emitter, "Sesión no válida.");
+			completeStreamError(emitter, AiToolErrorCode.VALIDATION, AiErrorMessages.INVALID_SESSION);
 			return emitter;
 		}
 		if (request == null) {
-			completeStreamError(emitter, "Solicitud no válida.");
+			completeStreamError(emitter, AiToolErrorCode.VALIDATION, AiErrorMessages.INVALID_REQUEST);
 			return emitter;
 		}
 		try {
@@ -194,20 +194,21 @@ public class AiChatRestController {
 		}
 		catch (final RequestNotPermitted ex) {
 			recordChatRateLimited("AI chat edit stream rate limit exceeded");
-			completeStreamError(emitter, AiChatRateLimiter.RATE_LIMIT_USER_MESSAGE);
+			completeStreamError(emitter, AiToolErrorCode.RATE_LIMIT, AiErrorMessages.RATE_LIMIT);
 		}
 		catch (final RuntimeException ex) {
 			if (log.isWarnEnabled()) {
 				log.warn("AI chat edit stream failed unexpectedly", ex);
 			}
-			completeStreamError(emitter, "No se pudo completar la solicitud.");
+			completeStreamError(emitter, AiToolErrorCode.INTERNAL, AiErrorMessages.GENERIC);
 		}
 		return emitter;
 	}
 
-	private static void completeStreamError(final SseEmitter emitter, final String message) {
+	private static void completeStreamError(final SseEmitter emitter, final AiToolErrorCode errorCode,
+			final String message) {
 		try {
-			AiChatSseSupport.sendError(emitter, message);
+			AiChatSseSupport.sendError(emitter, errorCode, message);
 		}
 		catch (Exception ex) {
 			emitter.completeWithError(ex);
@@ -274,7 +275,7 @@ public class AiChatRestController {
 	}
 
 	private static ResponseEntity<Map<String, Object>> unauthorized() {
-		return errorResponse(HttpStatus.UNAUTHORIZED, AiToolErrorCode.VALIDATION, "Sesión no válida.");
+		return errorResponse(HttpStatus.UNAUTHORIZED, AiToolErrorCode.VALIDATION, AiErrorMessages.INVALID_SESSION);
 	}
 
 	private static Map<String, Object> successBody() {
@@ -303,7 +304,7 @@ public class AiChatRestController {
 			case TIMEOUT -> HttpStatus.GATEWAY_TIMEOUT;
 			default -> HttpStatus.BAD_GATEWAY;
 		};
-		return errorResponse(status, AiToolErrorCode.VALIDATION, ex.getUserMessage());
+		return errorResponse(status, AiErrorMessages.errorCodeForOpenAi(ex.getKind()), ex.getUserMessage());
 	}
 
 	private static Map<String, Object> tokenUsageMap(final OpenAiTokenUsage usage) {

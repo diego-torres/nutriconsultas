@@ -140,7 +140,10 @@
     return fetch(url, options || {}).then(function (response) {
       return response.json().then(function (data) {
         if (!response.ok || data.success === false) {
-          var error = new Error(data.message || 'No se pudo completar la solicitud.');
+          if (window.NutriAiChatErrors && window.NutriAiChatErrors.createApiError) {
+            throw window.NutriAiChatErrors.createApiError(data, response.status);
+          }
+          var error = new Error(data.message || data.error || 'No se pudo completar la solicitud.');
           error.status = response.status;
           error.errorCode = data.errorCode;
           throw error;
@@ -150,10 +153,10 @@
     });
   }
 
-  function showError(message) {
+  function showError(message, title) {
     if (typeof swal === 'function') {
       swal({
-        title: 'Error',
+        title: title || 'Error',
         text: message,
         type: 'error',
         timer: 5000
@@ -352,7 +355,7 @@
         return null;
       })
       .catch(function (error) {
-        showError(error.message);
+        showError(error.message, error.title);
       });
   }
 
@@ -365,7 +368,7 @@
         renderDraftPreview(preview);
       })
       .catch(function (error) {
-        showError(error.message);
+        showError(error.message, error.title);
       });
   }
 
@@ -421,7 +424,7 @@
           return loadDrafts(state.threadId);
         })
         .catch(function (error) {
-          showError(error.message);
+          showError(error.message, error.title);
         })
         .finally(function () {
           setBusy(false);
@@ -453,7 +456,7 @@
           return loadDrafts(state.threadId);
         })
         .catch(function (error) {
-          showError(error.message);
+          showError(error.message, error.title);
         })
         .finally(function () {
           setBusy(false);
@@ -606,7 +609,7 @@
           renderMessages(false);
           return;
         }
-        showError(error.message);
+        showError(error.message, error.title);
       })
       .finally(function () {
         setBusy(false);
@@ -698,8 +701,8 @@
             onAbort: function () {
               handleStreamAbort(assistantIndex);
             },
-            onError: function (message) {
-              throw new Error(message);
+            onError: function (error) {
+              throw error;
             }
           });
           state.activeStreamRequest = streamRequest;
@@ -721,7 +724,7 @@
         state.showLoading = false;
         state.messages.pop();
         renderMessages(false);
-        showError(error.message);
+        showError(error.message, error.title);
       })
       .finally(function () {
         state.showLoading = false;

@@ -16,8 +16,7 @@ public final class AiChatRateLimiter {
 
 	public static final String AI_CHAT_MESSAGE = "aiChatMessage";
 
-	public static final String RATE_LIMIT_USER_MESSAGE = "Has alcanzado el límite de mensajes del asistente de IA. "
-			+ "Intenta de nuevo en unos minutos.";
+	public static final String RATE_LIMIT_USER_MESSAGE = AiErrorMessages.RATE_LIMIT;
 
 	private final RateLimiterRegistry rateLimiterRegistry;
 
