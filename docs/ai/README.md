@@ -18,6 +18,7 @@ Documentation for the **AI Nutrition Assistant** track.
 | [`PRODUCTION-AI-SETUP.md`](PRODUCTION-AI-SETUP.md) | Production EC2 `app.env`, SSM, rollback (#406) |
 | [`NUTRITIONIST-USER-GUIDANCE.md`](NUTRITIONIST-USER-GUIDANCE.md) | Nutritionist-facing guidance — drafts, prompts, limits (#407) |
 | [`RELEASE-CHECKLIST.md`](RELEASE-CHECKLIST.md) | Production rollout gate before `AI_ENABLED=true` (#408) |
+| [`MCP-SERVER-ENDPOINT.md`](MCP-SERVER-ENDPOINT.md) | MCP transport, auth, tool surface (#392) |
 | [`AI-ASSISTANT-PLAN.md`](AI-ASSISTANT-PLAN.md) | Architecture, security, tools, milestones, definition of done |
 | [`../../ISSUE-AI-ASSISTANT.md`](../../ISSUE-AI-ASSISTANT.md) | GitHub issue registry (#360–#408) |
 | [`../../AI-ASSISTANT-WORKFLOW.md`](../../AI-ASSISTANT-WORKFLOW.md) | Agent implementation workflow |

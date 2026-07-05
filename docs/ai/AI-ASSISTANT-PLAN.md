@@ -177,7 +177,7 @@ POST /nutritionist/ai/drafts/{draftId}/accept
 POST /nutritionist/ai/drafts/{draftId}/discard
 ```
 
-MCP (Phase 7): `POST /mcp/nutriconsultas`
+MCP (Phase 7): `POST /mcp/nutriconsultas` — see [`MCP-SERVER-ENDPOINT.md`](MCP-SERVER-ENDPOINT.md) (#392)
 
 ---
 

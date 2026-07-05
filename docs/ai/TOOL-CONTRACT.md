@@ -908,7 +908,7 @@ The model must **not** be offered functions for:
 |-----|-------|
 | [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md) | Scoping and PHI |
 | [`FUNCTIONAL-SCOPE.md`](FUNCTIONAL-SCOPE.md) | UX and confirmation flows |
-| MCP endpoint design | #392 |
+| MCP endpoint design | [`MCP-SERVER-ENDPOINT.md`](MCP-SERVER-ENDPOINT.md) | #392 |
 | Draft accept mapping to entities | #382 |
 
 ---
