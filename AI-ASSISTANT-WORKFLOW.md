@@ -170,7 +170,8 @@ mvn test
 
 ## Local & production config
 
-Full local guide: [`docs/ai/LOCAL-AI-SETUP.md`](docs/ai/LOCAL-AI-SETUP.md) (#405). Production: #406.
+Full local guide: [`docs/ai/LOCAL-AI-SETUP.md`](docs/ai/LOCAL-AI-SETUP.md) (#405).  
+Production: [`docs/ai/PRODUCTION-AI-SETUP.md`](docs/ai/PRODUCTION-AI-SETUP.md) (#406) and `infrastructure/scripts/ssm-update-ai-openai.sh`.
 
 | Variable | Purpose |
 |----------|---------|

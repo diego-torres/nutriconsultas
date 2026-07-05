@@ -178,6 +178,24 @@ bash infrastructure/scripts/ssm-update-patient-broker.sh
 
 Verify: signup probe should **not** return HTTP 503 (400/403/409 is OK for a dummy email).
 
+**AI Nutrition Assistant (#406)** — OpenAI for nutritionist chat (`/admin/ai`). **Not** written by Terraform first boot; add on the running app host:
+
+| Variable | Purpose |
+|----------|---------|
+| `AI_ENABLED` | Feature flag (`false` until release checklist #408) |
+| `OPENAI_API_KEY` | Server-only OpenAI secret |
+| `OPENAI_MODEL` | Model id (e.g. `gpt-5-mini`) |
+| `OPENAI_STORE` | Keep `false` (no provider-side retention) |
+| `AI_CHAT_MESSAGE_RATE_LIMIT` / `AI_CHAT_MESSAGE_RATE_WINDOW` | Per-nutritionist app rate limit (default 20/hour) |
+
+```bash
+export AWS_PROFILE=minutriporcion AWS_DEFAULT_REGION=us-east-1
+export AI_ENABLED=true OPENAI_API_KEY='sk-proj-...' OPENAI_MODEL='gpt-5-mini'
+bash infrastructure/scripts/ssm-update-ai-openai.sh
+```
+
+Disable quickly: `export AI_ENABLED=false` and run the same script. Runbook: [`docs/ai/PRODUCTION-AI-SETUP.md`](../docs/ai/PRODUCTION-AI-SETUP.md).
+
 **Invitation email (#209)** — nutritionist invite delivery (SES prod / console local):
 
 | Variable | Purpose |
