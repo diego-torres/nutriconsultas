@@ -214,6 +214,21 @@ Align with [`PHI-LOGGING-AUDIT.md`](../mobile-api/PHI-LOGGING-AUDIT.md) and [`Lo
 
 Persist in `ai_chat_message` / `ai_generated_draft` (#369). Retention: follow general application backup policy; document in #405/#406.
 
+### Usage metrics (#398)
+
+Micrometer counters via `AiUsageMetrics` (Spring Boot Actuator). Exposed at `/actuator/metrics` when enabled. **No PHI in tags** — only low-cardinality labels (`mode`, `type`, `kind`, `source`, `tool`).
+
+| Metric | Tags | When incremented |
+|--------|------|------------------|
+| `ai.chat.messages` | `mode` | Chat request (send/stream/edit) |
+| `ai.drafts.created` | `type` | Draft tool creates borrador |
+| `ai.drafts.accepted` | — | Draft accepted |
+| `ai.drafts.discarded` | — | Draft discarded |
+| `ai.openai.errors` | `kind` | OpenAI client failure |
+| `ai.rate_limited` | `source=chat\|openai` | App or OpenAI rate limit |
+| `ai.openai.tokens` | `kind=prompt\|completion` | Orchestration token usage |
+| `ai.tool.calls` | `tool` | Tool invoked in orchestration |
+
 ---
 
 ## API key handling (confirmation)

@@ -105,7 +105,7 @@ class AiNutritionGoldenPromptTest {
 		when(orchestrationTools.getToolCatalog()).thenReturn(toolCatalog);
 		when(orchestrationTools.getToolDispatcher()).thenReturn(toolDispatcher);
 		when(orchestrationTools.getGuardrails()).thenReturn(realGuardrails);
-		when(orchestrationTools.getAuditLogger()).thenReturn(new AiAuditLogger());
+		when(orchestrationTools.getAuditLogger()).thenReturn(AiMetricsTestSupport.auditLogger());
 		when(requestScopePipeline.evaluate(any(String.class))).thenReturn(Optional.empty());
 		when(transactionTemplate.execute(org.mockito.ArgumentMatchers.<TransactionCallback<Object>>any()))
 			.thenAnswer(invocation -> {

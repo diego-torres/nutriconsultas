@@ -35,6 +35,9 @@ class AiChatRestControllerEntitlementTest {
 	@Mock
 	private AiChatRateLimiter aiChatRateLimiter;
 
+	@Mock
+	private AiUsageMetrics aiUsageMetrics;
+
 	@Test
 	void sendMessagePropagatesSubscriptionDenial() throws Exception {
 		when(aiChatRateLimiter.executeMessage(eq(NUTRITIONIST_ID), any())).thenAnswer(invocation -> {

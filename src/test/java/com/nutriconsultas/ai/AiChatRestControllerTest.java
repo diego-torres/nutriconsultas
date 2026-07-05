@@ -42,6 +42,9 @@ class AiChatRestControllerTest {
 	@Mock
 	private AiChatRateLimiter aiChatRateLimiter;
 
+	@Mock
+	private AiUsageMetrics aiUsageMetrics;
+
 	@Test
 	void startChatReturnsCreatedThread() {
 		final AiChatThread thread = new AiChatThread();
@@ -147,6 +150,7 @@ class AiChatRestControllerTest {
 		assertThat(response.getBody()).containsEntry("success", false)
 			.containsEntry("errorCode", AiToolErrorCode.RATE_LIMIT.name())
 			.containsEntry("message", AiChatRateLimiter.RATE_LIMIT_USER_MESSAGE);
+		verify(aiUsageMetrics).recordChatRateLimited();
 	}
 
 	@Test
