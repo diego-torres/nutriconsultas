@@ -37,7 +37,7 @@ class OpenAiClientServiceTest {
 		properties.getOpenai().setBaseUrl("https://api.openai.com");
 		final RestClient.Builder restClientBuilder = RestClient.builder().baseUrl(properties.getOpenai().getBaseUrl());
 		mockServer = MockRestServiceServer.bindTo(restClientBuilder).build();
-		service = new OpenAiClientServiceImpl(properties, restClientBuilder.build());
+		service = new OpenAiClientServiceImpl(properties, restClientBuilder.build(), new AiAuditLogger());
 	}
 
 	@Test
@@ -213,26 +213,24 @@ class OpenAiClientServiceTest {
 
 	@Test
 	void chatCompletionSerializesOptionalParameters() {
-		mockServer.expect(requestTo("https://api.openai.com/v1/chat/completions"))
-			.andExpect(content().json("""
-					{
-					  "model": "gpt-test",
-					  "messages": [{"role":"user","content":"Clasifica"}],
-					  "store": false,
-					  "temperature": 0.0,
-					  "max_tokens": 200,
-					  "response_format": {"type":"json_object"}
-					}
-					""", false))
-			.andRespond(withSuccess("""
-					{
-					  "id": "chatcmpl-json",
-					  "choices": [{
-					    "message": {"role":"assistant","content":"{\\"decision\\":\\"ALLOW\\"}"},
-					    "finish_reason": "stop"
-					  }]
-					}
-					""", MediaType.APPLICATION_JSON));
+		mockServer.expect(requestTo("https://api.openai.com/v1/chat/completions")).andExpect(content().json("""
+				{
+				  "model": "gpt-test",
+				  "messages": [{"role":"user","content":"Clasifica"}],
+				  "store": false,
+				  "temperature": 0.0,
+				  "max_tokens": 200,
+				  "response_format": {"type":"json_object"}
+				}
+				""", false)).andRespond(withSuccess("""
+				{
+				  "id": "chatcmpl-json",
+				  "choices": [{
+				    "message": {"role":"assistant","content":"{\\"decision\\":\\"ALLOW\\"}"},
+				    "finish_reason": "stop"
+				  }]
+				}
+				""", MediaType.APPLICATION_JSON));
 
 		service.chatCompletion(new OpenAiChatCompletionRequest(List.of(OpenAiChatMessage.user("Clasifica")), List.of(),
 				OpenAiCompletionParameters.scopeClassifier(200)));

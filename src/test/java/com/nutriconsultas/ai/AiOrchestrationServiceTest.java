@@ -72,6 +72,9 @@ class AiOrchestrationServiceTest {
 	@Mock
 	private AiOrchestrationGuardrails guardrails;
 
+	@Mock
+	private AiAuditLogger auditLogger;
+
 	private AiUserMessageGuard realUserMessageGuard;
 
 	private AiRequestScopeGuard realRequestScopeGuard;
@@ -96,6 +99,7 @@ class AiOrchestrationServiceTest {
 		lenient().when(orchestrationTools.getToolCatalog()).thenReturn(toolCatalog);
 		lenient().when(orchestrationTools.getToolDispatcher()).thenReturn(toolDispatcher);
 		lenient().when(orchestrationTools.getGuardrails()).thenReturn(guardrails);
+		lenient().when(orchestrationTools.getAuditLogger()).thenReturn(auditLogger);
 		lenient().when(guardrails.isToolAllowed(org.mockito.ArgumentMatchers.anyString())).thenReturn(true);
 		lenient()
 			.when(guardrails.sanitizeToolResult(org.mockito.ArgumentMatchers.anyString(),

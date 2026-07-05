@@ -248,7 +248,7 @@ Rotate keys if exposed. Use separate test keys locally; never commit `.env`.
 |-----|-------|
 | [`FUNCTIONAL-SCOPE.md`](FUNCTIONAL-SCOPE.md) | Workflows and patient-linked UX |
 | System prompt (#367) | `AiSystemPromptService`, `ai/system-prompt-base.txt` |
-| Audit logging implementation | #397 |
+| Audit logging implementation | ~~#397~~ — `AiAuditLogger`, `AiAuditRedaction` |
 | Production setup | #406 |
 
 ---

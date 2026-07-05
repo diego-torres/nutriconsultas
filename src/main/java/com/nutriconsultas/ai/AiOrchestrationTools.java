@@ -14,11 +14,14 @@ public class AiOrchestrationTools {
 
 	private final AiOrchestrationGuardrails guardrails;
 
+	private final AiAuditLogger auditLogger;
+
 	public AiOrchestrationTools(final AiOpenAiToolCatalog catalog, final AiOrchestrationToolDispatcher dispatcher,
-			final AiOrchestrationGuardrails guardrails) {
+			final AiOrchestrationGuardrails guardrails, final AiAuditLogger auditLogger) {
 		this.catalog = catalog;
 		this.dispatcher = dispatcher;
 		this.guardrails = guardrails;
+		this.auditLogger = auditLogger;
 	}
 
 	public AiOpenAiToolCatalog getToolCatalog() {
@@ -31,6 +34,10 @@ public class AiOrchestrationTools {
 
 	public AiOrchestrationGuardrails getGuardrails() {
 		return guardrails;
+	}
+
+	public AiAuditLogger getAuditLogger() {
+		return auditLogger;
 	}
 
 }

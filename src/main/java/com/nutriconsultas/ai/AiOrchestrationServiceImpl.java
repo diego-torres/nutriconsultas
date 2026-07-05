@@ -9,10 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Service
-@Slf4j
 public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 
 	private static final int TOOL_AUDIT_MAX_CHARS = 2_000;
@@ -69,9 +66,9 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		persistToolAuditMessages(thread, loopOutcome.toolAuditEntries());
 		touchThread(thread);
 
-		if (log.isInfoEnabled()) {
-			log.info("AI orchestration threadId={} toolCalls={}", thread.getId(), loopOutcome.toolCallsExecuted());
-		}
+		orchestrationTools.getAuditLogger()
+			.logOrchestrationComplete(thread.getId(), context.nutritionistId(), loopOutcome.toolCallsExecuted(),
+					toolNamesFrom(loopOutcome.toolAuditEntries()), loopOutcome.tokenUsage());
 		return new AiOrchestrationResult(thread.getId(), assistantMessage, loopOutcome.toolCallsExecuted(),
 				loopOutcome.tokenUsage());
 	}
@@ -115,10 +112,9 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 			final AiChatMessage assistantMessage = persistAssistantMessage(thread, loopOutcome.assistantContent());
 			persistToolAuditMessages(thread, loopOutcome.toolAuditEntries());
 			touchThread(thread);
-			if (log.isInfoEnabled()) {
-				log.info("AI streaming orchestration threadId={} toolCalls={}", thread.getId(),
-						loopOutcome.toolCallsExecuted());
-			}
+			orchestrationTools.getAuditLogger()
+				.logOrchestrationComplete(thread.getId(), context.nutritionistId(), loopOutcome.toolCallsExecuted(),
+						toolNamesFrom(loopOutcome.toolAuditEntries()), loopOutcome.tokenUsage());
 			return new AiOrchestrationResult(thread.getId(), assistantMessage, loopOutcome.toolCallsExecuted(),
 					loopOutcome.tokenUsage());
 		});
@@ -159,10 +155,9 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 			final AiRequestScopePipeline.ScopeShortCircuit shortCircuit) {
 		final AiChatMessage assistantMessage = persistAssistantMessage(thread, shortCircuit.assistantMessage());
 		touchThread(thread);
-		if (log.isInfoEnabled()) {
-			log.info("AI orchestration {} short-circuit threadId={} detail={}", shortCircuit.sourceLabel(),
-					thread.getId(), shortCircuit.sourceDetail());
-		}
+		orchestrationTools.getAuditLogger()
+			.logOrchestrationShortCircuit(thread.getId(), thread.getNutritionistId(), shortCircuit.sourceLabel(),
+					String.valueOf(shortCircuit.sourceDetail()));
 		return new AiOrchestrationResult(thread.getId(), assistantMessage, 0, null);
 	}
 
@@ -180,10 +175,9 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		final AiOrchestrationResult result = chatPersistence.getTransactionTemplate().execute(status -> {
 			final AiChatMessage assistantMessage = persistAssistantMessage(thread, assistantContent);
 			touchThread(thread);
-			if (log.isInfoEnabled()) {
-				log.info("AI streaming {} short-circuit threadId={} detail={}", sourceLabel, thread.getId(),
-						sourceDetail);
-			}
+			orchestrationTools.getAuditLogger()
+				.logOrchestrationShortCircuit(thread.getId(), thread.getNutritionistId(), sourceLabel,
+						String.valueOf(sourceDetail));
 			return new AiOrchestrationResult(thread.getId(), assistantMessage, 0, null);
 		});
 		if (result == null) {
@@ -255,10 +249,8 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 			}
 			if (toolCallsExecuted >= properties.getMaxToolCalls()) {
 				assistantContent = TOOL_LIMIT_MESSAGE;
-				if (log.isWarnEnabled()) {
-					log.warn("AI orchestration threadId={} reached maxToolCalls={}", context.threadId(),
-							properties.getMaxToolCalls());
-				}
+				orchestrationTools.getAuditLogger()
+					.logMaxToolCallsReached(context.threadId(), properties.getMaxToolCalls());
 				break;
 			}
 
@@ -283,9 +275,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 
 	private String executeToolCall(final AiOrchestrationContext context, final OpenAiToolCall toolCall) {
 		if (!orchestrationTools.getGuardrails().isToolAllowed(toolCall.name())) {
-			if (log.isWarnEnabled()) {
-				log.warn("AI tool call rejected tool={} threadId={}", toolCall.name(), context.threadId());
-			}
+			orchestrationTools.getAuditLogger().logToolRejected(context.threadId(), toolCall.name());
 			return AiToolJsonSerializer
 				.toJson(AiToolResult.error(AiToolErrorCode.VALIDATION, AiToolAllowlist.REJECTION_MESSAGE));
 		}
@@ -295,9 +285,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 			return orchestrationTools.getGuardrails().sanitizeToolResult(toolCall.name(), rawResult);
 		}
 		catch (final AiOrchestrationException ex) {
-			if (log.isWarnEnabled()) {
-				log.warn("AI tool dispatch failed tool={} threadId={}", toolCall.name(), context.threadId());
-			}
+			orchestrationTools.getAuditLogger().logToolDispatchFailed(context.threadId(), toolCall.name());
 			return AiToolJsonSerializer.toJson(AiToolResult.error(AiToolErrorCode.VALIDATION, ex.getMessage()));
 		}
 	}
@@ -330,6 +318,10 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 			return json;
 		}
 		return json.substring(0, TOOL_AUDIT_MAX_CHARS) + "...";
+	}
+
+	private static List<String> toolNamesFrom(final List<ToolAuditEntry> entries) {
+		return entries.stream().map(ToolAuditEntry::toolName).toList();
 	}
 
 	private static OpenAiTokenUsage mergeUsage(final OpenAiTokenUsage accumulated, final OpenAiTokenUsage latest) {

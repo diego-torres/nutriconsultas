@@ -36,6 +36,9 @@ class AiDraftLifecycleServiceTest {
 	@Mock
 	private AiEntitlementGuard aiEntitlementGuard;
 
+	@Mock
+	private AiAuditLogger auditLogger;
+
 	@BeforeEach
 	void stubEntitlement() {
 		org.mockito.Mockito.lenient()
@@ -142,7 +145,13 @@ class AiDraftLifecycleServiceTest {
 	@Test
 	void createDraftTrimsJsonPayload() {
 		when(threadRepository.findByIdAndNutritionistId(10L, NUTRITIONIST_A)).thenReturn(Optional.of(thread));
-		when(draftRepository.save(any(AiGeneratedDraft.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(draftRepository.save(any(AiGeneratedDraft.class))).thenAnswer(invocation -> {
+			final AiGeneratedDraft draft = invocation.getArgument(0);
+			if (draft.getId() == null) {
+				draft.setId(99L);
+			}
+			return draft;
+		});
 
 		service.createDraft(10L, NUTRITIONIST_A, AiDraftType.DISH, "  {\"name\":\"Tacos\"}  ");
 

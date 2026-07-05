@@ -182,8 +182,8 @@ class AiBulkScopeGoldenPromptTest {
 			service = new AiOrchestrationServiceImpl(properties, openAiClientService, systemPromptService,
 					new AiChatPersistence(threadRepository, messageRepository,
 							mock(org.springframework.transaction.support.TransactionTemplate.class)),
-					new AiOrchestrationTools(toolCatalog, toolDispatcher, guardrails), userMessageGuard,
-					requestScopePipeline);
+					new AiOrchestrationTools(toolCatalog, toolDispatcher, guardrails, new AiAuditLogger()),
+					userMessageGuard, requestScopePipeline);
 		}
 
 		private OpenAiClientService openAiClientService() {

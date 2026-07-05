@@ -65,7 +65,7 @@ Staging may enable AI earlier for smoke tests using a **separate OpenAI key** wi
 - [ ] Draft accept/discard audited via draft lifecycle (status transitions in DB).
 - [ ] **Verify:** send one chat message in staging → rows in `ai_chat_message`; journal has no patient names/emails.
 
-**Note:** Enhanced structured audit (#397) may follow; baseline DB + redacted logs are required for v1.
+**Note:** Structured audit logging via `AiAuditLogger` (#397) supplements DB persistence; redacted INFO lines only.
 
 ---
 
