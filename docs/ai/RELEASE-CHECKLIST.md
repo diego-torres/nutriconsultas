@@ -88,12 +88,15 @@ Run from repo root:
 ```bash
 mvn test -Dtest=AiSecurityGoldenPromptTest,AiUserMessageGuardTest,AiPromptThreatDetectorTest,\
 AiToolAllowlistTest,AiAssistantOutputValidatorTest,AiToolResultSanitizerTest,\
-AiRequestScopeGuardTest,AiBulkScopeGoldenPromptTest,AiDraftFlowIntegrationTest
+AiRequestScopeGuardTest,AiBulkScopeGoldenPromptTest,AiDraftFlowIntegrationTest,\
+McpSecurityReviewTest,McpToolDispatchServiceTest,McpNutriconsultasSecurityIntegrationTest,\
+McpAiDisabledSecurityIntegrationTest
 ```
 
 - [ ] All tests above pass on the release commit.
 - [ ] Full CI green on `main` (lint, Thymeleaf validation, SpotBugs, PMD).
 - [ ] IDOR: user A cannot read user B threads/drafts (`AiDraftFlowIntegrationTest`, `AiChatRestControllerTest`).
+- [ ] MCP: cross-tenant `threadId` denied; draft tools require thread; no destructive tools exposed (`McpSecurityReviewTest`, `McpNutriconsultasSecurityIntegrationTest`).
 - [ ] Golden prompts: no tool execution on injection/jailbreak/bulk abuse scenarios.
 
 **Reference:** [`SECURITY-GOLDEN-PROMPTS.md`](SECURITY-GOLDEN-PROMPTS.md) · [`BULK-SCOPE-GOLDEN-PROMPTS.md`](BULK-SCOPE-GOLDEN-PROMPTS.md)

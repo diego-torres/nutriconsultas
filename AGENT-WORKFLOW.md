@@ -55,7 +55,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (nutritionist web):** None — all registered epics complete: ~~#271~~ done (PR [#288](https://github.com/diego-torres/nutriconsultas/pull/288)) + ~~#272~~ done (PR [#289](https://github.com/diego-torres/nutriconsultas/pull/289)) system catalog create; ~~#241~~–~~#242~~ patient UX; ~~#232~~–~~#235~~ diet grid; ~~#236~~–~~#240~~ profile/PDF/nutrients; ~~#257~~–~~#259~~ platillo ownership; ~~#275~~, ~~#280~~–~~#281~~, ~~#285~~ diet/ingredient editing. Deferred follow-ups need new issues. See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 
-**Current next issue (AI assistant):** [#390 — Build Draft Preview UI](https://github.com/diego-torres/nutriconsultas/issues/390) (`NEXT`). Backlog: epic [#433](https://github.com/diego-torres/nutriconsultas/issues/433) chat UX (#434–#437), epic [#438](https://github.com/diego-torres/nutriconsultas/issues/438) prompt security (#439–#441), [#442](https://github.com/diego-torres/nutriconsultas/issues/442) floating widget (PR #432). See [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md).
+**Current next issue (AI assistant):** None — registered implementation track **complete** (#360–#450). Production rollout: [`RELEASE-CHECKLIST.md`](docs/ai/RELEASE-CHECKLIST.md) (#408). See [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md).
 
 ---
 

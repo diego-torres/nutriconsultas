@@ -5,7 +5,7 @@
 
 Design for exposing the existing nutrition tool layer through an **MCP-compatible HTTP endpoint** so external AI agents can reuse the same Spring services as the in-app OpenAI orchestrator (#385).
 
-**Implementation follow-ups:** `McpToolDescriptorCatalog` (#393) · #394 (dispatch) · #395 (security review)
+**Implementation status:** **Shipped** — #393 `McpToolDescriptorCatalog`, #394 `McpNutriconsultasController` + `McpToolDispatchService`, #395 security tests.
 
 ---
 
@@ -259,19 +259,19 @@ MCP tool descriptors (#393) expose JSON Schema for each tool’s **arguments**. 
 
 ## Security configuration (Spring)
 
-Proposed `SecurityConfig` additions for #394:
+Implemented in `SecurityConfig` (#394):
 
 ```java
 .requestMatchers("/mcp/**").authenticated()
 ```
 
-MCP controller (`McpNutriconsultasController` or similar) will:
+`McpNutriconsultasController` + `McpToolDispatchService`:
 
-1. Resolve `OidcUser` from the security context.
-2. Assert `AiProperties.isEnabled()` and subscription `AI_ASSISTANT`.
-3. Build `AiOrchestrationContext` from session + `threadId`.
+1. Resolve `OidcUser` from the security context (reject unauthenticated with OAuth redirect or JSON-RPC 401 when principal is null).
+2. Assert `AiProperties.isEnabled()` and subscription `AI_ASSISTANT` via `AiChatRequestGuards`.
+3. Build `AiOrchestrationContext` from session + optional `_meta.threadId` (required for draft tools).
 4. Map MCP name → internal name → `AiOrchestrationToolDispatcher`.
-5. Log via `AiAuditLogger` with redaction (#397) — tool name + thread ID only at INFO.
+5. Log via `AiAuditLogger.logMcpToolCall` — tool names + redacted nutritionist ID only at INFO (#395).
 
 No alternate code paths that bypass `AiToolAllowlist`, `AiDraftToolSchemaValidator`, or tenant checks (#441, #402).
 
@@ -281,10 +281,10 @@ No alternate code paths that bypass `AiToolAllowlist`, `AiDraftToolSchemaValidat
 
 | Control | Behavior |
 |---------|----------|
-| **App rate limit** | MCP `tools/call` counts toward the same per-nutritionist `aiChatMessage` limiter (#386) unless a separate MCP limiter is added in #394. Document in #394 if split. |
+| **App rate limit** | MCP `tools/call` does **not** use `AiChatRateLimiter` in v1 — only REST chat messages are rate-limited (#386). Add a dedicated MCP limiter in a follow-up issue if agent traffic needs caps. |
 | **Max tool calls** | Bulk scope guard `nutriconsultas.ai.max-tool-calls` applies per agent turn when MCP is used inside a hosted orchestration loop. |
-| **Metrics** | `AiUsageMetrics` records MCP tool calls with a distinct tag in #394 (`source=mcp`). |
-| **Audit** | `AiAuditLogger.logToolCall` — redacted args/result lengths, no PHI. |
+| **Metrics** | MCP tool calls audited via `AiAuditLogger.logMcpToolCall`; distinct Micrometer `source=mcp` tag deferred. |
+| **Audit** | `AiAuditLogger.logMcpToolCall` — MCP + internal tool names, redacted nutritionist ID, no argument JSON at INFO (#395). |
 
 ---
 
@@ -301,14 +301,14 @@ No alternate code paths that bypass `AiToolAllowlist`, `AiDraftToolSchemaValidat
 
 ## Testing expectations (#395)
 
-| Area | Tests |
-|------|-------|
-| **Auth** | Unauthenticated → 401; wrong plan → 403; `AI_ENABLED=false` → 503 |
-| **Tenant** | User A cannot pass user B’s `threadId` |
-| **Descriptors** | Snapshot or schema tests for `tools/list` (#393) |
-| **Dispatch** | Each MCP name maps to correct service; unknown name → error |
-| **Draft** | Draft tools without `threadId` → `VALIDATION` |
-| **Redaction** | Logs contain no patient names or full argument JSON at INFO |
+| Area | Tests | Class |
+|------|-------|-------|
+| **Auth** | Unauthenticated denied; wrong plan → 403 JSON-RPC; `AI_ENABLED=false` → 503 | `McpNutriconsultasSecurityIntegrationTest`, `McpAiDisabledSecurityIntegrationTest` |
+| **Tenant** | User A cannot pass user B’s `threadId` | `McpNutriconsultasSecurityIntegrationTest`, `McpToolDispatchServiceTest` |
+| **Descriptors** | Eight tools, schemas, read-only vs draft | `McpToolDescriptorCatalogTest`, `McpSecurityReviewTest` |
+| **Dispatch** | Each MCP name maps to correct service; unknown name → error | `McpToolDispatchServiceTest` |
+| **Draft** | Draft tools without `threadId` → validation error | `McpToolDispatchServiceTest`, `McpSecurityReviewTest` |
+| **Redaction** | Logs contain no full user id or argument JSON at INFO | `AiAuditLoggerTest`, `McpSecurityReviewTest` |
 
 ---
 
@@ -330,4 +330,4 @@ No alternate code paths that bypass `AiToolAllowlist`, `AiDraftToolSchemaValidat
 | [`TOOL-CONTRACT.md`](TOOL-CONTRACT.md) | Tool schemas and MCP name table |
 | [`DATA-ACCESS-RULES.md`](DATA-ACCESS-RULES.md) | PHI and tenant rules |
 | [`PROMPT-SECURITY.md`](PROMPT-SECURITY.md) | Not applicable to MCP tool-only path, but agents should not bypass scope |
-| [`RELEASE-CHECKLIST.md`](RELEASE-CHECKLIST.md) | MCP can ship after #393–#395; not required for initial `AI_ENABLED=true` chat rollout |
+| [`RELEASE-CHECKLIST.md`](RELEASE-CHECKLIST.md) | MCP optional for initial chat rollout; required for external agent integrations |
