@@ -8,7 +8,7 @@
     </div>
   </footer>
   <!-- End of Footer -->
-  <div th:if="${aiEnabled and aiAssistantWidgetContext != null}"
+  <div th:if="${aiAssistantAvailable and aiAssistantWidgetContext != null}"
     th:insert="~{sbadmin/fragments/ai-assistant-widget :: widget}"></div>
   <div th:insert="~{sbadmin/fragments/patient-messages-widget :: widget}"></div>
 </div>

@@ -39,13 +39,18 @@ class AiAssistantWidgetAdviceTest {
 	@Mock
 	private PlatilloService platilloService;
 
+	@Mock
+	private AiEntitlementGuard aiEntitlementGuard;
+
 	private AiAssistantWidgetAdvice advice;
 
 	@BeforeEach
 	void setUp() {
 		final AiProperties properties = new AiProperties();
 		properties.setEnabled(true);
-		advice = new AiAssistantWidgetAdvice(properties, pacienteRepository, dietaService, platilloService);
+		when(aiEntitlementGuard.canUseAiAssistant(NUTRITIONIST_ID)).thenReturn(true);
+		advice = new AiAssistantWidgetAdvice(properties, pacienteRepository, dietaService, platilloService,
+				aiEntitlementGuard);
 	}
 
 	@Test
@@ -112,6 +117,13 @@ class AiAssistantWidgetAdviceTest {
 	@Test
 	void unrelatedAdminPageReturnsNull() {
 		assertThat(advice.aiAssistantWidgetContext(request("/admin"), principal())).isNull();
+	}
+
+	@Test
+	void widgetHiddenWhenPlanEntitlementMissing() {
+		when(aiEntitlementGuard.canUseAiAssistant(NUTRITIONIST_ID)).thenReturn(false);
+
+		assertThat(advice.aiAssistantWidgetContext(request("/admin/dietas/4"), principal())).isNull();
 	}
 
 	private static MockHttpServletRequest request(final String path) {

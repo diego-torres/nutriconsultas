@@ -16,6 +16,7 @@ class PlanTierTest {
 		assertThat(PlanTier.BASICO.hasEntitlement(Entitlement.REPORTS_BASIC)).isTrue();
 		assertThat(PlanTier.BASICO.hasEntitlement(Entitlement.PDF_EXPORT)).isFalse();
 		assertThat(PlanTier.BASICO.hasEntitlement(Entitlement.USER_ADMINISTRATION)).isFalse();
+		assertThat(PlanTier.BASICO.hasEntitlement(Entitlement.AI_ASSISTANT)).isFalse();
 	}
 
 	@Test
@@ -26,12 +27,14 @@ class PlanTierTest {
 		assertThat(PlanTier.PROFESIONAL.hasEntitlement(Entitlement.PDF_EXPORT)).isTrue();
 		assertThat(PlanTier.PROFESIONAL.hasEntitlement(Entitlement.REPORTS_BRANDED)).isTrue();
 		assertThat(PlanTier.PROFESIONAL.hasEntitlement(Entitlement.PRIORITY_SUPPORT)).isFalse();
+		assertThat(PlanTier.PROFESIONAL.hasEntitlement(Entitlement.AI_ASSISTANT)).isFalse();
 	}
 
 	@Test
 	void plusHasUnlimitedPatientsAndPrioritySupport() {
 		assertThat(PlanTier.PLUS.getMaxPatients()).isNull();
 		assertThat(PlanTier.PLUS.hasEntitlement(Entitlement.PRIORITY_SUPPORT)).isTrue();
+		assertThat(PlanTier.PLUS.hasEntitlement(Entitlement.AI_ASSISTANT)).isTrue();
 		assertThat(PlanTier.PLUS.hasEntitlement(Entitlement.USER_ADMINISTRATION)).isFalse();
 	}
 
@@ -41,6 +44,7 @@ class PlanTierTest {
 		assertThat(PlanTier.CONSULTORIO.getMaxNutritionists()).isEqualTo(20);
 		assertThat(PlanTier.CONSULTORIO.getRoleSlug()).isEqualTo("director-consultorio");
 		assertThat(PlanTier.CONSULTORIO.hasEntitlement(Entitlement.USER_ADMINISTRATION)).isTrue();
+		assertThat(PlanTier.CONSULTORIO.hasEntitlement(Entitlement.AI_ASSISTANT)).isTrue();
 	}
 
 	@Test

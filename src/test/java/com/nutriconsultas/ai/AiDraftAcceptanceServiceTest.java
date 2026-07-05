@@ -40,6 +40,17 @@ class AiDraftAcceptanceServiceTest {
 	@Mock
 	private AiDraftLifecycleService draftLifecycleService;
 
+	@Mock
+	private AiEntitlementGuard aiEntitlementGuard;
+
+	@org.junit.jupiter.api.BeforeEach
+	void stubEntitlement() {
+		org.mockito.Mockito.lenient()
+			.doNothing()
+			.when(aiEntitlementGuard)
+			.assertCanUseAiAssistant(org.mockito.ArgumentMatchers.anyString());
+	}
+
 	@Test
 	void acceptMaterializesDishDraftAndMarksAccepted() {
 		final AiGeneratedDraft draft = dishDraft();

@@ -21,12 +21,15 @@ public class AiDraftAcceptanceServiceImpl implements AiDraftAcceptanceService {
 
 	private final AiDraftLifecycleService draftLifecycleService;
 
+	private final AiEntitlementGuard aiEntitlementGuard;
+
 	public AiDraftAcceptanceServiceImpl(final AiGeneratedDraftRepository draftRepository,
 			final AiDraftMaterializationService materializationService,
-			final AiDraftLifecycleService draftLifecycleService) {
+			final AiDraftLifecycleService draftLifecycleService, final AiEntitlementGuard aiEntitlementGuard) {
 		this.draftRepository = draftRepository;
 		this.materializationService = materializationService;
 		this.draftLifecycleService = draftLifecycleService;
+		this.aiEntitlementGuard = aiEntitlementGuard;
 	}
 
 	@Override
@@ -36,6 +39,7 @@ public class AiDraftAcceptanceServiceImpl implements AiDraftAcceptanceService {
 		if (!StringUtils.hasText(nutritionistId)) {
 			throw new AiDraftLifecycleException("Sesión de nutriólogo no válida.");
 		}
+		aiEntitlementGuard.assertCanUseAiAssistant(nutritionistId);
 		final AiGeneratedDraft draft = loadMutableDraft(draftId, nutritionistId);
 		final MaterializedEntity entity = materialize(draft, nutritionistId, principal);
 		final AiGeneratedDraft accepted = draftLifecycleService.acceptDraft(draftId, nutritionistId);

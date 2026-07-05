@@ -44,13 +44,16 @@ public class AiChatServiceImpl implements AiChatService {
 
 	private final AiUserMessageGuard userMessageGuard;
 
+	private final AiEntitlementGuard aiEntitlementGuard;
+
 	public AiChatServiceImpl(final AiChatThreadRepository threadRepository,
 			final AiChatMessageRepository messageRepository, final AiGeneratedDraftRepository draftRepository,
 			final AiOrchestrationService orchestrationService,
 			final AiPatientPromptContextResolver patientContextResolver,
 			final AiDietaPromptContextResolver dietaContextResolver,
 			final AiPlatilloPromptContextResolver platilloContextResolver, final PacienteRepository pacienteRepository,
-			final TransactionTemplate transactionTemplate, final AiUserMessageGuard userMessageGuard) {
+			final TransactionTemplate transactionTemplate, final AiUserMessageGuard userMessageGuard,
+			final AiEntitlementGuard aiEntitlementGuard) {
 		this.threadRepository = threadRepository;
 		this.messageRepository = messageRepository;
 		this.draftRepository = draftRepository;
@@ -61,13 +64,14 @@ public class AiChatServiceImpl implements AiChatService {
 		this.pacienteRepository = pacienteRepository;
 		this.transactionTemplate = transactionTemplate;
 		this.userMessageGuard = userMessageGuard;
+		this.aiEntitlementGuard = aiEntitlementGuard;
 	}
 
 	@Override
 	@Transactional
 	public AiChatThread startThread(@NonNull final String nutritionistId, @Nullable final String title,
 			@Nullable final Long patientId, @Nullable final Long clinicId, final AiChatPromptContext promptContext) {
-		assertNutritionistId(nutritionistId);
+		assertNutritionistAccess(nutritionistId);
 		final AiChatPromptContext resolvedPromptContext = mergePromptContext(promptContext, null);
 		final Long linkedPatientId = patientId != null ? patientId : resolvedPromptContext.patientId();
 		final Paciente patient = resolveOwnedPatient(linkedPatientId, nutritionistId);
@@ -86,7 +90,7 @@ public class AiChatServiceImpl implements AiChatService {
 	@Override
 	@Transactional(readOnly = true)
 	public AiChatThreadDetail getThread(@NonNull final String nutritionistId, final long threadId) {
-		assertNutritionistId(nutritionistId);
+		assertNutritionistAccess(nutritionistId);
 		final AiChatThread thread = loadOwnedThread(threadId, nutritionistId);
 		final List<AiChatMessageView> messages = toVisibleMessages(
 				messageRepository.findByThreadIdOrderByCreatedAtAscIdAsc(threadId));
@@ -97,7 +101,7 @@ public class AiChatServiceImpl implements AiChatService {
 	@Override
 	@Transactional(readOnly = true)
 	public AiChatDraftList listDrafts(@NonNull final String nutritionistId, final long threadId) {
-		assertNutritionistId(nutritionistId);
+		assertNutritionistAccess(nutritionistId);
 		loadOwnedThread(threadId, nutritionistId);
 		final List<AiChatDraftSummary> drafts = new ArrayList<>();
 		for (final AiGeneratedDraft draft : draftRepository.findByThreadIdOrderByCreatedAtDescIdDesc(threadId)) {
@@ -111,7 +115,7 @@ public class AiChatServiceImpl implements AiChatService {
 	@Transactional
 	public AiOrchestrationResult sendMessage(@NonNull final String nutritionistId, final long threadId,
 			final String message, final AiChatPromptContext promptContext) {
-		assertNutritionistId(nutritionistId);
+		assertNutritionistAccess(nutritionistId);
 		if (!StringUtils.hasText(message)) {
 			throw new AiChatException(org.springframework.http.HttpStatus.BAD_REQUEST, AiToolErrorCode.VALIDATION,
 					"El mensaje no puede estar vacío.");
@@ -126,7 +130,7 @@ public class AiChatServiceImpl implements AiChatService {
 	@Override
 	public void streamMessage(@NonNull final String nutritionistId, final AiSendMessageRequest request,
 			final SseEmitter emitter) {
-		assertNutritionistId(nutritionistId);
+		assertNutritionistAccess(nutritionistId);
 		if (request == null || !StringUtils.hasText(request.message())) {
 			completeStreamWithError(emitter, "El mensaje no puede estar vacío.");
 			return;
@@ -174,7 +178,7 @@ public class AiChatServiceImpl implements AiChatService {
 	@Transactional
 	public AiEditResubmitResult editAndResubmitMessage(@NonNull final String nutritionistId,
 			final AiEditMessageRequest request) {
-		assertNutritionistId(nutritionistId);
+		assertNutritionistAccess(nutritionistId);
 		assertEditRequest(request);
 		final String sanitizedMessage = validateUserMessageContent(request.message());
 		final AiChatPromptContext promptContext = new AiChatPromptContext(request.patientId(), request.dietaId(),
@@ -193,7 +197,7 @@ public class AiChatServiceImpl implements AiChatService {
 	@Override
 	public void streamEditMessage(@NonNull final String nutritionistId, final AiEditMessageRequest request,
 			final SseEmitter emitter) {
-		assertNutritionistId(nutritionistId);
+		assertNutritionistAccess(nutritionistId);
 		if (request == null) {
 			completeStreamWithError(emitter, "Solicitud no válida.");
 			return;
@@ -358,6 +362,11 @@ public class AiChatServiceImpl implements AiChatService {
 			return trimmed;
 		}
 		return trimmed.substring(0, MAX_TITLE_LENGTH);
+	}
+
+	private void assertNutritionistAccess(final String nutritionistId) {
+		assertNutritionistId(nutritionistId);
+		aiEntitlementGuard.assertCanUseAiAssistant(nutritionistId);
 	}
 
 	private static void assertNutritionistId(final String nutritionistId) {

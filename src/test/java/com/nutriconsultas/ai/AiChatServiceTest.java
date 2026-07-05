@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -64,6 +65,9 @@ class AiChatServiceTest {
 	@Mock
 	private AiUserMessageGuard userMessageGuard;
 
+	@Mock
+	private AiEntitlementGuard aiEntitlementGuard;
+
 	@BeforeEach
 	void stubUserMessageGuard() {
 		final AiProperties properties = new AiProperties();
@@ -71,6 +75,10 @@ class AiChatServiceTest {
 		org.mockito.Mockito.lenient()
 			.when(userMessageGuard.validateAndSanitize(org.mockito.ArgumentMatchers.anyString()))
 			.thenAnswer(invocation -> realGuard.validateAndSanitize(invocation.getArgument(0)));
+		org.mockito.Mockito.lenient()
+			.doNothing()
+			.when(aiEntitlementGuard)
+			.assertCanUseAiAssistant(org.mockito.ArgumentMatchers.anyString());
 	}
 
 	@Test
@@ -225,6 +233,17 @@ class AiChatServiceTest {
 			.isInstanceOf(AiChatException.class)
 			.extracting(ex -> ((AiChatException) ex).getHttpStatus())
 			.isEqualTo(HttpStatus.NOT_FOUND);
+	}
+
+	@Test
+	void sendMessageDeniedWithoutAiAssistantEntitlement() {
+		doThrow(new com.nutriconsultas.subscription.SubscriptionLimitExceededException(
+				com.nutriconsultas.subscription.SubscriptionErrorResponses.KEY_AI_ASSISTANT_DENIED))
+			.when(aiEntitlementGuard)
+			.assertCanUseAiAssistant(NUTRITIONIST_ID);
+
+		assertThatThrownBy(() -> service.sendMessage(NUTRITIONIST_ID, 5L, "Hola", null))
+			.isInstanceOf(com.nutriconsultas.subscription.SubscriptionLimitExceededException.class);
 	}
 
 	@Test

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
@@ -22,6 +23,16 @@ import org.springframework.test.context.TestPropertySource;
 import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.alimentos.AlimentosRepository;
 import com.nutriconsultas.platillos.PlatilloRepository;
+import com.nutriconsultas.subscription.Clinic;
+import com.nutriconsultas.subscription.ClinicMember;
+import com.nutriconsultas.subscription.ClinicMemberRepository;
+import com.nutriconsultas.subscription.ClinicMemberRole;
+import com.nutriconsultas.subscription.ClinicRepository;
+import com.nutriconsultas.subscription.MembershipStatus;
+import com.nutriconsultas.subscription.PlanTier;
+import com.nutriconsultas.subscription.Subscription;
+import com.nutriconsultas.subscription.SubscriptionRepository;
+import com.nutriconsultas.subscription.SubscriptionStatus;
 
 /**
  * End-to-end AI draft flow with real persistence and tool dispatch; OpenAI is mocked only
@@ -64,15 +75,56 @@ class AiDraftFlowIntegrationTest {
 	@Autowired
 	private PlatilloRepository platilloRepository;
 
+	@Autowired
+	private SubscriptionRepository subscriptionRepository;
+
+	@Autowired
+	private ClinicRepository clinicRepository;
+
+	@Autowired
+	private ClinicMemberRepository clinicMemberRepository;
+
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
 	@MockBean
 	private OpenAiClientService openAiClientService;
 
 	private long catalogAlimentoId;
 
 	@BeforeEach
-	void setUpOpenAiAndCatalog() {
+	void setUpOpenAiCatalogAndEntitlements() {
 		when(openAiClientService.isAvailable()).thenReturn(true);
 		catalogAlimentoId = alimentosRepository.saveAndFlush(sampleAlimento()).getId();
+		resetPlusEntitlements(NUTRITIONIST_A);
+		resetPlusEntitlements(NUTRITIONIST_B);
+	}
+
+	private void resetPlusEntitlements(final String userId) {
+		jdbcTemplate.update("DELETE FROM clinic_member WHERE user_id = ?", userId);
+		jdbcTemplate.update("DELETE FROM clinic WHERE director_user_id = ?", userId);
+		provisionPlusSubscription(userId);
+	}
+
+	private void provisionPlusSubscription(final String userId) {
+		Subscription subscription = new Subscription();
+		subscription.setPlanTier(PlanTier.PLUS);
+		subscription.setStatus(SubscriptionStatus.ACTIVE);
+		subscription.setPaymentExempt(true);
+		subscription = subscriptionRepository.saveAndFlush(subscription);
+
+		final Clinic clinic = new Clinic();
+		clinic.setName("Clinic " + userId);
+		clinic.setDirectorUserId(userId);
+		clinic.setSubscription(subscription);
+		final Clinic savedClinic = clinicRepository.saveAndFlush(clinic);
+
+		final ClinicMember member = new ClinicMember();
+		member.setClinic(savedClinic);
+		member.setUserId(userId);
+		member.setRole(ClinicMemberRole.DIRECTOR);
+		member.setMembershipStatus(MembershipStatus.ACTIVE);
+		clinicMemberRepository.saveAndFlush(member);
 	}
 
 	@Test

@@ -17,10 +17,13 @@ public class AiDraftLifecycleServiceImpl implements AiDraftLifecycleService {
 
 	private final AiGeneratedDraftRepository draftRepository;
 
+	private final AiEntitlementGuard aiEntitlementGuard;
+
 	public AiDraftLifecycleServiceImpl(final AiChatThreadRepository threadRepository,
-			final AiGeneratedDraftRepository draftRepository) {
+			final AiGeneratedDraftRepository draftRepository, final AiEntitlementGuard aiEntitlementGuard) {
 		this.threadRepository = threadRepository;
 		this.draftRepository = draftRepository;
+		this.aiEntitlementGuard = aiEntitlementGuard;
 	}
 
 	@Override
@@ -46,6 +49,7 @@ public class AiDraftLifecycleServiceImpl implements AiDraftLifecycleService {
 	@Override
 	@Transactional
 	public AiGeneratedDraft acceptDraft(@NonNull final Long draftId, @NonNull final String nutritionistId) {
+		aiEntitlementGuard.assertCanUseAiAssistant(nutritionistId);
 		final AiGeneratedDraft draft = loadMutableDraft(draftId, nutritionistId);
 		draft.setStatus(AiDraftStatus.ACCEPTED);
 		draft.setAcceptedAt(Instant.now());
@@ -59,6 +63,7 @@ public class AiDraftLifecycleServiceImpl implements AiDraftLifecycleService {
 	@Override
 	@Transactional
 	public AiGeneratedDraft discardDraft(@NonNull final Long draftId, @NonNull final String nutritionistId) {
+		aiEntitlementGuard.assertCanUseAiAssistant(nutritionistId);
 		final AiGeneratedDraft draft = loadMutableDraft(draftId, nutritionistId);
 		draft.setStatus(AiDraftStatus.DISCARDED);
 		final AiGeneratedDraft saved = draftRepository.save(draft);

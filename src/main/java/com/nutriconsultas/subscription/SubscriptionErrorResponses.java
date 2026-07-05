@@ -28,6 +28,8 @@ public final class SubscriptionErrorResponses {
 
 	public static final String KEY_REPORTS_FULL_DENIED = "error.subscription.reports_full_denied";
 
+	public static final String KEY_AI_ASSISTANT_DENIED = "error.subscription.ai_assistant_denied";
+
 	public static final String KEY_INVITATION_REQUIRED = "error.subscription.invitation_required";
 
 	private final MessageSource messageSource;

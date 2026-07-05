@@ -15,13 +15,18 @@ public class AiDraftPreviewServiceImpl implements AiDraftPreviewService {
 
 	private final AiGeneratedDraftRepository draftRepository;
 
-	public AiDraftPreviewServiceImpl(final AiGeneratedDraftRepository draftRepository) {
+	private final AiEntitlementGuard aiEntitlementGuard;
+
+	public AiDraftPreviewServiceImpl(final AiGeneratedDraftRepository draftRepository,
+			final AiEntitlementGuard aiEntitlementGuard) {
 		this.draftRepository = draftRepository;
+		this.aiEntitlementGuard = aiEntitlementGuard;
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public AiDraftPreviewView getPreview(final long draftId, @NonNull final String nutritionistId) {
+		aiEntitlementGuard.assertCanUseAiAssistant(nutritionistId);
 		final AiGeneratedDraft draft = draftRepository.findByIdAndThreadNutritionistId(draftId, nutritionistId)
 			.orElseThrow(() -> new AiDraftLifecycleException("Borrador no encontrado."));
 		return toPreviewView(draft);

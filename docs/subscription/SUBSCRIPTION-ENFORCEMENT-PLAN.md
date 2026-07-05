@@ -90,6 +90,7 @@ Aligned with [`eterna/index.html`](../../src/main/resources/templates/eterna/ind
 | `pdfExport` | ✗ | ✓ | ✓ | ✓ |
 | `reportsBranded` | ✗ | ✓ | ✓ | ✓ |
 | `prioritySupport` | ✗ | ✗ | ✓ | ✓ |
+| `aiAssistant` | ✗ | ✗ | ✓ | ✓ |
 | `userAdministration` | ✗ | ✗ | ✗ | ✓ |
 
 ### Report mapping (implementation)
@@ -101,6 +102,7 @@ Aligned with [`eterna/index.html`](../../src/main/resources/templates/eterna/ind
 | Reportes completos | `reportsFull` | Full patient report HTML views |
 | Exportación PDF | `pdfExport` | `GET /rest/reports/patient/{id}`, nutrition PDF, clinic statistics PDF |
 | Personalizados (logo + datos) | `reportsBranded` | `NutritionistProfile` header block on PDF templates (already partial) |
+| Asistente de IA nutricional | `aiAssistant` | `/admin/ai`, `/rest/nutritionist/ai/**`, floating widget (#409) |
 
 Enforcement: central `SubscriptionEntitlementService.hasEntitlement(userId, Entitlement)` called from controllers/services **before** business logic; return **403** with localized message for web, JSON for REST.
 

@@ -222,6 +222,38 @@ class SubscriptionEntitlementServiceTest {
 	}
 
 	@Test
+	void assertCanUseAiAssistantAllowsPlusPlan() {
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID))
+			.thenReturn(Optional.of(activeMember(SOLO_ID, PlanTier.PLUS)));
+
+		service.assertCanUseAiAssistant(SOLO_ID);
+		assertThat(service.hasEntitlement(SOLO_ID, Entitlement.AI_ASSISTANT)).isTrue();
+	}
+
+	@Test
+	void assertCanUseAiAssistantThrowsForProfesionalPlan() {
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID))
+			.thenReturn(Optional.of(activeMember(SOLO_ID, PlanTier.PROFESIONAL)));
+
+		assertThatThrownBy(() -> service.assertCanUseAiAssistant(SOLO_ID))
+			.isInstanceOf(SubscriptionLimitExceededException.class)
+			.extracting(ex -> ((SubscriptionLimitExceededException) ex).getMessageKey())
+			.isEqualTo(SubscriptionErrorResponses.KEY_AI_ASSISTANT_DENIED);
+		assertThat(service.hasEntitlement(SOLO_ID, Entitlement.AI_ASSISTANT)).isFalse();
+	}
+
+	@Test
+	void assertCanUseAiAssistantThrowsForBasicoPlan() {
+		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID))
+			.thenReturn(Optional.of(activeMember(SOLO_ID, PlanTier.BASICO)));
+
+		assertThatThrownBy(() -> service.assertCanUseAiAssistant(SOLO_ID))
+			.isInstanceOf(SubscriptionLimitExceededException.class)
+			.extracting(ex -> ((SubscriptionLimitExceededException) ex).getMessageKey())
+			.isEqualTo(SubscriptionErrorResponses.KEY_AI_ASSISTANT_DENIED);
+	}
+
+	@Test
 	void assertCanAccessFullReportsAllowsProfesionalPlan() {
 		when(clinicMemberRepository.findByUserIdWithClinicAndSubscription(SOLO_ID))
 			.thenReturn(Optional.of(activeMember(SOLO_ID, PlanTier.PROFESIONAL)));

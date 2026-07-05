@@ -28,6 +28,17 @@ class AiDraftPreviewServiceTest {
 	@Mock
 	private AiGeneratedDraftRepository draftRepository;
 
+	@Mock
+	private AiEntitlementGuard aiEntitlementGuard;
+
+	@org.junit.jupiter.api.BeforeEach
+	void stubEntitlement() {
+		org.mockito.Mockito.lenient()
+			.doNothing()
+			.when(aiEntitlementGuard)
+			.assertCanUseAiAssistant(org.mockito.ArgumentMatchers.anyString());
+	}
+
 	@Test
 	void getPreviewReturnsDishDetails() throws Exception {
 		final AiGeneratedDraft draft = dishDraft();
