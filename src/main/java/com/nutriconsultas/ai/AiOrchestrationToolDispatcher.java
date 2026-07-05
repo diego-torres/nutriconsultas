@@ -191,7 +191,7 @@ public class AiOrchestrationToolDispatcher {
 			return PatientAppointmentScope.valueOf(value);
 		}
 		catch (final IllegalArgumentException ex) {
-			throw new AiOrchestrationException("El campo 'scope' debe ser UPCOMING, PAST o ALL.");
+			throw new AiOrchestrationException("El campo 'scope' debe ser UPCOMING, PAST o ALL.", ex);
 		}
 	}
 
