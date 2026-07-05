@@ -5,7 +5,7 @@ Living index of GitHub issues for the **AI Nutrition Assistant** — OpenAI-back
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md)  
 **Workflow:** [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md)  
-**Last updated:** 2026-07-05 — ~~#405~~ merged (PR #472). Next: **#406** (production AI setup docs).
+**Last updated:** 2026-07-05 — ~~#406~~ merged (PR #474). Next: **#407** (nutritionist user guidance).
 
 > **Scope.** AI assistant for **nutritionist web** (`/admin/**`, `/nutritionist/ai/**`). Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Do not mix AI orchestration into mobile or subscription PRs unless explicitly coupled.
 
@@ -248,7 +248,7 @@ Setup docs, nutritionist guidance, release checklist.
 |---|-------|-----|-------|------------|-------|
 | **404** | Epic — AI Assistant Documentation and Release (Phase 10) | https://github.com/diego-torres/nutriconsultas/issues/404 | **open** | **396**, **403** | Milestone 5 |
 | **405** | Document Local AI Setup | https://github.com/diego-torres/nutriconsultas/issues/405 | **done** | **365** | PR #472 — [`docs/ai/LOCAL-AI-SETUP.md`](docs/ai/LOCAL-AI-SETUP.md) |
-| **406** | Document Production AI Setup | https://github.com/diego-torres/nutriconsultas/issues/406 | **open** | **365** | EC2 `app.env`, SSM |
+| **406** | Document Production AI Setup | https://github.com/diego-torres/nutriconsultas/issues/406 | **done** | **365** | PR #474 — [`docs/ai/PRODUCTION-AI-SETUP.md`](docs/ai/PRODUCTION-AI-SETUP.md), `ssm-update-ai-openai.sh` |
 | **407** | Add Nutritionist User Guidance | https://github.com/diego-torres/nutriconsultas/issues/407 | **open** | **390** | In-app or docs |
 | **408** | Create AI Assistant Release Checklist | https://github.com/diego-torres/nutriconsultas/issues/408 | **open** | **404** | Rollout gate |
 
