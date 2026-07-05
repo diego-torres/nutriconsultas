@@ -55,9 +55,9 @@ enum McpToolRegistry {
 	private static final Map<String, McpToolRegistry> BY_INTERNAL_NAME = Arrays.stream(values())
 		.collect(Collectors.toUnmodifiableMap(McpToolRegistry::internalToolName, Function.identity()));
 
-	private final String mcpName;
+	private final String registeredMcpName;
 
-	private final String internalToolName;
+	private final String registeredInternalToolName;
 
 	private final String title;
 
@@ -69,8 +69,8 @@ enum McpToolRegistry {
 
 	McpToolRegistry(final String mcpName, final String internalToolName, final String title,
 			final String summaryDescription, final boolean readOnly, final boolean requiresNutritionistConfirmation) {
-		this.mcpName = mcpName;
-		this.internalToolName = internalToolName;
+		this.registeredMcpName = mcpName;
+		this.registeredInternalToolName = internalToolName;
 		this.title = title;
 		this.summaryDescription = summaryDescription;
 		this.readOnly = readOnly;
@@ -78,11 +78,11 @@ enum McpToolRegistry {
 	}
 
 	String mcpName() {
-		return mcpName;
+		return registeredMcpName;
 	}
 
 	String internalToolName() {
-		return internalToolName;
+		return registeredInternalToolName;
 	}
 
 	static Optional<McpToolRegistry> findByMcpName(final String mcpName) {
@@ -99,7 +99,7 @@ enum McpToolRegistry {
 
 	McpToolDescriptor toDescriptor(final OpenAiToolDefinition openAiDefinition) {
 		final String description = buildDescription(openAiDefinition.description());
-		return new McpToolDescriptor(mcpName, title, description, openAiDefinition.parameters(), readOnly,
+		return new McpToolDescriptor(registeredMcpName, title, description, openAiDefinition.parameters(), readOnly,
 				requiresNutritionistConfirmation);
 	}
 
