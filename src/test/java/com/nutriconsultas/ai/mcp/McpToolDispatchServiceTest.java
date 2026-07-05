@@ -34,6 +34,8 @@ import com.nutriconsultas.ai.AiOrchestrationToolDispatcher;
 import com.nutriconsultas.ai.AiProperties;
 import com.nutriconsultas.ai.AiToolErrorCode;
 import com.nutriconsultas.ai.SearchFoodCatalogToolService;
+import com.nutriconsultas.subscription.SubscriptionErrorResponses;
+import com.nutriconsultas.subscription.SubscriptionLimitExceededException;
 
 @ExtendWith(MockitoExtension.class)
 class McpToolDispatchServiceTest {
@@ -65,6 +67,9 @@ class McpToolDispatchServiceTest {
 	private AiAuditLogger auditLogger;
 
 	@Mock
+	private SubscriptionErrorResponses subscriptionErrorResponses;
+
+	@Mock
 	private AiChatThreadRepository threadRepository;
 
 	private AiChatPersistence chatPersistence;
@@ -78,7 +83,7 @@ class McpToolDispatchServiceTest {
 		chatPersistence = new AiChatPersistence(threadRepository, messageRepository, transactionTemplate);
 		descriptorCatalog = new McpToolDescriptorCatalog(new AiOpenAiToolCatalog());
 		dispatchService = new McpToolDispatchService(aiProperties, chatRequestGuards, descriptorCatalog, toolDispatcher,
-				guardrails, contextResolvers, chatPersistence, auditLogger);
+				guardrails, contextResolvers, chatPersistence, auditLogger, subscriptionErrorResponses);
 		when(aiProperties.isEnabled()).thenReturn(true);
 	}
 
@@ -162,6 +167,36 @@ class McpToolDispatchServiceTest {
 			.isInstanceOf(McpAccessException.class)
 			.extracting(ex -> ((McpAccessException) ex).getStatus())
 			.isEqualTo(HttpStatus.FORBIDDEN);
+	}
+
+	@Test
+	void propagatesSubscriptionEntitlementFailure() {
+		final SubscriptionLimitExceededException denied = new SubscriptionLimitExceededException(
+				SubscriptionErrorResponses.KEY_AI_ASSISTANT_DENIED);
+		org.mockito.Mockito.doThrow(denied).when(chatRequestGuards).assertNutritionistAccess(NUTRITIONIST_ID);
+		when(subscriptionErrorResponses.resolve(denied)).thenReturn("Plan Plus requerido.");
+
+		org.assertj.core.api.Assertions
+			.assertThatThrownBy(() -> dispatchService.handle(NUTRITIONIST_ID, jsonRpc("tools/list", Map.of())))
+			.isInstanceOf(McpAccessException.class)
+			.extracting(ex -> ((McpAccessException) ex).getStatus(), ex -> ((McpAccessException) ex).getUserMessage())
+			.containsExactly(HttpStatus.FORBIDDEN, "Plan Plus requerido.");
+	}
+
+	@Test
+	void crossTenantThreadIdReturnsNotFound() {
+		when(threadRepository.findByIdAndNutritionistId(42L, NUTRITIONIST_ID)).thenReturn(Optional.empty());
+
+		final Map<String, Object> params = new LinkedHashMap<>();
+		params.put("name", "catalog.search_foods");
+		params.put("arguments", Map.of("query", "avena"));
+		params.put("_meta", Map.of("threadId", 42));
+
+		org.assertj.core.api.Assertions
+			.assertThatThrownBy(() -> dispatchService.handle(NUTRITIONIST_ID, jsonRpc("tools/call", params)))
+			.isInstanceOf(McpAccessException.class)
+			.extracting(ex -> ((McpAccessException) ex).getStatus())
+			.isEqualTo(HttpStatus.NOT_FOUND);
 	}
 
 	@Test
