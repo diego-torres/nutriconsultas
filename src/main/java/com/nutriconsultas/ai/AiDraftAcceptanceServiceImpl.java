@@ -9,10 +9,7 @@ import org.springframework.util.StringUtils;
 import com.nutriconsultas.dieta.Dieta;
 import com.nutriconsultas.platillos.Platillo;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Service
-@Slf4j
 public class AiDraftAcceptanceServiceImpl implements AiDraftAcceptanceService {
 
 	private final AiGeneratedDraftRepository draftRepository;
@@ -23,13 +20,17 @@ public class AiDraftAcceptanceServiceImpl implements AiDraftAcceptanceService {
 
 	private final AiEntitlementGuard aiEntitlementGuard;
 
+	private final AiAuditLogger auditLogger;
+
 	public AiDraftAcceptanceServiceImpl(final AiGeneratedDraftRepository draftRepository,
 			final AiDraftMaterializationService materializationService,
-			final AiDraftLifecycleService draftLifecycleService, final AiEntitlementGuard aiEntitlementGuard) {
+			final AiDraftLifecycleService draftLifecycleService, final AiEntitlementGuard aiEntitlementGuard,
+			final AiAuditLogger auditLogger) {
 		this.draftRepository = draftRepository;
 		this.materializationService = materializationService;
 		this.draftLifecycleService = draftLifecycleService;
 		this.aiEntitlementGuard = aiEntitlementGuard;
+		this.auditLogger = auditLogger;
 	}
 
 	@Override
@@ -44,10 +45,8 @@ public class AiDraftAcceptanceServiceImpl implements AiDraftAcceptanceService {
 		final MaterializedEntity entity = materialize(draft, nutritionistId, principal);
 		final AiGeneratedDraft accepted = draftLifecycleService.acceptDraft(draftId, nutritionistId);
 		final String summary = buildSummary(draft.getDraftType(), entity);
-		if (log.isInfoEnabled()) {
-			log.info("AI draft accepted id={} status={} createdEntityType={} createdEntityId={}", accepted.getId(),
-					accepted.getStatus(), entity.entityType(), entity.entityId());
-		}
+		auditLogger.logDraftMaterialized(accepted.getId(), accepted.getThread().getId(), entity.entityType(),
+				entity.entityId());
 		return new AiDraftAcceptanceResult(accepted.getId(), accepted.getDraftType(), accepted.getStatus(),
 				entity.entityType(), entity.entityId(), summary);
 	}

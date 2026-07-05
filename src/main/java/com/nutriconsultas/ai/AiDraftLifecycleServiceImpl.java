@@ -7,10 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Service
-@Slf4j
 public class AiDraftLifecycleServiceImpl implements AiDraftLifecycleService {
 
 	private final AiChatThreadRepository threadRepository;
@@ -19,11 +16,15 @@ public class AiDraftLifecycleServiceImpl implements AiDraftLifecycleService {
 
 	private final AiEntitlementGuard aiEntitlementGuard;
 
+	private final AiAuditLogger auditLogger;
+
 	public AiDraftLifecycleServiceImpl(final AiChatThreadRepository threadRepository,
-			final AiGeneratedDraftRepository draftRepository, final AiEntitlementGuard aiEntitlementGuard) {
+			final AiGeneratedDraftRepository draftRepository, final AiEntitlementGuard aiEntitlementGuard,
+			final AiAuditLogger auditLogger) {
 		this.threadRepository = threadRepository;
 		this.draftRepository = draftRepository;
 		this.aiEntitlementGuard = aiEntitlementGuard;
+		this.auditLogger = auditLogger;
 	}
 
 	@Override
@@ -40,9 +41,7 @@ public class AiDraftLifecycleServiceImpl implements AiDraftLifecycleService {
 		draft.setJsonPayload(jsonPayload.trim());
 		draft.setStatus(AiDraftStatus.DRAFT);
 		final AiGeneratedDraft saved = draftRepository.save(draft);
-		if (log.isInfoEnabled()) {
-			log.info("AI draft created id={} threadId={} type={}", saved.getId(), threadId, draftType);
-		}
+		auditLogger.logDraftCreated(saved.getId(), threadId, draftType);
 		return saved;
 	}
 
@@ -54,9 +53,7 @@ public class AiDraftLifecycleServiceImpl implements AiDraftLifecycleService {
 		draft.setStatus(AiDraftStatus.ACCEPTED);
 		draft.setAcceptedAt(Instant.now());
 		final AiGeneratedDraft saved = draftRepository.save(draft);
-		if (log.isInfoEnabled()) {
-			log.info("AI draft accepted id={} threadId={}", saved.getId(), saved.getThread().getId());
-		}
+		auditLogger.logDraftAccepted(saved.getId(), saved.getThread().getId(), saved.getStatus());
 		return saved;
 	}
 
@@ -67,9 +64,7 @@ public class AiDraftLifecycleServiceImpl implements AiDraftLifecycleService {
 		final AiGeneratedDraft draft = loadMutableDraft(draftId, nutritionistId);
 		draft.setStatus(AiDraftStatus.DISCARDED);
 		final AiGeneratedDraft saved = draftRepository.save(draft);
-		if (log.isInfoEnabled()) {
-			log.info("AI draft discarded id={} threadId={}", saved.getId(), saved.getThread().getId());
-		}
+		auditLogger.logDraftDiscarded(saved.getId(), saved.getThread().getId());
 		return saved;
 	}
 

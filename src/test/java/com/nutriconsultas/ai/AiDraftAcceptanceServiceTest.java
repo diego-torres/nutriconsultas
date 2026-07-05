@@ -43,6 +43,9 @@ class AiDraftAcceptanceServiceTest {
 	@Mock
 	private AiEntitlementGuard aiEntitlementGuard;
 
+	@Mock
+	private AiAuditLogger auditLogger;
+
 	@org.junit.jupiter.api.BeforeEach
 	void stubEntitlement() {
 		org.mockito.Mockito.lenient()
@@ -60,6 +63,7 @@ class AiDraftAcceptanceServiceTest {
 		when(materializationService.materializeDish(any(), eq(NUTRITIONIST_ID), any())).thenReturn(platillo);
 		final AiGeneratedDraft accepted = dishDraft();
 		accepted.setStatus(AiDraftStatus.ACCEPTED);
+		accepted.setThread(draft.getThread());
 		when(draftLifecycleService.acceptDraft(55L, NUTRITIONIST_ID)).thenReturn(accepted);
 
 		final AiDraftAcceptanceResult result = service.accept(55L, NUTRITIONIST_ID, principal());
@@ -89,6 +93,7 @@ class AiDraftAcceptanceServiceTest {
 		when(materializationService.materializeMenu(any(), eq(NUTRITIONIST_ID), any())).thenReturn(dieta);
 		final AiGeneratedDraft accepted = menuDraft();
 		accepted.setStatus(AiDraftStatus.ACCEPTED);
+		accepted.setThread(draft.getThread());
 		when(draftLifecycleService.acceptDraft(56L, NUTRITIONIST_ID)).thenReturn(accepted);
 
 		final AiDraftAcceptanceResult result = service.accept(56L, NUTRITIONIST_ID, principal());
@@ -98,8 +103,10 @@ class AiDraftAcceptanceServiceTest {
 	}
 
 	private static AiGeneratedDraft dishDraft() {
+		final AiChatThread thread = sampleThread();
 		final AiGeneratedDraft draft = new AiGeneratedDraft();
 		draft.setId(55L);
+		draft.setThread(thread);
 		draft.setDraftType(AiDraftType.DISH);
 		draft.setStatus(AiDraftStatus.DRAFT);
 		draft.setJsonPayload(
@@ -111,8 +118,10 @@ class AiDraftAcceptanceServiceTest {
 	}
 
 	private static AiGeneratedDraft menuDraft() {
+		final AiChatThread thread = sampleThread();
 		final AiGeneratedDraft draft = new AiGeneratedDraft();
 		draft.setId(56L);
+		draft.setThread(thread);
 		draft.setDraftType(AiDraftType.MENU);
 		draft.setStatus(AiDraftStatus.DRAFT);
 		draft.setJsonPayload("{\"ingestas\":[{\"nombre\":\"Desayuno\",\"orden\":1,"
@@ -128,6 +137,13 @@ class AiDraftAcceptanceServiceTest {
 		final OidcIdToken idToken = new OidcIdToken(jwt.getTokenValue(), jwt.getIssuedAt(), jwt.getExpiresAt(),
 				Map.of("sub", NUTRITIONIST_ID));
 		return new DefaultOidcUser(List.of(), idToken);
+	}
+
+	private static AiChatThread sampleThread() {
+		final AiChatThread thread = new AiChatThread();
+		thread.setId(10L);
+		thread.setNutritionistId(NUTRITIONIST_ID);
+		return thread;
 	}
 
 }

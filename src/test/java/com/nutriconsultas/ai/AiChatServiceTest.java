@@ -62,6 +62,9 @@ class AiChatServiceTest {
 	@Mock
 	private AiChatRequestGuards chatRequestGuards;
 
+	@Mock
+	private AiAuditLogger auditLogger;
+
 	@BeforeEach
 	void stubGuardsAndPersistence() {
 		org.mockito.Mockito.lenient().when(chatPersistence.getThreadRepository()).thenReturn(threadRepository);

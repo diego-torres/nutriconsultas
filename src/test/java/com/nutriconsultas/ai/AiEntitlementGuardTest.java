@@ -27,6 +27,9 @@ class AiEntitlementGuardTest {
 	@Mock
 	private SubscriptionEntitlementService subscriptionEntitlementService;
 
+	@Mock
+	private AiAuditLogger auditLogger;
+
 	@Test
 	void canUseAiAssistantDelegatesToSubscriptionService() {
 		when(subscriptionEntitlementService.hasEntitlement(NUTRITIONIST_ID, Entitlement.AI_ASSISTANT)).thenReturn(true);
@@ -42,16 +45,22 @@ class AiEntitlementGuardTest {
 
 	@Test
 	void assertCanUseAiAssistantPropagatesSubscriptionDenial() {
+		when(subscriptionEntitlementService.hasEntitlement(NUTRITIONIST_ID, Entitlement.AI_ASSISTANT))
+			.thenReturn(false);
 		final SubscriptionLimitExceededException denied = new SubscriptionLimitExceededException(
 				SubscriptionErrorResponses.KEY_AI_ASSISTANT_DENIED);
-		org.mockito.Mockito.doThrow(denied).when(subscriptionEntitlementService).assertCanUseAiAssistant(NUTRITIONIST_ID);
+		org.mockito.Mockito.doThrow(denied)
+			.when(subscriptionEntitlementService)
+			.assertCanUseAiAssistant(NUTRITIONIST_ID);
 
 		assertThatThrownBy(() -> guard.assertCanUseAiAssistant(NUTRITIONIST_ID)).isSameAs(denied);
+		verify(auditLogger).logAccessDenied(NUTRITIONIST_ID, "missing_entitlement");
 	}
 
 	@Test
 	void assertCanUseAiAssistantChecksEmptyUserId() {
-		org.mockito.Mockito.doThrow(new SubscriptionLimitExceededException(SubscriptionErrorResponses.KEY_AI_ASSISTANT_DENIED))
+		org.mockito.Mockito
+			.doThrow(new SubscriptionLimitExceededException(SubscriptionErrorResponses.KEY_AI_ASSISTANT_DENIED))
 			.when(subscriptionEntitlementService)
 			.assertCanUseAiAssistant("");
 

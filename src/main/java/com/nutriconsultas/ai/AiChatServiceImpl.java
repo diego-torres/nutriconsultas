@@ -35,16 +35,19 @@ public class AiChatServiceImpl implements AiChatService {
 
 	private final AiChatRequestGuards chatRequestGuards;
 
+	private final AiAuditLogger auditLogger;
+
 	public AiChatServiceImpl(final AiChatPersistence chatPersistence, final AiGeneratedDraftRepository draftRepository,
 			final AiOrchestrationService orchestrationService,
 			final AiChatPromptContextResolvers promptContextResolvers, final PacienteRepository pacienteRepository,
-			final AiChatRequestGuards chatRequestGuards) {
+			final AiChatRequestGuards chatRequestGuards, final AiAuditLogger auditLogger) {
 		this.chatPersistence = chatPersistence;
 		this.draftRepository = draftRepository;
 		this.orchestrationService = orchestrationService;
 		this.promptContextResolvers = promptContextResolvers;
 		this.pacienteRepository = pacienteRepository;
 		this.chatRequestGuards = chatRequestGuards;
+		this.auditLogger = auditLogger;
 	}
 
 	@Override
@@ -61,9 +64,7 @@ public class AiChatServiceImpl implements AiChatService {
 		thread.setClinicId(clinicId);
 		thread.setPatient(patient);
 		final AiChatThread saved = chatPersistence.getThreadRepository().save(thread);
-		if (log.isInfoEnabled()) {
-			log.info("AI chat thread created id={} patientLinked={}", saved.getId(), patient != null);
-		}
+		auditLogger.logThreadCreated(saved.getId(), nutritionistId, patient != null);
 		return saved;
 	}
 
@@ -103,6 +104,7 @@ public class AiChatServiceImpl implements AiChatService {
 		final String sanitizedMessage = validateUserMessageContent(message);
 		final AiChatThread thread = loadOwnedThread(threadId, nutritionistId);
 		final AiChatPromptContext mergedContext = mergePromptContext(promptContext, patientId(thread));
+		auditChatRequest(nutritionistId, threadId, AiChatRequestMode.SEND, sanitizedMessage, mergedContext);
 		final AiOrchestrationContext context = buildOrchestrationContext(nutritionistId, threadId, mergedContext);
 		return orchestrationService.processUserMessage(context, sanitizedMessage);
 	}
@@ -128,6 +130,8 @@ public class AiChatServiceImpl implements AiChatService {
 				return patientId(ownedThread);
 			});
 			final AiChatPromptContext mergedContext = mergePromptContext(promptContext, threadPatientId);
+			auditChatRequest(nutritionistId, request.threadId(), AiChatRequestMode.STREAM, sanitizedMessage,
+					mergedContext);
 			final AiOrchestrationContext context = buildOrchestrationContext(nutritionistId, request.threadId(),
 					mergedContext);
 			orchestrationService.processUserMessageStreaming(context, sanitizedMessage,
@@ -167,6 +171,7 @@ public class AiChatServiceImpl implements AiChatService {
 				request.messageId());
 		final AiChatThread thread = loadOwnedThread(request.threadId(), nutritionistId);
 		final AiChatPromptContext mergedContext = mergePromptContext(promptContext, patientId(thread));
+		auditChatRequest(nutritionistId, request.threadId(), AiChatRequestMode.EDIT, sanitizedMessage, mergedContext);
 		final AiOrchestrationContext context = buildOrchestrationContext(nutritionistId, request.threadId(),
 				mergedContext);
 		final AiOrchestrationResult orchestration = orchestrationService.processUserMessage(context, sanitizedMessage);
@@ -202,15 +207,12 @@ public class AiChatServiceImpl implements AiChatService {
 				return patientId(ownedThread);
 			});
 			final AiChatPromptContext mergedContext = mergePromptContext(promptContext, threadPatientId);
+			auditChatRequest(nutritionistId, request.threadId(), AiChatRequestMode.EDIT_STREAM, sanitizedMessage,
+					mergedContext);
 			final AiOrchestrationContext context = buildOrchestrationContext(nutritionistId, request.threadId(),
 					mergedContext);
 			orchestrationService.processUserMessageStreaming(context, sanitizedMessage,
 					streamConsumerFor(emitter, cancellation));
-			if (log.isInfoEnabled()) {
-				log.info("AI chat edit-resubmit stream threadId={} truncatedMessages={} discardedDrafts={}",
-						request.threadId(), truncateOutcome.truncatedMessageCount(),
-						truncateOutcome.discardedDraftIds().size());
-			}
 			AiChatSseSupport.completeQuietly(emitter);
 		}
 		catch (final AiStreamCancelledException ex) {
@@ -281,6 +283,12 @@ public class AiChatServiceImpl implements AiChatService {
 			return;
 		}
 		AiChatSseSupport.completeQuietly(emitter);
+	}
+
+	private void auditChatRequest(final String nutritionistId, final long threadId, final AiChatRequestMode mode,
+			final String sanitizedMessage, final AiChatPromptContext context) {
+		auditLogger.logChatRequest(threadId, nutritionistId, mode, AiAuditRedaction.safeMessageLength(sanitizedMessage),
+				context.patientId() != null, context.dietaId() != null, context.platilloId() != null);
 	}
 
 	private AiOrchestrationContext buildOrchestrationContext(final String nutritionistId, final long threadId,
@@ -389,10 +397,7 @@ public class AiChatServiceImpl implements AiChatService {
 		}
 		final int truncatedMessageCount = chatPersistence.getMessageRepository()
 			.deleteByThreadIdAndIdGreaterThanEqual(threadId, anchor.getId());
-		if (log.isInfoEnabled()) {
-			log.info("AI chat truncated threadId={} fromMessageId={} removedMessages={} discardedDrafts={}", threadId,
-					messageId, truncatedMessageCount, discardedDraftIds.size());
-		}
+		auditLogger.logThreadTruncated(threadId, messageId, truncatedMessageCount, discardedDraftIds.size());
 		return new TruncateOutcome(truncatedMessageCount, List.copyOf(discardedDraftIds));
 	}
 

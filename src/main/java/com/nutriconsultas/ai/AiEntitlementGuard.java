@@ -16,11 +16,18 @@ public final class AiEntitlementGuard {
 
 	private final SubscriptionEntitlementService subscriptionEntitlementService;
 
-	public AiEntitlementGuard(final SubscriptionEntitlementService subscriptionEntitlementService) {
+	private final AiAuditLogger auditLogger;
+
+	public AiEntitlementGuard(final SubscriptionEntitlementService subscriptionEntitlementService,
+			final AiAuditLogger auditLogger) {
 		this.subscriptionEntitlementService = subscriptionEntitlementService;
+		this.auditLogger = auditLogger;
 	}
 
 	public void assertCanUseAiAssistant(@Nullable final String nutritionistId) {
+		if (!canUseAiAssistant(nutritionistId)) {
+			auditLogger.logAccessDenied(nutritionistId, "missing_entitlement");
+		}
 		if (!StringUtils.hasText(nutritionistId)) {
 			subscriptionEntitlementService.assertCanUseAiAssistant("");
 			return;

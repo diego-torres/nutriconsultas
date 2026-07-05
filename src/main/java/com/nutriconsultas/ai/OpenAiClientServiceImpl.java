@@ -17,10 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Component
-@Slf4j
 public class OpenAiClientServiceImpl implements OpenAiClientService {
 
 	private static final String CHAT_COMPLETIONS_PATH = "/v1/chat/completions";
@@ -29,10 +26,13 @@ public class OpenAiClientServiceImpl implements OpenAiClientService {
 
 	private final RestClient restClient;
 
+	private final AiAuditLogger auditLogger;
+
 	public OpenAiClientServiceImpl(final AiProperties properties,
-			@Qualifier("openAiRestClient") final RestClient openAiRestClient) {
+			@Qualifier("openAiRestClient") final RestClient openAiRestClient, final AiAuditLogger auditLogger) {
 		this.properties = properties;
 		this.restClient = openAiRestClient;
+		this.auditLogger = auditLogger;
 	}
 
 	@Override
@@ -55,15 +55,12 @@ public class OpenAiClientServiceImpl implements OpenAiClientService {
 			return toCompletionResponse(response);
 		}
 		catch (final RestClientResponseException ex) {
-			if (log.isWarnEnabled()) {
-				log.warn("OpenAI chat completion failed with status={}", ex.getStatusCode().value());
-			}
-			throw OpenAiClientErrorMapper.mapResponseException(ex);
+			final OpenAiClientException mapped = OpenAiClientErrorMapper.mapResponseException(ex);
+			auditLogger.logOpenAiError(null, mapped.getKind().name(), mapped.getHttpStatus().value());
+			throw mapped;
 		}
 		catch (final ResourceAccessException ex) {
-			if (log.isWarnEnabled()) {
-				log.warn("OpenAI chat completion timed out or connection failed");
-			}
+			auditLogger.logOpenAiError(null, OpenAiClientException.ErrorKind.TIMEOUT.name(), 0);
 			throw OpenAiClientErrorMapper.timeout(ex);
 		}
 	}
@@ -97,8 +94,8 @@ public class OpenAiClientServiceImpl implements OpenAiClientService {
 			tools.add(new OpenAiApiTool("function", function));
 		}
 		return new OpenAiApiRequest(properties.getOpenai().getModel(), messages, tools.isEmpty() ? null : tools,
-				properties.getOpenai().isStore(), request.parameters().temperature(),
-				request.parameters().maxTokens(), responseFormat(request.parameters().responseFormatType()));
+				properties.getOpenai().isStore(), request.parameters().temperature(), request.parameters().maxTokens(),
+				responseFormat(request.parameters().responseFormatType()));
 	}
 
 	private static Map<String, String> responseFormat(final String type) {
