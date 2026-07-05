@@ -118,4 +118,10 @@ class McpToolDescriptorCatalogTest {
 		assertThat(catalog.mcpToolNameFor(SearchDishCatalogToolService.TOOL_NAME)).contains("catalog.search_dishes");
 	}
 
+	@Test
+	void draftToolsRequireThreadId() {
+		assertThat(catalog.requiresThreadId("draft.create_dish")).isTrue();
+		assertThat(catalog.requiresThreadId("catalog.search_foods")).isFalse();
+	}
+
 }

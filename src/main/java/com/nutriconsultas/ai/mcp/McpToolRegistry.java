@@ -85,6 +85,10 @@ enum McpToolRegistry {
 		return registeredInternalToolName;
 	}
 
+	boolean requiresThreadId() {
+		return requiresNutritionistConfirmation;
+	}
+
 	static Optional<McpToolRegistry> findByMcpName(final String mcpName) {
 		return Optional.ofNullable(BY_MCP_NAME.get(mcpName));
 	}
