@@ -237,7 +237,7 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 			}
 			final OpenAiChatCompletionResponse response = openAiClientService
 				.chatCompletion(new OpenAiChatCompletionRequest(List.copyOf(conversation),
-						orchestrationTools.getToolCatalog().definitions()));
+						orchestrationTools.getToolCatalog().definitionsForSession(context.patientContext())));
 			accumulatedUsage = mergeUsage(accumulatedUsage, response.usage());
 			assistantContent = response.content();
 

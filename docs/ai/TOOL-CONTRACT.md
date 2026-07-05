@@ -31,6 +31,7 @@ Backend tools the OpenAI orchestrator (#385) may invoke. Each tool is a Spring s
 | `calculate_recipe_nutrients` | read | no | #376 |
 | `get_diet_templates` | read | no | #372 (Phase 3) |
 | `validate_plan_constraints` | read | no | #377 |
+| `get_patient_appointments` | read | no | patient calendar (scoped) |
 | `create_dish_draft` | draft | yes (`ai_generated_draft`) | #379 |
 | `create_menu_draft` | draft | yes (`ai_generated_draft`) | #380 |
 | `create_diet_plan_draft` | draft | yes (`ai_generated_draft`) | #381 |

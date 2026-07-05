@@ -96,7 +96,7 @@ class McpToolDispatchServiceTest {
 		final Map<String, Object> result = (Map<String, Object>) response.get("result");
 		@SuppressWarnings("unchecked")
 		final List<Map<String, Object>> tools = (List<Map<String, Object>>) result.get("tools");
-		assertThat(tools).hasSize(8);
+		assertThat(tools).hasSize(9);
 		verify(chatRequestGuards).assertNutritionistAccess(NUTRITIONIST_ID);
 	}
 

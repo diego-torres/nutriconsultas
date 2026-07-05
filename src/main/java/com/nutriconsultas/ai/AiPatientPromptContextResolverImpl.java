@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.nutriconsultas.calendar.CalendarEvent;
+import com.nutriconsultas.calendar.CalendarEventRepository;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.paciente.satellite.PacienteMedicalHistory;
@@ -23,8 +25,12 @@ public class AiPatientPromptContextResolverImpl implements AiPatientPromptContex
 
 	private final PacienteRepository pacienteRepository;
 
-	public AiPatientPromptContextResolverImpl(final PacienteRepository pacienteRepository) {
+	private final CalendarEventRepository calendarEventRepository;
+
+	public AiPatientPromptContextResolverImpl(final PacienteRepository pacienteRepository,
+			final CalendarEventRepository calendarEventRepository) {
 		this.pacienteRepository = pacienteRepository;
+		this.calendarEventRepository = calendarEventRepository;
 	}
 
 	@Override
@@ -40,10 +46,33 @@ public class AiPatientPromptContextResolverImpl implements AiPatientPromptContex
 		final PacienteMedicalHistory history = paciente.getMedicalHistory();
 		final String activityLevel = paciente.getPhysicalActivityLevel() != null
 				? paciente.getPhysicalActivityLevel().name() : null;
+		final NextAppointmentSummary nextAppointment = resolveNextAppointment(paciente.getId());
 		return new AiPatientPromptContext(paciente.getId(), resolveRequerimientoKcal(paciente),
 				paciente.getFinalTotalKcal(), paciente.getPhysiologicalStressActive(), paciente.getGender(),
 				paciente.getPregnancy(), nivelPesoLabel(paciente), paciente.getImc(), pathologyFlags(history),
-				sanitizeAlergias(history != null ? history.getAlergias() : null), activityLevel);
+				sanitizeAlergias(history != null ? history.getAlergias() : null), activityLevel,
+				nextAppointment.atIso(), nextAppointment.title(), nextAppointment.durationMinutes());
+	}
+
+	private NextAppointmentSummary resolveNextAppointment(final long patientId) {
+		return GetPatientAppointmentsToolServiceImpl.findNextScheduledAppointment(calendarEventRepository, patientId)
+			.map(this::toNextAppointmentSummary)
+			.orElse(NextAppointmentSummary.empty());
+	}
+
+	private NextAppointmentSummary toNextAppointmentSummary(final CalendarEvent event) {
+		final String iso = java.time.Instant.ofEpochMilli(event.getEventDateTime().getTime()).toString();
+		final String title = StringUtils.hasText(event.getTitle()) ? event.getTitle().trim() : "Consulta";
+		final Integer duration = event.getDurationMinutes();
+		return new NextAppointmentSummary(iso, title, duration);
+	}
+
+	private record NextAppointmentSummary(String atIso, String title, Integer durationMinutes) {
+
+		private static NextAppointmentSummary empty() {
+			return new NextAppointmentSummary(null, null, null);
+		}
+
 	}
 
 	private static String nivelPesoLabel(final Paciente paciente) {

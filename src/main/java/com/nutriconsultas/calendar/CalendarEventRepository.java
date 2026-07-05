@@ -62,4 +62,14 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
 	List<CalendarEvent> findUpcomingEventsByUserId(@Param("userId") String userId, @Param("startDate") Date startDate,
 			@Param("status") EventStatus status);
 
+	@Query("SELECT e FROM CalendarEvent e WHERE e.paciente.id = :pacienteId AND e.status = :status "
+			+ "AND e.eventDateTime >= :fromDate ORDER BY e.eventDateTime ASC")
+	List<CalendarEvent> findUpcomingByPacienteId(@Param("pacienteId") Long pacienteId, @Param("fromDate") Date fromDate,
+			@Param("status") EventStatus status, Pageable pageable);
+
+	@Query("SELECT e FROM CalendarEvent e WHERE e.paciente.id = :pacienteId AND e.status = :status "
+			+ "AND e.eventDateTime < :beforeDate ORDER BY e.eventDateTime DESC")
+	List<CalendarEvent> findPastByPacienteId(@Param("pacienteId") Long pacienteId, @Param("beforeDate") Date beforeDate,
+			@Param("status") EventStatus status, Pageable pageable);
+
 }

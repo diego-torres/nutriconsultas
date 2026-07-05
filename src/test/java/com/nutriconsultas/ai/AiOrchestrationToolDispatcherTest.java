@@ -5,6 +5,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -46,6 +49,9 @@ class AiOrchestrationToolDispatcherTest {
 	private CreateDietPlanDraftToolService createDietPlanDraftToolService;
 
 	@Mock
+	private GetPatientAppointmentsToolService getPatientAppointmentsToolService;
+
+	@Mock
 	private AiDraftToolSchemaValidator draftToolSchemaValidator;
 
 	@Test
@@ -85,11 +91,38 @@ class AiOrchestrationToolDispatcherTest {
 	}
 
 	@Test
+	void dispatchGetPatientAppointmentsUsesLinkedPatientContext() {
+		final AiPatientPromptContext patient = new AiPatientPromptContext(5L, 2795.0, null, false, "M", false, null,
+				null, Map.of(), null, null, null, null, null);
+		final PatientAppointmentsData data = new PatientAppointmentsData(List.of(), List.of(), 0);
+		when(getPatientAppointmentsToolService.getAppointments(eq(NUTRITIONIST_ID), eq(5L),
+				eq(PatientAppointmentScope.UPCOMING), eq(3)))
+			.thenReturn(AiToolResult.success(data));
+
+		final String json = dispatcher.dispatch(
+				new AiOrchestrationContext(NUTRITIONIST_ID, THREAD_ID, patient, null, null),
+				GetPatientAppointmentsToolService.TOOL_NAME, "{\"scope\":\"UPCOMING\",\"limit\":3}");
+
+		assertThat(json).contains("\"success\":true");
+		verify(getPatientAppointmentsToolService).getAppointments(NUTRITIONIST_ID, 5L, PatientAppointmentScope.UPCOMING,
+				3);
+	}
+
+	@Test
+	void dispatchGetPatientAppointmentsRequiresPatientContext() {
+		final String json = dispatcher.dispatch(context(), GetPatientAppointmentsToolService.TOOL_NAME, "{}");
+
+		assertThat(json).contains("\"success\":false");
+		assertThat(json).contains("paciente vinculado");
+	}
+
+	@Test
 	void dispatchDishDraftUsesRealSchemaValidatorWhenConfigured() {
 		final AiOrchestrationToolDispatcher realSchemaDispatcher = new AiOrchestrationToolDispatcher(
 				searchFoodCatalogToolService, getFoodNutrientsToolService, searchDishCatalogToolService,
 				calculateRecipeNutrientsToolService, validatePlanConstraintsToolService, createDishDraftToolService,
-				createMenuDraftToolService, createDietPlanDraftToolService, new AiDraftToolSchemaValidator());
+				createMenuDraftToolService, createDietPlanDraftToolService, getPatientAppointmentsToolService,
+				new AiDraftToolSchemaValidator());
 		when(createDishDraftToolService.createDraft(org.mockito.ArgumentMatchers.eq(NUTRITIONIST_ID),
 				org.mockito.ArgumentMatchers.eq(THREAD_ID), org.mockito.ArgumentMatchers.any()))
 			.thenReturn(AiToolResult

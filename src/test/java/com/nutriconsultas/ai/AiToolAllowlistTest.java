@@ -18,7 +18,7 @@ class AiToolAllowlistTest {
 	void allowsRegisteredTools() {
 		assertThat(allowlist.isAllowed(SearchFoodCatalogToolService.TOOL_NAME)).isTrue();
 		assertThat(allowlist.isAllowed(CreateDietPlanDraftToolService.TOOL_NAME)).isTrue();
-		assertThat(allowlist.allowedToolNames()).hasSize(8);
+		assertThat(allowlist.allowedToolNames()).hasSize(9);
 	}
 
 	@Test

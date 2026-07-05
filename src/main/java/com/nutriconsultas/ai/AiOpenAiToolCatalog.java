@@ -17,7 +17,17 @@ public final class AiOpenAiToolCatalog {
 
 	public List<OpenAiToolDefinition> definitions() {
 		return List.of(searchFoodCatalog(), getFoodNutrients(), searchDishCatalog(), calculateRecipeNutrients(),
-				validatePlanConstraints(), createDishDraft(), createMenuDraft(), createDietPlanDraft());
+				validatePlanConstraints(), createDishDraft(), createMenuDraft(), createDietPlanDraft(),
+				getPatientAppointments());
+	}
+
+	public List<OpenAiToolDefinition> definitionsForSession(final AiPatientPromptContext patientContext) {
+		if (patientContext == null || patientContext.patientId() == null) {
+			return definitions().stream()
+				.filter(definition -> !GetPatientAppointmentsToolService.TOOL_NAME.equals(definition.name()))
+				.toList();
+		}
+		return definitions();
 	}
 
 	private static OpenAiToolDefinition searchFoodCatalog() {
@@ -114,6 +124,16 @@ public final class AiOpenAiToolCatalog {
 						Map.of("type", "array", "minItems", 1, "maxItems", 14, "items", Map.of("type", "object")),
 						"validationSummary", optionalStringProperty("Resumen de validación", 2000), "assumptions",
 						stringArrayProperty(), "warnings", stringArrayProperty()), List.of("days")));
+	}
+
+	private static OpenAiToolDefinition getPatientAppointments() {
+		return new OpenAiToolDefinition(GetPatientAppointmentsToolService.TOOL_NAME,
+				secureDescription("Consulta citas del paciente vinculado a esta conversación (programadas o pasadas). "
+						+ "Solo funciona con contexto de paciente; no incluye datos clínicos de la consulta."),
+				objectSchema(Map.of("scope",
+						Map.of("type", "string", "enum", List.of("UPCOMING", "PAST", "ALL"), "description",
+								"UPCOMING (default), PAST o ALL"),
+						"limit", integerProperty("Cantidad máxima por lista", 1, 10)), List.of()));
 	}
 
 	private static Map<String, Object> objectSchema(final Map<String, Object> properties, final List<String> required) {

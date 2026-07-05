@@ -24,7 +24,7 @@ class McpToolDescriptorCatalogTest {
 
 	private static final Set<String> EXPECTED_MCP_NAMES = Set.of("catalog.search_foods", "catalog.get_food_nutrients",
 			"catalog.search_dishes", "nutrition.calculate_recipe", "nutrition.validate_plan", "draft.create_dish",
-			"draft.create_menu", "draft.create_diet_plan");
+			"draft.create_menu", "draft.create_diet_plan", "calendar.get_patient_appointments");
 
 	private final McpToolDescriptorCatalog catalog = new McpToolDescriptorCatalog(new AiOpenAiToolCatalog());
 
@@ -32,7 +32,7 @@ class McpToolDescriptorCatalogTest {
 	void descriptorsExposeEightStableMcpTools() {
 		final List<McpToolDescriptor> descriptors = catalog.descriptors();
 
-		assertThat(descriptors).hasSize(8);
+		assertThat(descriptors).hasSize(9);
 		assertThat(descriptors.stream().map(McpToolDescriptor::name).collect(Collectors.toSet()))
 			.isEqualTo(EXPECTED_MCP_NAMES);
 		assertThat(catalog.descriptorVersion()).isEqualTo(McpToolDescriptorCatalog.DESCRIPTOR_VERSION);
@@ -66,9 +66,11 @@ class McpToolDescriptorCatalogTest {
 		assertThat(byName.get("catalog.search_dishes").readOnly()).isTrue();
 		assertThat(byName.get("nutrition.calculate_recipe").readOnly()).isTrue();
 		assertThat(byName.get("nutrition.validate_plan").readOnly()).isTrue();
+		assertThat(byName.get("calendar.get_patient_appointments").readOnly()).isTrue();
 
 		for (final String readOnlyName : List.of("catalog.search_foods", "catalog.get_food_nutrients",
-				"catalog.search_dishes", "nutrition.calculate_recipe", "nutrition.validate_plan")) {
+				"catalog.search_dishes", "nutrition.calculate_recipe", "nutrition.validate_plan",
+				"calendar.get_patient_appointments")) {
 			assertThat(byName.get(readOnlyName).toMap()).containsEntry("annotations", Map.of("readOnlyHint", true));
 			assertThat(byName.get(readOnlyName).requiresNutritionistConfirmation()).isFalse();
 		}

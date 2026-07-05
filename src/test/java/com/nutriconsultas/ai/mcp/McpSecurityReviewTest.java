@@ -37,7 +37,7 @@ class McpSecurityReviewTest {
 			.collect(Collectors.toSet());
 
 		assertThat(mcpInternalNames).isEqualTo(allowlist.allowedToolNames());
-		assertThat(mcpInternalNames).hasSize(8);
+		assertThat(mcpInternalNames).hasSize(9);
 	}
 
 	@Test

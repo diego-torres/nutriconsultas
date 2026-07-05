@@ -98,6 +98,19 @@ public class AiSystemPromptServiceImpl implements AiSystemPromptService {
 		if (StringUtils.hasText(patient.activityLevel())) {
 			section.append("- Nivel de actividad: ").append(patient.activityLevel()).append('\n');
 		}
+		if (StringUtils.hasText(patient.nextAppointmentAtIso())) {
+			section.append("- Próxima cita programada: ").append(patient.nextAppointmentAtIso());
+			if (StringUtils.hasText(patient.nextAppointmentTitle())) {
+				section.append(" — ").append(patient.nextAppointmentTitle().trim());
+			}
+			if (patient.nextAppointmentDurationMinutes() != null && patient.nextAppointmentDurationMinutes() > 0) {
+				section.append(" (").append(patient.nextAppointmentDurationMinutes()).append(" min)");
+			}
+			section.append('\n');
+		}
+		else {
+			section.append("- Próxima cita programada: ninguna registrada\n");
+		}
 		if (!patient.pathologyFlags().isEmpty()) {
 			final String flags = patient.pathologyFlags()
 				.entrySet()
