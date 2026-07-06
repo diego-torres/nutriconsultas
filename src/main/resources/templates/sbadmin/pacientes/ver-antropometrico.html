@@ -228,8 +228,14 @@
                     <!-- Circumferences Tab -->
                     <div class="tab-pane fade" id="circumferences" role="tabpanel" aria-labelledby="circumferences-tab">
                       <div class="row">
-                        <div class="col-md-4" th:if="${measurement.circumferences != null && measurement.circumferences.cephalicCircumference != null}">
-                          <p><strong>Cefálico:</strong> <span th:text="${#numbers.formatDecimal(measurement.circumferences.cephalicCircumference, 1, 1)} + ' cm'">-</span></p>
+                        <div class="col-md-4">
+                          <p class="mb-0">
+                            <strong>Cefálico</strong>
+                            <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('circumferences.cephalicCircumference', 'Cefálico')}"></span>:
+                            <span th:if="${measurement.circumferences != null && measurement.circumferences.cephalicCircumference != null}"
+                                  th:text="${#numbers.formatDecimal(measurement.circumferences.cephalicCircumference, 1, 1)} + ' cm'">-</span>
+                            <span th:unless="${measurement.circumferences != null && measurement.circumferences.cephalicCircumference != null}">—</span>
+                          </p>
                         </div>
                         <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'circumferences.neckCircumference', 'Cuello', ${measurement.circumferences != null ? measurement.circumferences.neckCircumference : null}, 'cm', 20.0, 80.0, 1, true)}"></div>
                         <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: field(${paciente.id}, ${measurement.id}, 'circumferences.midUpperArmCircumferenceRelaxed', 'Brazo relajado', ${measurement.circumferences != null ? measurement.circumferences.midUpperArmCircumferenceRelaxed : null}, 'cm', 10.0, 80.0, 1, true)}"></div>

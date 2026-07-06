@@ -27,7 +27,20 @@
     }
     .invitation-hero-copy {
       padding: 2.5rem 2rem;
-      background: transparent;
+      background: rgba(250, 243, 230, 0.82);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border-radius: 0.75rem;
+    }
+    @media (max-width: 991.98px) {
+      .invitation-hero {
+        min-height: auto;
+        background-position: center top;
+      }
+      .invitation-hero-copy {
+        margin: 1rem 0.75rem 1.25rem;
+        background: rgba(250, 243, 230, 0.9);
+      }
     }
     @media (min-width: 992px) {
       .invitation-hero {
@@ -75,8 +88,9 @@
       letter-spacing: 0.05em;
     }
     .invitation-code-box {
-      background: rgba(255, 255, 255, 0.55);
+      background: rgba(255, 252, 245, 0.75);
       backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       border-radius: 0.5rem;
       padding: 1.25rem 1.5rem;
     }
