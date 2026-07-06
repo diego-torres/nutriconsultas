@@ -36,7 +36,7 @@ class CalendarEventPatientVisitSpecificationsTest {
 	}
 
 	@Test
-	void findAll_withNullOptionalFilters_returnsPatientVisits() {
+	void findAllWithNullOptionalFiltersReturnsPatientVisits() {
 		calendarEventRepository.saveAndFlush(sampleEvent("Consulta A", EventStatus.SCHEDULED, 3));
 		calendarEventRepository.saveAndFlush(sampleEvent("Consulta B", EventStatus.COMPLETED, -1));
 
@@ -49,7 +49,7 @@ class CalendarEventPatientVisitSpecificationsTest {
 	}
 
 	@Test
-	void findAll_withStatusFilter_returnsMatchingVisitsOnly() {
+	void findAllWithStatusFilterReturnsMatchingVisitsOnly() {
 		calendarEventRepository.saveAndFlush(sampleEvent("Programada", EventStatus.SCHEDULED, 2));
 		calendarEventRepository.saveAndFlush(sampleEvent("Completada", EventStatus.COMPLETED, -2));
 
