@@ -14,7 +14,8 @@
               data-paciente-id=${pacienteId},
               data-measurement-id=${measurementId}">
   <p class="mb-0">
-    <strong th:text="${label}">Campo</strong>:
+    <strong th:text="${label}">Campo</strong>
+    <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton(${fieldKey}, ${label})}"></span>:
     <span class="field-display-value"
           th:text="${value != null ? #numbers.formatDecimal(value, 1, decimals) + (unit != null && !unit.isEmpty() ? ' ' + unit : '') : '—'}">—</span>
     <button type="button" class="btn btn-link btn-sm p-0 ml-1 edit-anthropometric-field-btn" title="Corregir valor">

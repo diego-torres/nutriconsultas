@@ -18,6 +18,7 @@ import org.thymeleaf.context.IWebContext;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 
+import com.nutriconsultas.config.AnthropometricVisualAidDialect;
 import com.nutriconsultas.config.ImcGaugeDialect;
 import com.nutriconsultas.validation.template.TemplateValidator;
 import com.nutriconsultas.validation.template.TemplateValidatorRegistry;
@@ -200,6 +201,7 @@ public class ThymeleafValidator {
 		templateResolver.setCacheable(false);
 		templateEngine.setTemplateResolver(templateResolver);
 		templateEngine.addDialect(new ImcGaugeDialect());
+		templateEngine.addDialect(new AnthropometricVisualAidDialect());
 		return templateEngine;
 	}
 

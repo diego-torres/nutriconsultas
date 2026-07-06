@@ -22,6 +22,7 @@
 
   <!-- Custom styles for this template-->
   <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+  <div th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: visualAidStyles}"></div>
 
 </head>
 
@@ -290,21 +291,27 @@
                           <div class="row">
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Subescapular</label>
+                                <label>Subescapular
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('skinfolds.subscapularSkinfold', 'Subescapular')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{skinfolds.subscapularSkinfold}" class="form-control">
                                 <span th:if="${#fields.hasErrors('skinfolds.subscapularSkinfold')}" th:errors="*{skinfolds.subscapularSkinfold}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Tríceps</label>
+                                <label>Tríceps
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('skinfolds.tricepsSkinfold', 'Tríceps')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{skinfolds.tricepsSkinfold}" class="form-control">
                                 <span th:if="${#fields.hasErrors('skinfolds.tricepsSkinfold')}" th:errors="*{skinfolds.tricepsSkinfold}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Bíceps</label>
+                                <label>Bíceps
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('skinfolds.bicepsSkinfold', 'Bíceps')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{skinfolds.bicepsSkinfold}" class="form-control">
                                 <span th:if="${#fields.hasErrors('skinfolds.bicepsSkinfold')}" th:errors="*{skinfolds.bicepsSkinfold}"></span>
                               </div>
@@ -313,21 +320,27 @@
                           <div class="row">
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Cresta iliaca</label>
+                                <label>Cresta iliaca
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('skinfolds.iliacCrestSkinfold', 'Cresta iliaca')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{skinfolds.iliacCrestSkinfold}" class="form-control">
                                 <span th:if="${#fields.hasErrors('skinfolds.iliacCrestSkinfold')}" th:errors="*{skinfolds.iliacCrestSkinfold}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Supraespinal</label>
+                                <label>Supraespinal
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('skinfolds.supraespinalSkinfold', 'Supraespinal')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{skinfolds.supraespinalSkinfold}" class="form-control">
                                 <span th:if="${#fields.hasErrors('skinfolds.supraespinalSkinfold')}" th:errors="*{skinfolds.supraespinalSkinfold}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Abdominal</label>
+                                <label>Abdominal
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('skinfolds.abdominalSkinfold', 'Abdominal')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{skinfolds.abdominalSkinfold}" class="form-control">
                                 <span th:if="${#fields.hasErrors('skinfolds.abdominalSkinfold')}" th:errors="*{skinfolds.abdominalSkinfold}"></span>
                               </div>
@@ -336,21 +349,27 @@
                           <div class="row">
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Muslo frontal</label>
+                                <label>Muslo frontal
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('skinfolds.frontalThighSkinfold', 'Muslo frontal')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{skinfolds.frontalThighSkinfold}" class="form-control">
                                 <span th:if="${#fields.hasErrors('skinfolds.frontalThighSkinfold')}" th:errors="*{skinfolds.frontalThighSkinfold}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Pantorrilla medial</label>
+                                <label>Pantorrilla medial
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('skinfolds.medialCalfSkinfold', 'Pantorrilla medial')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{skinfolds.medialCalfSkinfold}" class="form-control">
                                 <span th:if="${#fields.hasErrors('skinfolds.medialCalfSkinfold')}" th:errors="*{skinfolds.medialCalfSkinfold}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Axilar medial</label>
+                                <label>Axilar medial
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('skinfolds.medialAxillarySkinfold', 'Axilar medial')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{skinfolds.medialAxillarySkinfold}" class="form-control">
                                 <span th:if="${#fields.hasErrors('skinfolds.medialAxillarySkinfold')}" th:errors="*{skinfolds.medialAxillarySkinfold}"></span>
                               </div>
@@ -359,7 +378,9 @@
                           <div class="row">
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Pectoral</label>
+                                <label>Pectoral
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('skinfolds.pectoralSkinfold', 'Pectoral')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{skinfolds.pectoralSkinfold}" class="form-control">
                                 <span th:if="${#fields.hasErrors('skinfolds.pectoralSkinfold')}" th:errors="*{skinfolds.pectoralSkinfold}"></span>
                               </div>
@@ -1245,6 +1266,8 @@
     <!-- Calculation Tab JavaScript -->
     <div th:insert="~{sbadmin/pacientes/calculation-script :: calculationScript(true)}"></div>
     <div th:insert="~{sbadmin/pacientes/body-mass-imc-live :: bodyMassImcScript}"></div>
+    <div th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: modal}"></div>
+    <div th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: visualAidScript}"></div>
 
 </body>
 

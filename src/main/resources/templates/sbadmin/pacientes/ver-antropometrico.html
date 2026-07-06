@@ -24,6 +24,7 @@
   <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
   <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
   <div th:insert="~{sbadmin/pacientes/imc-gauge :: imcGaugeStyles}"></div>
+  <div th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: visualAidStyles}"></div>
 
 </head>
 
@@ -1105,6 +1106,8 @@
 
     <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: editableFieldScript}"></div>
     <div th:replace="~{sbadmin/pacientes/anthropometric-editable-field :: editableFieldInit}"></div>
+    <div th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: modal}"></div>
+    <div th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: visualAidScript}"></div>
 
 </body>
 
