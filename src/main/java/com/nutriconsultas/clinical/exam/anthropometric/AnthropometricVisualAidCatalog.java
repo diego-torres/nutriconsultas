@@ -5,7 +5,7 @@ import java.util.Optional;
 
 /**
  * Static images that illustrate how to take anthropometric measurements (pliegues,
- * perímetros, etc.).
+ * perímetros, diámetros, etc.).
  */
 public final class AnthropometricVisualAidCatalog {
 
@@ -40,7 +40,20 @@ public final class AnthropometricVisualAidCatalog {
 			Map.entry("circumferences.thighCircumference", new VisualAidAsset("perimetros", "muslo.png")),
 			Map.entry("circumferences.midThighCircumference", new VisualAidAsset("perimetros", "muslo-medio.png")),
 			Map.entry("circumferences.calfCircumference", new VisualAidAsset("perimetros", "pantorrilla.png")),
-			Map.entry("circumferences.ankleCircumference", new VisualAidAsset("perimetros", "tobillo.png")));
+			Map.entry("circumferences.ankleCircumference", new VisualAidAsset("perimetros", "tobillo.png")),
+			Map.entry("diameters.biacromialDiameter", new VisualAidAsset("diametros", "biacromial.png")),
+			Map.entry("diameters.biiliocrestalDiameter", new VisualAidAsset("diametros", "biiliocrestal.png")),
+			Map.entry("diameters.footLength", new VisualAidAsset("diametros", "longitud-pie.png")),
+			Map.entry("diameters.transverseThoraxDiameter", new VisualAidAsset("diametros", "transverso-torax.png")),
+			Map.entry("diameters.anteroposteriorThoraxDiameter",
+					new VisualAidAsset("diametros", "anteroposterior-torax.png")),
+			Map.entry("diameters.humerusDiameter", new VisualAidAsset("diametros", "humero.png")),
+			Map.entry("diameters.biestiloidWristDiameter", new VisualAidAsset("diametros", "biestiloideo-muneca.png")),
+			Map.entry("diameters.femurDiameter", new VisualAidAsset("diametros", "femur.png")),
+			Map.entry("diameters.bimaleolarDiameter", new VisualAidAsset("diametros", "bimaleolar.png")),
+			Map.entry("diameters.transverseFootDiameter", new VisualAidAsset("diametros", "transverso-pie.png")),
+			Map.entry("diameters.handLength", new VisualAidAsset("diametros", "longitud-mano.png")),
+			Map.entry("diameters.transverseHandDiameter", new VisualAidAsset("diametros", "transverso-mano.png")));
 
 	private AnthropometricVisualAidCatalog() {
 	}
@@ -53,8 +66,12 @@ public final class AnthropometricVisualAidCatalog {
 		return fieldKey != null && fieldKey.startsWith("circumferences.");
 	}
 
+	public static boolean isDiameterField(final String fieldKey) {
+		return fieldKey != null && fieldKey.startsWith("diameters.");
+	}
+
 	public static boolean isVisualAidField(final String fieldKey) {
-		return isSkinfoldField(fieldKey) || isCircumferenceField(fieldKey);
+		return isSkinfoldField(fieldKey) || isCircumferenceField(fieldKey) || isDiameterField(fieldKey);
 	}
 
 	public static Optional<String> imageFolder(final String fieldKey) {

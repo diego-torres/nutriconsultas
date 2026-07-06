@@ -19,6 +19,10 @@ public final class AnthropometricVisualAidUtils {
 		return AnthropometricVisualAidCatalog.isCircumferenceField(fieldKey);
 	}
 
+	public static boolean isDiameterField(final String fieldKey) {
+		return AnthropometricVisualAidCatalog.isDiameterField(fieldKey);
+	}
+
 	public static boolean isVisualAidField(final String fieldKey) {
 		return AnthropometricVisualAidCatalog.isVisualAidField(fieldKey);
 	}

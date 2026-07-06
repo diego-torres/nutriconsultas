@@ -21,10 +21,17 @@ class AnthropometricVisualAidCatalogTest {
 	}
 
 	@Test
-	void isVisualAidFieldIncludesSkinfoldsAndCircumferences() {
+	void isVisualAidFieldIncludesSkinfoldsCircumferencesAndDiameters() {
 		assertThat(AnthropometricVisualAidCatalog.isVisualAidField("skinfolds.tricepsSkinfold")).isTrue();
 		assertThat(AnthropometricVisualAidCatalog.isVisualAidField("circumferences.neckCircumference")).isTrue();
+		assertThat(AnthropometricVisualAidCatalog.isVisualAidField("diameters.biacromialDiameter")).isTrue();
 		assertThat(AnthropometricVisualAidCatalog.isVisualAidField("bodyMass.weight")).isFalse();
+	}
+
+	@Test
+	void isDiameterFieldRecognizesDiameterKeys() {
+		assertThat(AnthropometricVisualAidCatalog.isDiameterField("diameters.biacromialDiameter")).isTrue();
+		assertThat(AnthropometricVisualAidCatalog.isDiameterField("circumferences.neckCircumference")).isFalse();
 	}
 
 	@Test
@@ -69,11 +76,38 @@ class AnthropometricVisualAidCatalogTest {
 	}
 
 	@Test
+	void imageFileNameReturnsBiacromialAsset() {
+		assertThat(AnthropometricVisualAidCatalog.imageFileName("diameters.biacromialDiameter"))
+			.contains("biacromial.png");
+		assertThat(AnthropometricVisualAidCatalog.imageFolder("diameters.biacromialDiameter")).contains("diametros");
+		assertThat(AnthropometricVisualAidCatalog.imageFileName("diameters.biiliocrestalDiameter"))
+			.contains("biiliocrestal.png");
+		assertThat(AnthropometricVisualAidCatalog.imageFileName("diameters.footLength")).contains("longitud-pie.png");
+		assertThat(AnthropometricVisualAidCatalog.imageFileName("diameters.transverseThoraxDiameter"))
+			.contains("transverso-torax.png");
+		assertThat(AnthropometricVisualAidCatalog.imageFileName("diameters.anteroposteriorThoraxDiameter"))
+			.contains("anteroposterior-torax.png");
+		assertThat(AnthropometricVisualAidCatalog.imageFileName("diameters.humerusDiameter")).contains("humero.png");
+		assertThat(AnthropometricVisualAidCatalog.imageFileName("diameters.biestiloidWristDiameter"))
+			.contains("biestiloideo-muneca.png");
+		assertThat(AnthropometricVisualAidCatalog.imageFileName("diameters.femurDiameter")).contains("femur.png");
+		assertThat(AnthropometricVisualAidCatalog.imageFileName("diameters.bimaleolarDiameter"))
+			.contains("bimaleolar.png");
+		assertThat(AnthropometricVisualAidCatalog.imageFileName("diameters.transverseFootDiameter"))
+			.contains("transverso-pie.png");
+		assertThat(AnthropometricVisualAidCatalog.imageFileName("diameters.handLength")).contains("longitud-mano.png");
+		assertThat(AnthropometricVisualAidCatalog.imageFileName("diameters.transverseHandDiameter"))
+			.contains("transverso-mano.png");
+	}
+
+	@Test
 	void imagePathBuildsStaticUrl() {
 		assertThat(AnthropometricVisualAidCatalog.imagePath("skinfolds.subscapularSkinfold"))
 			.contains("/sbadmin/img/anthropometry/pliegues/subescapular.png");
 		assertThat(AnthropometricVisualAidCatalog.imagePath("circumferences.cephalicCircumference"))
 			.contains("/sbadmin/img/anthropometry/perimetros/cefalico.png");
+		assertThat(AnthropometricVisualAidCatalog.imagePath("diameters.biacromialDiameter"))
+			.contains("/sbadmin/img/anthropometry/diametros/biacromial.png");
 	}
 
 }
