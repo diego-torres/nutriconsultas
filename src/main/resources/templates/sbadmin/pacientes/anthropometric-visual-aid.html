@@ -1,0 +1,94 @@
+<!--
+  Visual aids for anthropometric measurement fields (pliegues cutaneous).
+  Fragments: styles, helpButton(fieldKey, label), modal, script
+-->
+<style th:fragment="visualAidStyles">
+  .anthropometric-visual-aid-btn {
+    vertical-align: baseline;
+    line-height: 1;
+  }
+
+  .anthropometric-visual-aid-btn .fa-question-circle {
+    font-size: 0.95rem;
+  }
+
+  .anthropometric-visual-aid-image {
+    max-height: 70vh;
+    width: auto;
+  }
+</style>
+
+<button th:fragment="helpButton(fieldKey, label)"
+        type="button"
+        class="btn btn-link btn-sm p-0 ml-1 anthropometric-visual-aid-btn"
+        th:if="${#anthropometricVisualAid.isSkinfoldField(fieldKey)}"
+        th:with="fileName=${#anthropometricVisualAid.imageFileName(fieldKey)}"
+        th:attr="data-label=${label},
+                 data-visual-aid-url=${fileName != null} ? @{/sbadmin/img/anthropometry/pliegues/{file}(file=${fileName})} : ''"
+        title="¿Cómo medir?"
+        aria-label="¿Cómo medir?">
+  <i class="fas fa-question-circle text-info" aria-hidden="true"></i>
+  <span class="sr-only">¿Cómo medir?</span>
+</button>
+
+<div th:fragment="modal"
+     class="modal fade"
+     id="anthropometricVisualAidModal"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="anthropometricVisualAidModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="anthropometricVisualAidModalLabel">¿Cómo medir?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="anthropometricVisualAidImage"
+             class="img-fluid anthropometric-visual-aid-image d-none"
+             src=""
+             alt="">
+        <p id="anthropometricVisualAidPlaceholder" class="text-muted mb-0 d-none">
+          Guía visual próximamente.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:fragment="visualAidScript">
+  (function ($) {
+    'use strict';
+
+    $(document).on('click', '.anthropometric-visual-aid-btn', function () {
+      var label = $(this).data('label') || 'Medición';
+      var imageUrl = $(this).data('visual-aid-url') || '';
+      var $modal = $('#anthropometricVisualAidModal');
+      var $image = $('#anthropometricVisualAidImage');
+      var $placeholder = $('#anthropometricVisualAidPlaceholder');
+
+      $('#anthropometricVisualAidModalLabel').text('¿Cómo medir? ' + label);
+
+      if (imageUrl) {
+        $image.attr('src', imageUrl).attr('alt', 'Guía visual: ' + label).removeClass('d-none');
+        $placeholder.addClass('d-none');
+      } else {
+        $image.addClass('d-none').attr('src', '').attr('alt', '');
+        $placeholder.removeClass('d-none');
+      }
+
+      $modal.modal('show');
+    });
+
+    $('#anthropometricVisualAidModal').on('hidden.bs.modal', function () {
+      $('#anthropometricVisualAidImage').addClass('d-none').attr('src', '').attr('alt', '');
+      $('#anthropometricVisualAidPlaceholder').addClass('d-none');
+    });
+  })(jQuery);
+</script>

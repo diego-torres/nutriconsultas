@@ -11,4 +11,9 @@ public class ThymeleafDialectConfig {
 		return new ImcGaugeDialect();
 	}
 
+	@Bean
+	public AnthropometricVisualAidDialect anthropometricVisualAidDialect() {
+		return new AnthropometricVisualAidDialect();
+	}
+
 }
