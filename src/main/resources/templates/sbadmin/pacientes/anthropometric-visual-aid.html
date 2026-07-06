@@ -1,5 +1,5 @@
 <!--
-  Visual aids for anthropometric measurement fields (pliegues cutaneous).
+  Visual aids for anthropometric measurement fields (pliegues, perímetros, diámetros).
   Fragments: styles, helpButton(fieldKey, label), modal, script
 -->
 <style th:fragment="visualAidStyles">
@@ -21,10 +21,10 @@
 <button th:fragment="helpButton(fieldKey, label)"
         type="button"
         class="btn btn-link btn-sm p-0 ml-1 anthropometric-visual-aid-btn"
-        th:if="${#anthropometricVisualAid.isSkinfoldField(fieldKey)}"
-        th:with="fileName=${#anthropometricVisualAid.imageFileName(fieldKey)}"
+        th:if="${#anthropometricVisualAid.isVisualAidField(fieldKey)}"
+        th:with="folder=${#anthropometricVisualAid.imageFolder(fieldKey)}, fileName=${#anthropometricVisualAid.imageFileName(fieldKey)}"
         th:attr="data-label=${label},
-                 data-visual-aid-url=${fileName != null} ? @{/sbadmin/img/anthropometry/pliegues/{file}(file=${fileName})} : ''"
+                 data-visual-aid-url=${fileName != null} ? @{/sbadmin/img/anthropometry/{folder}/{file}(folder=${folder},file=${fileName})} : ''"
         title="¿Cómo medir?"
         aria-label="¿Cómo medir?">
   <i class="fas fa-question-circle text-info" aria-hidden="true"></i>

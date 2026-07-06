@@ -393,21 +393,27 @@
                           <div class="row">
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Cefálico (cm)</label>
+                                <label>Cefálico (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('circumferences.cephalicCircumference', 'Cefálico')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{circumferences.cephalicCircumference}" class="form-control">
                                 <span th:if="${#fields.hasErrors('circumferences.cephalicCircumference')}" th:errors="*{circumferences.cephalicCircumference}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Cuello (cm)</label>
+                                <label>Cuello (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('circumferences.neckCircumference', 'Cuello')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{circumferences.neckCircumference}" class="form-control">
                                 <span th:if="${#fields.hasErrors('circumferences.neckCircumference')}" th:errors="*{circumferences.neckCircumference}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Mitad del brazo relajado (cm)</label>
+                                <label>Mitad del brazo relajado (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('circumferences.midUpperArmCircumferenceRelaxed', 'Brazo relajado')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{circumferences.midUpperArmCircumferenceRelaxed}" class="form-control">
                                 <span th:if="${#fields.hasErrors('circumferences.midUpperArmCircumferenceRelaxed')}" th:errors="*{circumferences.midUpperArmCircumferenceRelaxed}"></span>
                               </div>
@@ -416,21 +422,27 @@
                           <div class="row">
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Mitad del brazo contraído (cm)</label>
+                                <label>Mitad del brazo contraído (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('circumferences.midUpperArmCircumferenceContracted', 'Brazo contraído')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{circumferences.midUpperArmCircumferenceContracted}" class="form-control">
                                 <span th:if="${#fields.hasErrors('circumferences.midUpperArmCircumferenceContracted')}" th:errors="*{circumferences.midUpperArmCircumferenceContracted}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Antebrazo (cm)</label>
+                                <label>Antebrazo (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('circumferences.forearmCircumference', 'Antebrazo')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{circumferences.forearmCircumference}" class="form-control">
                                 <span th:if="${#fields.hasErrors('circumferences.forearmCircumference')}" th:errors="*{circumferences.forearmCircumference}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Muñeca (cm)</label>
+                                <label>Muñeca (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('circumferences.wristCircumference', 'Muñeca')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{circumferences.wristCircumference}" class="form-control">
                                 <span th:if="${#fields.hasErrors('circumferences.wristCircumference')}" th:errors="*{circumferences.wristCircumference}"></span>
                               </div>
@@ -439,21 +451,27 @@
                           <div class="row">
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Mesoesternal (cm)</label>
+                                <label>Mesoesternal (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('circumferences.mesosternalCircumference', 'Mesoesternal')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{circumferences.mesosternalCircumference}" class="form-control">
                                 <span th:if="${#fields.hasErrors('circumferences.mesosternalCircumference')}" th:errors="*{circumferences.mesosternalCircumference}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Umbilical (cm)</label>
+                                <label>Umbilical (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('circumferences.umbilicalCircumference', 'Umbilical')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{circumferences.umbilicalCircumference}" class="form-control">
                                 <span th:if="${#fields.hasErrors('circumferences.umbilicalCircumference')}" th:errors="*{circumferences.umbilicalCircumference}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Cintura (cm)</label>
+                                <label>Cintura (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('circumferences.waistCircumference', 'Cintura')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{circumferences.waistCircumference}" class="form-control">
                                 <span th:if="${#fields.hasErrors('circumferences.waistCircumference')}" th:errors="*{circumferences.waistCircumference}"></span>
                               </div>
@@ -462,21 +480,27 @@
                           <div class="row">
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Cadera (cm)</label>
+                                <label>Cadera (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('circumferences.hipCircumference', 'Cadera')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{circumferences.hipCircumference}" class="form-control">
                                 <span th:if="${#fields.hasErrors('circumferences.hipCircumference')}" th:errors="*{circumferences.hipCircumference}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Muslo (cm)</label>
+                                <label>Muslo (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('circumferences.thighCircumference', 'Muslo')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{circumferences.thighCircumference}" class="form-control">
                                 <span th:if="${#fields.hasErrors('circumferences.thighCircumference')}" th:errors="*{circumferences.thighCircumference}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Muslo medio (cm)</label>
+                                <label>Muslo medio (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('circumferences.midThighCircumference', 'Muslo medio')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{circumferences.midThighCircumference}" class="form-control">
                                 <span th:if="${#fields.hasErrors('circumferences.midThighCircumference')}" th:errors="*{circumferences.midThighCircumference}"></span>
                               </div>
@@ -485,14 +509,18 @@
                           <div class="row">
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Pantorrilla (cm)</label>
+                                <label>Pantorrilla (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('circumferences.calfCircumference', 'Pantorrilla')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{circumferences.calfCircumference}" class="form-control">
                                 <span th:if="${#fields.hasErrors('circumferences.calfCircumference')}" th:errors="*{circumferences.calfCircumference}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Tobillo (cm)</label>
+                                <label>Tobillo (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('circumferences.ankleCircumference', 'Tobillo')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{circumferences.ankleCircumference}" class="form-control">
                                 <span th:if="${#fields.hasErrors('circumferences.ankleCircumference')}" th:errors="*{circumferences.ankleCircumference}"></span>
                               </div>
@@ -505,21 +533,27 @@
                           <div class="row">
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Biacromial (cm)</label>
+                                <label>Biacromial (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('diameters.biacromialDiameter', 'Biacromial')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{diameters.biacromialDiameter}" class="form-control">
                                 <span th:if="${#fields.hasErrors('diameters.biacromialDiameter')}" th:errors="*{diameters.biacromialDiameter}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Biileocrestal (cm)</label>
+                                <label>Biileocrestal (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('diameters.biiliocrestalDiameter', 'Biileocrestal')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{diameters.biiliocrestalDiameter}" class="form-control">
                                 <span th:if="${#fields.hasErrors('diameters.biiliocrestalDiameter')}" th:errors="*{diameters.biiliocrestalDiameter}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Longitud del pie (cm)</label>
+                                <label>Longitud del pie (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('diameters.footLength', 'Longitud del pie')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{diameters.footLength}" class="form-control">
                                 <span th:if="${#fields.hasErrors('diameters.footLength')}" th:errors="*{diameters.footLength}"></span>
                               </div>
@@ -528,21 +562,27 @@
                           <div class="row">
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Transverso del tórax (cm)</label>
+                                <label>Transverso del tórax (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('diameters.transverseThoraxDiameter', 'Transverso del tórax')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{diameters.transverseThoraxDiameter}" class="form-control">
                                 <span th:if="${#fields.hasErrors('diameters.transverseThoraxDiameter')}" th:errors="*{diameters.transverseThoraxDiameter}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Anteroposterior del tórax (cm)</label>
+                                <label>Anteroposterior del tórax (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('diameters.anteroposteriorThoraxDiameter', 'Anteroposterior del tórax')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{diameters.anteroposteriorThoraxDiameter}" class="form-control">
                                 <span th:if="${#fields.hasErrors('diameters.anteroposteriorThoraxDiameter')}" th:errors="*{diameters.anteroposteriorThoraxDiameter}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Húmero (cm)</label>
+                                <label>Húmero (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('diameters.humerusDiameter', 'Húmero')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{diameters.humerusDiameter}" class="form-control">
                                 <span th:if="${#fields.hasErrors('diameters.humerusDiameter')}" th:errors="*{diameters.humerusDiameter}"></span>
                               </div>
@@ -551,21 +591,27 @@
                           <div class="row">
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Biestiloideo de la muñeca (cm)</label>
+                                <label>Biestiloideo de la muñeca (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('diameters.biestiloidWristDiameter', 'Biestiloideo de la muñeca')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{diameters.biestiloidWristDiameter}" class="form-control">
                                 <span th:if="${#fields.hasErrors('diameters.biestiloidWristDiameter')}" th:errors="*{diameters.biestiloidWristDiameter}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Fémur (cm)</label>
+                                <label>Fémur (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('diameters.femurDiameter', 'Fémur')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{diameters.femurDiameter}" class="form-control">
                                 <span th:if="${#fields.hasErrors('diameters.femurDiameter')}" th:errors="*{diameters.femurDiameter}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Bimaleolar (cm)</label>
+                                <label>Bimaleolar (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('diameters.bimaleolarDiameter', 'Bimaleolar')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{diameters.bimaleolarDiameter}" class="form-control">
                                 <span th:if="${#fields.hasErrors('diameters.bimaleolarDiameter')}" th:errors="*{diameters.bimaleolarDiameter}"></span>
                               </div>
@@ -574,21 +620,27 @@
                           <div class="row">
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Transverso del pie (cm)</label>
+                                <label>Transverso del pie (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('diameters.transverseFootDiameter', 'Transverso del pie')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{diameters.transverseFootDiameter}" class="form-control">
                                 <span th:if="${#fields.hasErrors('diameters.transverseFootDiameter')}" th:errors="*{diameters.transverseFootDiameter}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Longitud mano (cm)</label>
+                                <label>Longitud mano (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('diameters.handLength', 'Longitud mano')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{diameters.handLength}" class="form-control">
                                 <span th:if="${#fields.hasErrors('diameters.handLength')}" th:errors="*{diameters.handLength}"></span>
                               </div>
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label>Transverso de la mano (cm)</label>
+                                <label>Transverso de la mano (cm)
+                                  <span th:replace="~{sbadmin/pacientes/anthropometric-visual-aid :: helpButton('diameters.transverseHandDiameter', 'Transverso de la mano')}"></span>
+                                </label>
                                 <input type="number" step="0.01" th:field="*{diameters.transverseHandDiameter}" class="form-control">
                                 <span th:if="${#fields.hasErrors('diameters.transverseHandDiameter')}" th:errors="*{diameters.transverseHandDiameter}"></span>
                               </div>
