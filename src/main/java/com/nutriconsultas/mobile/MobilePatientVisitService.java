@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.calendar.CalendarEvent;
+import com.nutriconsultas.calendar.CalendarEventPatientVisitSpecifications;
 import com.nutriconsultas.calendar.CalendarEventRepository;
 import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.mobile.dto.PagedResponse;
@@ -42,8 +43,8 @@ public class MobilePatientVisitService {
 		final Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "eventDateTime"));
 		final Date fromDate = from != null ? Date.from(from) : null;
 		final Date toDate = to != null ? Date.from(to) : null;
-		final Page<CalendarEvent> events = calendarEventRepository.findPatientVisits(pacienteId, status, fromDate,
-				toDate, pageable);
+		final Page<CalendarEvent> events = calendarEventRepository.findAll(
+				CalendarEventPatientVisitSpecifications.forPatient(pacienteId, status, fromDate, toDate), pageable);
 		final Page<VisitSummaryDto> summaries = events.map(VisitSummaryDto::fromEntity);
 		if (log.isDebugEnabled()) {
 			log.debug("Listed mobile visits page={} size={} count={} for patient {}", safePage, safeSize,
