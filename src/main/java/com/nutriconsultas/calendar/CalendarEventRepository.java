@@ -4,24 +4,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Long> {
+public interface CalendarEventRepository
+		extends JpaRepository<CalendarEvent, Long>, JpaSpecificationExecutor<CalendarEvent> {
 
 	List<CalendarEvent> findByPacienteId(Long pacienteId);
-
-	@Query("SELECT e FROM CalendarEvent e WHERE e.paciente.id = :pacienteId "
-			+ "AND (:status IS NULL OR e.status = :status) "
-			+ "AND (:fromDate IS NULL OR e.eventDateTime >= :fromDate) "
-			+ "AND (:toDate IS NULL OR e.eventDateTime <= :toDate)")
-	Page<CalendarEvent> findPatientVisits(@Param("pacienteId") Long pacienteId, @Param("status") EventStatus status,
-			@Param("fromDate") Date fromDate, @Param("toDate") Date toDate, Pageable pageable);
 
 	Optional<CalendarEvent> findByIdAndPacienteId(Long id, Long pacienteId);
 
