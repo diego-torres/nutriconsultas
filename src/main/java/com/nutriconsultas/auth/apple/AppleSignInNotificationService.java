@@ -22,16 +22,20 @@ public class AppleSignInNotificationService {
 
 	private final AppleSignInAccountLifecycleService accountLifecycleService;
 
+	private final AppleSignInRelayEmailService relayEmailService;
+
 	public AppleSignInNotificationService(final AppleSignInProperties properties,
 			final AppleSignInNotificationVerifier notificationVerifier,
 			final AppleSignInNotificationRepository notificationRepository,
 			final AppleIdentityMappingService identityMappingService,
-			final AppleSignInAccountLifecycleService accountLifecycleService) {
+			final AppleSignInAccountLifecycleService accountLifecycleService,
+			final AppleSignInRelayEmailService relayEmailService) {
 		this.properties = properties;
 		this.notificationVerifier = notificationVerifier;
 		this.notificationRepository = notificationRepository;
 		this.identityMappingService = identityMappingService;
 		this.accountLifecycleService = accountLifecycleService;
+		this.relayEmailService = relayEmailService;
 	}
 
 	@Transactional
@@ -84,6 +88,13 @@ public class AppleSignInNotificationService {
 			final AppleSignInNotificationClaims claims) {
 		if (claims.eventType() == AppleSignInEventType.UNKNOWN) {
 			notification.setProcessingStatus(AppleSignInNotificationProcessingStatus.IGNORED);
+			notification.setProcessedAt(Instant.now());
+			return;
+		}
+		if (claims.eventType().isRelayEmailEvent()) {
+			final AppleSignInLifecycleAction relayAction = relayEmailService.applyRelayEmailEvent(notification, claims);
+			notification.setLifecycleAction(relayAction);
+			notification.setProcessingStatus(AppleSignInNotificationProcessingStatus.PROCESSED);
 			notification.setProcessedAt(Instant.now());
 			return;
 		}

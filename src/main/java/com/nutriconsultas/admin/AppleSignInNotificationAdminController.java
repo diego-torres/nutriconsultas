@@ -24,9 +24,9 @@ public class AppleSignInNotificationAdminController extends AbstractPlatformAdmi
 	}
 
 	@GetMapping
-	public String listDestructiveEvents(@AuthenticationPrincipal final OidcUser principal, final Model model) {
+	public String listReviewableEvents(@AuthenticationPrincipal final OidcUser principal, final Model model) {
 		requirePlatformAdmin(principal, "apple-signin.list");
-		model.addAttribute("notifications", notificationAdminService.findDestructiveEventsNewestFirst());
+		model.addAttribute("notifications", notificationAdminService.findReviewableEventsNewestFirst());
 		model.addAttribute("activeMenu", "apple-signin");
 		return "sbadmin/platform/apple-signin/listado";
 	}

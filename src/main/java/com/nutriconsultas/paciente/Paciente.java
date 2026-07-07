@@ -1,5 +1,6 @@
 package com.nutriconsultas.paciente;
 
+import java.time.Instant;
 import java.util.Date;
 
 import jakarta.persistence.AttributeOverride;
@@ -77,6 +78,22 @@ public class Paciente {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "apple_lifecycle_status", nullable = false, length = 30)
 	private ApplePacienteLifecycleStatus appleLifecycleStatus = ApplePacienteLifecycleStatus.NONE;
+
+	/**
+	 * Apple Hide My Email relay address from server notifications (#507). Not the primary
+	 * identity key — use {@link #appleSubject} and {@link #patientAuthSub}.
+	 */
+	@Column(name = "apple_relay_email", length = 320)
+	private String appleRelayEmail;
+
+	@Column(name = "apple_relay_private_email")
+	private Boolean appleRelayPrivateEmail;
+
+	@Column(name = "apple_relay_forwarding_enabled")
+	private Boolean appleRelayForwardingEnabled;
+
+	@Column(name = "apple_relay_updated_at")
+	private Instant appleRelayUpdatedAt;
 
 	/**
 	 * Invite-only onboarding lifecycle (#132). Existing patients default to

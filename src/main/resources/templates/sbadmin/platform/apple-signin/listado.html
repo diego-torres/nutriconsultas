@@ -23,11 +23,12 @@
         <div th:insert="~{sbadmin/topbar :: topbar}"></div>
         <div class="container-fluid">
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Apple Sign-In — eventos destructivos</h1>
+            <h1 class="h3 mb-0 text-gray-800">Apple Sign-In — notificaciones</h1>
           </div>
           <div class="alert alert-info" role="alert">
-            Revisión de notificaciones Apple (<code>consent-revoked</code>, <code>account-delete</code>).
-            No se eliminan datos automáticamente. Consulte el runbook antes de cualquier borrado manual.
+            Revisión de notificaciones Apple: eventos destructivos (<code>consent-revoked</code>,
+            <code>account-delete</code>) y cambios de reenvío de correo relay (<code>email-disabled</code>,
+            <code>email-enabled</code>). No se eliminan datos automáticamente.
           </div>
           <div class="card shadow mb-4">
             <div class="card-header py-3">
@@ -41,19 +42,31 @@
                       <th>Fecha</th>
                       <th>Tipo</th>
                       <th>ID paciente</th>
+                      <th>Correo relay</th>
+                      <th>Relay privado</th>
                       <th>Mapeo</th>
-                      <th>Acción lifecycle</th>
+                      <th>Acción</th>
                       <th>Estado</th>
                       <th>Event ID</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr th:each="notification : ${notifications}">
+                    <tr th:each="notification : ${notifications}"
+                      th:classappend="${notification.eventType.name() == 'EMAIL_DISABLED'} ? 'table-warning' : ''">
                       <td th:text="${#temporals.format(notification.receivedAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
                       <td th:text="${notification.eventType}">CONSENT_REVOKED</td>
                       <td>
                         <span th:if="${notification.pacienteId != null}" th:text="${notification.pacienteId}">42</span>
                         <span th:unless="${notification.pacienteId != null}" class="text-muted">—</span>
+                      </td>
+                      <td>
+                        <span th:if="${notification.email != null}" th:text="${notification.email}">relay@…</span>
+                        <span th:unless="${notification.email != null}" class="text-muted">—</span>
+                      </td>
+                      <td>
+                        <span th:if="${notification.isPrivateEmail == true}">Sí</span>
+                        <span th:if="${notification.isPrivateEmail == false}">No</span>
+                        <span th:if="${notification.isPrivateEmail == null}" class="text-muted">—</span>
                       </td>
                       <td th:text="${notification.identityMappingStatus}">MAPPED</td>
                       <td th:text="${notification.lifecycleAction}">APPLIED_ACCESS_REVOKED</td>

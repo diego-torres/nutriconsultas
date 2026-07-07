@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 028-paciente-apple-relay-email
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: paciente
+              columnName: apple_relay_email
+      changes:
+        - addColumn:
+            tableName: paciente
+            columns:
+              - column:
+                  name: apple_relay_email
+                  type: VARCHAR(320)
+              - column:
+                  name: apple_relay_private_email
+                  type: BOOLEAN
+              - column:
+                  name: apple_relay_forwarding_enabled
+                  type: BOOLEAN
+              - column:
+                  name: apple_relay_updated_at
+                  type: TIMESTAMP WITH TIME ZONE

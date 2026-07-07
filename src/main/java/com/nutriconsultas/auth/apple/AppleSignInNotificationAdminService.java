@@ -15,9 +15,10 @@ public class AppleSignInNotificationAdminService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<AppleSignInNotification> findDestructiveEventsNewestFirst() {
+	public List<AppleSignInNotification> findReviewableEventsNewestFirst() {
 		return notificationRepository.findByEventTypeInOrderByReceivedAtDesc(
-				List.of(AppleSignInEventType.CONSENT_REVOKED, AppleSignInEventType.ACCOUNT_DELETE));
+				List.of(AppleSignInEventType.CONSENT_REVOKED, AppleSignInEventType.ACCOUNT_DELETE,
+						AppleSignInEventType.EMAIL_DISABLED, AppleSignInEventType.EMAIL_ENABLED));
 	}
 
 }

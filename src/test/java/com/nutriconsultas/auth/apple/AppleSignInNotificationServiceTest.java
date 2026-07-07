@@ -37,6 +37,9 @@ class AppleSignInNotificationServiceTest {
 	@Mock
 	private AppleSignInAccountLifecycleService accountLifecycleService;
 
+	@Mock
+	private AppleSignInRelayEmailService relayEmailService;
+
 	@Test
 	void handleNotificationPersistsVerifiedEventInObserveOnlyMode() {
 		final AppleSignInNotificationClaims claims = sampleClaims(AppleSignInEventType.CONSENT_REVOKED);
@@ -82,12 +85,14 @@ class AppleSignInNotificationServiceTest {
 	}
 
 	@Test
-	void handleNotificationPersistsNonDestructiveLifecycleAsNotApplicable() {
+	void handleNotificationAppliesRelayEmailEvent() {
 		final AppleSignInNotificationClaims claims = sampleClaims(AppleSignInEventType.EMAIL_ENABLED);
 		when(notificationVerifier.verifyAndParse("signed-payload")).thenReturn(claims);
 		when(notificationRepository.findByAppleEventId("evt-1")).thenReturn(Optional.empty());
 		when(identityMappingService.mapNotification("001234.abc", "relay@privaterelay.appleid.com"))
 			.thenReturn(AppleIdentityMappingResult.mapped("apple|001234.abc", 42L));
+		when(relayEmailService.applyRelayEmailEvent(any(AppleSignInNotification.class), eq(claims)))
+			.thenReturn(AppleSignInLifecycleAction.APPLIED_RELAY_FORWARDING_ENABLED);
 		when(notificationRepository.save(any(AppleSignInNotification.class)))
 			.thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -96,7 +101,10 @@ class AppleSignInNotificationServiceTest {
 		final ArgumentCaptor<AppleSignInNotification> captor = ArgumentCaptor.forClass(AppleSignInNotification.class);
 		verify(notificationRepository).save(captor.capture());
 		assertThat(captor.getValue().getAppleSubject()).isEqualTo("001234.abc");
-		assertThat(captor.getValue().getLifecycleAction()).isEqualTo(AppleSignInLifecycleAction.NOT_APPLICABLE);
+		assertThat(captor.getValue().getLifecycleAction())
+			.isEqualTo(AppleSignInLifecycleAction.APPLIED_RELAY_FORWARDING_ENABLED);
+		verify(relayEmailService).applyRelayEmailEvent(any(AppleSignInNotification.class), eq(claims));
+		verify(accountLifecycleService, never()).applyDestructiveEvent(any(), any());
 	}
 
 	@Test
