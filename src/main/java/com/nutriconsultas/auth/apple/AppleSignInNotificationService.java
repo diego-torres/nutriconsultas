@@ -18,12 +18,16 @@ public class AppleSignInNotificationService {
 
 	private final AppleSignInNotificationRepository notificationRepository;
 
+	private final AppleIdentityMappingService identityMappingService;
+
 	public AppleSignInNotificationService(final AppleSignInProperties properties,
 			final AppleSignInNotificationVerifier notificationVerifier,
-			final AppleSignInNotificationRepository notificationRepository) {
+			final AppleSignInNotificationRepository notificationRepository,
+			final AppleIdentityMappingService identityMappingService) {
 		this.properties = properties;
 		this.notificationVerifier = notificationVerifier;
 		this.notificationRepository = notificationRepository;
+		this.identityMappingService = identityMappingService;
 	}
 
 	@Transactional
@@ -46,6 +50,7 @@ public class AppleSignInNotificationService {
 		notification.setRawClaimsJson(claims.rawClaimsJson());
 		notification.setProcessingStatus(AppleSignInNotificationProcessingStatus.VERIFIED);
 		notification.setReceivedAt(Instant.now());
+		applyIdentityMapping(notification, claims);
 		processNotification(notification, claims);
 		notificationRepository.save(notification);
 		if (log.isInfoEnabled()) {
@@ -53,6 +58,22 @@ public class AppleSignInNotificationService {
 					claims.eventType(), notification.getProcessingStatus());
 		}
 		return AppleSignInWebhookOutcome.PROCESSED;
+	}
+
+	private void applyIdentityMapping(final AppleSignInNotification notification,
+			final AppleSignInNotificationClaims claims) {
+		final AppleIdentityMappingResult mappingResult = identityMappingService.mapNotification(claims.appleSubject(),
+				claims.email());
+		notification.setIdentityMappingStatus(mappingResult.status());
+		notification.setAuth0UserId(mappingResult.auth0UserId());
+		notification.setPacienteId(mappingResult.pacienteId());
+		if (StringUtils.hasText(mappingResult.detail())) {
+			notification.setProcessingError(truncateDetail(mappingResult.detail()));
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Apple identity mapping status={} pacienteId={}", mappingResult.status(),
+					mappingResult.pacienteId());
+		}
 	}
 
 	private void processNotification(final AppleSignInNotification notification,
@@ -77,6 +98,13 @@ public class AppleSignInNotificationService {
 			log.debug("Apple sign-in observe-only processing complete for subject hash={}",
 					claims.appleSubject().hashCode());
 		}
+	}
+
+	private static String truncateDetail(final String detail) {
+		if (detail == null || detail.length() <= 500) {
+			return detail;
+		}
+		return detail.substring(0, 497) + "...";
 	}
 
 }

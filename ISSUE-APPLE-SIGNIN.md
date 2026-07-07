@@ -6,7 +6,7 @@ Living index of GitHub issues that implement **Sign in with Apple** through Auth
 **Roadmap:** [`docs/auth/apple-signin-backend-roadmap.md`](docs/auth/apple-signin-backend-roadmap.md)  
 **Setup (maintainer runbook):** [`docs/auth/apple-signin-setup.md`](docs/auth/apple-signin-setup.md)  
 **Epic comment:** [#497](https://github.com/diego-torres/nutriconsultas/issues/497#issuecomment-4904658287)  
-**Last updated:** 2026-07-07 — #498–#503 in progress on `apple-signin/498-503-webhook-foundation`.
+**Last updated:** 2026-07-07 — #504–#505 in progress on `apple-signin/504-505-identity-mapping`.
 
 > **Scope.** Auth0 Apple social connection, backend webhook (`POST /rest/webhooks/apple/sign-in`), signed payload verification, notification persistence, identity mapping, and safe lifecycle handling. **Does not** replace Auth0 with custom Apple OAuth. Patient mobile API: [`ISSUE.md`](ISSUE.md). Auth0 patient gate: [`docs/auth0/PATIENT-POST-LOGIN-GATE.md`](docs/auth0/PATIENT-POST-LOGIN-GATE.md).
 
@@ -41,14 +41,14 @@ Suggested order matches [`docs/auth/apple-signin-backend-roadmap.md`](docs/auth/
 | Step | # | Title | URL | State | Depends on | Notes |
 |------|---|-------|-----|-------|------------|-------|
 | 1 | **497** | Configure Auth0 Apple connection | https://github.com/diego-torres/nutriconsultas/issues/497 | **open** | — | Auth0 tenant + Apple Developer Portal; manual setup **NEXT** |
-| 2 | 498 | Add webhook configuration properties | https://github.com/diego-torres/nutriconsultas/issues/498 | **in-progress** | — | Branch `apple-signin/498-503-webhook-foundation` |
-| 3 | 499 | Add webhook controller | https://github.com/diego-torres/nutriconsultas/issues/499 | **in-progress** | 498 | `POST /rest/webhooks/apple/sign-in` |
-| 4 | 500 | Permit webhook path through Spring Security | https://github.com/diego-torres/nutriconsultas/issues/500 | **in-progress** | 499 | Public route; verify payload in handler |
-| 5 | 501 | Implement signed payload verification | https://github.com/diego-torres/nutriconsultas/issues/501 | **in-progress** | 498, 499 | Nimbus JOSE JWT + JWKS cache |
-| 6 | 502 | Persist notification events (Liquibase + JPA) | https://github.com/diego-torres/nutriconsultas/issues/502 | **in-progress** | 498 | `apple_signin_notification`; idempotent |
-| 7 | 503 | Create notification processing service | https://github.com/diego-torres/nutriconsultas/issues/503 | **in-progress** | 501, 502 | Observe-only first; no destructive auto |
-| 8 | 504 | Map Apple/Auth0 identity to local users | https://github.com/diego-torres/nutriconsultas/issues/504 | open | 497, 503 | Stable subject over email |
-| 9 | 505 | Add Auth0 Management API client methods | https://github.com/diego-torres/nutriconsultas/issues/505 | open | 497 | Narrow scopes; delete disabled by default |
+| 2 | 498 | Add webhook configuration properties | https://github.com/diego-torres/nutriconsultas/issues/498 | **done** | — | PR #513 |
+| 3 | 499 | Add webhook controller | https://github.com/diego-torres/nutriconsultas/issues/499 | **done** | 498 | PR #513 |
+| 4 | 500 | Permit webhook path through Spring Security | https://github.com/diego-torres/nutriconsultas/issues/500 | **done** | 499 | PR #513 |
+| 5 | 501 | Implement signed payload verification | https://github.com/diego-torres/nutriconsultas/issues/501 | **done** | 498, 499 | PR #513 |
+| 6 | 502 | Persist notification events (Liquibase + JPA) | https://github.com/diego-torres/nutriconsultas/issues/502 | **done** | 498 | PR #513 |
+| 7 | 503 | Create notification processing service | https://github.com/diego-torres/nutriconsultas/issues/503 | **done** | 501, 502 | PR #513 |
+| 8 | 504 | Map Apple/Auth0 identity to local users | https://github.com/diego-torres/nutriconsultas/issues/504 | **in-progress** | 497, 503 | Branch `apple-signin/504-505-identity-mapping` |
+| 9 | 505 | Add Auth0 Management API client methods | https://github.com/diego-torres/nutriconsultas/issues/505 | **in-progress** | 497 | Same branch as #504 |
 | 10 | 506 | Add safe account deletion workflow | https://github.com/diego-torres/nutriconsultas/issues/506 | open | 503, 504, 505 | Staged; no silent hard-delete |
 | 11 | 507 | Handle private relay email changes | https://github.com/diego-torres/nutriconsultas/issues/507 | open | 503, 504 | Relay metadata; no email-as-primary-key |
 | 12 | 508 | Add observability and operational alerts | https://github.com/diego-torres/nutriconsultas/issues/508 | open | 499, 503 | Metrics + structured logs |

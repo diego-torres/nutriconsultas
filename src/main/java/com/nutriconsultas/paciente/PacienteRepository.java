@@ -36,6 +36,8 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 
 	Optional<Paciente> findByPatientAuthSub(String patientAuthSub);
 
+	Optional<Paciente> findByAppleSubject(String appleSubject);
+
 	@Query(LIST_VIEW_SELECT + "FROM Paciente p WHERE p.userId = :userId")
 	Page<PacienteListView> findListViewsByUserId(@Param("userId") String userId, Pageable pageable);
 
