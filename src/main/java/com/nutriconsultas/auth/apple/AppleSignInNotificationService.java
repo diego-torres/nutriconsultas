@@ -24,24 +24,30 @@ public class AppleSignInNotificationService {
 
 	private final AppleSignInRelayEmailService relayEmailService;
 
+	private final AppleSignInWebhookObservability webhookObservability;
+
 	public AppleSignInNotificationService(final AppleSignInProperties properties,
 			final AppleSignInNotificationVerifier notificationVerifier,
 			final AppleSignInNotificationRepository notificationRepository,
 			final AppleIdentityMappingService identityMappingService,
 			final AppleSignInAccountLifecycleService accountLifecycleService,
-			final AppleSignInRelayEmailService relayEmailService) {
+			final AppleSignInRelayEmailService relayEmailService,
+			final AppleSignInWebhookObservability webhookObservability) {
 		this.properties = properties;
 		this.notificationVerifier = notificationVerifier;
 		this.notificationRepository = notificationRepository;
 		this.identityMappingService = identityMappingService;
 		this.accountLifecycleService = accountLifecycleService;
 		this.relayEmailService = relayEmailService;
+		this.webhookObservability = webhookObservability;
 	}
 
 	@Transactional
 	public AppleSignInWebhookOutcome handleNotification(final String signedPayload) {
 		final AppleSignInNotificationClaims claims = notificationVerifier.verifyAndParse(signedPayload);
+		webhookObservability.recordVerificationSuccess(claims);
 		if (notificationRepository.findByAppleEventId(claims.eventId()).isPresent()) {
+			webhookObservability.recordDuplicate(claims);
 			if (log.isDebugEnabled()) {
 				log.debug("Duplicate Apple sign-in notification eventId={} type={}", claims.eventId(),
 						claims.eventType());
@@ -61,6 +67,7 @@ public class AppleSignInNotificationService {
 		applyIdentityMapping(notification, claims);
 		processNotification(notification, claims);
 		notificationRepository.save(notification);
+		webhookObservability.recordProcessed(notification, claims);
 		if (log.isInfoEnabled()) {
 			log.info("Processed Apple sign-in notification eventId={} type={} status={}", claims.eventId(),
 					claims.eventType(), notification.getProcessingStatus());

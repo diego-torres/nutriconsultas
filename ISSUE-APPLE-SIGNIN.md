@@ -6,8 +6,9 @@ Living index of GitHub issues that implement **Sign in with Apple** through Auth
 **Roadmap:** [`docs/auth/apple-signin-backend-roadmap.md`](docs/auth/apple-signin-backend-roadmap.md)  
 **Setup (maintainer runbook):** [`docs/auth/apple-signin-setup.md`](docs/auth/apple-signin-setup.md)  
 **Deletion runbook:** [`docs/auth/apple-signin-deletion-runbook.md`](docs/auth/apple-signin-deletion-runbook.md)  
+**Observability:** [`docs/auth/apple-signin-observability.md`](docs/auth/apple-signin-observability.md)  
 **Epic comment:** [#497](https://github.com/diego-torres/nutriconsultas/issues/497#issuecomment-4904658287)  
-**Last updated:** 2026-07-07 — ~~#506~~ **done** (PR #515); #507 in progress on `apple-signin/507-relay-email`.
+**Last updated:** 2026-07-07 — ~~#507~~ **done** (PR #516); #508 in progress on `apple-signin/508-observability`.
 
 > **Scope.** Auth0 Apple social connection, backend webhook (`POST /rest/webhooks/apple/sign-in`), signed payload verification, notification persistence, identity mapping, and safe lifecycle handling. **Does not** replace Auth0 with custom Apple OAuth. Patient mobile API: [`ISSUE.md`](ISSUE.md). Auth0 patient gate: [`docs/auth0/PATIENT-POST-LOGIN-GATE.md`](docs/auth0/PATIENT-POST-LOGIN-GATE.md).
 
@@ -51,8 +52,8 @@ Suggested order matches [`docs/auth/apple-signin-backend-roadmap.md`](docs/auth/
 | 8 | 504 | Map Apple/Auth0 identity to local users | https://github.com/diego-torres/nutriconsultas/issues/504 | **done** | 497, 503 | PR #514 |
 | 9 | 505 | Add Auth0 Management API client methods | https://github.com/diego-torres/nutriconsultas/issues/505 | **done** | 497 | PR #514 |
 | 10 | **506** | Add safe account deletion workflow | https://github.com/diego-torres/nutriconsultas/issues/506 | **done** | 503, 504, 505 | PR #515 |
-| 11 | **507** | Handle private relay email changes | https://github.com/diego-torres/nutriconsultas/issues/507 | **in-progress** | 503, 504 | Branch `apple-signin/507-relay-email` **NEXT** |
-| 12 | 508 | Add observability and operational alerts | https://github.com/diego-torres/nutriconsultas/issues/508 | open | 499, 503 | Metrics + structured logs |
+| 11 | **507** | Handle private relay email changes | https://github.com/diego-torres/nutriconsultas/issues/507 | **done** | 503, 504 | PR #516 |
+| 12 | **508** | Add observability and operational alerts | https://github.com/diego-torres/nutriconsultas/issues/508 | **in-progress** | 499, 503 | Branch `apple-signin/508-observability` **NEXT** |
 | 13 | 509 | Add integration tests | https://github.com/diego-torres/nutriconsultas/issues/509 | open | 499–503 | No live Apple/Auth0 in tests |
 | 14 | 510 | Document Apple Developer Portal setup | https://github.com/diego-torres/nutriconsultas/issues/510 | open | — | Expand [`apple-signin-setup.md`](docs/auth/apple-signin-setup.md) |
 | 15 | 511 | Add production rollout plan | https://github.com/diego-torres/nutriconsultas/issues/511 | open | 497–510 | Phased: observe → metadata → restrict → optional delete |

@@ -3,6 +3,7 @@ package com.nutriconsultas.auth.apple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,6 +29,9 @@ class AppleSignInWebhookControllerTest {
 	@Mock
 	private AppleSignInNotificationService notificationService;
 
+	@Mock
+	private AppleSignInWebhookObservability webhookObservability;
+
 	@InjectMocks
 	private AppleSignInWebhookController controller;
 
@@ -36,7 +40,7 @@ class AppleSignInWebhookControllerTest {
 	@BeforeEach
 	void setUp() {
 		mockMvc = MockMvcBuilders.standaloneSetup(controller)
-			.setControllerAdvice(new AppleSignInWebhookExceptionHandler())
+			.setControllerAdvice(new AppleSignInWebhookExceptionHandler(webhookObservability))
 			.build();
 	}
 
@@ -68,6 +72,8 @@ class AppleSignInWebhookControllerTest {
 		mockMvc
 			.perform(post(WEBHOOK_URL).contentType(MediaType.APPLICATION_JSON).content("{\"payload\":\"signed-jwt\"}"))
 			.andExpect(status().isOk());
+
+		verify(webhookObservability).recordWebhookReceived();
 	}
 
 	@Test
@@ -78,6 +84,9 @@ class AppleSignInWebhookControllerTest {
 
 		mockMvc.perform(post(WEBHOOK_URL).contentType(MediaType.APPLICATION_JSON).content("{\"payload\":\"bad-jwt\"}"))
 			.andExpect(status().isBadRequest());
+
+		verify(webhookObservability).recordWebhookReceived();
+		verify(webhookObservability).recordVerificationFailure("Invalid Apple notification signature");
 	}
 
 }

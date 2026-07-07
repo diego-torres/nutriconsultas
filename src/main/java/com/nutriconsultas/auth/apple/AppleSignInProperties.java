@@ -29,6 +29,8 @@ public class AppleSignInProperties {
 
 	private Duration jwksCacheTtl = Duration.ofHours(6);
 
+	private int verificationFailureAlertThreshold = 5;
+
 	public Webhook getWebhook() {
 		return webhook;
 	}
@@ -91,6 +93,16 @@ public class AppleSignInProperties {
 	public void setJwksCacheTtl(final Duration jwksCacheTtl) {
 		if (jwksCacheTtl != null && !jwksCacheTtl.isNegative() && !jwksCacheTtl.isZero()) {
 			this.jwksCacheTtl = jwksCacheTtl;
+		}
+	}
+
+	public int getVerificationFailureAlertThreshold() {
+		return verificationFailureAlertThreshold;
+	}
+
+	public void setVerificationFailureAlertThreshold(final int verificationFailureAlertThreshold) {
+		if (verificationFailureAlertThreshold > 0) {
+			this.verificationFailureAlertThreshold = verificationFailureAlertThreshold;
 		}
 	}
 

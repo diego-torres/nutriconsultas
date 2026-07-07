@@ -16,6 +16,7 @@ class AppleSignInPropertiesTest {
 
 		assertThat(properties.isWebhookEnabled()).isFalse();
 		assertThat(properties.isAutoProcessDestructiveEvents()).isFalse();
+		assertThat(properties.getVerificationFailureAlertThreshold()).isEqualTo(5);
 		assertThat(properties.getExpectedIssuer()).isEqualTo("https://appleid.apple.com");
 		assertThat(properties.getJwksUrl()).isEqualTo("https://appleid.apple.com/auth/keys");
 		assertThat(properties.isWebhookConfigured()).isFalse();
