@@ -13,10 +13,7 @@ public final class AppleRelayEmailSupport {
 	}
 
 	public static boolean isApplePrivateRelayEmail(final String email) {
-		if (!StringUtils.hasText(email)) {
-			return false;
-		}
-		return email.trim().toLowerCase().endsWith(PRIVATE_RELAY_DOMAIN);
+		return StringUtils.hasText(email) && email.trim().toLowerCase().endsWith(PRIVATE_RELAY_DOMAIN);
 	}
 
 }

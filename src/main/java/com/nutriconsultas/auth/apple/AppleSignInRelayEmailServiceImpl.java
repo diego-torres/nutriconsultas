@@ -2,6 +2,7 @@ package com.nutriconsultas.auth.apple;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -80,16 +81,14 @@ public class AppleSignInRelayEmailServiceImpl implements AppleSignInRelayEmailSe
 		if (!paciente.getAppleRelayForwardingEnabled().equals(forwardingEnabled)) {
 			return false;
 		}
-		if (StringUtils.hasText(claims.email()) && StringUtils.hasText(paciente.getAppleRelayEmail())) {
-			return claims.email().trim().equalsIgnoreCase(paciente.getAppleRelayEmail());
-		}
-		return true;
+		return !StringUtils.hasText(claims.email()) || !StringUtils.hasText(paciente.getAppleRelayEmail())
+				|| claims.email().trim().equalsIgnoreCase(paciente.getAppleRelayEmail());
 	}
 
 	private static boolean applyRelayMetadata(final Paciente paciente, final AppleSignInNotificationClaims claims,
 			final boolean forwardingEnabled) {
 		final String relayEmail = StringUtils.hasText(claims.email()) ? claims.email().trim() : null;
-		final boolean contactEmailProtected = relayEmail != null && !mayUpdateContactEmail(paciente, relayEmail);
+		final boolean contactEmailProtected = relayEmail != null && !mayUpdateContactEmail(paciente);
 		if (relayEmail != null) {
 			paciente.setAppleRelayEmail(relayEmail);
 		}
@@ -104,19 +103,14 @@ public class AppleSignInRelayEmailServiceImpl implements AppleSignInRelayEmailSe
 		return contactEmailProtected;
 	}
 
-	private static boolean mayUpdateContactEmail(final Paciente paciente, final String newRelayEmail) {
+	private static boolean mayUpdateContactEmail(final Paciente paciente) {
 		final String currentEmail = paciente.getEmail();
 		if (!StringUtils.hasText(currentEmail)) {
 			return true;
 		}
-		if (AppleRelayEmailSupport.isApplePrivateRelayEmail(currentEmail)) {
-			return true;
-		}
-		if (StringUtils.hasText(paciente.getAppleRelayEmail())
-				&& currentEmail.equalsIgnoreCase(paciente.getAppleRelayEmail())) {
-			return true;
-		}
-		return false;
+		return AppleRelayEmailSupport.isApplePrivateRelayEmail(currentEmail)
+				|| (StringUtils.hasText(paciente.getAppleRelayEmail())
+						&& currentEmail.equalsIgnoreCase(paciente.getAppleRelayEmail()));
 	}
 
 	private void updateAuth0RelayMetadata(final AppleSignInNotification notification,
@@ -124,7 +118,7 @@ public class AppleSignInRelayEmailServiceImpl implements AppleSignInRelayEmailSe
 		if (!StringUtils.hasText(notification.getAuth0UserId()) || !auth0ManagementUserService.isConfigured()) {
 			return;
 		}
-		final HashMap<String, Object> metadata = new HashMap<>();
+		final Map<String, Object> metadata = new HashMap<>();
 		metadata.put("apple_relay_forwarding_enabled", forwardingEnabled);
 		metadata.put("apple_relay_updated_at", Instant.now().toString());
 		metadata.put("apple_relay_last_event_id", notification.getAppleEventId());
