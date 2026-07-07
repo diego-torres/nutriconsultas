@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 import com.nutriconsultas.mobile.MobilePatientAccessRules.Decision;
+import com.nutriconsultas.paciente.ApplePacienteLifecycleStatus;
 import com.nutriconsultas.paciente.PacienteStatus;
 import com.nutriconsultas.paciente.projection.PacienteAuthView;
 
@@ -48,6 +49,16 @@ class MobilePatientAccessRulesTest {
 	void evaluatePatientApiAccess_revokedPatient_requiresOnboarding() {
 		final PacienteAuthView authView = MobileTestPacienteAuthViews.authView(1L, "auth0|revoked", "owner",
 				PacienteStatus.REVOKED);
+
+		final Decision decision = MobilePatientAccessRules.evaluatePatientApiAccess(Optional.of(authView), VISITS_PATH);
+
+		assertThat(decision).isEqualTo(Decision.ONBOARDING_REQUIRED);
+	}
+
+	@Test
+	void evaluatePatientApiAccess_appleAccessRevoked_requiresOnboarding() {
+		final PacienteAuthView authView = MobileTestPacienteAuthViews.authView(1L, "apple|001234.abc", "owner",
+				PacienteStatus.ACTIVE, ApplePacienteLifecycleStatus.ACCESS_REVOKED);
 
 		final Decision decision = MobilePatientAccessRules.evaluatePatientApiAccess(Optional.of(authView), VISITS_PATH);
 

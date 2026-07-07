@@ -2,6 +2,7 @@ package com.nutriconsultas.mobile;
 
 import java.util.Optional;
 
+import com.nutriconsultas.paciente.ApplePacienteLifecycleStatus;
 import com.nutriconsultas.paciente.PacienteStatus;
 import com.nutriconsultas.paciente.projection.PacienteAuthView;
 
@@ -34,6 +35,10 @@ public final class MobilePatientAccessRules {
 	}
 
 	private static Decision evaluateLinkedPatientAccess(final PacienteAuthView authView, final String path) {
+		if (authView.getAppleLifecycleStatus() != null
+				&& authView.getAppleLifecycleStatus() != ApplePacienteLifecycleStatus.NONE) {
+			return Decision.ONBOARDING_REQUIRED;
+		}
 		final PacienteStatus status = authView.getStatus();
 		if (status == PacienteStatus.REVOKED || status == PacienteStatus.INVITED) {
 			return Decision.ONBOARDING_REQUIRED;

@@ -1,5 +1,6 @@
 package com.nutriconsultas.mobile;
 
+import com.nutriconsultas.paciente.ApplePacienteLifecycleStatus;
 import com.nutriconsultas.paciente.PacienteStatus;
 import com.nutriconsultas.paciente.projection.PacienteAuthView;
 
@@ -14,6 +15,11 @@ public final class MobileTestPacienteAuthViews {
 
 	public static PacienteAuthView authView(final Long id, final String patientAuthSub, final String userId,
 			final PacienteStatus status) {
+		return authView(id, patientAuthSub, userId, status, ApplePacienteLifecycleStatus.NONE);
+	}
+
+	public static PacienteAuthView authView(final Long id, final String patientAuthSub, final String userId,
+			final PacienteStatus status, final ApplePacienteLifecycleStatus appleLifecycleStatus) {
 		return new PacienteAuthView() {
 			@Override
 			public Long getId() {
@@ -33,6 +39,11 @@ public final class MobileTestPacienteAuthViews {
 			@Override
 			public PacienteStatus getStatus() {
 				return status;
+			}
+
+			@Override
+			public ApplePacienteLifecycleStatus getAppleLifecycleStatus() {
+				return appleLifecycleStatus;
 			}
 		};
 	}

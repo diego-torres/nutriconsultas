@@ -620,7 +620,7 @@ Issue registry: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Epic ~~**#
 
 Issue registry: [`ISSUE-APPLE-SIGNIN.md`](ISSUE-APPLE-SIGNIN.md). Roadmap: [`docs/auth/apple-signin-backend-roadmap.md`](docs/auth/apple-signin-backend-roadmap.md). Setup: [`docs/auth/apple-signin-setup.md`](docs/auth/apple-signin-setup.md).
 
-**Epic #497–#511** (2026-07-07): Sign in with Apple via Auth0 + Apple server-to-server webhook (`POST /rest/webhooks/apple/sign-in`). **NEXT:** [#497](https://github.com/diego-torres/nutriconsultas/issues/497) Auth0 Apple connection. Auth0 callback: `https://minutriporcion-prod.us.auth0.com/login/callback` — **not** the Apple notification URL.
+**Epic #497–#511** (2026-07-07): Sign in with Apple via Auth0 + Apple server-to-server webhook (`POST /rest/webhooks/apple/sign-in`). ~~#497~~ **done** (Auth0 prod + Apple connection, 2026-07-07). ~~#498–#505~~ **done** (PRs [#513](https://github.com/diego-torres/nutriconsultas/pull/513), [#514](https://github.com/diego-torres/nutriconsultas/pull/514)). **NEXT:** [#506](https://github.com/diego-torres/nutriconsultas/issues/506) safe deletion workflow (`apple-signin/506-deletion-workflow`). Auth0 callback: `https://minutriporcion-prod.us.auth0.com/login/callback` — **not** the Apple notification URL.
 
 ## Resources
 

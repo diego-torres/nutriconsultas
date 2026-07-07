@@ -1,5 +1,6 @@
 package com.nutriconsultas.paciente.projection;
 
+import com.nutriconsultas.paciente.ApplePacienteLifecycleStatus;
 import com.nutriconsultas.paciente.PacienteStatus;
 
 /**
@@ -15,5 +16,7 @@ public interface PacienteAuthView {
 	String getUserId();
 
 	PacienteStatus getStatus();
+
+	ApplePacienteLifecycleStatus getAppleLifecycleStatus();
 
 }

@@ -2,6 +2,7 @@ package com.nutriconsultas.auth.apple;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,6 +34,9 @@ class AppleSignInNotificationServiceTest {
 	@Mock
 	private AppleIdentityMappingService identityMappingService;
 
+	@Mock
+	private AppleSignInAccountLifecycleService accountLifecycleService;
+
 	@Test
 	void handleNotificationPersistsVerifiedEventInObserveOnlyMode() {
 		final AppleSignInNotificationClaims claims = sampleClaims(AppleSignInEventType.CONSENT_REVOKED);
@@ -51,10 +55,48 @@ class AppleSignInNotificationServiceTest {
 		verify(notificationRepository).save(captor.capture());
 		assertThat(captor.getValue().getProcessingStatus())
 			.isEqualTo(AppleSignInNotificationProcessingStatus.PROCESSED);
+		assertThat(captor.getValue().getLifecycleAction()).isEqualTo(AppleSignInLifecycleAction.SKIPPED_OBSERVE_ONLY);
+		verify(accountLifecycleService, never()).applyDestructiveEvent(any(), any());
+	}
+
+	@Test
+	void handleNotificationAppliesLifecycleWhenAutoProcessEnabled() {
+		final AppleSignInNotificationClaims claims = sampleClaims(AppleSignInEventType.ACCOUNT_DELETE);
+		when(notificationVerifier.verifyAndParse("signed-payload")).thenReturn(claims);
+		when(notificationRepository.findByAppleEventId("evt-1")).thenReturn(Optional.empty());
+		when(properties.isAutoProcessDestructiveEvents()).thenReturn(true);
+		when(identityMappingService.mapNotification("001234.abc", "relay@privaterelay.appleid.com"))
+			.thenReturn(AppleIdentityMappingResult.mapped("apple|001234.abc", 42L));
+		when(accountLifecycleService.applyDestructiveEvent(any(AppleSignInNotification.class),
+				eq(AppleSignInEventType.ACCOUNT_DELETE)))
+			.thenReturn(AppleSignInLifecycleAction.APPLIED_PENDING_DELETION_REVIEW);
+		when(notificationRepository.save(any(AppleSignInNotification.class)))
+			.thenAnswer(invocation -> invocation.getArgument(0));
+
+		service.handleNotification("signed-payload");
+
+		final ArgumentCaptor<AppleSignInNotification> captor = ArgumentCaptor.forClass(AppleSignInNotification.class);
+		verify(notificationRepository).save(captor.capture());
+		assertThat(captor.getValue().getLifecycleAction())
+			.isEqualTo(AppleSignInLifecycleAction.APPLIED_PENDING_DELETION_REVIEW);
+	}
+
+	@Test
+	void handleNotificationPersistsNonDestructiveLifecycleAsNotApplicable() {
+		final AppleSignInNotificationClaims claims = sampleClaims(AppleSignInEventType.EMAIL_ENABLED);
+		when(notificationVerifier.verifyAndParse("signed-payload")).thenReturn(claims);
+		when(notificationRepository.findByAppleEventId("evt-1")).thenReturn(Optional.empty());
+		when(identityMappingService.mapNotification("001234.abc", "relay@privaterelay.appleid.com"))
+			.thenReturn(AppleIdentityMappingResult.mapped("apple|001234.abc", 42L));
+		when(notificationRepository.save(any(AppleSignInNotification.class)))
+			.thenAnswer(invocation -> invocation.getArgument(0));
+
+		service.handleNotification("signed-payload");
+
+		final ArgumentCaptor<AppleSignInNotification> captor = ArgumentCaptor.forClass(AppleSignInNotification.class);
+		verify(notificationRepository).save(captor.capture());
 		assertThat(captor.getValue().getAppleSubject()).isEqualTo("001234.abc");
-		assertThat(captor.getValue().getAuth0UserId()).isEqualTo("apple|001234.abc");
-		assertThat(captor.getValue().getPacienteId()).isEqualTo(42L);
-		assertThat(captor.getValue().getIdentityMappingStatus()).isEqualTo(AppleIdentityMappingStatus.MAPPED);
+		assertThat(captor.getValue().getLifecycleAction()).isEqualTo(AppleSignInLifecycleAction.NOT_APPLICABLE);
 	}
 
 	@Test

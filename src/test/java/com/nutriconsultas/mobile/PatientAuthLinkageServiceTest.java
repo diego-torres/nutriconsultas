@@ -167,6 +167,11 @@ class PatientAuthLinkageServiceTest {
 			public com.nutriconsultas.paciente.PacienteStatus getStatus() {
 				return entity.getStatus();
 			}
+
+			@Override
+			public com.nutriconsultas.paciente.ApplePacienteLifecycleStatus getAppleLifecycleStatus() {
+				return entity.getAppleLifecycleStatus();
+			}
 		};
 	}
 

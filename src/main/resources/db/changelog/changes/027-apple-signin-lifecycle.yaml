@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 027-paciente-apple-lifecycle-status
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: paciente
+              columnName: apple_lifecycle_status
+      changes:
+        - addColumn:
+            tableName: paciente
+            columns:
+              - column:
+                  name: apple_lifecycle_status
+                  type: VARCHAR(30)
+                  defaultValue: NONE
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: 027-apple-signin-lifecycle-action
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: apple_signin_notification
+              columnName: lifecycle_action
+      changes:
+        - addColumn:
+            tableName: apple_signin_notification
+            columns:
+              - column:
+                  name: lifecycle_action
+                  type: VARCHAR(40)
