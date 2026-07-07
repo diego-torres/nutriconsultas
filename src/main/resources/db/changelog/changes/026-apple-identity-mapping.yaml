@@ -1,0 +1,46 @@
+databaseChangeLog:
+  - changeSet:
+      id: 026-paciente-apple-subject
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: paciente
+              columnName: apple_subject
+      changes:
+        - addColumn:
+            tableName: paciente
+            columns:
+              - column:
+                  name: apple_subject
+                  type: VARCHAR(255)
+        - addUniqueConstraint:
+            tableName: paciente
+            columnNames: apple_subject
+            constraintName: uk_paciente_apple_subject
+  - changeSet:
+      id: 026-apple-signin-identity-mapping-columns
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: apple_signin_notification
+              columnName: identity_mapping_status
+      changes:
+        - addColumn:
+            tableName: apple_signin_notification
+            columns:
+              - column:
+                  name: identity_mapping_status
+                  type: VARCHAR(30)
+              - column:
+                  name: paciente_id
+                  type: BIGINT
+        - createIndex:
+            indexName: idx_apple_signin_notification_mapping_status
+            tableName: apple_signin_notification
+            columns:
+              - column:
+                  name: identity_mapping_status

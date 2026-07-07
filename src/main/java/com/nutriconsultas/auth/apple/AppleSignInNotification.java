@@ -45,6 +45,13 @@ public class AppleSignInNotification {
 	@Column(name = "auth0_user_id", length = 255)
 	private String auth0UserId;
 
+	@Column(name = "paciente_id")
+	private Long pacienteId;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "identity_mapping_status", length = 30)
+	private AppleIdentityMappingStatus identityMappingStatus;
+
 	@Column(length = 320)
 	private String email;
 

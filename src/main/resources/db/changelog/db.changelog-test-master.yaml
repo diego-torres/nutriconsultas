@@ -65,3 +65,6 @@ databaseChangeLog:
   - include:
       file: changes/025-apple-signin-notification.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/026-apple-identity-mapping.yaml
+      relativeToChangelogFile: true

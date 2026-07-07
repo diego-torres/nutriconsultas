@@ -30,12 +30,17 @@ class AppleSignInNotificationServiceTest {
 	@Mock
 	private AppleSignInNotificationRepository notificationRepository;
 
+	@Mock
+	private AppleIdentityMappingService identityMappingService;
+
 	@Test
 	void handleNotificationPersistsVerifiedEventInObserveOnlyMode() {
 		final AppleSignInNotificationClaims claims = sampleClaims(AppleSignInEventType.CONSENT_REVOKED);
 		when(notificationVerifier.verifyAndParse("signed-payload")).thenReturn(claims);
 		when(notificationRepository.findByAppleEventId("evt-1")).thenReturn(Optional.empty());
 		when(properties.isAutoProcessDestructiveEvents()).thenReturn(false);
+		when(identityMappingService.mapNotification("001234.abc", "relay@privaterelay.appleid.com"))
+			.thenReturn(AppleIdentityMappingResult.mapped("apple|001234.abc", 42L));
 		when(notificationRepository.save(any(AppleSignInNotification.class)))
 			.thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -47,6 +52,9 @@ class AppleSignInNotificationServiceTest {
 		assertThat(captor.getValue().getProcessingStatus())
 			.isEqualTo(AppleSignInNotificationProcessingStatus.PROCESSED);
 		assertThat(captor.getValue().getAppleSubject()).isEqualTo("001234.abc");
+		assertThat(captor.getValue().getAuth0UserId()).isEqualTo("apple|001234.abc");
+		assertThat(captor.getValue().getPacienteId()).isEqualTo(42L);
+		assertThat(captor.getValue().getIdentityMappingStatus()).isEqualTo(AppleIdentityMappingStatus.MAPPED);
 	}
 
 	@Test
@@ -66,6 +74,8 @@ class AppleSignInNotificationServiceTest {
 		final AppleSignInNotificationClaims claims = sampleClaims(AppleSignInEventType.UNKNOWN);
 		when(notificationVerifier.verifyAndParse("signed-payload")).thenReturn(claims);
 		when(notificationRepository.findByAppleEventId("evt-1")).thenReturn(Optional.empty());
+		when(identityMappingService.mapNotification("001234.abc", "relay@privaterelay.appleid.com"))
+			.thenReturn(AppleIdentityMappingResult.noAuth0User());
 		when(notificationRepository.save(any(AppleSignInNotification.class)))
 			.thenAnswer(invocation -> invocation.getArgument(0));
 

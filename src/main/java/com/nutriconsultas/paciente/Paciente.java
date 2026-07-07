@@ -65,6 +65,13 @@ public class Paciente {
 	private String patientAuthSub;
 
 	/**
+	 * Apple Sign-In stable subject for mobile patient identity (#504). Distinct from
+	 * relay email; used for Apple server notification mapping.
+	 */
+	@Column(name = "apple_subject", unique = true, length = 255)
+	private String appleSubject;
+
+	/**
 	 * Invite-only onboarding lifecycle (#132). Existing patients default to
 	 * {@link PacienteStatus#ACTIVE}.
 	 */
