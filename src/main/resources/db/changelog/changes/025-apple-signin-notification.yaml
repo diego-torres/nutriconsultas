@@ -1,0 +1,84 @@
+databaseChangeLog:
+  - changeSet:
+      id: 025-apple-signin-notification
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: apple_signin_notification
+      changes:
+        - createTable:
+            tableName: apple_signin_notification
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: apple_event_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: event_type
+                  type: VARCHAR(40)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: apple_subject
+                  type: VARCHAR(255)
+              - column:
+                  name: auth0_user_id
+                  type: VARCHAR(255)
+              - column:
+                  name: email
+                  type: VARCHAR(320)
+              - column:
+                  name: email_verified
+                  type: BOOLEAN
+              - column:
+                  name: is_private_email
+                  type: BOOLEAN
+              - column:
+                  name: raw_claims_json
+                  type: TEXT
+              - column:
+                  name: processing_status
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: processing_error
+                  type: VARCHAR(500)
+              - column:
+                  name: received_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: processed_at
+                  type: TIMESTAMP
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: apple_signin_notification
+            columnNames: apple_event_id
+            constraintName: uk_apple_signin_notification_event_id
+        - createIndex:
+            indexName: idx_apple_signin_notification_status
+            tableName: apple_signin_notification
+            columns:
+              - column:
+                  name: processing_status

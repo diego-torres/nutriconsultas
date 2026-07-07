@@ -49,6 +49,8 @@ public class SecurityConfig {
 			.headers(headers -> headers.frameOptions(options -> options.sameOrigin()))
 			.authorizeHttpRequests(ar -> ar.requestMatchers("/rest/subscription/payment/webhook")
 				.permitAll()
+				.requestMatchers(HttpMethod.POST, "/rest/webhooks/apple/sign-in")
+				.permitAll()
 				.requestMatchers("/rest/public/booking/**")
 				.permitAll()
 				.requestMatchers(HttpMethod.GET, "/invitation/nutritionist/redeem")

@@ -11,7 +11,8 @@ import org.springframework.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Deterministic pre-orchestration guard against excessive bulk generation requests (#447).
+ * Deterministic pre-orchestration guard against excessive bulk generation requests
+ * (#447).
  */
 @Component
 @Slf4j
@@ -21,22 +22,23 @@ public class AiRequestScopeGuard {
 
 	private static final Pattern WEEK_COUNT_PATTERN = Pattern.compile("(\\d{1,3})\\s*semanas?", Pattern.UNICODE_CASE);
 
-	private static final Pattern DISH_COUNT_PATTERN = Pattern
-		.compile("(\\d{1,4})\\s*(platillos?|recetas?|platos?)", Pattern.UNICODE_CASE | Pattern.CASE_INSENSITIVE);
+	private static final Pattern DISH_COUNT_PATTERN = Pattern.compile("(\\d{1,4})\\s*(platillos?|recetas?|platos?)",
+			Pattern.UNICODE_CASE | Pattern.CASE_INSENSITIVE);
 
-	private static final Pattern PLAN_COUNT_PATTERN = Pattern.compile("(\\d{1,4})\\s*(planes?(?:\\s+nutricionales?|"
-			+ "\\s+alimenticios?)?)", Pattern.UNICODE_CASE | Pattern.CASE_INSENSITIVE);
+	private static final Pattern PLAN_COUNT_PATTERN = Pattern.compile(
+			"(\\d{1,4})\\s*(planes?(?:\\s+nutricionales?|" + "\\s+alimenticios?)?)",
+			Pattern.UNICODE_CASE | Pattern.CASE_INSENSITIVE);
 
 	private static final Pattern MENU_COUNT_PATTERN = Pattern.compile("(\\d{1,4})\\s*men[uú]s?",
 			Pattern.UNICODE_CASE | Pattern.CASE_INSENSITIVE);
 
-	private static final Pattern LARGE_BULK_PATTERN = Pattern.compile("(\\d{2,})\\s*(planes?|platillos?|recetas?"
-			+ "|men[uú]s?|pacientes?)", Pattern.UNICODE_CASE | Pattern.CASE_INSENSITIVE);
-
-	private static final Pattern MULTI_PATIENT_PATTERN = Pattern.compile(
-			"todos\\s+(mis\\s+)?pacientes|cada\\s+paciente|para\\s+todos\\s+(mis\\s+)?pacientes|"
-					+ "todos\\s+los\\s+pacientes",
+	private static final Pattern LARGE_BULK_PATTERN = Pattern.compile(
+			"(\\d{2,})\\s*(planes?|platillos?|recetas?" + "|men[uú]s?|pacientes?)",
 			Pattern.UNICODE_CASE | Pattern.CASE_INSENSITIVE);
+
+	private static final Pattern MULTI_PATIENT_PATTERN = Pattern
+		.compile("todos\\s+(mis\\s+)?pacientes|cada\\s+paciente|para\\s+todos\\s+(mis\\s+)?pacientes|"
+				+ "todos\\s+los\\s+pacientes", Pattern.UNICODE_CASE | Pattern.CASE_INSENSITIVE);
 
 	private static final Pattern YEAR_SCOPE_PATTERN = Pattern.compile(
 			"cada\\s+d[ií]a\\s+del\\s+a[nñ]o|todo\\s+el\\s+a[nñ]o|365\\s*d[ií]as",
@@ -124,8 +126,8 @@ public class AiRequestScopeGuard {
 			return Optional.of(violation(AiRequestScopeKind.BULK_COUNT, 100,
 					refusalFor(AiRequestScopeKind.DISH_COUNT, 100, "platillos")));
 		}
-		return Optional.of(violation(AiRequestScopeKind.BULK_COUNT, 100,
-				refusalFor(AiRequestScopeKind.MENU_DAYS, 100, "menús")));
+		return Optional
+			.of(violation(AiRequestScopeKind.BULK_COUNT, 100, refusalFor(AiRequestScopeKind.MENU_DAYS, 100, "menús")));
 	}
 
 	private Optional<AiRequestScopeViolation> evaluateDishCount(final String normalized) {

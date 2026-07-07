@@ -8,8 +8,7 @@ import java.util.List;
 public record OpenAiChatCompletionRequest(List<OpenAiChatMessage> messages, List<OpenAiToolDefinition> tools,
 		OpenAiCompletionParameters parameters) {
 
-	public OpenAiChatCompletionRequest(final List<OpenAiChatMessage> messages,
-			final List<OpenAiToolDefinition> tools) {
+	public OpenAiChatCompletionRequest(final List<OpenAiChatMessage> messages, final List<OpenAiToolDefinition> tools) {
 		this(messages, tools, OpenAiCompletionParameters.none());
 	}
 

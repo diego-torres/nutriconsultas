@@ -62,8 +62,7 @@ class AiRequestScopeGuardTest {
 		final AiProperties properties = new AiProperties();
 		final AiRequestScopeGuard scopeGuard = new AiRequestScopeGuard(properties);
 
-		assertThat(scopeGuard.refusalMessageForUnits(new AiRequestScopeRequestedUnits(null, 5, null, null)))
-			.get()
+		assertThat(scopeGuard.refusalMessageForUnits(new AiRequestScopeRequestedUnits(null, 5, null, null))).get()
 			.isEqualTo(AiRequestScopeGuard.refusalFor(AiRequestScopeKind.DISH_COUNT, 5, "platillos"));
 	}
 
@@ -76,9 +75,7 @@ class AiRequestScopeGuardTest {
 
 	@Test
 	void refusesYearLongScope() {
-		final AiRequestScopeViolation violation = guard
-			.evaluate("Genera comidas para cada día del año")
-			.orElseThrow();
+		final AiRequestScopeViolation violation = guard.evaluate("Genera comidas para cada día del año").orElseThrow();
 
 		assertThat(violation.kind()).isEqualTo(AiRequestScopeKind.DIET_PLAN_DAYS);
 		assertThat(violation.requestedAmount()).isEqualTo(365);
