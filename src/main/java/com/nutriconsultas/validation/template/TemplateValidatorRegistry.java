@@ -7,6 +7,7 @@ import com.nutriconsultas.alimentos.AlimentoTemplateValidator;
 import com.nutriconsultas.ai.AiChatTemplateValidator;
 import com.nutriconsultas.calendar.CalendarTemplateValidator;
 import com.nutriconsultas.contact.ContactInquiryTemplateValidator;
+import com.nutriconsultas.auth.apple.AppleSignInNotificationTemplateValidator;
 import com.nutriconsultas.dieta.DietaTemplateValidator;
 import com.nutriconsultas.paciente.PacienteTemplateValidator;
 import com.nutriconsultas.platillos.PlatilloTemplateValidator;
@@ -44,6 +45,7 @@ public class TemplateValidatorRegistry {
 		register(new ClinicDirectorTemplateValidator());
 		register(new SubscriptionBillingTemplateValidator());
 		register(new ContactInquiryTemplateValidator());
+		register(new AppleSignInNotificationTemplateValidator());
 		register(new InvitationRedeemTemplateValidator());
 		register(new EternaTemplateValidator());
 		// Default validator should be last (handles "*")
