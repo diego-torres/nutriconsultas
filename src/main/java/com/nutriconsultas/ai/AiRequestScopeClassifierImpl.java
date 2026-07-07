@@ -53,11 +53,12 @@ public class AiRequestScopeClassifierImpl implements AiRequestScopeClassifier {
 			return Optional.empty();
 		}
 		try {
-			final OpenAiChatCompletionResponse response = openAiClientService.chatCompletion(
-					new OpenAiChatCompletionRequest(
-							List.of(OpenAiChatMessage.system(classifierPrompt),
-									OpenAiChatMessage.user(sanitizedUserMessage)),
-							List.of(), OpenAiCompletionParameters.scopeClassifier(properties.getScopeClassifierMaxTokens())));
+			final OpenAiChatCompletionResponse response = openAiClientService
+				.chatCompletion(new OpenAiChatCompletionRequest(
+						List.of(OpenAiChatMessage.system(classifierPrompt),
+								OpenAiChatMessage.user(sanitizedUserMessage)),
+						List.of(),
+						OpenAiCompletionParameters.scopeClassifier(properties.getScopeClassifierMaxTokens())));
 			final ParsedClassification parsed = parseClassification(response.content());
 			if (parsed.decision() == AiRequestScopeDecision.ALLOW) {
 				if (log.isInfoEnabled()) {
@@ -67,12 +68,12 @@ public class AiRequestScopeClassifierImpl implements AiRequestScopeClassifier {
 			}
 			final String assistantMessage = buildAssistantMessage(parsed);
 			if (log.isInfoEnabled()) {
-				log.info("AI scope classifier decision={} days={} dishes={} plans={} patients={}",
-						parsed.decision(), parsed.requestedUnits().days(), parsed.requestedUnits().dishes(),
+				log.info("AI scope classifier decision={} days={} dishes={} plans={} patients={}", parsed.decision(),
+						parsed.requestedUnits().days(), parsed.requestedUnits().dishes(),
 						parsed.requestedUnits().plans(), parsed.requestedUnits().patients());
 			}
-			return Optional.of(new AiRequestScopeClassifierOutcome(parsed.decision(), assistantMessage,
-					parsed.requestedUnits()));
+			return Optional
+				.of(new AiRequestScopeClassifierOutcome(parsed.decision(), assistantMessage, parsed.requestedUnits()));
 		}
 		catch (final RuntimeException ex) {
 			if (log.isWarnEnabled()) {
@@ -92,8 +93,7 @@ public class AiRequestScopeClassifierImpl implements AiRequestScopeClassifier {
 			}
 			return DEFAULT_CLARIFY_MESSAGE;
 		}
-		final Optional<String> refusalFromUnits = requestScopeGuard
-			.refusalMessageForUnits(parsed.requestedUnits());
+		final Optional<String> refusalFromUnits = requestScopeGuard.refusalMessageForUnits(parsed.requestedUnits());
 		if (refusalFromUnits.isPresent()) {
 			return refusalFromUnits.get();
 		}

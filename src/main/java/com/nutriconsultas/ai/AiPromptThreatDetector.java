@@ -38,7 +38,8 @@ public final class AiPromptThreatDetector {
 					Pattern.CASE_INSENSITIVE),
 			Pattern.compile("you\\s+are\\s+(the|a|an)?\\s*(admin|administrator|platform\\s+admin|root|superuser)",
 					Pattern.CASE_INSENSITIVE),
-			Pattern.compile("role-?play\\s+as\\s+(an?\\s+)?((platform|system)\\s+)?(admin|administrator|developer|unrestricted\\s+ai)",
+			Pattern.compile(
+					"role-?play\\s+as\\s+(an?\\s+)?((platform|system)\\s+)?(admin|administrator|developer|unrestricted\\s+ai)",
 					Pattern.CASE_INSENSITIVE),
 			Pattern.compile("simulate\\s+(unrestricted|unfiltered|developer)\\s+mode", Pattern.CASE_INSENSITIVE),
 			Pattern.compile("bypass\\s+(safety|restrictions|guardrails|content\\s+filters?)", Pattern.CASE_INSENSITIVE),

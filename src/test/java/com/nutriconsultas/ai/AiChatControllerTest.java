@@ -78,7 +78,8 @@ class AiChatControllerTest {
 		final SubscriptionLimitExceededException denied = new SubscriptionLimitExceededException(
 				SubscriptionErrorResponses.KEY_AI_ASSISTANT_DENIED);
 		org.mockito.Mockito.doThrow(denied).when(aiEntitlementGuard).assertCanUseAiAssistant(USER_ID);
-		when(subscriptionErrorResponses.resolve(denied)).thenReturn("El asistente de IA nutricional requiere el plan Plus o Consultorio.");
+		when(subscriptionErrorResponses.resolve(denied))
+			.thenReturn("El asistente de IA nutricional requiere el plan Plus o Consultorio.");
 
 		assertThatThrownBy(() -> controller.chatHome(null, new ExtendedModelMap(), principal()))
 			.isInstanceOf(ResponseStatusException.class)

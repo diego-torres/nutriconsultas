@@ -30,14 +30,13 @@ public class AiRequestScopePipeline {
 		final Optional<AiRequestScopeViolation> violation = deterministicGuard.evaluate(sanitizedUserMessage);
 		if (violation.isPresent()) {
 			final AiRequestScopeViolation scopeViolation = violation.get();
-			return Optional.of(new ScopeShortCircuit(scopeViolation.refusalMessage(), "scope refusal",
-					scopeViolation.kind()));
+			return Optional
+				.of(new ScopeShortCircuit(scopeViolation.refusalMessage(), "scope refusal", scopeViolation.kind()));
 		}
 		final Optional<AiRequestScopeClassifierOutcome> classifierOutcome = classifier.evaluate(sanitizedUserMessage);
 		if (classifierOutcome.isPresent()) {
 			final AiRequestScopeClassifierOutcome outcome = classifierOutcome.get();
-			return Optional.of(
-					new ScopeShortCircuit(outcome.assistantMessage(), "classifier", outcome.decision()));
+			return Optional.of(new ScopeShortCircuit(outcome.assistantMessage(), "classifier", outcome.decision()));
 		}
 		return Optional.empty();
 	}

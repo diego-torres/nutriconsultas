@@ -14,7 +14,6 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
-import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -33,22 +32,24 @@ public final class AppleSignInTestJwtSupport {
 		return () -> jwkSet;
 	}
 
-	public static String signNotification(final RSAKey rsaKey, final String issuer, final String audience,
-			final String eventId, final String eventKey, final Map<String, Object> eventPayload, final Instant issuedAt,
-			final Instant expiresAt) throws JOSEException {
+	public static String signNotification(final SignNotificationRequest request) throws JOSEException {
 		final Map<String, Object> events = new LinkedHashMap<>();
-		events.put(eventKey, eventPayload);
-		final JWTClaimsSet claims = new JWTClaimsSet.Builder().issuer(issuer)
-			.audience(List.of(audience))
-			.jwtID(eventId)
-			.issueTime(Date.from(issuedAt))
-			.expirationTime(Date.from(expiresAt))
+		events.put(request.eventKey(), request.eventPayload());
+		final JWTClaimsSet claims = new JWTClaimsSet.Builder().issuer(request.issuer())
+			.audience(List.of(request.audience()))
+			.jwtID(request.eventId())
+			.issueTime(Date.from(request.issuedAt()))
+			.expirationTime(Date.from(request.expiresAt()))
 			.claim("events", events)
 			.build();
 		final SignedJWT signedJwt = new SignedJWT(
-				new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(rsaKey.getKeyID()).build(), claims);
-		signedJwt.sign(new RSASSASigner(rsaKey));
+				new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(request.rsaKey().getKeyID()).build(), claims);
+		signedJwt.sign(new RSASSASigner(request.rsaKey()));
 		return signedJwt.serialize();
+	}
+
+	public record SignNotificationRequest(RSAKey rsaKey, String issuer, String audience, String eventId,
+			String eventKey, Map<String, Object> eventPayload, Instant issuedAt, Instant expiresAt) {
 	}
 
 }

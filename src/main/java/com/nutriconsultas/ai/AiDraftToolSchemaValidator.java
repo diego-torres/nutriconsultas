@@ -47,8 +47,8 @@ public final class AiDraftToolSchemaValidator {
 	public AiDraftToolSchemaValidator() {
 		final String schemaContent = loadSchemaContent();
 		final JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012,
-				builder -> builder.schemaLoaders(
-						schemaLoaders -> schemaLoaders.schemas(Map.of(SCHEMA_DOCUMENT_ID, schemaContent))));
+				builder -> builder
+					.schemaLoaders(schemaLoaders -> schemaLoaders.schemas(Map.of(SCHEMA_DOCUMENT_ID, schemaContent))));
 		dishDraftSchema = factory.getSchema(SchemaLocation.of(SCHEMA_DOCUMENT_ID + "#/definitions/DishDraftInput"));
 		menuDraftSchema = factory.getSchema(SchemaLocation.of(SCHEMA_DOCUMENT_ID + "#/definitions/MenuDraftInput"));
 		dietPlanDraftSchema = factory

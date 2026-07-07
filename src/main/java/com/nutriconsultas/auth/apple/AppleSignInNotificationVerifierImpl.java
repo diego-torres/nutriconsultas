@@ -48,9 +48,6 @@ public class AppleSignInNotificationVerifierImpl implements AppleSignInNotificat
 			validateStandardClaims(claimsSet);
 			return mapClaims(claimsSet);
 		}
-		catch (InvalidAppleSignInNotificationException ex) {
-			throw ex;
-		}
 		catch (BadJOSEException ex) {
 			throw new InvalidAppleSignInNotificationException("Invalid Apple notification signature", ex);
 		}

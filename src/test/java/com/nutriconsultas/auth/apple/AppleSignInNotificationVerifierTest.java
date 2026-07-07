@@ -89,8 +89,9 @@ class AppleSignInNotificationVerifierTest {
 	void verifyAndParseRejectsExpiredPayload() throws Exception {
 		final Instant issuedAt = Instant.now().minus(2, ChronoUnit.HOURS);
 		final Instant expiresAt = Instant.now().minus(1, ChronoUnit.HOURS);
-		final String signedPayload = AppleSignInTestJwtSupport.signNotification(rsaKey, ISSUER, AUDIENCE, "evt-expired",
-				"email-disabled", sampleEventPayload(), issuedAt, expiresAt);
+		final String signedPayload = AppleSignInTestJwtSupport
+			.signNotification(new AppleSignInTestJwtSupport.SignNotificationRequest(rsaKey, ISSUER, AUDIENCE,
+					"evt-expired", "email-disabled", sampleEventPayload(), issuedAt, expiresAt));
 
 		assertThatThrownBy(() -> verifier.verifyAndParse(signedPayload))
 			.isInstanceOf(InvalidAppleSignInNotificationException.class);
@@ -99,8 +100,8 @@ class AppleSignInNotificationVerifierTest {
 	private String signSampleNotification(final String eventId, final String eventKey) throws JOSEException {
 		final Instant issuedAt = Instant.now();
 		final Instant expiresAt = issuedAt.plus(1, ChronoUnit.HOURS);
-		return AppleSignInTestJwtSupport.signNotification(rsaKey, ISSUER, AUDIENCE, eventId, eventKey,
-				sampleEventPayload(), issuedAt, expiresAt);
+		return AppleSignInTestJwtSupport.signNotification(new AppleSignInTestJwtSupport.SignNotificationRequest(rsaKey,
+				ISSUER, AUDIENCE, eventId, eventKey, sampleEventPayload(), issuedAt, expiresAt));
 	}
 
 	private static Map<String, Object> sampleEventPayload() {

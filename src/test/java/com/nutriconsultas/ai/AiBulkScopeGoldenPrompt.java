@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * Golden prompt fixtures for bulk scope evaluation (#450). Mirrors scenarios documented in
- * {@code docs/ai/BULK-SCOPE-GOLDEN-PROMPTS.md}.
+ * Golden prompt fixtures for bulk scope evaluation (#450). Mirrors scenarios documented
+ * in {@code docs/ai/BULK-SCOPE-GOLDEN-PROMPTS.md}.
  */
 final class AiBulkScopeGoldenPrompt {
 
