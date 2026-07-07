@@ -72,6 +72,13 @@ public class Paciente {
 	private String appleSubject;
 
 	/**
+	 * Apple server notification lifecycle (#506). Never hard-deletes data automatically.
+	 */
+	@Enumerated(EnumType.STRING)
+	@Column(name = "apple_lifecycle_status", nullable = false, length = 30)
+	private ApplePacienteLifecycleStatus appleLifecycleStatus = ApplePacienteLifecycleStatus.NONE;
+
+	/**
 	 * Invite-only onboarding lifecycle (#132). Existing patients default to
 	 * {@link PacienteStatus#ACTIVE}.
 	 */

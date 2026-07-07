@@ -51,37 +51,9 @@ POST /rest/webhooks/apple/sign-in
 
 # Issue List
 
-## Issue 1: Configure Auth0 Apple connection — [#497](https://github.com/diego-torres/nutriconsultas/issues/497)
+## Issue 1: Configure Auth0 Apple connection — [#497](https://github.com/diego-torres/nutriconsultas/issues/497) — **done** (2026-07-07)
 
-### Problem
-
-Auth0 must be configured with Apple credentials so native iOS Sign in with Apple can exchange the Apple authorization code for Auth0 tokens.
-
-### Tasks
-
-- Create or confirm Apple App ID / Bundle ID.
-- Create or confirm Apple Services ID if web-based Sign in with Apple is needed.
-- Create or confirm Apple private key for Sign in with Apple.
-- Configure Auth0 Apple social connection with:
-  - Apple Team ID
-  - App ID / Bundle ID
-  - Key ID
-  - Client Secret Signing Key
-- Enable the Apple connection for the Minutriporcion application.
-- Confirm the Auth0 callback remains:
-
-```text
-https://minutriporcion-prod.us.auth0.com/login/callback
-```
-
-### Acceptance criteria
-
-- Apple appears as an enabled Auth0 social connection.
-- iOS login can exchange an Apple authorization code through Auth0.
-- Auth0 creates or reuses a user profile for Apple sign-in users.
-- Google login and existing Auth0 login flows still work.
-
----
+Auth0 production tenant `minutriporcion-prod.us.auth0.com` with Apple social connection enabled for Minutriporcion applications. See [`apple-signin-setup.md`](apple-signin-setup.md).
 
 ## Issue 2: Add Apple webhook configuration properties — [#498](https://github.com/diego-torres/nutriconsultas/issues/498)
 
@@ -598,16 +570,16 @@ Apple lifecycle handling is security-sensitive. It should be rolled out graduall
 
 # Suggested Implementation Order
 
-1. [#497](https://github.com/diego-torres/nutriconsultas/issues/497) — Configure Auth0 Apple connection.
-2. [#498](https://github.com/diego-torres/nutriconsultas/issues/498) — Add backend configuration properties.
-3. [#499](https://github.com/diego-torres/nutriconsultas/issues/499) — Add webhook controller.
-4. [#500](https://github.com/diego-torres/nutriconsultas/issues/500) — Permit webhook route in security config.
-5. [#501](https://github.com/diego-torres/nutriconsultas/issues/501) — Implement payload verification.
-6. [#502](https://github.com/diego-torres/nutriconsultas/issues/502) — Persist notification events.
-7. [#503](https://github.com/diego-torres/nutriconsultas/issues/503) — Add notification processing service.
-8. [#504](https://github.com/diego-torres/nutriconsultas/issues/504) — Add Apple/Auth0/local identity mapping.
-9. [#505](https://github.com/diego-torres/nutriconsultas/issues/505) — Add Auth0 Management API methods.
-10. [#506](https://github.com/diego-torres/nutriconsultas/issues/506) — Add safe account deletion workflow.
+1. ~~[#497](https://github.com/diego-torres/nutriconsultas/issues/497)~~ — Configure Auth0 Apple connection (**done**, 2026-07-07).
+2. ~~[#498](https://github.com/diego-torres/nutriconsultas/issues/498)~~ — Add backend configuration properties (**done**, PR #513).
+3. ~~[#499](https://github.com/diego-torres/nutriconsultas/issues/499)~~ — Add webhook controller (**done**, PR #513).
+4. ~~[#500](https://github.com/diego-torres/nutriconsultas/issues/500)~~ — Permit webhook route in security config (**done**, PR #513).
+5. ~~[#501](https://github.com/diego-torres/nutriconsultas/issues/501)~~ — Implement payload verification (**done**, PR #513).
+6. ~~[#502](https://github.com/diego-torres/nutriconsultas/issues/502)~~ — Persist notification events (**done**, PR #513).
+7. ~~[#503](https://github.com/diego-torres/nutriconsultas/issues/503)~~ — Add notification processing service (**done**, PR #513).
+8. ~~[#504](https://github.com/diego-torres/nutriconsultas/issues/504)~~ — Add Apple/Auth0/local identity mapping (**done**, PR #514).
+9. ~~[#505](https://github.com/diego-torres/nutriconsultas/issues/505)~~ — Add Auth0 Management API methods (**done**, PR #514).
+10. [#506](https://github.com/diego-torres/nutriconsultas/issues/506) — Add safe account deletion workflow (**in progress**).
 11. [#507](https://github.com/diego-torres/nutriconsultas/issues/507) — Handle private relay email changes.
 12. [#508](https://github.com/diego-torres/nutriconsultas/issues/508) — Add observability.
 13. [#509](https://github.com/diego-torres/nutriconsultas/issues/509) — Add integration tests.

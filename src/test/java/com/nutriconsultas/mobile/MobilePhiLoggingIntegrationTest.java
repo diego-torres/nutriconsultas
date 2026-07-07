@@ -93,6 +93,11 @@ class MobilePhiLoggingIntegrationTest {
 			public com.nutriconsultas.paciente.PacienteStatus getStatus() {
 				return com.nutriconsultas.paciente.PacienteStatus.ACTIVE;
 			}
+
+			@Override
+			public com.nutriconsultas.paciente.ApplePacienteLifecycleStatus getAppleLifecycleStatus() {
+				return com.nutriconsultas.paciente.ApplePacienteLifecycleStatus.NONE;
+			}
 		};
 		final Paciente pacienteRef = new Paciente();
 		pacienteRef.setId(12L);

@@ -53,7 +53,11 @@ This endpoint is implemented by the backend (#499). Deploy and enable the webhoo
 
 ---
 
-## Auth0 configuration — [#497](https://github.com/diego-torres/nutriconsultas/issues/497)
+## Auth0 configuration — [#497](https://github.com/diego-torres/nutriconsultas/issues/497) — **done** (2026-07-07)
+
+Production tenant: `minutriporcion-prod.us.auth0.com`. Apple social connection enabled for Minutriporcion applications. Auth vars deployed to EC2 via `terraform.tfvars` / SSM.
+
+Reference steps (for new environments):
 
 1. Auth0 Dashboard → **Authentication** → **Social** → **Apple**.
 2. Configure:
@@ -70,7 +74,7 @@ https://minutriporcion-prod.us.auth0.com/login/callback
 
 5. Verify existing connections (Google, email/password) still work after enabling Apple.
 
-### Auth0 Management API (lifecycle handling — [#505](https://github.com/diego-torres/nutriconsultas/issues/505))
+### Auth0 Management API (lifecycle handling — ~~#505~~ **done**, PR #514)
 
 Create or reuse a Machine-to-Machine application with minimal scopes:
 

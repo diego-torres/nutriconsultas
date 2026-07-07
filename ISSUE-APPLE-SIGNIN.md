@@ -5,8 +5,9 @@ Living index of GitHub issues that implement **Sign in with Apple** through Auth
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Roadmap:** [`docs/auth/apple-signin-backend-roadmap.md`](docs/auth/apple-signin-backend-roadmap.md)  
 **Setup (maintainer runbook):** [`docs/auth/apple-signin-setup.md`](docs/auth/apple-signin-setup.md)  
+**Deletion runbook:** [`docs/auth/apple-signin-deletion-runbook.md`](docs/auth/apple-signin-deletion-runbook.md)  
 **Epic comment:** [#497](https://github.com/diego-torres/nutriconsultas/issues/497#issuecomment-4904658287)  
-**Last updated:** 2026-07-07 — #504–#505 in progress on `apple-signin/504-505-identity-mapping`.
+**Last updated:** 2026-07-07 — ~~#497~~ **done** (Auth0 prod tenant + Apple connection); #506 in progress on `apple-signin/506-deletion-workflow`.
 
 > **Scope.** Auth0 Apple social connection, backend webhook (`POST /rest/webhooks/apple/sign-in`), signed payload verification, notification persistence, identity mapping, and safe lifecycle handling. **Does not** replace Auth0 with custom Apple OAuth. Patient mobile API: [`ISSUE.md`](ISSUE.md). Auth0 patient gate: [`docs/auth0/PATIENT-POST-LOGIN-GATE.md`](docs/auth0/PATIENT-POST-LOGIN-GATE.md).
 
@@ -40,16 +41,16 @@ Suggested order matches [`docs/auth/apple-signin-backend-roadmap.md`](docs/auth/
 
 | Step | # | Title | URL | State | Depends on | Notes |
 |------|---|-------|-----|-------|------------|-------|
-| 1 | **497** | Configure Auth0 Apple connection | https://github.com/diego-torres/nutriconsultas/issues/497 | **open** | — | Auth0 tenant + Apple Developer Portal; manual setup **NEXT** |
+| 1 | 497 | Configure Auth0 Apple connection | https://github.com/diego-torres/nutriconsultas/issues/497 | **done** | — | Auth0 prod tenant (`minutriporcion-prod.us.auth0.com`) + Apple social connection (2026-07-07) |
 | 2 | 498 | Add webhook configuration properties | https://github.com/diego-torres/nutriconsultas/issues/498 | **done** | — | PR #513 |
 | 3 | 499 | Add webhook controller | https://github.com/diego-torres/nutriconsultas/issues/499 | **done** | 498 | PR #513 |
 | 4 | 500 | Permit webhook path through Spring Security | https://github.com/diego-torres/nutriconsultas/issues/500 | **done** | 499 | PR #513 |
 | 5 | 501 | Implement signed payload verification | https://github.com/diego-torres/nutriconsultas/issues/501 | **done** | 498, 499 | PR #513 |
 | 6 | 502 | Persist notification events (Liquibase + JPA) | https://github.com/diego-torres/nutriconsultas/issues/502 | **done** | 498 | PR #513 |
 | 7 | 503 | Create notification processing service | https://github.com/diego-torres/nutriconsultas/issues/503 | **done** | 501, 502 | PR #513 |
-| 8 | 504 | Map Apple/Auth0 identity to local users | https://github.com/diego-torres/nutriconsultas/issues/504 | **in-progress** | 497, 503 | Branch `apple-signin/504-505-identity-mapping` |
-| 9 | 505 | Add Auth0 Management API client methods | https://github.com/diego-torres/nutriconsultas/issues/505 | **in-progress** | 497 | Same branch as #504 |
-| 10 | 506 | Add safe account deletion workflow | https://github.com/diego-torres/nutriconsultas/issues/506 | open | 503, 504, 505 | Staged; no silent hard-delete |
+| 8 | 504 | Map Apple/Auth0 identity to local users | https://github.com/diego-torres/nutriconsultas/issues/504 | **done** | 497, 503 | PR #514 |
+| 9 | 505 | Add Auth0 Management API client methods | https://github.com/diego-torres/nutriconsultas/issues/505 | **done** | 497 | PR #514 |
+| 10 | **506** | Add safe account deletion workflow | https://github.com/diego-torres/nutriconsultas/issues/506 | **in-progress** | 503, 504, 505 | Branch `apple-signin/506-deletion-workflow` **NEXT** |
 | 11 | 507 | Handle private relay email changes | https://github.com/diego-torres/nutriconsultas/issues/507 | open | 503, 504 | Relay metadata; no email-as-primary-key |
 | 12 | 508 | Add observability and operational alerts | https://github.com/diego-torres/nutriconsultas/issues/508 | open | 499, 503 | Metrics + structured logs |
 | 13 | 509 | Add integration tests | https://github.com/diego-torres/nutriconsultas/issues/509 | open | 499–503 | No live Apple/Auth0 in tests |

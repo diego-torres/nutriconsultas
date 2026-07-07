@@ -52,6 +52,10 @@ public class AppleSignInNotification {
 	@Column(name = "identity_mapping_status", length = 30)
 	private AppleIdentityMappingStatus identityMappingStatus;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "lifecycle_action", length = 40)
+	private AppleSignInLifecycleAction lifecycleAction;
+
 	@Column(length = 320)
 	private String email;
 

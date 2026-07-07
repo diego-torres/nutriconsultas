@@ -20,14 +20,18 @@ public class AppleSignInNotificationService {
 
 	private final AppleIdentityMappingService identityMappingService;
 
+	private final AppleSignInAccountLifecycleService accountLifecycleService;
+
 	public AppleSignInNotificationService(final AppleSignInProperties properties,
 			final AppleSignInNotificationVerifier notificationVerifier,
 			final AppleSignInNotificationRepository notificationRepository,
-			final AppleIdentityMappingService identityMappingService) {
+			final AppleIdentityMappingService identityMappingService,
+			final AppleSignInAccountLifecycleService accountLifecycleService) {
 		this.properties = properties;
 		this.notificationVerifier = notificationVerifier;
 		this.notificationRepository = notificationRepository;
 		this.identityMappingService = identityMappingService;
+		this.accountLifecycleService = accountLifecycleService;
 	}
 
 	@Transactional
@@ -84,6 +88,7 @@ public class AppleSignInNotificationService {
 			return;
 		}
 		if (claims.eventType().isDestructive() && !properties.isAutoProcessDestructiveEvents()) {
+			notification.setLifecycleAction(AppleSignInLifecycleAction.SKIPPED_OBSERVE_ONLY);
 			notification.setProcessingStatus(AppleSignInNotificationProcessingStatus.PROCESSED);
 			notification.setProcessedAt(Instant.now());
 			if (log.isInfoEnabled()) {
@@ -91,6 +96,14 @@ public class AppleSignInNotificationService {
 						claims.eventId(), claims.eventType());
 			}
 			return;
+		}
+		if (claims.eventType().isDestructive()) {
+			final AppleSignInLifecycleAction lifecycleAction = accountLifecycleService
+				.applyDestructiveEvent(notification, claims.eventType());
+			notification.setLifecycleAction(lifecycleAction);
+		}
+		else {
+			notification.setLifecycleAction(AppleSignInLifecycleAction.NOT_APPLICABLE);
 		}
 		notification.setProcessingStatus(AppleSignInNotificationProcessingStatus.PROCESSED);
 		notification.setProcessedAt(Instant.now());
