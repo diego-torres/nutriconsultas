@@ -26,4 +26,8 @@ public enum AppleSignInEventType {
 		return this == CONSENT_REVOKED || this == ACCOUNT_DELETE;
 	}
 
+	public boolean isRelayEmailEvent() {
+		return this == EMAIL_DISABLED || this == EMAIL_ENABLED;
+	}
+
 }

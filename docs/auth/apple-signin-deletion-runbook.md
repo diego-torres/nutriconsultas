@@ -35,6 +35,8 @@ The grid lists destructive notifications with:
 
 Use `paciente_id` to locate the patient in the nutritionist admin UI. **Do not** use relay email as the primary key.
 
+Relay email forwarding status is stored on `Paciente` (`apple_relay_email`, `apple_relay_forwarding_enabled`) and visible in `/admin/platform/apple-signin` for `email-disabled` / `email-enabled` events (#507).
+
 ---
 
 ## Manual final deletion (explicit approval only)

@@ -45,6 +45,18 @@ public class AppleSignInNotificationTemplateValidator extends BaseTemplateValida
 		accountDelete.setProcessingStatus(AppleSignInNotificationProcessingStatus.PROCESSED);
 		accountDelete.setReceivedAt(Instant.parse("2026-07-06T10:00:00Z"));
 		notifications.add(accountDelete);
+		final AppleSignInNotification emailDisabled = new AppleSignInNotification();
+		emailDisabled.setId(3L);
+		emailDisabled.setAppleEventId("evt-relay-disabled-1");
+		emailDisabled.setEventType(AppleSignInEventType.EMAIL_DISABLED);
+		emailDisabled.setEmail("relay@privaterelay.appleid.com");
+		emailDisabled.setIsPrivateEmail(true);
+		emailDisabled.setPacienteId(55L);
+		emailDisabled.setIdentityMappingStatus(AppleIdentityMappingStatus.MAPPED);
+		emailDisabled.setLifecycleAction(AppleSignInLifecycleAction.APPLIED_RELAY_FORWARDING_DISABLED);
+		emailDisabled.setProcessingStatus(AppleSignInNotificationProcessingStatus.PROCESSED);
+		emailDisabled.setReceivedAt(Instant.parse("2026-07-05T08:00:00Z"));
+		notifications.add(emailDisabled);
 		return notifications;
 	}
 
