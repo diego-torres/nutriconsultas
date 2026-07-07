@@ -71,3 +71,6 @@ databaseChangeLog:
   - include:
       file: changes/024-ai-chat-schema.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/025-apple-signin-notification.yaml
+      relativeToChangelogFile: true

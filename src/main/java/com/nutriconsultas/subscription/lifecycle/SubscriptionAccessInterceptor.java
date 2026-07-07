@@ -102,7 +102,8 @@ public class SubscriptionAccessInterceptor implements HandlerInterceptor {
 		if (uri.startsWith("/rest/mobile/")) {
 			return false;
 		}
-		return !uri.startsWith("/rest/subscription/payment/webhook") && !uri.startsWith("/rest/public/booking/");
+		return !uri.startsWith("/rest/subscription/payment/webhook") && !uri.startsWith("/rest/public/booking/")
+				&& !uri.startsWith("/rest/webhooks/apple/sign-in");
 	}
 
 	private static boolean isAllowedWithoutSubscription(final String uri) {
