@@ -71,6 +71,34 @@ public class WebControllerTest {
 	}
 
 	@Test
+	public void testPrivacyPage() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/privacidad"))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.view().name("eterna/privacidad"));
+	}
+
+	@Test
+	public void testPrivacyPageAlias() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/aviso-de-privacidad"))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.view().name("eterna/privacidad"));
+	}
+
+	@Test
+	public void testAgeSuitabilityPage() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/aptitud-por-edad"))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.view().name("eterna/aptitud-edad"));
+	}
+
+	@Test
+	public void testAgeSuitabilityPageAlias() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/age-suitability"))
+			.andExpect(status().isOk())
+			.andExpect(MockMvcResultMatchers.view().name("eterna/aptitud-edad"));
+	}
+
+	@Test
 	public void testContactPageWithPlanParam() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get("/contact").param("plan", "nutriologo-profesional"))
 			.andExpect(status().isOk())
