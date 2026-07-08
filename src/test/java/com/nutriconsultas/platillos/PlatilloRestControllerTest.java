@@ -199,6 +199,7 @@ public class PlatilloRestControllerTest {
 		PagingRequest pagingRequest = new PagingRequest();
 		List<Column> columnList = new ArrayList<>();
 		columnList.add(new Column("acciones", "", true, true, new Search("", "false")));
+		columnList.add(new Column("imagen", "", true, true, new Search("", "false")));
 		columnList.add(new Column("platillo", "", true, true, new Search("", "false")));
 		columnList.add(new Column("ingestas", "", true, true, new Search("", "false")));
 		columnList.add(new Column("kcal", "", true, true, new Search("", "false")));
@@ -210,7 +211,7 @@ public class PlatilloRestControllerTest {
 		pagingRequest.setStart(0);
 		pagingRequest.setLength(10);
 		pagingRequest.setDraw(1);
-		pagingRequest.setOrder(Arrays.asList(new Order(1, Direction.asc)));
+		pagingRequest.setOrder(Arrays.asList(new Order(2, Direction.asc)));
 		pagingRequest.setSearch(new Search("", "false"));
 		pagingRequest.setOwnershipFilter("todas");
 		log.debug("arrange paging request {}.", pagingRequest);
@@ -242,6 +243,7 @@ public class PlatilloRestControllerTest {
 		PagingRequest pagingRequest = new PagingRequest();
 		List<Column> columnList = new ArrayList<>();
 		columnList.add(new Column("acciones", "", true, true, new Search("", "false")));
+		columnList.add(new Column("imagen", "", true, true, new Search("", "false")));
 		columnList.add(new Column("platillo", "", true, true, new Search("", "false")));
 		columnList.add(new Column("ingestas", "", true, true, new Search("", "false")));
 		columnList.add(new Column("kcal", "", true, true, new Search("", "false")));
@@ -252,7 +254,7 @@ public class PlatilloRestControllerTest {
 		pagingRequest.setStart(0);
 		pagingRequest.setLength(10);
 		pagingRequest.setDraw(1);
-		pagingRequest.setOrder(Arrays.asList(new Order(1, Direction.asc)));
+		pagingRequest.setOrder(Arrays.asList(new Order(2, Direction.asc)));
 		pagingRequest.setSearch(new Search(searchTerm, "false"));
 		pagingRequest.setOwnershipFilter("todas");
 		log.debug("arrange paging request {}.", pagingRequest);
@@ -276,6 +278,7 @@ public class PlatilloRestControllerTest {
 		PagingRequest pagingRequest = new PagingRequest();
 		List<Column> columnList = new ArrayList<>();
 		columnList.add(new Column("acciones", "", true, true, new Search("", "false")));
+		columnList.add(new Column("imagen", "", true, true, new Search("", "false")));
 		columnList.add(new Column("platillo", "", true, true, new Search("", "false")));
 		columnList.add(new Column("ingestas", "", true, true, new Search("", "false")));
 		columnList.add(new Column("kcal", "", true, true, new Search("", "false")));
@@ -419,6 +422,38 @@ public class PlatilloRestControllerTest {
 	}
 
 	@Test
+	public void testArrayWithSinImagenFilter() {
+		final Platillo withImage = new Platillo();
+		withImage.setId(10L);
+		withImage.setName("Con imagen");
+		withImage.setImageUrl("platillo/10/picture.jpg");
+		withImage.setEnergia(100);
+		withImage.setProteina(1.0);
+		withImage.setLipidos(1.0);
+		withImage.setHidratosDeCarbono(1.0);
+
+		final Platillo withoutImage = new Platillo();
+		withoutImage.setId(11L);
+		withoutImage.setName("Sin imagen");
+		withoutImage.setEnergia(100);
+		withoutImage.setProteina(1.0);
+		withoutImage.setLipidos(1.0);
+		withoutImage.setHidratosDeCarbono(1.0);
+
+		when(platilloService.getPlatillosForCatalogFilter(PlatilloCatalogFilter.TODAS, TEST_USER_ID))
+			.thenReturn(List.of(withImage, withoutImage));
+
+		final PagingRequest pagingRequest = buildPagingRequest("sin-imagen");
+
+		final PageArray result = platilloRestController.getPageArray(pagingRequest);
+
+		assertThat(result.getRecordsTotal()).isEqualTo(1);
+		assertThat(result.getRecordsFiltered()).isEqualTo(1);
+		assertThat(result.getData().get(0).get(2)).contains("Sin imagen");
+		assertThat(result.getData().get(0).get(1)).contains("Sin imagen");
+	}
+
+	@Test
 	public void testToStringListIncludesCopyButtonForSystemPlatillo() {
 		final Platillo systemPlatillo = new Platillo();
 		systemPlatillo.setId(97L);
@@ -439,6 +474,7 @@ public class PlatilloRestControllerTest {
 		final PagingRequest pagingRequest = new PagingRequest();
 		final List<Column> columnList = new ArrayList<>();
 		columnList.add(new Column("acciones", "", true, true, new Search("", "false")));
+		columnList.add(new Column("imagen", "", true, true, new Search("", "false")));
 		columnList.add(new Column("platillo", "", true, true, new Search("", "false")));
 		columnList.add(new Column("ingestas", "", true, true, new Search("", "false")));
 		columnList.add(new Column("kcal", "", true, true, new Search("", "false")));
@@ -449,7 +485,7 @@ public class PlatilloRestControllerTest {
 		pagingRequest.setStart(0);
 		pagingRequest.setLength(10);
 		pagingRequest.setDraw(1);
-		pagingRequest.setOrder(Arrays.asList(new Order(1, Direction.asc)));
+		pagingRequest.setOrder(Arrays.asList(new Order(2, Direction.asc)));
 		pagingRequest.setSearch(new Search("", "false"));
 		pagingRequest.setOwnershipFilter("todas");
 
@@ -459,6 +495,28 @@ public class PlatilloRestControllerTest {
 		assertThat(actions).contains("duplicatePlatillo(97)");
 		assertThat(actions).doesNotContain("fa-edit");
 		assertThat(actions).doesNotContain("deletePlatillo");
+	}
+
+	private PagingRequest buildPagingRequest(final String pictureFilter) {
+		final PagingRequest pagingRequest = new PagingRequest();
+		final List<Column> columnList = new ArrayList<>();
+		columnList.add(new Column("acciones", "", true, true, new Search("", "false")));
+		columnList.add(new Column("imagen", "", true, true, new Search("", "false")));
+		columnList.add(new Column("platillo", "", true, true, new Search("", "false")));
+		columnList.add(new Column("ingestas", "", true, true, new Search("", "false")));
+		columnList.add(new Column("kcal", "", true, true, new Search("", "false")));
+		columnList.add(new Column("prot", "", true, true, new Search("", "false")));
+		columnList.add(new Column("lip", "", true, true, new Search("", "false")));
+		columnList.add(new Column("hc", "", true, true, new Search("", "false")));
+		pagingRequest.setColumns(columnList);
+		pagingRequest.setStart(0);
+		pagingRequest.setLength(10);
+		pagingRequest.setDraw(1);
+		pagingRequest.setOrder(Arrays.asList(new Order(2, Direction.asc)));
+		pagingRequest.setSearch(new Search("", "false"));
+		pagingRequest.setOwnershipFilter("todas");
+		pagingRequest.setPictureFilter(pictureFilter);
+		return pagingRequest;
 	}
 
 }

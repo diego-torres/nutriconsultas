@@ -100,9 +100,20 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 		log.debug("starting getRows with pagingRequest: {}", pagingRequest);
 		final PlatilloCatalogFilter catalogFilter = PlatilloCatalogFilter
 			.fromRequestValue(pagingRequest.getOwnershipFilter());
+		final PlatilloPictureFilter pictureFilter = PlatilloPictureFilter
+			.fromRequestValue(pagingRequest.getPictureFilter());
 		final String userId = principal != null ? principal.getSubject() : null;
 		final List<Platillo> data = service.getPlatillosForCatalogFilter(catalogFilter, userId);
-		return getPage(pagingRequest, data);
+		final List<Platillo> filteredData = applyPictureFilter(data, pictureFilter);
+		return getPage(pagingRequest, filteredData);
+	}
+
+	private List<Platillo> applyPictureFilter(final List<Platillo> platillos,
+			final PlatilloPictureFilter pictureFilter) {
+		if (pictureFilter != PlatilloPictureFilter.SIN_IMAGEN) {
+			return platillos;
+		}
+		return platillos.stream().filter(platillo -> !PlatilloImageSupport.hasAssignedPicture(platillo)).toList();
 	}
 
 	private OidcUser resolveGridPrincipal() {
@@ -320,7 +331,7 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 	@Override
 	protected List<Column> getColumns() {
 		log.debug("getting Platillo columns.");
-		return Stream.of("acciones", "platillo", "ingestas", "kcal", "prot", "lip", "hc")
+		return Stream.of("acciones", "imagen", "platillo", "ingestas", "kcal", "prot", "lip", "hc")
 			.map(Column::new)
 			.collect(Collectors.toList());
 	}
@@ -332,7 +343,7 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 
 	private List<String> toStringList(final Platillo row, final OidcUser principal) {
 		log.debug("converting Platillo row {} to string list.", row);
-		return Arrays.asList(buildActionsColumn(row, principal),
+		return Arrays.asList(buildActionsColumn(row, principal), PlatilloImageSupport.buildGridImageColumn(row),
 				"<a href='/admin/platillos/" + row.getId() + "'>" + row.getName() + "</a>",
 				row.getIngestasSugeridas() == null ? "" : row.getIngestasSugeridas(),
 				row.getEnergia() == null ? "" : row.getEnergia().toString(), String.format("%.1f", row.getProteina()),
