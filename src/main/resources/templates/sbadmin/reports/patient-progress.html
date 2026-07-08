@@ -18,6 +18,7 @@
 	- exams: List<ClinicalExam> (required)
 	- dietaryPlans: List<PacienteDieta> (required)
 	- weightBmiTrend: List<WeightBmiDataPoint> (required)
+	- progressCharts: List<PatientReportChart> (required)
 	- startDate: Date (optional, for date range filtering)
 	- endDate: Date (optional, for date range filtering)
 	- reportDate: Date (required, report generation date)
@@ -174,6 +175,22 @@
 			font-style: italic;
 			padding: 10px;
 		}
+		.progress-chart {
+			margin-bottom: 20px;
+			page-break-inside: avoid;
+		}
+		.progress-chart h3 {
+			color: #5a5c69;
+			font-size: 11pt;
+			margin: 0 0 8px 0;
+		}
+		.progress-chart svg {
+			display: block;
+			margin: 0 auto;
+		}
+		.progress-charts-grid {
+			display: block;
+		}
 	</style>
 	<style th:replace="~{sbadmin/fragments/pdf-nutritionist-logo :: logoStyles}"></style>
 </head>
@@ -282,31 +299,18 @@
 		</div>
 	</div>
 
-	<!-- Weight/BMI Trend -->
+	<!-- Progress Indicator Charts -->
 	<div class="section">
-		<h2>Tendencia de Peso e IMC</h2>
-		<div th:if="${weightBmiTrend != null && !weightBmiTrend.isEmpty()}">
-			<table class="trend-table">
-				<thead>
-					<tr>
-						<th>Fecha</th>
-						<th>Peso (kg)</th>
-						<th>IMC</th>
-						<th>Fuente</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr th:each="point : ${weightBmiTrend}">
-						<td th:text="${#dates.format(point.date, 'dd/MM/yyyy')}"></td>
-						<td th:text="${point.weight != null ? (#numbers.formatDecimal(point.weight, 1, 2) + ' kg') : 'N/A'}"></td>
-						<td th:text="${point.bmi != null ? #numbers.formatDecimal(point.bmi, 1, 2) : 'N/A'}"></td>
-						<td th:text="${point.source}"></td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-		<div th:if="${weightBmiTrend == null || weightBmiTrend.isEmpty()}" class="no-data">
-			No hay datos de peso/IMC disponibles para el período seleccionado.
+		<h2>Indicadores de Progreso</h2>
+		<div class="progress-charts-grid">
+			<div th:each="chart : ${progressCharts}" class="progress-chart">
+				<h3>
+					<span th:text="${chart.title}"></span>
+					<span th:if="${chart.unit != null && !chart.unit.isEmpty()}" th:text="' (' + ${chart.unit} + ')'"></span>
+				</h3>
+				<div th:if="${chart.hasData}" th:utext="${chart.svgMarkup}"></div>
+				<div th:unless="${chart.hasData}" class="no-data" th:text="${chart.emptyMessage}"></div>
+			</div>
 		</div>
 	</div>
 

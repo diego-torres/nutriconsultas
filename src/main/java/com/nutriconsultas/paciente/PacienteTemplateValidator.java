@@ -58,6 +58,8 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		variables.put("isUnder18", false);
 		variables.put("suggestedStressTypes", List.of());
 		variables.put("growthMeasurements", new ArrayList<AnthropometricMeasurement>());
+		variables.put("canExportPdf", true);
+		variables.put("canFullReports", true);
 		// Calculation tab variables
 		variables.put("patientAge", 30);
 		variables.put("patientIsMale", true);

@@ -27,6 +27,9 @@ import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
 import com.nutriconsultas.paciente.PacienteService;
+import com.nutriconsultas.paciente.metrics.BodyMetricRecord;
+import com.nutriconsultas.paciente.metrics.BodyMetricRecordRepository;
+import com.nutriconsultas.paciente.metrics.BodyMetricRecordService;
 import com.nutriconsultas.profile.NutritionistBrandingHelper;
 import com.nutriconsultas.profile.NutritionistProfile;
 import com.nutriconsultas.profile.NutritionistProfileService;
@@ -108,6 +111,12 @@ public class PatientReportService {
 	@Autowired
 	private SubscriptionEntitlementService subscriptionEntitlementService;
 
+	@Autowired
+	private BodyMetricRecordService bodyMetricRecordService;
+
+	@Autowired
+	private BodyMetricRecordRepository bodyMetricRecordRepository;
+
 	/**
 	 * Generates a PDF progress report for a patient.
 	 * @param pacienteId the ID of the patient
@@ -136,6 +145,8 @@ public class PatientReportService {
 		final List<PacienteDieta> dietaryPlans = getDietaryPlans(pacienteId);
 		final List<WeightBmiDataPoint> weightBmiTrend = buildWeightBmiTrend(consultations, measurements, exams);
 		final AnthropometricMeasurement latestSomatotypeMeasurement = findLatestSomatotypeMeasurement(measurements);
+		final List<PatientReportChart> progressCharts = buildProgressCharts(pacienteId, startDate, endDate,
+				measurements);
 
 		// Prepare context for Thymeleaf template
 		final Context context = new Context();
@@ -145,6 +156,7 @@ public class PatientReportService {
 		context.setVariable("exams", exams);
 		context.setVariable("dietaryPlans", dietaryPlans);
 		context.setVariable("weightBmiTrend", weightBmiTrend);
+		context.setVariable("progressCharts", progressCharts);
 		context.setVariable("latestSomatotypeMeasurement", latestSomatotypeMeasurement);
 		context.setVariable("startDate", startDate);
 		context.setVariable("endDate", endDate);
@@ -253,6 +265,16 @@ public class PatientReportService {
 			.max(Comparator.comparing(AnthropometricMeasurement::getMeasurementDateTime,
 					Comparator.nullsLast(Comparator.naturalOrder())))
 			.orElse(null);
+	}
+
+	private List<PatientReportChart> buildProgressCharts(@NonNull final Long pacienteId, final Date startDate,
+			final Date endDate, final List<AnthropometricMeasurement> measurements) {
+		bodyMetricRecordService.ensureBackfilled(pacienteId);
+		final List<BodyMetricRecord> allRecords = bodyMetricRecordRepository
+			.findByPacienteIdOrderByRecordedAtAsc(pacienteId);
+		final List<BodyMetricRecord> filteredRecords = PatientReportProgressChartBuilder
+			.filterRecordsByDateRange(allRecords, startDate, endDate);
+		return PatientReportProgressChartBuilder.build(filteredRecords, measurements);
 	}
 
 	/**
