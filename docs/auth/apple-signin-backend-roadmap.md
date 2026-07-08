@@ -581,8 +581,8 @@ Apple lifecycle handling is security-sensitive. It should be rolled out graduall
 9. ~~[#505](https://github.com/diego-torres/nutriconsultas/issues/505)~~ — Add Auth0 Management API methods (**done**, PR #514).
 10. ~~[#506](https://github.com/diego-torres/nutriconsultas/issues/506)~~ — Add safe account deletion workflow (**done**, PR #515).
 11. ~~[#507](https://github.com/diego-torres/nutriconsultas/issues/507)~~ — Handle private relay email changes (**done**, PR #516).
-12. [#508](https://github.com/diego-torres/nutriconsultas/issues/508) — Add observability (**in progress**).
-13. [#509](https://github.com/diego-torres/nutriconsultas/issues/509) — Add integration tests.
+12. ~~[#508](https://github.com/diego-torres/nutriconsultas/issues/508)~~ — Add observability (**done**, PR #517).
+13. [#509](https://github.com/diego-torres/nutriconsultas/issues/509) — Add integration tests (**in progress**).
 14. [#510](https://github.com/diego-torres/nutriconsultas/issues/510) — Document Apple Developer Portal setup.
 15. [#511](https://github.com/diego-torres/nutriconsultas/issues/511) — Roll out in observe-only mode.
 
