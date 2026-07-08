@@ -58,6 +58,7 @@ public class ReportTemplateValidator extends BaseTemplateValidator {
 		// Create mock weight/BMI trend
 		final List<PatientReportService.WeightBmiDataPoint> mockWeightBmiTrend = createMockWeightBmiTrend();
 		variables.put("weightBmiTrend", mockWeightBmiTrend);
+		variables.put("progressCharts", createMockProgressCharts());
 		variables.put("latestSomatotypeMeasurement", mockMeasurements.isEmpty() ? null : mockMeasurements.get(0));
 
 		// Create date variables
@@ -205,6 +206,32 @@ public class ReportTemplateValidator extends BaseTemplateValidator {
 		point.setSource("Consulta");
 		trend.add(point);
 		return trend;
+	}
+
+	private List<PatientReportChart> createMockProgressCharts() {
+		final List<String> labels = List.of("01/01/24", "01/02/24", "01/03/24");
+		final List<Double> values = List.of(70.0, 69.5, 69.0);
+		final String svg = ReportLineChartRenderer.render(labels, values, "#4e73df", "kg");
+
+		final PatientReportChart weightChart = new PatientReportChart();
+		weightChart.setTitle("Peso");
+		weightChart.setUnit("kg");
+		weightChart.setHasData(true);
+		weightChart.setSvgMarkup(svg);
+		weightChart
+			.setEmptyMessage("Al registrar mediciones antropométricas se habilitará el seguimiento de este indicador.");
+
+		final PatientReportChart emptyChart = new PatientReportChart();
+		emptyChart.setTitle("GET");
+		emptyChart.setUnit("kcal/día");
+		emptyChart.setHasData(false);
+		emptyChart
+			.setEmptyMessage("Al registrar mediciones antropométricas se habilitará el seguimiento de este indicador.");
+
+		final List<PatientReportChart> charts = new ArrayList<>();
+		charts.add(weightChart);
+		charts.add(emptyChart);
+		return charts;
 	}
 
 	private NutritionAnalysisResult createMockNutritionAnalysis() {

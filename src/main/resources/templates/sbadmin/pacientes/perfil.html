@@ -62,6 +62,11 @@
                       class="btn btn-sm btn-outline-primary mr-2 mb-2 paciente-export-link">
                       <i class="fas fa-download"></i> Exportar
                     </a>
+                    <button type="button" th:if="${canExportPdf and canFullReports}"
+                      class="btn btn-sm btn-outline-info mr-2 mb-2 paciente-report-btn"
+                      th:attr="data-paciente-id=${paciente.id}">
+                      <i class="fas fa-file-pdf"></i> Reporte PDF
+                    </button>
                     <button type="button" class="btn btn-sm btn-outline-danger mb-2 paciente-delete-btn"
                       th:attr="data-id=${paciente.id}">
                       <i class="fas fa-trash"></i> Eliminar
@@ -592,6 +597,13 @@
             event.preventDefault();
             PacienteMpxActions.exportPaciente(pacienteId);
           }
+        });
+        $('.paciente-report-btn').on('click', function () {
+          var id = $(this).data('paciente-id');
+          if (!id) {
+            return;
+          }
+          window.open('/rest/reports/patient/' + id, '_blank');
         });
       }
       $('.avatar-option-btn').on('click', function () {

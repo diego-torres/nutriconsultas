@@ -36,6 +36,8 @@ import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
 import com.nutriconsultas.paciente.PacienteService;
+import com.nutriconsultas.paciente.metrics.BodyMetricRecordRepository;
+import com.nutriconsultas.paciente.metrics.BodyMetricRecordService;
 import com.nutriconsultas.profile.NutritionistProfile;
 import com.nutriconsultas.profile.NutritionistProfileService;
 import com.nutriconsultas.subscription.Entitlement;
@@ -78,6 +80,12 @@ public class PatientReportServiceTest {
 	@Mock
 	private SubscriptionEntitlementService subscriptionEntitlementService;
 
+	@Mock
+	private BodyMetricRecordService bodyMetricRecordService;
+
+	@Mock
+	private BodyMetricRecordRepository bodyMetricRecordRepository;
+
 	private Paciente paciente;
 
 	@BeforeEach
@@ -101,6 +109,8 @@ public class PatientReportServiceTest {
 		lenient().when(nutritionistProfileService.getLogoAsBase64DataUri(anyString())).thenReturn(null);
 		lenient().when(subscriptionEntitlementService.hasEntitlement(anyString(), eq(Entitlement.REPORTS_BRANDED)))
 			.thenReturn(true);
+		lenient().when(bodyMetricRecordRepository.findByPacienteIdOrderByRecordedAtAsc(1L))
+			.thenReturn(new ArrayList<>());
 	}
 
 	@Test
@@ -299,6 +309,28 @@ public class PatientReportServiceTest {
 		assertThat(contextCaptor.getValue().getVariable("nutritionistDisplayName"))
 			.isEqualTo("Lic. María García López");
 		assertThat(contextCaptor.getValue().getVariable("nutritionistProfile")).isSameAs(profile);
+	}
+
+	@Test
+	public void testGenerateReportIncludesProgressCharts() {
+		when(pacienteService.findByIdAndUserId(1L, "user123")).thenReturn(paciente);
+		when(calendarEventService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
+		when(anthropometricMeasurementService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
+		when(clinicalExamService.findByPacienteId(1L)).thenReturn(new ArrayList<>());
+		when(pacienteDietaRepository.findByPacienteIdOrderByStartDateDesc(1L)).thenReturn(new ArrayList<>());
+		when(templateEngine.process(eq("sbadmin/reports/patient-progress"), any(Context.class)))
+			.thenReturn("<html><body>Test Report</body></html>");
+
+		reportService.generateReport(1L, "user123", null, null);
+
+		final ArgumentCaptor<Context> contextCaptor = ArgumentCaptor.forClass(Context.class);
+		verify(templateEngine).process(eq("sbadmin/reports/patient-progress"), contextCaptor.capture());
+		@SuppressWarnings("unchecked")
+		final List<PatientReportChart> charts = (List<PatientReportChart>) contextCaptor.getValue()
+			.getVariable("progressCharts");
+		assertThat(charts).isNotNull();
+		assertThat(charts).hasSize(8);
+		verify(bodyMetricRecordService).ensureBackfilled(1L);
 	}
 
 	@Test

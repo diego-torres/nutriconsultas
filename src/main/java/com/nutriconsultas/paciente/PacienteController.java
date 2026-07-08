@@ -40,8 +40,10 @@ import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.DietaRepository;
 import com.nutriconsultas.dieta.DietaService;
 import com.nutriconsultas.paciente.calculation.BmrCalculationService;
+import com.nutriconsultas.subscription.SubscriptionEntitlementService;
 import com.nutriconsultas.subscription.SubscriptionErrorResponses;
 import com.nutriconsultas.subscription.SubscriptionLimitExceededException;
+import com.nutriconsultas.subscription.Entitlement;
 import com.nutriconsultas.paciente.mpx.MpxExportResult;
 import com.nutriconsultas.paciente.mpx.MpxImportException;
 import com.nutriconsultas.paciente.mpx.MpxImportResult;
@@ -69,6 +71,9 @@ public class PacienteController extends AbstractAuthorizedController {
 
 	@Autowired
 	private SubscriptionErrorResponses subscriptionErrorResponses;
+
+	@Autowired
+	private SubscriptionEntitlementService subscriptionEntitlementService;
 
 	@Autowired
 	private CalendarEventService calendarEventService;
@@ -287,6 +292,10 @@ public class PacienteController extends AbstractAuthorizedController {
 				.collect(Collectors.toList());
 			model.addAttribute("growthMeasurements", sortedMeasurements);
 		}
+		model.addAttribute("canExportPdf",
+				subscriptionEntitlementService.hasEntitlement(userId, Entitlement.PDF_EXPORT));
+		model.addAttribute("canFullReports",
+				subscriptionEntitlementService.hasEntitlement(userId, Entitlement.REPORTS_FULL));
 		return "sbadmin/pacientes/perfil";
 	}
 

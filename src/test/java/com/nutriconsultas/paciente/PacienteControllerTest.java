@@ -43,6 +43,8 @@ import com.nutriconsultas.clinical.exam.anthropometric.Circumferences;
 import com.nutriconsultas.paciente.calculation.ActivityFactorScale;
 import com.nutriconsultas.paciente.calculation.BmrCalculationService;
 import com.nutriconsultas.paciente.calculation.BmrFormulaType;
+import com.nutriconsultas.subscription.Entitlement;
+import com.nutriconsultas.subscription.SubscriptionEntitlementService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -81,6 +83,9 @@ public class PacienteControllerTest {
 
 	@Mock
 	private com.nutriconsultas.paciente.metrics.BodyMetricRecordService bodyMetricRecordService;
+
+	@Mock
+	private SubscriptionEntitlementService subscriptionEntitlementService;
 
 	@Mock
 	private BindingResult bindingResult;
@@ -122,6 +127,10 @@ public class PacienteControllerTest {
 		principal = org.mockito.Mockito.mock(OidcUser.class);
 		lenient().when(principal.getSubject()).thenReturn(TEST_USER_ID);
 		lenient().when(bodyMetricRecordService.findLatestByPacienteId(any())).thenReturn(java.util.Optional.empty());
+		lenient().when(subscriptionEntitlementService.hasEntitlement(TEST_USER_ID, Entitlement.PDF_EXPORT))
+			.thenReturn(true);
+		lenient().when(subscriptionEntitlementService.hasEntitlement(TEST_USER_ID, Entitlement.REPORTS_FULL))
+			.thenReturn(true);
 		final com.nutriconsultas.clinical.exam.anthropometric.BodyCompositionService realBodyCompositionService = new com.nutriconsultas.clinical.exam.anthropometric.BodyCompositionService(
 				new BodyFatCalculatorService());
 		ReflectionTestUtils.setField(controller, "bodyCompositionService", realBodyCompositionService);
@@ -280,6 +289,8 @@ public class PacienteControllerTest {
 		org.mockito.Mockito.verify(model).addAttribute("paciente", paciente);
 		org.mockito.Mockito.verify(model).addAttribute(eq("citaAnterior"), org.mockito.ArgumentMatchers.anyString());
 		org.mockito.Mockito.verify(model).addAttribute("citaSiguiente", "");
+		org.mockito.Mockito.verify(model).addAttribute("canExportPdf", true);
+		org.mockito.Mockito.verify(model).addAttribute("canFullReports", true);
 		log.info("finished testPerfilPacienteWithCompletedPastEvent");
 	}
 
