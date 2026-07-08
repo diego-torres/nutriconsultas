@@ -62,10 +62,7 @@ Repeated Apple notifications for the same subject:
 
 ## Rollout phases (#511)
 
-1. **Observe only** — current production default.
-2. **Metadata** — enable auto-processing to mark lifecycle + Auth0 `app_metadata`.
-3. **Restricted automation** — block mobile access via `apple_lifecycle_status` (implemented in `MobilePatientAccessRules`).
-4. **Optional deletion** — manual only; see above.
+See [`apple-signin-rollout.md`](apple-signin-rollout.md) for operator checklists, env flags, verification steps, and sign-off.
 
 ---
 

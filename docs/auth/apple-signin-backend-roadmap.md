@@ -510,40 +510,9 @@ Expanded [`apple-signin-setup.md`](apple-signin-setup.md) with portal steps, ide
 
 ---
 
-## Issue 15: Add production rollout plan — [#511](https://github.com/diego-torres/nutriconsultas/issues/511)
+## Issue 15: Add production rollout plan — [#511](https://github.com/diego-torres/nutriconsultas/issues/511) — **done** (2026-07-08)
 
-### Problem
-
-Apple lifecycle handling is security-sensitive. It should be rolled out gradually.
-
-### Phase 1: Observe only
-
-- Enable webhook.
-- Verify payloads.
-- Persist notifications.
-- Do not mutate Auth0 or local users.
-
-### Phase 2: Metadata updates
-
-- Mark Auth0/local users with Apple lifecycle metadata.
-- Record relay changes.
-- Surface pending deletion events to admins.
-
-### Phase 3: Restricted automation
-
-- Block or disable access for confirmed revoked users if product policy requires it.
-- Keep hard deletion manual.
-
-### Phase 4: Optional deletion automation
-
-- Enable only after legal/product approval.
-- Require idempotency, audit trail, and rollback documentation.
-
-### Acceptance criteria
-
-- Webhook can be enabled without destructive side effects.
-- Operators can monitor real Apple notifications.
-- Destructive actions require explicit configuration and documentation.
+Phased operator checklist: [`apple-signin-rollout.md`](apple-signin-rollout.md). Covers observe-only enablement, destructive auto-process gates, monitoring, rollback, and sign-off.
 
 ---
 
@@ -563,7 +532,7 @@ Apple lifecycle handling is security-sensitive. It should be rolled out graduall
 12. ~~[#508](https://github.com/diego-torres/nutriconsultas/issues/508)~~ — Add observability (**done**, PR #517).
 13. ~~[#509](https://github.com/diego-torres/nutriconsultas/issues/509)~~ — Add integration tests (**done**, PR #518).
 14. ~~[#510](https://github.com/diego-torres/nutriconsultas/issues/510)~~ — Document Apple Developer Portal setup (**done**, 2026-07-07).
-15. [#511](https://github.com/diego-torres/nutriconsultas/issues/511) — Roll out in observe-only mode.
+15. ~~[#511](https://github.com/diego-torres/nutriconsultas/issues/511)~~ — Production rollout plan (**done**, [`apple-signin-rollout.md`](apple-signin-rollout.md)).
 
 ---
 
