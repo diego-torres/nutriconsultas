@@ -504,30 +504,9 @@ Webhook and account lifecycle behavior must be tested without relying on live Ap
 
 ---
 
-## Issue 14: Document Apple Developer Portal setup — [#510](https://github.com/diego-torres/nutriconsultas/issues/510)
+## Issue 14: Document Apple Developer Portal setup — [#510](https://github.com/diego-torres/nutriconsultas/issues/510) — **done** (2026-07-07)
 
-### Problem
-
-Future maintainers need exact setup steps and must not confuse the Auth0 callback with the Apple webhook endpoint.
-
-### Tasks
-
-Expand [`apple-signin-setup.md`](apple-signin-setup.md) with:
-
-- Apple App ID setup.
-- Apple Sign in with Apple capability.
-- Apple server-to-server notification endpoint.
-- Auth0 callback URL.
-- Auth0 Apple social connection settings.
-- Production environment variables.
-- Testing limitations.
-- Rollback steps.
-
-### Acceptance criteria
-
-- Documentation clearly separates Auth0 login callback from Apple webhook endpoint.
-- Production setup can be repeated from the docs.
-- Required secrets are listed but not committed.
+Expanded [`apple-signin-setup.md`](apple-signin-setup.md) with portal steps, identifier reference, SSM deploy script, verification checklist, and rollback. See also `infrastructure/scripts/ssm-update-apple-signin.sh`.
 
 ---
 
@@ -582,8 +561,8 @@ Apple lifecycle handling is security-sensitive. It should be rolled out graduall
 10. ~~[#506](https://github.com/diego-torres/nutriconsultas/issues/506)~~ — Add safe account deletion workflow (**done**, PR #515).
 11. ~~[#507](https://github.com/diego-torres/nutriconsultas/issues/507)~~ — Handle private relay email changes (**done**, PR #516).
 12. ~~[#508](https://github.com/diego-torres/nutriconsultas/issues/508)~~ — Add observability (**done**, PR #517).
-13. [#509](https://github.com/diego-torres/nutriconsultas/issues/509) — Add integration tests (**in progress**).
-14. [#510](https://github.com/diego-torres/nutriconsultas/issues/510) — Document Apple Developer Portal setup.
+13. ~~[#509](https://github.com/diego-torres/nutriconsultas/issues/509)~~ — Add integration tests (**done**, PR #518).
+14. ~~[#510](https://github.com/diego-torres/nutriconsultas/issues/510)~~ — Document Apple Developer Portal setup (**done**, 2026-07-07).
 15. [#511](https://github.com/diego-torres/nutriconsultas/issues/511) — Roll out in observe-only mode.
 
 ---
