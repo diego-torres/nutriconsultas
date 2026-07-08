@@ -28,4 +28,9 @@ public class PagingRequest {
 	 */
 	private String ownershipFilter;
 
+	/**
+	 * Optional picture filter for platillos grid (e.g. sin-imagen).
+	 */
+	private String pictureFilter;
+
 }

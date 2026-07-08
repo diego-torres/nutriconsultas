@@ -24,6 +24,19 @@
 
   <!-- Custom styles for this template-->
   <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+  <style>
+    .platillo-grid-thumb {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border: 1px solid #e3e6f0;
+    }
+
+    .platillo-grid-thumb-missing {
+      opacity: 0.65;
+      border-style: dashed;
+    }
+  </style>
 </head>
 
 <body id="page-top">
@@ -84,11 +97,18 @@
               <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex flex-wrap align-items-center justify-content-between">
                   <h6 class="m-0 font-weight-bold text-primary">Catálogo de platillos</h6>
-                  <div class="btn-group btn-group-sm mt-2 mt-md-0" role="group" aria-label="Filtrar platillos"
-                    id="platilloCatalogFilter">
-                    <button type="button" class="btn btn-primary active" data-filter="todas">Todas</button>
-                    <button type="button" class="btn btn-outline-primary" data-filter="sistema">De sistema</button>
-                    <button type="button" class="btn btn-outline-primary" data-filter="propias">Mis platillos</button>
+                  <div class="d-flex flex-wrap align-items-center mt-2 mt-md-0">
+                    <div class="btn-group btn-group-sm mr-2 mb-2" role="group" aria-label="Filtrar platillos"
+                      id="platilloCatalogFilter">
+                      <button type="button" class="btn btn-primary active" data-filter="todas">Todas</button>
+                      <button type="button" class="btn btn-outline-primary" data-filter="sistema">De sistema</button>
+                      <button type="button" class="btn btn-outline-primary" data-filter="propias">Mis platillos</button>
+                    </div>
+                    <div class="btn-group btn-group-sm mb-2" role="group" aria-label="Filtrar por imagen"
+                      id="platilloPictureFilter">
+                      <button type="button" class="btn btn-secondary active" data-filter="todas">Todas las imágenes</button>
+                      <button type="button" class="btn btn-outline-secondary" data-filter="sin-imagen">Sin imagen</button>
+                    </div>
                   </div>
                 </div>
                 <table id="mainGrid" class="table table-striped table-bordered dt-responsive nowrap"
@@ -96,6 +116,7 @@
                     <thead>
                       <tr>
                         <th>Acciones</th>
+                        <th>Imagen</th>
                         <th>Platillo</th>
                         <th>Ingestas</th>
                         <th>Kcal</th>
@@ -145,14 +166,16 @@
 
         jQuery(document).ready(function ($) {
           var platilloCatalogFilter = 'todas';
+          var platilloPictureFilter = 'todas';
           var mainGrid = $('#mainGrid').DataTable({
             "processing": true,
             "serverSide": true,
             "scrollX": true,
             "columnDefs": [
-              { "targets": 0, "orderable": false }
+              { "targets": 0, "orderable": false },
+              { "targets": 1, "orderable": true, "searchable": false }
             ],
-            "order": [[1, "asc"]],
+            "order": [[2, "asc"]],
             "language": {
               "emptyTable": "No hay registros",
               "lengthMenu": "Mostrar _MENU_ registros por página",
@@ -176,6 +199,7 @@
               "contentType": "application/json",
               "data": function (d) {
                 d.ownershipFilter = platilloCatalogFilter;
+                d.pictureFilter = platilloPictureFilter;
                 return JSON.stringify(d);
               }
             },
@@ -189,6 +213,17 @@
             platilloCatalogFilter = filter;
             $('#platilloCatalogFilter button').removeClass('active btn-primary').addClass('btn-outline-primary');
             $(this).removeClass('btn-outline-primary').addClass('active btn-primary');
+            mainGrid.ajax.reload();
+          });
+
+          $('#platilloPictureFilter button').click(function () {
+            var filter = $(this).data('filter');
+            if (filter === platilloPictureFilter) {
+              return;
+            }
+            platilloPictureFilter = filter;
+            $('#platilloPictureFilter button').removeClass('active btn-secondary').addClass('btn-outline-secondary');
+            $(this).removeClass('btn-outline-secondary').addClass('active btn-secondary');
             mainGrid.ajax.reload();
           });
 

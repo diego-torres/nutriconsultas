@@ -19,6 +19,14 @@ public final class PlatilloComparators {
 		MAP.put(new ComparatorKey("platillo", Direction.asc), Comparator.comparing(Platillo::getName));
 		MAP.put(new ComparatorKey("platillo", Direction.desc), Comparator.comparing(Platillo::getName).reversed());
 
+		// compare by picture presence, then name
+		MAP.put(new ComparatorKey("imagen", Direction.asc),
+				Comparator.comparing(PlatilloImageSupport::hasAssignedPicture).thenComparing(Platillo::getName));
+		MAP.put(new ComparatorKey("imagen", Direction.desc),
+				Comparator.comparing(PlatilloImageSupport::hasAssignedPicture)
+					.reversed()
+					.thenComparing(Platillo::getName));
+
 		// compare by ingestaSugerida
 		MAP.put(new ComparatorKey("ingestas", Direction.asc), Comparator.comparing(Platillo::getIngestasSugeridas));
 		MAP.put(new ComparatorKey("ingestas", Direction.desc),
