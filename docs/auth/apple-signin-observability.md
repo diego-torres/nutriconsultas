@@ -62,3 +62,15 @@ Environment variable: `APPLE_SIGNIN_VERIFICATION_FAILURE_ALERT_THRESHOLD`
 2. Check `apple.signin.webhook.failed` by `reason` tag in metrics.
 3. Query `apple_signin_notification` for `processing_status` and `identity_mapping_status`.
 4. Review platform admin UI: `/admin/platform/apple-signin`.
+
+---
+
+## Integration tests (#509)
+
+Run the Apple Sign-In integration suite (local RSA keys, mocked Auth0 — no live Apple or Auth0):
+
+```bash
+mvn test -Dtest=AppleSignIn*IntegrationTest,AppleSignInNotificationPersistenceTest
+```
+
+Coverage includes webhook HTTP flows, signed payload verification, idempotency, relay/destructive service paths, and repository uniqueness.
