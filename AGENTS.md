@@ -620,7 +620,7 @@ Issue registry: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Epic ~~**#
 
 Issue registry: [`ISSUE-APPLE-SIGNIN.md`](ISSUE-APPLE-SIGNIN.md). Roadmap: [`docs/auth/apple-signin-backend-roadmap.md`](docs/auth/apple-signin-backend-roadmap.md). Setup: [`docs/auth/apple-signin-setup.md`](docs/auth/apple-signin-setup.md).
 
-**Epic #497–#511** (2026-07-07): Sign in with Apple via Auth0 + Apple server-to-server webhook (`POST /rest/webhooks/apple/sign-in`). ~~#497–#510~~ **done** (PRs [#513](https://github.com/diego-torres/nutriconsultas/pull/513)–[#519](https://github.com/diego-torres/nutriconsultas/pull/519)). **NEXT:** [#511](https://github.com/diego-torres/nutriconsultas/issues/511) production rollout plan. Auth0 callback: `https://minutriporcion-prod.us.auth0.com/login/callback` — **not** the Apple notification URL.
+**Epic #497–#511** (2026-07-08): Sign in with Apple via Auth0 + Apple server-to-server webhook (`POST /rest/webhooks/apple/sign-in`). **Track complete** — ~~#497–#511~~ **done** (PRs [#513](https://github.com/diego-torres/nutriconsultas/pull/513)–[#519](https://github.com/diego-torres/nutriconsultas/pull/519); rollout plan [`docs/auth/apple-signin-rollout.md`](docs/auth/apple-signin-rollout.md)). Auth0 callback: `https://minutriporcion-prod.us.auth0.com/login/callback` — **not** the Apple notification URL.
 
 ## Resources
 

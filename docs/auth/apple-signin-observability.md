@@ -2,7 +2,7 @@
 
 Operators can detect Apple server-to-server notification problems via structured logs, Micrometer counters, and alert log lines. No emails, Apple subjects, Auth0 user IDs, or signed payloads are logged.
 
-**Related:** [`apple-signin-setup.md`](apple-signin-setup.md), [`ISSUE-APPLE-SIGNIN.md`](../../ISSUE-APPLE-SIGNIN.md)
+**Related:** [`apple-signin-setup.md`](apple-signin-setup.md), [`apple-signin-rollout.md`](apple-signin-rollout.md), [`ISSUE-APPLE-SIGNIN.md`](../../ISSUE-APPLE-SIGNIN.md)
 
 ---
 

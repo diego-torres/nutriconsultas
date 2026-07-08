@@ -14,6 +14,7 @@
 # Optional: APPLE_SIGNIN_AUTO_PROCESS_DESTRUCTIVE_EVENTS, APPLE_SIGNIN_VERIFICATION_FAILURE_ALERT_THRESHOLD
 #
 # See docs/auth/apple-signin-setup.md (#510).
+# Production rollout phases: docs/auth/apple-signin-rollout.md (#511).
 set -euo pipefail
 
 PROJECT="${1:-nutriconsultas}"

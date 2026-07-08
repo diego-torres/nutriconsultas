@@ -8,6 +8,7 @@ Maintainer runbook for **Sign in with Apple** on Minutriporcion (#510). Auth0 re
 - Backend roadmap: [`apple-signin-backend-roadmap.md`](apple-signin-backend-roadmap.md)
 - Observability & alerts: [`apple-signin-observability.md`](apple-signin-observability.md)
 - Deletion runbook: [`apple-signin-deletion-runbook.md`](apple-signin-deletion-runbook.md)
+- Production rollout: [`apple-signin-rollout.md`](apple-signin-rollout.md)
 - Auth0 patient post-login gate: [`../auth0/PATIENT-POST-LOGIN-GATE.md`](../auth0/PATIENT-POST-LOGIN-GATE.md)
 
 ---
@@ -246,4 +247,4 @@ See also [`apple-signin-deletion-runbook.md`](apple-signin-deletion-runbook.md) 
 
 ## Rollout pointer
 
-Phased production rollout (observe → metadata → restrict → optional delete) is documented in issue [#511](https://github.com/diego-torres/nutriconsultas/issues/511). Start with webhook **enabled** and destructive processing **disabled**.
+Phased production rollout is documented in [`apple-signin-rollout.md`](apple-signin-rollout.md) ([#511](https://github.com/diego-torres/nutriconsultas/issues/511)). Start with webhook **enabled** and `APPLE_SIGNIN_AUTO_PROCESS_DESTRUCTIVE_EVENTS=false` (Phase 1 observe-only).

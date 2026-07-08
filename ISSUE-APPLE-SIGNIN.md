@@ -7,8 +7,9 @@ Living index of GitHub issues that implement **Sign in with Apple** through Auth
 **Setup (maintainer runbook):** [`docs/auth/apple-signin-setup.md`](docs/auth/apple-signin-setup.md)  
 **Deletion runbook:** [`docs/auth/apple-signin-deletion-runbook.md`](docs/auth/apple-signin-deletion-runbook.md)  
 **Observability:** [`docs/auth/apple-signin-observability.md`](docs/auth/apple-signin-observability.md)  
+**Production rollout:** [`docs/auth/apple-signin-rollout.md`](docs/auth/apple-signin-rollout.md)  
 **Epic comment:** [#497](https://github.com/diego-torres/nutriconsultas/issues/497#issuecomment-4904658287)  
-**Last updated:** 2026-07-07 — ~~#510~~ **done** (PR #519); **NEXT:** [#511](https://github.com/diego-torres/nutriconsultas/issues/511) production rollout plan.
+**Last updated:** 2026-07-08 — ~~#511~~ **done** on `apple-signin/511-rollout-plan`. Apple Sign-In backend track **complete** (#497–#511).
 
 > **Scope.** Auth0 Apple social connection, backend webhook (`POST /rest/webhooks/apple/sign-in`), signed payload verification, notification persistence, identity mapping, and safe lifecycle handling. **Does not** replace Auth0 with custom Apple OAuth. Patient mobile API: [`ISSUE.md`](ISSUE.md). Auth0 patient gate: [`docs/auth0/PATIENT-POST-LOGIN-GATE.md`](docs/auth0/PATIENT-POST-LOGIN-GATE.md).
 
@@ -56,18 +57,13 @@ Suggested order matches [`docs/auth/apple-signin-backend-roadmap.md`](docs/auth/
 | 12 | **508** | Add observability and operational alerts | https://github.com/diego-torres/nutriconsultas/issues/508 | **done** | 499, 503 | PR #517 |
 | 13 | **509** | Add integration tests | https://github.com/diego-torres/nutriconsultas/issues/509 | **done** | 499–503 | PR #518 |
 | 14 | **510** | Document Apple Developer Portal setup | https://github.com/diego-torres/nutriconsultas/issues/510 | **done** | — | PR #519 |
-| 15 | **511** | Add production rollout plan | https://github.com/diego-torres/nutriconsultas/issues/511 | **NEXT** | 497–510 | Phased: observe → metadata → restrict → optional delete |
+| 15 | **511** | Add production rollout plan | https://github.com/diego-torres/nutriconsultas/issues/511 | **done** | 497–510 | [`apple-signin-rollout.md`](docs/auth/apple-signin-rollout.md) |
 
 ---
 
 ## Rollout phases (#511)
 
-| Phase | Behavior |
-|-------|----------|
-| **1 — Observe only** | Enable webhook; verify + persist; no Auth0/local mutations |
-| **2 — Metadata** | Mark lifecycle metadata; relay changes; admin visibility |
-| **3 — Restricted automation** | Block revoked users per policy; hard delete still manual |
-| **4 — Optional deletion** | Only after legal/product approval + audit trail |
+Documented in [`docs/auth/apple-signin-rollout.md`](docs/auth/apple-signin-rollout.md).
 
 ---
 
