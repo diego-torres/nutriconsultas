@@ -40,6 +40,9 @@ class AppleSignInNotificationServiceTest {
 	@Mock
 	private AppleSignInRelayEmailService relayEmailService;
 
+	@Mock
+	private AppleSignInWebhookObservability webhookObservability;
+
 	@Test
 	void handleNotificationPersistsVerifiedEventInObserveOnlyMode() {
 		final AppleSignInNotificationClaims claims = sampleClaims(AppleSignInEventType.CONSENT_REVOKED);

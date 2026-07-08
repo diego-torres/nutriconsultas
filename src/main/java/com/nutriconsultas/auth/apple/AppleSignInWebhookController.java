@@ -19,10 +19,14 @@ public class AppleSignInWebhookController {
 
 	private final AppleSignInNotificationService notificationService;
 
+	private final AppleSignInWebhookObservability webhookObservability;
+
 	public AppleSignInWebhookController(final AppleSignInProperties properties,
-			final AppleSignInNotificationService notificationService) {
+			final AppleSignInNotificationService notificationService,
+			final AppleSignInWebhookObservability webhookObservability) {
 		this.properties = properties;
 		this.notificationService = notificationService;
+		this.webhookObservability = webhookObservability;
 	}
 
 	@PostMapping("/sign-in")
@@ -33,6 +37,7 @@ public class AppleSignInWebhookController {
 		if (request == null || !StringUtils.hasText(request.payload())) {
 			return ResponseEntity.badRequest().build();
 		}
+		webhookObservability.recordWebhookReceived();
 		final AppleSignInWebhookOutcome outcome = notificationService.handleNotification(request.payload().trim());
 		if (outcome == AppleSignInWebhookOutcome.DUPLICATE) {
 			return ResponseEntity.ok().build();

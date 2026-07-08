@@ -136,4 +136,4 @@ Existing Auth0 variables (`AUTH_ISSUER`, `AUTH_CLIENT`, mobile broker keys, etc.
 - [ ] iOS Bundle ID and Apple Team ID values (reference only — store in secure ops vault, not in git)
 - [ ] Auth0 Apple `user_id` / `identities` shape for this tenant
 - [ ] SSM update script for Apple webhook env vars on EC2
-- [ ] Operator alert runbook for verification failures (#508)
+- [x] Operator alert runbook for verification failures (#508) — see [`apple-signin-observability.md`](apple-signin-observability.md)
