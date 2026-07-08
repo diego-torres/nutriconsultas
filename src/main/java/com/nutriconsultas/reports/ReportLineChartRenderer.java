@@ -38,20 +38,13 @@ public final class ReportLineChartRenderer {
 
 		final int plotWidth = WIDTH - PADDING_LEFT - PADDING_RIGHT;
 		final int plotHeight = HEIGHT - PADDING_TOP - PADDING_BOTTOM;
+		final String openTag = String.format(
+				"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%d\" height=\"%d\" viewBox=\"0 0 %d %d\">", WIDTH,
+				HEIGHT, WIDTH, HEIGHT);
 
-		final StringBuilder svg = new StringBuilder();
-		svg.append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"")
-			.append(WIDTH)
-			.append("\" height=\"")
-			.append(HEIGHT)
-			.append("\" viewBox=\"0 0 ")
-			.append(WIDTH)
-			.append(' ')
-			.append(HEIGHT)
-			.append("\">");
-
-		// Plot area background
-		svg.append("<rect x=\"")
+		final StringBuilder svg = new StringBuilder(512);
+		svg.append(openTag)
+			.append("<rect x=\"")
 			.append(PADDING_LEFT)
 			.append("\" y=\"")
 			.append(PADDING_TOP)
@@ -80,7 +73,7 @@ public final class ReportLineChartRenderer {
 		}
 
 		// Build polyline and data points
-		final StringBuilder polylinePoints = new StringBuilder();
+		final StringBuilder polylinePoints = new StringBuilder(values.size() * 8);
 		for (int index = 0; index < values.size(); index++) {
 			final double value = values.get(index);
 			final int x = computeX(index, values.size(), plotWidth);
