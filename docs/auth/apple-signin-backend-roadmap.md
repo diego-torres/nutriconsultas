@@ -562,7 +562,7 @@ Apple lifecycle handling is security-sensitive. It should be rolled out graduall
 11. ~~[#507](https://github.com/diego-torres/nutriconsultas/issues/507)~~ — Handle private relay email changes (**done**, PR #516).
 12. ~~[#508](https://github.com/diego-torres/nutriconsultas/issues/508)~~ — Add observability (**done**, PR #517).
 13. ~~[#509](https://github.com/diego-torres/nutriconsultas/issues/509)~~ — Add integration tests (**done**, PR #518).
-14. [#510](https://github.com/diego-torres/nutriconsultas/issues/510) — Document Apple Developer Portal setup (**in progress**).
+14. ~~[#510](https://github.com/diego-torres/nutriconsultas/issues/510)~~ — Document Apple Developer Portal setup (**done**, 2026-07-07).
 15. [#511](https://github.com/diego-torres/nutriconsultas/issues/511) — Roll out in observe-only mode.
 
 ---
