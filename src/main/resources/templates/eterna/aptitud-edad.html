@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Aptitud por Edad - Minutriporcion</title>
+  <meta content="Información de aptitud por edad para Minutriporcion (plataforma web) y MiNutriporcion (app móvil para pacientes)."
+    name="description">
+  <meta content="aptitud por edad, clasificación, menores, Minutriporcion, MiNutriporcion, app móvil"
+    name="keywords">
+
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
+
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <link th:href="@{/eterna/assets/vendor/animate.css/animate.min.css}" rel="stylesheet">
+  <link th:href="@{/eterna/assets/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+  <link th:href="@{/eterna/assets/vendor/bootstrap-icons/bootstrap-icons.css}" rel="stylesheet">
+  <link th:href="@{/eterna/assets/vendor/boxicons/css/boxicons.min.css}" rel="stylesheet">
+  <link th:href="@{/eterna/assets/vendor/glightbox/css/glightbox.min.css}" rel="stylesheet">
+  <link th:href="@{/eterna/assets/vendor/swiper/swiper-bundle.min.css}" rel="stylesheet">
+
+  <link th:href="@{/eterna/assets/css/style.css}" rel="stylesheet">
+
+  <style>
+    #main {
+      padding-top: 150px;
+    }
+
+    .legal-content {
+      color: #444;
+      line-height: 1.75;
+    }
+
+    .legal-content h3 {
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      font-size: 1.35rem;
+      color: #111;
+    }
+
+    .legal-content h4 {
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+      color: #222;
+    }
+
+    .legal-content p,
+    .legal-content li {
+      font-size: 0.975rem;
+    }
+
+    .legal-content ul {
+      padding-left: 1.25rem;
+    }
+
+    .legal-updated {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .age-rating-badge {
+      display: inline-block;
+      padding: 0.35rem 0.75rem;
+      border-radius: 0.35rem;
+      background: #f0f4f8;
+      border: 1px solid #d0d7de;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #111;
+    }
+  </style>
+</head>
+
+<body>
+
+  <section id="topbar" class="d-flex align-items-center">
+    <div class="container d-flex justify-content-center justify-content-md-between">
+      <div class="contact-info d-flex align-items-center">
+        <i class="bi bi-envelope d-flex align-items-center"><a href="mailto:contacto@minutriporcion.com">contacto@minutriporcion.com</a></i>
+      </div>
+      <div class="social-links d-none d-md-flex align-items-center">
+        <a href="https://www.facebook.com/minutriporcion" target="_blank" rel="noopener noreferrer" class="facebook"><i class="bi bi-facebook"></i></a>
+        <a href="https://www.instagram.com/minutriporcion" target="_blank" rel="noopener noreferrer" class="instagram"><i class="bi bi-instagram"></i></a>
+      </div>
+    </div>
+  </section>
+
+  <header id="header" class="d-flex align-items-center">
+    <div class="container d-flex justify-content-between align-items-center">
+
+      <div class="logo">
+        <a th:href="@{/}" class="d-flex align-items-center">
+          <img th:src="@{/eterna/assets/img/favicon.png}" alt="Minutriporcion" style="height: 40px; margin-right: 10px;">
+          <h1 class="mb-0">Minutriporcion</h1>
+        </a>
+      </div>
+
+      <nav id="navbar" class="navbar">
+        <ul>
+          <li><a th:href="@{/}">Inicio</a></li>
+          <li><a th:href="@{/#about}">Acerca de</a></li>
+          <li><a th:href="@{/#services}">Servicios</a></li>
+          <li><a th:href="@{/#pricing}">Planes</a></li>
+          <li><a th:href="@{/contact}">Contacto</a></li>
+          <li><a th:href="@{/admin}">Ingresar</a></li>
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav>
+
+    </div>
+  </header>
+
+  <main id="main">
+
+    <section id="breadcrumbs" class="breadcrumbs">
+      <div class="container">
+        <ol>
+          <li><a th:href="@{/}">Inicio</a></li>
+          <li>Aptitud por Edad</li>
+        </ol>
+        <h2>Aptitud por Edad</h2>
+        <p class="legal-updated mb-0">Última actualización: 8 de julio de 2026</p>
+      </div>
+    </section>
+
+    <section class="about">
+      <div class="container legal-content">
+
+        <p>
+          Esta página describe la aptitud por edad de los servicios de <strong>Minutriporcion</strong> para padres,
+          tutores, profesionales de la salud y responsables de tiendas de aplicaciones. Aplica a:
+        </p>
+        <ul>
+          <li><strong>Plataforma Web Minutriporcion</strong> — panel de administración para nutriólogos en
+            minutriporcion.com.</li>
+          <li><strong>App Móvil MiNutriporcion</strong> — aplicación para pacientes en iOS y Android.</li>
+        </ul>
+
+        <h3>1. Resumen</h3>
+        <table class="table table-bordered mt-2 mb-4">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Producto</th>
+              <th scope="col">Público previsto</th>
+              <th scope="col">Edad mínima recomendada</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Plataforma Web (nutriólogos)</td>
+              <td>Profesionales titulados de nutrición</td>
+              <td><strong>18 años</strong> (mayor de edad con cédula profesional)</td>
+            </tr>
+            <tr>
+              <td>App Móvil MiNutriporcion (pacientes)</td>
+              <td>Pacientes bajo atención de un nutriólogo</td>
+              <td><strong>Todas las edades</strong>, con supervisión de adulto responsable si es menor</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          Clasificación sugerida para tiendas de aplicaciones:
+          <span class="age-rating-badge">4+ / Para todas las edades</span>
+        </p>
+        <p>
+          MiNutriporcion no contiene contenido violento, sexual, apuestas, alcohol, tabaco ni lenguaje ofensivo.
+          Su propósito es mostrar información nutricional y de seguimiento clínico autorizada por el nutriólogo del
+          paciente.
+        </p>
+
+        <h3>2. Plataforma Web — solo profesionales adultos</h3>
+        <p>
+          Minutriporcion está diseñada exclusivamente para nutriólogos y nutricionistas con título profesional
+          acreditado. El acceso requiere:
+        </p>
+        <ul>
+          <li>Ser mayor de edad (18 años o más).</li>
+          <li>Presentar documentación que acredite la cédula profesional correspondiente.</li>
+          <li>Crear una cuenta mediante autenticación segura (Auth0).</li>
+        </ul>
+        <p>
+          No está dirigida a menores de edad ni permite que niños, niñas o adolescentes administren consultorios o
+          expedientes clínicos de terceros.
+        </p>
+
+        <h3>3. App Móvil — pacientes de todas las edades</h3>
+        <p>
+          MiNutriporcion permite a los pacientes consultar planes de alimentación, recordatorios de citas, mensajes con
+          su nutriólogo y datos de seguimiento nutricional. Los pacientes pueden ser menores de edad cuando su
+          nutriólogo los registra y les envía una invitación para vincular la app.
+        </p>
+        <h4>3.1 Cómo acceden los menores</h4>
+        <ul>
+          <li>El nutriólogo crea o administra el expediente del paciente menor en la Plataforma Web.</li>
+          <li>El nutriólogo envía una invitación (enlace o código) al paciente o a su tutor.</li>
+          <li>El menor o su tutor crea la cuenta en la app y acepta los términos y el aviso de privacidad.</li>
+        </ul>
+        <p>
+          La app <strong>no está diseñada para que menores se registren por su cuenta</strong> sin la intervención de
+          un nutriólogo y, cuando corresponda, de un padre, madre o tutor legal.
+        </p>
+
+        <h4>3.2 Supervisión de padres y tutores</h4>
+        <p>Si un menor utiliza MiNutriporcion, recomendamos que un adulto responsable:</p>
+        <ul>
+          <li>Revise y apruebe la vinculación con el nutriólogo.</li>
+          <li>Supervise el uso de la app y las comunicaciones con el profesional de la salud.</li>
+          <li>Contacte al nutriólogo o a Minutriporcion ante dudas sobre la información mostrada.</li>
+        </ul>
+
+        <h3>4. Contenido y funciones por edad</h3>
+        <p>MiNutriporcion incluye funciones relacionadas con salud y nutrición. No incluye:</p>
+        <ul>
+          <li>Redes sociales abiertas ni perfiles públicos de menores.</li>
+          <li>Compras dentro de la app (in-app purchases) dirigidas a menores.</li>
+          <li>Publicidad de terceros orientada a niños.</li>
+          <li>Geolocalización en tiempo real compartida con otros usuarios.</li>
+          <li>Contenido generado por usuarios visible al público general.</li>
+        </ul>
+        <p>Las funciones disponibles son:</p>
+        <ul>
+          <li>Consulta de planes de alimentación asignados por el nutriólogo.</li>
+          <li>Visualización de mediciones y progreso autorizados por el profesional.</li>
+          <li>Mensajes con el nutriólogo tratante.</li>
+          <li>Recordatorios locales de consultas (notificaciones en el dispositivo).</li>
+          <li>Personalización básica de perfil (nombre, avatar).</li>
+        </ul>
+
+        <h3>5. Menores de 13 años</h3>
+        <p>
+          No recopilamos de forma consciente datos personales de menores de 13 años sin el consentimiento del titular,
+          tutor o representante legal, ni sin la relación profesional iniciada por el nutriólogo. Si consideras que un
+          menor ha creado una cuenta sin la autorización adecuada, contáctanos en
+          <a href="mailto:contacto@minutriporcion.com">contacto@minutriporcion.com</a> para revisar y, en su caso,
+          eliminar la información.
+        </p>
+
+        <h3>6. Responsabilidad del profesional de la salud</h3>
+        <p>
+          El nutriólogo es responsable de determinar la idoneidad clínica del plan nutricional y de las recomendaciones
+          para cada paciente, incluidos los menores. Minutriporcion provee herramientas de gestión; no sustituye el
+          juicio clínico ni la relación médico-paciente.
+        </p>
+
+        <h3>7. Cambios a esta página</h3>
+        <p>
+          Podemos actualizar esta información cuando cambien las funciones de la Plataforma o de la App Móvil, o los
+          requisitos de las tiendas de aplicaciones. La fecha de última actualización aparece al inicio de esta página.
+        </p>
+
+        <h3>8. Contacto y documentos relacionados</h3>
+        <p>
+          Para preguntas sobre aptitud por edad o uso por menores:<br>
+          <strong>Correo:</strong> <a href="mailto:contacto@minutriporcion.com">contacto@minutriporcion.com</a>
+        </p>
+        <p>
+          Consulta también nuestro <a th:href="@{/privacidad}">Aviso de Privacidad</a>, que describe cómo tratamos los
+          datos personales, incluidos los de menores de edad.
+        </p>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer id="footer">
+
+    <div class="footer-top">
+      <div class="container">
+        <div class="row">
+
+          <div class="col-lg-3 col-md-6 footer-links">
+            <h4>Enlaces Útiles</h4>
+            <ul>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/}">Inicio</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/#about}">Acerca de</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/#services}">Servicios</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/#pricing}">Planes</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/contact}">Contacto</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/privacidad}">Aviso de Privacidad</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/aptitud-por-edad}">Aptitud por Edad</a></li>
+            </ul>
+          </div>
+
+          <div class="col-lg-3 col-md-6 footer-links">
+            <h4>Nuestros Servicios</h4>
+            <ul>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/#services}">Gestión de Pacientes</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/#services}">Planes de Alimentación</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/#services}">Seguimiento Nutricional</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/#services}">Calendario de Citas</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/#services}">Reportes Profesionales</a></li>
+            </ul>
+          </div>
+
+          <div class="col-lg-3 col-md-6 footer-contact">
+            <h4>Contacto</h4>
+            <p>
+              <strong>Email:</strong> soporte@minutriporcion.com<br>
+            </p>
+          </div>
+
+          <div class="col-lg-3 col-md-6 footer-info">
+            <h3>Minutriporcion</h3>
+            <p>Sistema de gestión integral para consultorios de nutriólogos. Digitaliza tu práctica profesional y optimiza la atención a tus pacientes.</p>
+            <div class="social-links mt-3">
+              <a href="https://www.facebook.com/minutriporcion" target="_blank" rel="noopener noreferrer" class="facebook"><i class="bx bxl-facebook"></i></a>
+              <a href="https://www.instagram.com/minutriporcion" target="_blank" rel="noopener noreferrer" class="instagram"><i class="bx bxl-instagram"></i></a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="copyright">
+        &copy; Copyright <strong><span>Minutriporcion</span></strong>. Todos los derechos reservados
+      </div>
+      <div class="credits">
+        Diseñado con <a href="https://bootstrapmade.com/">BootstrapMade</a>
+      </div>
+    </div>
+  </footer>
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <script th:src="@{/eterna/assets/vendor/purecounter/purecounter_vanilla.js}"></script>
+  <script th:src="@{/eterna/assets/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/eterna/assets/vendor/glightbox/js/glightbox.min.js}"></script>
+  <script th:src="@{/eterna/assets/vendor/isotope-layout/isotope.pkgd.min.js}"></script>
+  <script th:src="@{/eterna/assets/vendor/swiper/swiper-bundle.min.js}"></script>
+  <script th:src="@{/eterna/assets/vendor/waypoints/noframework.waypoints.js}"></script>
+  <script th:src="@{/eterna/assets/vendor/php-email-form/validate.js}"></script>
+  <script th:src="@{/eterna/assets/js/main.js}"></script>
+
+</body>
+
+</html>

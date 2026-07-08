@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Aviso de Privacidad - Minutriporcion</title>
+  <meta content="Aviso de privacidad de Minutriporcion: plataforma web para nutriólogos y aplicación móvil MiNutriporcion para pacientes."
+    name="description">
+  <meta content="privacidad, aviso de privacidad, Minutriporcion, MiNutriporcion, datos personales, salud"
+    name="keywords">
+
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
+
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <link th:href="@{/eterna/assets/vendor/animate.css/animate.min.css}" rel="stylesheet">
+  <link th:href="@{/eterna/assets/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+  <link th:href="@{/eterna/assets/vendor/bootstrap-icons/bootstrap-icons.css}" rel="stylesheet">
+  <link th:href="@{/eterna/assets/vendor/boxicons/css/boxicons.min.css}" rel="stylesheet">
+  <link th:href="@{/eterna/assets/vendor/glightbox/css/glightbox.min.css}" rel="stylesheet">
+  <link th:href="@{/eterna/assets/vendor/swiper/swiper-bundle.min.css}" rel="stylesheet">
+
+  <link th:href="@{/eterna/assets/css/style.css}" rel="stylesheet">
+
+  <style>
+    #main {
+      padding-top: 150px;
+    }
+
+    .privacy-content {
+      color: #444;
+      line-height: 1.75;
+    }
+
+    .privacy-content h3 {
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      font-size: 1.35rem;
+      color: #111;
+    }
+
+    .privacy-content h4 {
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+      color: #222;
+    }
+
+    .privacy-content p,
+    .privacy-content li {
+      font-size: 0.975rem;
+    }
+
+    .privacy-content ul {
+      padding-left: 1.25rem;
+    }
+
+    .privacy-updated {
+      font-size: 0.9rem;
+      color: #666;
+    }
+  </style>
+</head>
+
+<body>
+
+  <section id="topbar" class="d-flex align-items-center">
+    <div class="container d-flex justify-content-center justify-content-md-between">
+      <div class="contact-info d-flex align-items-center">
+        <i class="bi bi-envelope d-flex align-items-center"><a href="mailto:contacto@minutriporcion.com">contacto@minutriporcion.com</a></i>
+      </div>
+      <div class="social-links d-none d-md-flex align-items-center">
+        <a href="https://www.facebook.com/minutriporcion" target="_blank" rel="noopener noreferrer" class="facebook"><i class="bi bi-facebook"></i></a>
+        <a href="https://www.instagram.com/minutriporcion" target="_blank" rel="noopener noreferrer" class="instagram"><i class="bi bi-instagram"></i></a>
+      </div>
+    </div>
+  </section>
+
+  <header id="header" class="d-flex align-items-center">
+    <div class="container d-flex justify-content-between align-items-center">
+
+      <div class="logo">
+        <a th:href="@{/}" class="d-flex align-items-center">
+          <img th:src="@{/eterna/assets/img/favicon.png}" alt="Minutriporcion" style="height: 40px; margin-right: 10px;">
+          <h1 class="mb-0">Minutriporcion</h1>
+        </a>
+      </div>
+
+      <nav id="navbar" class="navbar">
+        <ul>
+          <li><a th:href="@{/}">Inicio</a></li>
+          <li><a th:href="@{/#about}">Acerca de</a></li>
+          <li><a th:href="@{/#services}">Servicios</a></li>
+          <li><a th:href="@{/#pricing}">Planes</a></li>
+          <li><a th:href="@{/contact}">Contacto</a></li>
+          <li><a th:href="@{/admin}">Ingresar</a></li>
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav>
+
+    </div>
+  </header>
+
+  <main id="main">
+
+    <section id="breadcrumbs" class="breadcrumbs">
+      <div class="container">
+        <ol>
+          <li><a th:href="@{/}">Inicio</a></li>
+          <li>Aviso de Privacidad</li>
+        </ol>
+        <h2>Aviso de Privacidad</h2>
+        <p class="privacy-updated mb-0">Última actualización: 8 de julio de 2026</p>
+      </div>
+    </section>
+
+    <section class="about">
+      <div class="container privacy-content">
+
+        <p>
+          En <strong>Minutriporcion</strong> (“nosotros”, “nuestro” o “la Plataforma”) respetamos tu privacidad y
+          protegemos tus datos personales. Este Aviso de Privacidad describe cómo recopilamos, usamos, almacenamos y
+          compartimos información cuando utilizas:
+        </p>
+        <ul>
+          <li>El sitio web <strong>minutriporcion.com</strong>, incluyendo el panel de administración para
+            nutriólogos y nutricionistas (“Plataforma Web”).</li>
+          <li>La aplicación móvil <strong>MiNutriporcion</strong> para pacientes (“App Móvil”), disponible en iOS y
+            Android.</li>
+          <li>Formularios y servicios públicos asociados, como contacto, invitaciones de pacientes y agendamiento de
+            citas en línea.</li>
+        </ul>
+        <p>
+          Este aviso se emite conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares
+          (LFPDPPP) y su reglamento. Al usar nuestros servicios, reconoces haber leído este documento.
+        </p>
+
+        <h3>1. Responsable del tratamiento</h3>
+        <p>
+          <strong>Minutriporcion</strong><br>
+          Correo de contacto para privacidad: <a href="mailto:soporte@minutriporcion.com">soporte@minutriporcion.com</a>
+        </p>
+
+        <h3>2. Datos personales que recopilamos</h3>
+        <p>La información que tratamos depende de tu relación con la Plataforma:</p>
+
+        <h4>2.1 Nutriólogos y nutricionistas (Plataforma Web)</h4>
+        <ul>
+          <li>Datos de identificación y contacto: nombre, correo electrónico, foto de perfil (cuando la provee tu
+            proveedor de inicio de sesión).</li>
+          <li>Datos de autenticación: identificador de cuenta (por ejemplo, el identificador <em>sub</em> de Auth0),
+            sesión de acceso.</li>
+          <li>Datos profesionales: cédula profesional, nombre de consultorio, logotipo y demás información de perfil
+            profesional que decidas registrar.</li>
+          <li>Datos de suscripción y facturación: plan contratado, historial de pagos y datos necesarios para procesar
+            cobros (gestionados por nuestro proveedor de pagos).</li>
+          <li>Información operativa: pacientes, dietas, platillos, citas, reportes y demás contenido que tú ingreses o
+            generes en el ejercicio de tu práctica profesional.</li>
+        </ul>
+
+        <h4>2.2 Pacientes (App Móvil MiNutriporcion y expediente clínico)</h4>
+        <p>
+          Los datos de salud y nutrición de los pacientes son registrados principalmente por su nutriólogo en la
+          Plataforma Web. La App Móvil permite al paciente acceder a la información que su nutriólogo haya puesto a su
+          disposición. Podemos tratar:
+        </p>
+        <ul>
+          <li>Datos de identificación: nombre, correo electrónico, fecha de nacimiento, avatar seleccionado en la app.
+          </li>
+          <li>Datos de salud y nutrición: historial clínico, antecedentes, alergias, mediciones antropométricas,
+            exámenes clínicos, planes de alimentación, listas de compras, recordatorios de consultas y mensajes
+            relacionados con la atención nutricional.</li>
+          <li>Datos de vinculación: códigos o enlaces de invitación emitidos por el nutriólogo para asociar la cuenta
+            móvil con el expediente correspondiente.</li>
+          <li>Preferencias de la app: idioma y configuraciones locales almacenadas en el dispositivo.</li>
+        </ul>
+        <p>
+          Los datos sensibles de salud se tratan con medidas de seguridad reforzadas y únicamente para las finalidades
+          descritas en este aviso.
+        </p>
+
+        <h4>2.3 Visitantes del sitio público</h4>
+        <ul>
+          <li>Formulario de contacto: nombre, correo electrónico, asunto, mensaje y plan de interés (opcional).</li>
+          <li>Agendamiento de citas en línea: nombre, correo electrónico, teléfono y datos necesarios para reservar una
+            cita con un nutriólogo.</li>
+          <li>Verificación anti-abuso: tokens de Google reCAPTCHA para proteger formularios públicos.</li>
+          <li>Datos técnicos: dirección IP, tipo de navegador, páginas visitadas y registros del servidor necesarios
+            para operación y seguridad.</li>
+        </ul>
+
+        <h3>3. Finalidades del tratamiento</h3>
+        <p>Utilizamos tus datos personales para:</p>
+        <ul>
+          <li>Proveer, operar y mejorar la Plataforma Web y la App Móvil.</li>
+          <li>Autenticar usuarios, administrar sesiones y prevenir accesos no autorizados.</li>
+          <li>Permitir la gestión de pacientes, dietas, citas, reportes y comunicación entre nutriólogo y paciente.</li>
+          <li>Procesar invitaciones, vinculación de cuentas móviles y recordatorios de consultas.</li>
+          <li>Administrar suscripciones, facturación y soporte al cliente.</li>
+          <li>Cumplir obligaciones legales, resolver disputas y hacer valer nuestros acuerdos.</li>
+          <li>Proteger la seguridad e integridad de la Plataforma, incluyendo detección de fraude y abuso.</li>
+        </ul>
+        <p>
+          Cuando un nutriólogo utiliza el asistente de inteligencia artificial opcional, enviamos a nuestro proveedor de
+          IA únicamente el subconjunto mínimo de información estructurada necesario para generar borradores de apoyo
+          clínico. No enviamos nombres, correos, teléfonos ni otros identificadores directos del paciente en las
+          solicitudes al proveedor de IA.
+        </p>
+
+        <h3>4. Base legal y consentimiento</h3>
+        <p>El tratamiento se basa en:</p>
+        <ul>
+          <li>La relación contractual derivada del uso de la Plataforma o la App Móvil.</li>
+          <li>Tu consentimiento, cuando lo exija la ley (por ejemplo, al registrarte o al aceptar invitaciones).</li>
+          <li>El interés legítimo en mantener la seguridad, operación y mejora del servicio.</li>
+          <li>El cumplimiento de obligaciones legales aplicables.</li>
+        </ul>
+
+        <h3>5. Compartición con terceros</h3>
+        <p>No vendemos tus datos personales. Podemos compartirlos con proveedores que nos ayudan a operar el servicio,
+          sujetos a obligaciones de confidencialidad y solo en la medida necesaria:</p>
+        <ul>
+          <li><strong>Auth0</strong> — autenticación e inicio de sesión (incluyendo Google, Apple y otros proveedores
+            sociales configurados).</li>
+          <li><strong>Amazon Web Services (AWS)</strong> — alojamiento, almacenamiento de archivos (por ejemplo, logotipos
+            e imágenes) y operación de infraestructura.</li>
+          <li><strong>Stripe</strong> — procesamiento de pagos de suscripción.</li>
+          <li><strong>Google reCAPTCHA</strong> — protección de formularios públicos contra spam y abuso.</li>
+          <li><strong>OpenAI</strong> — asistente de IA opcional para nutriólogos, con envío mínimo de datos y sin
+            identificadores personales del paciente en las solicitudes.</li>
+          <li><strong>Apple</strong> — inicio de sesión con Apple y notificaciones del ciclo de vida de la cuenta, cuando
+            el usuario elige esa opción.</li>
+        </ul>
+        <p>
+          También podemos divulgar información cuando la ley lo requiera o para proteger derechos, seguridad o
+          integridad de usuarios y de la Plataforma.
+        </p>
+
+        <h3>6. Aislamiento de datos entre profesionales</h3>
+        <p>
+          La Plataforma implementa control de acceso multi-inquilino: cada nutriólogo solo puede acceder a los pacientes
+          e información clínica asociados a su cuenta. Los pacientes vinculados a la App Móvil acceden únicamente a su
+          propia información autorizada por su nutriólogo.
+        </p>
+
+        <h3>7. Transferencias internacionales</h3>
+        <p>
+          Algunos proveedores pueden procesar datos en Estados Unidos u otros países. Cuando ello ocurra, adoptamos
+          medidas contractuales y técnicas razonables para proteger tu información conforme a la LFPDPPP.
+        </p>
+
+        <h3>8. Conservación de datos</h3>
+        <p>
+          Conservamos los datos personales mientras mantengas una cuenta activa o sea necesario para prestar el servicio,
+          cumplir obligaciones legales, resolver controversias o hacer valer acuerdos. Cuando ya no sean necesarios,
+          procederemos a eliminarlos o anonimizarlos de forma segura, salvo que la ley exija un periodo de retención
+          mayor.
+        </p>
+
+        <h3>9. Medidas de seguridad</h3>
+        <p>Aplicamos medidas técnicas y organizativas para proteger la información, incluyendo:</p>
+        <ul>
+          <li>Comunicaciones cifradas mediante HTTPS.</li>
+          <li>Control de acceso basado en autenticación y autorización por usuario.</li>
+          <li>Almacenamiento seguro de credenciales y secretos fuera del código fuente.</li>
+          <li>Redacción de datos personales en registros del sistema para evitar exposición innecesaria.</li>
+          <li>Verificación anti-abuso en formularios públicos.</li>
+        </ul>
+        <p>
+          Ningún método de transmisión o almacenamiento es 100 % infalible; te recomendamos proteger tus credenciales de
+          acceso y notificarnos de inmediato cualquier uso no autorizado.
+        </p>
+
+        <h3>10. Cookies, sesiones y almacenamiento local</h3>
+        <p>
+          La Plataforma Web utiliza cookies y sesiones almacenadas en el servidor para mantener tu inicio de sesión y
+          preferencias de navegación. La App Móvil puede almacenar tokens de sesión y preferencias (como idioma) en el
+          dispositivo. Puedes gestionar cookies desde la configuración de tu navegador; desactivarlas puede limitar
+          funciones que requieren autenticación.
+        </p>
+
+        <h3>11. Notificaciones en la App Móvil</h3>
+        <p>
+          La App Móvil puede solicitar permiso para mostrar notificaciones locales en tu dispositivo (por ejemplo,
+          recordatorios de consultas). Estas notificaciones se generan en el dispositivo; puedes desactivarlas en la
+          configuración del sistema operativo en cualquier momento.
+        </p>
+
+        <h3>12. Derechos ARCO y revocación del consentimiento</h3>
+        <p>
+          Tienes derecho a <strong>Acceder</strong>, <strong>Rectificar</strong>, <strong>Cancelar</strong> u
+          <strong>Oponerte</strong> al tratamiento de tus datos personales, así como a revocar el consentimiento cuando
+          aplique. Para ejercer estos derechos, envía una solicitud a
+          <a href="mailto:soporte@minutriporcion.com">soporte@minutriporcion.com</a> indicando tu nombre, medio de
+          contacto y descripción clara de tu solicitud. Responderemos en los plazos previstos por la ley.
+        </p>
+        <p>
+          Si eres paciente, tu nutriólogo puede ser quien administra parte de tu expediente clínico; en esos casos
+          coordinaremos la solicitud con el profesional responsable cuando corresponda.
+        </p>
+
+        <h3>13. Menores de edad</h3>
+        <p>
+          La App Móvil y los expedientes de pacientes menores de edad deben ser gestionados con el consentimiento del
+          titular, tutor o representante legal, conforme a la legislación aplicable. No recopilamos de forma consciente
+          datos de menores sin la intervención de un adulto responsable o del profesional de la salud que brinda la
+          atención. Consulta también nuestra página de
+          <a th:href="@{/aptitud-por-edad}">Aptitud por Edad</a> para más detalle.
+        </p>
+
+        <h3>14. Enlaces a sitios de terceros</h3>
+        <p>
+          Nuestros servicios pueden contener enlaces a sitios o tiendas de aplicaciones de terceros (por ejemplo, App
+          Store o Google Play). Las prácticas de privacidad de esos sitios son independientes; te recomendamos revisar
+          sus avisos antes de proporcionar información.
+        </p>
+
+        <h3>15. Cambios a este aviso</h3>
+        <p>
+          Podemos actualizar este Aviso de Privacidad para reflejar cambios legales, técnicos o de negocio. Publicaremos
+          la versión vigente en esta página e indicaremos la fecha de última actualización. El uso continuado de la
+          Plataforma después de un cambio implica tu conocimiento del aviso actualizado.
+        </p>
+
+        <h3>16. Contacto</h3>
+        <p>
+          Para dudas, solicitudes de privacidad o ejercicio de derechos ARCO:<br>
+          <strong>Correo:</strong> <a href="mailto:soporte@minutriporcion.com">soporte@minutriporcion.com</a>
+        </p>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer id="footer">
+
+    <div class="footer-top">
+      <div class="container">
+        <div class="row">
+
+          <div class="col-lg-3 col-md-6 footer-links">
+            <h4>Enlaces Útiles</h4>
+            <ul>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/}">Inicio</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/#about}">Acerca de</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/#services}">Servicios</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/#pricing}">Planes</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/contact}">Contacto</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/privacidad}">Aviso de Privacidad</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/aptitud-por-edad}">Aptitud por Edad</a></li>
+            </ul>
+          </div>
+
+          <div class="col-lg-3 col-md-6 footer-links">
+            <h4>Nuestros Servicios</h4>
+            <ul>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/#services}">Gestión de Pacientes</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/#services}">Planes de Alimentación</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/#services}">Seguimiento Nutricional</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/#services}">Calendario de Citas</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a th:href="@{/#services}">Reportes Profesionales</a></li>
+            </ul>
+          </div>
+
+          <div class="col-lg-3 col-md-6 footer-contact">
+            <h4>Contacto</h4>
+            <p>
+              <strong>Email:</strong> contacto@minutriporcion.com<br>
+            </p>
+          </div>
+
+          <div class="col-lg-3 col-md-6 footer-info">
+            <h3>Minutriporcion</h3>
+            <p>Sistema de gestión integral para consultorios de nutriólogos. Digitaliza tu práctica profesional y optimiza la atención a tus pacientes.</p>
+            <div class="social-links mt-3">
+              <a href="https://www.facebook.com/minutriporcion" target="_blank" rel="noopener noreferrer" class="facebook"><i class="bx bxl-facebook"></i></a>
+              <a href="https://www.instagram.com/minutriporcion" target="_blank" rel="noopener noreferrer" class="instagram"><i class="bx bxl-instagram"></i></a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="copyright">
+        &copy; Copyright <strong><span>Minutriporcion</span></strong>. Todos los derechos reservados
+      </div>
+      <div class="credits">
+        Diseñado con <a href="https://bootstrapmade.com/">BootstrapMade</a>
+      </div>
+    </div>
+  </footer>
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <script th:src="@{/eterna/assets/vendor/purecounter/purecounter_vanilla.js}"></script>
+  <script th:src="@{/eterna/assets/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/eterna/assets/vendor/glightbox/js/glightbox.min.js}"></script>
+  <script th:src="@{/eterna/assets/vendor/isotope-layout/isotope.pkgd.min.js}"></script>
+  <script th:src="@{/eterna/assets/vendor/swiper/swiper-bundle.min.js}"></script>
+  <script th:src="@{/eterna/assets/vendor/waypoints/noframework.waypoints.js}"></script>
+  <script th:src="@{/eterna/assets/vendor/php-email-form/validate.js}"></script>
+  <script th:src="@{/eterna/assets/js/main.js}"></script>
+
+</body>
+
+</html>

@@ -48,6 +48,18 @@ public class WebController {
 		return "eterna/contact";
 	}
 
+	@GetMapping(path = { "/privacidad", "/aviso-de-privacidad" })
+	public String privacyPage() {
+		log.debug("Resolving privacy page");
+		return "eterna/privacidad";
+	}
+
+	@GetMapping(path = { "/aptitud-por-edad", "/age-suitability" })
+	public String ageSuitabilityPage() {
+		log.debug("Resolving age suitability page");
+		return "eterna/aptitud-edad";
+	}
+
 	@PostMapping(path = "/contact")
 	public ResponseEntity<String> contact(@Valid final ContactForm contactForm, final BindingResult bindingResult,
 			@RequestParam(value = "recaptcha-response", required = false) final String recaptchaResponse) {
