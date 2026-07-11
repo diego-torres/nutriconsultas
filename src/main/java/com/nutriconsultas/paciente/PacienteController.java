@@ -63,6 +63,7 @@ import java.time.ZoneId;
 
 @Controller
 @Slf4j
+@SuppressWarnings("PMD.NcssCount")
 public class PacienteController extends AbstractAuthorizedController {
 
 	@Autowired
