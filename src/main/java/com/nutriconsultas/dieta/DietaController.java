@@ -326,6 +326,7 @@ public class DietaController extends AbstractAuthorizedController {
 			Model model, @AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Agregar alimento {} a ingesta con id {}", alimentoModel, id);
 		final Dieta dieta = loadDietaForMutation(id, principal);
+		alimentoModel.setTipoPorcion(AlimentoPortionDefaults.resolveTipoPorcion(alimentoModel.getTipoPorcion()));
 		Ingesta ingesta = dieta.getIngestas()
 			.stream()
 			.filter(i -> i.getId().equals(alimentoModel.getIngestaAlimento()))
