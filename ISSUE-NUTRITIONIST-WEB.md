@@ -207,6 +207,7 @@ Feedback from the latest published version — diet assignment, authoring UX, cl
 | Requirement | Issues |
 |-------------|--------|
 | Weekly day-of-week diet assignment + grocery list | #525 |
+| Grocery list PDF export for print | #532 |
 | Alimentos sequence + drag-reorder in diets and platillos | #526 |
 | Create catalog platillo from ingesta alimento combination | #527 |
 | Default portion type to porción when adding alimentos | #528 |
@@ -217,6 +218,7 @@ Feedback from the latest published version — diet assignment, authoring UX, cl
 | # | Title | URL | State | Depends on | Notes |
 |---|-------|-----|-------|-----------|-------|
 | **525** | Patient diet assignment — weekly day-of-week plans with grocery list | https://github.com/diego-torres/nutriconsultas/issues/525 | **in-progress** | #353 (grocery) | Branch `issue-525-weekly-diet-assignment`; `paciente_dieta_weekday` + web lista de compras |
+| **532** | Grocery list — downloadable PDF for print | https://github.com/diego-torres/nutriconsultas/issues/532 | **open** | **525** | Flying Saucer PDF from `/lista-compras`; branded logo; DATE_RANGE + WEEKLY |
 | **526** | Alimentos ordering — sequence metadata + drag-reorder in diets and platillos | https://github.com/diego-torres/nutriconsultas/issues/526 | **open** | — | `orden` on `AlimentoIngesta` + `Ingrediente`; mirror ingesta drag-reorder |
 | **527** | Diet ingesta — create catalog platillo from selected alimentos combination | https://github.com/diego-torres/nutriconsultas/issues/527 | **open** | #257 | Modal nombre; nutritionist-owned platillo from ingesta selection |
 | **528** | Default portion type to porción (not gramos) when adding alimentos | https://github.com/diego-torres/nutriconsultas/issues/528 | **open** | — | `#tipoPorcion` default in diet/platillo add-alimento modals |
@@ -257,7 +259,7 @@ Feedback from the latest published version — diet assignment, authoring UX, cl
 | ~~#285~~ Platillo form | Inline cantidad edit on catalog `#ingredientesGrid` + diet ingesta grid — branch `issue-285-platillo-inline-cantidad` |
 | ~~#243~~ / ~~#244~~ Subscription | reCAPTCHA **done**; Solicitar acceso pre-fill **done** — public funnel complete |
 | #245–#248 Public booking | ~~#245~~ epic **done**; ~~#246~~, ~~#247~~, ~~#248~~, ~~#297~~, ~~#300~~, ~~#302~~ **done** — separate track complete (v1) |
-| **#525–#528**, **#530** Nutritionist feedback | Weekly diet (#525); alimento order (#526); crear platillo (#527); porción default (#528); thyroid labs (#530) |
+| **#525–#528**, **#530**, **#532** Nutritionist feedback | Weekly diet (#525); grocery PDF (#532); alimento order (#526); crear platillo (#527); porción default (#528); thyroid labs (#530) |
 | **#529** Patient photo | S3 upload + resolver — mobile track; complements #241 static avatars |
 
 ---
