@@ -54,14 +54,16 @@
                                th:attr="data-day=${dayNum}">
                             <div class="d-flex justify-content-between align-items-center">
                               <div>
-                                <strong th:text="${weekdayLabels != null ? weekdayLabels[dayNum] : dayNum}">Lunes</strong>
+                                <strong th:text="${weekdayLabels != null ? weekdayLabels.get(dayNum) : dayNum}">Lunes</strong>
                                 <div class="small text-muted weekly-selected-label"
-                                     th:with="slot=${weekdaySlots != null ? weekdaySlots.?[dayOfWeek == dayNum][0] : null}"
+                                     th:with="slot=${weekdaySlotsByDay != null ? weekdaySlotsByDay.get(dayNum) : null}"
                                      th:text="${slot != null && slot.dieta != null ? slot.dieta.nombre : 'Sin dieta'}">Sin dieta</div>
                               </div>
                               <div>
                                 <input type="hidden" th:name="${'weekdayDietaId_' + dayNum}"
-                                       class="weekday-dieta-input" value="">
+                                       class="weekday-dieta-input"
+                                       th:with="slot=${weekdaySlotsByDay != null ? weekdaySlotsByDay.get(dayNum) : null}"
+                                       th:value="${slot != null && slot.dieta != null ? slot.dieta.id : ''}">
                                 <button type="button" class="btn btn-sm btn-outline-secondary weekly-pick-btn"
                                         th:attr="data-day=${dayNum}">Cambiar</button>
                               </div>
@@ -73,7 +75,7 @@
                           <select class="form-control" id="activeWeeklyDaySelect">
                             <option th:each="dayNum : ${#numbers.sequence(1, 7)}"
                                     th:value="${dayNum}"
-                                    th:text="${weekdayLabels != null ? weekdayLabels[dayNum] : dayNum}">Lunes</option>
+                                    th:text="${weekdayLabels != null ? weekdayLabels.get(dayNum) : dayNum}">Lunes</option>
                           </select>
                         </div>
                         <div id="dietaPickerList" class="list-group dieta-picker-list mb-2"></div>

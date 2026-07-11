@@ -84,7 +84,7 @@
                                 <ul class="small mb-0 pl-3"
                                     th:if="${weekdaySlotsByAssignmentId != null && weekdaySlotsByAssignmentId[dietaAsignada.id] != null}">
                                   <li th:each="slot : ${weekdaySlotsByAssignmentId[dietaAsignada.id]}"
-                                      th:text="${(weekdayLabels != null ? weekdayLabels[slot.dayOfWeek] : slot.dayOfWeek) + ': ' + (slot.dieta != null ? slot.dieta.nombre : '-')}"></li>
+                                      th:text="${(weekdayLabels != null ? weekdayLabels.get(slot.dayOfWeek) : slot.dayOfWeek) + ': ' + (slot.dieta != null ? slot.dieta.nombre : '-')}"></li>
                                 </ul>
                               </div>
                               <a th:unless="${dietaAsignada.weeklyAssignment}"

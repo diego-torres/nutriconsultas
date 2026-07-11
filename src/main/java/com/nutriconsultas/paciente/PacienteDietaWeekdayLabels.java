@@ -1,5 +1,6 @@
 package com.nutriconsultas.paciente;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +19,19 @@ public final class PacienteDietaWeekdayLabels {
 
 	public static String labelForDay(final int dayOfWeek) {
 		return SPANISH_LABELS.getOrDefault(dayOfWeek, "Día " + dayOfWeek);
+	}
+
+	public static Map<Integer, PacienteDietaWeekday> slotsByDay(final List<PacienteDietaWeekday> slots) {
+		final Map<Integer, PacienteDietaWeekday> byDay = new LinkedHashMap<>();
+		if (slots == null) {
+			return byDay;
+		}
+		for (final PacienteDietaWeekday slot : slots) {
+			if (slot.getDayOfWeek() != null) {
+				byDay.put(slot.getDayOfWeek(), slot);
+			}
+		}
+		return byDay;
 	}
 
 }

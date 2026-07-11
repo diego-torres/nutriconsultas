@@ -917,6 +917,38 @@ public class PacienteControllerTest {
 	}
 
 	@Test
+	public void testEditarAsignacionDietaWeeklyIncludesSlotsByDay() {
+		log.info("starting testEditarAsignacionDietaWeeklyIncludesSlotsByDay");
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		pacienteDieta.setId(6L);
+		pacienteDieta.setPaciente(paciente);
+		pacienteDieta.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
+
+		final PacienteDietaWeekday mondaySlot = new PacienteDietaWeekday();
+		mondaySlot.setDayOfWeek(1);
+		final com.nutriconsultas.dieta.Dieta dieta = new com.nutriconsultas.dieta.Dieta();
+		dieta.setId(22L);
+		dieta.setNombre("Dieta Hope 1");
+		mondaySlot.setDieta(dieta);
+
+		when(pacienteRepository.findByIdAndUserId(7L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteDietaService.findById(6L)).thenReturn(pacienteDieta);
+		when(pacienteDietaService.findWeekdaySlots(6L)).thenReturn(java.util.List.of(mondaySlot));
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		final String result = controller.editarAsignacionDieta(7L, 6L, model, principal);
+
+		assertThat(result).isEqualTo("sbadmin/pacientes/editar-dieta");
+		verify(model).addAttribute(eq("weekdaySlotsByDay"), org.mockito.ArgumentMatchers.argThat(map -> {
+			@SuppressWarnings("unchecked")
+			final java.util.Map<Integer, PacienteDietaWeekday> slots = (java.util.Map<Integer, PacienteDietaWeekday>) map;
+			return slots.containsKey(1) && slots.get(1).getDieta().getNombre().equals("Dieta Hope 1");
+		}));
+		log.info("finished testEditarAsignacionDietaWeeklyIncludesSlotsByDay");
+	}
+
+	@Test
 	public void testActualizarAsignacionDieta() {
 		log.info("starting testActualizarAsignacionDieta");
 		// Arrange

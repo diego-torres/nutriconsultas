@@ -126,6 +126,7 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		mockPacienteDieta.setEndDate(null);
 		mockPacienteDieta.setStatus(PacienteDietaStatus.ACTIVE);
 		mockPacienteDieta.setNotes("");
+		mockPacienteDieta.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
 		mockDietasAsignadas.add(mockPacienteDieta);
 
 		variables.put("dietasAsignadas", mockDietasAsignadas);
@@ -149,7 +150,10 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		variables.put("weekdayLabels", PacienteDietaWeekdayLabels.ISO_DAYS_MONDAY_FIRST.stream()
 			.collect(java.util.stream.Collectors.toMap(day -> day, PacienteDietaWeekdayLabels::labelForDay)));
 		variables.put("weekdaySlotsByAssignmentId", java.util.Map.of());
-		variables.put("weekdaySlots", java.util.List.of());
+		final PacienteDietaWeekday mondaySlot = new PacienteDietaWeekday();
+		mondaySlot.setDayOfWeek(1);
+		mondaySlot.setDieta(mockDieta);
+		variables.put("weekdaySlotsByDay", PacienteDietaWeekdayLabels.slotsByDay(java.util.List.of(mondaySlot)));
 		variables.put("groceryItems", java.util.List.of());
 	}
 

@@ -939,7 +939,8 @@ public class PacienteController extends AbstractAuthorizedController {
 		model.addAttribute("paciente", paciente);
 		model.addAttribute("pacienteDieta", pacienteDieta);
 		if (pacienteDieta.isWeeklyAssignment()) {
-			model.addAttribute("weekdaySlots", pacienteDietaService.findWeekdaySlots(id));
+			model.addAttribute("weekdaySlotsByDay",
+					PacienteDietaWeekdayLabels.slotsByDay(pacienteDietaService.findWeekdaySlots(id)));
 		}
 		model.addAttribute("weekdayLabels", PacienteDietaWeekdayLabels.ISO_DAYS_MONDAY_FIRST.stream()
 			.collect(Collectors.toMap(day -> day, PacienteDietaWeekdayLabels::labelForDay)));
@@ -998,7 +999,8 @@ public class PacienteController extends AbstractAuthorizedController {
 			model.addAttribute("paciente", paciente);
 			model.addAttribute("pacienteDieta", pacienteDieta);
 			if (existing.isWeeklyAssignment()) {
-				model.addAttribute("weekdaySlots", pacienteDietaService.findWeekdaySlots(id));
+				model.addAttribute("weekdaySlotsByDay",
+						PacienteDietaWeekdayLabels.slotsByDay(pacienteDietaService.findWeekdaySlots(id)));
 			}
 			model.addAttribute("weekdayLabels", PacienteDietaWeekdayLabels.ISO_DAYS_MONDAY_FIRST.stream()
 				.collect(Collectors.toMap(day -> day, PacienteDietaWeekdayLabels::labelForDay)));
