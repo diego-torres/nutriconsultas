@@ -109,4 +109,14 @@ public class LiquibaseMigrationTest {
 		assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM ai_generated_draft", Long.class)).isEqualTo(0L);
 	}
 
+	@Test
+	public void testDietAssignmentSequenceResyncChangesetApplied() {
+		assertThat(jdbc.queryForObject(
+				"SELECT COUNT(*) FROM databasechangelog WHERE id = '030-resync-diet-assignment-sequences'",
+				Long.class))
+			.isEqualTo(1L);
+		final Long maxDietaId = jdbc.queryForObject("SELECT COALESCE(MAX(id), 0) FROM dieta", Long.class);
+		assertThat(maxDietaId).isGreaterThan(0L);
+	}
+
 }

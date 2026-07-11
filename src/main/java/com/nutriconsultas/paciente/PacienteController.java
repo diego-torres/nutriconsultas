@@ -4,10 +4,13 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,6 +50,7 @@ import com.nutriconsultas.paciente.mpx.MpxImportException;
 import com.nutriconsultas.paciente.mpx.MpxImportResult;
 import com.nutriconsultas.paciente.mpx.PacienteMpxExportService;
 import com.nutriconsultas.paciente.mpx.PacienteMpxImportService;
+import com.nutriconsultas.mobile.dto.DietGroceryListItemDto;
 import com.nutriconsultas.util.LogRedaction;
 
 import org.springframework.http.HttpHeaders;
@@ -59,6 +63,7 @@ import java.time.ZoneId;
 
 @Controller
 @Slf4j
+@SuppressWarnings("PMD.NcssCount")
 public class PacienteController extends AbstractAuthorizedController {
 
 	@Autowired
@@ -539,6 +544,16 @@ public class PacienteController extends AbstractAuthorizedController {
 			}
 		}
 		model.addAttribute("dietasActivas", dietasActivas);
+		final Map<Long, List<PacienteDietaWeekday>> weekdaySlotsByAssignmentId = new HashMap<>();
+		for (final PacienteDieta assignment : dietasAsignadas) {
+			if (assignment.isWeeklyAssignment() && assignment.getId() != null) {
+				weekdaySlotsByAssignmentId.put(assignment.getId(),
+						pacienteDietaService.findWeekdaySlots(assignment.getId()));
+			}
+		}
+		model.addAttribute("weekdaySlotsByAssignmentId", weekdaySlotsByAssignmentId);
+		model.addAttribute("weekdayLabels", PacienteDietaWeekdayLabels.ISO_DAYS_MONDAY_FIRST.stream()
+			.collect(Collectors.toMap(day -> day, PacienteDietaWeekdayLabels::labelForDay)));
 		// obtener todas las dietas disponibles para asignar (legacy attribute for dietas
 		// template)
 		model.addAttribute("dietasDisponibles", getDietasDisponiblesWithCalculatedNutrients());
@@ -821,15 +836,17 @@ public class PacienteController extends AbstractAuthorizedController {
 		model.addAttribute("paciente", paciente);
 		model.addAttribute("requerimientoKcal", resolveRequerimientoKcal(paciente));
 		model.addAttribute("pacienteDieta", new PacienteDieta());
+		model.addAttribute("weekdayLabels", PacienteDietaWeekdayLabels.ISO_DAYS_MONDAY_FIRST.stream()
+			.collect(Collectors.toMap(day -> day, PacienteDietaWeekdayLabels::labelForDay)));
 		return "sbadmin/pacientes/asignar-dieta";
 	}
 
 	@PostMapping(path = "/admin/pacientes/{id}/dietas/asignar")
 	public String guardarAsignacionDieta(@PathVariable @NonNull final Long id, final PacienteDieta pacienteDieta,
-			final BindingResult result, final Model model,
-			@org.springframework.web.bind.annotation.RequestParam(required = true) @NonNull final Long dietaId,
+			final BindingResult result, final Model model, @RequestParam(required = false) final String assignmentType,
+			@RequestParam(required = false) final Long dietaId, final HttpServletRequest request,
 			@AuthenticationPrincipal final OidcUser principal) {
-		log.debug("Guardando asignación de dieta {} para paciente {}", dietaId, id);
+		log.debug("Guardando asignación de dieta para paciente {}", id);
 		final String userId = getUserId(principal);
 		if (userId == null) {
 			throw new IllegalArgumentException("No se pudo identificar al usuario");
@@ -840,21 +857,12 @@ public class PacienteController extends AbstractAuthorizedController {
 			throw new IllegalArgumentException("PacienteDieta cannot be null");
 		}
 
-		// Set paciente and dieta from parameters before validation
-		// This is necessary because paciente and dieta are validated as @NotNull but come
-		// from
-		// path variable and request parameter, not from form binding
+		final PacienteDietaAssignmentType parsedType = PacienteDietaWeekdayRequestSupport
+			.parseAssignmentType(assignmentType);
 		final Paciente paciente = pacienteRepository.findByIdAndUserId(id, userId)
 			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
 		verifyPatientOwnership(paciente, userId);
-		final com.nutriconsultas.dieta.Dieta dieta = dietaRepository.findById(dietaId)
-			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado dieta con id " + dietaId));
 
-		pacienteDieta.setPaciente(paciente);
-		pacienteDieta.setDieta(dieta);
-
-		// Manual validation since paciente and dieta come from parameters, not form
-		// binding
 		boolean hasErrors = false;
 		if (pacienteDieta.getStartDate() == null) {
 			result.rejectValue("startDate", "NotNull", "La fecha de inicio es requerida");
@@ -864,13 +872,27 @@ public class PacienteController extends AbstractAuthorizedController {
 			result.rejectValue("status", "NotNull", "El estado es requerido");
 			hasErrors = true;
 		}
-		if (pacienteDieta.getPaciente() == null) {
-			result.rejectValue("paciente", "NotNull", "El paciente es requerido");
-			hasErrors = true;
+
+		if (parsedType == PacienteDietaAssignmentType.DATE_RANGE) {
+			if (dietaId == null) {
+				result.rejectValue("dieta", "NotNull", "La dieta es requerida");
+				hasErrors = true;
+			}
+			else {
+				final com.nutriconsultas.dieta.Dieta dieta = dietaRepository.findById(dietaId)
+					.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado dieta con id " + dietaId));
+				pacienteDieta.setPaciente(paciente);
+				pacienteDieta.setDieta(dieta);
+			}
 		}
-		if (pacienteDieta.getDieta() == null) {
-			result.rejectValue("dieta", "NotNull", "La dieta es requerida");
-			hasErrors = true;
+		else {
+			final Map<Integer, Long> weekdayDietaIds = PacienteDietaWeekdayRequestSupport
+				.parseWeekdayCatalogDietaIds(request);
+			if (weekdayDietaIds.isEmpty()) {
+				result.reject("weekdayDietaIds", "Seleccione al menos un día con dieta para el plan semanal");
+				hasErrors = true;
+			}
+			pacienteDieta.setPaciente(paciente);
 		}
 
 		if (hasErrors) {
@@ -880,9 +902,19 @@ public class PacienteController extends AbstractAuthorizedController {
 			model.addAttribute("activeMenu", "perfil");
 			model.addAttribute("paciente", paciente);
 			model.addAttribute("requerimientoKcal", resolveRequerimientoKcal(paciente));
+			model.addAttribute("weekdayLabels", PacienteDietaWeekdayLabels.ISO_DAYS_MONDAY_FIRST.stream()
+				.collect(Collectors.toMap(day -> day, PacienteDietaWeekdayLabels::labelForDay)));
 			return "sbadmin/pacientes/asignar-dieta";
 		}
-		final PacienteDieta saved = pacienteDietaService.assignDieta(id, dietaId, pacienteDieta, userId);
+
+		final PacienteDieta saved;
+		if (parsedType == PacienteDietaAssignmentType.WEEKLY) {
+			saved = pacienteDietaService.assignWeeklyDieta(id,
+					PacienteDietaWeekdayRequestSupport.parseWeekdayCatalogDietaIds(request), pacienteDieta, userId);
+		}
+		else {
+			saved = pacienteDietaService.assignDieta(id, dietaId, pacienteDieta, userId);
+		}
 		log.debug("Dieta asignada exitosamente: {}", LogRedaction.redactPacienteDieta(saved));
 		return String.format("redirect:/admin/pacientes/%d/dietas", id);
 	}
@@ -907,34 +939,36 @@ public class PacienteController extends AbstractAuthorizedController {
 		model.addAttribute("activeMenu", "perfil");
 		model.addAttribute("paciente", paciente);
 		model.addAttribute("pacienteDieta", pacienteDieta);
+		if (pacienteDieta.isWeeklyAssignment()) {
+			model.addAttribute("weekdaySlotsByDay",
+					PacienteDietaWeekdayLabels.slotsByDay(pacienteDietaService.findWeekdaySlots(id)));
+		}
+		model.addAttribute("weekdayLabels", PacienteDietaWeekdayLabels.ISO_DAYS_MONDAY_FIRST.stream()
+			.collect(Collectors.toMap(day -> day, PacienteDietaWeekdayLabels::labelForDay)));
+		model.addAttribute("requerimientoKcal", resolveRequerimientoKcal(paciente));
 		return "sbadmin/pacientes/editar-dieta";
 	}
 
 	@PostMapping(path = "/admin/pacientes/{pacienteId}/dietas/{id}/editar")
 	public String actualizarAsignacionDieta(@PathVariable @NonNull final Long pacienteId,
 			@PathVariable @NonNull final Long id, final PacienteDieta pacienteDieta, final BindingResult result,
-			final Model model, @AuthenticationPrincipal final OidcUser principal) {
+			final Model model, final HttpServletRequest request, @AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Actualizando asignación de dieta {}", id);
 		final String userId = getUserId(principal);
 		if (userId == null) {
 			throw new IllegalArgumentException("No se pudo identificar al usuario");
 		}
 
-		// Load existing assignment to preserve paciente and dieta relationships
-		// These are not in the form, so they need to be set from the existing entity
 		final PacienteDieta existing = pacienteDietaService.findById(id);
 		if (existing == null) {
 			throw new IllegalArgumentException("No se ha encontrado asignación de dieta con id " + id);
 		}
 
-		// Set paciente and dieta from existing entity
-		// This prevents validation errors since these fields are @NotNull but not in the
-		// form
 		pacienteDieta.setPaciente(existing.getPaciente());
 		pacienteDieta.setDieta(existing.getDieta());
 		pacienteDieta.setId(existing.getId());
+		pacienteDieta.setAssignmentType(existing.getAssignmentType());
 
-		// Manual validation for fields that come from the form
 		boolean hasErrors = false;
 		if (pacienteDieta.getStartDate() == null) {
 			result.rejectValue("startDate", "NotNull", "La fecha de inicio es requerida");
@@ -943,6 +977,15 @@ public class PacienteController extends AbstractAuthorizedController {
 		if (pacienteDieta.getStatus() == null) {
 			result.rejectValue("status", "NotNull", "El estado es requerido");
 			hasErrors = true;
+		}
+		if (existing.isWeeklyAssignment()) {
+			final Map<Integer, Long> weekdayDietaIds = PacienteDietaWeekdayRequestSupport
+				.parseWeekdayCatalogDietaIds(request);
+			final List<PacienteDietaWeekday> existingSlots = pacienteDietaService.findWeekdaySlots(id);
+			if (weekdayDietaIds.isEmpty() && existingSlots.isEmpty()) {
+				result.reject("weekdayDietaIds", "Seleccione al menos un día con dieta para el plan semanal");
+				hasErrors = true;
+			}
 		}
 
 		if (hasErrors) {
@@ -956,11 +999,50 @@ public class PacienteController extends AbstractAuthorizedController {
 			model.addAttribute("activeMenu", "perfil");
 			model.addAttribute("paciente", paciente);
 			model.addAttribute("pacienteDieta", pacienteDieta);
+			if (existing.isWeeklyAssignment()) {
+				model.addAttribute("weekdaySlotsByDay",
+						PacienteDietaWeekdayLabels.slotsByDay(pacienteDietaService.findWeekdaySlots(id)));
+			}
+			model.addAttribute("weekdayLabels", PacienteDietaWeekdayLabels.ISO_DAYS_MONDAY_FIRST.stream()
+				.collect(Collectors.toMap(day -> day, PacienteDietaWeekdayLabels::labelForDay)));
+			model.addAttribute("requerimientoKcal", resolveRequerimientoKcal(paciente));
 			return "sbadmin/pacientes/editar-dieta";
 		}
-		final PacienteDieta updated = pacienteDietaService.updateAssignment(id, pacienteDieta);
+
+		final PacienteDieta updated;
+		if (existing.isWeeklyAssignment()) {
+			updated = pacienteDietaService.updateWeeklyAssignment(id,
+					PacienteDietaWeekdayRequestSupport.parseWeekdayCatalogDietaIds(request), pacienteDieta);
+		}
+		else {
+			updated = pacienteDietaService.updateAssignment(id, pacienteDieta);
+		}
 		log.info("Asignación de dieta actualizada exitosamente: {}", LogRedaction.redactPacienteDieta(updated));
 		return String.format("redirect:/admin/pacientes/%d/dietas", pacienteId);
+	}
+
+	@GetMapping(path = "/admin/pacientes/{pacienteId}/dietas/{id}/lista-compras")
+	public String listaComprasAsignacion(@PathVariable @NonNull final Long pacienteId,
+			@PathVariable @NonNull final Long id, final Model model,
+			@AuthenticationPrincipal final OidcUser principal) {
+		log.debug("Cargando lista de compras para asignación {}", id);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		final Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId));
+		verifyPatientOwnership(paciente, userId);
+		final PacienteDieta assignment = pacienteDietaService.findById(id);
+		if (assignment.getPaciente() == null || !pacienteId.equals(assignment.getPaciente().getId())) {
+			throw new IllegalArgumentException("La asignación no pertenece al paciente");
+		}
+		final List<DietGroceryListItemDto> groceryItems = pacienteDietaService.buildGroceryList(assignment);
+		model.addAttribute("activeMenu", "plan-alimentario");
+		model.addAttribute("paciente", paciente);
+		model.addAttribute("pacienteDieta", assignment);
+		model.addAttribute("groceryItems", groceryItems);
+		return "sbadmin/pacientes/lista-compras";
 	}
 
 	@PostMapping(path = "/admin/pacientes/{pacienteId}/dietas/{id}/cancelar")

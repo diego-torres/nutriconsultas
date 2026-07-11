@@ -73,6 +73,11 @@
     .dieta-picker-status {
       font-size: 0.875rem;
     }
+
+    .weekly-day-row.active-picking {
+      border-left: 4px solid #4e73df;
+      background-color: #f8f9fc;
+    }
   </style>
 
 </head>
@@ -120,15 +125,82 @@
                           th:action="@{/admin/pacientes/{id}/dietas/asignar(id=${paciente != null ? paciente.id : 0})}" 
                           th:object="${pacienteDieta}" method="POST">
                       <div class="form-group">
-                        <label>Dieta<span style="color:red;">*</span></label>
-                        <input type="hidden" name="dietaId" id="dietaIdInput" value="">
-                        <div id="dietaSelectionError" class="alert alert-danger py-2 d-none" role="alert">
-                          Seleccione una dieta de la lista.
+                        <label>Tipo de asignación<span style="color:red;">*</span></label>
+                        <div class="custom-control custom-radio">
+                          <input type="radio" id="assignmentTypeDateRange" name="assignmentType"
+                                 class="custom-control-input" value="DATE_RANGE" checked>
+                          <label class="custom-control-label" for="assignmentTypeDateRange">Rango de fechas (una dieta)</label>
                         </div>
-                        <div id="dietaSelectedSummary" class="alert alert-primary py-2 d-none mb-2" role="status">
-                          <i class="fas fa-check-circle"></i>
-                          <strong>Seleccionada:</strong> <span id="dietaSelectedLabel">-</span>
+                        <div class="custom-control custom-radio">
+                          <input type="radio" id="assignmentTypeWeekly" name="assignmentType"
+                                 class="custom-control-input" value="WEEKLY">
+                          <label class="custom-control-label" for="assignmentTypeWeekly">Plan semanal (lunes a domingo)</label>
                         </div>
+                      </div>
+
+                      <input type="hidden" name="dietaId" id="dietaIdInput" value="">
+
+                      <div id="dateRangeSection">
+                        <div class="form-group">
+                          <label>Dieta<span style="color:red;">*</span></label>
+                          <div id="dietaSelectionError" class="alert alert-danger py-2 d-none" role="alert">
+                            Seleccione una dieta de la lista.
+                          </div>
+                          <div id="dietaSelectedSummary" class="alert alert-primary py-2 d-none mb-2" role="status">
+                            <i class="fas fa-check-circle"></i>
+                            <strong>Seleccionada:</strong> <span id="dietaSelectedLabel">-</span>
+                          </div>
+                          <span th:if="${#fields.hasErrors('dieta')}" th:errors="*{dieta}"></span>
+                        </div>
+                      </div>
+
+                      <div id="weeklySection" class="d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <label class="mb-0">Menú por día de la semana<span style="color:red;">*</span></label>
+                          <button type="button" class="btn btn-sm btn-outline-primary" id="repeatMondayBtn">
+                            Repetir lunes en todos los días
+                          </button>
+                        </div>
+                        <div id="weeklyPickerHint" class="alert alert-light border py-2 mb-3" role="status">
+                          <i class="fas fa-hand-pointer"></i>
+                          <strong>Paso 1:</strong> pulse <em>Seleccionar dieta</em> en el día deseado.
+                          <strong>Paso 2:</strong> elija una dieta del catálogo en la lista de abajo.
+                          No se requiere calcular GET/TEF para asignar un plan semanal.
+                        </div>
+                        <div id="weeklyActiveDayHint" class="alert alert-primary py-2 mb-3 d-none" role="status">
+                          <i class="fas fa-arrow-down"></i>
+                          Elija una dieta de la lista para <strong id="weeklyActiveDayLabel">-</strong>.
+                        </div>
+                        <div id="weeklySelectionError" class="alert alert-danger py-2 d-none" role="alert">
+                          Seleccione al menos un día con dieta.
+                        </div>
+                        <div class="list-group mb-3" id="weeklyDayRows">
+                          <div class="list-group-item weekly-day-row" th:each="dayNum : ${#numbers.sequence(1, 7)}"
+                               th:attr="data-day=${dayNum}">
+                            <div class="d-flex justify-content-between align-items-center">
+                              <div>
+                                <strong th:text="${weekdayLabels != null ? weekdayLabels.get(dayNum) : dayNum}">Lunes</strong>
+                                <div class="small text-muted weekly-selected-label">Sin dieta</div>
+                              </div>
+                              <div>
+                                <input type="hidden" th:name="${'weekdayDietaId_' + dayNum}" value=""
+                                       class="weekday-dieta-input">
+                                <button type="button" class="btn btn-sm btn-outline-secondary weekly-pick-btn"
+                                        th:attr="data-day=${dayNum}">
+                                  Seleccionar dieta
+                                </button>
+                                <button type="button" class="btn btn-sm btn-link text-danger weekly-clear-btn d-none"
+                                        th:attr="data-day=${dayNum}">
+                                  Quitar
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div id="dietaPickerSection" class="form-group">
+                        <label id="dietaPickerSectionLabel">Catálogo de dietas</label>
                         <div class="input-group mb-2">
                           <div class="input-group-prepend">
                             <span class="input-group-text"><i class="fas fa-search"></i></span>
@@ -154,8 +226,8 @@
                         <div id="dietaSearchNoResults" class="alert alert-secondary mt-2 mb-0 d-none">
                           No hay dietas que coincidan con la búsqueda.
                         </div>
-                        <span th:if="${#fields.hasErrors('dieta')}" th:errors="*{dieta}"></span>
                       </div>
+
                       <div class="form-group">
                         <label>Fecha de Inicio<span style="color:red;">*</span></label>
                         <input type="date" th:field="*{startDate}" class="form-control" required>
@@ -218,6 +290,7 @@
     <script th:inline="javascript">
       document.addEventListener('DOMContentLoaded', function() {
         const requerimientoKcal = /*[[${requerimientoKcal}]]*/ null;
+        const weekdayLabels = /*[[${weekdayLabels}]]*/ {};
         const pickerPageSize = 20;
         const dietaIdInput = document.getElementById('dietaIdInput');
         const searchInput = document.getElementById('dietaSearchInput');
@@ -230,6 +303,14 @@
         const selectionError = document.getElementById('dietaSelectionError');
         const noResults = document.getElementById('dietaSearchNoResults');
         const form = document.getElementById('asignarDietaForm');
+        const assignmentTypeDateRangeEl = document.getElementById('assignmentTypeDateRange');
+        const assignmentTypeWeeklyEl = document.getElementById('assignmentTypeWeekly');
+        const dateRangeSection = document.getElementById('dateRangeSection');
+        const weeklySection = document.getElementById('weeklySection');
+        const weeklyPickerHint = document.getElementById('weeklyPickerHint');
+        const weeklyActiveDayHint = document.getElementById('weeklyActiveDayHint');
+        const weeklyActiveDayLabel = document.getElementById('weeklyActiveDayLabel');
+        const dietaPickerSectionLabel = document.getElementById('dietaPickerSectionLabel');
 
         if (!pickerList) {
           return;
@@ -241,6 +322,7 @@
         let searchTerm = '';
         let searchDebounceTimer = null;
         let selectedDietaId = null;
+        let activeWeeklyDay = null;
 
         function formatKcal(value) {
           if (value === null || value === undefined || isNaN(value)) {
@@ -403,7 +485,75 @@
           loadPickerPage(0, false);
         }
 
+        function weekdayLabelFor(day) {
+          if (weekdayLabels && weekdayLabels[day]) {
+            return weekdayLabels[day];
+          }
+          return 'Día ' + day;
+        }
+
+        function clearActiveWeeklyDayUi() {
+          document.querySelectorAll('.weekly-day-row').forEach(function(row) {
+            row.classList.remove('active-picking');
+          });
+          document.querySelectorAll('.weekly-pick-btn').forEach(function(btn) {
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-outline-secondary');
+            btn.textContent = 'Seleccionar dieta';
+          });
+          if (weeklyPickerHint) {
+            weeklyPickerHint.classList.remove('d-none');
+          }
+          if (weeklyActiveDayHint) {
+            weeklyActiveDayHint.classList.add('d-none');
+          }
+        }
+
+        function setActiveWeeklyDay(day) {
+          activeWeeklyDay = day;
+          clearActiveWeeklyDayUi();
+          const row = document.querySelector('.weekly-day-row[data-day="' + day + '"]');
+          const pickBtn = row ? row.querySelector('.weekly-pick-btn') : null;
+          if (row) {
+            row.classList.add('active-picking');
+          }
+          if (pickBtn) {
+            pickBtn.classList.remove('btn-outline-secondary');
+            pickBtn.classList.add('btn-primary');
+            pickBtn.textContent = 'Seleccionando…';
+          }
+          if (weeklyPickerHint) {
+            weeklyPickerHint.classList.add('d-none');
+          }
+          if (weeklyActiveDayHint && weeklyActiveDayLabel) {
+            weeklyActiveDayLabel.textContent = weekdayLabelFor(day);
+            weeklyActiveDayHint.classList.remove('d-none');
+          }
+        }
+
         function selectDieta(item, dieta) {
+          if (assignmentTypeWeeklyEl && assignmentTypeWeeklyEl.checked) {
+            if (!activeWeeklyDay) {
+              const weeklyError = document.getElementById('weeklySelectionError');
+              if (weeklyError) {
+                weeklyError.textContent = 'Primero pulse «Seleccionar dieta» en el día que desea configurar.';
+                weeklyError.classList.remove('d-none');
+              }
+              if (weeklySection) {
+                weeklySection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              }
+              return;
+            }
+            setWeeklyDaySelection(activeWeeklyDay, dieta);
+            const weeklyError = document.getElementById('weeklySelectionError');
+            if (weeklyError) {
+              weeklyError.classList.add('d-none');
+              weeklyError.textContent = 'Seleccione al menos un día con dieta.';
+            }
+            activeWeeklyDay = null;
+            clearActiveWeeklyDayUi();
+            return;
+          }
           pickerList.querySelectorAll('.dieta-picker-item').forEach(function(el) {
             el.classList.remove('selected');
           });
@@ -418,6 +568,27 @@
             selectedLabel.textContent = (dieta.nombre || '') + ' — ' + formatKcal(dieta.energiaKcal)
               + ' kcal (' + fitInfo.label + ')';
             selectedSummary.classList.remove('d-none');
+          }
+        }
+
+        function setWeeklyDaySelection(day, dieta) {
+          const row = document.querySelector('.weekly-day-row[data-day="' + day + '"]');
+          if (!row) {
+            return;
+          }
+          const input = row.querySelector('.weekday-dieta-input');
+          const label = row.querySelector('.weekly-selected-label');
+          const clearBtn = row.querySelector('.weekly-clear-btn');
+          if (input) {
+            input.value = dieta ? String(dieta.id) : '';
+          }
+          if (label) {
+            label.textContent = dieta
+              ? (dieta.nombre || '') + ' — ' + formatKcal(dieta.energiaKcal) + ' kcal'
+              : 'Sin dieta';
+          }
+          if (clearBtn) {
+            clearBtn.classList.toggle('d-none', !dieta);
           }
         }
 
@@ -446,6 +617,19 @@
 
         if (form) {
           form.addEventListener('submit', function(e) {
+            const isWeekly = document.getElementById('assignmentTypeWeekly').checked;
+            if (isWeekly) {
+              const hasDay = Array.from(document.querySelectorAll('.weekday-dieta-input'))
+                .some(function(input) { return input.value; });
+              if (!hasDay) {
+                e.preventDefault();
+                const weeklyError = document.getElementById('weeklySelectionError');
+                if (weeklyError) {
+                  weeklyError.classList.remove('d-none');
+                }
+              }
+              return;
+            }
             if (!dietaIdInput.value) {
               e.preventDefault();
               if (selectionError) {
@@ -458,7 +642,87 @@
           });
         }
 
+        function toggleAssignmentSections() {
+          const isWeekly = assignmentTypeWeeklyEl && assignmentTypeWeeklyEl.checked;
+          if (dateRangeSection) {
+            dateRangeSection.classList.toggle('d-none', isWeekly);
+          }
+          if (weeklySection) {
+            weeklySection.classList.toggle('d-none', !isWeekly);
+          }
+          if (dietaPickerSectionLabel) {
+            dietaPickerSectionLabel.textContent = isWeekly
+              ? 'Catálogo de dietas (elija para el día activo)'
+              : 'Catálogo de dietas';
+          }
+          if (!isWeekly) {
+            activeWeeklyDay = null;
+            clearActiveWeeklyDayUi();
+          }
+        }
+
+        if (assignmentTypeDateRangeEl) {
+          assignmentTypeDateRangeEl.addEventListener('change', toggleAssignmentSections);
+        }
+        if (assignmentTypeWeeklyEl) {
+          assignmentTypeWeeklyEl.addEventListener('change', toggleAssignmentSections);
+        }
+
+        document.querySelectorAll('.weekly-pick-btn').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            setActiveWeeklyDay(btn.getAttribute('data-day'));
+            if (searchInput) {
+              searchInput.focus();
+            }
+            const pickerSection = document.getElementById('dietaPickerSection');
+            if (pickerSection) {
+              pickerSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+          });
+        });
+
+        document.querySelectorAll('.weekly-clear-btn').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            setWeeklyDaySelection(btn.getAttribute('data-day'), null);
+          });
+        });
+
+        const repeatMondayBtn = document.getElementById('repeatMondayBtn');
+        if (repeatMondayBtn) {
+          repeatMondayBtn.addEventListener('click', function() {
+            const mondayRow = document.querySelector('.weekly-day-row[data-day="1"]');
+            if (!mondayRow) {
+              return;
+            }
+            const mondayInput = mondayRow.querySelector('.weekday-dieta-input');
+            const mondayLabel = mondayRow.querySelector('.weekly-selected-label');
+            if (!mondayInput || !mondayInput.value) {
+              return;
+            }
+            const labelText = mondayLabel ? mondayLabel.textContent : '';
+            for (let day = 2; day <= 7; day++) {
+              const row = document.querySelector('.weekly-day-row[data-day="' + day + '"]');
+              if (!row) {
+                continue;
+              }
+              const input = row.querySelector('.weekday-dieta-input');
+              const label = row.querySelector('.weekly-selected-label');
+              const clearBtn = row.querySelector('.weekly-clear-btn');
+              if (input) {
+                input.value = mondayInput.value;
+              }
+              if (label) {
+                label.textContent = labelText;
+              }
+              if (clearBtn) {
+                clearBtn.classList.remove('d-none');
+              }
+            }
+          });
+        }
+
         resetAndLoad();
+        toggleAssignmentSections();
       });
     </script>
 

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <title>Minutriporcion - Lista de Compras</title>
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+</head>
+
+<body id="page-top">
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/pacientes/sidebar :: sidebar}"></div>
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <div class="container-fluid">
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">
+              Lista de compras —
+              [[${paciente != null ? paciente.name : ''}]]
+            </h1>
+            <button type="button" class="btn btn-sm btn-primary d-print-none" onclick="window.print()">
+              <i class="fas fa-print"></i> Imprimir
+            </button>
+          </div>
+
+          <div class="card shadow mb-4">
+            <div class="card-body">
+              <p class="text-muted mb-3" th:if="${pacienteDieta != null}">
+                <span th:if="${pacienteDieta.weeklyAssignment}">Plan semanal</span>
+                <span th:unless="${pacienteDieta.weeklyAssignment}"
+                      th:text="${pacienteDieta.dieta != null ? pacienteDieta.dieta.nombre : 'Dieta'}">Dieta</span>
+                · Inicio [[${#dates.format(pacienteDieta.startDate, 'dd/MM/yyyy')}]]
+              </p>
+
+              <div th:if="${groceryItems == null || groceryItems.isEmpty()}" class="alert alert-secondary mb-0">
+                No hay ingredientes para mostrar en la lista de compras.
+              </div>
+
+              <div th:unless="${groceryItems == null || groceryItems.isEmpty()}" class="table-responsive">
+                <table class="table table-bordered table-sm">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>Alimento</th>
+                      <th>Cantidad</th>
+                      <th>Unidad</th>
+                      <th>Categoría</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="item : ${groceryItems}">
+                      <td th:text="${item.nombre}">Alimento</td>
+                      <td th:text="${item.cantidad}">1</td>
+                      <td th:text="${item.unidad}">porción</td>
+                      <td th:text="${item.categoria != null ? item.categoria : '-'}">-</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <a th:href="@{/admin/pacientes/{id}/dietas(id=${paciente != null ? paciente.id : 0})}"
+                 class="btn btn-secondary mt-3 d-print-none">Volver al plan alimentario</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div th:insert="~{sbadmin/footer :: footer}"></div>
+    </div>
+  </div>
+  <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+</body>
+
+</html>

@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: 030-resync-diet-assignment-sequences
+      author: nutriconsultas
+      comment: >-
+        Resync diet-copy identity sequences after catalog seed explicit IDs (#525).
+        PostgreSQL uses GREATEST(MAX(id), last_value) so production sequences never regress.
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/data/resync-diet-assignment-sequences.postgresql.sql
+            dbms: postgresql
+            splitStatements: true
+            stripComments: true
+        - sqlFile:
+            path: classpath:db/changelog/data/resync-diet-assignment-sequences.h2.sql
+            dbms: h2
+            splitStatements: true
+            stripComments: true

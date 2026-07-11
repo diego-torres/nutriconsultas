@@ -2,72 +2,93 @@
 <html lang="en">
 
 <head>
-
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="">
-  <meta name="author" content="">
-  <!-- Favicons -->
   <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
-  <link th:href="@{/eterna/assets/img/apple-touch-icon.png}" rel="apple-touch-icon">
-
   <title>Minutriporcion - Editar Asignación de Dieta</title>
-
-  <!-- Custom fonts for this template-->
   <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
-  <link
-    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-    rel="stylesheet">
-
-  <!-- Custom styles for this template-->
+  <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
   <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
-
+  <style>
+    .dieta-picker-list { max-height: 280px; overflow-y: auto; border: 1px solid #e3e6f0; border-radius: 0.35rem; }
+    .dieta-picker-item { cursor: pointer; }
+    .dieta-picker-item.selected { background-color: #eaecf4; }
+  </style>
 </head>
 
 <body id="page-top">
-
-  <!-- Page Wrapper -->
   <div id="wrapper">
     <div th:insert="~{sbadmin/pacientes/sidebar :: sidebar}"></div>
-    <!-- Content Wrapper -->
     <div id="content-wrapper" class="d-flex flex-column">
-
-      <!-- Main Content -->
       <div id="content">
         <div th:insert="~{sbadmin/topbar :: topbar}"></div>
-        <!-- Begin Page Content -->
         <div class="container-fluid">
-
-          <!-- Page Heading -->
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Editar Asignación de Dieta - [[${paciente != null ? paciente.name : ''}]]</h1>
           </div>
-
-          <!-- Content Row -->
           <div class="row">
-            <!-- EDIT DIETA ASSIGNMENT FORM -->
             <div class="col-12">
               <div class="card shadow mb-4">
                 <div class="col-sm-10 offset-sm-1">
-
                   <div class="info-form p-5">
                     <div class="alert alert-info">
-                      <strong>Dieta:</strong> [[${pacienteDieta != null && pacienteDieta.dieta != null ? pacienteDieta.dieta.nombre : 'N/A'}]]<br>
+                      <span th:if="${pacienteDieta != null && pacienteDieta.weeklyAssignment}">
+                        <strong>Plan semanal</strong>
+                      </span>
+                      <span th:unless="${pacienteDieta != null && pacienteDieta.weeklyAssignment}">
+                        <strong>Dieta:</strong> [[${pacienteDieta != null && pacienteDieta.dieta != null ? pacienteDieta.dieta.nombre : 'N/A'}]]
+                      </span>
+                      <br>
                       <strong>Paciente:</strong> [[${paciente != null ? paciente.name : 'N/A'}]]
                     </div>
-                    <form th:action="@{/admin/pacientes/{pacienteId}/dietas/{id}/editar(pacienteId=${paciente != null ? paciente.id : 0}, id=${pacienteDieta != null ? pacienteDieta.id : 0})}" 
-                          th:object="${pacienteDieta}" method="POST">
+                    <form th:action="@{/admin/pacientes/{pacienteId}/dietas/{id}/editar(pacienteId=${paciente != null ? paciente.id : 0}, id=${pacienteDieta != null ? pacienteDieta.id : 0})}"
+                          th:object="${pacienteDieta}" method="POST" id="editarDietaForm">
                       <input type="hidden" th:field="*{id}" />
+
+                      <div th:if="${pacienteDieta != null && pacienteDieta.weeklyAssignment}" class="mb-4">
+                        <label class="d-block">Menú por día</label>
+                        <p class="small text-muted">Seleccione una dieta del catálogo para cada día. Use la lista inferior y pulse «Aplicar al día activo».</p>
+                        <div class="list-group mb-2">
+                          <div class="list-group-item weekly-day-row" th:each="dayNum : ${#numbers.sequence(1, 7)}"
+                               th:attr="data-day=${dayNum}">
+                            <div class="d-flex justify-content-between align-items-center">
+                              <div>
+                                <strong th:text="${weekdayLabels != null ? weekdayLabels.get(dayNum) : dayNum}">Lunes</strong>
+                                <div class="small text-muted weekly-selected-label"
+                                     th:with="slot=${weekdaySlotsByDay != null ? weekdaySlotsByDay.get(dayNum) : null}"
+                                     th:text="${slot != null && slot.dieta != null ? slot.dieta.nombre : 'Sin dieta'}">Sin dieta</div>
+                              </div>
+                              <div>
+                                <input type="hidden" th:name="${'weekdayDietaId_' + dayNum}"
+                                       class="weekday-dieta-input"
+                                       th:with="slot=${weekdaySlotsByDay != null ? weekdaySlotsByDay.get(dayNum) : null}"
+                                       th:value="${slot != null && slot.dieta != null ? slot.dieta.id : ''}">
+                                <button type="button" class="btn btn-sm btn-outline-secondary weekly-pick-btn"
+                                        th:attr="data-day=${dayNum}">Cambiar</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label>Día activo para selección</label>
+                          <select class="form-control" id="activeWeeklyDaySelect">
+                            <option th:each="dayNum : ${#numbers.sequence(1, 7)}"
+                                    th:value="${dayNum}"
+                                    th:text="${weekdayLabels != null ? weekdayLabels.get(dayNum) : dayNum}">Lunes</option>
+                          </select>
+                        </div>
+                        <div id="dietaPickerList" class="list-group dieta-picker-list mb-2"></div>
+                        <button type="button" class="btn btn-sm btn-primary" id="applyPickerSelectionBtn">Aplicar al día activo</button>
+                      </div>
+
                       <div class="form-group">
                         <label>Fecha de Inicio<span style="color:red;">*</span></label>
                         <input type="date" th:field="*{startDate}" class="form-control" required>
-                        <span th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></span>
                       </div>
                       <div class="form-group">
                         <label>Fecha de Fin (Opcional)</label>
                         <input type="date" th:field="*{endDate}" class="form-control">
-                        <span th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></span>
                       </div>
                       <div class="form-group">
                         <label>Estado<span style="color:red;">*</span></label>
@@ -76,49 +97,77 @@
                           <option th:value="COMPLETED">COMPLETADA</option>
                           <option th:value="CANCELLED">CANCELADA</option>
                         </select>
-                        <span th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></span>
                       </div>
                       <div class="form-group">
                         <label>Notas</label>
-                        <textarea class="form-control" rows="3" th:field="*{notes}" placeholder="Notas adicionales sobre la asignación de la dieta..."></textarea>
-                        <span th:if="${#fields.hasErrors('notes')}" th:errors="*{notes}"></span>
+                        <textarea class="form-control" rows="3" th:field="*{notes}"></textarea>
                       </div>
                       <button type="submit" class="btn btn-success">Guardar Cambios</button>
-                      <a th:href="@{/admin/pacientes/{id}(id=${paciente.id})}" class="btn btn-secondary">Cancelar</a>
+                      <a th:href="@{/admin/pacientes/{id}/dietas(id=${paciente.id})}" class="btn btn-secondary">Cancelar</a>
                     </form>
                   </div>
-                  <br>
-
-                  <a href="#nav-main" class="btn btn-secondary-outline btn-sm" role="button">↓</a>
                 </div>
               </div>
             </div>
-
           </div>
-          <!-- /.container-fluid -->
-
         </div>
-        <!-- End of Main Content -->
-
-        <div th:insert="~{sbadmin/footer :: footer}"></div>
-
       </div>
-      <!-- End of Content Wrapper -->
-
+      <div th:insert="~{sbadmin/footer :: footer}"></div>
     </div>
-    <!-- End of Page Wrapper -->
+  </div>
+  <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+      const pickerList = document.getElementById('dietaPickerList');
+      const applyBtn = document.getElementById('applyPickerSelectionBtn');
+      const activeDaySelect = document.getElementById('activeWeeklyDaySelect');
+      if (!pickerList || !applyBtn) {
+        return;
+      }
+      let selectedPickerDieta = null;
 
-    <!-- Bootstrap core JavaScript-->
-    <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
-    <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+      function setWeeklyDaySelection(day, dieta) {
+        const row = document.querySelector('.weekly-day-row[data-day="' + day + '"]');
+        if (!row) {
+          return;
+        }
+        const input = row.querySelector('.weekday-dieta-input');
+        const label = row.querySelector('.weekly-selected-label');
+        if (input) {
+          input.value = dieta ? String(dieta.id) : '';
+        }
+        if (label) {
+          label.textContent = dieta ? (dieta.nombre || '') : 'Sin dieta';
+        }
+      }
 
-    <!-- Core plugin JavaScript-->
-    <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+      fetch('/rest/dietas/picker?page=0&size=50', { headers: { 'Accept': 'application/json' } })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+          (data.items || []).forEach(function(dieta) {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'list-group-item list-group-item-action dieta-picker-item';
+            item.textContent = (dieta.nombre || '') + ' — ' + (dieta.energiaKcal || 0) + ' kcal';
+            item.addEventListener('click', function() {
+              pickerList.querySelectorAll('.dieta-picker-item').forEach(function(el) {
+                el.classList.remove('selected');
+              });
+              item.classList.add('selected');
+              selectedPickerDieta = dieta;
+            });
+            pickerList.appendChild(item);
+          });
+        });
 
-    <!-- Custom scripts for all pages-->
-    <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
-
+      applyBtn.addEventListener('click', function() {
+        if (!selectedPickerDieta || !activeDaySelect) {
+          return;
+        }
+        setWeeklyDaySelection(activeDaySelect.value, selectedPickerDieta);
+      });
+    });
+  </script>
 </body>
-
 </html>
-

@@ -83,3 +83,9 @@ databaseChangeLog:
   - include:
       file: changes/028-apple-signin-relay-email.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/029-paciente-dieta-weekly.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: changes/030-resync-diet-assignment-sequences.yaml
+      relativeToChangelogFile: true

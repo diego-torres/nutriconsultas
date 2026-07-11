@@ -8,7 +8,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +38,9 @@ public class PacienteDietaServiceTest {
 
 	@Mock
 	private PacienteDietaRepository pacienteDietaRepository;
+
+	@Mock
+	private PacienteDietaWeekdayRepository pacienteDietaWeekdayRepository;
 
 	@Mock
 	private PacienteRepository pacienteRepository;
@@ -386,6 +391,51 @@ public class PacienteDietaServiceTest {
 		assertThat(result).isEqualTo(pacienteDieta);
 		verify(pacienteDietaRepository).findById(1L);
 		log.info("finished testFindById");
+	}
+
+	@Test
+	public void testAssignWeeklyDieta() {
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(Optional.of(paciente));
+		when(dietaRepository.findById(1L)).thenReturn(Optional.of(sourceDieta));
+		when(dietaService.copyDietaForPatientAssignment(1L, 1L, TEST_USER_ID)).thenReturn(patientCopyDieta);
+		when(pacienteDietaRepository.save(any(PacienteDieta.class))).thenAnswer(invocation -> {
+			final PacienteDieta pd = invocation.getArgument(0);
+			pd.setId(10L);
+			return pd;
+		});
+		when(pacienteDietaRepository.findById(10L)).thenAnswer(invocation -> {
+			final PacienteDieta saved = new PacienteDieta();
+			saved.setId(10L);
+			saved.setPaciente(paciente);
+			saved.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
+			return Optional.of(saved);
+		});
+		when(pacienteDietaWeekdayRepository.save(any(PacienteDietaWeekday.class)))
+			.thenAnswer(invocation -> invocation.getArgument(0));
+
+		final Map<Integer, Long> weekdayIds = new LinkedHashMap<>();
+		weekdayIds.put(1, 1L);
+		weekdayIds.put(3, 1L);
+		final PacienteDieta metadata = new PacienteDieta();
+		metadata.setStartDate(new Date());
+		metadata.setStatus(PacienteDietaStatus.ACTIVE);
+
+		final PacienteDieta result = service.assignWeeklyDieta(1L, weekdayIds, metadata, TEST_USER_ID);
+
+		assertThat(result).isNotNull();
+		assertThat(result.getAssignmentType()).isEqualTo(PacienteDietaAssignmentType.WEEKLY);
+		verify(pacienteDietaWeekdayRepository).deleteByPacienteDietaId(10L);
+		verify(pacienteDietaWeekdayRepository, org.mockito.Mockito.times(2)).save(any(PacienteDietaWeekday.class));
+	}
+
+	@Test
+	public void testAssignWeeklyDietaRequiresAtLeastOneDay() {
+		final PacienteDieta metadata = new PacienteDieta();
+		metadata.setStartDate(new Date());
+
+		assertThatThrownBy(() -> service.assignWeeklyDieta(1L, Map.of(), metadata, TEST_USER_ID))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("al menos un día");
 	}
 
 	@Test

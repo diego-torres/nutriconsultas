@@ -4,7 +4,7 @@ Living index of GitHub issues for the **nutritionist Thymeleaf web app** (`/admi
 
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan (MPX):** [`docs/paciente/PATIENT-MPX-PLAN.md`](docs/paciente/PATIENT-MPX-PLAN.md)  
-**Last updated:** 2026-06-26 — ~~#341~~ **done** (branch `issue-341-web-mobile-invitation`, 38f358e). ~~#242~~ **done** (branch `issue-242-anthropometric-field-edit`). ~~#241~~ **done** (PR [#291](https://github.com/diego-torres/nutriconsultas/pull/291)). Patient UX epic **complete** (#241–#242). ~~#272~~ **done** (PR [#289](https://github.com/diego-torres/nutriconsultas/pull/289)). ~~#271~~ **done** (PR [#288](https://github.com/diego-torres/nutriconsultas/pull/288)).
+**Last updated:** 2026-07-11 — Registered nutritionist feedback batch **#525–#528**, **#530** (published-version UX). ~~#341~~ **done** (branch `issue-341-web-mobile-invitation`, 38f358e). Patient UX epic **complete** (#241–#242).
 
 > **Scope.** Nutritionist web features only. Patient mobile API: [`ISSUE.md`](ISSUE.md). Subscription enforcement: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Public booking: [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md). Do not mix mobile JWT, subscription billing, or public booking into unrelated PRs unless explicitly coupled.
 
@@ -200,6 +200,32 @@ Nutritionist sends patient mobile onboarding invitations from the **patient grid
 
 ---
 
+## Epic — Nutritionist feedback (published version, 2026-07-11)
+
+Feedback from the latest published version — diet assignment, authoring UX, clinical exams.
+
+| Requirement | Issues |
+|-------------|--------|
+| Weekly day-of-week diet assignment + grocery list | #525 |
+| Grocery list PDF export for print | #532 |
+| Alimentos sequence + drag-reorder in diets and platillos | #526 |
+| Create catalog platillo from ingesta alimento combination | #527 |
+| Default portion type to porción when adding alimentos | #528 |
+| Clinical exam thyroid indicator fields | #530 |
+
+**Suggested order:** #528 (quick UX) → #526 → #527 → #525 (schema) → #530. **#529** (patient photo S3) tracked in [`ISSUE.md`](ISSUE.md) (mobile API).
+
+| # | Title | URL | State | Depends on | Notes |
+|---|-------|-----|-------|-----------|-------|
+| **525** | Patient diet assignment — weekly day-of-week plans with grocery list | https://github.com/diego-torres/nutriconsultas/issues/525 | **in-progress** | #353 (grocery) | Branch `issue-525-weekly-diet-assignment`; `paciente_dieta_weekday` + web lista de compras |
+| **532** | Grocery list — downloadable PDF for print | https://github.com/diego-torres/nutriconsultas/issues/532 | **open** | **525** | Flying Saucer PDF from `/lista-compras`; branded logo; DATE_RANGE + WEEKLY |
+| **526** | Alimentos ordering — sequence metadata + drag-reorder in diets and platillos | https://github.com/diego-torres/nutriconsultas/issues/526 | **open** | — | `orden` on `AlimentoIngesta` + `Ingrediente`; mirror ingesta drag-reorder |
+| **527** | Diet ingesta — create catalog platillo from selected alimentos combination | https://github.com/diego-torres/nutriconsultas/issues/527 | **open** | #257 | Modal nombre; nutritionist-owned platillo from ingesta selection |
+| **528** | Default portion type to porción (not gramos) when adding alimentos | https://github.com/diego-torres/nutriconsultas/issues/528 | **open** | — | `#tipoPorcion` default in diet/platillo add-alimento modals |
+| **530** | Clinical exam (clínicos) — thyroid indicator fields | https://github.com/diego-torres/nutriconsultas/issues/530 | **open** | #46 | TSH, T4 libre, T3 libre; Liquibase + `clinicos.html` tab |
+
+---
+
 ## Bugs
 
 | # | Title | URL | State | Depends on | Notes |
@@ -233,6 +259,8 @@ Nutritionist sends patient mobile onboarding invitations from the **patient grid
 | ~~#285~~ Platillo form | Inline cantidad edit on catalog `#ingredientesGrid` + diet ingesta grid — branch `issue-285-platillo-inline-cantidad` |
 | ~~#243~~ / ~~#244~~ Subscription | reCAPTCHA **done**; Solicitar acceso pre-fill **done** — public funnel complete |
 | #245–#248 Public booking | ~~#245~~ epic **done**; ~~#246~~, ~~#247~~, ~~#248~~, ~~#297~~, ~~#300~~, ~~#302~~ **done** — separate track complete (v1) |
+| **#525–#528**, **#530**, **#532** Nutritionist feedback | Weekly diet (#525); grocery PDF (#532); alimento order (#526); crear platillo (#527); porción default (#528); thyroid labs (#530) |
+| **#529** Patient photo | S3 upload + resolver — mobile track; complements #241 static avatars |
 
 ---
 

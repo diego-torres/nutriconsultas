@@ -79,19 +79,39 @@
                         <tbody>
                           <tr th:each="dietaAsignada : ${dietasActivas}">
                             <td>
-                              <a th:href="@{/admin/dietas/{id}(id=${dietaAsignada.dieta.id})}" 
+                              <div th:if="${dietaAsignada.weeklyAssignment}">
+                                <span class="badge badge-primary mb-1">Plan semanal</span>
+                                <ul class="small mb-0 pl-3"
+                                    th:if="${weekdaySlotsByAssignmentId != null && weekdaySlotsByAssignmentId[dietaAsignada.id] != null}">
+                                  <li th:each="slot : ${weekdaySlotsByAssignmentId[dietaAsignada.id]}">
+                                    <span th:text="${(weekdayLabels != null ? weekdayLabels.get(slot.dayOfWeek) : slot.dayOfWeek) + ': '}">Lunes: </span>
+                                    <a th:if="${slot.dieta != null}"
+                                       th:href="@{/admin/dietas/{id}(id=${slot.dieta.id})}"
+                                       th:text="${slot.dieta.nombre}"
+                                       title="Modificar dieta del paciente"></a>
+                                    <span th:unless="${slot.dieta != null}" class="text-muted">-</span>
+                                  </li>
+                                </ul>
+                              </div>
+                              <a th:unless="${dietaAsignada.weeklyAssignment}"
+                                 th:if="${dietaAsignada.dieta != null}"
+                                 th:href="@{/admin/dietas/{id}(id=${dietaAsignada.dieta.id})}"
                                  th:text="${dietaAsignada.dieta.nombre}"
                                  title="Ver detalles de la dieta"></a>
                             </td>
                             <td>
-                              <small>
+                              <small th:if="${!dietaAsignada.weeklyAssignment && dietaAsignada.dieta != null}">
                                 <strong>P:</strong> <span th:text="${#numbers.formatDecimal(dietaAsignada.dieta.proteina, 1, 1)} + 'g'">0.0g</span>
                                 <strong>L:</strong> <span th:text="${#numbers.formatDecimal(dietaAsignada.dieta.lipidos, 1, 1)} + 'g'">0.0g</span>
                                 <strong>H:</strong> <span th:text="${#numbers.formatDecimal(dietaAsignada.dieta.hidratosDeCarbono, 1, 1)} + 'g'">0.0g</span>
                               </small>
+                              <span th:if="${dietaAsignada.weeklyAssignment}" class="text-muted">Varía por día</span>
                             </td>
                             <td>
-                              <span th:text="${dietaAsignada.dieta.energia != null ? dietaAsignada.dieta.energia : 0}">0</span> kcal
+                              <span th:if="${!dietaAsignada.weeklyAssignment && dietaAsignada.dieta != null}"
+                                    th:text="${dietaAsignada.dieta.energia != null ? dietaAsignada.dieta.energia : 0}">0</span>
+                              <span th:if="${dietaAsignada.weeklyAssignment}" class="text-muted">—</span>
+                              <span th:if="${!dietaAsignada.weeklyAssignment}"> kcal</span>
                             </td>
                             <td>[[(${#dates.format(dietaAsignada.startDate, 'dd/MM/yyyy')})]]</td>
                             <td>
@@ -108,11 +128,17 @@
                               <span th:if="${dietaAsignada.notes == null || dietaAsignada.notes.isEmpty()}" class="text-muted">-</span>
                             </td>
                             <td>
-                              <a th:href="@{/admin/pacientes/{pacienteId}/dietas/{dietaId}/print(pacienteId=${paciente.id}, dietaId=${dietaAsignada.dieta.id})}" 
-                                 class="btn btn-sm btn-primary" 
+                              <a th:if="${!dietaAsignada.weeklyAssignment && dietaAsignada.dieta != null}"
+                                 th:href="@{/admin/pacientes/{pacienteId}/dietas/{dietaId}/print(pacienteId=${paciente.id}, dietaId=${dietaAsignada.dieta.id})}"
+                                 class="btn btn-sm btn-primary"
                                  target="_blank"
                                  title="Imprimir PDF">
                                 <i class="fas fa-file-pdf"></i> PDF
+                              </a>
+                              <a th:href="@{/admin/pacientes/{pacienteId}/dietas/{id}/lista-compras(pacienteId=${paciente.id}, id=${dietaAsignada.id})}"
+                                 class="btn btn-sm btn-secondary"
+                                 title="Lista de compras">
+                                <i class="fas fa-shopping-basket"></i> Compras
                               </a>
                               <a th:href="@{/admin/pacientes/{pacienteId}/dietas/{id}/editar(pacienteId=${paciente.id}, id=${dietaAsignada.id})}" 
                                  class="btn btn-sm btn-info">
@@ -152,19 +178,38 @@
                           <tr th:each="dietaAsignada : ${dietasAsignadas}" 
                               th:classappend="${dietaAsignada.status.name() == 'ACTIVE'} ? 'table-success' : (${dietaAsignada.status.name() == 'COMPLETED'} ? 'table-info' : 'table-secondary')">
                             <td>
-                              <a th:href="@{/admin/dietas/{id}(id=${dietaAsignada.dieta.id})}" 
+                              <div th:if="${dietaAsignada.weeklyAssignment}">
+                                <span class="badge badge-primary mb-1">Plan semanal</span>
+                                <ul class="small mb-0 pl-3"
+                                    th:if="${weekdaySlotsByAssignmentId != null && weekdaySlotsByAssignmentId[dietaAsignada.id] != null}">
+                                  <li th:each="slot : ${weekdaySlotsByAssignmentId[dietaAsignada.id]}">
+                                    <span th:text="${(weekdayLabels != null ? weekdayLabels.get(slot.dayOfWeek) : slot.dayOfWeek) + ': '}">Lunes: </span>
+                                    <a th:if="${slot.dieta != null}"
+                                       th:href="@{/admin/dietas/{id}(id=${slot.dieta.id})}"
+                                       th:text="${slot.dieta.nombre}"
+                                       title="Modificar dieta del paciente"></a>
+                                    <span th:unless="${slot.dieta != null}" class="text-muted">-</span>
+                                  </li>
+                                </ul>
+                              </div>
+                              <a th:unless="${dietaAsignada.weeklyAssignment}"
+                                 th:if="${dietaAsignada.dieta != null}"
+                                 th:href="@{/admin/dietas/{id}(id=${dietaAsignada.dieta.id})}"
                                  th:text="${dietaAsignada.dieta.nombre}"
                                  title="Ver detalles de la dieta"></a>
                             </td>
                             <td>
-                              <small>
+                              <small th:if="${!dietaAsignada.weeklyAssignment && dietaAsignada.dieta != null}">
                                 <strong>P:</strong> <span th:text="${#numbers.formatDecimal(dietaAsignada.dieta.proteina, 1, 1)} + 'g'">0.0g</span>
                                 <strong>L:</strong> <span th:text="${#numbers.formatDecimal(dietaAsignada.dieta.lipidos, 1, 1)} + 'g'">0.0g</span>
                                 <strong>H:</strong> <span th:text="${#numbers.formatDecimal(dietaAsignada.dieta.hidratosDeCarbono, 1, 1)} + 'g'">0.0g</span>
                               </small>
+                              <span th:if="${dietaAsignada.weeklyAssignment}" class="text-muted">—</span>
                             </td>
                             <td>
-                              <span th:text="${dietaAsignada.dieta.energia != null ? dietaAsignada.dieta.energia : 0}">0</span> kcal
+                              <span th:if="${!dietaAsignada.weeklyAssignment && dietaAsignada.dieta != null}"
+                                    th:text="${dietaAsignada.dieta.energia != null ? dietaAsignada.dieta.energia : 0} + ' kcal'">0 kcal</span>
+                              <span th:if="${dietaAsignada.weeklyAssignment}" class="text-muted">—</span>
                             </td>
                             <td>[[(${#dates.format(dietaAsignada.startDate, 'dd/MM/yyyy')})]]</td>
                             <td>

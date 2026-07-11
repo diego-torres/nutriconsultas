@@ -60,6 +60,27 @@ class DietGroceryListAggregatorTest {
 	}
 
 	@Test
+	void aggregate_mergesMultipleDiets() {
+		final Alimento avena = alimento(1L, "Avena", "Cereales");
+		final Alimento manzana = alimento(2L, "Manzana", "Frutas");
+
+		final Dieta lunes = new Dieta();
+		final Ingesta lunesIngesta = ingesta("Desayuno");
+		lunesIngesta.setAlimentos(List.of(standaloneAlimento(avena, 1)));
+		lunes.setIngestas(List.of(lunesIngesta));
+
+		final Dieta martes = new Dieta();
+		final Ingesta martesIngesta = ingesta("Colación");
+		martesIngesta.setAlimentos(List.of(standaloneAlimento(manzana, 2)));
+		martes.setIngestas(List.of(martesIngesta));
+
+		final List<DietGroceryListItemDto> items = DietGroceryListAggregator.aggregate(List.of(lunes, martes));
+
+		assertThat(items).hasSize(2);
+		assertThat(items).extracting(DietGroceryListItemDto::nombre).containsExactlyInAnyOrder("Avena", "Manzana");
+	}
+
+	@Test
 	void aggregate_returnsEmptyListWhenPlanHasNoIngredients() {
 		final Dieta dieta = new Dieta();
 		final Ingesta ingesta = ingesta("Desayuno");
@@ -67,6 +88,15 @@ class DietGroceryListAggregatorTest {
 		dieta.setIngestas(List.of(ingesta));
 
 		assertThat(DietGroceryListAggregator.aggregate(dieta)).isEmpty();
+	}
+
+	private static AlimentoIngesta standaloneAlimento(final Alimento alimento, final int portions) {
+		final AlimentoIngesta alimentoIngesta = new AlimentoIngesta();
+		alimentoIngesta.setName(alimento.getNombreAlimento());
+		alimentoIngesta.setPortions(portions);
+		alimentoIngesta.setUnidad("pieza");
+		alimentoIngesta.setAlimento(alimento);
+		return alimentoIngesta;
 	}
 
 	private static Alimento alimento(final Long id, final String nombre, final String categoria) {

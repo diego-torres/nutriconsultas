@@ -1,0 +1,8 @@
+-- H2 identity restart floors after catalog seed (matches 020/021 high-water marks).
+ALTER TABLE dieta ALTER COLUMN id RESTART WITH 56;
+ALTER TABLE ingesta ALTER COLUMN id RESTART WITH 221;
+ALTER TABLE platillo_ingesta ALTER COLUMN id RESTART WITH 228;
+ALTER TABLE alimento_ingesta ALTER COLUMN id RESTART WITH 34;
+ALTER TABLE ingrediente_platillo_ingesta ALTER COLUMN id RESTART WITH 22709;
+ALTER TABLE platillo ALTER COLUMN id RESTART WITH 112;
+ALTER TABLE ingrediente ALTER COLUMN id RESTART WITH 549;

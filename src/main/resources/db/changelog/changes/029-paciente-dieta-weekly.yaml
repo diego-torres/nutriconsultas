@@ -1,0 +1,92 @@
+databaseChangeLog:
+  - changeSet:
+      id: 029-paciente-dieta-assignment-type
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: paciente_dieta
+              columnName: assignment_type
+      changes:
+        - addColumn:
+            tableName: paciente_dieta
+            columns:
+              - column:
+                  name: assignment_type
+                  type: VARCHAR(16)
+                  defaultValue: DATE_RANGE
+                  constraints:
+                    nullable: false
+        - sql:
+            sql: UPDATE paciente_dieta SET assignment_type = 'DATE_RANGE' WHERE assignment_type IS NULL
+  - changeSet:
+      id: 029-paciente-dieta-nullable-dieta-id
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - columnExists:
+            tableName: paciente_dieta
+            columnName: dieta_id
+      changes:
+        - dropNotNullConstraint:
+            tableName: paciente_dieta
+            columnName: dieta_id
+            columnDataType: BIGINT
+  - changeSet:
+      id: 029-paciente-dieta-weekday-table
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: paciente_dieta_weekday
+      changes:
+        - createTable:
+            tableName: paciente_dieta_weekday
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: paciente_dieta_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: day_of_week
+                  type: SMALLINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: dieta_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: paciente_dieta_weekday
+            baseColumnNames: paciente_dieta_id
+            referencedTableName: paciente_dieta
+            referencedColumnNames: id
+            constraintName: fk_paciente_dieta_weekday_assignment
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: paciente_dieta_weekday
+            baseColumnNames: dieta_id
+            referencedTableName: dieta
+            referencedColumnNames: id
+            constraintName: fk_paciente_dieta_weekday_dieta
+        - addUniqueConstraint:
+            tableName: paciente_dieta_weekday
+            columnNames: paciente_dieta_id, day_of_week
+            constraintName: uk_paciente_dieta_weekday_day
+        - createIndex:
+            tableName: paciente_dieta_weekday
+            indexName: idx_paciente_dieta_weekday_assignment
+            columns:
+              - column:
+                  name: paciente_dieta_id

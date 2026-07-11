@@ -26,9 +26,21 @@ public final class DietGroceryListAggregator {
 		if (dieta == null || dieta.getIngestas() == null) {
 			return List.of();
 		}
+		return aggregate(List.of(dieta));
+	}
+
+	public static List<DietGroceryListItemDto> aggregate(final List<Dieta> diets) {
+		if (diets == null || diets.isEmpty()) {
+			return List.of();
+		}
 		final Map<String, MutableGroceryItem> items = new LinkedHashMap<>();
-		for (final Ingesta ingesta : dieta.getIngestas()) {
-			aggregateIngesta(ingesta, items);
+		for (final Dieta dieta : diets) {
+			if (dieta == null || dieta.getIngestas() == null) {
+				continue;
+			}
+			for (final Ingesta ingesta : dieta.getIngestas()) {
+				aggregateIngesta(ingesta, items);
+			}
 		}
 		return items.values()
 			.stream()

@@ -44,13 +44,16 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 
 	private final DietaService dietaService;
 
+	private final PacienteDietaWeekdayRepository pacienteDietaWeekdayRepository;
+
 	public PacienteDeletionServiceImpl(final PacienteRepository pacienteRepository,
 			final PatientMessageRepository patientMessageRepository,
 			final PatientInvitationRepository patientInvitationRepository,
 			final PacienteDietaRepository pacienteDietaRepository, final CalendarEventService calendarEventService,
 			final ClinicalExamService clinicalExamService,
 			final AnthropometricMeasurementService anthropometricMeasurementService,
-			final BodyMetricRecordRepository bodyMetricRecordRepository, final DietaService dietaService) {
+			final BodyMetricRecordRepository bodyMetricRecordRepository, final DietaService dietaService,
+			final PacienteDietaWeekdayRepository pacienteDietaWeekdayRepository) {
 		this.pacienteRepository = pacienteRepository;
 		this.patientMessageRepository = patientMessageRepository;
 		this.patientInvitationRepository = patientInvitationRepository;
@@ -60,6 +63,7 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 		this.anthropometricMeasurementService = anthropometricMeasurementService;
 		this.bodyMetricRecordRepository = bodyMetricRecordRepository;
 		this.dietaService = dietaService;
+		this.pacienteDietaWeekdayRepository = pacienteDietaWeekdayRepository;
 	}
 
 	@Override
@@ -91,10 +95,13 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 		}
 		final List<PacienteDieta> dietAssignments = pacienteDietaRepository.findByPacienteId(pacienteId);
 		for (final PacienteDieta assignment : dietAssignments) {
-			final Dieta dieta = assignment.getDieta();
-			if (dieta != null && dieta.getId() != null && DietaCatalogConstants.isPatientAssignment(dieta)) {
-				dietaService.deleteDieta(dieta.getId());
+			if (assignment.isWeeklyAssignment() && assignment.getId() != null) {
+				for (final PacienteDietaWeekday slot : pacienteDietaWeekdayRepository
+					.findByPacienteDietaIdOrderByDayOfWeekAsc(assignment.getId())) {
+					deletePatientDietaCopy(slot.getDieta());
+				}
 			}
+			deletePatientDietaCopy(assignment.getDieta());
 		}
 		if (!dietAssignments.isEmpty()) {
 			pacienteDietaRepository.deleteAll(dietAssignments);
@@ -110,6 +117,12 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 			anthropometricMeasurementService.deleteById(measurement.getId());
 		}
 		bodyMetricRecordRepository.deleteByPacienteId(pacienteId);
+	}
+
+	private void deletePatientDietaCopy(final Dieta dieta) {
+		if (dieta != null && dieta.getId() != null && DietaCatalogConstants.isPatientAssignment(dieta)) {
+			dietaService.deleteDieta(dieta.getId());
+		}
 	}
 
 }
