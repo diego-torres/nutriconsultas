@@ -149,10 +149,11 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		variables.put("requerimientoKcal", 2000.0);
 		variables.put("weekdayLabels", PacienteDietaWeekdayLabels.ISO_DAYS_MONDAY_FIRST.stream()
 			.collect(java.util.stream.Collectors.toMap(day -> day, PacienteDietaWeekdayLabels::labelForDay)));
-		variables.put("weekdaySlotsByAssignmentId", java.util.Map.of());
 		final PacienteDietaWeekday mondaySlot = new PacienteDietaWeekday();
 		mondaySlot.setDayOfWeek(1);
 		mondaySlot.setDieta(mockDieta);
+		variables.put("weekdaySlotsByAssignmentId",
+				java.util.Map.of(1L, java.util.List.of(mondaySlot)));
 		variables.put("weekdaySlotsByDay", PacienteDietaWeekdayLabels.slotsByDay(java.util.List.of(mondaySlot)));
 		variables.put("groceryItems", java.util.List.of());
 	}

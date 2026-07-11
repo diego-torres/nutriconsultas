@@ -83,8 +83,14 @@
                                 <span class="badge badge-primary mb-1">Plan semanal</span>
                                 <ul class="small mb-0 pl-3"
                                     th:if="${weekdaySlotsByAssignmentId != null && weekdaySlotsByAssignmentId[dietaAsignada.id] != null}">
-                                  <li th:each="slot : ${weekdaySlotsByAssignmentId[dietaAsignada.id]}"
-                                      th:text="${(weekdayLabels != null ? weekdayLabels.get(slot.dayOfWeek) : slot.dayOfWeek) + ': ' + (slot.dieta != null ? slot.dieta.nombre : '-')}"></li>
+                                  <li th:each="slot : ${weekdaySlotsByAssignmentId[dietaAsignada.id]}">
+                                    <span th:text="${(weekdayLabels != null ? weekdayLabels.get(slot.dayOfWeek) : slot.dayOfWeek) + ': '}">Lunes: </span>
+                                    <a th:if="${slot.dieta != null}"
+                                       th:href="@{/admin/dietas/{id}(id=${slot.dieta.id})}"
+                                       th:text="${slot.dieta.nombre}"
+                                       title="Modificar dieta del paciente"></a>
+                                    <span th:unless="${slot.dieta != null}" class="text-muted">-</span>
+                                  </li>
                                 </ul>
                               </div>
                               <a th:unless="${dietaAsignada.weeklyAssignment}"
@@ -173,7 +179,18 @@
                               th:classappend="${dietaAsignada.status.name() == 'ACTIVE'} ? 'table-success' : (${dietaAsignada.status.name() == 'COMPLETED'} ? 'table-info' : 'table-secondary')">
                             <td>
                               <div th:if="${dietaAsignada.weeklyAssignment}">
-                                <span class="badge badge-primary">Plan semanal</span>
+                                <span class="badge badge-primary mb-1">Plan semanal</span>
+                                <ul class="small mb-0 pl-3"
+                                    th:if="${weekdaySlotsByAssignmentId != null && weekdaySlotsByAssignmentId[dietaAsignada.id] != null}">
+                                  <li th:each="slot : ${weekdaySlotsByAssignmentId[dietaAsignada.id]}">
+                                    <span th:text="${(weekdayLabels != null ? weekdayLabels.get(slot.dayOfWeek) : slot.dayOfWeek) + ': '}">Lunes: </span>
+                                    <a th:if="${slot.dieta != null}"
+                                       th:href="@{/admin/dietas/{id}(id=${slot.dieta.id})}"
+                                       th:text="${slot.dieta.nombre}"
+                                       title="Modificar dieta del paciente"></a>
+                                    <span th:unless="${slot.dieta != null}" class="text-muted">-</span>
+                                  </li>
+                                </ul>
                               </div>
                               <a th:unless="${dietaAsignada.weeklyAssignment}"
                                  th:if="${dietaAsignada.dieta != null}"
