@@ -300,8 +300,8 @@
                       class="form-control"
                       id="tipoPorcion"
                       name="tipoPorcion">
+                      <option value="porcion" selected>Porci&oacute;n</option>
                       <option value="gramos">Gramos</option>
-                      <option value="porcion">Porci&oacute;n</option>
                     </select>
                   </div>
                   <button type="submit" class="btn btn-primary">Guardar</button>
@@ -2074,7 +2074,7 @@
             selectedAlimentoReference = null;
             modal.find('#alimento').val('').trigger('change');
             modal.find('#alimentoPorciones').val('1');
-            modal.find('#tipoPorcion').val('gramos');
+            modal.find('#tipoPorcion').val('porcion');
             $('#alimentoCantidad').val('');
             $('#alimentoUnidad').val('');
             $('#alimentoPeso').val('');

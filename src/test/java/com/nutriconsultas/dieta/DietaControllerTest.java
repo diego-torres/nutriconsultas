@@ -450,6 +450,25 @@ public class DietaControllerTest {
 
 	@Test
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testSaveAlimentoDefaultsTipoPorcionWhenOmitted() throws Exception {
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/alimentos/save")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("ingestaAlimento", "1")
+				.param("alimento", "1")
+				.param("porciones", "1")
+				.with(oidcLogin(TEST_USER_ID))
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
+
+		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
+		verify(alimentoService, times(1)).findById(1L);
+		verify(dietaService, times(1)).saveDieta(any(Dieta.class));
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	public void testSaveAlimentoWithDefaultPortions() throws Exception {
 		log.info("Starting testSaveAlimento_WithDefaultPortions");
 
