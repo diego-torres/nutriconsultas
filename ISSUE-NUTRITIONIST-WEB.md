@@ -221,7 +221,7 @@ Feedback from the latest published version — diet assignment, authoring UX, cl
 | **532** | Grocery list — downloadable PDF for print | https://github.com/diego-torres/nutriconsultas/issues/532 | **open** | **525** | Flying Saucer PDF from `/lista-compras`; branded logo; DATE_RANGE + WEEKLY |
 | **526** | Alimentos ordering — sequence metadata + drag-reorder in diets and platillos | https://github.com/diego-torres/nutriconsultas/issues/526 | **open** | — | `orden` on `AlimentoIngesta` + `Ingrediente`; mirror ingesta drag-reorder |
 | **527** | Diet ingesta — create catalog platillo from selected alimentos combination | https://github.com/diego-torres/nutriconsultas/issues/527 | **open** | #257 | Modal nombre; nutritionist-owned platillo from ingesta selection |
-| **528** | Default portion type to porción (not gramos) when adding alimentos | https://github.com/diego-torres/nutriconsultas/issues/528 | **in-progress** | — | Branch `issue-528-default-porcion`; `#tipoPorcion` default in diet/platillo add-alimento modals |
+| **528** | Default portion type to porción (not gramos) when adding alimentos | https://github.com/diego-torres/nutriconsultas/issues/528 | **done** | — | PR [#533](https://github.com/diego-torres/nutriconsultas/pull/533); `#tipoPorcion` default in diet add-alimento modal |
 | **530** | Clinical exam (clínicos) — thyroid indicator fields | https://github.com/diego-torres/nutriconsultas/issues/530 | **open** | #46 | TSH, T4 libre, T3 libre; Liquibase + `clinicos.html` tab |
 
 ---
