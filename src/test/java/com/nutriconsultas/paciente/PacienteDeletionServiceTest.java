@@ -64,6 +64,9 @@ class PacienteDeletionServiceTest {
 	@Mock
 	private DietaService dietaService;
 
+	@Mock
+	private PacienteDietaWeekdayRepository pacienteDietaWeekdayRepository;
+
 	private Paciente paciente;
 
 	@BeforeEach
@@ -109,6 +112,34 @@ class PacienteDeletionServiceTest {
 		verify(clinicalExamService).deleteById(20L);
 		verify(anthropometricMeasurementService).deleteById(30L);
 		verify(bodyMetricRecordRepository).deleteByPacienteId(7L);
+		verify(pacienteRepository).delete(paciente);
+	}
+
+	@Test
+	void deletePatientWithHistory_removesWeeklyAssignmentDietCopies() {
+		final PacienteDieta assignment = new PacienteDieta();
+		assignment.setId(40L);
+		assignment.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
+		final Dieta mondayDieta = new Dieta();
+		mondayDieta.setId(61L);
+		mondayDieta.setPacienteId(7L);
+		final PacienteDietaWeekday mondaySlot = new PacienteDietaWeekday();
+		mondaySlot.setDayOfWeek(1);
+		mondaySlot.setDieta(mondayDieta);
+
+		when(pacienteRepository.findByIdAndUserId(7L, USER_ID)).thenReturn(Optional.of(paciente));
+		when(patientInvitationRepository.findByPacienteId(7L)).thenReturn(List.of());
+		when(pacienteDietaRepository.findByPacienteId(7L)).thenReturn(List.of(assignment));
+		when(pacienteDietaWeekdayRepository.findByPacienteDietaIdOrderByDayOfWeekAsc(40L))
+			.thenReturn(List.of(mondaySlot));
+		when(calendarEventService.findByPacienteId(7L)).thenReturn(List.of());
+		when(clinicalExamService.findByPacienteId(7L)).thenReturn(List.of());
+		when(anthropometricMeasurementService.findByPacienteId(7L)).thenReturn(List.of());
+
+		service.deletePatientWithHistory(7L, USER_ID);
+
+		verify(dietaService).deleteDieta(61L);
+		verify(pacienteDietaRepository).deleteAll(List.of(assignment));
 		verify(pacienteRepository).delete(paciente);
 	}
 
