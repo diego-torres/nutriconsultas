@@ -85,6 +85,9 @@ public class PacienteControllerTest {
 	@Mock
 	private BindingResult bindingResult;
 
+	@Mock
+	private jakarta.servlet.http.HttpServletRequest httpServletRequest;
+
 	private Paciente paciente;
 
 	private CalendarEvent evento;
@@ -717,7 +720,8 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L, principal);
+		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, "DATE_RANGE",
+				1L, httpServletRequest, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("redirect:/admin/pacientes/1/dietas");
@@ -747,7 +751,8 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L, principal);
+		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, "DATE_RANGE",
+				1L, httpServletRequest, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/asignar-dieta");
@@ -782,7 +787,8 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L, principal);
+		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, "DATE_RANGE",
+				1L, httpServletRequest, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/asignar-dieta");
@@ -812,7 +818,8 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act
-		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L, principal);
+		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, "DATE_RANGE",
+				1L, httpServletRequest, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/asignar-dieta");
@@ -835,8 +842,8 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(
-				() -> controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L, principal))
+		assertThatThrownBy(() -> controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model,
+				"DATE_RANGE", 1L, httpServletRequest, principal))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado paciente con folio");
 		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
@@ -859,8 +866,8 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(
-				() -> controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, 1L, principal))
+		assertThatThrownBy(() -> controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model,
+				"DATE_RANGE", 1L, httpServletRequest, principal))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado dieta con id");
 		verify(pacienteRepository).findByIdAndUserId(1L, TEST_USER_ID);
@@ -877,7 +884,8 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(() -> controller.guardarAsignacionDieta(1L, null, bindingResult, model, 1L, principal))
+		assertThatThrownBy(() -> controller.guardarAsignacionDieta(1L, null, bindingResult, model, "DATE_RANGE", 1L,
+				httpServletRequest, principal))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("PacienteDieta cannot be null");
 		verify(pacienteDietaService, org.mockito.Mockito.never()).assignDieta(any(Long.class), any(Long.class),
@@ -939,7 +947,7 @@ public class PacienteControllerTest {
 
 		// Act
 		final String result = controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model,
-				principal);
+				httpServletRequest, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("redirect:/admin/pacientes/1/dietas");
@@ -976,7 +984,7 @@ public class PacienteControllerTest {
 
 		// Act
 		final String result = controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model,
-				principal);
+				httpServletRequest, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/editar-dieta");
@@ -1014,7 +1022,7 @@ public class PacienteControllerTest {
 
 		// Act
 		final String result = controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model,
-				principal);
+				httpServletRequest, principal);
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/editar-dieta");
@@ -1041,8 +1049,8 @@ public class PacienteControllerTest {
 		final Model model = org.mockito.Mockito.mock(Model.class);
 
 		// Act & Assert
-		assertThatThrownBy(
-				() -> controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model, principal))
+		assertThatThrownBy(() -> controller.actualizarAsignacionDieta(1L, 1L, pacienteDieta, bindingResult, model,
+				httpServletRequest, principal))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado asignación de dieta con id");
 

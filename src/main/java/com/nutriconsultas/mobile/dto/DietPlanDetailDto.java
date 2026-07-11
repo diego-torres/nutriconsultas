@@ -21,17 +21,22 @@ public record DietPlanDetailDto(Long assignmentId, PacienteDietaStatus status, L
 		Double totalCarbohidratos, List<DietIngestaDto> ingestas) {
 
 	public static DietPlanDetailDto fromEntity(final PacienteDieta assignment) {
+		return fromEntity(assignment, assignment != null ? assignment.getDieta() : null);
+	}
+
+	public static DietPlanDetailDto fromEntity(final PacienteDieta assignment, final Dieta dieta) {
 		if (assignment == null) {
 			return null;
 		}
-		final Dieta dieta = assignment.getDieta();
+		final String dietaName = assignment.isWeeklyAssignment() ? "Plan semanal"
+				: (dieta != null ? dieta.getNombre() : null);
 		final List<DietIngestaDto> ingestas = dieta != null && dieta.getIngestas() != null ? dieta.getIngestas()
 			.stream()
 			.sorted(IngestaComparators.BY_DISPLAY_ORDER)
 			.map(DietIngestaDto::fromEntity)
 			.toList() : List.of();
 		return new DietPlanDetailDto(assignment.getId(), assignment.getStatus(), toLocalDate(assignment.getStartDate()),
-				toLocalDate(assignment.getEndDate()), assignment.getNotes(), dieta != null ? dieta.getNombre() : null,
+				toLocalDate(assignment.getEndDate()), assignment.getNotes(), dietaName,
 				dieta != null ? dieta.getEnergia() : null, dieta != null ? dieta.getProteina() : null,
 				dieta != null ? dieta.getLipidos() : null, dieta != null ? dieta.getHidratosDeCarbono() : null,
 				ingestas);

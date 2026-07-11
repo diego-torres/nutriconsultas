@@ -1,5 +1,8 @@
 package com.nutriconsultas.mobile;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +28,7 @@ import com.nutriconsultas.mobile.dto.DietPlatilloDetailDto;
 import com.nutriconsultas.mobile.dto.PagedResponse;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
+import com.nutriconsultas.paciente.PacienteDietaService;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
 import com.nutriconsultas.util.LogRedaction;
 
@@ -38,13 +42,17 @@ public class MobilePatientDietPlanService {
 
 	private final PacienteDietaRepository pacienteDietaRepository;
 
+	private final PacienteDietaService pacienteDietaService;
+
 	private final PlatilloIngestaRepository platilloIngestaRepository;
 
 	private final DietaPdfService dietaPdfService;
 
 	public MobilePatientDietPlanService(final PacienteDietaRepository pacienteDietaRepository,
-			final PlatilloIngestaRepository platilloIngestaRepository, final DietaPdfService dietaPdfService) {
+			final PacienteDietaService pacienteDietaService, final PlatilloIngestaRepository platilloIngestaRepository,
+			final DietaPdfService dietaPdfService) {
 		this.pacienteDietaRepository = pacienteDietaRepository;
+		this.pacienteDietaService = pacienteDietaService;
 		this.platilloIngestaRepository = platilloIngestaRepository;
 		this.dietaPdfService = dietaPdfService;
 	}
@@ -70,12 +78,13 @@ public class MobilePatientDietPlanService {
 	public DietPlanDetailDto getDietPlanDetail(final Long pacienteId, final Long assignmentId) {
 		final PacienteDieta assignment = pacienteDietaRepository.findByIdAndPacienteId(assignmentId, pacienteId)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-		initializeDietaTree(assignment.getDieta());
+		final Dieta effectiveDieta = resolveEffectiveDieta(assignment);
+		initializeDietaTree(effectiveDieta);
 		if (log.isDebugEnabled()) {
 			log.debug("Loaded mobile diet plan detail assignmentId={} for patient {}",
 					LogRedaction.redactPacienteDieta(assignmentId), LogRedaction.redactPaciente(pacienteId));
 		}
-		return DietPlanDetailDto.fromEntity(assignment);
+		return DietPlanDetailDto.fromEntity(assignment, effectiveDieta);
 	}
 
 	@Transactional(readOnly = true)
@@ -100,12 +109,14 @@ public class MobilePatientDietPlanService {
 		if (week != null && !week.isBlank() && !"current".equalsIgnoreCase(week)) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 		}
-		initializeGroceryTree(assignment.getDieta());
+		for (final Dieta dieta : pacienteDietaService.resolveDietsForGroceryList(assignment)) {
+			initializeGroceryTree(dieta);
+		}
 		if (log.isDebugEnabled()) {
 			log.debug("Loaded mobile grocery list assignmentId={} for patient {}",
 					LogRedaction.redactPacienteDieta(assignmentId), LogRedaction.redactPaciente(pacienteId));
 		}
-		return new DietGroceryListDto(DietGroceryListAggregator.aggregate(assignment.getDieta()));
+		return new DietGroceryListDto(pacienteDietaService.buildGroceryList(assignment));
 	}
 
 	@Transactional(readOnly = true)
@@ -120,6 +131,17 @@ public class MobilePatientDietPlanService {
 					LogRedaction.redactPacienteDieta(assignmentId), LogRedaction.redactPaciente(pacienteId));
 		}
 		return new DietPlanPdfResult(pdfBytes, filename);
+	}
+
+	private Dieta resolveEffectiveDieta(final PacienteDieta assignment) {
+		Dieta effectiveDieta = pacienteDietaService.resolveDietaForDate(assignment, LocalDate.now());
+		if (effectiveDieta == null && assignment.isWeeklyAssignment()) {
+			final List<Dieta> weeklyDiets = pacienteDietaService.resolveDietsForGroceryList(assignment);
+			if (!weeklyDiets.isEmpty()) {
+				effectiveDieta = weeklyDiets.get(0);
+			}
+		}
+		return effectiveDieta;
 	}
 
 	private static void initializeGroceryTree(final Dieta dieta) {

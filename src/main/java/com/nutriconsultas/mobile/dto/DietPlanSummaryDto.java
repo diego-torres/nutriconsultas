@@ -21,6 +21,11 @@ public record DietPlanSummaryDto(Long assignmentId, PacienteDietaStatus status, 
 		if (assignment == null) {
 			return null;
 		}
+		if (assignment.isWeeklyAssignment()) {
+			return new DietPlanSummaryDto(assignment.getId(), assignment.getStatus(),
+					toLocalDate(assignment.getStartDate()), toLocalDate(assignment.getEndDate()), assignment.getNotes(),
+					"Plan semanal", null, null, null, null);
+		}
 		final Dieta dieta = assignment.getDieta();
 		return new DietPlanSummaryDto(assignment.getId(), assignment.getStatus(),
 				toLocalDate(assignment.getStartDate()), toLocalDate(assignment.getEndDate()), assignment.getNotes(),

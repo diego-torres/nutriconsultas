@@ -146,6 +146,11 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		mockDietasDisponibles.add(dietaBaja);
 		variables.put("dietasDisponibles", mockDietasDisponibles);
 		variables.put("requerimientoKcal", 2000.0);
+		variables.put("weekdayLabels", PacienteDietaWeekdayLabels.ISO_DAYS_MONDAY_FIRST.stream()
+			.collect(java.util.stream.Collectors.toMap(day -> day, PacienteDietaWeekdayLabels::labelForDay)));
+		variables.put("weekdaySlotsByAssignmentId", java.util.Map.of());
+		variables.put("weekdaySlots", java.util.List.of());
+		variables.put("groceryItems", java.util.List.of());
 	}
 
 	private void addMockConsulta(final Map<String, Object> variables, final Paciente paciente) {

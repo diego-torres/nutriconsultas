@@ -25,6 +25,7 @@ import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.Ingesta;
 import com.nutriconsultas.dieta.PlatilloIngesta;
 import com.nutriconsultas.dieta.PlatilloIngestaRepository;
+import com.nutriconsultas.mobile.dto.DietGroceryListItemDto;
 import com.nutriconsultas.mobile.dto.DietGroceryListDto;
 import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
 import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
@@ -32,6 +33,7 @@ import com.nutriconsultas.mobile.dto.DietPlatilloDetailDto;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
+import com.nutriconsultas.paciente.PacienteDietaService;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,12 +49,18 @@ class MobilePatientDietPlanServiceTest {
 	private DietaPdfService dietaPdfService;
 
 	@Mock
+	private PacienteDietaService pacienteDietaService;
+
+	@Mock
 	private PlatilloIngestaRepository platilloIngestaRepository;
 
 	@Test
 	void getGroceryList_returnsAggregatedItemsWhenOwnedByPatient() {
 		final PacienteDieta assignment = sampleAssignment(5L, 1L);
 		when(pacienteDietaRepository.findByIdAndPacienteId(5L, 1L)).thenReturn(Optional.of(assignment));
+		when(pacienteDietaService.resolveDietsForGroceryList(assignment)).thenReturn(List.of(assignment.getDieta()));
+		when(pacienteDietaService.buildGroceryList(assignment))
+			.thenReturn(List.of(new DietGroceryListItemDto("Manzana", "1", "pieza", "Frutas")));
 
 		final DietGroceryListDto result = service.getGroceryList(1L, 5L, "current");
 
@@ -110,6 +118,7 @@ class MobilePatientDietPlanServiceTest {
 	void getDietPlanDetail_returnsStructuredMealTreeWhenOwnedByPatient() {
 		final PacienteDieta assignment = sampleAssignment(5L, 1L);
 		when(pacienteDietaRepository.findByIdAndPacienteId(5L, 1L)).thenReturn(Optional.of(assignment));
+		when(pacienteDietaService.resolveDietaForDate(assignment, LocalDate.now())).thenReturn(assignment.getDieta());
 
 		final DietPlanDetailDto result = service.getDietPlanDetail(1L, 5L);
 
