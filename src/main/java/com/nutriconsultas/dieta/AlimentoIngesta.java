@@ -25,6 +25,8 @@ public class AlimentoIngesta {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	private Integer orden = 0;
+
 	private String name;
 
 	private Integer portions = 1;

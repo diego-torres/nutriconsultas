@@ -1076,10 +1076,21 @@
                                   </div>
                                 </div>
                               </div>
+                              <div th:if="${!#lists.isEmpty(ingesta.alimentos)}"
+                                   class="alimento-order-list"
+                                   th:attr="data-dieta-id=${dieta.id},data-ingesta-id=${ingesta.id},data-can-reorder=${isOwner == null || isOwner}">
+                                <p class="text-muted small mb-2" th:if="${isOwner == null || isOwner}">
+                                  Arrastra los alimentos para cambiar el orden.
+                                </p>
                               <div th:each="alimento : ${ingesta.alimentos}"
-                                   class="ingesta-item-card border rounded p-3">
+                                   class="ingesta-item-card border rounded p-3 alimento-order-item"
+                                   th:attr="data-alimento-ingesta-id=${alimento.id},draggable=${isOwner == null || isOwner ? 'true' : 'false'}">
                                 <div class="ingesta-item-header d-flex justify-content-between align-items-start">
-                                  <div class="ingesta-item-name pr-2">
+                                  <div class="d-flex align-items-start ingesta-item-name pr-2">
+                                    <span class="ingesta-order-handle text-muted mr-2 mt-1" title="Arrastrar para reordenar">
+                                      <i class="fas fa-grip-vertical"></i>
+                                    </span>
+                                    <div>
                                     <span class="badge badge-warning mr-1">Alimento</span>
                                     <a th:if="${alimento.alimento != null && alimento.alimento.id != null}"
                                        th:href="@{/admin/alimentos/{id}(id=${alimento.alimento.id})}"
@@ -1087,6 +1098,7 @@
                                        title="Ver detalles del alimento"></a>
                                     <span th:unless="${alimento.alimento != null && alimento.alimento.id != null}"
                                           th:text="${alimento.name}"></span>
+                                    </div>
                                   </div>
                                   <div class="ingesta-item-actions flex-shrink-0">
                                     <button
@@ -1174,6 +1186,7 @@
                                           th:text="${#numbers.formatDecimal(alimento.hidratosDeCarbono, 1, 2)}">0.00</span>
                                   </div>
                                 </div>
+                              </div>
                               </div>
                             </div>
                             <!-- end ingesta-items-scroll -->
@@ -1378,6 +1391,84 @@
           }
 
           initIngestaOrderList();
+
+          function initAlimentoOrderLists() {
+            document.querySelectorAll('.alimento-order-list').forEach(function (orderList) {
+              var canReorder = orderList.getAttribute('data-can-reorder') === 'true';
+              if (!canReorder) {
+                return;
+              }
+              var dietaId = orderList.getAttribute('data-dieta-id');
+              var ingestaId = orderList.getAttribute('data-ingesta-id');
+              var draggedItem = null;
+
+              function persistAlimentoOrder() {
+                var orderedIds = Array.from(orderList.querySelectorAll('.alimento-order-item')).map(function (item) {
+                  return parseInt(item.getAttribute('data-alimento-ingesta-id'), 10);
+                });
+                $.ajax({
+                  url: '/admin/dietas/' + dietaId + '/ingestas/' + ingestaId + '/alimentos/reorder',
+                  type: 'POST',
+                  contentType: 'application/json',
+                  data: JSON.stringify(orderedIds),
+                  error: function (error) {
+                    swal({
+                      title: 'Error',
+                      text: error.responseJSON && error.responseJSON.message
+                        ? error.responseJSON.message
+                        : 'No se pudo reordenar los alimentos.',
+                      type: 'error',
+                      timer: 5000,
+                    });
+                    window.location.reload();
+                  }
+                });
+              }
+
+              orderList.querySelectorAll('.alimento-order-item').forEach(function (item) {
+                item.addEventListener('dragstart', function (event) {
+                  draggedItem = item;
+                  item.classList.add('ingesta-order-item--dragging');
+                  event.dataTransfer.effectAllowed = 'move';
+                });
+                item.addEventListener('dragend', function () {
+                  item.classList.remove('ingesta-order-item--dragging');
+                  orderList.querySelectorAll('.alimento-order-item').forEach(function (element) {
+                    element.classList.remove('ingesta-order-item--drop-target');
+                  });
+                  draggedItem = null;
+                });
+                item.addEventListener('dragover', function (event) {
+                  event.preventDefault();
+                  if (!draggedItem || draggedItem === item) {
+                    return;
+                  }
+                  item.classList.add('ingesta-order-item--drop-target');
+                });
+                item.addEventListener('dragleave', function () {
+                  item.classList.remove('ingesta-order-item--drop-target');
+                });
+                item.addEventListener('drop', function (event) {
+                  event.preventDefault();
+                  item.classList.remove('ingesta-order-item--drop-target');
+                  if (!draggedItem || draggedItem === item) {
+                    return;
+                  }
+                  var items = Array.from(orderList.querySelectorAll('.alimento-order-item'));
+                  var draggedIndex = items.indexOf(draggedItem);
+                  var targetIndex = items.indexOf(item);
+                  if (draggedIndex < targetIndex) {
+                    orderList.insertBefore(draggedItem, item.nextSibling);
+                  } else {
+                    orderList.insertBefore(draggedItem, item);
+                  }
+                  persistAlimentoOrder();
+                });
+              });
+            });
+          }
+
+          initAlimentoOrderLists();
 
           // initialize select2 for platillo
           $('#platillo').select2({

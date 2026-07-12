@@ -26,6 +26,8 @@ public class Ingrediente extends AbstractFraccionable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	private Integer orden = 0;
+
 	private String description;
 
 	@ManyToOne(optional = false)

@@ -1080,6 +1080,19 @@ public class DietaControllerTest {
 	}
 
 	@Test
+	public void testReorderAlimentosInIngestaSuccess() throws Exception {
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/ingestas/1/alimentos/reorder")
+				.with(oidcLogin(TEST_USER_ID))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("[2,1]"))
+			.andExpect(status().isOk())
+			.andExpect(content().json("{\"status\":\"ok\"}"));
+
+		verify(dietaService).reorderAlimentosInIngesta(eq(1L), eq(1L), eq(List.of(2L, 1L)));
+	}
+
+	@Test
 	public void testSaveIngestaDuplicateNameSetsFlashError() throws Exception {
 		doThrow(new IllegalArgumentException("Ya existe una ingesta con ese nombre en este plan alimentario"))
 			.when(dietaService)

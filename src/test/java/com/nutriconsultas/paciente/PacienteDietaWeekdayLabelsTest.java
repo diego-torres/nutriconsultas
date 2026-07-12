@@ -24,8 +24,7 @@ class PacienteDietaWeekdayLabelsTest {
 		wednesday.setDayOfWeek(3);
 		wednesday.setDieta(dieta);
 
-		assertThat(PacienteDietaWeekdayLabels.slotsByDay(List.of(monday, wednesday)))
-			.containsEntry(1, monday)
+		assertThat(PacienteDietaWeekdayLabels.slotsByDay(List.of(monday, wednesday))).containsEntry(1, monday)
 			.containsEntry(3, wednesday)
 			.hasSize(2);
 	}

@@ -228,6 +228,11 @@ public class DietaPdfService {
 			.stream()
 			.sorted(IngestaComparators.BY_DISPLAY_ORDER)
 			.collect(Collectors.toList());
+		sortedIngestas.forEach(ingesta -> {
+			if (ingesta.getAlimentos() != null) {
+				ingesta.getAlimentos().sort(AlimentoIngestaComparators.BY_DISPLAY_ORDER);
+			}
+		});
 		context.setVariable("ingestas", sortedIngestas);
 
 		// Calculate nutritional totals per ingesta and store in a map

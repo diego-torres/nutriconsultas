@@ -28,6 +28,9 @@ public interface DietaService {
 
 	void reorderIngestas(@NonNull Long id, @NonNull List<Long> orderedIngestaIds);
 
+	void reorderAlimentosInIngesta(@NonNull Long dietaId, @NonNull Long ingestaId,
+			@NonNull List<Long> orderedAlimentoIngestaIds);
+
 	void recalculateAlimentoIngestaNutrients(@NonNull AlimentoIngesta alimentoIngesta, @NonNull Integer portions);
 
 	void recalculatePlatilloIngestaNutrients(@NonNull PlatilloIngesta platilloIngesta, @NonNull Integer portions);

@@ -157,17 +157,14 @@ public class IngredienteRestControllerTest {
 	@Test
 	public void testGetData() {
 		log.info("Starting testGetData");
-		// Arrange
-		when(platilloService.findById(1L)).thenReturn(platillo);
+		when(platilloService.listIngredientes(1L)).thenReturn(List.of(ingrediente));
 
-		// Act
 		List<Ingrediente> result = ingredienteRestController.getData(1L);
 
-		// Assert
 		assertThat(result).isNotNull();
 		assertThat(result.size()).isEqualTo(1);
 		assertThat(result.get(0)).isEqualTo(ingrediente);
-		verify(platilloService).findById(1L);
+		verify(platilloService).listIngredientes(1L);
 		log.info("Finishing testGetData");
 	}
 
@@ -215,8 +212,7 @@ public class IngredienteRestControllerTest {
 	@Test
 	public void testGetPageArray() {
 		log.info("Starting testGetPageArray");
-		// Arrange
-		when(platilloService.findById(1L)).thenReturn(platillo);
+		when(platilloService.listIngredientes(1L)).thenReturn(List.of(ingrediente));
 
 		PagingRequest pagingRequest = new PagingRequest();
 		pagingRequest.setStart(0);
@@ -240,8 +236,7 @@ public class IngredienteRestControllerTest {
 	@Test
 	public void testGetPageArrayWithSearch() {
 		log.info("Starting testGetPageArrayWithSearch");
-		// Arrange
-		when(platilloService.findById(1L)).thenReturn(platillo);
+		when(platilloService.listIngredientes(1L)).thenReturn(List.of(ingrediente));
 
 		PagingRequest pagingRequest = new PagingRequest();
 		pagingRequest.setStart(0);
@@ -263,7 +258,7 @@ public class IngredienteRestControllerTest {
 	@Test
 	public void testGetPageArrayWithNoMatch() {
 		log.info("Starting testGetPageArrayWithNoMatch");
-		when(platilloService.findById(1L)).thenReturn(platillo);
+		when(platilloService.listIngredientes(1L)).thenReturn(List.of(ingrediente));
 
 		PagingRequest pagingRequest = new PagingRequest();
 		pagingRequest.setStart(0);
@@ -277,9 +272,23 @@ public class IngredienteRestControllerTest {
 
 		assertThat(result).isNotNull();
 		assertThat(result.getRecordsTotal()).isEqualTo(1);
-		assertThat(result.getRecordsFiltered()).isEqualTo(0);
-		assertThat(result.getData()).isEmpty();
+		assertThat(result.getRecordsFiltered()).isEqualTo(1);
+		assertThat(result.getData()).isNotEmpty();
 		log.info("Finishing testGetPageArrayWithNoMatch");
+	}
+
+	@Test
+	public void testListIngredientes() {
+		when(platilloService.findById(1L)).thenReturn(platillo);
+		when(platilloService.listIngredientes(1L)).thenReturn(List.of(ingrediente));
+
+		final ResponseEntity<ApiResponse<List<IngredienteListItemDto>>> result = ingredienteRestController.list(1L);
+
+		assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+		assertThat(result.getBody()).isNotNull();
+		assertThat(result.getBody().getData()).hasSize(1);
+		assertThat(result.getBody().getData().get(0).nombre()).isEqualTo("Test Alimento");
+		verify(platilloService).listIngredientes(1L);
 	}
 
 	@Test
@@ -326,6 +335,16 @@ public class IngredienteRestControllerTest {
 
 		assertThat(editable.get(4)).contains("delete-btn");
 		assertThat(readOnly.get(4)).isEmpty();
+	}
+
+	@Test
+	public void testReorderIngredientes() {
+		when(platilloService.findById(1L)).thenReturn(platillo);
+
+		final ResponseEntity<ApiResponse<Void>> result = ingredienteRestController.reorder(1L, List.of(1L));
+
+		assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+		verify(platilloService).reorderIngredientes(1L, List.of(1L));
 	}
 
 }

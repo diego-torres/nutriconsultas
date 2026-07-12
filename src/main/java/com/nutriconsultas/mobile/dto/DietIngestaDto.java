@@ -4,7 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.nutriconsultas.dieta.AlimentoIngesta;
+import com.nutriconsultas.dieta.AlimentoIngestaComparators;
 import com.nutriconsultas.dieta.Ingesta;
 import com.nutriconsultas.dieta.PlatilloIngesta;
 
@@ -26,7 +26,7 @@ public record DietIngestaDto(String tipo, Integer totalKcal, Double totalProtein
 			.toList();
 		final List<DietAlimentoDto> alimentos = ingesta.getAlimentos()
 			.stream()
-			.sorted(Comparator.comparingLong(AlimentoIngesta::getId))
+			.sorted(AlimentoIngestaComparators.BY_DISPLAY_ORDER)
 			.map(DietAlimentoDto::fromEntity)
 			.toList();
 		return new DietIngestaDto(ingesta.getNombre(), ingesta.getEnergia(), ingesta.getProteina(),

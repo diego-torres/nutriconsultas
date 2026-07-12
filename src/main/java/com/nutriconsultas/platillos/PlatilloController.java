@@ -69,6 +69,16 @@ public class PlatilloController extends AbstractAuthorizedController {
 		model.addAttribute("isSystemCatalog", PlatilloCatalogConstants.isSystemCatalog(platillo));
 	}
 
+	private void addIngredientesOrdenados(final Platillo platillo, final Model model) {
+		if (platillo.getId() != null && platillo.getId() > 0) {
+			model.addAttribute("ingredientesOrdenados", service.listIngredientes(platillo.getId()));
+		}
+		else {
+			model.addAttribute("ingredientesOrdenados", List.of());
+		}
+		model.addAttribute("maxIngredientesPerPlatillo", PlatilloIngredientLimits.MAX_PER_PLATILLO);
+	}
+
 	@GetMapping(path = "/admin/platillos/nuevo")
 	public String nuevo(final Model model, @AuthenticationPrincipal final OidcUser principal) {
 		log.debug("Starting nuevo");
@@ -82,6 +92,8 @@ public class PlatilloController extends AbstractAuthorizedController {
 		final boolean createsAsSystemCatalog = userId != null && PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID
 			.equals(platilloAuthorization.resolveCreateUserId(principal, userId));
 		model.addAttribute("isSystemCatalog", createsAsSystemCatalog);
+		model.addAttribute("ingredientesOrdenados", List.of());
+		model.addAttribute("maxIngredientesPerPlatillo", PlatilloIngredientLimits.MAX_PER_PLATILLO);
 		log.debug("Finishing nuevo platillo con valores predeterminados: {}", platillo);
 		return "sbadmin/platillos/formulario";
 	}
@@ -112,6 +124,7 @@ public class PlatilloController extends AbstractAuthorizedController {
 		model.addAttribute("ingestas", ingestas);
 		log.debug("Finishing editar with platillo {}", platillo);
 		model.addAttribute("alimentosList", alimentoService.findAll());
+		addIngredientesOrdenados(platillo, model);
 		return "sbadmin/platillos/formulario";
 	}
 
