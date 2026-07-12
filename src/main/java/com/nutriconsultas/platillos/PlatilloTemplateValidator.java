@@ -47,6 +47,8 @@ public class PlatilloTemplateValidator extends BaseTemplateValidator {
 		variables.put("canCopy", false);
 		variables.put("isSystemCatalog", false);
 		variables.put("errorMessage", null);
+		variables.put("ingredientesOrdenados", java.util.Collections.emptyList());
+		variables.put("maxIngredientesPerPlatillo", PlatilloIngredientLimits.MAX_PER_PLATILLO);
 
 		return variables;
 	}

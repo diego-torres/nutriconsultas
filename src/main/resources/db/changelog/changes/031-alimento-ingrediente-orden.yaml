@@ -1,0 +1,59 @@
+databaseChangeLog:
+  - changeSet:
+      id: 031-alimento-ingesta-orden-column
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: alimento_ingesta
+              columnName: orden
+      changes:
+        - addColumn:
+            tableName: alimento_ingesta
+            columns:
+              - column:
+                  name: orden
+                  type: INT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              UPDATE alimento_ingesta ai
+              SET orden = (
+                SELECT COUNT(*)
+                FROM alimento_ingesta ai2
+                WHERE ai2.ingesta_id = ai.ingesta_id AND ai2.id < ai.id
+              );
+  - changeSet:
+      id: 031-ingrediente-orden-column
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: ingrediente
+              columnName: orden
+      changes:
+        - addColumn:
+            tableName: ingrediente
+            columns:
+              - column:
+                  name: orden
+                  type: INT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              UPDATE ingrediente i
+              SET orden = (
+                SELECT COUNT(*)
+                FROM ingrediente i2
+                WHERE i2.platillo_id = i.platillo_id AND i2.id < i.id
+              );

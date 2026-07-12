@@ -580,4 +580,24 @@ public class DietaServiceTest {
 		verify(dietaRepository).save(originalDieta);
 	}
 
+	@Test
+	public void testReorderAlimentosInIngestaUpdatesOrden() {
+		final AlimentoIngesta secondAlimento = new AlimentoIngesta();
+		secondAlimento.setId(2L);
+		secondAlimento.setName("Plátano");
+		secondAlimento.setOrden(1);
+		secondAlimento.setIngesta(ingesta);
+		ingesta.getAlimentos().add(secondAlimento);
+		alimentoIngesta.setOrden(0);
+
+		when(dietaRepository.findById(1L)).thenReturn(Optional.of(originalDieta));
+		when(dietaRepository.save(any(Dieta.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		dietaService.reorderAlimentosInIngesta(1L, 1L, List.of(2L, 1L));
+
+		assertThat(secondAlimento.getOrden()).isEqualTo(0);
+		assertThat(alimentoIngesta.getOrden()).isEqualTo(1);
+		verify(dietaRepository).save(originalDieta);
+	}
+
 }

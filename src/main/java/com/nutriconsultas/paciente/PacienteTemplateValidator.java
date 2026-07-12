@@ -152,8 +152,7 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		final PacienteDietaWeekday mondaySlot = new PacienteDietaWeekday();
 		mondaySlot.setDayOfWeek(1);
 		mondaySlot.setDieta(mockDieta);
-		variables.put("weekdaySlotsByAssignmentId",
-				java.util.Map.of(1L, java.util.List.of(mondaySlot)));
+		variables.put("weekdaySlotsByAssignmentId", java.util.Map.of(1L, java.util.List.of(mondaySlot)));
 		variables.put("weekdaySlotsByDay", PacienteDietaWeekdayLabels.slotsByDay(java.util.List.of(mondaySlot)));
 		variables.put("groceryItems", java.util.List.of());
 	}

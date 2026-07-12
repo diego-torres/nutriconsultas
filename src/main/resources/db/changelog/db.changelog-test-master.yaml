@@ -80,3 +80,6 @@ databaseChangeLog:
   - include:
       file: changes/030-resync-diet-assignment-sequences.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/031-alimento-ingrediente-orden.yaml
+      relativeToChangelogFile: true

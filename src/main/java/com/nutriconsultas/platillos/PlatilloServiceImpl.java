@@ -186,6 +186,12 @@ public class PlatilloServiceImpl implements PlatilloService {
 		}
 		log.debug("Alimento found to add ingrediente: {}", alimento);
 
+		final int ingredienteCount = platillo.getIngredientes() != null ? platillo.getIngredientes().size() : 0;
+		if (ingredienteCount >= PlatilloIngredientLimits.MAX_PER_PLATILLO) {
+			throw new IllegalArgumentException(
+					"El platillo no puede tener más de " + PlatilloIngredientLimits.MAX_PER_PLATILLO + " ingredientes");
+		}
+
 		// Calculate ingrediente values
 		final Ingrediente ingrediente = new Ingrediente();
 		ingrediente.setAlimento(alimento);
@@ -215,6 +221,7 @@ public class PlatilloServiceImpl implements PlatilloService {
 			log.debug("ingrediente calculated from peso change: {}", ingrediente);
 		}
 		ingrediente.setPlatillo(platillo);
+		ingrediente.setOrden(IngredienteComparators.nextOrden(platillo.getIngredientes()));
 
 		log.debug("setting ingrediente in platillo: {}.", ingrediente);
 		platillo.getIngredientes().add(ingrediente);
@@ -223,6 +230,38 @@ public class PlatilloServiceImpl implements PlatilloService {
 		platilloRepository.save(platillo);
 		log.info("finish addIngrediente with platillo: {}", platillo);
 		return ingrediente;
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<Ingrediente> listIngredientes(@NonNull final Long platilloId) {
+		final Platillo platillo = platilloRepository.findById(platilloId).orElse(null);
+		if (platillo == null || platillo.getIngredientes() == null) {
+			return List.of();
+		}
+		return platillo.getIngredientes()
+			.stream()
+			.sorted(IngredienteComparators.BY_DISPLAY_ORDER)
+			.limit(PlatilloIngredientLimits.LIST_PAGE_SIZE)
+			.toList();
+	}
+
+	@Override
+	public void reorderIngredientes(@NonNull final Long platilloId, @NonNull final List<Long> orderedIngredienteIds) {
+		log.info("Reordering ingredientes for platillo {}", platilloId);
+		final Platillo platillo = platilloRepository.findById(platilloId)
+			.orElseThrow(() -> new IllegalArgumentException("Platillo no encontrado"));
+		final java.util.Map<Long, Ingrediente> ingredientesById = platillo.getIngredientes()
+			.stream()
+			.collect(java.util.stream.Collectors.toMap(Ingrediente::getId, ingrediente -> ingrediente));
+		if (orderedIngredienteIds.size() != ingredientesById.size()
+				|| !ingredientesById.keySet().containsAll(orderedIngredienteIds)) {
+			throw new IllegalArgumentException("Lista de ingredientes inválida");
+		}
+		for (int index = 0; index < orderedIngredienteIds.size(); index++) {
+			ingredientesById.get(orderedIngredienteIds.get(index)).setOrden(index);
+		}
+		platilloRepository.save(platillo);
 	}
 
 	@Override
@@ -276,6 +315,7 @@ public class PlatilloServiceImpl implements PlatilloService {
 		copy.setAlimento(original.getAlimento());
 		copy.setUnidad(original.getUnidad());
 		copy.setCantSugerida(original.getCantSugerida());
+		copy.setOrden(original.getOrden());
 		copyNutrientFields(original, copy);
 		return copy;
 	}

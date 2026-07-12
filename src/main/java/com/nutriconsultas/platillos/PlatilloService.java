@@ -34,6 +34,10 @@ public interface PlatilloService {
 	Ingrediente addIngrediente(@NonNull Long id, @NonNull Long alimentoId, @NonNull String cantidad,
 			@NonNull Integer peso);
 
+	List<Ingrediente> listIngredientes(@NonNull Long platilloId);
+
+	void reorderIngredientes(@NonNull Long platilloId, @NonNull List<Long> orderedIngredienteIds);
+
 	Platillo updateIngrediente(@NonNull Long platilloId, @NonNull Long ingredienteId, @NonNull String cantidad,
 			@NonNull Integer peso);
 

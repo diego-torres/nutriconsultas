@@ -209,6 +209,30 @@ public class DietaServiceImpl implements DietaService {
 		dietaRepository.save(dieta);
 	}
 
+	@Override
+	public void reorderAlimentosInIngesta(@NonNull final Long dietaId, @NonNull final Long ingestaId,
+			@NonNull final List<Long> orderedAlimentoIngestaIds) {
+		log.info("Reordering alimentos for ingesta {} in dieta {}", ingestaId, dietaId);
+		final Dieta dieta = dietaRepository.findById(dietaId)
+			.orElseThrow(() -> new IllegalArgumentException("Dieta no encontrada"));
+		final Ingesta ingesta = dieta.getIngestas()
+			.stream()
+			.filter(candidate -> candidate.getId().equals(ingestaId))
+			.findFirst()
+			.orElseThrow(() -> new IllegalArgumentException("Ingesta no encontrada"));
+		final java.util.Map<Long, AlimentoIngesta> alimentosById = ingesta.getAlimentos()
+			.stream()
+			.collect(java.util.stream.Collectors.toMap(AlimentoIngesta::getId, alimento -> alimento));
+		if (orderedAlimentoIngestaIds.size() != alimentosById.size()
+				|| !alimentosById.keySet().containsAll(orderedAlimentoIngestaIds)) {
+			throw new IllegalArgumentException("Lista de alimentos inválida");
+		}
+		for (int index = 0; index < orderedAlimentoIngestaIds.size(); index++) {
+			alimentosById.get(orderedAlimentoIngestaIds.get(index)).setOrden(index);
+		}
+		dietaRepository.save(dieta);
+	}
+
 	private int nextIngestaOrden(final Dieta dieta) {
 		return dieta.getIngestas()
 			.stream()
@@ -627,6 +651,7 @@ public class DietaServiceImpl implements DietaService {
 		copy.setPortions(original.getPortions());
 		copy.setAlimento(original.getAlimento());
 		copy.setUnidad(original.getUnidad());
+		copy.setOrden(original.getOrden());
 
 		// Copy all nutritional values
 		copy.setPesoBrutoRedondeado(original.getPesoBrutoRedondeado());

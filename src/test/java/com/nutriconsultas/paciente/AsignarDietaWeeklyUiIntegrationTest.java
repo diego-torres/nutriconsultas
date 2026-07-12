@@ -58,8 +58,7 @@ class AsignarDietaWeeklyUiIntegrationTest {
 		assertThat(html).contains("id=\"dietaPickerList\"");
 		assertThat(html).contains("Seleccionar dieta");
 		assertThat(html).contains("No se requiere calcular GET/TEF");
-		assertThat(html.indexOf("id=\"dietaPickerSection\""))
-			.isGreaterThan(html.indexOf("id=\"dateRangeSection\""));
+		assertThat(html.indexOf("id=\"dietaPickerSection\"")).isGreaterThan(html.indexOf("id=\"dateRangeSection\""));
 	}
 
 }

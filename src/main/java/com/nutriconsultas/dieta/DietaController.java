@@ -139,6 +139,7 @@ public class DietaController extends AbstractAuthorizedController {
 			.stream()
 			.sorted(IngestaComparators.BY_DISPLAY_ORDER)
 			.collect(Collectors.toList());
+		sortedIngestas.forEach(this::sortAlimentosForDisplay);
 		model.addAttribute("ingestas", sortedIngestas);
 
 		final Long activeIngestaId = sortedIngestas.isEmpty() ? Long.valueOf(0L) : sortedIngestas.get(0).getId();
@@ -271,6 +272,22 @@ public class DietaController extends AbstractAuthorizedController {
 		}
 	}
 
+	@PostMapping(path = "/admin/dietas/{id}/ingestas/{ingestaId}/alimentos/reorder",
+			consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public ResponseEntity<Map<String, String>> reorderAlimentosInIngesta(@PathVariable @NonNull final Long id,
+			@PathVariable @NonNull final Long ingestaId, @RequestBody final List<Long> orderedAlimentoIngestaIds,
+			@AuthenticationPrincipal final OidcUser principal) {
+		loadDietaForMutation(id, principal);
+		try {
+			dietaService.reorderAlimentosInIngesta(id, ingestaId, orderedAlimentoIngestaIds);
+			return ResponseEntity.ok(Map.of("status", "ok"));
+		}
+		catch (IllegalArgumentException exception) {
+			return ResponseEntity.badRequest().body(Map.of("message", exception.getMessage()));
+		}
+	}
+
 	@PostMapping(path = "/admin/dietas/{id}/ingestas/delete")
 	public String deleteIngesta(@PathVariable @NonNull final Long id,
 			@ModelAttribute final IngestaFormModel ingestaModel, final Model model,
@@ -340,6 +357,7 @@ public class DietaController extends AbstractAuthorizedController {
 				// map the found alimento to a AlimentoIngesta
 				AlimentoIngesta alimentoIngesta = mapAlimentoIngesta(alimento, alimentoModel);
 				alimentoIngesta.setIngesta(ingesta);
+				alimentoIngesta.setOrden(AlimentoIngestaComparators.nextOrden(ingesta.getAlimentos()));
 
 				ingesta.getAlimentos().add(alimentoIngesta);
 				dietaService.saveDieta(dieta);
@@ -655,6 +673,12 @@ public class DietaController extends AbstractAuthorizedController {
 		}
 
 		return alimentoIngesta;
+	}
+
+	private void sortAlimentosForDisplay(final Ingesta ingesta) {
+		if (ingesta.getAlimentos() != null) {
+			ingesta.getAlimentos().sort(AlimentoIngestaComparators.BY_DISPLAY_ORDER);
+		}
 	}
 
 	private Double getKCal(Dieta dieta) {

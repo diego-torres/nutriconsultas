@@ -139,12 +139,18 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 			result = ResponseEntity.badRequest().build();
 		}
 		else {
-			final Ingrediente ingredienteResult = service.addIngrediente(id, alimentoId, cantidad, peso);
-			final Platillo platillo = service.findById(id);
-			platilloAuthorization.auditSystemPlatilloMutationIfNeeded(principal, platillo,
-					"platillos.ingredientes.add");
-			log.info("finish addIngrediente with id {} and ingrediente {}.", id, ingrediente);
-			result = ResponseEntity.ok(new ApiResponse<Ingrediente>(ingredienteResult));
+			try {
+				final Ingrediente ingredienteResult = service.addIngrediente(id, alimentoId, cantidad, peso);
+				final Platillo platillo = service.findById(id);
+				platilloAuthorization.auditSystemPlatilloMutationIfNeeded(principal, platillo,
+						"platillos.ingredientes.add");
+				log.info("finish addIngrediente with id {} and ingrediente {}.", id, ingrediente);
+				result = ResponseEntity.ok(new ApiResponse<Ingrediente>(ingredienteResult));
+			}
+			catch (IllegalArgumentException exception) {
+				log.warn("addIngrediente rejected for platillo {}: {}", id, exception.getMessage());
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage());
+			}
 		}
 		return result;
 	}

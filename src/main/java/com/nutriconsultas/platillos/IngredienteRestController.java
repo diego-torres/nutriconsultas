@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -75,6 +76,20 @@ public class IngredienteRestController extends AbstractGridItemController<Ingred
 		return platillo;
 	}
 
+	@GetMapping
+	public ResponseEntity<ApiResponse<List<IngredienteListItemDto>>> list(@NonNull @PathVariable final Long id) {
+		log.debug("listing ingredientes for platillo {}.", id);
+		final Platillo platillo = platilloService.findById(id);
+		if (platillo == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Platillo no encontrado");
+		}
+		final List<IngredienteListItemDto> items = platilloService.listIngredientes(id)
+			.stream()
+			.map(IngredienteListItemDto::fromEntity)
+			.toList();
+		return ResponseEntity.ok(new ApiResponse<>(items));
+	}
+
 	@DeleteMapping("/{ingredienteId}")
 	public void delete(@NonNull @PathVariable final Long id, @NonNull @PathVariable final Long ingredienteId) {
 		log.debug("deleting Ingrediente with id {}.", ingredienteId);
@@ -82,6 +97,21 @@ public class IngredienteRestController extends AbstractGridItemController<Ingred
 		final Platillo platillo = loadPlatilloForMutation(id, principal);
 		platilloService.deleteIngrediente(id, ingredienteId);
 		platilloAuthorization.auditSystemPlatilloMutationIfNeeded(principal, platillo, "platillos.ingredientes.delete");
+	}
+
+	@PutMapping("/reorder")
+	public ResponseEntity<ApiResponse<Void>> reorder(@NonNull @PathVariable final Long id,
+			@RequestBody @NonNull final List<Long> orderedIngredienteIds) {
+		log.debug("reordering ingredientes for platillo {}.", id);
+		final OidcUser principal = currentUser();
+		loadPlatilloForMutation(id, principal);
+		try {
+			platilloService.reorderIngredientes(id, orderedIngredienteIds);
+			return ResponseEntity.ok(new ApiResponse<>(null));
+		}
+		catch (IllegalArgumentException exception) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage());
+		}
 	}
 
 	@PutMapping("/{ingredienteId}")
@@ -112,6 +142,14 @@ public class IngredienteRestController extends AbstractGridItemController<Ingred
 		final Platillo platillo = platilloService.findById(id);
 		final boolean canModify = platilloAuthorization.canModify(platillo, getUserId(principal), principal);
 		pagingRequest.setColumns(getColumns());
+		pagingRequest.setStart(0);
+		pagingRequest.setLength(PlatilloIngredientLimits.LIST_PAGE_SIZE);
+		if (pagingRequest.getSearch() == null) {
+			pagingRequest.setSearch(new com.nutriconsultas.dataTables.paging.Search("", "false"));
+		}
+		else {
+			pagingRequest.getSearch().setValue("");
+		}
 		final Page<Ingrediente> page = getRows(pagingRequest, id);
 		log.debug("page with records: {}", page.getRecordsTotal());
 		final PageArray pageArray = new PageArray();
@@ -162,7 +200,7 @@ public class IngredienteRestController extends AbstractGridItemController<Ingred
 	@Override
 	protected List<Ingrediente> getData(@NonNull final Long id) {
 		log.debug("getting Ingrediente rows for Platillo id {}.", id);
-		return platilloService.findById(id).getIngredientes();
+		return platilloService.listIngredientes(id);
 	}
 
 	@Override

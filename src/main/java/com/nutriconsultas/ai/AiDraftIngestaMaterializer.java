@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.alimentos.AlimentosRepository;
 import com.nutriconsultas.dieta.AlimentoIngesta;
+import com.nutriconsultas.dieta.AlimentoIngestaComparators;
 import com.nutriconsultas.dieta.DietaService;
 import com.nutriconsultas.dieta.IngredientePlatilloIngesta;
 import com.nutriconsultas.dieta.Ingesta;
@@ -89,6 +90,7 @@ public class AiDraftIngestaMaterializer {
 		}
 		final AlimentoIngesta alimentoIngesta = mapAlimentoIngesta(alimento, resolvePortions(item.portions()));
 		alimentoIngesta.setIngesta(ingesta);
+		alimentoIngesta.setOrden(AlimentoIngestaComparators.nextOrden(ingesta.getAlimentos()));
 		ingesta.getAlimentos().add(alimentoIngesta);
 	}
 

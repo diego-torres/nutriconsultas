@@ -1,6 +1,7 @@
 package com.nutriconsultas.platillos;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.nutriconsultas.alimentos.Alimento;
+import com.nutriconsultas.alimentos.AlimentosRepository;
 
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
@@ -29,6 +31,9 @@ class PlatilloServiceTest {
 
 	@Mock
 	private PlatilloRepository platilloRepository;
+
+	@Mock
+	private AlimentosRepository alimentoRepository;
 
 	@Test
 	void getPlatillosForCatalogFilter_todas_returnsSystemAndOwned() {
@@ -178,6 +183,72 @@ class PlatilloServiceTest {
 		assertThat(saved.getEnergia()).isEqualTo(200);
 		assertThat(saved.getProteina()).isEqualTo(20.0);
 		verify(platilloRepository).save(platillo);
+	}
+
+	@Test
+	void reorderIngredientes_updatesOrden() {
+		final Platillo platillo = ownedPlatillo(10L, TEST_USER_ID);
+		final Ingrediente first = new Ingrediente();
+		first.setId(1L);
+		first.setOrden(0);
+		first.setPlatillo(platillo);
+		final Ingrediente second = new Ingrediente();
+		second.setId(2L);
+		second.setOrden(1);
+		second.setPlatillo(platillo);
+		platillo.setIngredientes(new ArrayList<>(List.of(first, second)));
+
+		when(platilloRepository.findById(10L)).thenReturn(Optional.of(platillo));
+		when(platilloRepository.save(any(Platillo.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		platilloService.reorderIngredientes(10L, List.of(2L, 1L));
+
+		assertThat(second.getOrden()).isEqualTo(0);
+		assertThat(first.getOrden()).isEqualTo(1);
+		verify(platilloRepository).save(platillo);
+	}
+
+	@Test
+	void listIngredientes_returnsSortedLimitedPage() {
+		final Platillo platillo = ownedPlatillo(10L, TEST_USER_ID);
+		final List<Ingrediente> ingredientes = new ArrayList<>();
+		for (int index = 0; index < 55; index++) {
+			final Ingrediente item = new Ingrediente();
+			item.setId((long) index + 1);
+			item.setOrden(index);
+			item.setPlatillo(platillo);
+			ingredientes.add(item);
+		}
+		platillo.setIngredientes(ingredientes);
+		when(platilloRepository.findById(10L)).thenReturn(Optional.of(platillo));
+
+		final List<Ingrediente> listed = platilloService.listIngredientes(10L);
+
+		assertThat(listed).hasSize(PlatilloIngredientLimits.LIST_PAGE_SIZE);
+		assertThat(listed.get(0).getOrden()).isZero();
+	}
+
+	@Test
+	void addIngrediente_rejectsWhenMaxIngredientesReached() {
+		final Platillo platillo = ownedPlatillo(10L, TEST_USER_ID);
+		final List<Ingrediente> ingredientes = new ArrayList<>();
+		for (int index = 0; index < PlatilloIngredientLimits.MAX_PER_PLATILLO; index++) {
+			final Ingrediente item = new Ingrediente();
+			item.setId((long) index + 1);
+			item.setPlatillo(platillo);
+			ingredientes.add(item);
+		}
+		platillo.setIngredientes(ingredientes);
+		final Alimento alimento = new Alimento();
+		alimento.setId(3L);
+		alimento.setCantSugerida(1.0);
+		alimento.setPesoNeto(100);
+		when(platilloRepository.findById(10L)).thenReturn(Optional.of(platillo));
+		when(alimentoRepository.findById(3L)).thenReturn(Optional.of(alimento));
+
+		assertThatThrownBy(() -> platilloService.addIngrediente(10L, 3L, "1", 100))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("50");
 	}
 
 	private static Platillo systemPlatillo(final Long id) {
