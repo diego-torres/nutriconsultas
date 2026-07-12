@@ -149,7 +149,7 @@ public class PlatilloRestController extends AbstractGridController<Platillo> {
 			}
 			catch (IllegalArgumentException exception) {
 				log.warn("addIngrediente rejected for platillo {}: {}", id, exception.getMessage());
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage());
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage(), exception);
 			}
 		}
 		return result;

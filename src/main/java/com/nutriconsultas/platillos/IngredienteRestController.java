@@ -110,7 +110,7 @@ public class IngredienteRestController extends AbstractGridItemController<Ingred
 			return ResponseEntity.ok(new ApiResponse<>(null));
 		}
 		catch (IllegalArgumentException exception) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage());
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage(), exception);
 		}
 	}
 
