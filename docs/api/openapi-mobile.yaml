@@ -303,6 +303,61 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponsePatientOnboardingProfileDto"
+  /rest/mobile/patient/profile/photo:
+    get:
+      tags:
+      - Mobile
+      summary: Get patient profile photo
+      description: Returns custom photo bytes or redirects to catalog avatar when no custom photo is set.
+      operationId: getProfilePhoto
+      responses:
+        "200":
+          description: Custom profile photo bytes
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        "302":
+          description: Redirect to catalog avatar when no custom photo is stored
+        "401":
+          description: Missing or invalid JWT
+        "403":
+          description: Patient account not linked to Auth0 sub
+        "404":
+          description: Patient not found
+    put:
+      tags:
+      - Mobile
+      summary: Upload patient profile photo
+      description: Stores a custom profile photo in S3 for the authenticated patient.
+      operationId: uploadProfilePhoto
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+              - photoFile
+              properties:
+                photoFile:
+                  type: string
+                  format: binary
+                  description: Image file (JPG, PNG, GIF, or WebP)
+      responses:
+        "200":
+          description: Upload succeeded
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseMobilePatientPhotoResponse"
+        "400":
+          description: Empty or unreadable file
+        "401":
+          description: Missing or invalid JWT
+        "403":
+          description: Patient account not linked to Auth0 sub
   /rest/mobile/patient/visits:
     get:
       tags:
@@ -1120,6 +1175,10 @@ components:
           type: string
           description: Selected avatar id
           example: avatar_6
+        avatarUrl:
+          type: string
+          description: Profile picture URL (custom S3 photo or catalog avatar)
+          example: /rest/mobile/patient/profile/photo
         assignedId:
           type: string
           description: Clinic-facing identifier
@@ -1135,6 +1194,27 @@ components:
         assignedDietPlan:
           $ref: "#/components/schemas/AssignedDietPlanReferenceDto"
           description: "Primary active diet assignment, when present"
+    ApiResponseMobilePatientPhotoResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/MobilePatientPhotoResponse"
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    MobilePatientPhotoResponse:
+      type: object
+      properties:
+        photoUrl:
+          type: string
+          description: Resolver URL for the profile picture
+          example: /rest/mobile/patient/profile/photo
+        photoExtension:
+          type: string
+          description: Stored file extension when a custom photo exists
+          example: png
     ApiResponsePagedResponseVisitSummaryDto:
       type: object
       properties:

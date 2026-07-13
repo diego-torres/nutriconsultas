@@ -67,6 +67,9 @@ class PacienteDeletionServiceTest {
 	@Mock
 	private PacienteDietaWeekdayRepository pacienteDietaWeekdayRepository;
 
+	@Mock
+	private PacientePhotoService pacientePhotoService;
+
 	private Paciente paciente;
 
 	@BeforeEach
@@ -112,6 +115,7 @@ class PacienteDeletionServiceTest {
 		verify(clinicalExamService).deleteById(20L);
 		verify(anthropometricMeasurementService).deleteById(30L);
 		verify(bodyMetricRecordRepository).deleteByPacienteId(7L);
+		verify(pacientePhotoService).deletePhotoFromStorage(7L, null);
 		verify(pacienteRepository).delete(paciente);
 	}
 
@@ -140,6 +144,23 @@ class PacienteDeletionServiceTest {
 
 		verify(dietaService).deleteDieta(61L);
 		verify(pacienteDietaRepository).deleteAll(List.of(assignment));
+		verify(pacientePhotoService).deletePhotoFromStorage(7L, null);
+		verify(pacienteRepository).delete(paciente);
+	}
+
+	@Test
+	void deletePatientWithHistory_deletesCustomPhotoFromStorage() {
+		paciente.setPhotoExtension("png");
+		when(pacienteRepository.findByIdAndUserId(7L, USER_ID)).thenReturn(Optional.of(paciente));
+		when(patientInvitationRepository.findByPacienteId(7L)).thenReturn(List.of());
+		when(pacienteDietaRepository.findByPacienteId(7L)).thenReturn(List.of());
+		when(calendarEventService.findByPacienteId(7L)).thenReturn(List.of());
+		when(clinicalExamService.findByPacienteId(7L)).thenReturn(List.of());
+		when(anthropometricMeasurementService.findByPacienteId(7L)).thenReturn(List.of());
+
+		service.deletePatientWithHistory(7L, USER_ID);
+
+		verify(pacientePhotoService).deletePhotoFromStorage(7L, "png");
 		verify(pacienteRepository).delete(paciente);
 	}
 

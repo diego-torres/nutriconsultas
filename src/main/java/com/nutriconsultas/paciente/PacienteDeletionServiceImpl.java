@@ -46,6 +46,8 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 
 	private final PacienteDietaWeekdayRepository pacienteDietaWeekdayRepository;
 
+	private final PacientePhotoService pacientePhotoService;
+
 	public PacienteDeletionServiceImpl(final PacienteRepository pacienteRepository,
 			final PatientMessageRepository patientMessageRepository,
 			final PatientInvitationRepository patientInvitationRepository,
@@ -53,7 +55,8 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 			final ClinicalExamService clinicalExamService,
 			final AnthropometricMeasurementService anthropometricMeasurementService,
 			final BodyMetricRecordRepository bodyMetricRecordRepository, final DietaService dietaService,
-			final PacienteDietaWeekdayRepository pacienteDietaWeekdayRepository) {
+			final PacienteDietaWeekdayRepository pacienteDietaWeekdayRepository,
+			final PacientePhotoService pacientePhotoService) {
 		this.pacienteRepository = pacienteRepository;
 		this.patientMessageRepository = patientMessageRepository;
 		this.patientInvitationRepository = patientInvitationRepository;
@@ -64,6 +67,7 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 		this.bodyMetricRecordRepository = bodyMetricRecordRepository;
 		this.dietaService = dietaService;
 		this.pacienteDietaWeekdayRepository = pacienteDietaWeekdayRepository;
+		this.pacientePhotoService = pacientePhotoService;
 	}
 
 	@Override
@@ -72,6 +76,7 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 		final Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
 			.orElseThrow(() -> new IllegalArgumentException("Paciente no encontrado"));
 		logMobileLinkageClear(paciente);
+		pacientePhotoService.deletePhotoFromStorage(pacienteId, paciente.getPhotoExtension());
 		deleteRelatedHistory(pacienteId);
 		pacienteRepository.delete(paciente);
 		if (log.isInfoEnabled()) {

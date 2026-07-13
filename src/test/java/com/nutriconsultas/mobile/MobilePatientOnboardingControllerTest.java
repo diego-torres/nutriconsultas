@@ -40,8 +40,8 @@ class MobilePatientOnboardingControllerTest {
 		when(patientAuthService.requireAuthViewByJwt(jwt)).thenReturn(
 				MobileTestPacienteAuthViews.authView(12L, PATIENT_SUB, "nutritionist-sub", PacienteStatus.ONBOARDING));
 		final PatientOnboardingProfileDto profile = new PatientOnboardingProfileDto(12L, PacienteStatus.ONBOARDING,
-				"María López", "María", LocalDate.of(1990, 5, 15), "F", "maria@example.com", null, null, "P-001", false,
-				"Lic. Ana López", null);
+				"María López", "María", LocalDate.of(1990, 5, 15), "F", "maria@example.com", null, null,
+				"/sbadmin/img/paciente-avatars/avatar_1.png", "P-001", false, "Lic. Ana López", null);
 		when(mobilePatientOnboardingService.getProfile(12L)).thenReturn(profile);
 
 		final ApiResponse<PatientOnboardingProfileDto> response = controller.getProfile(jwt);
@@ -59,7 +59,8 @@ class MobilePatientOnboardingControllerTest {
 				null, null, null, PacienteAvatarCatalog.DEFAULT_FEMALE_ID);
 		final PatientOnboardingProfileDto profile = new PatientOnboardingProfileDto(12L, PacienteStatus.ACTIVE,
 				"María López", "María", LocalDate.of(1990, 5, 15), "F", "maria@example.com", null,
-				PacienteAvatarCatalog.DEFAULT_FEMALE_ID, "P-001", true, "Lic. Ana López", null);
+				PacienteAvatarCatalog.DEFAULT_FEMALE_ID, "/sbadmin/img/paciente-avatars/avatar_6.png", "P-001", true,
+				"Lic. Ana López", null);
 		when(mobilePatientOnboardingService.updateProfile(12L, request)).thenReturn(profile);
 
 		final ApiResponse<PatientOnboardingProfileDto> response = controller.updateProfile(jwt, request);

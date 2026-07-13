@@ -15,6 +15,8 @@ public final class MobilePatientAccessRules {
 
 	private static final String ONBOARDING_PROFILE_PATH = "/rest/mobile/patient/me";
 
+	private static final String ONBOARDING_PROFILE_PHOTO_PATH = "/rest/mobile/patient/profile/photo";
+
 	private MobilePatientAccessRules() {
 	}
 
@@ -53,7 +55,8 @@ public final class MobilePatientAccessRules {
 	}
 
 	public static boolean isOnboardingAllowedPath(final String path) {
-		return ONBOARDING_PROFILE_PATH.equals(path) || path.startsWith(ONBOARDING_PROFILE_PATH + "/");
+		return ONBOARDING_PROFILE_PATH.equals(path) || path.startsWith(ONBOARDING_PROFILE_PATH + "/")
+				|| ONBOARDING_PROFILE_PHOTO_PATH.equals(path);
 	}
 
 }

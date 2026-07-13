@@ -95,3 +95,6 @@ databaseChangeLog:
   - include:
       file: changes/032-thyroid-panel.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/033-paciente-photo-extension.yaml
+      relativeToChangelogFile: true

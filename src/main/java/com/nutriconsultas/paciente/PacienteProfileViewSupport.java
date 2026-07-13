@@ -11,7 +11,8 @@ public final class PacienteProfileViewSupport {
 	}
 
 	public static void addAvatarAttributes(final Model model, final Paciente paciente) {
-		model.addAttribute("avatarImageUrl", PacienteAvatarCatalog.resolveImagePath(paciente));
+		model.addAttribute("avatarImageUrl", PacientePictureSupport.resolveDisplayUrlForAdmin(paciente));
+		model.addAttribute("hasCustomPhoto", PacientePictureSupport.hasCustomPhoto(paciente));
 		model.addAttribute("selectedAvatarId", PacienteAvatarCatalog.resolveSelectedId(paciente));
 		model.addAttribute("avatarOptions", PacienteAvatarCatalog.allOptions());
 	}

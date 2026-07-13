@@ -10,6 +10,7 @@ import com.nutriconsultas.mobile.PatientOnboardingCompleteness;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
+import com.nutriconsultas.paciente.PacientePictureSupport;
 import com.nutriconsultas.paciente.PacienteStatus;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,6 +29,8 @@ public record PatientOnboardingProfileDto(@Schema(description = "Paciente id", e
 		@Schema(description = "Contact email", example = "maria@example.com") String email,
 		@Schema(description = "Contact phone", example = "+525512345678") String phone,
 		@Schema(description = "Selected avatar id", example = "avatar_6") String avatarId,
+		@Schema(description = "Profile picture URL (custom S3 photo or catalog avatar)",
+				example = "/rest/mobile/patient/profile/photo") String avatarUrl,
 		@Schema(description = "Clinic-facing identifier", example = "P-CLINIC-001") String assignedId,
 		@Schema(description = "True when all required onboarding fields are present",
 				example = "false") boolean profileComplete,
@@ -39,7 +42,8 @@ public record PatientOnboardingProfileDto(@Schema(description = "Paciente id", e
 			final AssignedDietPlanReferenceDto assignedDietPlan, final String nutritionistDisplayName) {
 		return new PatientOnboardingProfileDto(paciente.getId(), paciente.getStatus(), paciente.getName(),
 				paciente.getDisplayName(), toLocalDate(paciente.getDob()), paciente.getGender(), paciente.getEmail(),
-				paciente.getPhone(), paciente.getAvatarId(), paciente.getAssignedId(),
+				paciente.getPhone(), paciente.getAvatarId(),
+				PacientePictureSupport.resolveDisplayUrlForMobile(paciente), paciente.getAssignedId(),
 				PatientOnboardingCompleteness.isComplete(paciente), nutritionistDisplayName, assignedDietPlan);
 	}
 
