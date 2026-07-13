@@ -322,7 +322,7 @@ public class DietaController extends AbstractAuthorizedController {
 				dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.platillos.save");
 			}
 		}
-		return redirectToDietaEditor(id, platilloModel.getIngestaPlatillo());
+		return redirectToDietaEditor(id, ingesta != null ? platilloModel.getIngestaPlatillo() : null);
 	}
 
 	@PostMapping(path = "/admin/dietas/{id}/alimentos/save")
@@ -351,7 +351,7 @@ public class DietaController extends AbstractAuthorizedController {
 				dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.alimentos.save");
 			}
 		}
-		return redirectToDietaEditor(id, alimentoModel.getIngestaAlimento());
+		return redirectToDietaEditor(id, ingesta != null ? alimentoModel.getIngestaAlimento() : null);
 	}
 
 	@PostMapping(path = "/admin/dietas/{id}/platillos/{platilloIngestaId}/update")

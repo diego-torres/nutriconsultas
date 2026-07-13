@@ -228,7 +228,7 @@ public class DietaControllerTest {
 				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
-			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1?ingesta=1"));
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
 		// Verify that dietaService.getDietaByIdAndUserId was called but saveDieta was not
 		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
@@ -508,7 +508,7 @@ public class DietaControllerTest {
 				.with(oidcLogin(TEST_USER_ID))
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 			.andExpect(status().is3xxRedirection())
-			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1?ingesta=1"));
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1"));
 
 		// Verify that dietaService.getDietaByIdAndUserId was called but saveDieta was not
 		verify(dietaService, times(1)).getDietaByIdAndUserId(1L, TEST_USER_ID);
