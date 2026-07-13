@@ -88,4 +88,21 @@ public final class PlatilloIngestaMapping {
 		return result;
 	}
 
+	public static PlatilloIngesta attachCatalogPlatilloToIngesta(final Platillo platillo, final Ingesta ingesta,
+			final int portions) {
+		final PlatilloIngesta platilloIngesta = mapPlatilloIngesta(platillo);
+		platilloIngesta.setIngesta(ingesta);
+		platilloIngesta.setPortions(portions);
+		if (platillo.getIngredientes() != null) {
+			for (final Ingrediente ingrediente : platillo.getIngredientes()) {
+				final IngredientePlatilloIngesta ingPlatilloIng = mapFromIngredienteToIngredientePlatilloIngesta(
+						ingrediente);
+				ingPlatilloIng.setPlatillo(platilloIngesta);
+				platilloIngesta.getIngredientes().add(ingPlatilloIng);
+			}
+		}
+		ingesta.getPlatillos().add(platilloIngesta);
+		return platilloIngesta;
+	}
+
 }

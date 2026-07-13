@@ -119,6 +119,21 @@
         font-style: italic;
         padding: 1rem 0.25rem;
       }
+      .alimento-order-list {
+        margin-top: 0.5rem;
+      }
+      .alimento-order-item {
+        cursor: default;
+      }
+      .alimento-order-item--dragging {
+        opacity: 0.5;
+      }
+      .alimento-order-item--drop-target {
+        box-shadow: inset 0 3px 0 0 #4e73df;
+      }
+      .alimento-order-item--dragging .ingesta-order-handle {
+        cursor: grabbing;
+      }
       .patient-caloric-indicator {
         position: fixed;
         bottom: 1.5rem;
@@ -918,6 +933,13 @@
                               </button>
                               <button
                                 type="button"
+                                class="btn btn-info btn-sm mb-1 mr-2 crear-platillo-btn"
+                                th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id}"
+                                th:disabled="${isOwner != null && !isOwner}">
+                                <i class="fas fa-utensils"></i> Crear platillo
+                              </button>
+                              <button
+                                type="button"
                                 class="btn btn-primary btn-sm mb-1 mr-2"
                                 th:attr="data-ingesta=${ingesta.id},data-nombre=${ingesta.nombre}"
                                 data-toggle="modal"
@@ -941,16 +963,28 @@
                                 No hay platillos ni alimentos en esta ingesta.
                               </p>
                               <div th:each="platillo : ${ingesta.platillos}"
-                                   class="ingesta-item-card border rounded p-3"
+                                   class="ingesta-item-card border rounded p-3 crear-platillo-platillo-item"
                                    th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-platillo=${platillo.id}">
                                 <div class="ingesta-item-header d-flex justify-content-between align-items-start">
-                                  <div class="ingesta-item-name pr-2">
+                                  <div class="ingesta-item-name pr-2 d-flex align-items-start">
+                                    <div class="custom-control custom-checkbox mr-2 mt-1 crear-platillo-checkbox-wrap"
+                                         th:if="${isOwner == null || isOwner}">
+                                      <input type="checkbox"
+                                             class="custom-control-input crear-platillo-select platillo-select"
+                                             th:id="'crear-platillo-plat-' + ${platillo.id}"
+                                             th:attr="data-platillo-ingesta-id=${platillo.id}" />
+                                      <label class="custom-control-label"
+                                             th:for="'crear-platillo-plat-' + ${platillo.id}"
+                                             title="Seleccionar para crear platillo"></label>
+                                    </div>
+                                    <div>
                                     <span class="badge badge-info mr-1">Platillo</span>
                                     <a th:if="${platillo.sourcePlatilloId != null}"
                                        th:href="@{/admin/platillos/{id}(id=${platillo.sourcePlatilloId})}"
                                        th:text="${platillo.name}"
                                        title="Ver detalles del platillo"></a>
                                     <span th:if="${platillo.sourcePlatilloId == null}" th:text="${platillo.name}"></span>
+                                    </div>
                                   </div>
                                   <div class="ingesta-item-actions flex-shrink-0">
                                     <button
@@ -1084,9 +1118,19 @@
                                 </p>
                               <div th:each="alimento : ${ingesta.alimentos}"
                                    class="ingesta-item-card border rounded p-3 alimento-order-item"
-                                   th:attr="data-alimento-ingesta-id=${alimento.id},draggable=${isOwner == null || isOwner ? 'true' : 'false'}">
+                                   th:attr="data-alimento-ingesta-id=${alimento.id}">
                                 <div class="ingesta-item-header d-flex justify-content-between align-items-start">
                                   <div class="d-flex align-items-start ingesta-item-name pr-2">
+                                    <div class="custom-control custom-checkbox mr-2 mt-1 crear-platillo-checkbox-wrap"
+                                         th:if="${isOwner == null || isOwner}">
+                                      <input type="checkbox"
+                                             class="custom-control-input crear-platillo-select alimento-select"
+                                             th:id="'crear-platillo-ali-' + ${alimento.id}"
+                                             th:attr="data-alimento-ingesta-id=${alimento.id}" />
+                                      <label class="custom-control-label"
+                                             th:for="'crear-platillo-ali-' + ${alimento.id}"
+                                             title="Seleccionar para crear platillo"></label>
+                                    </div>
                                     <span class="ingesta-order-handle text-muted mr-2 mt-1" title="Arrastrar para reordenar">
                                       <i class="fas fa-grip-vertical"></i>
                                     </span>
@@ -1296,16 +1340,83 @@
             var draggedItem = null;
             var panesContainer = document.getElementById('ingestaPanes');
 
+            function dietaActiveIngestaStorageKey(editorDietaId) {
+              return 'dieta-active-ingesta-' + editorDietaId;
+            }
+
+            function persistActiveIngesta(editorDietaId, ingestaId) {
+              if (!editorDietaId || !ingestaId) {
+                return;
+              }
+              try {
+                sessionStorage.setItem(dietaActiveIngestaStorageKey(editorDietaId), String(ingestaId));
+              } catch (storageError) {
+                // Ignore storage failures (private mode, quota, etc.)
+              }
+              var nextUrl = '/admin/dietas/' + editorDietaId + '?ingesta=' + ingestaId;
+              if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, '', nextUrl);
+              }
+            }
+
+            function resolveActiveIngestaId(editorDietaId) {
+              var params = new URLSearchParams(window.location.search);
+              var fromQuery = params.get('ingesta');
+              if (fromQuery) {
+                var parsedQuery = parseInt(fromQuery, 10);
+                if (!isNaN(parsedQuery)) {
+                  return parsedQuery;
+                }
+              }
+              if (window.location.hash && window.location.hash.indexOf('#ingesta-') === 0) {
+                var parsedHash = parseInt(window.location.hash.replace('#ingesta-', ''), 10);
+                if (!isNaN(parsedHash)) {
+                  return parsedHash;
+                }
+              }
+              try {
+                var stored = sessionStorage.getItem(dietaActiveIngestaStorageKey(editorDietaId));
+                if (stored) {
+                  var parsedStorage = parseInt(stored, 10);
+                  if (!isNaN(parsedStorage)) {
+                    return parsedStorage;
+                  }
+                }
+              } catch (storageError) {
+                // Ignore storage failures
+              }
+              return null;
+            }
+
             function selectIngesta(ingestaId) {
               $('#ingestaOrderList .ingesta-order-item').removeClass('active');
               $('#ingestaOrderList .ingesta-order-item[data-ingesta-id="' + ingestaId + '"]').addClass('active');
               $('.ingesta-pane').removeClass('ingesta-pane--active');
               $('#ingesta-' + ingestaId).addClass('ingesta-pane--active');
+              persistActiveIngesta(dietaId, ingestaId);
             }
+
+            window.reloadDietaEditor = function (editorDietaId, ingestaId) {
+              if (editorDietaId && ingestaId) {
+                persistActiveIngesta(editorDietaId, ingestaId);
+                window.location.href = '/admin/dietas/' + editorDietaId + '?ingesta=' + ingestaId;
+                return;
+              }
+              window.location.reload();
+            };
+
+            window.persistActiveIngestaFromForm = function (editorDietaId, ingestaId) {
+              persistActiveIngesta(editorDietaId, ingestaId);
+            };
 
             $(document).on('click', '.ingesta-order-select', function () {
               selectIngesta($(this).data('ingesta-id'));
             });
+
+            var restoredIngestaId = resolveActiveIngestaId(dietaId);
+            if (restoredIngestaId && document.getElementById('ingesta-' + restoredIngestaId)) {
+              selectIngesta(restoredIngestaId);
+            }
 
             function reorderIngestaPanes() {
               if (!panesContainer) {
@@ -1401,9 +1512,29 @@
               var dietaId = orderList.getAttribute('data-dieta-id');
               var ingestaId = orderList.getAttribute('data-ingesta-id');
               var draggedItem = null;
+              var currentDropTarget = null;
+
+              function getOrderItems() {
+                return Array.from(orderList.querySelectorAll(':scope > .alimento-order-item'));
+              }
+
+              function clearDropTarget() {
+                if (currentDropTarget) {
+                  currentDropTarget.classList.remove('alimento-order-item--drop-target');
+                  currentDropTarget = null;
+                }
+              }
+
+              function resolveDropTarget(event) {
+                var targetItem = event.target.closest('.alimento-order-item');
+                if (!targetItem || !orderList.contains(targetItem) || targetItem === draggedItem) {
+                  return null;
+                }
+                return targetItem;
+              }
 
               function persistAlimentoOrder() {
-                var orderedIds = Array.from(orderList.querySelectorAll('.alimento-order-item')).map(function (item) {
+                var orderedIds = getOrderItems().map(function (item) {
                   return parseInt(item.getAttribute('data-alimento-ingesta-id'), 10);
                 });
                 $.ajax({
@@ -1420,50 +1551,92 @@
                       type: 'error',
                       timer: 5000,
                     });
-                    window.location.reload();
+                    if (window.reloadDietaEditor) {
+                      window.reloadDietaEditor(dietaId, ingestaId);
+                    } else {
+                      window.location.reload();
+                    }
                   }
                 });
               }
 
-              orderList.querySelectorAll('.alimento-order-item').forEach(function (item) {
+              getOrderItems().forEach(function (item) {
+                var dragFromHandle = false;
+                var dragHandles = item.querySelectorAll('.ingesta-order-handle');
+                dragHandles.forEach(function (handle) {
+                  handle.addEventListener('mousedown', function () {
+                    dragFromHandle = true;
+                    item.setAttribute('draggable', 'true');
+                  });
+                  handle.addEventListener('touchstart', function () {
+                    dragFromHandle = true;
+                    item.setAttribute('draggable', 'true');
+                  }, { passive: true });
+                });
                 item.addEventListener('dragstart', function (event) {
+                  if (!dragFromHandle) {
+                    event.preventDefault();
+                    return;
+                  }
                   draggedItem = item;
-                  item.classList.add('ingesta-order-item--dragging');
+                  item.classList.add('alimento-order-item--dragging');
                   event.dataTransfer.effectAllowed = 'move';
+                  event.dataTransfer.setData('text/plain', item.getAttribute('data-alimento-ingesta-id') || '');
                 });
                 item.addEventListener('dragend', function () {
-                  item.classList.remove('ingesta-order-item--dragging');
-                  orderList.querySelectorAll('.alimento-order-item').forEach(function (element) {
-                    element.classList.remove('ingesta-order-item--drop-target');
-                  });
+                  dragFromHandle = false;
+                  item.removeAttribute('draggable');
+                  item.classList.remove('alimento-order-item--dragging');
+                  clearDropTarget();
                   draggedItem = null;
                 });
-                item.addEventListener('dragover', function (event) {
-                  event.preventDefault();
-                  if (!draggedItem || draggedItem === item) {
-                    return;
-                  }
-                  item.classList.add('ingesta-order-item--drop-target');
-                });
-                item.addEventListener('dragleave', function () {
-                  item.classList.remove('ingesta-order-item--drop-target');
-                });
-                item.addEventListener('drop', function (event) {
-                  event.preventDefault();
-                  item.classList.remove('ingesta-order-item--drop-target');
-                  if (!draggedItem || draggedItem === item) {
-                    return;
-                  }
-                  var items = Array.from(orderList.querySelectorAll('.alimento-order-item'));
-                  var draggedIndex = items.indexOf(draggedItem);
-                  var targetIndex = items.indexOf(item);
-                  if (draggedIndex < targetIndex) {
-                    orderList.insertBefore(draggedItem, item.nextSibling);
-                  } else {
-                    orderList.insertBefore(draggedItem, item);
-                  }
-                  persistAlimentoOrder();
-                });
+              });
+
+              orderList.addEventListener('dragover', function (event) {
+                event.preventDefault();
+                if (!draggedItem) {
+                  return;
+                }
+                var targetItem = resolveDropTarget(event);
+                if (!targetItem) {
+                  clearDropTarget();
+                  return;
+                }
+                if (currentDropTarget !== targetItem) {
+                  clearDropTarget();
+                  currentDropTarget = targetItem;
+                  targetItem.classList.add('alimento-order-item--drop-target');
+                }
+              });
+
+              orderList.addEventListener('dragleave', function (event) {
+                if (!orderList.contains(event.relatedTarget)) {
+                  clearDropTarget();
+                }
+              });
+
+              orderList.addEventListener('drop', function (event) {
+                event.preventDefault();
+                if (!draggedItem) {
+                  return;
+                }
+                var targetItem = resolveDropTarget(event);
+                clearDropTarget();
+                if (!targetItem) {
+                  return;
+                }
+                var items = getOrderItems();
+                var draggedIndex = items.indexOf(draggedItem);
+                var targetIndex = items.indexOf(targetItem);
+                if (draggedIndex < 0 || targetIndex < 0 || draggedIndex === targetIndex) {
+                  return;
+                }
+                if (draggedIndex < targetIndex) {
+                  orderList.insertBefore(draggedItem, targetItem.nextSibling);
+                } else {
+                  orderList.insertBefore(draggedItem, targetItem);
+                }
+                persistAlimentoOrder();
               });
             });
           }
@@ -1995,8 +2168,11 @@
                   timer: 2000,
                 });
                 modal.modal('hide');
-                // Reload the page to refresh the data
-                location.reload();
+                if (window.reloadDietaEditor) {
+                  window.reloadDietaEditor(dieta, ingesta);
+                } else {
+                  window.location.reload();
+                }
               },
               error: function (error) {
                 swal({
@@ -2042,8 +2218,11 @@
                   timer: 2000,
                 });
                 modal.modal('hide');
-                // Reload the page to refresh the data
-                location.reload();
+                if (window.reloadDietaEditor) {
+                  window.reloadDietaEditor(dieta, ingesta);
+                } else {
+                  window.location.reload();
+                }
               },
               error: function (error) {
                 swal({
@@ -2179,9 +2358,30 @@
             }
           });
           $('#alimentoCantidad').on('input change', recalculateAlimentoPesoFromCantidad);
+          $('#platilloModal form').on('submit', function () {
+            var orderList = document.getElementById('ingestaOrderList');
+            if (!orderList) {
+              return;
+            }
+            var editorDietaId = orderList.getAttribute('data-dieta-id');
+            var ingestaId = $('#ingestaPlatillo').val();
+            if (window.persistActiveIngestaFromForm) {
+              window.persistActiveIngestaFromForm(editorDietaId, ingestaId);
+            }
+          });
+
           $('#alimentoModal form').on('submit', function () {
             if ($('#tipoPorcion').val() === 'porcion') {
               syncAlimentoPorcionesFromCantidad();
+            }
+            var orderList = document.getElementById('ingestaOrderList');
+            if (!orderList) {
+              return;
+            }
+            var editorDietaId = orderList.getAttribute('data-dieta-id');
+            var ingestaId = $('#ingestaAlimento').val();
+            if (window.persistActiveIngestaFromForm) {
+              window.persistActiveIngestaFromForm(editorDietaId, ingestaId);
             }
           });
 
@@ -2787,6 +2987,148 @@
               }
             });
           };
+
+          function collectCrearPlatilloSelection(ingestaPane) {
+            var alimentoIds = [];
+            var platilloIds = [];
+            ingestaPane.querySelectorAll('.crear-platillo-select.alimento-select:checked').forEach(function (checkbox) {
+              alimentoIds.push(parseInt(checkbox.getAttribute('data-alimento-ingesta-id'), 10));
+            });
+            ingestaPane.querySelectorAll('.crear-platillo-select.platillo-select:checked').forEach(function (checkbox) {
+              platilloIds.push(parseInt(checkbox.getAttribute('data-platillo-ingesta-id'), 10));
+            });
+            return { alimentoIds: alimentoIds, platilloIds: platilloIds };
+          }
+
+          function isValidCrearPlatilloSelection(selection) {
+            if (selection.alimentoIds.length === 0 && selection.platilloIds.length === 0) {
+              return false;
+            }
+            if (selection.platilloIds.length === 1 && selection.alimentoIds.length === 0) {
+              return false;
+            }
+            return true;
+          }
+
+          document.querySelectorAll('.crear-platillo-btn').forEach(function (button) {
+            button.addEventListener('click', function () {
+              var dietaId = button.getAttribute('data-dieta');
+              var ingestaId = button.getAttribute('data-ingesta');
+              var ingestaPane = document.getElementById('ingesta-' + ingestaId);
+              if (!ingestaPane) {
+                return;
+              }
+              var selection = collectCrearPlatilloSelection(ingestaPane);
+              if (!isValidCrearPlatilloSelection(selection)) {
+                var message = selection.platilloIds.length === 1 && selection.alimentoIds.length === 0
+                  ? 'Este platillo ya existe en el catálogo. Seleccione alimentos o use Copiar platillo en el formulario del platillo.'
+                  : 'Seleccione al menos un alimento o una combinación de platillo y alimentos.';
+                swal({
+                  title: 'Selección incompleta',
+                  text: message,
+                  type: 'warning',
+                  timer: 5000
+                });
+                return;
+              }
+              swal({
+                title: 'Crear platillo',
+                text: 'Nombre del nuevo platillo en su catálogo:',
+                type: 'input',
+                inputPlaceholder: 'Ej. Ensalada mixta',
+                showCancelButton: true,
+                confirmButtonText: 'Crear',
+                cancelButtonText: 'Cancelar',
+                closeOnConfirm: false,
+                showLoaderOnConfirm: true
+              }, function (inputValue) {
+                if (inputValue === false) {
+                  return;
+                }
+                var nombre = String(inputValue || '').trim();
+                if (!nombre) {
+                  swal.showInputError('El nombre del platillo es obligatorio');
+                  return false;
+                }
+                $.ajax({
+                  url: '/rest/dietas/' + dietaId + '/ingestas/' + ingestaId + '/platillos/from-ingesta',
+                  type: 'POST',
+                  contentType: 'application/json',
+                  data: JSON.stringify({
+                    nombre: nombre,
+                    alimentoIngestaIds: selection.alimentoIds,
+                    platilloIngestaIds: selection.platilloIds
+                  }),
+                  success: function (data) {
+                    if (data && data.data && data.data.id) {
+                      swal({
+                        title: '¡Platillo creado!',
+                        text: 'Se creó "' + nombre + '" en su catálogo.',
+                        type: 'success',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ver platillo',
+                        cancelButtonText: 'Continuar aquí',
+                        closeOnConfirm: true
+                      }, function (goToPlatillo) {
+                        if (goToPlatillo) {
+                          window.location.href = '/admin/platillos/' + data.data.id;
+                        } else {
+                          $.ajax({
+                            url: '/rest/dietas/' + dietaId + '/ingestas/' + ingestaId + '/platillos/'
+                              + data.data.id + '/replace-selection',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({
+                              alimentoIngestaIds: selection.alimentoIds,
+                              platilloIngestaIds: selection.platilloIds
+                            }),
+                            success: function () {
+                              window.location.href = '/admin/dietas/' + dietaId + '?ingesta=' + ingestaId;
+                            },
+                            error: function (xhr) {
+                              var message = 'El platillo se creó, pero no se pudo reemplazar la selección en la ingesta';
+                              if (xhr.responseJSON && xhr.responseJSON.message) {
+                                message = xhr.responseJSON.message;
+                              } else if (xhr.responseJSON && xhr.responseJSON.error) {
+                                message = xhr.responseJSON.error;
+                              }
+                              swal({
+                                title: 'Error',
+                                text: message,
+                                type: 'error',
+                                timer: 5000
+                              });
+                            }
+                          });
+                        }
+                      });
+                    } else {
+                      swal({
+                        title: 'Error',
+                        text: 'No se pudo crear el platillo',
+                        type: 'error',
+                        timer: 5000
+                      });
+                    }
+                  },
+                  error: function (xhr) {
+                    var message = 'No se pudo crear el platillo';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                      message = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON && xhr.responseJSON.error) {
+                      message = xhr.responseJSON.error;
+                    }
+                    swal({
+                      title: 'Error',
+                      text: message,
+                      type: 'error',
+                      timer: 5000
+                    });
+                  }
+                });
+              });
+            });
+          });
         });
       })(jQuery);
     </script>
