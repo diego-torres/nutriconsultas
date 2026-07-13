@@ -98,3 +98,6 @@ databaseChangeLog:
   - include:
       file: changes/033-paciente-photo-extension.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/034-support-ticket.yaml
+      relativeToChangelogFile: true

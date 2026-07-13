@@ -1,0 +1,80 @@
+databaseChangeLog:
+  - changeSet:
+      id: 034-support-ticket
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: support_ticket
+      changes:
+        - createTable:
+            tableName: support_ticket
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: VARCHAR(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR(4000)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: admin_notes
+                  type: VARCHAR(2000)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: closed_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: true
+        - createIndex:
+            indexName: idx_support_ticket_user_id
+            tableName: support_ticket
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            indexName: idx_support_ticket_status
+            tableName: support_ticket
+            columns:
+              - column:
+                  name: status
+        - createIndex:
+            indexName: idx_support_ticket_status_created_at
+            tableName: support_ticket
+            columns:
+              - column:
+                  name: status
+              - column:
+                  name: created_at
