@@ -26,6 +26,10 @@
             <button type="button" class="btn btn-sm btn-primary d-print-none" onclick="window.print()">
               <i class="fas fa-print"></i> Imprimir
             </button>
+            <a th:href="@{/admin/pacientes/{pacienteId}/dietas/{id}/lista-compras.pdf(pacienteId=${paciente != null ? paciente.id : 0}, id=${pacienteDieta != null ? pacienteDieta.id : 0})}"
+               class="btn btn-sm btn-outline-primary d-print-none ml-2">
+              <i class="fas fa-file-pdf"></i> Descargar PDF
+            </a>
           </div>
 
           <div class="card shadow mb-4">
