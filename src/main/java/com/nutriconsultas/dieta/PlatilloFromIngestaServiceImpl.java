@@ -182,7 +182,9 @@ public class PlatilloFromIngestaServiceImpl implements PlatilloFromIngestaServic
 		final Map<Long, IngredientDraft> merged = new LinkedHashMap<>();
 		int order = 0;
 		for (final AlimentoIngesta alimentoIngesta : alimentos) {
-			final IngredientDraft draft = draftFromAlimentoIngesta(alimentoIngesta, order++);
+			final int draftOrder = order;
+			order++;
+			final IngredientDraft draft = draftFromAlimentoIngesta(alimentoIngesta, draftOrder);
 			mergeDraft(merged, draft);
 		}
 		for (final PlatilloIngesta platilloIngesta : platillos) {
@@ -191,7 +193,9 @@ public class PlatilloFromIngestaServiceImpl implements PlatilloFromIngestaServic
 				continue;
 			}
 			for (final IngredientePlatilloIngesta ingrediente : platilloIngesta.getIngredientes()) {
-				final IngredientDraft draft = draftFromPlatilloIngrediente(ingrediente, platilloPortions, order++);
+				final int draftOrder = order;
+				order++;
+				final IngredientDraft draft = draftFromPlatilloIngrediente(ingrediente, platilloPortions, draftOrder);
 				if (draft != null) {
 					mergeDraft(merged, draft);
 				}
