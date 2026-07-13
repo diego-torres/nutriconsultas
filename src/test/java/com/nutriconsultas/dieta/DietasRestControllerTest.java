@@ -1,6 +1,7 @@
 package com.nutriconsultas.dieta;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -27,6 +28,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.dataTables.paging.Direction;
 import com.nutriconsultas.dataTables.paging.Order;
@@ -35,6 +37,7 @@ import com.nutriconsultas.dataTables.paging.PagingRequest;
 import com.nutriconsultas.dataTables.paging.Search;
 import com.nutriconsultas.model.ApiResponse;
 import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.platillos.Platillo;
 import com.nutriconsultas.platform.PlatformAdminAuditService;
 import com.nutriconsultas.platform.PlatformAdminService;
 
@@ -63,6 +66,9 @@ public class DietasRestControllerTest {
 
 	@Mock
 	private DietaDeletionService dietaDeletionService;
+
+	@Mock
+	private PlatilloFromIngestaService platilloFromIngestaService;
 
 	private DietaAuthorization dietaAuthorization;
 
@@ -1645,6 +1651,117 @@ public class DietasRestControllerTest {
 		finally {
 			SecurityContextHolder.clearContext();
 		}
+	}
+
+	@Test
+	public void testCreatePlatilloFromIngestaReturnsCreatedPlatillo() {
+		final OidcUser principal = createMockOidcUser(TEST_USER_ID);
+		final Dieta dieta = new Dieta();
+		dieta.setId(5L);
+		dieta.setUserId(TEST_USER_ID);
+		final Ingesta ingesta = new Ingesta("Comida");
+		ingesta.setId(50L);
+		ingesta.setDieta(dieta);
+		dieta.setIngestas(new ArrayList<>(List.of(ingesta)));
+		stubMutationAccess(5L, TEST_USER_ID, dieta);
+
+		final Platillo created = new Platillo();
+		created.setId(900L);
+		created.setName("Ensalada mixta");
+		when(platilloFromIngestaService.createFromIngestaSelection(eq(ingesta), any(), eq(TEST_USER_ID), eq(principal)))
+			.thenReturn(created);
+
+		final CreatePlatilloFromIngestaRequest request = new CreatePlatilloFromIngestaRequest();
+		request.setNombre("Ensalada mixta");
+		request.setAlimentoIngestaIds(List.of(1L, 2L));
+
+		final ResponseEntity<ApiResponse<Platillo>> response = dietasRestController.createPlatilloFromIngesta(5L, 50L,
+				request, principal);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().getData().getId()).isEqualTo(900L);
+	}
+
+	@Test
+	public void testCreatePlatilloFromIngestaNotFoundForWrongIngesta() {
+		final OidcUser principal = createMockOidcUser(TEST_USER_ID);
+		final Dieta dieta = new Dieta();
+		dieta.setId(5L);
+		dieta.setUserId(TEST_USER_ID);
+		final Ingesta ingesta = new Ingesta("Comida");
+		ingesta.setId(50L);
+		dieta.setIngestas(new ArrayList<>(List.of(ingesta)));
+		stubMutationAccess(5L, TEST_USER_ID, dieta);
+
+		final CreatePlatilloFromIngestaRequest request = new CreatePlatilloFromIngestaRequest();
+		request.setNombre("Combo");
+		request.setAlimentoIngestaIds(List.of(1L));
+
+		final ResponseEntity<ApiResponse<Platillo>> response = dietasRestController.createPlatilloFromIngesta(5L, 99L,
+				request, principal);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+	}
+
+	@Test
+	public void testCreatePlatilloFromIngestaUnauthorizedWithoutPrincipal() {
+		final CreatePlatilloFromIngestaRequest request = new CreatePlatilloFromIngestaRequest();
+		request.setNombre("Combo");
+
+		final ResponseEntity<ApiResponse<Platillo>> response = dietasRestController.createPlatilloFromIngesta(5L, 50L,
+				request, null);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+	}
+
+	@Test
+	public void testCreatePlatilloFromIngestaBadRequestOnValidationError() {
+		final OidcUser principal = createMockOidcUser(TEST_USER_ID);
+		final Dieta dieta = new Dieta();
+		dieta.setId(5L);
+		dieta.setUserId(TEST_USER_ID);
+		final Ingesta ingesta = new Ingesta("Comida");
+		ingesta.setId(50L);
+		dieta.setIngestas(new ArrayList<>(List.of(ingesta)));
+		stubMutationAccess(5L, TEST_USER_ID, dieta);
+		when(platilloFromIngestaService.createFromIngestaSelection(eq(ingesta), any(), eq(TEST_USER_ID), eq(principal)))
+			.thenThrow(new IllegalArgumentException("Seleccione al menos un alimento o platillo"));
+
+		final CreatePlatilloFromIngestaRequest request = new CreatePlatilloFromIngestaRequest();
+		request.setNombre("Combo");
+
+		assertThatThrownBy(() -> dietasRestController.createPlatilloFromIngesta(5L, 50L, request, principal))
+			.isInstanceOf(ResponseStatusException.class)
+			.extracting("statusCode")
+			.isEqualTo(HttpStatus.BAD_REQUEST);
+	}
+
+	@Test
+	public void testReplaceIngestaSelectionWithPlatilloReturnsUpdatedDieta() {
+		final OidcUser principal = createMockOidcUser(TEST_USER_ID);
+		final Dieta dieta = new Dieta();
+		dieta.setId(5L);
+		dieta.setUserId(TEST_USER_ID);
+		final Ingesta ingesta = new Ingesta("Comida");
+		ingesta.setId(50L);
+		dieta.setIngestas(new ArrayList<>(List.of(ingesta)));
+		stubMutationAccess(5L, TEST_USER_ID, dieta);
+
+		final Dieta saved = new Dieta();
+		saved.setId(5L);
+		when(platilloFromIngestaService.replaceSelectionWithCatalogPlatillo(eq(dieta), eq(ingesta), eq(900L), any()))
+			.thenReturn(saved);
+
+		final ReplaceIngestaSelectionRequest request = new ReplaceIngestaSelectionRequest();
+		request.setAlimentoIngestaIds(List.of(1L, 2L));
+
+		final ResponseEntity<ApiResponse<Dieta>> response = dietasRestController.replaceIngestaSelectionWithPlatillo(5L,
+				50L, 900L, request, principal);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().getData().getId()).isEqualTo(5L);
 	}
 
 }

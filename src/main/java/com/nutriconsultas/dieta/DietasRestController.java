@@ -31,8 +31,11 @@ import com.nutriconsultas.dataTables.paging.Page;
 import com.nutriconsultas.dataTables.paging.PageArray;
 import com.nutriconsultas.dataTables.paging.PagingRequest;
 import com.nutriconsultas.model.ApiResponse;
+import com.nutriconsultas.platillos.Platillo;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/rest/dietas")
@@ -47,6 +50,9 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 
 	@Autowired
 	private DietaDeletionService dietaDeletionService;
+
+	@Autowired
+	private PlatilloFromIngestaService platilloFromIngestaService;
 
 	private Dieta loadDietaForMutation(@NonNull final Long dietaId, final OidcUser principal) {
 		if (principal == null) {
@@ -233,6 +239,82 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		log.info("finish updateAlimentoIngestaPortions with dietaId {}, ingestaId {}, "
 				+ "alimentoIngestaId {}, portions {}.", dietaId, ingestaId, alimentoIngestaId, portions);
 		return ResponseEntity.ok(new ApiResponse<Dieta>(saved));
+	}
+
+	@PostMapping("{dietaId}/ingestas/{ingestaId}/platillos/from-ingesta")
+	public ResponseEntity<ApiResponse<Platillo>> createPlatilloFromIngesta(@PathVariable @NonNull final Long dietaId,
+			@PathVariable @NonNull final Long ingestaId,
+			@RequestBody @NonNull final CreatePlatilloFromIngestaRequest request,
+			@AuthenticationPrincipal final OidcUser principal) {
+		log.info("starting createPlatilloFromIngesta dietaId={}, ingestaId={}", dietaId, ingestaId);
+		if (principal == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		final String userId = principal.getSubject();
+		if (userId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		final Dieta dieta = loadDietaForMutation(dietaId, principal);
+		if (dieta == null) {
+			return ResponseEntity.notFound().build();
+		}
+		final Ingesta ingesta = dieta.getIngestas()
+			.stream()
+			.filter(candidate -> candidate.getId().equals(ingestaId))
+			.findFirst()
+			.orElse(null);
+		if (ingesta == null) {
+			return ResponseEntity.notFound().build();
+		}
+		try {
+			final Platillo created = platilloFromIngestaService.createFromIngestaSelection(ingesta, request, userId,
+					principal);
+			if (created == null) {
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+			}
+			log.info("finish createPlatilloFromIngesta dietaId={}, ingestaId={}, platilloId={}", dietaId, ingestaId,
+					created.getId());
+			return ResponseEntity.ok(new ApiResponse<>(created));
+		}
+		catch (IllegalArgumentException exception) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage(), exception);
+		}
+	}
+
+	@PostMapping("{dietaId}/ingestas/{ingestaId}/platillos/{catalogPlatilloId}/replace-selection")
+	public ResponseEntity<ApiResponse<Dieta>> replaceIngestaSelectionWithPlatillo(
+			@PathVariable @NonNull final Long dietaId, @PathVariable @NonNull final Long ingestaId,
+			@PathVariable @NonNull final Long catalogPlatilloId,
+			@RequestBody @NonNull final ReplaceIngestaSelectionRequest request,
+			@AuthenticationPrincipal final OidcUser principal) {
+		log.info("starting replaceIngestaSelectionWithPlatillo dietaId={}, ingestaId={}, catalogPlatilloId={}", dietaId,
+				ingestaId, catalogPlatilloId);
+		if (principal == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		final Dieta dieta = loadDietaForMutation(dietaId, principal);
+		if (dieta == null) {
+			return ResponseEntity.notFound().build();
+		}
+		final Ingesta ingesta = dieta.getIngestas()
+			.stream()
+			.filter(candidate -> candidate.getId().equals(ingestaId))
+			.findFirst()
+			.orElse(null);
+		if (ingesta == null) {
+			return ResponseEntity.notFound().build();
+		}
+		try {
+			final Dieta saved = platilloFromIngestaService.replaceSelectionWithCatalogPlatillo(dieta, ingesta,
+					catalogPlatilloId, request);
+			dietaAuthorization.auditSystemDietMutationIfNeeded(principal, saved, "dietas.platillos.replace-selection");
+			log.info("finish replaceIngestaSelectionWithPlatillo dietaId={}, ingestaId={}, catalogPlatilloId={}",
+					dietaId, ingestaId, catalogPlatilloId);
+			return ResponseEntity.ok(new ApiResponse<>(saved));
+		}
+		catch (IllegalArgumentException exception) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage(), exception);
+		}
 	}
 
 	@PostMapping("{dietaId}/duplicate")

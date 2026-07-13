@@ -31,7 +31,6 @@ import com.nutriconsultas.controller.AbstractAuthorizedController;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.platillos.IngestaFormModel;
-import com.nutriconsultas.platillos.Ingrediente;
 import com.nutriconsultas.platillos.Platillo;
 import com.nutriconsultas.platillos.PlatilloService;
 
@@ -105,8 +104,8 @@ public class DietaController extends AbstractAuthorizedController {
 	}
 
 	@GetMapping(path = "/admin/dietas/{id}")
-	public String editar(@PathVariable @NonNull final Long id, final Model model,
-			@AuthenticationPrincipal final OidcUser principal) {
+	public String editar(@PathVariable @NonNull final Long id, @RequestParam(required = false) final Long ingesta,
+			final Model model, @AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Editar dieta con id {}", id);
 		final String userId = getUserId(principal);
 		if (userId == null) {
@@ -142,7 +141,7 @@ public class DietaController extends AbstractAuthorizedController {
 		sortedIngestas.forEach(this::sortAlimentosForDisplay);
 		model.addAttribute("ingestas", sortedIngestas);
 
-		final Long activeIngestaId = sortedIngestas.isEmpty() ? Long.valueOf(0L) : sortedIngestas.get(0).getId();
+		final Long activeIngestaId = resolveActiveIngestaId(sortedIngestas, ingesta);
 		model.addAttribute("activeIngestaId", activeIngestaId);
 
 		model.addAttribute("platillos", platilloService.findAll());
@@ -255,7 +254,9 @@ public class DietaController extends AbstractAuthorizedController {
 		catch (IllegalArgumentException exception) {
 			redirectAttributes.addFlashAttribute("ingestaError", exception.getMessage());
 		}
-		return "redirect:/admin/dietas/" + id;
+		final Long activeIngestaId = ingesta.getIngestaId() != null && ingesta.getIngestaId() > 0L
+				? ingesta.getIngestaId() : null;
+		return redirectToDietaEditor(id, activeIngestaId);
 	}
 
 	@PostMapping(path = "/admin/dietas/{id}/ingestas/reorder", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -315,27 +316,13 @@ public class DietaController extends AbstractAuthorizedController {
 			Long platilloId = Objects.requireNonNull(platilloModel.getPlatillo());
 			Platillo platillo = platilloService.findById(platilloId);
 			if (platillo != null) {
-				// map the found platillo to a PlatilloIngesta
-				PlatilloIngesta platilloIngesta = PlatilloIngestaMapping.mapPlatilloIngesta(platillo);
-				platilloIngesta.setIngesta(ingesta);
-				platilloIngesta.setPortions(platilloModel.getPorciones() != null ? platilloModel.getPorciones() : 1);
-
-				// map ingredientes from platillo to ingredientes of platilloIngesta
-				if (platillo.getIngredientes() != null) {
-					for (Ingrediente ingrediente : platillo.getIngredientes()) {
-						IngredientePlatilloIngesta ingPlatilloIng = PlatilloIngestaMapping
-							.mapFromIngredienteToIngredientePlatilloIngesta(ingrediente);
-						ingPlatilloIng.setPlatillo(platilloIngesta);
-						platilloIngesta.getIngredientes().add(ingPlatilloIng);
-					}
-				}
-
-				ingesta.getPlatillos().add(platilloIngesta);
+				PlatilloIngestaMapping.attachCatalogPlatilloToIngesta(platillo, ingesta,
+						platilloModel.getPorciones() != null ? platilloModel.getPorciones() : 1);
 				dietaService.saveDieta(dieta);
 				dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.platillos.save");
 			}
 		}
-		return "redirect:/admin/dietas/" + id;
+		return redirectToDietaEditor(id, platilloModel.getIngestaPlatillo());
 	}
 
 	@PostMapping(path = "/admin/dietas/{id}/alimentos/save")
@@ -364,7 +351,7 @@ public class DietaController extends AbstractAuthorizedController {
 				dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.alimentos.save");
 			}
 		}
-		return "redirect:/admin/dietas/" + id;
+		return redirectToDietaEditor(id, alimentoModel.getIngestaAlimento());
 	}
 
 	@PostMapping(path = "/admin/dietas/{id}/platillos/{platilloIngestaId}/update")
@@ -372,6 +359,7 @@ public class DietaController extends AbstractAuthorizedController {
 			@RequestParam @NonNull Integer porciones, @AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Actualizar platillo ingesta {} con {} porciones en dieta {}", platilloIngestaId, porciones, id);
 		final Dieta dieta = loadDietaForMutation(id, principal);
+		final Long activeIngestaId = findIngestaIdForPlatilloIngesta(dieta, platilloIngestaId);
 		dieta.getIngestas()
 			.stream()
 			.flatMap(ingesta -> ingesta.getPlatillos().stream())
@@ -410,7 +398,7 @@ public class DietaController extends AbstractAuthorizedController {
 				dietaService.saveDieta(dieta);
 				dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.platillos.update");
 			});
-		return "redirect:/admin/dietas/" + id;
+		return redirectToDietaEditor(id, activeIngestaId);
 	}
 
 	@PostMapping(path = "/admin/dietas/{id}/alimentos/{alimentoIngestaId}/update")
@@ -418,6 +406,7 @@ public class DietaController extends AbstractAuthorizedController {
 			@RequestParam @NonNull Integer porciones, @AuthenticationPrincipal final OidcUser principal) {
 		LOGGER.debug("Actualizar alimento ingesta {} con {} porciones en dieta {}", alimentoIngestaId, porciones, id);
 		final Dieta dieta = loadDietaForMutation(id, principal);
+		final Long activeIngestaId = findIngestaIdForAlimentoIngesta(dieta, alimentoIngestaId);
 		dieta.getIngestas()
 			.stream()
 			.flatMap(ingesta -> ingesta.getAlimentos().stream())
@@ -456,7 +445,7 @@ public class DietaController extends AbstractAuthorizedController {
 					dietaAuthorization.auditSystemDietMutationIfNeeded(principal, dieta, "dietas.alimentos.update");
 				}
 			});
-		return "redirect:/admin/dietas/" + id;
+		return redirectToDietaEditor(id, activeIngestaId);
 	}
 
 	private void updatePlatilloIngestaNutritionalValues(PlatilloIngesta platilloIngesta, double ratio) {
@@ -719,6 +708,43 @@ public class DietaController extends AbstractAuthorizedController {
 						.mapToDouble(a -> a.getHidratosDeCarbono() != null ? a.getHidratosDeCarbono() : 0.0)
 						.sum())
 			.sum();
+	}
+
+	private static Long resolveActiveIngestaId(final List<Ingesta> sortedIngestas, final Long requestedIngestaId) {
+		if (requestedIngestaId != null
+				&& sortedIngestas.stream().anyMatch(ingesta -> ingesta.getId().equals(requestedIngestaId))) {
+			return requestedIngestaId;
+		}
+		return sortedIngestas.isEmpty() ? Long.valueOf(0L) : sortedIngestas.get(0).getId();
+	}
+
+	private static String redirectToDietaEditor(final Long dietaId, final Long ingestaId) {
+		if (ingestaId != null && ingestaId > 0L) {
+			return "redirect:/admin/dietas/" + dietaId + "?ingesta=" + ingestaId;
+		}
+		return "redirect:/admin/dietas/" + dietaId;
+	}
+
+	private static Long findIngestaIdForAlimentoIngesta(final Dieta dieta, final Long alimentoIngestaId) {
+		return dieta.getIngestas()
+			.stream()
+			.filter(ingesta -> ingesta.getAlimentos()
+				.stream()
+				.anyMatch(alimento -> alimento.getId().equals(alimentoIngestaId)))
+			.map(Ingesta::getId)
+			.findFirst()
+			.orElse(null);
+	}
+
+	private static Long findIngestaIdForPlatilloIngesta(final Dieta dieta, final Long platilloIngestaId) {
+		return dieta.getIngestas()
+			.stream()
+			.filter(ingesta -> ingesta.getPlatillos()
+				.stream()
+				.anyMatch(platillo -> platillo.getId().equals(platilloIngestaId)))
+			.map(Ingesta::getId)
+			.findFirst()
+			.orElse(null);
 	}
 
 }
