@@ -146,7 +146,7 @@ public class PacientePhotoServiceImpl implements PacientePhotoService {
 		}
 		catch (final S3Exception e) {
 			log.error("Error uploading patient photo to S3 for patient id {}", pacienteId, e);
-			throw new IllegalStateException("Error al guardar la foto del paciente");
+			throw new IllegalStateException("Error al guardar la foto del paciente", e);
 		}
 	}
 

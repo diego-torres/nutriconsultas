@@ -83,7 +83,7 @@ public class MobilePatientPhotoController extends AbstractMobilePatientControlle
 			return photoFile.getBytes();
 		}
 		catch (final IOException e) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se pudo leer la imagen");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se pudo leer la imagen", e);
 		}
 	}
 

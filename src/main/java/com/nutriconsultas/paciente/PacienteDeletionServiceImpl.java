@@ -2,6 +2,7 @@ package com.nutriconsultas.paciente;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +47,8 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 
 	private final PacienteDietaWeekdayRepository pacienteDietaWeekdayRepository;
 
-	private final PacientePhotoService pacientePhotoService;
+	@Autowired
+	private PacientePhotoService pacientePhotoService;
 
 	public PacienteDeletionServiceImpl(final PacienteRepository pacienteRepository,
 			final PatientMessageRepository patientMessageRepository,
@@ -55,8 +57,7 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 			final ClinicalExamService clinicalExamService,
 			final AnthropometricMeasurementService anthropometricMeasurementService,
 			final BodyMetricRecordRepository bodyMetricRecordRepository, final DietaService dietaService,
-			final PacienteDietaWeekdayRepository pacienteDietaWeekdayRepository,
-			final PacientePhotoService pacientePhotoService) {
+			final PacienteDietaWeekdayRepository pacienteDietaWeekdayRepository) {
 		this.pacienteRepository = pacienteRepository;
 		this.patientMessageRepository = patientMessageRepository;
 		this.patientInvitationRepository = patientInvitationRepository;
@@ -67,7 +68,6 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 		this.bodyMetricRecordRepository = bodyMetricRecordRepository;
 		this.dietaService = dietaService;
 		this.pacienteDietaWeekdayRepository = pacienteDietaWeekdayRepository;
-		this.pacientePhotoService = pacientePhotoService;
 	}
 
 	@Override
