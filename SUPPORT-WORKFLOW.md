@@ -10,7 +10,7 @@ How AI agents (and humans) ship the **`[Support]`** track on **`diego-torres/nut
 | [`docs/support/SUPPORT-TICKETS-PLAN.md`](docs/support/SUPPORT-TICKETS-PLAN.md) | Product/tech plan, data model, version bump |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#544](https://github.com/diego-torres/nutriconsultas/issues/544) — Support ticket service. ~~#543~~ schema **done**. ~~#548~~ docs **done**.
+**Current next issue:** [#541](https://github.com/diego-torres/nutriconsultas/issues/541) topbar (∥ [#542](https://github.com/diego-torres/nutriconsultas/issues/542) Acerca de). ~~#544~~ service **done**. ~~#543~~ ~~#548~~ done.
 
 ---
 

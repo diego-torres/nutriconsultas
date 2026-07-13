@@ -229,6 +229,19 @@ public final class LogRedaction {
 	}
 
 	/**
+	 * Redacts a support ticket for logging purposes. Returns only the ticket ID.
+	 * <strong>Never log title, description, or admin notes.</strong>
+	 * @param ticketId the support ticket ID
+	 * @return a safe string representation (e.g., "SupportTicket[id=1]")
+	 */
+	public static String redactSupportTicket(final Long ticketId) {
+		if (ticketId == null) {
+			return "SupportTicket[id=null]";
+		}
+		return "SupportTicket[id=" + ticketId + "]";
+	}
+
+	/**
 	 * Redacts a patient message ID for logging purposes.
 	 * @param messageId the message ID
 	 * @return a safe string representation (e.g., "PatientMessage[id=123]")
