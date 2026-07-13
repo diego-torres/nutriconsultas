@@ -121,8 +121,10 @@ class SupportTicketRepositoryTest {
 		assertThat(loaded.getAdminNotes()).isEqualTo("Revisado por plataforma");
 		assertThat(loaded.getStatus()).isEqualTo(SupportTicketStatus.CLOSED);
 		assertThat(loaded.getClosedAt()).isNotNull();
-		assertThat(loaded.getCreatedAt()).isEqualTo(createdAt);
-		assertThat(loaded.getUpdatedAt()).isAfterOrEqualTo(updatedAtBefore);
+		// H2 TIMESTAMP may truncate Instant nanos; compare at millisecond precision.
+		assertThat(loaded.getCreatedAt().toEpochMilli()).isEqualTo(createdAt.toEpochMilli());
+		assertThat(loaded.getUpdatedAt())
+			.isAfterOrEqualTo(updatedAtBefore.truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
 	}
 
 	private static SupportTicket sampleTicket(final String userId, final String title, final String description) {
