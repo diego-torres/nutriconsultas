@@ -622,6 +622,12 @@ Issue registry: [`ISSUE-APPLE-SIGNIN.md`](ISSUE-APPLE-SIGNIN.md). Roadmap: [`doc
 
 **Epic #497–#511** (2026-07-08): Sign in with Apple via Auth0 + Apple server-to-server webhook (`POST /rest/webhooks/apple/sign-in`). **Track complete** — ~~#497–#511~~ **done** (PRs [#513](https://github.com/diego-torres/nutriconsultas/pull/513)–[#519](https://github.com/diego-torres/nutriconsultas/pull/519); rollout plan [`docs/auth/apple-signin-rollout.md`](docs/auth/apple-signin-rollout.md)). Auth0 callback: `https://minutriporcion-prod.us.auth0.com/login/callback` — **not** the Apple notification URL.
 
+## In-app support / Soporte (tracking)
+
+Issue registry: [`ISSUE-SUPPORT.md`](ISSUE-SUPPORT.md). Plan: [`docs/support/SUPPORT-TICKETS-PLAN.md`](docs/support/SUPPORT-TICKETS-PLAN.md). Workflow: [`SUPPORT-WORKFLOW.md`](SUPPORT-WORKFLOW.md).
+
+**Epic #540–#548** (2026-07-13): Topbar **Perfil / Soporte / Acerca de / Salir**; nutritionist own tickets + create form; platform-admin triage (user, subscription, title; update/close; activos/cerrados filter); Acerca de app version + README bump process. **NEXT:** [#543](https://github.com/diego-torres/nutriconsultas/issues/543) Liquibase schema. Orthogonal to public `ContactInquiry`.
+
 ## Resources
 
 - [Spring Boot Documentation](https://spring.io/projects/spring-boot)

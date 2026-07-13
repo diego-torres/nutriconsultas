@@ -11,9 +11,28 @@ registro de consultorio de nutrición
 
 ### Patient mobile API
 
-**Agent workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Issue registries:** [`ISSUE.md`](ISSUE.md) (mobile) · [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) (subscription) · [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) (nutritionist web) · [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md) (public booking) · **Contract docs:** [`docs/mobile-api/README.md`](docs/mobile-api/README.md)
+**Agent workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Issue registries:** [`ISSUE.md`](ISSUE.md) (mobile) · [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) (subscription) · [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) (nutritionist web) · [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md) (public booking) · [`ISSUE-SUPPORT.md`](ISSUE-SUPPORT.md) (in-app support) · **Contract docs:** [`docs/mobile-api/README.md`](docs/mobile-api/README.md)
 
 **On `main` (2026-06-23):** Mobile **Phase 2 invitation onboarding complete** (~~#141~~). Subscription **registered track complete** (~~#244~~ ✓ on `subscription/244-contact-form-prefill`; ~~#314~~ ~~#188~~ ~~#186~~ ~~#220~~ ~~#207~~ ~~#208~~ ~~#209~~ done). Nutritionist web: all registered epics **complete** (#221–#242, #271–#272). Public booking: epic ~~#245~~ **done** (v1); ~~#246~~–~~#302~~ shipped.
+
+### In-app support (Soporte)
+
+**Issue registry:** [`ISSUE-SUPPORT.md`](ISSUE-SUPPORT.md) · **Plan:** [`docs/support/SUPPORT-TICKETS-PLAN.md`](docs/support/SUPPORT-TICKETS-PLAN.md) · **Workflow:** [`SUPPORT-WORKFLOW.md`](SUPPORT-WORKFLOW.md)
+
+Epic [#540](https://github.com/diego-torres/nutriconsultas/issues/540): topbar menu **Perfil / Soporte / Acerca de / Salir**, nutritionist tickets, platform-admin triage, and **Acerca de** version display. **NEXT:** [#543](https://github.com/diego-torres/nutriconsultas/issues/543) schema.
+
+### Application version
+
+The web application version shown in **Acerca de** (once [#542](https://github.com/diego-torres/nutriconsultas/issues/542) lands) comes from Maven `<version>` in [`pom.xml`](pom.xml) (currently `2.0-SNAPSHOT`), exposed at runtime as a filtered property such as `app.version`.
+
+**When shipping a new version to `main`:**
+
+1. Update the `<version>` element in `pom.xml` (project semver or agreed scheme, e.g. `2.1.0`).
+2. Ensure the Maven build still filters that value into `application.properties` / the packaged artifact (`app.version=${project.version}` or equivalent — wired by #542).
+3. Merge the release PR to `main`, deploy, then confirm **Acerca de** in the admin topbar shows the new version.
+4. Optionally create a matching Git tag (e.g. `v2.1.0`) on the release commit.
+
+Do not hardcode the version only in Thymeleaf HTML; keep `pom.xml` as the source of truth.
 
 ## AWS (production infrastructure)
 
