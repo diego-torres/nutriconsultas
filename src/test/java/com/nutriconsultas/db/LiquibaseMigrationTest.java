@@ -128,4 +128,12 @@ public class LiquibaseMigrationTest {
 			.isEqualTo(1L);
 	}
 
+	@Test
+	public void testSupportTicketSchemaTableExists() {
+		assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM support_ticket", Long.class)).isEqualTo(0L);
+		assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM databasechangelog WHERE id = '034-support-ticket'",
+				Long.class))
+			.isEqualTo(1L);
+	}
+
 }
