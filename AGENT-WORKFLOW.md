@@ -47,6 +47,14 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`AI-ASSISTANT-WORKFLOW.md`](AI-ASSISTANT-WORKFLOW.md) | Agent workflow for AI nutrition assistant |
 | [`docs/ai/AI-ASSISTANT-PLAN.md`](docs/ai/AI-ASSISTANT-PLAN.md) | Architecture, security, tools, definition of done |
 
+**Parallel track (in-app support — do not mix into mobile/subscription PRs unless coupled):**
+
+| File | Purpose |
+|------|---------|
+| [`ISSUE-SUPPORT.md`](ISSUE-SUPPORT.md) | `[Support]` issues (#540–#548), states, dependencies |
+| [`SUPPORT-WORKFLOW.md`](SUPPORT-WORKFLOW.md) | Agent workflow for Soporte / Acerca de |
+| [`docs/support/SUPPORT-TICKETS-PLAN.md`](docs/support/SUPPORT-TICKETS-PLAN.md) | Menu, roles, data model, version bump |
+
 **Current next issue (public booking):** None — epic ~~#245~~ **done**; ~~#246~~, ~~#247~~, ~~#248~~, ~~#297~~, ~~#300~~, ~~#302~~ done. Deferred follow-ups need new issues. See [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md).
 
 **Current next issue (mobile):** [#353 — Grocery list for patient diet plan](https://github.com/diego-torres/nutriconsultas/issues/353) (`in-progress`). ~~#354~~ ~~#352~~ **done** (PR [#357](https://github.com/diego-torres/nutriconsultas/pull/357)).
@@ -56,6 +64,8 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 **Current next issue (nutritionist web):** None — all registered epics complete: ~~#271~~ done (PR [#288](https://github.com/diego-torres/nutriconsultas/pull/288)) + ~~#272~~ done (PR [#289](https://github.com/diego-torres/nutriconsultas/pull/289)) system catalog create; ~~#241~~–~~#242~~ patient UX; ~~#232~~–~~#235~~ diet grid; ~~#236~~–~~#240~~ profile/PDF/nutrients; ~~#257~~–~~#259~~ platillo ownership; ~~#275~~, ~~#280~~–~~#281~~, ~~#285~~ diet/ingredient editing. Deferred follow-ups need new issues. See [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
 
 **Current next issue (AI assistant):** None — registered implementation track **complete** (#360–#450). Production rollout: [`RELEASE-CHECKLIST.md`](docs/ai/RELEASE-CHECKLIST.md) (#408). See [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md).
+
+**Current next issue (support):** [#543](https://github.com/diego-torres/nutriconsultas/issues/543) — Support ticket schema (after docs #548). See [`ISSUE-SUPPORT.md`](ISSUE-SUPPORT.md).
 
 ---
 
