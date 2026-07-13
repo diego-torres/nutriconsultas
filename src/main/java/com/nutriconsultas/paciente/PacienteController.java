@@ -1109,7 +1109,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		verifyPatientOwnership(paciente, userId);
 		if (photoFile == null || photoFile.isEmpty()) {
 			redirectAttributes.addFlashAttribute("errorMessage", "El archivo está vacío");
-			return String.format("redirect:/admin/pacientes/%d/perfil", id);
+			return String.format("redirect:/admin/pacientes/%d", id);
 		}
 		try {
 			final String extension = extractPhotoExtension(photoFile.getOriginalFilename());
@@ -1123,7 +1123,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		catch (final IllegalArgumentException e) {
 			redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
 		}
-		return String.format("redirect:/admin/pacientes/%d/perfil", id);
+		return String.format("redirect:/admin/pacientes/%d", id);
 	}
 
 	@PostMapping(path = "/admin/pacientes/{id}/photo/delete")
@@ -1140,7 +1140,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		catch (final IllegalArgumentException e) {
 			redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
 		}
-		return String.format("redirect:/admin/pacientes/%d/perfil", id);
+		return String.format("redirect:/admin/pacientes/%d", id);
 	}
 
 	private String extractPhotoExtension(final String originalFilename) {

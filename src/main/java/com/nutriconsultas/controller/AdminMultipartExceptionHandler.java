@@ -65,7 +65,7 @@ public class AdminMultipartExceptionHandler {
 		}
 		final Matcher patientMatcher = PACIENTE_PHOTO_URI.matcher(requestUri);
 		if (patientMatcher.matches()) {
-			return "redirect:/admin/pacientes/" + patientMatcher.group(1) + "/perfil";
+			return "redirect:/admin/pacientes/" + patientMatcher.group(1);
 		}
 		if ("/admin/perfil/logo".equals(requestUri)) {
 			return "redirect:/admin/perfil";
