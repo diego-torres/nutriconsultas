@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventService;
@@ -74,6 +75,7 @@ class PacienteDeletionServiceTest {
 
 	@BeforeEach
 	void setUp() {
+		ReflectionTestUtils.setField(service, "pacientePhotoService", pacientePhotoService);
 		paciente = new Paciente();
 		paciente.setId(7L);
 		paciente.setUserId(USER_ID);
