@@ -24,6 +24,7 @@ import com.nutriconsultas.paciente.NivelPeso;
 import com.nutriconsultas.paciente.NivelPesoLabels;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteAvatarCatalog;
+import com.nutriconsultas.paciente.PacientePictureSupport;
 import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.paciente.metrics.BodyMetricRecord;
 import com.nutriconsultas.paciente.metrics.BodyMetricRecordService;
@@ -91,7 +92,7 @@ public class MobilePatientProgressService {
 				toInstant(previousRecord.map(BodyMetricRecord::getRecordedAt).orElse(null)), weightKg, heightM, bmi,
 				nivelPeso, NivelPesoLabels.toImcLabel(nivelPeso), paciente.getBmr(), bodyFatPercentage, deltaPeso,
 				deltaImc, loadCircumferences(pacienteId), PacienteAvatarCatalog.resolveSelectedId(paciente),
-				PacienteAvatarCatalog.resolveImagePath(paciente));
+				PacientePictureSupport.resolveDisplayUrlForMobile(paciente));
 	}
 
 	@Transactional(readOnly = true)

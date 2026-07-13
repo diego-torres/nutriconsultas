@@ -2,6 +2,7 @@ package com.nutriconsultas.paciente;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +47,9 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 
 	private final PacienteDietaWeekdayRepository pacienteDietaWeekdayRepository;
 
+	@Autowired
+	private PacientePhotoService pacientePhotoService;
+
 	public PacienteDeletionServiceImpl(final PacienteRepository pacienteRepository,
 			final PatientMessageRepository patientMessageRepository,
 			final PatientInvitationRepository patientInvitationRepository,
@@ -72,6 +76,7 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 		final Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
 			.orElseThrow(() -> new IllegalArgumentException("Paciente no encontrado"));
 		logMobileLinkageClear(paciente);
+		pacientePhotoService.deletePhotoFromStorage(pacienteId, paciente.getPhotoExtension());
 		deleteRelatedHistory(pacienteId);
 		pacienteRepository.delete(paciente);
 		if (log.isInfoEnabled()) {

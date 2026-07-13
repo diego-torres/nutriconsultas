@@ -126,6 +126,13 @@ public class Paciente {
 	@Column(name = "avatar_id", length = 32)
 	private String avatarId;
 
+	/**
+	 * Custom profile photo extension in S3 ({@code patients/{id}/photo.{ext}}), #529.
+	 * When null, UI uses {@link PacienteAvatarCatalog}.
+	 */
+	@Column(name = "photo_extension", length = 16)
+	private String photoExtension;
+
 	public static final String DATE_OF_BIRTH_PATTERN = "dd/MM/yyyy";
 
 	@DateTimeFormat(pattern = DATE_OF_BIRTH_PATTERN)

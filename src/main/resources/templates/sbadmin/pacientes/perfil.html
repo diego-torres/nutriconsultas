@@ -54,6 +54,26 @@
                       <i class="fas fa-user-circle"></i> Cambiar avatar
                     </button>
                   </div>
+                  <div class="mt-3 px-2" th:if="${paciente != null}">
+                    <p class="text-muted small mb-2">Sube una foto personalizada (JPG, PNG, GIF o WebP).</p>
+                    <form th:action="@{/admin/pacientes/{id}/photo(id=${paciente.id})}" method="post"
+                      enctype="multipart/form-data" class="mb-2">
+                      <div class="form-group custom-file mb-2">
+                        <input type="file" class="custom-file-input" id="photoFile" name="photoFile"
+                          accept="image/png,image/jpeg,image/gif,image/webp" required />
+                        <label class="custom-file-label text-left" for="photoFile">Seleccionar foto&hellip;</label>
+                      </div>
+                      <button type="submit" class="btn btn-sm btn-primary btn-block">
+                        <i class="fas fa-upload"></i> Subir foto
+                      </button>
+                    </form>
+                    <form th:if="${hasCustomPhoto}"
+                      th:action="@{/admin/pacientes/{id}/photo/delete(id=${paciente.id})}" method="post">
+                      <button type="button" id="btnDeletePacientePhoto" class="btn btn-sm btn-outline-danger btn-block">
+                        <i class="fas fa-trash"></i> Quitar foto personalizada
+                      </button>
+                    </form>
+                  </div>
                   <h5 class="my-3">[[(${paciente != null ? paciente.name : ''})]]</h5>
                   <p class="text-muted mb-1"><i class="fas fa-envelope"></i> [[(${paciente != null ? paciente.email : ''})]]</p>
                   <p class="text-muted mb-4"><i class="fas fa-phone"></i> [[(${paciente != null ? paciente.phone : ''})]]</p>
@@ -323,6 +343,9 @@
           </button>
         </div>
         <div class="modal-body avatar-picker-body">
+          <p th:if="${hasCustomPhoto}" class="alert alert-info small">
+            Hay una foto personalizada activa. Elimínala primero para usar un avatar del catálogo.
+          </p>
           <h6 class="text-muted mb-3">Adultos</h6>
           <div class="row" th:if="${avatarOptions != null}">
             <div class="col-4 col-sm-3 col-md-2 mb-3 text-center"
@@ -565,6 +588,9 @@
     (function () {
       var importSuccess = /*[[${importSuccess}]]*/ null;
       var importDuplicateWarning = /*[[${importDuplicateWarning}]]*/ null;
+      var successMessage = /*[[${successMessage}]]*/ null;
+      var errorMessage = /*[[${errorMessage}]]*/ null;
+      var hasCustomPhoto = /*[[${hasCustomPhoto}]]*/ false;
       var pacienteId = /*[[${paciente != null ? paciente.id : null}]]*/ null;
       if (typeof swal === 'undefined') {
         return;
@@ -586,6 +612,42 @@
           });
         }, importSuccess ? 2600 : 0);
       }
+      if (successMessage) {
+        swal({
+          title: 'Listo',
+          text: successMessage,
+          type: 'success',
+          timer: 2500
+        });
+      }
+      if (errorMessage) {
+        swal({
+          title: 'Error',
+          text: errorMessage,
+          type: 'error',
+          timer: 5000
+        });
+      }
+      $('#photoFile').on('change', function () {
+        var fileName = $(this).val().split('\\').pop();
+        $(this).next('.custom-file-label').text(fileName || 'Seleccionar foto…');
+      });
+      $('#btnDeletePacientePhoto').on('click', function () {
+        var form = $(this).closest('form');
+        swal({
+          title: '¿Quitar foto personalizada?',
+          text: 'Se volverá a mostrar el avatar del catálogo.',
+          type: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          confirmButtonText: 'Sí, quitar',
+          cancelButtonText: 'Cancelar'
+        }, function (isConfirm) {
+          if (isConfirm) {
+            form.submit();
+          }
+        });
+      });
       if (window.PacienteMpxActions) {
         PacienteMpxActions.bind({
           onDeleted: function () {
@@ -608,6 +670,15 @@
       }
       $('.avatar-option-btn').on('click', function () {
         if (typeof swal === 'undefined' || !pacienteId) {
+          return;
+        }
+        if (hasCustomPhoto) {
+          swal({
+            title: 'Foto personalizada activa',
+            text: 'Elimina la foto personalizada antes de elegir un avatar del catálogo.',
+            type: 'info',
+            timer: 4000
+          });
           return;
         }
         var avatarId = $(this).data('avatar-id');

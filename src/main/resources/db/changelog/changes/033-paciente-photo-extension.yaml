@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 033-paciente-photo-extension
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: paciente
+              columnName: photo_extension
+      changes:
+        - addColumn:
+            tableName: paciente
+            columns:
+              - column:
+                  name: photo_extension
+                  type: VARCHAR(16)

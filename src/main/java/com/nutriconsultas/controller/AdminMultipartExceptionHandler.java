@@ -21,6 +21,8 @@ public class AdminMultipartExceptionHandler {
 
 	private static final Pattern PLATILLO_PICTURE_URI = Pattern.compile("^/admin/platillos/(\\d+)/picture$");
 
+	private static final Pattern PACIENTE_PHOTO_URI = Pattern.compile("^/admin/pacientes/(\\d+)/photo$");
+
 	private final DataSize maxFileSize;
 
 	public AdminMultipartExceptionHandler(
@@ -41,6 +43,10 @@ public class AdminMultipartExceptionHandler {
 		if ("/admin/perfil/logo".equals(requestUri)) {
 			return "El archivo supera el tamaño máximo permitido (" + sizeLabel + ").";
 		}
+		final Matcher patientMatcher = PACIENTE_PHOTO_URI.matcher(requestUri);
+		if (patientMatcher.matches()) {
+			return "La foto supera el tamaño máximo permitido (" + sizeLabel + ").";
+		}
 		return "La imagen supera el tamaño máximo permitido (" + sizeLabel + ").";
 	}
 
@@ -56,6 +62,10 @@ public class AdminMultipartExceptionHandler {
 		final Matcher platilloMatcher = PLATILLO_PICTURE_URI.matcher(requestUri);
 		if (platilloMatcher.matches()) {
 			return "redirect:/admin/platillos/" + platilloMatcher.group(1);
+		}
+		final Matcher patientMatcher = PACIENTE_PHOTO_URI.matcher(requestUri);
+		if (patientMatcher.matches()) {
+			return "redirect:/admin/pacientes/" + patientMatcher.group(1);
 		}
 		if ("/admin/perfil/logo".equals(requestUri)) {
 			return "redirect:/admin/perfil";

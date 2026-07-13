@@ -42,6 +42,7 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		variables.put("mobileInvitation", new PatientMobileInvitationStatus("NONE", "Sin app", true, false, false, null,
 				null, null, "j***@example.com"));
 		variables.put("avatarImageUrl", PacienteAvatarCatalog.resolveImagePath(paciente));
+		variables.put("hasCustomPhoto", false);
 		variables.put("selectedAvatarId", PacienteAvatarCatalog.resolveSelectedId(paciente));
 		variables.put("avatarOptions", PacienteAvatarCatalog.allOptions());
 

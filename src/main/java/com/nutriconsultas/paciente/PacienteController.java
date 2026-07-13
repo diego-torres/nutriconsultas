@@ -125,6 +125,9 @@ public class PacienteController extends AbstractAuthorizedController {
 	private PacienteMpxImportService pacienteMpxImportService;
 
 	@Autowired
+	private PacientePhotoService pacientePhotoService;
+
+	@Autowired
 	private com.nutriconsultas.paciente.invitation.PatientMobileInvitationService patientMobileInvitationService;
 
 	/**
@@ -1076,6 +1079,79 @@ public class PacienteController extends AbstractAuthorizedController {
 		log.debug("Cancelando asignación de dieta {}", id);
 		pacienteDietaService.cancelAssignment(id);
 		return String.format("redirect:/admin/pacientes/%d/dietas", pacienteId);
+	}
+
+	@GetMapping(path = "/admin/pacientes/{id}/picture")
+	public ResponseEntity<byte[]> getPacientePicture(@PathVariable @NonNull final Long id,
+			@AuthenticationPrincipal final OidcUser principal) {
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		final Paciente paciente = pacienteRepository.findByIdAndUserId(id, userId).orElse(null);
+		if (paciente == null) {
+			return ResponseEntity.notFound().build();
+		}
+		verifyPatientOwnership(paciente, userId);
+		return PacientePhotoResponses.buildPictureResponse(paciente, pacientePhotoService);
+	}
+
+	@PostMapping(path = "/admin/pacientes/{id}/photo")
+	public String uploadPacientePhoto(@PathVariable @NonNull final Long id,
+			@RequestParam("photoFile") final MultipartFile photoFile, @AuthenticationPrincipal final OidcUser principal,
+			final RedirectAttributes redirectAttributes) {
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		final Paciente paciente = pacienteRepository.findByIdAndUserId(id, userId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + id));
+		verifyPatientOwnership(paciente, userId);
+		if (photoFile == null || photoFile.isEmpty()) {
+			redirectAttributes.addFlashAttribute("errorMessage", "El archivo está vacío");
+			return String.format("redirect:/admin/pacientes/%d", id);
+		}
+		try {
+			final String extension = extractPhotoExtension(photoFile.getOriginalFilename());
+			pacientePhotoService.savePhotoForNutritionist(id, userId, photoFile.getBytes(), extension);
+			redirectAttributes.addFlashAttribute("successMessage", "Foto del paciente actualizada.");
+		}
+		catch (final java.io.IOException e) {
+			log.error("Failed to upload photo for patient id {}", id, e);
+			redirectAttributes.addFlashAttribute("errorMessage", "Error al subir la foto");
+		}
+		catch (final IllegalArgumentException e) {
+			redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+		}
+		return String.format("redirect:/admin/pacientes/%d", id);
+	}
+
+	@PostMapping(path = "/admin/pacientes/{id}/photo/delete")
+	public String deletePacientePhoto(@PathVariable @NonNull final Long id,
+			@AuthenticationPrincipal final OidcUser principal, final RedirectAttributes redirectAttributes) {
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			throw new IllegalArgumentException("No se pudo identificar al usuario");
+		}
+		try {
+			pacientePhotoService.deletePhotoForNutritionist(id, userId);
+			redirectAttributes.addFlashAttribute("successMessage", "Foto personalizada eliminada.");
+		}
+		catch (final IllegalArgumentException e) {
+			redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+		}
+		return String.format("redirect:/admin/pacientes/%d", id);
+	}
+
+	private String extractPhotoExtension(final String originalFilename) {
+		if (originalFilename == null) {
+			return "png";
+		}
+		final int dotIndex = originalFilename.lastIndexOf('.');
+		if (dotIndex <= 0 || dotIndex >= originalFilename.length() - 1) {
+			return "png";
+		}
+		return originalFilename.substring(dotIndex + 1);
 	}
 
 	/**
