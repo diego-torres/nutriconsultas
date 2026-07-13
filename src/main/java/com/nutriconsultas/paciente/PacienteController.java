@@ -42,6 +42,7 @@ import com.nutriconsultas.dieta.DietaNutritionCalculator;
 import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.DietaRepository;
 import com.nutriconsultas.dieta.DietaService;
+import com.nutriconsultas.profile.NutritionistBrandingHelper;
 import com.nutriconsultas.paciente.calculation.BmrCalculationService;
 import com.nutriconsultas.subscription.SubscriptionErrorResponses;
 import com.nutriconsultas.subscription.SubscriptionLimitExceededException;
@@ -107,6 +108,9 @@ public class PacienteController extends AbstractAuthorizedController {
 
 	@Autowired
 	private DietaPdfService dietaPdfService;
+
+	@Autowired
+	private GroceryListPdfService groceryListPdfService;
 
 	@Autowired
 	private PacienteDietaRepository pacienteDietaRepository;
@@ -1043,6 +1047,27 @@ public class PacienteController extends AbstractAuthorizedController {
 		model.addAttribute("pacienteDieta", assignment);
 		model.addAttribute("groceryItems", groceryItems);
 		return "sbadmin/pacientes/lista-compras";
+	}
+
+	@GetMapping(path = "/admin/pacientes/{pacienteId}/dietas/{id}/lista-compras.pdf")
+	public ResponseEntity<byte[]> listaComprasAsignacionPdf(@PathVariable @NonNull final Long pacienteId,
+			@PathVariable @NonNull final Long id, @AuthenticationPrincipal final OidcUser principal) {
+		log.debug("Generando PDF de lista de compras para asignación {}", id);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		final Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con folio " + pacienteId));
+		verifyPatientOwnership(paciente, userId);
+		final PacienteDieta assignment = pacienteDietaService.findById(id);
+		if (assignment.getPaciente() == null || !pacienteId.equals(assignment.getPaciente().getId())) {
+			throw new IllegalArgumentException("La asignación no pertenece al paciente");
+		}
+		assignment.setPaciente(paciente);
+		final List<DietGroceryListItemDto> groceryItems = pacienteDietaService.buildGroceryList(assignment);
+		final String oauthDisplayName = NutritionistBrandingHelper.resolveOAuthDisplayName(principal);
+		return groceryListPdfService.buildPdfResponse(paciente, assignment, groceryItems, userId, oauthDisplayName);
 	}
 
 	@PostMapping(path = "/admin/pacientes/{pacienteId}/dietas/{id}/cancelar")

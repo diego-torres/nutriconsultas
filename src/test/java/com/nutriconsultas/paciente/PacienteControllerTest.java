@@ -31,6 +31,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.http.ResponseEntity;
 
 import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventService;
@@ -43,6 +44,8 @@ import com.nutriconsultas.clinical.exam.anthropometric.Circumferences;
 import com.nutriconsultas.paciente.calculation.ActivityFactorScale;
 import com.nutriconsultas.paciente.calculation.BmrCalculationService;
 import com.nutriconsultas.paciente.calculation.BmrFormulaType;
+
+import com.nutriconsultas.mobile.dto.DietGroceryListItemDto;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,6 +69,9 @@ public class PacienteControllerTest {
 
 	@Mock
 	private PacienteDietaService pacienteDietaService;
+
+	@Mock
+	private GroceryListPdfService groceryListPdfService;
 
 	@Mock
 	private com.nutriconsultas.dieta.DietaService dietaService;
@@ -2055,6 +2061,66 @@ public class PacienteControllerTest {
 		assertThat(saved.getActivityFactorScale()).isEqualTo(ActivityFactorScale.FAO_WHO);
 		assertThat(saved.getPreferredBmrFormula()).isEqualTo(BmrFormulaType.MIFFLIN_ST_JEOR);
 		assertThat(saved.getCustomFactorModerate()).isEqualTo(2.05);
+	}
+
+	@Test
+	public void listaComprasAsignacion_returnsListaComprasView() {
+		final PacienteDieta assignment = new PacienteDieta();
+		assignment.setId(7L);
+		assignment.setPaciente(paciente);
+		final List<DietGroceryListItemDto> items = List
+			.of(new DietGroceryListItemDto("Manzana", "1", "pieza", "Frutas"));
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteDietaService.findById(7L)).thenReturn(assignment);
+		when(pacienteDietaService.buildGroceryList(assignment)).thenReturn(items);
+
+		final String result = controller.listaComprasAsignacion(1L, 7L, model, principal);
+
+		assertThat(result).isEqualTo("sbadmin/pacientes/lista-compras");
+		verify(model).addAttribute("groceryItems", items);
+		verify(model).addAttribute("paciente", paciente);
+		verify(model).addAttribute("pacienteDieta", assignment);
+	}
+
+	@Test
+	public void listaComprasAsignacionPdf_returnsPdfResponse() {
+		final PacienteDieta assignment = new PacienteDieta();
+		assignment.setId(7L);
+		assignment.setPaciente(paciente);
+		final List<DietGroceryListItemDto> items = List
+			.of(new DietGroceryListItemDto("Manzana", "1", "pieza", "Frutas"));
+		final byte[] pdfBytes = new byte[] { 1, 2, 3 };
+		final ResponseEntity<byte[]> pdfResponse = ResponseEntity.ok().body(pdfBytes);
+
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteDietaService.findById(7L)).thenReturn(assignment);
+		when(pacienteDietaService.buildGroceryList(assignment)).thenReturn(items);
+		when(groceryListPdfService.buildPdfResponse(eq(paciente), eq(assignment), eq(items), eq(TEST_USER_ID), any()))
+			.thenReturn(pdfResponse);
+
+		final ResponseEntity<byte[]> result = controller.listaComprasAsignacionPdf(1L, 7L, principal);
+
+		assertThat(result.getBody()).isEqualTo(pdfBytes);
+		verify(groceryListPdfService).buildPdfResponse(eq(paciente), eq(assignment), eq(items), eq(TEST_USER_ID),
+				any());
+	}
+
+	@Test
+	public void listaComprasAsignacionPdf_throwsWhenAssignmentBelongsToOtherPatient() {
+		final Paciente otherPatient = new Paciente();
+		otherPatient.setId(99L);
+		final PacienteDieta assignment = new PacienteDieta();
+		assignment.setId(7L);
+		assignment.setPaciente(otherPatient);
+
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteDietaService.findById(7L)).thenReturn(assignment);
+
+		assertThatThrownBy(() -> controller.listaComprasAsignacionPdf(1L, 7L, principal))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("no pertenece");
 	}
 
 	private void assertPacienteBmrMatchesPromedio(final double peso, final double estatura) {

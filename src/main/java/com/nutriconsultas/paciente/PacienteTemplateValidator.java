@@ -14,6 +14,9 @@ import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.anthropometric.AnthropometricFieldCatalog;
 import com.nutriconsultas.clinical.exam.ClinicalExam;
 import com.nutriconsultas.dieta.Dieta;
+import com.nutriconsultas.mobile.dto.DietGroceryListItemDto;
+import com.nutriconsultas.profile.NutritionistBrandingHelper;
+import com.nutriconsultas.profile.NutritionistProfile;
 import com.nutriconsultas.validation.template.BaseTemplateValidator;
 import com.nutriconsultas.mobile.PatientMobileAuthStatus;
 import com.nutriconsultas.paciente.invitation.PatientMobileInvitationStatus;
@@ -154,7 +157,21 @@ public class PacienteTemplateValidator extends BaseTemplateValidator {
 		mondaySlot.setDieta(mockDieta);
 		variables.put("weekdaySlotsByAssignmentId", java.util.Map.of(1L, java.util.List.of(mondaySlot)));
 		variables.put("weekdaySlotsByDay", PacienteDietaWeekdayLabels.slotsByDay(java.util.List.of(mondaySlot)));
-		variables.put("groceryItems", java.util.List.of());
+		variables.put("groceryItems", java.util.List.of(new DietGroceryListItemDto("Manzana", "2", "pieza", "Frutas")));
+		variables.put("assignmentLabel", "Plan semanal");
+		addPdfBrandingMockVariables(variables);
+	}
+
+	private void addPdfBrandingMockVariables(final Map<String, Object> variables) {
+		final NutritionistProfile mockProfile = new NutritionistProfile();
+		mockProfile.setId(1L);
+		mockProfile.setDisplayName("Lic. María García López");
+		mockProfile.setCedulaProfesional("12345678");
+		variables.put("nutritionistProfile", mockProfile);
+		variables.put("nutritionistDisplayName", "Lic. María García López");
+		variables.put("logoBase64", NutritionistBrandingHelper.MOCK_LOGO_DATA_URI);
+		NutritionistBrandingHelper.addPdfLogoDimensionVariables(variables,
+				NutritionistBrandingHelper.MOCK_LOGO_DATA_URI);
 	}
 
 	private void addMockConsulta(final Map<String, Object> variables, final Paciente paciente) {

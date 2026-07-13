@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+	<meta charset="UTF-8" />
+	<title>Lista de Compras</title>
+	<style>
+		@page {
+			size: A4 portrait;
+			margin: 1.2cm;
+		}
+		body {
+			font-family: Arial, sans-serif;
+			font-size: 9pt;
+			line-height: 1.25;
+			color: #333;
+		}
+		.header {
+			border-bottom: 2px solid #4e73df;
+			padding-bottom: 8px;
+			margin-bottom: 12px;
+		}
+		.header h1 {
+			color: #4e73df;
+			margin: 0;
+			font-size: 16pt;
+		}
+		.header p {
+			margin: 2px 0;
+			color: #666;
+			font-size: 8pt;
+		}
+		.meta {
+			background-color: #f8f9fc;
+			padding: 8px 10px;
+			border-radius: 4px;
+			margin-bottom: 12px;
+		}
+		.meta p {
+			margin: 2px 0;
+			font-size: 8.5pt;
+		}
+		table.grocery-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-bottom: 10px;
+		}
+		table.grocery-table th {
+			background-color: #4e73df;
+			color: white;
+			padding: 6px 8px;
+			text-align: left;
+			font-size: 8.5pt;
+		}
+		table.grocery-table td {
+			padding: 5px 8px;
+			border-bottom: 1px solid #e3e6f0;
+			font-size: 8.5pt;
+		}
+		table.grocery-table tr:nth-child(even) td {
+			background-color: #f8f9fc;
+		}
+		.empty-message {
+			color: #666;
+			font-style: italic;
+			font-size: 9pt;
+		}
+		.footer {
+			margin-top: 16px;
+			padding-top: 8px;
+			border-top: 1px solid #e3e6f0;
+			text-align: center;
+			color: #666;
+			font-size: 7.5pt;
+		}
+	</style>
+	<style th:replace="~{sbadmin/fragments/pdf-nutritionist-logo :: logoStyles}"></style>
+</head>
+<body>
+	<div class="header">
+		<table style="width: 100%; border-collapse: collapse;">
+			<tr>
+				<td style="vertical-align: bottom;">
+					<h1>Lista de Compras</h1>
+					<p>Minutriporcion - Consulta Nutricional</p>
+					<div th:replace="~{sbadmin/fragments/pdf-nutritionist-credentials :: credentials}"></div>
+				</td>
+				<td th:replace="~{sbadmin/fragments/pdf-nutritionist-logo :: logoCell}"></td>
+			</tr>
+		</table>
+	</div>
+
+	<div class="meta" th:if="${paciente != null}">
+		<p><strong>Paciente:</strong> <span th:text="${paciente.name}"></span></p>
+		<p th:if="${assignmentLabel != null}">
+			<strong>Plan:</strong> <span th:text="${assignmentLabel}"></span>
+		</p>
+		<p th:if="${pacienteDieta != null && pacienteDieta.startDate != null}">
+			<strong>Inicio:</strong>
+			<span th:text="${#dates.format(pacienteDieta.startDate, 'dd/MM/yyyy')}"></span>
+		</p>
+	</div>
+
+	<div th:if="${groceryItems == null || groceryItems.isEmpty()}" class="empty-message">
+		No hay ingredientes para mostrar en la lista de compras.
+	</div>
+
+	<table th:unless="${groceryItems == null || groceryItems.isEmpty()}" class="grocery-table">
+		<thead>
+			<tr>
+				<th>Alimento</th>
+				<th>Cantidad</th>
+				<th>Unidad</th>
+				<th>Categoría</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="item : ${groceryItems}">
+				<td th:text="${item.nombre}">Alimento</td>
+				<td th:text="${item.cantidad}">1</td>
+				<td th:text="${item.unidad}">porción</td>
+				<td th:text="${item.categoria != null ? item.categoria : '-'}">-</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<div class="footer">
+		<p>Documento generado por Minutriporcion</p>
+	</div>
+</body>
+</html>
