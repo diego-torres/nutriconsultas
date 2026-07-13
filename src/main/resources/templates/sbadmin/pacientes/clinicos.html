@@ -121,6 +121,11 @@
                           </a>
                         </li>
                         <li class="nav-item">
+                          <a class="nav-link" id="thyroid-panel-tab" data-toggle="tab" href="#thyroid-panel" role="tab" aria-controls="thyroid-panel" aria-selected="false">
+                            <i class="fas fa-notes-medical"></i> Tiroides
+                          </a>
+                        </li>
+                        <li class="nav-item">
                           <a class="nav-link" id="other-tests-tab" data-toggle="tab" href="#other-tests" role="tab" aria-controls="other-tests" aria-selected="false">
                             <i class="fas fa-vial"></i> Otros Exámenes
                           </a>
@@ -348,6 +353,42 @@
                           </div>
                         </div>
 
+                        <!-- Thyroid Panel Tab -->
+                        <div class="tab-pane fade" id="thyroid-panel" role="tabpanel" aria-labelledby="thyroid-panel-tab">
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>TSH (mUI/L)</label>
+                                <input type="number" step="0.01" th:field="*{tsh}" class="form-control">
+                                <span th:if="${#fields.hasErrors('tsh')}" th:errors="*{tsh}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>T4 libre (ng/dL)</label>
+                                <input type="number" step="0.01" th:field="*{t4Libre}" class="form-control">
+                                <span th:if="${#fields.hasErrors('t4Libre')}" th:errors="*{t4Libre}"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>T3 libre (pg/mL)</label>
+                                <input type="number" step="0.01" th:field="*{t3Libre}" class="form-control">
+                                <span th:if="${#fields.hasErrors('t3Libre')}" th:errors="*{t3Libre}"></span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group">
+                                <label>Anti-TPO (UI/mL)</label>
+                                <input type="number" step="0.01" th:field="*{antiTpo}" class="form-control">
+                                <span th:if="${#fields.hasErrors('antiTpo')}" th:errors="*{antiTpo}"></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
                         <!-- Other Tests Tab -->
                         <div class="tab-pane fade" id="other-tests" role="tabpanel" aria-labelledby="other-tests-tab">
                           <div class="row">
@@ -478,7 +519,13 @@
           vitaminaD: { min: 30, max: 100, borderlineMin: 20, borderlineMax: 150 },
           vitaminaB12: { min: 200, max: 900, borderlineMin: 150, borderlineMax: 1000 },
           hierro: { min: 60, max: 170, borderlineMin: 40, borderlineMax: 200 },
-          ferritina: { min: 15, max: 200, borderlineMin: 10, borderlineMax: 300 }
+          ferritina: { min: 15, max: 200, borderlineMin: 10, borderlineMax: 300 },
+
+          // Thyroid panel
+          tsh: { min: 0.4, max: 4.0, borderlineMin: 0.27, borderlineMax: 10.0 },
+          t4Libre: { min: 0.8, max: 1.8, borderlineMin: 0.6, borderlineMax: 2.5 },
+          t3Libre: { min: 2.3, max: 4.2, borderlineMin: 1.8, borderlineMax: 5.0 },
+          antiTpo: { min: null, max: 35, borderlineMin: 35, borderlineMax: 100 }
         };
 
         /**

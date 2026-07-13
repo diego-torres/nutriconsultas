@@ -1,0 +1,58 @@
+databaseChangeLog:
+  - changeSet:
+      id: 032-thyroid-panel-table
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: thyroid_panel
+      changes:
+        - createTable:
+            tableName: thyroid_panel
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: tsh
+                  type: FLOAT
+              - column:
+                  name: t4_libre
+                  type: FLOAT
+              - column:
+                  name: t3_libre
+                  type: FLOAT
+              - column:
+                  name: anti_tpo
+                  type: FLOAT
+  - changeSet:
+      id: 032-clinical-exam-thyroid-panel-fk
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: clinical_exam
+              columnName: thyroid_panel_id
+      changes:
+        - addColumn:
+            tableName: clinical_exam
+            columns:
+              - column:
+                  name: thyroid_panel_id
+                  type: BIGINT
+        - addUniqueConstraint:
+            tableName: clinical_exam
+            columnNames: thyroid_panel_id
+            constraintName: uk_clinical_exam_thyroid_panel_id
+        - addForeignKeyConstraint:
+            baseTableName: clinical_exam
+            baseColumnNames: thyroid_panel_id
+            referencedTableName: thyroid_panel
+            referencedColumnNames: id
+            constraintName: fk_clinical_exam_thyroid_panel

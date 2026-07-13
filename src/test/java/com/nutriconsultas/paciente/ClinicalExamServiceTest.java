@@ -300,6 +300,11 @@ public class ClinicalExamServiceTest {
 		completeExam.setVitaminaB12(500.0);
 		completeExam.setHierro(100.0);
 		completeExam.setFerritina(50.0);
+		// Thyroid panel
+		completeExam.setTsh(2.5);
+		completeExam.setT4Libre(1.2);
+		completeExam.setT3Libre(3.1);
+		completeExam.setAntiTpo(12.0);
 
 		when(repository.save(any(ClinicalExam.class))).thenAnswer(invocation -> {
 			final ClinicalExam savedExam = invocation.getArgument(0);
@@ -335,6 +340,11 @@ public class ClinicalExamServiceTest {
 		// Verify other tests
 		assertThat(result.getVitaminaD()).isEqualTo(35.0);
 		assertThat(result.getVitaminaB12()).isEqualTo(500.0);
+		// Verify thyroid panel
+		assertThat(result.getTsh()).isEqualTo(2.5);
+		assertThat(result.getT4Libre()).isEqualTo(1.2);
+		assertThat(result.getT3Libre()).isEqualTo(3.1);
+		assertThat(result.getAntiTpo()).isEqualTo(12.0);
 		verify(repository).save(any(ClinicalExam.class));
 		log.info("finished testSaveWithAllBiochemicalFields");
 	}
