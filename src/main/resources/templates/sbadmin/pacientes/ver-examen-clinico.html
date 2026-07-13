@@ -119,6 +119,11 @@
                       </a>
                     </li>
                     <li class="nav-item">
+                      <a class="nav-link" id="thyroid-panel-tab" data-toggle="tab" href="#thyroid-panel" role="tab" aria-controls="thyroid-panel" aria-selected="false">
+                        <i class="fas fa-notes-medical"></i> Tiroides
+                      </a>
+                    </li>
+                    <li class="nav-item">
                       <a class="nav-link" id="other-tests-tab" data-toggle="tab" href="#other-tests" role="tab" aria-controls="other-tests" aria-selected="false">
                         <i class="fas fa-vial"></i> Otros Exámenes
                       </a>
@@ -237,6 +242,24 @@
                         </div>
                         <div class="col-md-6" th:if="${exam.plaquetas != null}">
                           <p><strong>Plaquetas:</strong> <span th:text="${#numbers.formatDecimal(exam.plaquetas, 2, 2)} + ' x10³/μL'">-</span></p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Thyroid Panel Tab -->
+                    <div class="tab-pane fade" id="thyroid-panel" role="tabpanel" aria-labelledby="thyroid-panel-tab">
+                      <div class="row">
+                        <div class="col-md-6" th:if="${exam.tsh != null}">
+                          <p><strong>TSH:</strong> <span th:text="${#numbers.formatDecimal(exam.tsh, 2, 2)} + ' mUI/L'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.t4Libre != null}">
+                          <p><strong>T4 libre:</strong> <span th:text="${#numbers.formatDecimal(exam.t4Libre, 2, 2)} + ' ng/dL'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.t3Libre != null}">
+                          <p><strong>T3 libre:</strong> <span th:text="${#numbers.formatDecimal(exam.t3Libre, 2, 2)} + ' pg/mL'">-</span></p>
+                        </div>
+                        <div class="col-md-6" th:if="${exam.antiTpo != null}">
+                          <p><strong>Anti-TPO:</strong> <span th:text="${#numbers.formatDecimal(exam.antiTpo, 2, 2)} + ' UI/mL'">-</span></p>
                         </div>
                       </div>
                     </div>

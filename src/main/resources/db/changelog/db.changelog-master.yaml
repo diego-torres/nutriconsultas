@@ -92,3 +92,6 @@ databaseChangeLog:
   - include:
       file: changes/031-alimento-ingrediente-orden.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/032-thyroid-panel.yaml
+      relativeToChangelogFile: true

@@ -79,6 +79,10 @@ public class ClinicalExam {
 	private OtherIndicators otherTests;
 
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "thyroid_panel_id")
+	private ThyroidPanel thyroidPanel;
+
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "body_composition_id")
 	private com.nutriconsultas.clinical.exam.anthropometric.BodyComposition bodyComposition;
 
@@ -422,6 +426,50 @@ public class ClinicalExam {
 			otherTests = new OtherIndicators();
 		}
 		otherTests.setFerritina(ferritina);
+	}
+
+	public Double getTsh() {
+		return thyroidPanel != null ? thyroidPanel.getTsh() : null;
+	}
+
+	public void setTsh(final Double tsh) {
+		if (thyroidPanel == null) {
+			thyroidPanel = new ThyroidPanel();
+		}
+		thyroidPanel.setTsh(tsh);
+	}
+
+	public Double getT4Libre() {
+		return thyroidPanel != null ? thyroidPanel.getT4Libre() : null;
+	}
+
+	public void setT4Libre(final Double t4Libre) {
+		if (thyroidPanel == null) {
+			thyroidPanel = new ThyroidPanel();
+		}
+		thyroidPanel.setT4Libre(t4Libre);
+	}
+
+	public Double getT3Libre() {
+		return thyroidPanel != null ? thyroidPanel.getT3Libre() : null;
+	}
+
+	public void setT3Libre(final Double t3Libre) {
+		if (thyroidPanel == null) {
+			thyroidPanel = new ThyroidPanel();
+		}
+		thyroidPanel.setT3Libre(t3Libre);
+	}
+
+	public Double getAntiTpo() {
+		return thyroidPanel != null ? thyroidPanel.getAntiTpo() : null;
+	}
+
+	public void setAntiTpo(final Double antiTpo) {
+		if (thyroidPanel == null) {
+			thyroidPanel = new ThyroidPanel();
+		}
+		thyroidPanel.setAntiTpo(antiTpo);
 	}
 
 }
