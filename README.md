@@ -19,20 +19,22 @@ registro de consultorio de nutrición
 
 **Issue registry:** [`ISSUE-SUPPORT.md`](ISSUE-SUPPORT.md) · **Plan:** [`docs/support/SUPPORT-TICKETS-PLAN.md`](docs/support/SUPPORT-TICKETS-PLAN.md) · **Workflow:** [`SUPPORT-WORKFLOW.md`](SUPPORT-WORKFLOW.md)
 
-Epic [#540](https://github.com/diego-torres/nutriconsultas/issues/540): topbar menu **Perfil / Soporte / Acerca de / Salir**, nutritionist tickets, platform-admin triage, and **Acerca de** version display. **NEXT:** [#543](https://github.com/diego-torres/nutriconsultas/issues/543) schema.
+Epic [#540](https://github.com/diego-torres/nutriconsultas/issues/540): topbar menu **Perfil / Soporte / Acerca de / Salir**, nutritionist tickets, platform-admin triage, and **Acerca de** version display. **NEXT:** [#545](https://github.com/diego-torres/nutriconsultas/issues/545) nutritionist Soporte UI (after ~~#542~~).
 
 ### Application version
 
-The web application version shown in **Acerca de** (once [#542](https://github.com/diego-torres/nutriconsultas/issues/542) lands) comes from Maven `<version>` in [`pom.xml`](pom.xml) (currently `2.0-SNAPSHOT`), exposed at runtime as a filtered property such as `app.version`.
+The web application version shown in **Acerca de** (admin topbar → user menu) comes from Maven `<version>` in [`pom.xml`](pom.xml) (currently `2.0-SNAPSHOT`).
+
+At build time, Spring Boot resource filtering substitutes `app.version=@project.version@` in [`src/main/resources/application.properties`](src/main/resources/application.properties). `AppVersionModelAdvice` exposes that value to Thymeleaf as `appVersion` for `sbadmin/about-modal.html`.
 
 **When shipping a new version to `main`:**
 
 1. Update the `<version>` element in `pom.xml` (project semver or agreed scheme, e.g. `2.1.0`).
-2. Ensure the Maven build still filters that value into `application.properties` / the packaged artifact (`app.version=${project.version}` or equivalent — wired by #542).
-3. Merge the release PR to `main`, deploy, then confirm **Acerca de** in the admin topbar shows the new version.
+2. Run a normal Maven package/deploy (`mvn -DskipTests package` or CI). Confirm `target/classes/application.properties` contains `app.version=2.1.0` (not the `@project.version@` placeholder).
+3. Merge the release PR to `main`, deploy, then open **Acerca de** in the admin topbar and confirm the new version.
 4. Optionally create a matching Git tag (e.g. `v2.1.0`) on the release commit.
 
-Do not hardcode the version only in Thymeleaf HTML; keep `pom.xml` as the source of truth.
+Do not hardcode the version only in Thymeleaf HTML; keep `pom.xml` as the source of truth. Use `@…@` delimiters (not `${…}`) so Spring Boot’s resource filtering does not collide with runtime `${ENV}` placeholders.
 
 ## AWS (production infrastructure)
 
