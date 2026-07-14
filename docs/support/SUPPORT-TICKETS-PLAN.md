@@ -48,12 +48,12 @@ Template entry point: `src/main/resources/templates/sbadmin/topbar.html`.
 
 Reuse existing platform-admin patterns (`AbstractPlatformAdminController`, `requirePlatformAdmin`, contact-inquiry style audits where useful).
 
-**Suggested UX routing:** single entry `/admin/soporte` that branches in the controller:
+**UX routing (implemented):**
 
-- Non-admin → nutritionist grid + create form
-- Platform admin → admin inbox (user, subscription, title + actions)
-
-Alternatively `/admin/platform/soporte` for admin only and `/admin/soporte` for users — pick one in implementation and keep the topbar link consistent.
+- Nutritionists: `/admin/soporte` — own tickets grid + create form
+- Platform admins: `/admin/platform/soporte` — triage inbox (user, subscription, title; filter activos/cerrados; notes/close/reopen)
+- Topbar **Soporte** stays `/admin/soporte`; platform admins are redirected to `/admin/platform/soporte`
+- Sidebar **Plataforma → Soporte** links directly to the admin inbox
 
 ---
 

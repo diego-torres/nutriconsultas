@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <title>Minutriporcion - Soporte (plataforma)</title>
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link th:href="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+  <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
+</head>
+
+<body id="page-top">
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/sidebar :: sidebar}"></div>
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <div class="container-fluid">
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Soporte</h1>
+          </div>
+
+          <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}">Éxito</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+
+          <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+              <h6 class="m-0 font-weight-bold text-primary">Tickets de soporte</h6>
+              <div class="btn-group btn-group-sm" role="group" aria-label="Filtro de estado">
+                <a class="btn"
+                  th:classappend="${estado == 'activos'} ? ' btn-primary' : ' btn-outline-primary'"
+                  th:href="@{/admin/platform/soporte(estado='activos')}">Activos</a>
+                <a class="btn"
+                  th:classappend="${estado == 'cerrados'} ? ' btn-primary' : ' btn-outline-primary'"
+                  th:href="@{/admin/platform/soporte(estado='cerrados')}">Cerrados</a>
+              </div>
+            </div>
+            <div class="card-body">
+              <div th:if="${#lists.isEmpty(adminTickets)}" class="text-muted mb-0">
+                <span th:if="${estado == 'activos'}">No hay tickets activos.</span>
+                <span th:unless="${estado == 'activos'}">No hay tickets cerrados.</span>
+              </div>
+              <div th:unless="${#lists.isEmpty(adminTickets)}" class="table-responsive">
+                <table class="table table-bordered" id="adminSupportTicketsTable" width="100%" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Usuario</th>
+                      <th>Suscripción</th>
+                      <th>Título</th>
+                      <th>Descripción</th>
+                      <th>Fecha</th>
+                      <th>Notas admin</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="row : ${adminTickets}">
+                      <td th:text="${row.userDisplayLabel()}">Usuario</td>
+                      <td th:text="${row.subscriptionLabel()}">Plan</td>
+                      <td th:text="${row.title()}">Título</td>
+                      <td th:text="${#strings.abbreviate(row.ticket().description, 100)}">Descripción</td>
+                      <td
+                        th:text="${#temporals.format(row.ticket().createdAt.atZone(T(java.time.ZoneId).of('America/Mexico_City')), 'dd/MM/yyyy HH:mm')}">
+                        01/01/2026 12:00
+                      </td>
+                      <td style="min-width: 220px;">
+                        <form th:action="@{/admin/platform/soporte/{id}/notes(id=${row.ticketId()}, estado=${estado})}"
+                          method="post" class="admin-notes-form">
+                          <textarea class="form-control form-control-sm mb-1" name="adminNotes" rows="2"
+                            maxlength="2000" th:text="${row.ticket().adminNotes}"></textarea>
+                          <button type="submit" class="btn btn-sm btn-outline-primary">Guardar notas</button>
+                        </form>
+                      </td>
+                      <td class="text-nowrap">
+                        <form th:if="${row.status().name() == 'OPEN'}"
+                          th:action="@{/admin/platform/soporte/{id}/close(id=${row.ticketId()}, estado=${estado})}"
+                          method="post" class="d-inline close-support-ticket-form">
+                          <button type="button" class="btn btn-sm btn-danger close-support-ticket-btn"
+                            title="Cerrar ticket">
+                            <i class="fas fa-times"></i> Cerrar
+                          </button>
+                        </form>
+                        <form th:if="${row.status().name() == 'CLOSED'}"
+                          th:action="@{/admin/platform/soporte/{id}/reopen(id=${row.ticketId()}, estado=${estado})}"
+                          method="post" class="d-inline">
+                          <button type="submit" class="btn btn-sm btn-success" title="Reabrir ticket">
+                            <i class="fas fa-undo"></i> Reabrir
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div th:insert="~{sbadmin/footer :: footer}"></div>
+    </div>
+  </div>
+  <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+  <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
+  <script th:src="@{/sbadmin/vendor/datatables/jquery.dataTables.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.js}"></script>
+  <script th:inline="javascript">
+    $(document).ready(function () {
+      var successMessage = /*[[${successMessage}]]*/ null;
+      if (successMessage) {
+        swal({
+          title: 'Listo',
+          text: successMessage,
+          type: 'success',
+          timer: 2000
+        });
+      }
+
+      if ($('#adminSupportTicketsTable').length) {
+        $('#adminSupportTicketsTable').DataTable({
+          order: [[4, 'desc']],
+          language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+          },
+          columnDefs: [
+            { orderable: false, targets: [5, 6] }
+          ]
+        });
+      }
+
+      $(document).on('click', '.close-support-ticket-btn', function () {
+        var $form = $(this).closest('.close-support-ticket-form');
+        swal({
+          title: 'Cerrar ticket',
+          text: '¿Cerrar este ticket de soporte? El usuario lo verá como cerrado.',
+          type: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Sí, cerrar',
+          cancelButtonText: 'Cancelar',
+          closeOnConfirm: true
+        }, function (isConfirm) {
+          if (isConfirm) {
+            $form.submit();
+          }
+        });
+      });
+    });
+  </script>
+</body>
+
+</html>

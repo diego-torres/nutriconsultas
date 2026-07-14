@@ -22,6 +22,8 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
+import com.nutriconsultas.platform.PlatformAdminService;
+
 @ExtendWith(MockitoExtension.class)
 class SupportTicketControllerTest {
 
@@ -33,19 +35,34 @@ class SupportTicketControllerTest {
 	@Mock
 	private SupportTicketService supportTicketService;
 
+	@Mock
+	private PlatformAdminService platformAdminService;
+
 	@Test
 	void list_addsOwnTicketsAndEmptyForm() {
+		final DefaultOidcUser principal = principal();
 		final SupportTicket ticket = sampleTicket(1L, SupportTicketStatus.OPEN);
+		when(platformAdminService.isPlatformAdmin(principal)).thenReturn(false);
 		when(supportTicketService.findOwnTickets(USER_ID)).thenReturn(List.of(ticket));
 		final ExtendedModelMap model = new ExtendedModelMap();
 
-		final String view = controller.list(principal(), model);
+		final String view = controller.list(principal, model);
 
 		assertThat(view).isEqualTo("sbadmin/soporte/listado");
 		assertThat(model.getAttribute("tickets")).isEqualTo(List.of(ticket));
 		assertThat(model.getAttribute("form")).isInstanceOf(SupportTicketForm.class);
 		assertThat(model.getAttribute("activeMenu")).isEqualTo("soporte");
 		verify(supportTicketService).findOwnTickets(USER_ID);
+	}
+
+	@Test
+	void list_whenPlatformAdmin_redirectsToAdminInbox() {
+		final DefaultOidcUser principal = principal();
+		when(platformAdminService.isPlatformAdmin(principal)).thenReturn(true);
+
+		final String view = controller.list(principal, new ExtendedModelMap());
+
+		assertThat(view).isEqualTo("redirect:/admin/platform/soporte");
 	}
 
 	@Test
