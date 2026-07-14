@@ -15,7 +15,7 @@ public record SupportTicketAdminView(@NonNull SupportTicket ticket, @NonNull Str
 		return ticket.getTitle();
 	}
 
-	public Long id() {
+	public Long ticketId() {
 		return ticket.getId();
 	}
 
