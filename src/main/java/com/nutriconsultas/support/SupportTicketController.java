@@ -12,13 +12,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.nutriconsultas.controller.AbstractAuthorizedController;
+import com.nutriconsultas.platform.PlatformAdminService;
 import com.nutriconsultas.util.LogRedaction;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Nutritionist Soporte page: list own tickets and create new ones.
+ * Nutritionist Soporte page: list own tickets and create new ones. Platform admins are
+ * redirected to the triage inbox.
  */
 @Controller
 @RequestMapping("/admin/soporte")
@@ -27,12 +29,19 @@ public class SupportTicketController extends AbstractAuthorizedController {
 
 	private final SupportTicketService supportTicketService;
 
-	public SupportTicketController(final SupportTicketService supportTicketService) {
+	private final PlatformAdminService platformAdminService;
+
+	public SupportTicketController(final SupportTicketService supportTicketService,
+			final PlatformAdminService platformAdminService) {
 		this.supportTicketService = supportTicketService;
+		this.platformAdminService = platformAdminService;
 	}
 
 	@GetMapping
 	public String list(@AuthenticationPrincipal final OidcUser principal, final Model model) {
+		if (platformAdminService.isPlatformAdmin(principal)) {
+			return "redirect:/admin/platform/soporte";
+		}
 		final String userId = principal.getSubject();
 		model.addAttribute("tickets", supportTicketService.findOwnTickets(userId));
 		if (!model.containsAttribute("form")) {
