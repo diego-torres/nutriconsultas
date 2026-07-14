@@ -10,7 +10,7 @@ How AI agents (and humans) ship the **`[Support]`** track on **`diego-torres/nut
 | [`docs/support/SUPPORT-TICKETS-PLAN.md`](docs/support/SUPPORT-TICKETS-PLAN.md) | Product/tech plan, data model, version bump |
 | [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) | Mobile API workflow (orthogonal) |
 
-**Current next issue:** [#547](https://github.com/diego-torres/nutriconsultas/issues/547) — Remaining tests/validators (or close with feature coverage). ~~#546~~ platform admin Soporte **done**. ~~#545~~ ~~#542~~ ~~#544~~ ~~#541~~ ~~#543~~ ~~#548~~ done.
+**Current next issue:** None — `[Support]` track **complete** (#540–#548). ~~#547~~ tests/validators **done**.
 
 ---
 
