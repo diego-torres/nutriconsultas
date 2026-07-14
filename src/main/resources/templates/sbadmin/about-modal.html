@@ -1,0 +1,26 @@
+<div th:fragment="about">
+  <!-- About Modal — version text filled by appVersion (#542) -->
+  <div class="modal fade" id="aboutModal" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="aboutModalLabel">Acerca de</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2 font-weight-bold">Minutriporcion</p>
+          <p class="mb-0 text-muted">
+            Versión
+            <span id="appVersionLabel" th:text="${appVersion != null ? appVersion : '—'}">—</span>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" type="button" data-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

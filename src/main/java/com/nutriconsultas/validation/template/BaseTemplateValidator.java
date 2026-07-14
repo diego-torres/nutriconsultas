@@ -24,6 +24,9 @@ public abstract class BaseTemplateValidator implements TemplateValidator {
 		variables.put("username", "");
 		variables.put("user_picture", "");
 
+		// Acerca de modal (#541); wired from Maven project.version in #542
+		variables.put("appVersion", "2.0-SNAPSHOT");
+
 		// Common menu attribute
 		variables.put("activeMenu", "");
 
