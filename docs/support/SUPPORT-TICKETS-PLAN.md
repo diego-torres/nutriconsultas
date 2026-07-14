@@ -82,10 +82,10 @@ Ship schema via **incremental Liquibase** only (`docs/db/LIQUIBASE.md`). Never `
 
 **Source of truth:** Maven `<version>` in `pom.xml` (today `2.0-SNAPSHOT`).
 
-**Runtime exposure (recommended):**
+**Runtime exposure (implemented in #542):**
 
-1. Add `app.version=${project.version}` (or equivalent) with Maven resource filtering into `application.properties`, **or** inject `@Value("${app.version}")` from a filtered property.
-2. Expose to Thymeleaf via `@ControllerAdvice` / model attribute (e.g. `appVersion`) used by the about modal fragment in the admin layout.
+1. `app.version=@project.version@` in `application.properties` (Spring Boot `@` resource filtering).
+2. `AppVersionModelAdvice` adds `appVersion` for Thymeleaf (`sbadmin/about-modal.html`).
 
 Do not hardcode the version only in HTML.
 
@@ -94,11 +94,11 @@ Do not hardcode the version only in HTML.
 Documented for maintainers in the root [`README.md`](../../README.md) (section **Application version**):
 
 1. Update `<version>` in `pom.xml` before or as part of the release PR to `main`.
-2. Confirm the build filters `app.version` (or the chosen property) into the packaged artifact.
+2. Confirm `target/classes/application.properties` has the substituted `app.version=…` value after package.
 3. After deploy, open **Acerca de** and verify the new value.
 4. Optionally create a matching Git tag (e.g. `v2.1.0`).
 
-Child issue: [#542](https://github.com/diego-torres/nutriconsultas/issues/542).
+Child issue: ~~[#542](https://github.com/diego-torres/nutriconsultas/issues/542)~~.
 
 ---
 

@@ -5,7 +5,7 @@ Living index of GitHub issues for **in-app support tickets** and the topbar user
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Plan:** [`docs/support/SUPPORT-TICKETS-PLAN.md`](docs/support/SUPPORT-TICKETS-PLAN.md)  
 **Workflow:** [`SUPPORT-WORKFLOW.md`](SUPPORT-WORKFLOW.md)  
-**Last updated:** 2026-07-14 — ~~#545~~ nutritionist Soporte UI **done** (this PR). **NEXT:** [#546](https://github.com/diego-torres/nutriconsultas/issues/546) platform admin Soporte UI.
+**Last updated:** 2026-07-14 — ~~#545~~ nutritionist Soporte UI **done** (this PR); ~~#542~~ Acerca de **done**. **NEXT:** [#546](https://github.com/diego-torres/nutriconsultas/issues/546) platform admin Soporte UI.
 
 > **Scope.** Authenticated nutritionist web (`/admin/**`): support ticket create/list for users; platform-admin triage (user, subscription, title; update/close; active/closed filter); **Acerca de** version modal. **Does not** replace public `ContactInquiry`. Patient mobile API: [`ISSUE.md`](ISSUE.md). Platform admin patterns: contact inquiries / subscription admin.
 
@@ -43,7 +43,7 @@ Living index of GitHub issues for **in-app support tickets** and the topbar user
 |---|-------|-----|-------|------------|-------|
 | **540** | Epic — In-app support tickets + user menu | https://github.com/diego-torres/nutriconsultas/issues/540 | **open** | — | Umbrella; close when children done |
 | **541** | Topbar user menu — Perfil, Soporte, Acerca de, Salir | https://github.com/diego-torres/nutriconsultas/issues/541 | **done** | 540 | `#aboutModal` contract; Soporte → `/admin/soporte` |
-| **542** | Acerca de modal — app version + README bump process | https://github.com/diego-torres/nutriconsultas/issues/542 | **in-progress** | 540, ~~541~~ | PR [#553](https://github.com/diego-torres/nutriconsultas/pull/553) |
+| **542** | Acerca de modal — app version + README bump process | https://github.com/diego-torres/nutriconsultas/issues/542 | **done** | 540, ~~541~~ | `app.version=@project.version@` + `AppVersionModelAdvice` |
 | **543** | Support ticket schema — Liquibase + entity + repository | https://github.com/diego-torres/nutriconsultas/issues/543 | **done** | 540 | Liquibase `034`; `SupportTicket` + repository |
 | **544** | Support ticket service — create, list, update, close, filter | https://github.com/diego-torres/nutriconsultas/issues/544 | **done** | ~~**543**~~ | `SupportTicketService`; admin view with user + plan |
 | **545** | Nutritionist Soporte page — own tickets + create form | https://github.com/diego-torres/nutriconsultas/issues/545 | **done** | ~~**544**~~, ~~541~~ | `/admin/soporte` grid + create form |
