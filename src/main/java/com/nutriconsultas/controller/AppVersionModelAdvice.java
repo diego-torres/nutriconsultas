@@ -12,15 +12,15 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 @ControllerAdvice
 public class AppVersionModelAdvice {
 
-	private final String appVersion;
+	private final String configuredVersion;
 
-	public AppVersionModelAdvice(@Value("${app.version:unknown}") final String appVersion) {
-		this.appVersion = appVersion;
+	public AppVersionModelAdvice(@Value("${app.version:unknown}") final String configuredVersion) {
+		this.configuredVersion = configuredVersion;
 	}
 
 	@ModelAttribute("appVersion")
 	public String appVersion() {
-		return this.appVersion;
+		return this.configuredVersion;
 	}
 
 }
