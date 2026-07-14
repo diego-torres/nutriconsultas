@@ -18,6 +18,7 @@ import com.nutriconsultas.reports.ReportTemplateValidator;
 import com.nutriconsultas.search.SearchTemplateValidator;
 import com.nutriconsultas.subscription.clinic.ClinicDirectorTemplateValidator;
 import com.nutriconsultas.subscription.invitation.InvitationRedeemTemplateValidator;
+import com.nutriconsultas.support.SupportTicketTemplateValidator;
 
 /**
  * Registry for template validators. Manages all available validators and provides a way
@@ -45,6 +46,7 @@ public class TemplateValidatorRegistry {
 		register(new ClinicDirectorTemplateValidator());
 		register(new SubscriptionBillingTemplateValidator());
 		register(new ContactInquiryTemplateValidator());
+		register(new SupportTicketTemplateValidator());
 		register(new AppleSignInNotificationTemplateValidator());
 		register(new InvitationRedeemTemplateValidator());
 		register(new EternaTemplateValidator());

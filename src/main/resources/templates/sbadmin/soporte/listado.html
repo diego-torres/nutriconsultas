@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link th:href="@{/eterna/assets/img/favicon.png}" rel="icon">
+  <title>Minutriporcion - Soporte</title>
+  <link th:href="@{/sbadmin/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link th:href="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.css}" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+  <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
+  <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
+</head>
+
+<body id="page-top">
+  <div id="wrapper">
+    <div th:insert="~{sbadmin/sidebar :: sidebar}"></div>
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        <div th:insert="~{sbadmin/topbar :: topbar}"></div>
+        <div class="container-fluid">
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Soporte</h1>
+          </div>
+
+          <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}">Éxito</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-5">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary">Nuevo ticket</h6>
+                </div>
+                <div class="card-body">
+                  <form th:action="@{/admin/soporte}" th:object="${form}" method="post" id="supportTicketForm">
+                    <div class="form-group">
+                      <label for="title">Título</label>
+                      <input type="text" class="form-control" id="title" th:field="*{title}" maxlength="200"
+                        th:classappend="${#fields.hasErrors('title')} ? ' is-invalid' : ''" required>
+                      <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">
+                        Error de título
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="description">Descripción</label>
+                      <textarea class="form-control" id="description" th:field="*{description}" rows="5"
+                        maxlength="4000"
+                        th:classappend="${#fields.hasErrors('description')} ? ' is-invalid' : ''"
+                        required></textarea>
+                      <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}"
+                        th:errors="*{description}">
+                        Error de descripción
+                      </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                      <i class="fas fa-paper-plane fa-sm"></i> Enviar ticket
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-7">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary">Mis tickets</h6>
+                </div>
+                <div class="card-body">
+                  <div th:if="${#lists.isEmpty(tickets)}" class="text-muted mb-0">
+                    No tienes tickets de soporte todavía. Usa el formulario para crear uno.
+                  </div>
+                  <div th:unless="${#lists.isEmpty(tickets)}" class="table-responsive">
+                    <table class="table table-bordered" id="supportTicketsTable" width="100%" cellspacing="0">
+                      <thead>
+                        <tr>
+                          <th>Estado</th>
+                          <th>Fecha</th>
+                          <th>Título</th>
+                          <th>Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr th:each="ticket : ${tickets}">
+                          <td>
+                            <span th:if="${ticket.status.name() == 'OPEN'}" class="badge badge-success">Abierto</span>
+                            <span th:if="${ticket.status.name() == 'CLOSED'}" class="badge badge-secondary">Cerrado</span>
+                          </td>
+                          <td
+                            th:text="${#temporals.format(ticket.createdAt.atZone(T(java.time.ZoneId).of('America/Mexico_City')), 'dd/MM/yyyy HH:mm')}">
+                            01/01/2026 12:00
+                          </td>
+                          <td th:text="${ticket.title}">Título</td>
+                          <td th:text="${#strings.abbreviate(ticket.description, 80)}">Descripción</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div th:insert="~{sbadmin/footer :: footer}"></div>
+    </div>
+  </div>
+  <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/jquery-easing/jquery.easing.min.js}"></script>
+  <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
+  <script th:src="@{/sbadmin/vendor/datatables/jquery.dataTables.min.js}"></script>
+  <script th:src="@{/sbadmin/vendor/datatables/dataTables.bootstrap4.min.js}"></script>
+  <script th:inline="javascript">
+    $(document).ready(function () {
+      var successMessage = /*[[${successMessage}]]*/ null;
+      if (successMessage) {
+        swal({
+          title: 'Listo',
+          text: successMessage,
+          type: 'success',
+          timer: 2000
+        });
+      }
+
+      if ($('#supportTicketsTable').length) {
+        $('#supportTicketsTable').DataTable({
+          order: [[1, 'desc']],
+          language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+          }
+        });
+      }
+
+      $('#supportTicketForm').on('submit', function (e) {
+        var title = $.trim($('#title').val());
+        var description = $.trim($('#description').val());
+        if (!title || !description) {
+          e.preventDefault();
+          swal({
+            title: 'Datos incompletos',
+            text: 'El título y la descripción son obligatorios.',
+            type: 'warning',
+            timer: 4000
+          });
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
