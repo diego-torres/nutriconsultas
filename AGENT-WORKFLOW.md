@@ -65,7 +65,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (AI assistant):** None — registered implementation track **complete** (#360–#450). Production rollout: [`RELEASE-CHECKLIST.md`](docs/ai/RELEASE-CHECKLIST.md) (#408). See [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md).
 
-**Current next issue (support):** [#542](https://github.com/diego-torres/nutriconsultas/issues/542) — Acerca de version. ~~#544~~ ~~#541~~ ~~#543~~ ~~#548~~ done. See [`ISSUE-SUPPORT.md`](ISSUE-SUPPORT.md).
+**Current next issue (support):** [#545](https://github.com/diego-torres/nutriconsultas/issues/545) — Nutritionist Soporte UI. ~~#542~~ ~~#544~~ ~~#541~~ ~~#543~~ ~~#548~~ done. See [`ISSUE-SUPPORT.md`](ISSUE-SUPPORT.md).
 
 ---
 
