@@ -626,7 +626,7 @@ Issue registry: [`ISSUE-APPLE-SIGNIN.md`](ISSUE-APPLE-SIGNIN.md). Roadmap: [`doc
 
 Issue registry: [`ISSUE-SUPPORT.md`](ISSUE-SUPPORT.md). Plan: [`docs/support/SUPPORT-TICKETS-PLAN.md`](docs/support/SUPPORT-TICKETS-PLAN.md). Workflow: [`SUPPORT-WORKFLOW.md`](SUPPORT-WORKFLOW.md).
 
-**Epic #540–#548** (2026-07-13): Topbar **Perfil / Soporte / Acerca de / Salir**; nutritionist own tickets + create form; platform-admin triage (user, subscription, title; update/close; activos/cerrados filter); Acerca de app version + README bump process. ~~#548~~ docs done. ~~#543~~ schema done. ~~#541~~ topbar done. ~~#544~~ service done. ~~#542~~ Acerca de version done. **NEXT:** [#545](https://github.com/diego-torres/nutriconsultas/issues/545) nutritionist Soporte UI. Orthogonal to public `ContactInquiry`.
+**Epic #540–#548** (2026-07-13): Topbar **Perfil / Soporte / Acerca de / Salir**; nutritionist own tickets + create form; platform-admin triage (user, subscription, title; update/close; activos/cerrados filter); Acerca de app version + README bump process. ~~#548~~ docs done. ~~#543~~ schema done. ~~#541~~ topbar done. ~~#544~~ service done. ~~#542~~ Acerca de version done. ~~#545~~ nutritionist Soporte done. **NEXT:** [#546](https://github.com/diego-torres/nutriconsultas/issues/546) platform admin Soporte. Orthogonal to public `ContactInquiry`.
 
 ## Resources
 
