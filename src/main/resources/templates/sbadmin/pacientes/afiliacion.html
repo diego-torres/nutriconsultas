@@ -63,8 +63,8 @@
                       <div class="form-group">
                         <label>Fecha Nac.</label>
                         <input type="text" th:field="*{dob}" class="form-control" placeholder="dd/mm/aaaa"
-                          inputmode="numeric" autocomplete="bday">
-                        <small class="form-text text-muted">Formato: dd/mm/aaaa</small>
+                          data-dob-mask inputmode="numeric" autocomplete="bday" maxlength="10">
+                        <small class="form-text text-muted">Formato: dd/mm/aaaa (las barras se insertan al escribir)</small>
                         <span th:if="${#fields.hasErrors('dob')}" th:errors="*{dob}"></span>
                       </div>
                       <div class="form-group">
@@ -212,6 +212,7 @@
 
     <!-- Custom scripts for all pages-->
     <script th:src="@{/sbadmin/js/sb-admin-2.min.js}"></script>
+    <script th:src="@{/sbadmin/js/date-of-birth-mask.js}"></script>
     <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
     <script th:src="@{/sbadmin/js/paciente-mobile-invitation.js}"></script>
 
