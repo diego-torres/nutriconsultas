@@ -3,6 +3,13 @@
 Date: 2026-06-09. Produced after reading both repos + both planning docs + live GitHub issues.
 This file is the SHARED contract. Agents A/B/C must follow it exactly. Do not re-derive.
 
+> **Synced copies (merged 2026-07-16):** this spec is kept byte-identical in three places —
+> `Work/ALIGNMENT-SPEC.md` (local master), backend `docs/mobile-api/ALIGNMENT-SPEC.md`, and mobile
+> `ALIGNMENT-SPEC.md`. Edit one, copy to the other two in the same change. This merge combined the backend
+> copy's post-June updates (F6 resource-server, F8.1/F8.3/F8.4 shipped-state, F8.6 invitation-gate contract)
+> with the local master's F9/F10. Repo-relative links (e.g. `../../ISSUE.md`) resolve from the backend copy's
+> location; from the other copies read them as backend paths.
+
 ## Repos
 - Backend: `diego-torres/nutriconsultas` (Spring Boot). Issues #91–#99 = `[Mobile API]` endpoints. #101 closed (PDF branding).
 - Mobile: `Escanor4323/nutriconsultas-mobile` (Flutter/GetX). Issues #1–#21 already exist.
@@ -233,3 +240,112 @@ These exit criteria live in the workflow but were not per-row in [`ISSUE.md`](..
 ### F8.5 — Design source of truth
 Canonical visual design: `mobile/.claude/MiNutriporcion-2/` (light editorial palette per JSX + 01-p-dashboard.png; the dark welcome/login screenshots are an OLD iteration — ignore).
 Mobile branch `style/editorial-redesign` implements it; auth dedup done (AuthFlowController canonical, PR #48's AuthController/LoginView retired). UI field inventory: `mobile/docs/schema-planning.md` §10.
+
+## F9 — INVITE-ONLY ONBOARDING SUBSYSTEM (added 2026-06-13, AUTHORITATIVE; all issues SHIPPED — retained as the cross-repo issue map; live contract detail in F8.6)
+Source design: `invitation-system-research.md`. Decomposes the umbrella backend #109 (Patient-Auth0 account
+linkage / admin invite-assign) into concrete issues across both repos. Built ON TOP of Phase 0 (#107).
+
+### F9.1 — Design invariants (override any contradicting doc)
+- Invitations are TOKEN-BOUND, not email-bound. Email (esp. Apple private-relay / Google) is NOT a reliable join key.
+- The backend `redeem` call is the REAL security gate: no `patientAuthSub → Paciente` mapping ⇒ no patient data (403
+  "onboarding required" everywhere except redeem/onboarding). A valid Auth0 JWT is ALWAYS required — a leaked token alone yields nothing.
+- Auth0 gating MUST be a Post-Login Action (`logins_count===1`), NOT Pre-User-Registration (which never fires for social).
+- Store only the token HASH; never log raw tokens. Patient status machine: INVITED → ONBOARDING → ACTIVE (+ REVOKED/EXPIRED).
+- Firebase Dynamic Links is dead (25 Aug 2025): native Universal/App Links + manual-code fallback is the durable path; vendor deferred-linking is optional/later.
+
+### F9.2 — Backend issues (diego-torres/nutriconsultas, all `[Mobile API]`)
+| ID | # | Scope |
+|----|----|-------|
+| B1 | #132 | Data model: Paciente status + assignedId/emailHint/displayName + Invitation entity (token_hash, status, expires, max_uses) |
+| B2 | #133 | Token gen/hash service (CSPRNG ≥128-bit, human code, hash-only storage, optional JWS) |
+| B3 | #134 | POST /rest/mobile/invitations — nutritionist creates patient(INVITED) + invitation; returns link+code |
+| B4 | #135 | GET /rest/mobile/invitations/{token}/preview — public, rate-limited, inviter name only |
+| B5 | #136 | POST /rest/mobile/invitations/{token}/redeem — bind sub→patientAuthSub (authoritative gate; idempotent 200/409) |
+| B6 | #137 | CurrentPatient resolver + onboarding data gate (403 onboarding required) |
+| B7 | #138 | PATCH & GET /rest/mobile/patient/me — onboarding profile + status→ACTIVE |
+| B8 | #139 | POST /rest/mobile/invitations/{id}/revoke — nutritionist invalidates |
+| B9 | #140 | Auth0 Post-Login Action gate — first-login invitation validation (Google/Apple + DB) |
+| B10 | #141 | Security hardening — rate limits, enumeration protection, no-token logging |
+
+### F9.3 — Mobile issues (Escanor4323/nutriconsultas-mobile, patient-facing)
+| ID | # | Scope |
+|----|----|-------|
+| M1 | #62 | Invitation entry screen (manual code path) — features/invitation |
+| M2 | #63 | Invitation preview confirm screen ("Invited by Dr. X") |
+| M3 | #64 | Auth0 login with invitation_token parameter (extend AuthFlowController/auth_service) |
+| M4 | #65 | Redeem + onboarding routing + home bootstrap |
+| M5 | #66 | Onboarding profile form (PATCH /patient/me → ACTIVE) |
+| M6 | #67 | Deep links: Universal/App Links + app_links package (NEW dep) |
+| M7 | #68 | Not-installed landing fallback + paste-on-first-run hint |
+| M8 | #69 | (Optional, later) Vendor deferred deep linking (Branch/AppsFlyer) |
+
+### F9.4 — Cross-repo consumer↔endpoint map (two-way link)
+- M1 #62, M2 #63  → B4 #135 (preview)
+- M3 #64          → B9 #140 (Post-Login Action) + #108 (audience)
+- M4 #65          → B5 #136 (redeem) + B6 #137 (gate) + B7 #138 (GET /patient/me)
+- M5 #66          → B7 #138 (PATCH /patient/me)
+- M6 #67          → token rendering from B2 #133
+- M7 #68          → link/code issuance from B3 #134 (web landing page ownership TBD: backend/web team)
+- Nutritionist-only (NO patient-app consumer): B3 #134 (create), B8 #139 (revoke) — web/nutritionist audience.
+
+### F9.5 — Open design question (decide before building B1 data model)
+Multi-nutritionist / patient transfer: if a patient can relate to >1 nutritionist, model the relationship as its own
+table rather than a single `nutritionist_id` on Paciente (research §9). Unresolved.
+
+## F10 — AUTH0 SOCIAL LOGIN + INVITE RECONCILE (added 2026-07-16, AUTHORITATIVE; status: PLANNING — gated on product sign-off)
+Source issues: mobile Escanor4323/nutriconsultas-mobile#124 (planning) ↔ backend diego-torres/nutriconsultas#558
+(requirements counterpart). Full context lives in those two issue threads (body + all comments); this section is the
+distilled ground truth. Source plan doc: mobile `docs/plans/onboarding-finalize-and-email-reconcile.md` (Option B won).
+
+### F10.1 — Verified backend facts (override any doc that disagrees; verified on main 2026-07-15)
+- ALL four endpoints already exist: redeem (`/{token}/redeem`, `/by-code/{code}/redeem`), `POST /rest/mobile/invitations/reconcile`,
+  `GET`/`PATCH /rest/mobile/patient/me`. Reconcile shipped as PR #345 extension of #136 but is UNDOCUMENTED in every
+  contract doc (§F8.6 above, roadmap-v2, PATIENT-POST-LOGIN-GATE.md) — closing that gap is #558 §2
+  and is an agent/context-handoff blocker: an agent primed on docs alone would conclude reconcile does not exist.
+- Reconcile precedence (`PatientInvitationRedeemServiceImpl.reconcile()`, :76-116): (1) already-linked by sub →
+  idempotent; (2) `token` → token-only link; (3) `humanCode` → code-only link; (4) repair (invitation REDEEMED by sub
+  but Paciente.patientAuthSub unset); (5) LAST RESORT: JWT-email → PENDING invitation on INVITED Paciente.
+  ⇒ Code/token-only reconcile ALREADY links social subs; email match is only the empty-body fallback (#124 Decision 1: YES).
+- `email_verified` is checked NOWHERE (resolver, reconcile, Post-Login Action) — repo-wide grep zero hits.
+- SES v2 is already the invitation email transport (`SesPatientInvitationEmailSender`, `INVITATION_EMAIL_MODE=ses|console`,
+  Thymeleaf `templates/email/patient-invitation.html`, application.properties:106-113).
+- `Auth0UserLookupImpl` (Mgmt API `users-by-email`) is FULLY IMPLEMENTED, not a deferred stub (corrects mobile #99 plan
+  doc); only `AUTH0_MGMT_*` env wiring remains.
+- `PatchPatientOnboardingProfileRequest.email` is writable with NO JWT-claim check (`MobilePatientOnboardingService.java:98-100`).
+- `PatientOnboardingProfileDto.email` (GET /patient/me) is the NUTRITIONIST-entered address, not the IdP email.
+
+### F10.2 — Decisions (recorded in #558 security-review comment; do not re-derive)
+- `email_verified == true` required ONLY on the empty-body email-fallback reconcile path (step 5). Credential paths
+  (token/humanCode) stay email-agnostic. Claim must be mapped into the access token via Auth0 Action (→ #108).
+- Linking stays CONNECTION-BLIND (no branching on sub prefix); add audit logging of connection prefix + which
+  precedence step linked (TOKEN | HUMAN_CODE | REPAIR | EMAIL_FALLBACK).
+- Apple private relay (#124 Decision 3): ALLOW WITH CODE RECONCILE. Relay emails are Apple-verified functional
+  mailboxes but never match the nutritionist email; detect via `@privaterelay.appleid.com` suffix (the
+  `is_private_email` claim is unreliable). Outbound mail to relay addresses requires Apple Developer domain
+  registration + SPF/DKIM — same domain-auth effort as Auth0→SES verification mail.
+- Nutritionist email is HINT-ONLY (#124 Decision 2); the invite credential is the authoritative proof. Companion
+  control: brute-force posture on reconcile-by-code (`MobileInvitationController.java:145`).
+- DOB CANNOT come from IdPs (Apple: name+email only, name ONLY on first authorization — must persist immediately;
+  Google birthday needs sensitive People API scope). Hint copy promises name + email only; DOB is hand-entered.
+
+### F10.3 — Revised invite-funnel flow (workshop diagram; supersedes #124's "no new screens" and plan Option A)
+invite code → preview → confirm → **social-first auth step** (Google/Apple on top, "let your social provider fill
+this for you (name, email)", divider, "or fill by hand" db-auth with note "this will require your email to be
+verified") → **verify-your-data screen** (existing onboarding form prefilled from IdP claims; email displayed
+read-only FROM THE JWT, never from PatientOnboardingProfileDto.email) → confirm = existing submit → PATCH /patient/me
+→ ACTIVE. Reconcile always passes the stored credential (`InvitationFlowController.pendingCredential` must survive
+the Auth0 round-trip and the new screen).
+
+### F10.4 — Cross-repo work map (planning; insertion points verbatim in the issue threads)
+- Mobile #124: retarget `invitation_confirm_controller.continueToAuth()` / `auth_flow_controller.beginInvitationAuth()`
+  (:101-140); reuse `welcome_screen._socialRow()` + `MinutriSocialDot`; new route between invitationConfirm and
+  onboarding; swap `post_auth_coordinator._routeWithProfile()` (:174) for social logins; thread `email_verified`
+  through `UserModel` (currently dropped, available on `AuthService.userProfile`); i18n keys in en_US/es_MX.
+- Backend #558: `MobileJwtEmailResolver.java:20` (+verified flag); `PatientInvitationRedeemServiceImpl.java:101-115`
+  (step-5 gate); `docs/auth0/actions/patient-invitation-gate.js:148-162` (db-connection email_verified);
+  `MobilePatientOnboardingService.java:98-100` (email-lock: ignore or reject mismatch vs JWT claim); OpenAPI on
+  reconcile; §2 contract docs (ALIGNMENT-SPEC reconcile-matrix section + gate-doc sequence diagram).
+- Backend #108 (tenant, still open) gains: Auth0 custom email provider → SES; `email_verified` claim mapping into
+  access token; SPF/DKIM domain auth (shared prerequisite with Apple relay forwarding).
+- Open product call (logged, non-blocking): db-auth users — block at verify-data until verified, or proceed on invite
+  code and gate only email-dependent features (recommended).
