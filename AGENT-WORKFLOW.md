@@ -55,11 +55,17 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | [`SUPPORT-WORKFLOW.md`](SUPPORT-WORKFLOW.md) | Agent workflow for Soporte / Acerca de |
 | [`docs/support/SUPPORT-TICKETS-PLAN.md`](docs/support/SUPPORT-TICKETS-PLAN.md) | Menu, roles, data model, version bump |
 
+**Parallel track (mobile social reconcile — Auth0/SES + invite reconcile; do not mix into unrelated PRs):**
+
+| File | Purpose |
+|------|---------|
+| [`ISSUE-MOBILE-SOCIAL-RECONCILE.md`](ISSUE-MOBILE-SOCIAL-RECONCILE.md) | `[Mobile Social Reconcile]` epic #560–#569 (planning #558 / mobile #124) |
+
 **Current next issue (public booking):** None — epic ~~#245~~ **done**; ~~#246~~, ~~#247~~, ~~#248~~, ~~#297~~, ~~#300~~, ~~#302~~ done. Deferred follow-ups need new issues. See [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md).
 
 **Current next issue (mobile):** [#353 — Grocery list for patient diet plan](https://github.com/diego-torres/nutriconsultas/issues/353) (`in-progress`). ~~#354~~ ~~#352~~ **done** (PR [#357](https://github.com/diego-torres/nutriconsultas/pull/357)).
 
-**Planning in parallel (mobile):** [#558 — Auth0 social login reconcile alignment](https://github.com/diego-torres/nutriconsultas/issues/558) — **PLANNING**, cross-repo counterpart to mobile [#124](https://github.com/Escanor4323/nutriconsultas-mobile/issues/124). Implementation gated on product sign-off of #124's revised social-first flow — do not start code until that lands. See [Planning — #558](#planning--558-auth0-social-login-reconcile-alignment) below for insertion points.
+**Current next issue (mobile social reconcile):** [#569](https://github.com/diego-torres/nutriconsultas/issues/569) track docs (or ops [#561](https://github.com/diego-torres/nutriconsultas/issues/561)–[#563](https://github.com/diego-torres/nutriconsultas/issues/563) in parallel). Epic [#560](https://github.com/diego-torres/nutriconsultas/issues/560). Planning source [#558](https://github.com/diego-torres/nutriconsultas/issues/558) / mobile [#124](https://github.com/Escanor4323/nutriconsultas-mobile/issues/124). See [`ISSUE-MOBILE-SOCIAL-RECONCILE.md`](ISSUE-MOBILE-SOCIAL-RECONCILE.md) and [Planning — #558](#planning--558-auth0-social-login-reconcile-alignment).
 
 **Current next issue (subscription):** Registered track **complete** (~~#244~~ ✓ on `subscription/244-contact-form-prefill`). Triage open `[Subscription]` GitHub issues. See [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md).
 
@@ -79,7 +85,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 | **API surface** | All mobile endpoints live under `/rest/mobile/patient/` as plain JSON (not DataTables-shaped like the admin `*RestController`s). |
 | **Identity (security-critical)** | JWT `sub` → **`Paciente.patientAuthSub`** (#107 ✓ PR #117). **Never `Paciente.userId`** — that is the NUTRITIONIST's Auth0 sub / tenant owner (ALIGNMENT-SPEC §F2). `PatientLinkageFilter` returns **403** if no linked `Paciente`. |
 | **Ownership / IDOR** | Return only the authenticated patient's rows. On an ownership miss prefer **404** (not 403) so existence isn't leaked (esp. #92). Never return cross-tenant data. |
-| **Backend state** | **Phase 0 done** (#107, #109, #110). **All endpoints #91–#99 done** on `main`. **Cross-cutting done** (#111–#116). **#156**, **#46**, **#132–#141** done. **Phase 2 invitation onboarding complete.** Next mobile work requires new issues. Requires `AUTH_AUDIENCE` env var. **#558 (Auth0 social login reconcile alignment) is PLANNING** — reconcile-by-code already works (#136/PR #345) but needs a security-review sign-off + contract docs before further changes; do not implement until product signs off on mobile #124. |
+| **Backend state** | **Phase 0 done** (#107, #109, #110). **All endpoints #91–#99 done** on `main`. **Cross-cutting done** (#111–#116). **#156**, **#46**, **#132–#141** done. **Phase 2 invitation onboarding complete.** Requires `AUTH_AUDIENCE` env var. **#558 planning → implementation track [#560](https://github.com/diego-torres/nutriconsultas/issues/560)–#569** ([`ISSUE-MOBILE-SOCIAL-RECONCILE.md`](ISSUE-MOBILE-SOCIAL-RECONCILE.md)): Auth0/SES ops, verified-email fallback, PATCH email-lock, reconcile contract docs. |
 | **Auth0UserLookup correction** | `Auth0UserLookupImpl` (Management API `users-by-email`) is **fully implemented**, not a deferred stub — only `AUTH0_MGMT_*` env wiring remains (surfaced during #558 audit; corrects an assumption in mobile's `docs/plans/issue-99-invite-auth-routing.md`). |
 | **DTO envelope** | `ApiResponse<T>`; lists in `PagedResponse<T>` or `CursorPagedResponse<T>` (messages); ISO-8601 date strings. See #110. |
 | **Schema ground truth** | ALIGNMENT-SPEC §F8 field-name map (`nombre→dietaName`, `energia→totalKcal`, `lipidos→totalGrasas`, `hidratosDeCarbono→totalCarbohidratos`, `Ingesta.nombre→tipo`); enums `EventStatus`/`PacienteDietaStatus` (no INACTIVE)/`NivelPeso`. Serialization aliases only — **no DB schema changes** for field renames. |
@@ -374,9 +380,9 @@ Precise list of what changed. For each technical term, add a one-line plain-Engl
 
 ## Planning — #558 Auth0 social login reconcile alignment
 
-**Status: PLANNING.** Cross-repo counterpart to mobile [#124](https://github.com/Escanor4323/nutriconsultas-mobile/issues/124). **Do not implement until product signs off on #124's revised social-first flow.** Full resolved-decisions record lives in [`ISSUE.md`](ISSUE.md#558-resolved-decisions) — read it before touching any file below. This section exists so a future implementation agent can start without re-exploring the codebase.
+**Status: TRACK OPEN.** Planning issue [#558](https://github.com/diego-torres/nutriconsultas/issues/558); implementation epic [#560](https://github.com/diego-torres/nutriconsultas/issues/560)–[#569](https://github.com/diego-torres/nutriconsultas/issues/569) in [`ISSUE-MOBILE-SOCIAL-RECONCILE.md`](ISSUE-MOBILE-SOCIAL-RECONCILE.md). Cross-repo counterpart to mobile [#124](https://github.com/Escanor4323/nutriconsultas-mobile/issues/124). Full resolved-decisions record lives in [`ISSUE.md`](ISSUE.md#558-resolved-decisions) — read it before touching any file below.
 
-**Relationship to #108 (Auth0 tenant, still open):** #558's audit surfaced three *new* tenant items that belong on #108, not in backend Java:
+**Relationship to #108 (Auth0 tenant, still open):** #558's audit surfaced tenant items now owned by the social-reconcile track (#561–#563), with a cross-link on #108 for audience/scopes:
 - Auth0 custom email provider → Amazon SES (Dashboard → Branding → Email Provider) — carries verification mail for the fill-by-hand (db-connection) signup path. SES is already the transport for invitation email (`SesPatientInvitationEmailSender`, `application.properties:106-113`); this is tenant config, not new code.
 - `email_verified` claim mapping into the **access token** (Auth0 Action/claim rule) — the resource-server JWT does not carry this claim today; without the mapping, none of the backend insertion points below have anything to read.
 - SPF/DKIM domain authentication on the sending domain — shared prerequisite with Apple private-relay outbound mail (see `ISSUE.md` §1c).
@@ -470,8 +476,8 @@ gh pr create ...
 | Gate | Issues | When |
 |------|--------|------|
 | Phase 0 foundation | ~~#107~~ ✓, ~~#109~~ ✓, ~~#110~~ ✓ | **Done** |
-| Auth linkage (tenant) | #108 (tenant config; prod audience deployed #118; new items from #558: SES email provider, `email_verified` claim mapping, SPF/DKIM domain auth) | Before full Auth0 tenant hardening |
-| Social login reconcile alignment | **#558** (planning — reconcile-by-code security review, contract docs, `patient/me` alignment) | Gated on product sign-off of mobile [#124](https://github.com/Escanor4323/nutriconsultas-mobile/issues/124) |
+| Auth linkage (tenant) | #108 (audience/scopes); SES/`email_verified`/relay ops → [#561](https://github.com/diego-torres/nutriconsultas/issues/561)–[#563](https://github.com/diego-torres/nutriconsultas/issues/563) | Before full Auth0 tenant hardening |
+| Social login reconcile alignment | **#560–#569** ([`ISSUE-MOBILE-SOCIAL-RECONCILE.md`](ISSUE-MOBILE-SOCIAL-RECONCILE.md); planning #558 / mobile [#124](https://github.com/Escanor4323/nutriconsultas-mobile/issues/124)) | **NEXT** #569 or ops #561–#563 |
 | Endpoints | ~~#91–#99~~ ✓ | **Done** (PR #153) |
 | Cross-cutting | ~~#111~~ ✓, ~~#112~~ ✓ (OpenAPI), ~~#115~~ ✓ (PHI audit) | **Done** |
 | Hardening / additive | ~~#113~~ ✓, ~~#116~~ ✓ (`senderDisplayName`), ~~#114~~ ✓ (nutritionist reply) | **Done** |
@@ -481,7 +487,7 @@ gh pr create ...
 
 **Patient mobile API on `main`:** Phase 0 + endpoints **#91–#99** done; cross-cutting **#111–#116** done. Phase 2 invitation onboarding **#132–#141 complete** (PRs #214, #229, #319, #324–#333).
 
-**Next (mobile):** Phase 2 invitation onboarding **complete** (~~#141~~). **Planning in parallel:** #558 (Auth0 social login reconcile alignment) — see [Planning — #558](#planning--558-auth0-social-login-reconcile-alignment); gated on product sign-off of mobile #124.
+**Next (mobile):** Phase 2 invitation onboarding **complete** (~~#141~~). **Social reconcile track:** epic [#560](https://github.com/diego-torres/nutriconsultas/issues/560)–#569 — see [`ISSUE-MOBILE-SOCIAL-RECONCILE.md`](ISSUE-MOBILE-SOCIAL-RECONCILE.md) and [Planning — #558](#planning--558-auth0-social-login-reconcile-alignment).
 
 **Schema track:** ~~#46~~ Liquibase baseline (PR #196). Changesets **003–007** on `main` (subscription, patient invitation). All new edits → forward changesets only.
 

@@ -628,6 +628,12 @@ Issue registry: [`ISSUE-SUPPORT.md`](ISSUE-SUPPORT.md). Plan: [`docs/support/SUP
 
 **Epic #540–#548** (2026-07-13): Topbar **Perfil / Soporte / Acerca de / Salir**; nutritionist own tickets + create form; platform-admin triage (user, subscription, title; update/close; activos/cerrados filter); Acerca de app version + README bump process. **Track complete** — ~~#540–#548~~ **done**. Orthogonal to public `ContactInquiry`.
 
+## Mobile social reconcile (tracking)
+
+Issue registry: [`ISSUE-MOBILE-SOCIAL-RECONCILE.md`](ISSUE-MOBILE-SOCIAL-RECONCILE.md). Planning: [#558](https://github.com/diego-torres/nutriconsultas/issues/558). Mobile: [Escanor4323/nutriconsultas-mobile#124](https://github.com/Escanor4323/nutriconsultas-mobile/issues/124).
+
+**Epic #560–#569** (2026-07-18): Auth0 social invite reconcile (credential-first), `email_verified` fallback, PATCH email-lock, contract docs, plus **Auth0 → Amazon SES** verification mail and domain/Apple private relay ops. **NEXT:** [#569](https://github.com/diego-torres/nutriconsultas/issues/569) (or ops [#561](https://github.com/diego-torres/nutriconsultas/issues/561)–[#563](https://github.com/diego-torres/nutriconsultas/issues/563) in parallel).
+
 ## Resources
 
 - [Spring Boot Documentation](https://spring.io/projects/spring-boot)
