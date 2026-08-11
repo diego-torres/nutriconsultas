@@ -141,25 +141,32 @@ public class FcmHttpV1Client {
 	}
 
 	private String accessToken() throws Exception {
-		GoogleCredentials current = credentials;
-		if (current == null) {
-			synchronized (this) {
-				current = credentials;
-				if (current == null) {
-					current = GoogleCredentials
-						.fromStream(new ByteArrayInputStream(
-								properties.getFcm().getServiceAccountJson().getBytes(StandardCharsets.UTF_8)))
-						.createScoped(FCM_SCOPE);
-					credentials = current;
-					if (log.isDebugEnabled()) {
-						log.debug("Loaded FCM service account credentials for projectId={}",
-								LogRedaction.redactUserId(properties.getFcm().getProjectId()));
-					}
-				}
-			}
-		}
+		final GoogleCredentials current = resolveCredentials();
 		current.refreshIfExpired();
 		return current.getAccessToken().getTokenValue();
+	}
+
+	private GoogleCredentials resolveCredentials() throws Exception {
+		GoogleCredentials current = credentials;
+		if (current != null) {
+			return current;
+		}
+		synchronized (this) {
+			current = credentials;
+			if (current != null) {
+				return current;
+			}
+			current = GoogleCredentials
+				.fromStream(new ByteArrayInputStream(
+						properties.getFcm().getServiceAccountJson().getBytes(StandardCharsets.UTF_8)))
+				.createScoped(FCM_SCOPE);
+			credentials = current;
+			if (log.isDebugEnabled()) {
+				log.debug("Loaded FCM service account credentials for projectId={}",
+						LogRedaction.redactUserId(properties.getFcm().getProjectId()));
+			}
+			return current;
+		}
 	}
 
 }

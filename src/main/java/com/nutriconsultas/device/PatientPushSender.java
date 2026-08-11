@@ -4,6 +4,7 @@ package com.nutriconsultas.device;
  * Sends best-effort push notifications to a patient's registered devices (#575).
  * Implementations must never throw into the caller for transport failures.
  */
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface PatientPushSender {
 
 	/**
