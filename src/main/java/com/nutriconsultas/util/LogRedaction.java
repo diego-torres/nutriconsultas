@@ -269,4 +269,18 @@ public final class LogRedaction {
 		return "email[" + email.charAt(0) + "***@" + email.substring(atIndex + 1) + "]";
 	}
 
+	/**
+	 * Redacts a push device token for logging. Shows only a short prefix so ops can
+	 * correlate without exposing the full token.
+	 * @param token the APNs or FCM registration token
+	 * @return a safe truncated representation (e.g., "deviceToken[abc123...REDACTED]")
+	 */
+	public static String redactDeviceToken(final String token) {
+		if (token == null || token.isEmpty()) {
+			return "deviceToken[null]";
+		}
+		final String prefix = token.length() > 6 ? token.substring(0, 6) : token;
+		return "deviceToken[" + prefix + "...REDACTED]";
+	}
+
 }

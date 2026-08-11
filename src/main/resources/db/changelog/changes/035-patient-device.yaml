@@ -1,0 +1,74 @@
+databaseChangeLog:
+  - changeSet:
+      id: 035-patient-device
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: patient_device
+      changes:
+        - createTable:
+            tableName: patient_device
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: paciente_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: platform
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: token
+                  type: VARCHAR(512)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: app_version
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_seen_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: patient_device
+            baseColumnNames: paciente_id
+            referencedTableName: paciente
+            referencedColumnNames: id
+            constraintName: fk_patient_device_paciente
+        - createIndex:
+            indexName: idx_patient_device_paciente_id
+            tableName: patient_device
+            columns:
+              - column:
+                  name: paciente_id
+        - createIndex:
+            indexName: idx_patient_device_token
+            tableName: patient_device
+            columns:
+              - column:
+                  name: token
