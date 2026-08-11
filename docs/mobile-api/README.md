@@ -14,6 +14,9 @@ Canonical cross-repo contracts for the `[Mobile API]` track. Indexed from [`../.
 | [`../auth0/PATIENT-POST-LOGIN-GATE.md`](../auth0/PATIENT-POST-LOGIN-GATE.md) | Auth0 Post-Login invitation gate (#140) — Action script + deployment |
 | [`../api/openapi-mobile.yaml`](../api/openapi-mobile.yaml) | OpenAPI 3.1 export (#112, PR #164); regen: `scripts/export-openapi-mobile.sh` |
 | [`PUSH-SETUP.md`](PUSH-SETUP.md) | APNs + FCM HTTP v1 credentials, local enable, key rotation (#575) |
+| [`PUSH-CONTRACT.md`](PUSH-CONTRACT.md) | Devices API + push payload contract for mobile (#577); OpenAPI twin |
+
+**Status (2026-08-11):** Epic [#573](https://github.com/diego-torres/nutriconsultas/issues/573) mobile push — ~~#574~~–~~#577~~ backend contract/docs. (Older grocery status below retained.)
 
 **Status (2026-06-30):** ~~#353~~ **in-progress** — grocery list endpoint. ~~#354~~ ~~#352~~ **done** (PR [#357](https://github.com/diego-torres/nutriconsultas/pull/357)). ~~#349~~ **done** (PR [#356](https://github.com/diego-torres/nutriconsultas/pull/356)).
 
