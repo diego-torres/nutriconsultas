@@ -16,7 +16,7 @@ Server-side push gateway for **killed/background** patient message alerts. Our A
 | Soft disable | `PUSH_ENABLED=false` or missing creds → sender no-ops (local/dev safe) |
 | Invalid tokens | APNs `BadDeviceToken`/`Unregistered` and FCM `UNREGISTERED` delete the `patient_device` row |
 
-Device register/deregister: `POST`/`DELETE` `/rest/mobile/patient/devices` (#574). Emit-on-reply is [#576](https://github.com/diego-torres/nutriconsultas/issues/576).
+Device register/deregister: `POST`/`DELETE` `/rest/mobile/patient/devices` (#574). Emit-on-reply: nutritionist `POST` message thread calls `PatientPushSender` after commit (#576).
 
 ---
 

@@ -8,6 +8,8 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -29,10 +31,13 @@ public class PatientMessageService {
 
 	private final PacienteRepository pacienteRepository;
 
+	private final PatientMessagePushNotifier patientMessagePushNotifier;
+
 	public PatientMessageService(final PatientMessageRepository patientMessageRepository,
-			final PacienteRepository pacienteRepository) {
+			final PacienteRepository pacienteRepository, final PatientMessagePushNotifier patientMessagePushNotifier) {
 		this.patientMessageRepository = patientMessageRepository;
 		this.pacienteRepository = pacienteRepository;
+		this.patientMessagePushNotifier = patientMessagePushNotifier;
 	}
 
 	@Transactional(readOnly = true)
@@ -81,6 +86,7 @@ public class PatientMessageService {
 		message.setReadByNutritionist(true);
 		final PatientMessage saved = patientMessageRepository.save(message);
 		log.info("Nutritionist sent patient message: {}", LogRedaction.redactPatientMessage(saved.getId()));
+		schedulePushAfterCommit(paciente.getId(), saved.getId());
 		return PatientMessageThreadItemDto.fromEntity(saved);
 	}
 
@@ -92,6 +98,19 @@ public class PatientMessageService {
 			log.info("Marked {} patient messages read for patient {}", updated,
 					LogRedaction.redactPaciente(pacienteId));
 		}
+	}
+
+	private void schedulePushAfterCommit(final Long pacienteId, final Long messageId) {
+		if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+			patientMessagePushNotifier.notifyNewNutritionistMessage(pacienteId, messageId);
+			return;
+		}
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				patientMessagePushNotifier.notifyNewNutritionistMessage(pacienteId, messageId);
+			}
+		});
 	}
 
 	private Paciente requireOwnedPaciente(final Long pacienteId, final String userId) {
