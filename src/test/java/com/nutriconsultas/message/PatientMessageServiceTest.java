@@ -39,6 +39,9 @@ class PatientMessageServiceTest {
 	@Mock
 	private PacienteRepository pacienteRepository;
 
+	@Mock
+	private PatientMessagePushNotifier patientMessagePushNotifier;
+
 	@Test
 	void listThread_returnsAscendingMessages() {
 		final Paciente paciente = samplePaciente(1L);
@@ -88,10 +91,11 @@ class PatientMessageServiceTest {
 		assertThat(captor.getValue().getBody()).isEqualTo("Respuesta");
 		assertThat(captor.getValue().isReadByNutritionist()).isTrue();
 		assertThat(captor.getValue().isReadByPatient()).isFalse();
+		verify(patientMessagePushNotifier).notifyNewNutritionistMessage(1L, 99L);
 	}
 
 	@Test
-	void sendAsNutritionist_whenBodyBlank_throwsBadRequest() {
+	void sendAsNutritionist_whenBodyBlank_doesNotNotifyPush() {
 		final Paciente paciente = samplePaciente(1L);
 		when(pacienteRepository.findByIdAndUserId(1L, USER_ID)).thenReturn(Optional.of(paciente));
 
@@ -101,6 +105,7 @@ class PatientMessageServiceTest {
 			.isEqualTo(HttpStatus.BAD_REQUEST);
 
 		verify(patientMessageRepository, never()).save(any(PatientMessage.class));
+		verify(patientMessagePushNotifier, never()).notifyNewNutritionistMessage(any(), any());
 	}
 
 	@Test
@@ -113,6 +118,7 @@ class PatientMessageServiceTest {
 			.isEqualTo(HttpStatus.NOT_FOUND);
 
 		verify(patientMessageRepository, never()).save(any(PatientMessage.class));
+		verify(patientMessagePushNotifier, never()).notifyNewNutritionistMessage(any(), any());
 	}
 
 	@Test
