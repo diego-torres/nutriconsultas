@@ -42,8 +42,8 @@ Spring maps these under `nutriconsultas.push.*` in `application.properties`.
 ## Local / staging checklist
 
 1. Keep `PUSH_ENABLED=false` until APNs and/or FCM creds are present.
-2. Register a device via the mobile app (or curl) against `#574` endpoints.
-3. Call `PatientPushSender.send(pacienteId, PushEvent.newMessage(messageId))` from a temporary admin/test path, or wait for #576.
+2. Register a device via the mobile app (or curl) against `/rest/mobile/patient/devices` — see [`PUSH-CONTRACT.md`](PUSH-CONTRACT.md).
+3. Have a nutritionist send a thread reply (web) — after commit the API emits `NEW_MESSAGE` via `PatientPushSender` (#576).
 4. Confirm startup log: `Patient push enabled (apnsConfigured=..., fcmConfigured=...)` — never logs key material or tokens.
 
 ---

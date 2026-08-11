@@ -63,7 +63,7 @@ flutter_pdfview, connectivity_plus, envied (env config). (notification deps alre
 | FL-6 Progress + chart          | #16 Progress snapshot, #20 Progress chart(fl_chart), #8 progress models, #15 ProgressRepository | #98, #99 | fl_chart dep |
 | FL-7 Messaging                 | #19 Messages feature, #6 message model, #14 MessagesRepository | #96, #97 | |
 | FL-8 PDF download/open         | part of #18 | #95 | flutter_pdfview/share |
-| FL-9 Push (FCM)                | (none — GAP; notification_service exists) | #96 | NEW issue |
+| FL-9 Push (FCM)                | Backend epic #573 (#574–#577): devices + APNs/FCM HTTP v1 + emit on nutritionist reply; contract [`PUSH-CONTRACT.md`](PUSH-CONTRACT.md) | mobile #26 | **Backend shipped (PRs stacked); mobile killed-state E2E remaining** |
 | infra                          | #2 deps, #4 routes, #11 DI bootstrap, #21 component lib | Phase 0 | |
 
 ## BACKEND ENDPOINT ↔ MOBILE CONSUMER cross-reference (for two-way linking)

@@ -451,12 +451,13 @@ The workflow uses the `ci` Maven profile which enables strict linting (fails on 
 
 ### Git Pre-commit Hook
 
-A pre-commit hook is installed to validate code quality before each commit. The hook:
+A pre-commit hook is installed to block common mistakes before each commit. The hook:
 
-1. Checks if any Java files are staged
-2. Runs checkstyle validation to ensure code quality standards
-3. Blocks the commit if checkstyle violations are found
-4. Allows the commit to proceed if all checks pass
+1. Runs **gitleaks** on the **staged** diff (secret protection — always)
+2. When Java files are staged: runs **checkstyle** and the logging security script
+3. Blocks the commit if any check fails
+
+Requires [`gitleaks`](https://github.com/gitleaks/gitleaks) on your `PATH` (e.g. `brew install gitleaks`). Config: [`.gitleaks.toml`](.gitleaks.toml).
 
 #### Installation
 
@@ -477,7 +478,7 @@ The hook will run automatically on every commit.
 
 #### Usage
 
-**To bypass the hook** (not recommended):
+**To bypass the hook** (not recommended — especially not for secret findings):
 
 ```bash
 git commit --no-verify
@@ -489,4 +490,8 @@ git commit --no-verify
 .git/hooks/pre-commit
 ```
 
-**Note:** The hook formats all Java files in the project (Spring Java Format doesn't support formatting only specific files). If you have uncommitted changes, they will be formatted as well. It's recommended to commit or stash changes before committing.
+**To scan the whole working tree:**
+
+```bash
+gitleaks detect --source . --config .gitleaks.toml --no-banner
+```
