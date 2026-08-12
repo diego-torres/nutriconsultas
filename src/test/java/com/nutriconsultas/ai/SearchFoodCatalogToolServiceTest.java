@@ -35,8 +35,8 @@ class SearchFoodCatalogToolServiceTest {
 	@Test
 	void searchReturnsMappedItemsWithDefaultLimit() {
 		final Alimento avena = sampleAlimento(1L, "Avena", "Cereales", "taza", 0.5, 150);
-		when(alimentosRepository.countForCatalogSearch("%avena%", null)).thenReturn(1L);
-		when(alimentosRepository.findForCatalogSearch(eq("%avena%"), eq(null), any(Pageable.class)))
+		when(alimentosRepository.countBySearchTerm("%avena%")).thenReturn(1L);
+		when(alimentosRepository.findBySearchTerm(eq("%avena%"), any(Pageable.class)))
 			.thenReturn(new PageImpl<>(List.of(avena)));
 
 		final AiToolResult<FoodCatalogSearchData> result = service.search(NUTRITIONIST_ID, "avena", null, null);
@@ -53,7 +53,7 @@ class SearchFoodCatalogToolServiceTest {
 		assertThat(result.data().truncated()).isFalse();
 
 		final ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-		verify(alimentosRepository).findForCatalogSearch(eq("%avena%"), eq(null), pageableCaptor.capture());
+		verify(alimentosRepository).findBySearchTerm(eq("%avena%"), pageableCaptor.capture());
 		assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(SearchFoodCatalogToolServiceImpl.DEFAULT_LIMIT);
 	}
 
@@ -72,8 +72,8 @@ class SearchFoodCatalogToolServiceTest {
 
 	@Test
 	void searchMarksTruncatedWhenMoreMatchesExist() {
-		when(alimentosRepository.countForCatalogSearch("%arroz%", null)).thenReturn(40L);
-		when(alimentosRepository.findForCatalogSearch(eq("%arroz%"), eq(null), any(Pageable.class)))
+		when(alimentosRepository.countBySearchTerm("%arroz%")).thenReturn(40L);
+		when(alimentosRepository.findBySearchTerm(eq("%arroz%"), any(Pageable.class)))
 			.thenReturn(new PageImpl<>(List.of(sampleAlimento(3L, "Arroz", "Cereales", "taza", 1.0, 200))));
 
 		final AiToolResult<FoodCatalogSearchData> result = service.search(NUTRITIONIST_ID, "arroz", null, 10);
@@ -119,9 +119,8 @@ class SearchFoodCatalogToolServiceTest {
 
 	@Test
 	void searchReturnsEmptyListWhenNoMatches() {
-		when(alimentosRepository.countForCatalogSearch("%xyzq%", null)).thenReturn(0L);
-		when(alimentosRepository.findForCatalogSearch(eq("%xyzq%"), eq(null), any(Pageable.class)))
-			.thenReturn(Page.empty());
+		when(alimentosRepository.countBySearchTerm("%xyzq%")).thenReturn(0L);
+		when(alimentosRepository.findBySearchTerm(eq("%xyzq%"), any(Pageable.class))).thenReturn(Page.empty());
 
 		final AiToolResult<FoodCatalogSearchData> result = service.search(NUTRITIONIST_ID, "xyzq", null, null);
 

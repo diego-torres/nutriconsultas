@@ -213,7 +213,7 @@ class OpenAiClientServiceTest {
 	}
 
 	@Test
-	void chatCompletionSerializesOptionalParameters() {
+	void chatCompletionSerializesOptionalParametersForClassicModels() {
 		mockServer.expect(requestTo("https://api.openai.com/v1/chat/completions")).andExpect(content().json("""
 				{
 				  "model": "gpt-test",
@@ -226,6 +226,33 @@ class OpenAiClientServiceTest {
 				""", false)).andRespond(withSuccess("""
 				{
 				  "id": "chatcmpl-json",
+				  "choices": [{
+				    "message": {"role":"assistant","content":"{\\"decision\\":\\"ALLOW\\"}"},
+				    "finish_reason": "stop"
+				  }]
+				}
+				""", MediaType.APPLICATION_JSON));
+
+		service.chatCompletion(new OpenAiChatCompletionRequest(List.of(OpenAiChatMessage.user("Clasifica")), List.of(),
+				OpenAiCompletionParameters.scopeClassifier(200)));
+
+		mockServer.verify();
+	}
+
+	@Test
+	void chatCompletionUsesMaxCompletionTokensWithoutTemperatureForGpt5() {
+		properties.getOpenai().setModel("gpt-5-mini");
+		mockServer.expect(requestTo("https://api.openai.com/v1/chat/completions")).andExpect(content().json("""
+				{
+				  "model": "gpt-5-mini",
+				  "messages": [{"role":"user","content":"Clasifica"}],
+				  "store": false,
+				  "max_completion_tokens": 200,
+				  "response_format": {"type":"json_object"}
+				}
+				""", true)).andRespond(withSuccess("""
+				{
+				  "id": "chatcmpl-json-gpt5",
 				  "choices": [{
 				    "message": {"role":"assistant","content":"{\\"decision\\":\\"ALLOW\\"}"},
 				    "finish_reason": "stop"

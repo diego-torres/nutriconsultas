@@ -93,9 +93,12 @@ public class OpenAiClientServiceImpl implements OpenAiClientService {
 			function.put("parameters", tool.parameters());
 			tools.add(new OpenAiApiTool("function", function));
 		}
-		return new OpenAiApiRequest(properties.getOpenai().getModel(), messages, tools.isEmpty() ? null : tools,
-				properties.getOpenai().isStore(), request.parameters().temperature(), request.parameters().maxTokens(),
-				responseFormat(request.parameters().responseFormatType()));
+		final String model = properties.getOpenai().getModel();
+		final boolean reasoningStyle = OpenAiModelCapabilities.isReasoningStyleModel(model);
+		final Integer maxTokens = request.parameters().maxTokens();
+		return new OpenAiApiRequest(model, messages, tools.isEmpty() ? null : tools, properties.getOpenai().isStore(),
+				reasoningStyle ? null : request.parameters().temperature(), reasoningStyle ? null : maxTokens,
+				reasoningStyle ? maxTokens : null, responseFormat(request.parameters().responseFormatType()));
 	}
 
 	private static Map<String, String> responseFormat(final String type) {
@@ -139,6 +142,7 @@ public class OpenAiClientServiceImpl implements OpenAiClientService {
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private record OpenAiApiRequest(String model, List<OpenAiApiMessage> messages, List<OpenAiApiTool> tools,
 			boolean store, Double temperature, @JsonProperty("max_tokens") Integer maxTokens,
+			@JsonProperty("max_completion_tokens") Integer maxCompletionTokens,
 			@JsonProperty("response_format") Map<String, String> responseFormat) {
 	}
 

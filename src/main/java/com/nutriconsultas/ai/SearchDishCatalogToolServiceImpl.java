@@ -65,10 +65,18 @@ public class SearchDishCatalogToolServiceImpl implements SearchDishCatalogToolSe
 				nutritionistId.trim());
 		final String searchPattern = "%" + trimmedQuery + "%";
 		final String ingestasFilter = buildIngestasFilter(ingestasSugeridas);
-		final List<Platillo> platillos = platilloRepository
-			.findForAuthorizedCatalogSearch(authorizedUserIds, searchPattern, ingestasFilter,
-					PageRequest.of(0, effectiveLimit))
-			.getContent();
+		final PageRequest pageRequest = PageRequest.of(0, effectiveLimit);
+		final List<Platillo> platillos;
+		if (ingestasFilter == null) {
+			// Avoid JPQL null string params on PostgreSQL (lower(bytea) does not exist).
+			platillos = platilloRepository.findForAuthorizedCatalogSearch(authorizedUserIds, searchPattern, pageRequest)
+				.getContent();
+		}
+		else {
+			platillos = platilloRepository
+				.findForAuthorizedCatalogSearchByIngestas(authorizedUserIds, searchPattern, ingestasFilter, pageRequest)
+				.getContent();
+		}
 		final List<DishCatalogSearchItem> items = platillos.stream()
 			.map(platillo -> toItem(platillo, nutritionistId.trim()))
 			.toList();

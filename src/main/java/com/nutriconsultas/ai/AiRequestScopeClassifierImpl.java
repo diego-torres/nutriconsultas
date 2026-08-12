@@ -77,7 +77,7 @@ public class AiRequestScopeClassifierImpl implements AiRequestScopeClassifier {
 		}
 		catch (final RuntimeException ex) {
 			if (log.isWarnEnabled()) {
-				log.warn("AI scope classifier failed, allowing request");
+				log.warn("AI scope classifier failed, allowing request: {}", ex.getMessage());
 			}
 			return Optional.empty();
 		}

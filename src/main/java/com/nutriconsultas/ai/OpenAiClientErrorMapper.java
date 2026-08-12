@@ -16,29 +16,30 @@ final class OpenAiClientErrorMapper {
 	static OpenAiClientException mapResponseException(final RestClientResponseException ex) {
 		final int status = ex.getStatusCode().value();
 		final String providerMessage = extractProviderMessage(ex.getResponseBodyAsString());
+		final String providerHint = StringUtils.hasText(providerMessage) ? " providerMessage=" + providerMessage : "";
 		if (status == HttpStatus.UNAUTHORIZED.value() || status == HttpStatus.FORBIDDEN.value()) {
 			return new OpenAiClientException(OpenAiClientException.ErrorKind.AUTH, HttpStatus.BAD_GATEWAY,
-					AiErrorMessages.OPENAI_AUTH, "OpenAI auth failure status=" + status, ex);
+					AiErrorMessages.OPENAI_AUTH, "OpenAI auth failure status=" + status + providerHint, ex);
 		}
 		if (status == HttpStatus.TOO_MANY_REQUESTS.value()) {
 			return new OpenAiClientException(OpenAiClientException.ErrorKind.RATE_LIMIT, HttpStatus.TOO_MANY_REQUESTS,
-					AiErrorMessages.OPENAI_RATE_LIMIT, "OpenAI rate limit status=429", ex);
+					AiErrorMessages.OPENAI_RATE_LIMIT, "OpenAI rate limit status=429" + providerHint, ex);
 		}
 		if (status == HttpStatus.NOT_FOUND.value() && isModelError(providerMessage)) {
 			return new OpenAiClientException(OpenAiClientException.ErrorKind.MODEL_NOT_FOUND, HttpStatus.BAD_GATEWAY,
-					AiErrorMessages.OPENAI_MODEL_NOT_FOUND, "OpenAI model not found status=404", ex);
+					AiErrorMessages.OPENAI_MODEL_NOT_FOUND, "OpenAI model not found status=404" + providerHint, ex);
 		}
 		if (status == HttpStatus.BAD_REQUEST.value()) {
 			return new OpenAiClientException(OpenAiClientException.ErrorKind.INVALID_REQUEST, HttpStatus.BAD_GATEWAY,
-					AiErrorMessages.OPENAI_INVALID_REQUEST, "OpenAI invalid request status=400", ex);
+					AiErrorMessages.OPENAI_INVALID_REQUEST, "OpenAI invalid request status=400" + providerHint, ex);
 		}
 		if (status == HttpStatus.BAD_GATEWAY.value() || status == HttpStatus.SERVICE_UNAVAILABLE.value()
 				|| status == HttpStatus.GATEWAY_TIMEOUT.value()) {
 			return new OpenAiClientException(OpenAiClientException.ErrorKind.UNAVAILABLE, HttpStatus.BAD_GATEWAY,
-					AiErrorMessages.OPENAI_UNAVAILABLE, "OpenAI unavailable status=" + status, ex);
+					AiErrorMessages.OPENAI_UNAVAILABLE, "OpenAI unavailable status=" + status + providerHint, ex);
 		}
 		return new OpenAiClientException(OpenAiClientException.ErrorKind.UNKNOWN, HttpStatus.BAD_GATEWAY,
-				AiErrorMessages.OPENAI_UNKNOWN, "OpenAI error status=" + status, ex);
+				AiErrorMessages.OPENAI_UNKNOWN, "OpenAI error status=" + status + providerHint, ex);
 	}
 
 	static OpenAiClientException timeout(final Exception ex) {

@@ -61,10 +61,19 @@ public class SearchFoodCatalogToolServiceImpl implements SearchFoodCatalogToolSe
 
 		final String searchPattern = "%" + trimmedQuery + "%";
 		final String clasificacionFilter = buildClasificacionFilter(clasificacion);
-		final long totalMatches = alimentosRepository.countForCatalogSearch(searchPattern, clasificacionFilter);
-		final List<Alimento> alimentos = alimentosRepository
-			.findForCatalogSearch(searchPattern, clasificacionFilter, PageRequest.of(0, effectiveLimit))
-			.getContent();
+		final PageRequest pageRequest = PageRequest.of(0, effectiveLimit);
+		final long totalMatches;
+		final List<Alimento> alimentos;
+		if (clasificacionFilter == null) {
+			// Avoid JPQL null string params on PostgreSQL (lower(bytea) does not exist).
+			totalMatches = alimentosRepository.countBySearchTerm(searchPattern);
+			alimentos = alimentosRepository.findBySearchTerm(searchPattern, pageRequest).getContent();
+		}
+		else {
+			totalMatches = alimentosRepository.countForCatalogSearch(searchPattern, clasificacionFilter);
+			alimentos = alimentosRepository.findForCatalogSearch(searchPattern, clasificacionFilter, pageRequest)
+				.getContent();
+		}
 		final List<FoodCatalogSearchItem> items = alimentos.stream().map(this::toItem).toList();
 		final boolean truncated = totalMatches > items.size();
 		final FoodCatalogSearchData data = new FoodCatalogSearchData(items, items.size(), truncated);
