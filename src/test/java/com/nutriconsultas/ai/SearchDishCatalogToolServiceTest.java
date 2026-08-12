@@ -38,7 +38,7 @@ class SearchDishCatalogToolServiceTest {
 	void searchReturnsMappedItemsWithDefaultLimit() {
 		final Platillo systemDish = samplePlatillo(1L, "Ensalada verde",
 				PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID, "Comida", 120, 4.0);
-		when(platilloRepository.findForAuthorizedCatalogSearch(any(), eq("%ensalada%"), eq(null), any(Pageable.class)))
+		when(platilloRepository.findForAuthorizedCatalogSearch(any(), eq("%ensalada%"), any(Pageable.class)))
 			.thenReturn(new PageImpl<>(List.of(systemDish)));
 
 		final AiToolResult<DishCatalogSearchData> result = service.search(NUTRITIONIST_A, "ensalada", null, null);
@@ -55,21 +55,20 @@ class SearchDishCatalogToolServiceTest {
 		assertThat(result.data().totalReturned()).isEqualTo(1);
 
 		final ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-		verify(platilloRepository).findForAuthorizedCatalogSearch(any(), eq("%ensalada%"), eq(null),
-				pageableCaptor.capture());
+		verify(platilloRepository).findForAuthorizedCatalogSearch(any(), eq("%ensalada%"), pageableCaptor.capture());
 		assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(SearchDishCatalogToolServiceImpl.DEFAULT_LIMIT);
 	}
 
 	@Test
 	void searchScopesToSystemCatalogAndAuthenticatedNutritionist() {
-		when(platilloRepository.findForAuthorizedCatalogSearch(any(), any(), any(), any(Pageable.class)))
+		when(platilloRepository.findForAuthorizedCatalogSearch(any(), any(), any(Pageable.class)))
 			.thenReturn(new PageImpl<>(List.of()));
 
 		service.search(NUTRITIONIST_A, "tacos", null, 5);
 
 		@SuppressWarnings("unchecked")
 		final ArgumentCaptor<List<String>> userIdsCaptor = ArgumentCaptor.forClass(List.class);
-		verify(platilloRepository).findForAuthorizedCatalogSearch(userIdsCaptor.capture(), eq("%tacos%"), eq(null),
+		verify(platilloRepository).findForAuthorizedCatalogSearch(userIdsCaptor.capture(), eq("%tacos%"),
 				any(Pageable.class));
 		assertThat(userIdsCaptor.getValue()).containsExactly(PlatilloCatalogConstants.SYSTEM_CATALOG_USER_ID,
 				NUTRITIONIST_A);
@@ -79,7 +78,7 @@ class SearchDishCatalogToolServiceTest {
 	@Test
 	void searchMarksOwnedNutritionistPlatillos() {
 		final Platillo ownedDish = samplePlatillo(2L, "Tacos de pollo", NUTRITIONIST_A, "Cena", 300, 18.0);
-		when(platilloRepository.findForAuthorizedCatalogSearch(any(), eq("%tacos%"), eq(null), any(Pageable.class)))
+		when(platilloRepository.findForAuthorizedCatalogSearch(any(), eq("%tacos%"), any(Pageable.class)))
 			.thenReturn(new PageImpl<>(List.of(ownedDish)));
 
 		final AiToolResult<DishCatalogSearchData> result = service.search(NUTRITIONIST_A, "tacos", null, null);
@@ -91,14 +90,14 @@ class SearchDishCatalogToolServiceTest {
 
 	@Test
 	void searchAppliesIngestasFilter() {
-		when(platilloRepository.findForAuthorizedCatalogSearch(any(), eq("%avena%"), eq("%desayuno%"),
+		when(platilloRepository.findForAuthorizedCatalogSearchByIngestas(any(), eq("%avena%"), eq("%desayuno%"),
 				any(Pageable.class)))
 			.thenReturn(new PageImpl<>(List.of()));
 
 		final AiToolResult<DishCatalogSearchData> result = service.search(NUTRITIONIST_A, "avena", "desayuno", 10);
 
 		assertThat(result.success()).isTrue();
-		verify(platilloRepository).findForAuthorizedCatalogSearch(any(), eq("%avena%"), eq("%desayuno%"),
+		verify(platilloRepository).findForAuthorizedCatalogSearchByIngestas(any(), eq("%avena%"), eq("%desayuno%"),
 				any(Pageable.class));
 	}
 
@@ -128,7 +127,7 @@ class SearchDishCatalogToolServiceTest {
 
 	@Test
 	void searchReturnsEmptyListWhenNoMatches() {
-		when(platilloRepository.findForAuthorizedCatalogSearch(any(), eq("%xyzq%"), eq(null), any(Pageable.class)))
+		when(platilloRepository.findForAuthorizedCatalogSearch(any(), eq("%xyzq%"), any(Pageable.class)))
 			.thenReturn(new PageImpl<>(List.of()));
 
 		final AiToolResult<DishCatalogSearchData> result = service.search(NUTRITIONIST_A, "xyzq", null, null);
@@ -138,13 +137,13 @@ class SearchDishCatalogToolServiceTest {
 		assertThat(result.data().totalReturned()).isZero();
 	}
 
-	private static Platillo samplePlatillo(final long id, final String name, final String userId,
-			final String ingestasSugeridas, final int energia, final double proteina) {
+	private static Platillo samplePlatillo(final long id, final String name, final String userId, final String ingestas,
+			final int energia, final double proteina) {
 		final Platillo platillo = new Platillo();
 		platillo.setId(id);
 		platillo.setName(name);
 		platillo.setUserId(userId);
-		platillo.setIngestasSugeridas(ingestasSugeridas);
+		platillo.setIngestasSugeridas(ingestas);
 		platillo.setEnergia(energia);
 		platillo.setProteina(proteina);
 		return platillo;

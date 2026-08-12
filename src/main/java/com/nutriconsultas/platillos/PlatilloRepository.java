@@ -41,10 +41,19 @@ public interface PlatilloRepository extends JpaRepository<Platillo, Long> {
 	long countBySearchTerm(@Param("searchTerm") String searchTerm);
 
 	@Query("SELECT p FROM Platillo p WHERE p.userId IN :userIds AND " + "(LOWER(p.name) LIKE LOWER(:searchTerm) OR "
-			+ "(p.ingestasSugeridas IS NOT NULL AND LOWER(p.ingestasSugeridas) LIKE LOWER(:searchTerm))) "
-			+ "AND (:ingestasFilter IS NULL OR (p.ingestasSugeridas IS NOT NULL "
-			+ "AND LOWER(p.ingestasSugeridas) LIKE LOWER(:ingestasFilter)))")
+			+ "(p.ingestasSugeridas IS NOT NULL AND LOWER(p.ingestasSugeridas) LIKE LOWER(:searchTerm)))")
 	Page<Platillo> findForAuthorizedCatalogSearch(@Param("userIds") Collection<String> userIds,
+			@Param("searchTerm") String searchTerm, Pageable pageable);
+
+	/**
+	 * Authorized catalog search with a required ingestas filter. Do not pass {@code null}
+	 * for {@code ingestasFilter} (PostgreSQL binds null strings as {@code bytea} and
+	 * {@code LOWER(:param)} fails).
+	 */
+	@Query("SELECT p FROM Platillo p WHERE p.userId IN :userIds AND " + "(LOWER(p.name) LIKE LOWER(:searchTerm) OR "
+			+ "(p.ingestasSugeridas IS NOT NULL AND LOWER(p.ingestasSugeridas) LIKE LOWER(:searchTerm))) "
+			+ "AND p.ingestasSugeridas IS NOT NULL AND LOWER(p.ingestasSugeridas) LIKE LOWER(:ingestasFilter)")
+	Page<Platillo> findForAuthorizedCatalogSearchByIngestas(@Param("userIds") Collection<String> userIds,
 			@Param("searchTerm") String searchTerm, @Param("ingestasFilter") String ingestasFilter, Pageable pageable);
 
 }
