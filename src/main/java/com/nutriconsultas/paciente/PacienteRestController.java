@@ -201,9 +201,11 @@ public class PacienteRestController extends AbstractGridController<PacienteListV
 			.getPatientAuthSub(), PatientMobileInvitationUiSupport.resolveRecipientEmailFromListRow(row))
 					? "<button type='button' class='btn action-btn btn-outline-success btn-sm paciente-mobile-invite-btn' "
 							+ "data-id='" + pacienteId
-							+ "' title='Invitar a la app'><i class='fas fa-mobile-alt'></i></button> "
+							+ "' title='Invitar a la app'><i class='fas fa-envelope'></i></button> "
 					: "";
-		return inviteButton
+		final String previewButton = "<button type='button' class='btn action-btn btn-outline-info btn-sm paciente-mobile-preview-btn' "
+				+ "data-id='" + pacienteId + "' title='Ver en app'><i class='fas fa-mobile-alt'></i></button> ";
+		return previewButton + inviteButton
 				+ "<button type='button' class='btn action-btn btn-outline-primary btn-sm paciente-export-btn' "
 				+ "data-id='" + pacienteId + "' title='Exportar registro'><i class='fas fa-download'></i></button> "
 				+ "<button type='button' class='btn action-btn btn-danger btn-sm paciente-delete-btn' data-id='"

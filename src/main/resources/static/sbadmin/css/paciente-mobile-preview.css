@@ -1,0 +1,385 @@
+/* Patient mobile-app preview phone frame (nutritionist web). */
+
+.mnp-preview-modal .modal-dialog {
+  max-width: 420px;
+}
+
+.mnp-preview-modal .modal-content {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.mnp-preview-modal .modal-header {
+  border: none;
+  padding: 0 0 0.75rem;
+  color: #fff;
+}
+
+.mnp-preview-modal .modal-header .close {
+  color: #fff;
+  opacity: 0.9;
+  text-shadow: none;
+}
+
+.mnp-preview-modal .modal-body {
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.mnp-phone {
+  --mnp-bone: #f4f1ea;
+  --mnp-surf: #fbfaf6;
+  --mnp-ink: #1e241f;
+  --mnp-forest: #1f4d3c;
+  --mnp-mint: #2ecc8d;
+  --mnp-sage: #e7ece2;
+  --mnp-muted: #8a938b;
+  --mnp-sand: #c99a6a;
+  --mnp-line: rgba(30, 36, 31, 0.12);
+  width: 320px;
+  height: 640px;
+  background: #111;
+  border-radius: 36px;
+  padding: 12px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+
+.mnp-phone::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 96px;
+  height: 8px;
+  background: #222;
+  border-radius: 8px;
+  z-index: 2;
+}
+
+.mnp-phone-screen {
+  width: 100%;
+  height: 100%;
+  background: var(--mnp-bone);
+  border-radius: 28px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  color: var(--mnp-ink);
+  font-family: 'Nunito', 'Segoe UI', sans-serif;
+}
+
+.mnp-phone-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 0.9rem 0.75rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mnp-loading,
+.mnp-error {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--mnp-muted);
+  font-size: 0.9rem;
+}
+
+.mnp-error {
+  color: #b4533a;
+}
+
+.mnp-greeting-date {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mnp-muted);
+  margin-bottom: 0.25rem;
+}
+
+.mnp-greeting-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.mnp-greeting-text {
+  font-size: 1.55rem;
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--mnp-ink);
+}
+
+.mnp-greeting-text span {
+  display: block;
+  font-weight: 400;
+  font-size: 1rem;
+  color: var(--mnp-muted);
+  margin-bottom: 0.15rem;
+}
+
+.mnp-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--mnp-sage);
+  flex-shrink: 0;
+}
+
+.mnp-avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mnp-forest);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.mnp-card {
+  background: var(--mnp-surf);
+  border: 1px solid var(--mnp-line);
+  border-radius: 16px;
+  padding: 0.85rem 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.mnp-card-sage {
+  background: var(--mnp-sage);
+}
+
+.mnp-card-forest {
+  background: var(--mnp-forest);
+  color: #fff;
+  border-color: transparent;
+}
+
+.mnp-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mnp-card-title .mnp-link {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--mnp-forest);
+}
+
+.mnp-card-forest .mnp-card-title .mnp-link {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.mnp-muted {
+  color: var(--mnp-muted);
+  font-size: 0.78rem;
+}
+
+.mnp-imc-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.mnp-imc-value {
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+.mnp-imc-label {
+  font-size: 0.8rem;
+  color: var(--mnp-muted);
+}
+
+.mnp-delta {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.mnp-delta-up {
+  color: #b4533a;
+}
+
+.mnp-delta-down {
+  color: var(--mnp-mint);
+}
+
+.mnp-gauge {
+  height: 8px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #7ec8e3 0%, #2ecc8d 35%, #f0c36a 65%, #e07a5f 100%);
+  position: relative;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.mnp-gauge-marker {
+  position: absolute;
+  top: -3px;
+  width: 4px;
+  height: 14px;
+  background: var(--mnp-ink);
+  border-radius: 2px;
+  transform: translateX(-50%);
+}
+
+.mnp-weight {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.mnp-chip {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: var(--mnp-sage);
+  color: var(--mnp-forest);
+}
+
+.mnp-chip-active {
+  background: rgba(46, 204, 141, 0.2);
+  color: var(--mnp-forest);
+}
+
+.mnp-plan-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.2rem;
+}
+
+.mnp-plan-kcal {
+  font-size: 0.85rem;
+  color: var(--mnp-muted);
+}
+
+.mnp-visit-eyebrow {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  margin-bottom: 0.25rem;
+}
+
+.mnp-visit-title {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.2rem;
+}
+
+.mnp-visit-meta {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.mnp-ingesta {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--mnp-line);
+}
+
+.mnp-ingesta:last-child {
+  border-bottom: none;
+}
+
+.mnp-ingesta-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--mnp-sage);
+  color: var(--mnp-forest);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mnp-ingesta-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.mnp-ingesta-tipo {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.mnp-ingesta-meta {
+  font-size: 0.75rem;
+  color: var(--mnp-muted);
+}
+
+.mnp-tabbar {
+  display: flex;
+  border-top: 1px solid var(--mnp-line);
+  background: var(--mnp-surf);
+  padding: 0.35rem 0.25rem 0.55rem;
+}
+
+.mnp-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--mnp-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.35rem 0.15rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.mnp-tab i {
+  font-size: 0.95rem;
+}
+
+.mnp-tab.active {
+  color: var(--mnp-forest);
+}
+
+.mnp-tab:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.mnp-panel[hidden] {
+  display: none !important;
+}
+
+.mnp-empty {
+  color: var(--mnp-muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.mnp-preview-content {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.mnp-preview-content.is-visible {
+  display: flex;
+}
+
+@media (max-width: 480px) {
+  .mnp-phone {
+    width: 290px;
+    height: 580px;
+  }
+}
