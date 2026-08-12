@@ -56,7 +56,8 @@ public class OpenAiClientServiceImpl implements OpenAiClientService {
 		}
 		catch (final RestClientResponseException ex) {
 			final OpenAiClientException mapped = OpenAiClientErrorMapper.mapResponseException(ex);
-			auditLogger.logOpenAiError(null, mapped.getKind().name(), mapped.getHttpStatus().value());
+			auditLogger.logOpenAiError(null, mapped.getKind().name(), mapped.getHttpStatus().value(),
+					mapped.getMessage());
 			throw mapped;
 		}
 		catch (final ResourceAccessException ex) {

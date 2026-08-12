@@ -61,10 +61,15 @@ class AiChatPersistenceRepositoryTest {
 		assertThat(loaded.getTitle()).isEqualTo("Menú semanal");
 		assertThat(loaded.getCreatedAt()).isNotNull();
 		assertThat(loaded.getUpdatedAt()).isNotNull();
-		assertThat(messageRepository.findByThreadIdOrderByCreatedAtAscIdAsc(thread.getId())).hasSize(1);
-		assertThat(
-				draftRepository.findByThreadIdAndStatusOrderByCreatedAtDescIdDesc(thread.getId(), AiDraftStatus.DRAFT))
-			.hasSize(1);
+		final List<AiChatMessage> messages = messageRepository.findByThreadIdOrderByCreatedAtAscIdAsc(thread.getId());
+		assertThat(messages).hasSize(1);
+		assertThat(messages.get(0).getContent()).isEqualTo("Genera un menú de 1800 kcal");
+		assertThat(messages.get(0).getContent()).doesNotMatch("^[0-9]+$");
+		final List<AiGeneratedDraft> drafts = draftRepository
+			.findByThreadIdAndStatusOrderByCreatedAtDescIdDesc(thread.getId(), AiDraftStatus.DRAFT);
+		assertThat(drafts).hasSize(1);
+		assertThat(drafts.get(0).getJsonPayload()).isEqualTo("{\"title\":\"Menú lunes\"}");
+		assertThat(drafts.get(0).getJsonPayload()).doesNotMatch("^[0-9]+$");
 	}
 
 	@Test

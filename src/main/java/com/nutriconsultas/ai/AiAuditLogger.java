@@ -132,13 +132,24 @@ public final class AiAuditLogger {
 	}
 
 	public void logOpenAiError(@Nullable final Long threadId, final String errorKind, final int httpStatus) {
+		logOpenAiError(threadId, errorKind, httpStatus, null);
+	}
+
+	public void logOpenAiError(@Nullable final Long threadId, final String errorKind, final int httpStatus,
+			@Nullable final String detail) {
 		usageMetrics.recordOpenAiError(errorKind);
 		if (OpenAiClientException.ErrorKind.RATE_LIMIT.name().equals(errorKind)) {
 			usageMetrics.recordOpenAiRateLimited();
 		}
 		if (log.isWarnEnabled()) {
-			log.warn("AI audit event=openai_error threadId={} errorKind={} httpStatus={}", threadId, errorKind,
-					httpStatus);
+			if (StringUtils.hasText(detail)) {
+				log.warn("AI audit event=openai_error threadId={} errorKind={} httpStatus={} detail={}", threadId,
+						errorKind, httpStatus, AiAuditRedaction.redactSecrets(detail));
+			}
+			else {
+				log.warn("AI audit event=openai_error threadId={} errorKind={} httpStatus={}", threadId, errorKind,
+						httpStatus);
+			}
 		}
 	}
 
