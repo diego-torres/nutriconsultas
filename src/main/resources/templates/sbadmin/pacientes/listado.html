@@ -24,6 +24,7 @@
   <!-- Custom styles for this template-->
   <link th:href="@{/sbadmin/css/sb-admin-2.min.css}" rel="stylesheet">
   <link th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" rel="stylesheet">
+  <link th:href="@{/sbadmin/css/paciente-mobile-preview.css}" rel="stylesheet">
 </head>
 
 <body id="page-top">
@@ -112,6 +113,49 @@
     </div>
     <!-- End of Page Wrapper -->
 
+    <!-- Mobile app preview modal -->
+    <div class="modal fade mnp-preview-modal" id="pacienteMobilePreviewModal" tabindex="-1" role="dialog"
+      aria-labelledby="pacienteMobilePreviewTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="pacienteMobilePreviewTitle">Vista previa de la app</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="mnp-phone" aria-live="polite">
+              <div class="mnp-phone-screen">
+                <div id="mnpPreviewLoading" class="mnp-loading">Cargando vista previa…</div>
+                <div id="mnpPreviewError" class="mnp-error" style="display:none"></div>
+                <div id="mnpPreviewContent" class="mnp-preview-content">
+                  <div class="mnp-phone-body">
+                    <div id="mnpHomePanel" class="mnp-panel"></div>
+                    <div id="mnpDietPanel" class="mnp-panel" hidden></div>
+                  </div>
+                  <nav class="mnp-tabbar" aria-label="Navegación de preview">
+                    <button type="button" class="mnp-tab active" id="mnpTabHome">
+                      <i class="fas fa-home"></i> Inicio
+                    </button>
+                    <button type="button" class="mnp-tab" id="mnpTabDiet">
+                      <i class="fas fa-utensils"></i> Planes
+                    </button>
+                    <button type="button" class="mnp-tab" disabled title="Solo lectura">
+                      <i class="fas fa-calendar-alt"></i> Visitas
+                    </button>
+                    <button type="button" class="mnp-tab" disabled title="Solo lectura">
+                      <i class="fas fa-user"></i> Perfil
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Bootstrap core JavaScript-->
     <script th:src="@{/sbadmin/vendor/jquery/jquery.min.js}"></script>
     <script th:src="@{/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
@@ -127,6 +171,7 @@
     <script th:src="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.js}"></script>
     <script th:src="@{/sbadmin/js/paciente-mpx-actions.js}"></script>
     <script th:src="@{/sbadmin/js/paciente-mobile-invitation.js}"></script>
+    <script th:src="@{/sbadmin/js/paciente-mobile-preview.js}"></script>
     <script lang="javascript">
       'use strict';
       (function ($) {

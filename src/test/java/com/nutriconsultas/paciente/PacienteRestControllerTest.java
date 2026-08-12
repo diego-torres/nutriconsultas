@@ -267,6 +267,7 @@ public class PacienteRestControllerTest {
 		assertThat(result.get(4)).isEqualTo("M");
 		assertThat(result.get(5)).isEqualTo("Maria Perez");
 		assertThat(result.get(6)).contains("badge");
+		assertThat(result.get(7)).contains("paciente-mobile-preview-btn");
 		assertThat(result.get(7)).contains("paciente-export-btn");
 		assertThat(result.get(7)).contains("paciente-delete-btn");
 		log.info("finished testToStringList");
