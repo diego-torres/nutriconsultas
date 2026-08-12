@@ -288,6 +288,7 @@ public class PacienteController extends AbstractAuthorizedController {
 		addLatestCompositionMetricsToModel(id, model);
 		// Calculate age and check if patient is under 18 for growth table display
 		final Integer age = calculateAge(paciente.getDob());
+		model.addAttribute("patientAge", age);
 		final boolean isUnder18 = age != null && age < 18;
 		model.addAttribute("isUnder18", isUnder18);
 		// Fetch anthropometric measurements for growth table (only if under 18)

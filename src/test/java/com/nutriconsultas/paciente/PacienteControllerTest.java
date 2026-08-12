@@ -545,6 +545,7 @@ public class PacienteControllerTest {
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
 		verify(model).addAttribute("activeMenu", "perfil");
 		verify(model).addAttribute("paciente", paciente);
+		verify(model).addAttribute("patientAge", 30);
 		// Dietas were moved to separate page, so they should not be in perfil anymore
 		verify(model, org.mockito.Mockito.never()).addAttribute(eq("dietasAsignadas"), any());
 		verify(model, org.mockito.Mockito.never()).addAttribute(eq("dietasActivas"), any());
@@ -600,6 +601,7 @@ public class PacienteControllerTest {
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
+		verify(model).addAttribute("patientAge", 10);
 		verify(model).addAttribute("isUnder18", true);
 		verify(model).addAttribute(eq("growthMeasurements"), any(List.class));
 		log.info("finished testPerfilPacienteUnder18WithMeasurements");
@@ -629,6 +631,7 @@ public class PacienteControllerTest {
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
+		verify(model).addAttribute("patientAge", 5);
 		verify(model).addAttribute("isUnder18", true);
 		verify(model).addAttribute(eq("growthMeasurements"), any(List.class));
 		log.info("finished testPerfilPacienteUnder18WithoutMeasurements");
@@ -649,6 +652,7 @@ public class PacienteControllerTest {
 
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
+		verify(model).addAttribute("patientAge", 30);
 		verify(model).addAttribute("isUnder18", false);
 		verify(anthropometricMeasurementService).findByPacienteId(1L);
 		verify(model, org.mockito.Mockito.never()).addAttribute(eq("growthMeasurements"), any(List.class));
@@ -680,6 +684,7 @@ public class PacienteControllerTest {
 		// Assert
 		assertThat(result).isEqualTo("sbadmin/pacientes/perfil");
 		// Patient exactly 18 should not show growth table (age < 18, not <= 18)
+		verify(model).addAttribute("patientAge", 18);
 		verify(model).addAttribute("isUnder18", false);
 		verify(anthropometricMeasurementService).findByPacienteId(4L);
 		verify(model, org.mockito.Mockito.never()).addAttribute(eq("growthMeasurements"), any(List.class));
