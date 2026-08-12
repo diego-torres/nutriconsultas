@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 036-ai-chat-materialize-lob-oids
+      author: nutriconsultas
+      comment: >
+        Hibernate @Lob on PostgreSQL stored pg_largeobject OIDs in TEXT columns.
+        Materialize message/draft payloads with lo_get so Mina history is real text again.
+      preConditions:
+        - onFail: MARK_RAN
+        - dbms:
+            type: postgresql
+        - tableExists:
+            tableName: ai_chat_message
+      changes:
+        - sql:
+            sql: >
+              UPDATE ai_chat_message
+              SET content = convert_from(lo_get(content::oid), 'UTF8')
+              WHERE content ~ '^[0-9]+$'
+                AND content::bigint IN (SELECT oid FROM pg_largeobject_metadata);
+        - sql:
+            sql: >
+              UPDATE ai_generated_draft
+              SET json_payload = convert_from(lo_get(json_payload::oid), 'UTF8')
+              WHERE json_payload ~ '^[0-9]+$'
+                AND json_payload::bigint IN (SELECT oid FROM pg_largeobject_metadata);

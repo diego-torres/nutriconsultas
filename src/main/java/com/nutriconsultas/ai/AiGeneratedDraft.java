@@ -13,7 +13,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -49,8 +48,7 @@ public class AiGeneratedDraft {
 	@Column(nullable = false, length = 20)
 	private AiDraftStatus status = AiDraftStatus.DRAFT;
 
-	@Lob
-	@Column(name = "json_payload", nullable = false)
+	@Column(name = "json_payload", nullable = false, columnDefinition = "TEXT")
 	private String jsonPayload;
 
 	@Column(name = "created_at", nullable = false, updatable = false)
