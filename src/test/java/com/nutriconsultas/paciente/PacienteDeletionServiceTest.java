@@ -46,9 +46,6 @@ class PacienteDeletionServiceTest {
 	private PatientMessageRepository patientMessageRepository;
 
 	@Mock
-	private AppointmentQuestionRepository appointmentQuestionRepository;
-
-	@Mock
 	private PatientInvitationRepository patientInvitationRepository;
 
 	@Mock
@@ -75,11 +72,15 @@ class PacienteDeletionServiceTest {
 	@Mock
 	private PacientePhotoService pacientePhotoService;
 
+	@Mock
+	private AppointmentQuestionRepository appointmentQuestionRepository;
+
 	private Paciente paciente;
 
 	@BeforeEach
 	void setUp() {
 		ReflectionTestUtils.setField(service, "pacientePhotoService", pacientePhotoService);
+		ReflectionTestUtils.setField(service, "appointmentQuestionRepository", appointmentQuestionRepository);
 		paciente = new Paciente();
 		paciente.setId(7L);
 		paciente.setUserId(USER_ID);
