@@ -19,6 +19,8 @@ public final class PatientWriteRateLimiter {
 
 	public static final String PATIENT_MESSAGES = "patientMessages";
 
+	public static final String PATIENT_APPOINTMENT_QUESTIONS = "patientAppointmentQuestions";
+
 	private final RateLimiterRegistry rateLimiterRegistry;
 
 	public PatientWriteRateLimiter(final RateLimiterRegistry rateLimiterRegistry) {

@@ -107,3 +107,6 @@ databaseChangeLog:
   - include:
       file: changes/036-ai-chat-materialize-lob-oids.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/037-appointment-question.yaml
+      relativeToChangelogFile: true

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.nutriconsultas.appointmentquestion.AppointmentQuestionRepository;
 import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventService;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
@@ -31,6 +32,8 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 
 	private final PatientMessageRepository patientMessageRepository;
 
+	private final AppointmentQuestionRepository appointmentQuestionRepository;
+
 	private final PatientInvitationRepository patientInvitationRepository;
 
 	private final PacienteDietaRepository pacienteDietaRepository;
@@ -52,6 +55,7 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 
 	public PacienteDeletionServiceImpl(final PacienteRepository pacienteRepository,
 			final PatientMessageRepository patientMessageRepository,
+			final AppointmentQuestionRepository appointmentQuestionRepository,
 			final PatientInvitationRepository patientInvitationRepository,
 			final PacienteDietaRepository pacienteDietaRepository, final CalendarEventService calendarEventService,
 			final ClinicalExamService clinicalExamService,
@@ -60,6 +64,7 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 			final PacienteDietaWeekdayRepository pacienteDietaWeekdayRepository) {
 		this.pacienteRepository = pacienteRepository;
 		this.patientMessageRepository = patientMessageRepository;
+		this.appointmentQuestionRepository = appointmentQuestionRepository;
 		this.patientInvitationRepository = patientInvitationRepository;
 		this.pacienteDietaRepository = pacienteDietaRepository;
 		this.calendarEventService = calendarEventService;
@@ -94,6 +99,7 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 
 	private void deleteRelatedHistory(final Long pacienteId) {
 		patientMessageRepository.deleteByPacienteId(pacienteId);
+		appointmentQuestionRepository.deleteByPacienteId(pacienteId);
 		final List<PatientInvitation> invitations = patientInvitationRepository.findByPacienteId(pacienteId);
 		if (!invitations.isEmpty()) {
 			patientInvitationRepository.deleteAll(invitations);

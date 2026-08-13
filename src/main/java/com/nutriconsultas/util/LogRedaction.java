@@ -254,6 +254,18 @@ public final class LogRedaction {
 	}
 
 	/**
+	 * Redacts an appointment question ID for logging purposes.
+	 * @param questionId the appointment question ID
+	 * @return a safe string representation (e.g., "AppointmentQuestion[id=123]")
+	 */
+	public static String redactAppointmentQuestion(final Long questionId) {
+		if (questionId == null) {
+			return "AppointmentQuestion[id=null]";
+		}
+		return "AppointmentQuestion[id=" + questionId + "]";
+	}
+
+	/**
 	 * Redacts an email address for logging (shows first character and domain only).
 	 * @param email the email address
 	 * @return a safe string representation (e.g., "email[n***@example.com]")

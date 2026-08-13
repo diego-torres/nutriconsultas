@@ -18,6 +18,7 @@ Nutriconsultas uses [Liquibase](https://www.liquibase.org/) for schema and catal
 | `changes/024-ai-chat-schema.yaml` | AI chat thread, message, and draft tables (#369) |
 | `changes/034-support-ticket.yaml` | In-app support ticket table (#543) |
 | `changes/035-patient-device.yaml` | Patient push device registry (#574) |
+| `changes/037-appointment-question.yaml` | Patient appointment question reminders (#587) |
 | `changes/008-platillo-ingesta-source-platillo-id.yaml` | `source_platillo_id` on `platillo_ingesta` + catalog backfill (#250) |
 | `data/alimentos-seed.sql` | SMAE alimentos catalog (from `alimentos.sql`) |
 | `data/platillos-seed.sql` | Catalog `platillo` + `ingrediente` rows |
