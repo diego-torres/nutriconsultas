@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.nutriconsultas.appointmentquestion.AppointmentQuestionRepository;
 import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventService;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
@@ -49,6 +50,9 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 
 	@Autowired
 	private PacientePhotoService pacientePhotoService;
+
+	@Autowired
+	private AppointmentQuestionRepository appointmentQuestionRepository;
 
 	public PacienteDeletionServiceImpl(final PacienteRepository pacienteRepository,
 			final PatientMessageRepository patientMessageRepository,
@@ -94,6 +98,7 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 
 	private void deleteRelatedHistory(final Long pacienteId) {
 		patientMessageRepository.deleteByPacienteId(pacienteId);
+		appointmentQuestionRepository.deleteByPacienteId(pacienteId);
 		final List<PatientInvitation> invitations = patientInvitationRepository.findByPacienteId(pacienteId);
 		if (!invitations.isEmpty()) {
 			patientInvitationRepository.deleteAll(invitations);

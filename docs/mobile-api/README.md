@@ -15,6 +15,9 @@ Canonical cross-repo contracts for the `[Mobile API]` track. Indexed from [`../.
 | [`../api/openapi-mobile.yaml`](../api/openapi-mobile.yaml) | OpenAPI 3.1 export (#112, PR #164); regen: `scripts/export-openapi-mobile.sh` |
 | [`PUSH-SETUP.md`](PUSH-SETUP.md) | APNs + FCM HTTP v1 credentials, local enable, key rotation (#575) |
 | [`PUSH-CONTRACT.md`](PUSH-CONTRACT.md) | Devices API + push payload contract for mobile (#577); OpenAPI twin |
+| [`APPOINTMENT-QUESTIONS-CONTRACT.md`](APPOINTMENT-QUESTIONS-CONTRACT.md) | Appointment question reminders CRUD (#587); OpenAPI twin |
+
+**Status (2026-08-13):** [#587](https://github.com/diego-torres/nutriconsultas/issues/587) appointment question reminders — backend `in-progress` (`mobile-api/appointment-questions`).
 
 **Status (2026-08-11):** Epic [#573](https://github.com/diego-torres/nutriconsultas/issues/573) mobile push — ~~#574~~–~~#577~~ backend contract/docs. (Older grocery status below retained.)
 

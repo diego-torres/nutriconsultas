@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.nutriconsultas.appointmentquestion.AppointmentQuestionRepository;
 import com.nutriconsultas.calendar.CalendarEvent;
 import com.nutriconsultas.calendar.CalendarEventService;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
@@ -71,11 +72,15 @@ class PacienteDeletionServiceTest {
 	@Mock
 	private PacientePhotoService pacientePhotoService;
 
+	@Mock
+	private AppointmentQuestionRepository appointmentQuestionRepository;
+
 	private Paciente paciente;
 
 	@BeforeEach
 	void setUp() {
 		ReflectionTestUtils.setField(service, "pacientePhotoService", pacientePhotoService);
+		ReflectionTestUtils.setField(service, "appointmentQuestionRepository", appointmentQuestionRepository);
 		paciente = new Paciente();
 		paciente.setId(7L);
 		paciente.setUserId(USER_ID);
@@ -110,6 +115,7 @@ class PacienteDeletionServiceTest {
 		service.deletePatientWithHistory(7L, USER_ID);
 
 		verify(patientMessageRepository).deleteByPacienteId(7L);
+		verify(appointmentQuestionRepository).deleteByPacienteId(7L);
 		verify(patientInvitationRepository).deleteAll(List.of(invitation));
 		verify(dietaService).deleteDieta(60L);
 		verify(pacienteDietaRepository).deleteAll(List.of(assignment));

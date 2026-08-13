@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Subscription (parallel):** [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) · **Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-07-16 — #558 opened: `[Mobile API]` Auth0 social login reconcile alignment (planning; cross-repo counterpart to mobile #124). Registered **#529** patient profile photo (S3 + mobile). #353 grocery list endpoint (`mobile-api/353-grocery-list`). ~~#354~~ ~~#352~~ **done** (PR [#357](https://github.com/diego-torres/nutriconsultas/pull/357)). ~~#349~~ **done** (PR [#356](https://github.com/diego-torres/nutriconsultas/pull/356)).
+**Last updated:** 2026-08-13 — **#587** appointment question reminders (`mobile-api/appointment-questions`). #558 Auth0 social reconcile planning; **#529** patient profile photo; #353 grocery list (`mobile-api/353-grocery-list`). ~~#354~~ ~~#352~~ **done** (PR [#357](https://github.com/diego-torres/nutriconsultas/pull/357)). ~~#349~~ **done** (PR [#356](https://github.com/diego-torres/nutriconsultas/pull/356)).
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116, #132–#141 invitation onboarding) plus the directly-related `[Dashboard]` IMC gauge (#106) and **integration prerequisites** that gate schema work (#156, #46). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -189,6 +189,7 @@ Extended diet plan DTOs and endpoints for mobile home/diet detail flows.
 | 353 | Grocery list for patient diet plan | https://github.com/diego-torres/nutriconsultas/issues/353 | **in-progress** | ~~94~~ ✓ | `GET /rest/mobile/patient/diet-plans/{assignmentId}/grocery-list` |
 | 355 | Add default platillo image `plato-vacio.jpg` to static resources | https://github.com/diego-torres/nutriconsultas/issues/355 | **in-progress** | — | Serves `/sbadmin/img/plato-vacio.jpg`; OpenAPI `imageUrl` documented |
 | 529 | Patient profile photo — S3 upload API + picture resolver for mobile | https://github.com/diego-torres/nutriconsultas/issues/529 | **open** | #241, #107 | Custom photo in S3; falls back to `PacienteAvatarCatalog`; mobile + web upload |
+| **587** | Appointment question reminders (CRUD) | https://github.com/diego-torres/nutriconsultas/issues/587 | **in-progress** | ~~107~~ ✓, ~~110~~ ✓ | Branch `mobile-api/appointment-questions`; Liquibase `037`; contract [`docs/mobile-api/APPOINTMENT-QUESTIONS-CONTRACT.md`](docs/mobile-api/APPOINTMENT-QUESTIONS-CONTRACT.md) |
 
 ---
 
@@ -208,6 +209,7 @@ Each mobile feature consumes these backend endpoints. Two-way linking with the m
 | 156 | `Paciente` internal refactor (pre-Liquibase) | — (backend only) | — | **done** — PRs #175/#176/#178 on `main` |
 | 132–141 | Invitation onboarding | mobile (future) | Auth + profile | Replaces #109 manual linkage for new patients; gated by #156 |
 | 558 | Auth0 social login reconcile alignment (planning) | mobile [#124](https://github.com/Escanor4323/nutriconsultas-mobile/issues/124) | Auth + profile | **open (planning)** — reconcile-by-code security review, reconcile matrix contract docs, `GET`/`PATCH /patient/me` alignment, `email_verified` end-to-end. Reconcile itself already ships via #136/PR #345; see [Resolved decisions](#558-resolved-decisions). |
+| **587** | Preguntas para la próxima cita | mobile [#143](https://github.com/Escanor4323/nutriconsultas-mobile/issues/143) | Read + write | `GET/POST/PATCH/DELETE /rest/mobile/patient/appointment-questions`; contract [`docs/mobile-api/APPOINTMENT-QUESTIONS-CONTRACT.md`](docs/mobile-api/APPOINTMENT-QUESTIONS-CONTRACT.md) |
 
 **Common contract for every #91–#99** (ALIGNMENT-SPEC §"CORRECTED SCOPE"):
 - Auth: OAuth2 Resource Server JWT, separate `@Order(1)` `SecurityFilterChain`, stateless.

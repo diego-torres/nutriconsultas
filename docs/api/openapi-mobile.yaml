@@ -238,6 +238,99 @@ paths:
           description: Validation failed
         "429":
           description: "Rate limit exceeded (Retry-After: 60)"
+  /rest/mobile/patient/appointment-questions:
+    get:
+      tags:
+      - Mobile
+      summary: List appointment questions
+      description: Returns paged reminders of questions the patient wants to ask at
+        the next appointment.
+      operationId: listQuestions
+      parameters:
+      - name: page
+        in: query
+        description: Zero-based page index
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        description: Page size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      - name: answered
+        in: query
+        description: "Optional filter: true = answered, false = open"
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Paged appointment question summaries
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePagedResponseAppointmentQuestionDto"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePagedResponseAppointmentQuestionDto"
+        "403":
+          description: Patient account not linked to Auth0 sub
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePagedResponseAppointmentQuestionDto"
+    post:
+      tags:
+      - Mobile
+      summary: Create appointment question
+      description: Creates a reminder question for the patient's next appointment.
+      operationId: createQuestion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAppointmentQuestionRequest"
+        required: true
+      responses:
+        "201":
+          description: Created appointment question
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAppointmentQuestionDto"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAppointmentQuestionDto"
+        "403":
+          description: Patient account not linked to Auth0 sub
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAppointmentQuestionDto"
+        "400":
+          description: Validation failed
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAppointmentQuestionDto"
+        "429":
+          description: "Rate limit exceeded (Retry-After: 60)"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAppointmentQuestionDto"
   /rest/mobile/invitations:
     post:
       tags:
@@ -632,6 +725,128 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponsePatientOnboardingProfileDto"
+  /rest/mobile/patient/appointment-questions/{questionId}:
+    get:
+      tags:
+      - Mobile
+      summary: Get appointment question
+      description: Returns a single question reminder by id.
+      operationId: getQuestion
+      parameters:
+      - name: questionId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Appointment question detail
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAppointmentQuestionDto"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAppointmentQuestionDto"
+        "403":
+          description: Patient account not linked to Auth0 sub
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAppointmentQuestionDto"
+        "404":
+          description: Resource not found or not owned by patient
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAppointmentQuestionDto"
+    delete:
+      tags:
+      - Mobile
+      summary: Delete appointment question
+      description: Deletes a question reminder owned by the patient.
+      operationId: deleteQuestion
+      parameters:
+      - name: questionId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "204":
+          description: Question deleted
+        "401":
+          description: Missing or invalid JWT
+        "403":
+          description: Patient account not linked to Auth0 sub
+        "400":
+          description: Validation failed
+        "429":
+          description: "Rate limit exceeded (Retry-After: 60)"
+        "404":
+          description: Resource not found or not owned by patient
+    patch:
+      tags:
+      - Mobile
+      summary: Update appointment question
+      description: Updates question text and/or answered flag. Omitted fields are
+        unchanged.
+      operationId: patchQuestion
+      parameters:
+      - name: questionId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchAppointmentQuestionRequest"
+        required: true
+      responses:
+        "200":
+          description: Updated appointment question
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAppointmentQuestionDto"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAppointmentQuestionDto"
+        "403":
+          description: Patient account not linked to Auth0 sub
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAppointmentQuestionDto"
+        "400":
+          description: Validation failed
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAppointmentQuestionDto"
+        "429":
+          description: "Rate limit exceeded (Retry-After: 60)"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAppointmentQuestionDto"
+        "404":
+          description: Resource not found or not owned by patient
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAppointmentQuestionDto"
   /rest/mobile/patient/visits:
     get:
       tags:
@@ -1231,6 +1446,45 @@ components:
         updatedAt:
           type: string
           format: date-time
+    CreateAppointmentQuestionRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          description: Question text to remember for the next appointment
+          maxLength: 2000
+          minLength: 0
+      required:
+      - body
+    ApiResponseAppointmentQuestionDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/AppointmentQuestionDto"
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    AppointmentQuestionDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        body:
+          type: string
+        answered:
+          type: boolean
+        answeredAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     CreatePatientInvitationRequest:
       type: object
       description: Create patient + invitation
@@ -1616,6 +1870,18 @@ components:
         assignedDietPlan:
           $ref: "#/components/schemas/AssignedDietPlanReferenceDto"
           description: "Primary active diet assignment, when present"
+    PatchAppointmentQuestionRequest:
+      type: object
+      description: Patch appointment question reminder
+      properties:
+        body:
+          type: string
+          description: Updated question text
+          maxLength: 2000
+          minLength: 0
+        answered:
+          type: boolean
+          description: Mark as asked/answered (true) or reopen (false)
     ApiResponsePagedResponseVisitSummaryDto:
       type: object
       properties:
@@ -2147,6 +2413,37 @@ components:
           type: string
         categoria:
           type: string
+    ApiResponsePagedResponseAppointmentQuestionDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/PagedResponseAppointmentQuestionDto"
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    PagedResponseAppointmentQuestionDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/AppointmentQuestionDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        last:
+          type: boolean
     ApiResponsePatientInvitationPreviewDto:
       type: object
       properties:
