@@ -73,7 +73,7 @@ public class CreateMenuDraftToolServiceImpl implements CreateMenuDraftToolServic
 					jsonPayload);
 			final String summary = DRAFT_LABEL + ": " + displayTitle;
 			final AiDraftCreationData data = new AiDraftCreationData(draft.getId(), AiDraftType.MENU, draft.getStatus(),
-					summary);
+					summary, AiDraftCreationData.buildPreviewPath(threadId, draft.getId()));
 			if (log.isInfoEnabled()) {
 				log.info("AI tool create_menu_draft draftId={} threadId={}", draft.getId(), threadId);
 			}

@@ -101,29 +101,39 @@ public final class AiOpenAiToolCatalog {
 		properties.put("warnings", stringArrayProperty());
 		return new OpenAiToolDefinition(CreateDishDraftToolService.TOOL_NAME,
 				secureDescription("Guarda un borrador de platillo/receta para revisión del nutriólogo. "
-						+ "No guarda en el catálogo final."),
+						+ "No guarda en el catálogo final. Tras éxito, responde solo con el previewPath."),
 				objectSchema(properties, List.of("name", "ingredients")));
 	}
 
 	private static OpenAiToolDefinition createMenuDraft() {
+		final Map<String, Object> properties = new LinkedHashMap<>();
+		properties.put("title", optionalStringProperty("Título del menú", 120));
+		properties.put("targetKcal", Map.of("type", "number"));
+		properties.put("ingestas", ingestaSlotArrayProperty(12));
+		properties.put("validationSummary", optionalStringProperty("Resumen de validación", 1000));
+		properties.put("assumptions", stringArrayProperty());
+		properties.put("warnings", stringArrayProperty());
 		return new OpenAiToolDefinition(CreateMenuDraftToolService.TOOL_NAME,
-				secureDescription("Guarda un borrador de menú de un día (varias ingestas). No asigna al paciente."),
-				objectSchema(Map.of("title", optionalStringProperty("Título del menú", 120), "targetKcal",
-						Map.of("type", "number"), "ingestas",
-						Map.of("type", "array", "minItems", 1, "maxItems", 12, "items", Map.of("type", "object")),
-						"validationSummary", optionalStringProperty("Resumen de validación", 1000), "assumptions",
-						stringArrayProperty(), "warnings", stringArrayProperty()), List.of("ingestas")));
+				secureDescription("Guarda un borrador de menú de un día (varias ingestas). No asigna al paciente. "
+						+ "Cada ingesta debe incluir items con type PLATILLO|ALIMENTO|RECIPE e IDs del catálogo. "
+						+ "Tras éxito, responde solo con el previewPath del borrador."),
+				objectSchema(properties, List.of("ingestas")));
 	}
 
 	private static OpenAiToolDefinition createDietPlanDraft() {
+		final Map<String, Object> properties = new LinkedHashMap<>();
+		properties.put("title", optionalStringProperty("Título del plan", 120));
+		properties.put("dayCount", Map.of("type", "integer", "minimum", 1, "maximum", 14));
+		properties.put("targetKcalPerDay", Map.of("type", "number"));
+		properties.put("days", dietPlanDayArrayProperty());
+		properties.put("validationSummary", optionalStringProperty("Resumen de validación", 2000));
+		properties.put("assumptions", stringArrayProperty());
+		properties.put("warnings", stringArrayProperty());
 		return new OpenAiToolDefinition(CreateDietPlanDraftToolService.TOOL_NAME,
-				secureDescription("Guarda un borrador de plan alimenticio multi-día. No asigna al paciente."),
-				objectSchema(Map.of("title", optionalStringProperty("Título del plan", 120), "dayCount",
-						Map.of("type", "integer", "minimum", 1, "maximum", 14), "targetKcalPerDay",
-						Map.of("type", "number"), "days",
-						Map.of("type", "array", "minItems", 1, "maxItems", 14, "items", Map.of("type", "object")),
-						"validationSummary", optionalStringProperty("Resumen de validación", 2000), "assumptions",
-						stringArrayProperty(), "warnings", stringArrayProperty()), List.of("days")));
+				secureDescription("Guarda un borrador de plan alimenticio multi-día. No asigna al paciente. "
+						+ "Cada día incluye ingestas con items tipados e IDs del catálogo. "
+						+ "Tras éxito, responde solo con el previewPath del borrador."),
+				objectSchema(properties, List.of("days")));
 	}
 
 	private static OpenAiToolDefinition getPatientAppointments() {
@@ -154,10 +164,52 @@ public final class AiOpenAiToolCatalog {
 	}
 
 	private static Map<String, Object> recipeIngredientArrayProperty() {
-		return Map.of("type", "array", "minItems", 1, "maxItems", 40, "items", Map.of("type", "object", "properties",
+		return Map.of("type", "array", "minItems", 1, "maxItems", 40, "items", recipeIngredientItemSchema());
+	}
+
+	private static Map<String, Object> recipeIngredientItemSchema() {
+		return Map.of("type", "object", "properties",
 				Map.of("alimentoId", Map.of("type", "integer"), "cantidad", Map.of("type", "string"), "pesoNetoG",
 						Map.of("type", "integer", "minimum", 1), "unidad", Map.of("type", "string", "maxLength", 40)),
-				"required", List.of("alimentoId", "cantidad"), "additionalProperties", false));
+				"required", List.of("alimentoId", "cantidad"), "additionalProperties", false);
+	}
+
+	private static Map<String, Object> ingestaSlotItemSchema() {
+		final Map<String, Object> properties = new LinkedHashMap<>();
+		properties.put("type", Map.of("type", "string", "enum", List.of("PLATILLO", "ALIMENTO", "RECIPE")));
+		properties.put("platilloId", Map.of("type", "integer"));
+		properties.put("alimentoId", Map.of("type", "integer"));
+		properties.put("portions", Map.of("type", "integer", "minimum", 1));
+		properties.put("ingredients",
+				Map.of("type", "array", "minItems", 1, "maxItems", 40, "items", recipeIngredientItemSchema()));
+		return Map.of("type", "object", "properties", properties, "required", List.of("type"), "additionalProperties",
+				false);
+	}
+
+	private static Map<String, Object> ingestaSlotSchema() {
+		final Map<String, Object> properties = new LinkedHashMap<>();
+		properties.put("nombre", Map.of("type", "string", "maxLength", 80));
+		properties.put("orden", Map.of("type", "integer"));
+		properties.put("items", Map.of("type", "array", "minItems", 1, "items", ingestaSlotItemSchema()));
+		return Map.of("type", "object", "properties", properties, "required", List.of("items"), "additionalProperties",
+				false);
+	}
+
+	private static Map<String, Object> ingestaSlotArrayProperty(final int maxItems) {
+		return Map.of("type", "array", "minItems", 1, "maxItems", maxItems, "items", ingestaSlotSchema());
+	}
+
+	private static Map<String, Object> dietPlanDaySchema() {
+		final Map<String, Object> properties = new LinkedHashMap<>();
+		properties.put("dayIndex", Map.of("type", "integer", "minimum", 1));
+		properties.put("label", Map.of("type", "string", "maxLength", 80));
+		properties.put("ingestas", ingestaSlotArrayProperty(12));
+		return Map.of("type", "object", "properties", properties, "required", List.of("dayIndex", "ingestas"),
+				"additionalProperties", false);
+	}
+
+	private static Map<String, Object> dietPlanDayArrayProperty() {
+		return Map.of("type", "array", "minItems", 1, "maxItems", 14, "items", dietPlanDaySchema());
 	}
 
 	private static Map<String, Object> stringArrayProperty() {

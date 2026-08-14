@@ -54,6 +54,7 @@ class CreateDishDraftToolServiceTest {
 		assertThat(result.data().draftType()).isEqualTo(AiDraftType.DISH);
 		assertThat(result.data().status()).isEqualTo(AiDraftStatus.DRAFT);
 		assertThat(result.data().summary()).contains("Tacos de pollo");
+		assertThat(result.data().previewPath()).isEqualTo("/admin/ai?threadId=42&draftId=99");
 		verify(draftLifecycleService).createDraft(eq(THREAD_ID), eq(NUTRITIONIST_ID), eq(AiDraftType.DISH), any());
 	}
 

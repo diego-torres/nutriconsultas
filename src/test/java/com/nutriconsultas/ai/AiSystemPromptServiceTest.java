@@ -42,6 +42,11 @@ class AiSystemPromptServiceTest {
 		assertThat(prompt).contains("Puedo ayudarte con 1 borrador de ejemplo que revises y apruebes");
 		assertThat(prompt).contains("todos tus pacientes en un solo turno");
 		assertThat(prompt).contains("<mensaje_nutriologo>");
+		assertThat(prompt).contains("create_menu_draft");
+		assertThat(prompt).contains("create_diet_plan_draft");
+		assertThat(prompt).contains("create_dish_draft");
+		assertThat(prompt).contains("Se ha agregado el siguiente Borrador IA");
+		assertThat(prompt).contains("previewPath");
 	}
 
 	@Test

@@ -125,8 +125,8 @@ class AiOrchestrationToolDispatcherTest {
 				new AiDraftToolSchemaValidator());
 		when(createDishDraftToolService.createDraft(org.mockito.ArgumentMatchers.eq(NUTRITIONIST_ID),
 				org.mockito.ArgumentMatchers.eq(THREAD_ID), org.mockito.ArgumentMatchers.any()))
-			.thenReturn(AiToolResult
-				.success(new AiDraftCreationData(1L, AiDraftType.DISH, AiDraftStatus.DRAFT, "Borrador IA — Tacos")));
+			.thenReturn(AiToolResult.success(new AiDraftCreationData(1L, AiDraftType.DISH, AiDraftStatus.DRAFT,
+					"Borrador IA — Tacos", "/admin/ai?threadId=10&draftId=1")));
 
 		final String json = realSchemaDispatcher.dispatch(context(), CreateDishDraftToolService.TOOL_NAME, """
 				{
