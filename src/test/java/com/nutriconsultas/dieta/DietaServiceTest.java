@@ -316,6 +316,40 @@ public class DietaServiceTest {
 	}
 
 	@Test
+	public void testCreateEmptyDietaForPatientUsesDefaultNameAndEmptyMeals() {
+		when(dietaRepository.save(any(Dieta.class))).thenAnswer(invocation -> {
+			final Dieta saved = invocation.getArgument(0);
+			saved.setId(50L);
+			return saved;
+		});
+
+		final Dieta created = dietaService.createEmptyDietaForPatient(7L, TEST_USER_ID, "  ");
+
+		assertThat(created.getId()).isEqualTo(50L);
+		assertThat(created.getNombre()).isEqualTo("Plan alimentario");
+		assertThat(created.getUserId()).isEqualTo(TEST_USER_ID);
+		assertThat(created.getPacienteId()).isEqualTo(7L);
+		assertThat(created.getEnergia()).isZero();
+		assertThat(created.getIngestas()).extracting(Ingesta::getNombre).containsExactly("Desayuno", "Comida", "Cena");
+		assertThat(created.getIngestas()).allSatisfy(ingesta -> {
+			assertThat(ingesta.getAlimentos()).isEmpty();
+			assertThat(ingesta.getPlatillos()).isEmpty();
+			assertThat(ingesta.getDieta()).isSameAs(created);
+		});
+		verify(dietaRepository).save(any(Dieta.class));
+	}
+
+	@Test
+	public void testCreateEmptyDietaForPatientUsesCustomName() {
+		when(dietaRepository.save(any(Dieta.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		final Dieta created = dietaService.createEmptyDietaForPatient(7L, TEST_USER_ID, "  Plan de Ana  ");
+
+		assertThat(created.getNombre()).isEqualTo("Plan de Ana");
+		assertThat(created.getPacienteId()).isEqualTo(7L);
+	}
+
+	@Test
 	public void testGetDietaByIdAndUserIdSuccess() {
 		log.info("Starting testGetDietaByIdAndUserIdSuccess");
 

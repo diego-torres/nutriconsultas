@@ -881,7 +881,11 @@ public class PacienteController extends AbstractAuthorizedController {
 			hasErrors = true;
 		}
 
-		if (parsedType == PacienteDietaAssignmentType.DATE_RANGE) {
+		final boolean emptyPlan = PacienteDietaWeekdayRequestSupport.isEmptyPlanAssignment(assignmentType);
+		if (emptyPlan) {
+			pacienteDieta.setPaciente(paciente);
+		}
+		else if (parsedType == PacienteDietaAssignmentType.DATE_RANGE) {
 			if (dietaId == null) {
 				result.rejectValue("dieta", "NotNull", "La dieta es requerida");
 				hasErrors = true;
@@ -916,7 +920,11 @@ public class PacienteController extends AbstractAuthorizedController {
 		}
 
 		final PacienteDieta saved;
-		if (parsedType == PacienteDietaAssignmentType.WEEKLY) {
+		if (emptyPlan) {
+			saved = pacienteDietaService.assignEmptyDieta(id, pacienteDieta, userId,
+					request != null ? request.getParameter("emptyDietaNombre") : null);
+		}
+		else if (parsedType == PacienteDietaAssignmentType.WEEKLY) {
 			saved = pacienteDietaService.assignWeeklyDieta(id,
 					PacienteDietaWeekdayRequestSupport.parseWeekdayCatalogDietaIds(request), pacienteDieta, userId);
 		}

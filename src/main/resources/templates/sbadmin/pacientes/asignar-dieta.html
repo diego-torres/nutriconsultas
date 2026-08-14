@@ -136,6 +136,11 @@
                                  class="custom-control-input" value="WEEKLY">
                           <label class="custom-control-label" for="assignmentTypeWeekly">Plan semanal (lunes a domingo)</label>
                         </div>
+                        <div class="custom-control custom-radio">
+                          <input type="radio" id="assignmentTypeEmptyPlan" name="assignmentType"
+                                 class="custom-control-input" value="EMPTY_PLAN">
+                          <label class="custom-control-label" for="assignmentTypeEmptyPlan">Plan alimentario vacío (definir después)</label>
+                        </div>
                       </div>
 
                       <input type="hidden" name="dietaId" id="dietaIdInput" value="">
@@ -151,6 +156,19 @@
                             <strong>Seleccionada:</strong> <span id="dietaSelectedLabel">-</span>
                           </div>
                           <span th:if="${#fields.hasErrors('dieta')}" th:errors="*{dieta}"></span>
+                        </div>
+                      </div>
+
+                      <div id="emptyPlanSection" class="d-none">
+                        <div class="alert alert-light border py-2 mb-3" role="status">
+                          <i class="fas fa-clipboard"></i>
+                          Se creará un plan sin alimentos ni platillos, con ingestas de desayuno, comida y cena.
+                          Después podrá completar el menú desde el editor del plan alimentario.
+                        </div>
+                        <div class="form-group">
+                          <label for="emptyDietaNombre">Nombre del plan</label>
+                          <input type="text" class="form-control" id="emptyDietaNombre" name="emptyDietaNombre"
+                                 maxlength="255" placeholder="Plan alimentario" autocomplete="off">
                         </div>
                       </div>
 
@@ -305,8 +323,11 @@
         const form = document.getElementById('asignarDietaForm');
         const assignmentTypeDateRangeEl = document.getElementById('assignmentTypeDateRange');
         const assignmentTypeWeeklyEl = document.getElementById('assignmentTypeWeekly');
+        const assignmentTypeEmptyPlanEl = document.getElementById('assignmentTypeEmptyPlan');
         const dateRangeSection = document.getElementById('dateRangeSection');
+        const emptyPlanSection = document.getElementById('emptyPlanSection');
         const weeklySection = document.getElementById('weeklySection');
+        const dietaPickerSection = document.getElementById('dietaPickerSection');
         const weeklyPickerHint = document.getElementById('weeklyPickerHint');
         const weeklyActiveDayHint = document.getElementById('weeklyActiveDayHint');
         const weeklyActiveDayLabel = document.getElementById('weeklyActiveDayLabel');
@@ -617,6 +638,10 @@
 
         if (form) {
           form.addEventListener('submit', function(e) {
+            const isEmptyPlan = assignmentTypeEmptyPlanEl && assignmentTypeEmptyPlanEl.checked;
+            if (isEmptyPlan) {
+              return;
+            }
             const isWeekly = document.getElementById('assignmentTypeWeekly').checked;
             if (isWeekly) {
               const hasDay = Array.from(document.querySelectorAll('.weekday-dieta-input'))
@@ -644,11 +669,18 @@
 
         function toggleAssignmentSections() {
           const isWeekly = assignmentTypeWeeklyEl && assignmentTypeWeeklyEl.checked;
+          const isEmptyPlan = assignmentTypeEmptyPlanEl && assignmentTypeEmptyPlanEl.checked;
           if (dateRangeSection) {
-            dateRangeSection.classList.toggle('d-none', isWeekly);
+            dateRangeSection.classList.toggle('d-none', isWeekly || isEmptyPlan);
           }
           if (weeklySection) {
             weeklySection.classList.toggle('d-none', !isWeekly);
+          }
+          if (emptyPlanSection) {
+            emptyPlanSection.classList.toggle('d-none', !isEmptyPlan);
+          }
+          if (dietaPickerSection) {
+            dietaPickerSection.classList.toggle('d-none', isEmptyPlan);
           }
           if (dietaPickerSectionLabel) {
             dietaPickerSectionLabel.textContent = isWeekly
@@ -666,6 +698,9 @@
         }
         if (assignmentTypeWeeklyEl) {
           assignmentTypeWeeklyEl.addEventListener('change', toggleAssignmentSections);
+        }
+        if (assignmentTypeEmptyPlanEl) {
+          assignmentTypeEmptyPlanEl.addEventListener('change', toggleAssignmentSections);
         }
 
         document.querySelectorAll('.weekly-pick-btn').forEach(function(btn) {

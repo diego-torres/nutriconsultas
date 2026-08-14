@@ -50,4 +50,6 @@ public interface DietaService {
 	Dieta copyDietaForPatientAssignment(@NonNull Long sourceDietaId, @NonNull Long pacienteId,
 			@NonNull String nutritionistUserId);
 
+	Dieta createEmptyDietaForPatient(@NonNull Long pacienteId, @NonNull String nutritionistUserId, String nombre);
+
 }

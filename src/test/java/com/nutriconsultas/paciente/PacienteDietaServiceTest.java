@@ -439,6 +439,45 @@ public class PacienteDietaServiceTest {
 	}
 
 	@Test
+	public void testAssignEmptyDieta() {
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(Optional.of(paciente));
+		when(dietaService.createEmptyDietaForPatient(1L, TEST_USER_ID, "Plan de Juan")).thenReturn(patientCopyDieta);
+		when(pacienteDietaRepository.save(any(PacienteDieta.class))).thenAnswer(invocation -> {
+			final PacienteDieta pd = invocation.getArgument(0);
+			pd.setId(11L);
+			return pd;
+		});
+
+		final PacienteDieta metadata = new PacienteDieta();
+		metadata.setStartDate(new Date());
+		metadata.setStatus(PacienteDietaStatus.ACTIVE);
+		metadata.setNotes("Definir menú después");
+
+		final PacienteDieta result = service.assignEmptyDieta(1L, metadata, TEST_USER_ID, "Plan de Juan");
+
+		assertThat(result.getId()).isEqualTo(11L);
+		assertThat(result.getPaciente()).isEqualTo(paciente);
+		assertThat(result.getDieta()).isEqualTo(patientCopyDieta);
+		assertThat(result.getAssignmentType()).isEqualTo(PacienteDietaAssignmentType.DATE_RANGE);
+		assertThat(result.getNotes()).isEqualTo("Definir menú después");
+		verify(dietaService).createEmptyDietaForPatient(1L, TEST_USER_ID, "Plan de Juan");
+		verify(dietaService, org.mockito.Mockito.never()).copyDietaForPatientAssignment(any(), any(), any());
+		verify(pacienteDietaRepository).save(any(PacienteDieta.class));
+	}
+
+	@Test
+	public void testAssignEmptyDietaThrowsExceptionWhenPacienteNotFound() {
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(Optional.empty());
+		final PacienteDieta metadata = new PacienteDieta();
+		metadata.setStartDate(new Date());
+
+		assertThatThrownBy(() -> service.assignEmptyDieta(1L, metadata, TEST_USER_ID, null))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("No se ha encontrado paciente");
+		verify(dietaService, org.mockito.Mockito.never()).createEmptyDietaForPatient(any(), any(), any());
+	}
+
+	@Test
 	public void testFindByIdThrowsExceptionWhenNotFound() {
 		log.info("starting testFindByIdThrowsExceptionWhenNotFound");
 		// Arrange

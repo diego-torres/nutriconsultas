@@ -905,6 +905,47 @@ public class PacienteControllerTest {
 	}
 
 	@Test
+	public void testGuardarAsignacionEmptyPlan() {
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		pacienteDieta.setStartDate(new Date());
+		pacienteDieta.setStatus(PacienteDietaStatus.ACTIVE);
+
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(httpServletRequest.getParameter("emptyDietaNombre")).thenReturn("Plan personalizado");
+		when(pacienteDietaService.assignEmptyDieta(eq(1L), any(PacienteDieta.class), eq(TEST_USER_ID),
+				eq("Plan personalizado")))
+			.thenReturn(pacienteDieta);
+
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, "EMPTY_PLAN",
+				null, httpServletRequest, principal);
+
+		assertThat(result).isEqualTo("redirect:/admin/pacientes/1/dietas");
+		verify(pacienteDietaService).assignEmptyDieta(eq(1L), any(PacienteDieta.class), eq(TEST_USER_ID),
+				eq("Plan personalizado"));
+		verify(pacienteDietaService, org.mockito.Mockito.never()).assignDieta(any(Long.class), any(Long.class),
+				any(PacienteDieta.class), any(String.class));
+		verify(dietaRepository, org.mockito.Mockito.never()).findById(any());
+	}
+
+	@Test
+	public void testGuardarAsignacionEmptyPlanWithValidationErrors() {
+		final PacienteDieta pacienteDieta = new PacienteDieta();
+		pacienteDieta.setStatus(null);
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(bindingResult.getAllErrors()).thenReturn(new ArrayList<>());
+		final Model model = org.mockito.Mockito.mock(Model.class);
+
+		final String result = controller.guardarAsignacionDieta(1L, pacienteDieta, bindingResult, model, "EMPTY_PLAN",
+				null, httpServletRequest, principal);
+
+		assertThat(result).isEqualTo("sbadmin/pacientes/asignar-dieta");
+		verify(bindingResult).rejectValue(eq("startDate"), eq("NotNull"), eq("La fecha de inicio es requerida"));
+		verify(pacienteDietaService, org.mockito.Mockito.never()).assignEmptyDieta(any(), any(), any(), any());
+	}
+
+	@Test
 	public void testEditarAsignacionDieta() {
 		log.info("starting testEditarAsignacionDieta");
 		// Arrange
