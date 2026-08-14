@@ -46,7 +46,7 @@ How to enable or disable the **AI Nutrition Assistant** on a developer machine. 
 
 4. Confirm startup logs (no API key in output):
 
-   - **OK:** `AI assistant enabled (model=gpt-5-mini, openai.store=false, maxToolCalls=8)`
+   - **OK:** `AI assistant enabled (model=gpt-5-mini, openai.store=false, maxToolCalls=16)`
    - **Misconfigured:** `AI assistant is enabled (AI_ENABLED=true) but OpenAI is not fully configured (OPENAI_API_KEY or OPENAI_MODEL missing)...`
 
 5. Open **`http://localhost:3000/admin/ai`** after logging in as a nutritionist.
@@ -80,7 +80,7 @@ Spring maps env vars in `application.properties` under `nutriconsultas.ai.*`.
 |----------|---------|---------|
 | `OPENAI_CONNECT_TIMEOUT_MS` | `5000` | HTTP connect timeout |
 | `OPENAI_READ_TIMEOUT_MS` | `120000` | HTTP read timeout (long tool loops) |
-| `AI_MAX_TOOL_CALLS` | `8` | Max tool round-trips per user message |
+| `AI_MAX_TOOL_CALLS` | `16` | Max tool round-trips per user message |
 | `AI_MAX_USER_MESSAGE_LENGTH` | `4000` | User input cap (matches UI `maxlength`) |
 | `AI_MAX_DAYS_PER_TURN` | `14` | Diet-plan day cap per turn |
 | `AI_MAX_DISHES_PER_TURN` | `1` | Dish drafts per turn |

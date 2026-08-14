@@ -855,7 +855,7 @@ Orchestrator (#385) registers tools with OpenAI **Responses / Chat Completions**
 
 Tool results are sent back as `role: tool` messages with JSON string body = full response envelope.
 
-Max tool calls per user turn: `nutriconsultas.ai.max-tool-calls` (default **8**, #385).
+Max tool calls per user turn: `nutriconsultas.ai.max-tool-calls` (default **16**, #385).
 
 ---
 

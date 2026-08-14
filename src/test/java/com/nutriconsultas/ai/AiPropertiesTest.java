@@ -67,8 +67,8 @@ class AiPropertiesTest {
 		properties.setMaxToolCalls(100);
 		assertThat(properties.getMaxToolCalls()).isEqualTo(32);
 
-		properties.setMaxToolCalls(8);
-		assertThat(properties.getMaxToolCalls()).isEqualTo(8);
+		properties.setMaxToolCalls(16);
+		assertThat(properties.getMaxToolCalls()).isEqualTo(16);
 	}
 
 	@Test

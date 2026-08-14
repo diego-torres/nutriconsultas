@@ -10,7 +10,7 @@ import org.springframework.util.StringUtils;
 @ConfigurationProperties(prefix = "nutriconsultas.ai")
 public class AiProperties {
 
-	private static final int DEFAULT_MAX_TOOL_CALLS = 8;
+	private static final int DEFAULT_MAX_TOOL_CALLS = 16;
 
 	private static final int MIN_MAX_TOOL_CALLS = 1;
 

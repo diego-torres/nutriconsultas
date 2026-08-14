@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -192,6 +193,9 @@ class AiOrchestrationServiceTest {
 	void processUserMessageEnforcesMaxToolCalls() {
 		stubOperational();
 		when(properties.getMaxToolCalls()).thenReturn(1);
+		when(toolCatalog.definitionsForSession(any()))
+			.thenReturn(List.of(new OpenAiToolDefinition(SearchFoodCatalogToolService.TOOL_NAME, "Busca alimentos",
+					Map.of("type", "object"))));
 		when(threadRepository.findByIdAndNutritionistId(THREAD_ID, NUTRITIONIST_ID)).thenReturn(Optional.of(thread));
 		when(messageRepository.findByThreadIdOrderByCreatedAtAscIdAsc(THREAD_ID))
 			.thenReturn(List.of(message(AiChatMessageRole.USER, "Compara alimentos")));
@@ -200,18 +204,33 @@ class AiOrchestrationServiceTest {
 				List.of(new OpenAiToolCall("call_1", SearchFoodCatalogToolService.TOOL_NAME, "{\"query\":\"avena\"}"),
 						new OpenAiToolCall("call_2", SearchFoodCatalogToolService.TOOL_NAME, "{\"query\":\"arroz\"}")),
 				"tool_calls", null))
-			.thenReturn(
-					new OpenAiChatCompletionResponse(
-							"id-more", "assistant", null, List.of(new OpenAiToolCall("call_3",
-									SearchFoodCatalogToolService.TOOL_NAME, "{\"query\":\"frijol\"}")),
-							"tool_calls", null));
+			.thenReturn(new OpenAiChatCompletionResponse("id-final", "assistant",
+					"Con la avena encontrada puedo armar un borrador parcial.", List.of(), "stop",
+					new OpenAiTokenUsage(10, 5, 15)));
 		when(toolDispatcher.dispatch(any(), any(), any())).thenReturn("{\"success\":true}");
 
 		final AiOrchestrationResult result = service.processUserMessage(context(), "Compara alimentos");
 
 		assertThat(result.toolCallsExecuted()).isEqualTo(1);
-		assertThat(result.assistantMessage().getContent()).contains("límite de consultas");
+		assertThat(result.assistantMessage().getContent()).contains("borrador parcial");
 		verify(toolDispatcher, times(1)).dispatch(any(), any(), any());
+		verify(auditLogger).logMaxToolCallsReached(THREAD_ID, 1);
+
+		final ArgumentCaptor<OpenAiChatCompletionRequest> requestCaptor = ArgumentCaptor
+			.forClass(OpenAiChatCompletionRequest.class);
+		verify(openAiClientService, times(2)).chatCompletion(requestCaptor.capture());
+		final List<OpenAiChatCompletionRequest> requests = requestCaptor.getAllValues();
+		final OpenAiChatCompletionRequest toolRound = requests.get(0);
+		final OpenAiChatCompletionRequest finalRound = requests.get(1);
+		assertThat(toolRound.tools()).hasSize(1);
+		assertThat(finalRound.tools()).isEmpty();
+		assertThat(finalRound.messages())
+			.anyMatch(message -> "tool".equals(message.role()) && "call_1".equals(message.toolCallId()));
+		assertThat(finalRound.messages()).anyMatch(message -> "tool".equals(message.role())
+				&& "call_2".equals(message.toolCallId()) && message.content() != null
+				&& message.content().contains(AiOrchestrationServiceImpl.TOOL_LIMIT_SKIPPED_MESSAGE));
+		assertThat(finalRound.messages()).anyMatch(message -> "system".equals(message.role())
+				&& AiOrchestrationServiceImpl.TOOL_LIMIT_NUDGE.equals(message.content()));
 	}
 
 	@Test
