@@ -9,16 +9,28 @@
 #aiAssistantToggle {
   width: 3.5rem;
   height: 3.5rem;
+  padding: 0;
+  overflow: hidden;
   border-radius: 50%;
-  border: none;
+  border: 2px solid #fff;
   background: #1cc88a;
   color: #fff;
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
   cursor: pointer;
 }
 
+#aiAssistantToggle .mina-avatar {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 #aiAssistantToggle:hover {
   background: #17a673;
+}
+
+#aiAssistantToggle:hover .mina-avatar {
+  filter: brightness(0.96);
 }
 
 #aiAssistantPanel {
@@ -39,12 +51,25 @@
 
 #aiAssistantHeader {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
   background: #1cc88a;
   color: #fff;
+}
+
+#aiAssistantHeaderIdentity {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+#aiAssistantHeaderAvatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 2px solid rgba(255, 255, 255, 0.75);
 }
 
 #aiAssistantTitle {

@@ -12,7 +12,7 @@ Use after changes to `ai-markdown.js`, vendored `marked` / `DOMPurify`, or chat/
 
 ## Floating widget (patient / dieta / platillo page)
 
-Repeat steps 1–5 on a page with the green robot widget.
+Repeat steps 1–5 on a page with the Mina avatar widget.
 
 ## Fallback
 
