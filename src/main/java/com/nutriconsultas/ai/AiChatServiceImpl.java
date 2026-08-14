@@ -86,10 +86,21 @@ public class AiChatServiceImpl implements AiChatService {
 		loadOwnedThread(threadId, nutritionistId);
 		final List<AiChatDraftSummary> drafts = new ArrayList<>();
 		for (final AiGeneratedDraft draft : draftRepository.findByThreadIdOrderByCreatedAtDescIdDesc(threadId)) {
-			drafts.add(new AiChatDraftSummary(draft.getId(), draft.getDraftType(), draft.getStatus(),
-					AiDraftSummaryExtractor.summarize(draft), draft.getCreatedAt()));
+			drafts.add(toDraftSummary(draft, threadId));
 		}
 		return new AiChatDraftList(threadId, List.copyOf(drafts));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<AiChatDraftSummary> listPendingDrafts(@NonNull final String nutritionistId) {
+		assertNutritionistAccess(nutritionistId);
+		final List<AiChatDraftSummary> drafts = new ArrayList<>();
+		for (final AiGeneratedDraft draft : draftRepository
+			.findByNutritionistIdAndStatusOrderByCreatedAtDescIdDesc(nutritionistId, AiDraftStatus.DRAFT)) {
+			drafts.add(toDraftSummary(draft, draft.getThread().getId()));
+		}
+		return List.copyOf(drafts);
 	}
 
 	@Override
@@ -308,6 +319,11 @@ public class AiChatServiceImpl implements AiChatService {
 		final AiChatPromptContext safeRequest = requestContext != null ? requestContext : AiChatPromptContext.empty();
 		final Long patientId = safeRequest.patientId() != null ? safeRequest.patientId() : threadPatientId;
 		return new AiChatPromptContext(patientId, safeRequest.dietaId(), safeRequest.platilloId());
+	}
+
+	private static AiChatDraftSummary toDraftSummary(final AiGeneratedDraft draft, final long threadId) {
+		return new AiChatDraftSummary(draft.getId(), threadId, draft.getDraftType(), draft.getStatus(),
+				AiDraftSummaryExtractor.summarize(draft), draft.getCreatedAt());
 	}
 
 	private AiChatThread loadOwnedThread(final long threadId, final String nutritionistId) {

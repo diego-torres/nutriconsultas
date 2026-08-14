@@ -101,12 +101,28 @@ class AiChatRestControllerTest {
 	void listDraftsReturnsSummaries() {
 		final Instant now = Instant.parse("2026-06-30T12:00:00Z");
 		when(chatService.listDrafts(NUTRITIONIST_ID, 5L)).thenReturn(new AiChatDraftList(5L,
-				List.of(new AiChatDraftSummary(11L, AiDraftType.DISH, AiDraftStatus.DRAFT, "Borrador", now))));
+				List.of(new AiChatDraftSummary(11L, 5L, AiDraftType.DISH, AiDraftStatus.DRAFT, "Borrador", now))));
 
 		final ResponseEntity<Map<String, Object>> response = controller.listDrafts(5L, principal(NUTRITIONIST_ID));
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getBody()).containsEntry("threadId", 5L).containsKey("drafts");
+	}
+
+	@Test
+	void listPendingDraftsReturnsSummaries() {
+		final Instant now = Instant.parse("2026-06-30T12:00:00Z");
+		when(chatService.listPendingDrafts(NUTRITIONIST_ID)).thenReturn(
+				List.of(new AiChatDraftSummary(11L, 5L, AiDraftType.DISH, AiDraftStatus.DRAFT, "Borrador", now)));
+
+		final ResponseEntity<Map<String, Object>> response = controller.listPendingDrafts(principal(NUTRITIONIST_ID));
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).containsKey("drafts");
+		@SuppressWarnings("unchecked")
+		final List<Map<String, Object>> drafts = (List<Map<String, Object>>) response.getBody().get("drafts");
+		assertThat(drafts).hasSize(1);
+		assertThat(drafts.get(0)).containsEntry("draftId", 11L).containsEntry("threadId", 5L);
 	}
 
 	@Test

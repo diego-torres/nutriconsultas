@@ -210,6 +210,9 @@ class AiDraftFlowIntegrationTest {
 
 		assertThat(threadRepository.findByIdAndNutritionistId(thread.getId(), NUTRITIONIST_B)).isEmpty();
 		assertThat(draftRepository.findByIdAndThreadNutritionistId(draftId, NUTRITIONIST_B)).isEmpty();
+		assertThat(chatService.listPendingDrafts(NUTRITIONIST_B)).isEmpty();
+		assertThat(chatService.listPendingDrafts(NUTRITIONIST_A)).extracting(AiChatDraftSummary::draftId)
+			.contains(draftId);
 
 		assertThatThrownBy(() -> chatService.getThread(NUTRITIONIST_B, thread.getId()))
 			.isInstanceOf(AiChatException.class);

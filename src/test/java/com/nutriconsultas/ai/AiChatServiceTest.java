@@ -173,6 +173,42 @@ class AiChatServiceTest {
 
 		assertThat(list.drafts()).hasSize(1);
 		assertThat(list.drafts().get(0).summary()).contains("Tacos");
+		assertThat(list.drafts().get(0).threadId()).isEqualTo(5L);
+	}
+
+	@Test
+	void listPendingDraftsReturnsOnlyOwnDrafts() {
+		final AiChatThread thread = sampleThread(5L, NUTRITIONIST_ID);
+		final AiGeneratedDraft draft = new AiGeneratedDraft();
+		draft.setId(11L);
+		draft.setThread(thread);
+		draft.setDraftType(AiDraftType.MENU);
+		draft.setStatus(AiDraftStatus.DRAFT);
+		draft.setJsonPayload(
+				"{\"name\":\"Menú semanal\",\"days\":[],\"label\":\"Borrador IA\"}");
+		draft.setCreatedAt(Instant.now());
+		when(draftRepository.findByNutritionistIdAndStatusOrderByCreatedAtDescIdDesc(NUTRITIONIST_ID,
+				AiDraftStatus.DRAFT))
+			.thenReturn(List.of(draft));
+
+		final List<AiChatDraftSummary> drafts = service.listPendingDrafts(NUTRITIONIST_ID);
+
+		assertThat(drafts).hasSize(1);
+		assertThat(drafts.get(0).draftId()).isEqualTo(11L);
+		assertThat(drafts.get(0).threadId()).isEqualTo(5L);
+		verify(draftRepository).findByNutritionistIdAndStatusOrderByCreatedAtDescIdDesc(NUTRITIONIST_ID,
+				AiDraftStatus.DRAFT);
+	}
+
+	@Test
+	void listPendingDraftsDoesNotQueryOtherNutritionist() {
+		when(draftRepository.findByNutritionistIdAndStatusOrderByCreatedAtDescIdDesc(NUTRITIONIST_ID,
+				AiDraftStatus.DRAFT))
+			.thenReturn(List.of());
+
+		assertThat(service.listPendingDrafts(NUTRITIONIST_ID)).isEmpty();
+		verify(draftRepository, never()).findByNutritionistIdAndStatusOrderByCreatedAtDescIdDesc(OTHER_NUTRITIONIST_ID,
+				AiDraftStatus.DRAFT);
 	}
 
 	@Test

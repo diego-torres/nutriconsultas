@@ -228,27 +228,39 @@
     if (!container) {
       return;
     }
-    if (!state.threadId) {
-      container.innerHTML = '<p class="ai-chat-draft-empty">Inicia una conversación para ver borradores.</p>';
-      hideDraftPreview();
-      return;
-    }
     if (!state.drafts || state.drafts.length === 0) {
-      container.innerHTML = '<p class="ai-chat-draft-empty">Aún no hay borradores en esta conversación.</p>';
+      container.innerHTML = '<p class="ai-chat-draft-empty">Aún no hay borradores pendientes.</p>';
       hideDraftPreview();
       return;
     }
     container.innerHTML = state.drafts.map(function (draft) {
       var active = state.selectedDraftId === draft.draftId ? ' active' : '';
       var title = draft.summary || draftTypeLabel(draft.draftType);
-      return '<button type="button" class="ai-chat-draft-card' + active + '" data-draft-id="' + draft.draftId + '">' +
+      var canDelete = draft.status === 'DRAFT';
+      return '<div class="ai-chat-draft-card' + active + '" data-draft-id="' + draft.draftId + '">' +
+        '<button type="button" class="ai-chat-draft-card-select">' +
         '<p class="ai-chat-draft-card-title">' + escapeHtml(title) + '</p>' +
         '<p class="ai-chat-draft-card-meta">' + escapeHtml(draftTypeLabel(draft.draftType)) +
-        ' · ' + escapeHtml(draftStatusLabel(draft.status)) + '</p></button>';
+        ' · ' + escapeHtml(draftStatusLabel(draft.status)) + '</p></button>' +
+        (canDelete
+          ? '<button type="button" class="btn btn-outline-danger btn-sm ai-chat-draft-card-delete" ' +
+            'data-draft-delete-id="' + draft.draftId + '" aria-label="Eliminar borrador">Eliminar</button>'
+          : '') +
+        '</div>';
     }).join('');
-    container.querySelectorAll('[data-draft-id]').forEach(function (button) {
+    container.querySelectorAll('.ai-chat-draft-card-select').forEach(function (button) {
       button.addEventListener('click', function () {
-        selectDraft(Number(button.getAttribute('data-draft-id')));
+        var card = button.closest('[data-draft-id]');
+        if (card) {
+          selectDraft(Number(card.getAttribute('data-draft-id')));
+        }
+      });
+    });
+    container.querySelectorAll('[data-draft-delete-id]').forEach(function (button) {
+      button.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        discardDraftById(Number(button.getAttribute('data-draft-delete-id')));
       });
     });
   }
@@ -351,14 +363,9 @@
     }
   }
 
-  function loadDrafts(threadId, options) {
+  function loadDrafts(options) {
     var opts = options || {};
-    if (!threadId) {
-      state.drafts = [];
-      renderDraftList();
-      return Promise.resolve();
-    }
-    return requestJson(API_BASE + '/' + threadId + '/drafts', { method: 'GET' })
+    return requestJson(API_BASE + '/pending-drafts', { method: 'GET' })
       .then(function (data) {
         state.drafts = data.drafts || [];
         if (state.selectedDraftId && !state.drafts.some(function (d) {
@@ -445,7 +452,7 @@
               timer: 3000
             });
           }
-          return loadDrafts(state.threadId);
+          return loadDrafts();
         })
         .catch(function (error) {
           showError(error.message, error.title);
@@ -460,24 +467,33 @@
     if (!state.selectedDraftId || !state.selectedPreview || state.selectedPreview.status !== 'DRAFT') {
       return;
     }
+    discardDraftById(state.selectedDraftId);
+  }
+
+  function discardDraftById(draftId) {
+    if (!draftId || state.busy) {
+      return;
+    }
     confirmDraftAction({
-      title: '¿Descartar borrador?',
+      title: '¿Eliminar borrador?',
       text: 'Esta acción no se puede deshacer.',
-      confirmText: 'Sí, descartar',
+      confirmText: 'Sí, eliminar',
       confirmColor: '#e74a3b'
     }, function () {
       setBusy(true);
-      requestJson(DRAFT_API + '/' + state.selectedDraftId + '/discard', { method: 'POST' })
+      requestJson(DRAFT_API + '/' + draftId + '/discard', { method: 'POST' })
         .then(function () {
           if (typeof swal === 'function') {
             swal({
-              title: 'Borrador descartado',
+              title: 'Borrador eliminado',
               type: 'success',
               timer: 2000
             });
           }
-          hideDraftPreview();
-          return loadDrafts(state.threadId);
+          if (state.selectedDraftId === draftId) {
+            hideDraftPreview();
+          }
+          return loadDrafts();
         })
         .catch(function (error) {
           showError(error.message, error.title);
@@ -631,7 +647,7 @@
     updateThreadTitle(data.title);
     state.messages = data.messages || [];
     renderMessages(false);
-    loadDrafts(data.threadId);
+    loadDrafts();
   }
 
   function loadThread(threadId) {
@@ -721,7 +737,7 @@
       }
       if (data && data.threadId) {
         persistThreadId(data.threadId);
-        loadDrafts(data.threadId, { selectNewest: true });
+        loadDrafts({ selectNewest: true });
       }
       renderMessages(false);
     }
@@ -849,10 +865,9 @@
   function resetConversation() {
     persistThreadId(null);
     state.messages = [];
-    state.drafts = [];
     cancelEditMessage();
     hideDraftPreview();
-    renderDraftList();
+    loadDrafts();
     updateThreadTitle(null);
     renderMessages(false);
     var textarea = $('#aiChatInput');
@@ -966,7 +981,7 @@
       loadThread(threadId);
     } else {
       renderMessages(false);
-      renderDraftList();
+      loadDrafts();
     }
   }
 

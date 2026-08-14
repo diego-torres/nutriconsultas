@@ -21,4 +21,9 @@ public interface AiGeneratedDraftRepository extends JpaRepository<AiGeneratedDra
 	List<AiGeneratedDraft> findByThreadIdAndStatusAndCreatedAtGreaterThanEqual(Long threadId, AiDraftStatus status,
 			Instant createdAt);
 
+	@Query("SELECT d FROM AiGeneratedDraft d JOIN FETCH d.thread t WHERE t.nutritionistId = :nutritionistId "
+			+ "AND d.status = :status ORDER BY d.createdAt DESC, d.id DESC")
+	List<AiGeneratedDraft> findByNutritionistIdAndStatusOrderByCreatedAtDescIdDesc(
+			@Param("nutritionistId") String nutritionistId, @Param("status") AiDraftStatus status);
+
 }
