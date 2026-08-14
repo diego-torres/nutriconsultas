@@ -82,7 +82,7 @@ public class CreateDietPlanDraftToolServiceImpl implements CreateDietPlanDraftTo
 					AiDraftType.DIET_PLAN, jsonPayload);
 			final String summary = DRAFT_LABEL + ": " + displayTitle;
 			final AiDraftCreationData data = new AiDraftCreationData(draft.getId(), AiDraftType.DIET_PLAN,
-					draft.getStatus(), summary);
+					draft.getStatus(), summary, AiDraftCreationData.buildPreviewPath(threadId, draft.getId()));
 			if (log.isInfoEnabled()) {
 				log.info("AI tool create_diet_plan_draft draftId={} threadId={} dayCount={}", draft.getId(), threadId,
 						input.days().size());

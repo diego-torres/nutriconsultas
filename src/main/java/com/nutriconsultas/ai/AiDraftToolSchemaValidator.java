@@ -80,9 +80,18 @@ public final class AiDraftToolSchemaValidator {
 			return Optional.empty();
 		}
 		if (log.isWarnEnabled()) {
-			log.warn("AI draft tool schema validation failed violationCount={}", violations.size());
+			log.warn("AI draft tool schema validation failed violationCount={} samplePaths={}", violations.size(),
+					sampleViolationPaths(violations));
 		}
 		return Optional.of(toSpanishMessage(violations));
+	}
+
+	private static String sampleViolationPaths(final Set<ValidationMessage> violations) {
+		return violations.stream().limit(5).map(message -> {
+			final String path = formatPath(message.getInstanceLocation().toString());
+			final String location = path.isEmpty() ? "$" : path.trim();
+			return message.getType() + location;
+		}).reduce((left, right) -> left + "," + right).orElse("");
 	}
 
 	private static String toSpanishMessage(final Set<ValidationMessage> violations) {

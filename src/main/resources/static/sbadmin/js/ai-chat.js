@@ -256,6 +256,7 @@
   function hideDraftPreview() {
     state.selectedDraftId = null;
     state.selectedPreview = null;
+    persistDraftId(null);
     var panel = $('#aiChatDraftPreview');
     if (panel) {
       panel.hidden = true;
@@ -334,7 +335,8 @@
     }
   }
 
-  function loadDrafts(threadId) {
+  function loadDrafts(threadId, options) {
+    var opts = options || {};
     if (!threadId) {
       state.drafts = [];
       renderDraftList();
@@ -347,6 +349,9 @@
           return d.draftId === state.selectedDraftId;
         })) {
           hideDraftPreview();
+        }
+        if (!state.selectedDraftId && opts.selectNewest && state.drafts.length > 0) {
+          state.selectedDraftId = state.drafts[0].draftId;
         }
         renderDraftList();
         if (state.selectedDraftId) {
@@ -364,6 +369,7 @@
       .then(function (preview) {
         state.selectedDraftId = draftId;
         state.selectedPreview = preview;
+        persistDraftId(draftId);
         renderDraftList();
         renderDraftPreview(preview);
       })
@@ -533,12 +539,27 @@
       }
     } else {
       sessionStorage.removeItem(STORAGE_KEY);
+      state.selectedDraftId = null;
       if (window.history && window.history.replaceState) {
         var cleanUrl = new URL(window.location.href);
         cleanUrl.searchParams.delete('threadId');
+        cleanUrl.searchParams.delete('draftId');
         window.history.replaceState({}, '', cleanUrl.pathname + cleanUrl.search);
       }
     }
+  }
+
+  function persistDraftId(draftId) {
+    if (!(window.history && window.history.replaceState)) {
+      return;
+    }
+    var url = new URL(window.location.href);
+    if (draftId) {
+      url.searchParams.set('draftId', String(draftId));
+    } else {
+      url.searchParams.delete('draftId');
+    }
+    window.history.replaceState({}, '', url.toString());
   }
 
   function updateThreadTitle(title) {
@@ -682,7 +703,7 @@
       }
       if (data && data.threadId) {
         persistThreadId(data.threadId);
-        loadDrafts(data.threadId);
+        loadDrafts(data.threadId, { selectNewest: true });
       }
       renderMessages(false);
     }
@@ -827,11 +848,26 @@
     if (config.initialThreadId) {
       return Number(config.initialThreadId);
     }
+    var params = new URLSearchParams(window.location.search);
+    var fromQuery = params.get('threadId');
+    if (fromQuery) {
+      return Number(fromQuery);
+    }
     var stored = sessionStorage.getItem(STORAGE_KEY);
     if (stored) {
       return Number(stored);
     }
     return null;
+  }
+
+  function resolveInitialDraftId() {
+    var params = new URLSearchParams(window.location.search);
+    var fromQuery = params.get('draftId');
+    if (!fromQuery) {
+      return null;
+    }
+    var draftId = Number(fromQuery);
+    return Number.isFinite(draftId) && draftId > 0 ? draftId : null;
   }
 
   function bindEvents() {
@@ -903,6 +939,10 @@
 
   function init() {
     bindEvents();
+    var initialDraftId = resolveInitialDraftId();
+    if (initialDraftId) {
+      state.selectedDraftId = initialDraftId;
+    }
     var threadId = resolveInitialThreadId();
     if (threadId) {
       loadThread(threadId);

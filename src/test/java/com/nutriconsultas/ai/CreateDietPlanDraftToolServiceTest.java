@@ -54,6 +54,7 @@ class CreateDietPlanDraftToolServiceTest {
 		assertThat(result.data().draftType()).isEqualTo(AiDraftType.DIET_PLAN);
 		assertThat(result.data().status()).isEqualTo(AiDraftStatus.DRAFT);
 		assertThat(result.data().summary()).contains("Plan semanal");
+		assertThat(result.data().previewPath()).isEqualTo("/admin/ai?threadId=42&draftId=77");
 		verify(draftLifecycleService).createDraft(eq(THREAD_ID), eq(NUTRITIONIST_ID), eq(AiDraftType.DIET_PLAN), any());
 		verify(ingestaNutrientCalculator, times(2)).computeIngestas(eq(NUTRITIONIST_ID), any());
 	}
