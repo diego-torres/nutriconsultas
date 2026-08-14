@@ -19,9 +19,11 @@ class AiChatGuidanceContentTest {
 	void chatTemplateIncludesDraftReviewGuidance() throws IOException {
 		final String html = loadTemplate();
 
-		assertThat(html).contains("Cómo usar el asistente");
+		assertThat(html).contains("Cómo usar a Mina");
+		assertThat(html).contains("Minutriporcion - Mina");
 		assertThat(html).contains("Borrador IA — revisión del nutriólogo requerida");
 		assertThat(html).contains("no asigna");
+		assertThat(html).contains("Mensaje para Mina");
 	}
 
 	@Test

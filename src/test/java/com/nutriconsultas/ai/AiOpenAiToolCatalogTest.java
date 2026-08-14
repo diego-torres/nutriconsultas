@@ -50,6 +50,20 @@ class AiOpenAiToolCatalogTest {
 	}
 
 	@Test
+	void draftToolDescriptionsRequireMarkdownPreviewLink() {
+		for (final String toolName : List.of(CreateDishDraftToolService.TOOL_NAME, CreateMenuDraftToolService.TOOL_NAME,
+				CreateDietPlanDraftToolService.TOOL_NAME)) {
+			final OpenAiToolDefinition definition = catalog.definitions()
+				.stream()
+				.filter(item -> toolName.equals(item.name()))
+				.findFirst()
+				.orElseThrow();
+			assertThat(definition.description()).contains("[abrir borrador]({previewPath})");
+			assertThat(definition.description().toLowerCase()).doesNotContain("responde solo con el previewpath");
+		}
+	}
+
+	@Test
 	@SuppressWarnings("unchecked")
 	void menuAndDietPlanDraftSchemasIncludeNestedIngestaItems() {
 		final OpenAiToolDefinition menu = catalog.definitions()

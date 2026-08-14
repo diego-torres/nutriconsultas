@@ -67,6 +67,17 @@
   opacity: 0.92;
 }
 
+.ai-markdown a {
+  color: #4e73df;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.ai-markdown a:hover,
+.ai-markdown a:focus {
+  color: #2e59d9;
+}
+
 .ai-chat-message.user .ai-markdown code,
 .ai-chat-message.user .ai-markdown pre,
 .ai-assistant-message.user .ai-markdown code,
