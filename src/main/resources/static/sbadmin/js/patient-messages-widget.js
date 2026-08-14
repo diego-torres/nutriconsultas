@@ -4,6 +4,25 @@
   'use strict';
 
   var POLL_INTERVAL_MS = 60000;
+  var MAX_BODY_LENGTH = 2000;
+  var EMOJI_GROUPS = [
+    {
+      label: 'Reacciones',
+      emojis: ['😊', '🙂', '😄', '😁', '😍', '🤗', '😌', '😎', '🥳', '😇', '😉', '😅',
+        '😂', '🤩', '🥰', '😘', '🤔', '😮', '😴', '👍', '👎', '👏', '🙌', '💪',
+        '🙏', '❤️', '💚', '💙', '💛', '✨', '🌟', '🎉', '✅', '⚠️', '💯']
+    },
+    {
+      label: 'Alimentos',
+      emojis: ['🥗', '🍎', '🥦', '🥑', '🥕', '🍇', '🍊', '🍓', '🍌', '🍉', '🥝', '🍅',
+        '🥒', '🌽', '🥜', '🥚', '🥛', '🧀', '🐟', '🍗', '🥩', '🍞', '🍠', '🥣',
+        '🍽️', '💧', '☕', '🍵', '🥤']
+    },
+    {
+      label: 'Hábitos',
+      emojis: ['🏃', '🚶', '🧘', '🏋️', '🚴', '🛌', '☀️', '🌙', '⏰', '📝', '🚰', '💊']
+    }
+  ];
   var state = {
     open: false,
     unreadCount: 0,
@@ -12,7 +31,8 @@
     activePacienteId: null,
     activePacienteName: null,
     profileMode: false,
-    pollTimer: null
+    pollTimer: null,
+    emojiPickerOpen: false
   };
 
   function $(selector) {
@@ -129,7 +149,60 @@
     }
   }
 
+  function renderEmojiPicker() {
+    var picker = $('#patientChatEmojiPicker');
+    if (!picker || picker.dataset.ready === 'true') {
+      return;
+    }
+    picker.innerHTML = EMOJI_GROUPS.map(function (group) {
+      return '<div class="patient-chat-emoji-group">' +
+        '<span class="patient-chat-emoji-group-label">' + escapeHtml(group.label) + '</span>' +
+        '<div class="patient-chat-emoji-grid">' +
+        group.emojis.map(function (emoji) {
+          return '<button type="button" class="patient-chat-emoji-item" data-emoji="' + emoji +
+            '" aria-label="' + emoji + '">' + emoji + '</button>';
+        }).join('') +
+        '</div></div>';
+    }).join('');
+    picker.querySelectorAll('.patient-chat-emoji-item').forEach(function (button) {
+      button.addEventListener('click', function () {
+        insertEmoji(button.getAttribute('data-emoji'));
+      });
+    });
+    picker.dataset.ready = 'true';
+  }
+
+  function setEmojiPickerOpen(open) {
+    var picker = $('#patientChatEmojiPicker');
+    var button = $('#patientChatEmojiBtn');
+    state.emojiPickerOpen = !!open;
+    if (picker) {
+      picker.hidden = !state.emojiPickerOpen;
+    }
+    if (button) {
+      button.setAttribute('aria-expanded', state.emojiPickerOpen ? 'true' : 'false');
+    }
+  }
+
+  function insertEmoji(emoji) {
+    var input = $('#patientChatInput');
+    if (!input || input.disabled || !emoji) {
+      return;
+    }
+    var start = typeof input.selectionStart === 'number' ? input.selectionStart : input.value.length;
+    var end = typeof input.selectionEnd === 'number' ? input.selectionEnd : start;
+    var next = input.value.slice(0, start) + emoji + input.value.slice(end);
+    if (next.length > MAX_BODY_LENGTH) {
+      return;
+    }
+    input.value = next;
+    var caret = start + emoji.length;
+    input.focus();
+    input.setSelectionRange(caret, caret);
+  }
+
   function showGlobalView() {
+    setEmojiPickerOpen(false);
     $('#patientChatGlobalView').hidden = false;
     $('#patientChatThreadView').hidden = true;
     $('#patientChatBackBtn').hidden = true;
@@ -184,6 +257,11 @@
       return;
     }
     input.disabled = true;
+    var emojiBtn = $('#patientChatEmojiBtn');
+    if (emojiBtn) {
+      emojiBtn.disabled = true;
+    }
+    setEmojiPickerOpen(false);
     fetchJson('/rest/patient-messages/thread/' + state.activePacienteId, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -204,6 +282,9 @@
       }
     }).finally(function () {
       input.disabled = false;
+      if (emojiBtn) {
+        emojiBtn.disabled = false;
+      }
       input.focus();
     });
   }
@@ -222,6 +303,8 @@
         showGlobalView();
         loadUnread();
       }
+    } else {
+      setEmojiPickerOpen(false);
     }
   }
 
@@ -230,7 +313,9 @@
     var closeBtn = $('#patientChatClose');
     var backBtn = $('#patientChatBackBtn');
     var sendBtn = $('#patientChatSendBtn');
+    var emojiBtn = $('#patientChatEmojiBtn');
     var input = $('#patientChatInput');
+    renderEmojiPicker();
 
     if (toggleBtn) {
       toggleBtn.addEventListener('click', function () {
@@ -254,6 +339,11 @@
     if (sendBtn) {
       sendBtn.addEventListener('click', sendMessage);
     }
+    if (emojiBtn) {
+      emojiBtn.addEventListener('click', function () {
+        setEmojiPickerOpen(!state.emojiPickerOpen);
+      });
+    }
     if (input) {
       input.addEventListener('keydown', function (event) {
         if (event.key === 'Enter' && !event.shiftKey) {
@@ -262,6 +352,21 @@
         }
       });
     }
+    document.addEventListener('click', function (event) {
+      if (!state.emojiPickerOpen) {
+        return;
+      }
+      var picker = $('#patientChatEmojiPicker');
+      if ((picker && picker.contains(event.target)) || (emojiBtn && emojiBtn.contains(event.target))) {
+        return;
+      }
+      setEmojiPickerOpen(false);
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && state.emojiPickerOpen) {
+        setEmojiPickerOpen(false);
+      }
+    });
   }
 
   function startPolling() {

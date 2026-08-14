@@ -95,6 +95,26 @@ class PatientMessageServiceTest {
 	}
 
 	@Test
+	void sendAsNutritionist_persistsEmojiBody() {
+		final Paciente paciente = samplePaciente(1L);
+		when(pacienteRepository.findByIdAndUserId(1L, USER_ID)).thenReturn(Optional.of(paciente));
+		when(patientMessageRepository.save(any(PatientMessage.class))).thenAnswer(invocation -> {
+			final PatientMessage saved = invocation.getArgument(0);
+			saved.setId(100L);
+			saved.setSentAt(Instant.parse("2026-06-01T12:00:00Z"));
+			return saved;
+		});
+
+		final PatientMessageThreadItemDto sent = patientMessageService.sendAsNutritionist(1L, USER_ID,
+				"¡Excelente semana! 🥗💪");
+
+		assertThat(sent.body()).isEqualTo("¡Excelente semana! 🥗💪");
+		final ArgumentCaptor<PatientMessage> captor = ArgumentCaptor.forClass(PatientMessage.class);
+		verify(patientMessageRepository).save(captor.capture());
+		assertThat(captor.getValue().getBody()).isEqualTo("¡Excelente semana! 🥗💪");
+	}
+
+	@Test
 	void sendAsNutritionist_whenBodyBlank_doesNotNotifyPush() {
 		final Paciente paciente = samplePaciente(1L);
 		when(pacienteRepository.findByIdAndUserId(1L, USER_ID)).thenReturn(Optional.of(paciente));
