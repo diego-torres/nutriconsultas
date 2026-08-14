@@ -1,4 +1,5 @@
 <div th:fragment="sidebar">
+  <link rel="stylesheet" th:href="@{/sbadmin/css/mina-avatar.css}" />
   <!-- Sidebar -->
   <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
@@ -55,7 +56,8 @@
     </li>
     <li class="nav-item" th:if="${aiAssistantAvailable}" th:classappend="${activeMenu == 'ai' ? 'active' : ''}">
       <a class="nav-link" th:href="@{/admin/ai}">
-        <i class="fas fa-fw fa-robot"></i>
+        <img class="mina-avatar" th:src="@{/sbadmin/img/mina-avatar.png}" alt="" width="20" height="20"
+          aria-hidden="true" />
         <span>Mina</span></a>
     </li>
     <li class="nav-item" th:classappend="${activeMenu == 'perfil' ? 'active' : ''}">

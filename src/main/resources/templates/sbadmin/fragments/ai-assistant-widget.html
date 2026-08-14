@@ -1,13 +1,18 @@
 <div th:fragment="widget">
   <link rel="stylesheet" th:href="@{/sbadmin/vendor/bootstrap-sweetalert/sweetalert.css}" />
+  <link rel="stylesheet" th:href="@{/sbadmin/css/mina-avatar.css}" />
   <link rel="stylesheet" th:href="@{/sbadmin/css/ai-assistant-widget.css}" />
   <link rel="stylesheet" th:href="@{/sbadmin/css/ai-markdown.css}" />
   <div id="aiAssistantRoot" aria-live="polite">
     <div id="aiAssistantPanel" hidden>
       <div id="aiAssistantHeader">
-        <div id="aiAssistantHeaderText">
-          <h2 id="aiAssistantTitle">Mina</h2>
-          <p id="aiAssistantScope" th:text="${aiAssistantWidgetContext.scopeLabel()}">Contexto</p>
+        <div id="aiAssistantHeaderIdentity">
+          <img class="mina-avatar" id="aiAssistantHeaderAvatar" th:src="@{/sbadmin/img/mina-avatar.png}" alt=""
+            width="36" height="36" aria-hidden="true" />
+          <div id="aiAssistantHeaderText">
+            <h2 id="aiAssistantTitle">Mina</h2>
+            <p id="aiAssistantScope" th:text="${aiAssistantWidgetContext.scopeLabel()}">Contexto</p>
+          </div>
         </div>
         <div id="aiAssistantHeaderActions">
           <a id="aiAssistantOpenFull" th:href="@{/admin/ai}" class="ai-assistant-icon-btn" title="Abrir chat completo">
@@ -35,7 +40,8 @@
       </div>
     </div>
     <button type="button" id="aiAssistantToggle" title="Mina — asistente de IA" aria-label="Mina — asistente de IA">
-      <i class="fas fa-robot fa-lg" aria-hidden="true"></i>
+      <img class="mina-avatar" th:src="@{/sbadmin/img/mina-avatar.png}" alt="" width="56" height="56"
+        aria-hidden="true" />
     </button>
   </div>
   <script th:inline="javascript">

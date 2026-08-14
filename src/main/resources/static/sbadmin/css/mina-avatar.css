@@ -1,0 +1,39 @@
+.mina-avatar {
+  display: inline-block;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.sidebar .nav-item .nav-link .mina-avatar {
+  width: 1.25rem;
+  height: 1.25rem;
+  display: block;
+  margin: 0 auto 0.2rem;
+}
+
+.btn .mina-avatar {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-right: 0.3rem;
+  vertical-align: text-bottom;
+}
+
+.mina-avatar-heading {
+  width: 2rem;
+  height: 2rem;
+  margin-right: 0.4rem;
+}
+
+@media (min-width: 768px) {
+  .sidebar .nav-item .nav-link .mina-avatar {
+    display: inline-block;
+    margin: 0 0.4rem 0 0;
+  }
+
+  .sidebar.toggled .nav-item .nav-link .mina-avatar {
+    display: block;
+    margin: 0 auto 0.2rem;
+  }
+}
