@@ -47,6 +47,10 @@ class AiSystemPromptServiceTest {
 		assertThat(prompt).contains("create_dish_draft");
 		assertThat(prompt).contains("Se ha agregado el siguiente Borrador IA");
 		assertThat(prompt).contains("previewPath");
+		assertThat(prompt).contains("[abrir borrador]({previewPath})");
+		assertThat(prompt).contains("Eres Mina");
+		assertThat(prompt).contains("ESTILO DE RESPUESTA");
+		assertThat(prompt.toLowerCase(Locale.ROOT)).contains("respuestas compactas");
 	}
 
 	@Test

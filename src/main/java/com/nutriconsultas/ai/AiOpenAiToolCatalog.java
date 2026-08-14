@@ -101,7 +101,8 @@ public final class AiOpenAiToolCatalog {
 		properties.put("warnings", stringArrayProperty());
 		return new OpenAiToolDefinition(CreateDishDraftToolService.TOOL_NAME,
 				secureDescription("Guarda un borrador de platillo/receta para revisión del nutriólogo. "
-						+ "No guarda en el catálogo final. Tras éxito, responde solo con el previewPath."),
+						+ "No guarda en el catálogo final. Tras éxito, responde en una línea con Markdown "
+						+ "[abrir borrador]({previewPath}) usando el previewPath del resultado."),
 				objectSchema(properties, List.of("name", "ingredients")));
 	}
 
@@ -116,7 +117,8 @@ public final class AiOpenAiToolCatalog {
 		return new OpenAiToolDefinition(CreateMenuDraftToolService.TOOL_NAME,
 				secureDescription("Guarda un borrador de menú de un día (varias ingestas). No asigna al paciente. "
 						+ "Cada ingesta debe incluir items con type PLATILLO|ALIMENTO|RECIPE e IDs del catálogo. "
-						+ "Tras éxito, responde solo con el previewPath del borrador."),
+						+ "Tras éxito, responde en una línea con Markdown [abrir borrador]({previewPath}) "
+						+ "usando el previewPath del resultado; no pegues la ruta sola."),
 				objectSchema(properties, List.of("ingestas")));
 	}
 
@@ -132,7 +134,8 @@ public final class AiOpenAiToolCatalog {
 		return new OpenAiToolDefinition(CreateDietPlanDraftToolService.TOOL_NAME,
 				secureDescription("Guarda un borrador de plan alimenticio multi-día. No asigna al paciente. "
 						+ "Cada día incluye ingestas con items tipados e IDs del catálogo. "
-						+ "Tras éxito, responde solo con el previewPath del borrador."),
+						+ "Tras éxito, responde en una línea con Markdown [abrir borrador]({previewPath}) "
+						+ "usando el previewPath del resultado; no pegues la ruta sola."),
 				objectSchema(properties, List.of("days")));
 	}
 

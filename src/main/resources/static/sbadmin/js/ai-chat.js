@@ -64,7 +64,7 @@
       return 'Tú';
     }
     if (role === 'ASSISTANT') {
-      return 'Asistente';
+      return 'Mina';
     }
     return role;
   }
@@ -486,10 +486,10 @@
         sendBtn.setAttribute('aria-label', 'Detener generación');
       } else if (busy) {
         sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span>Enviando…';
-        sendBtn.setAttribute('aria-label', 'Enviando mensaje al asistente');
+        sendBtn.setAttribute('aria-label', 'Enviando mensaje a Mina');
       } else {
         sendBtn.innerHTML = '<i class="fas fa-paper-plane mr-1" aria-hidden="true"></i>Enviar';
-        sendBtn.setAttribute('aria-label', 'Enviar mensaje al asistente');
+        sendBtn.setAttribute('aria-label', 'Enviar mensaje a Mina');
       }
     }
     if (newBtn) {
@@ -579,7 +579,7 @@
     var items = visibleMessages(state.messages);
     if (items.length === 0 && !showLoading) {
       container.innerHTML = '<p class="ai-chat-empty">Escribe un mensaje para comenzar. ' +
-        'El asistente redactará borradores que deberás revisar antes de usarlos.</p>';
+        'Mina redactará borradores que deberás revisar antes de usarlos.</p>';
       return;
     }
 
@@ -601,7 +601,7 @@
       html += '<article class="ai-chat-message assistant loading" aria-live="polite" aria-busy="true">' +
         '<div class="ai-chat-bubble">' +
         '<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>' +
-        'El asistente está pensando…</div></article>';
+        'Mina está pensando…</div></article>';
     }
 
     container.innerHTML = html;

@@ -20,4 +20,15 @@ class AiMarkdownStaticAssetsTest {
 		assertThat(new ClassPathResource("static/sbadmin/css/ai-markdown.css").exists()).isTrue();
 	}
 
+	@Test
+	void markdownWrapperLinkifiesBareDraftPaths() throws Exception {
+		final String js = new ClassPathResource("static/sbadmin/js/ai-markdown.js")
+			.getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+
+		assertThat(js).contains("linkifyDraftPaths");
+		assertThat(js).contains("/admin/ai?threadId=");
+		assertThat(js).contains("[abrir borrador](");
+		assertThat(js).contains("linkifyDraftPaths: linkifyDraftPaths");
+	}
+
 }

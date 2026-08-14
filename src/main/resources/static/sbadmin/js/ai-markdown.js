@@ -20,6 +20,22 @@
     return escapeHtml(text).replace(/\n/g, '<br>');
   }
 
+  /**
+   * Model sometimes dumps bare /admin/ai?threadId=&draftId= paths.
+   * Convert those to Markdown links so they become clickable.
+   */
+  function linkifyDraftPaths(text) {
+    return String(text).replace(
+      /\[([^\]]+)\]\(\/admin\/ai\?threadId=\d+&draftId=\d+\)|(\/admin\/ai\?threadId=\d+&draftId=\d+)/g,
+      function (match, _label, barePath) {
+        if (barePath) {
+          return '[abrir borrador](' + barePath + ')';
+        }
+        return match;
+      }
+    );
+  }
+
   function configureLinkSanitizer() {
     if (typeof DOMPurify === 'undefined' || !DOMPurify.addHook) {
       return;
@@ -74,7 +90,7 @@
     if (text == null || text === '') {
       return '';
     }
-    var raw = String(text);
+    var raw = linkifyDraftPaths(text);
     try {
       var parsed = parseMarkdown(raw);
       if (parsed != null) {
@@ -95,6 +111,7 @@
 
   global.NutriAiMarkdown = {
     escapeHtml: escapeHtml,
+    linkifyDraftPaths: linkifyDraftPaths,
     renderAssistantMarkdown: renderAssistantMarkdown,
     formatMessageContent: formatMessageContent
   };
