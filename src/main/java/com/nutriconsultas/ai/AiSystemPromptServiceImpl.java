@@ -65,7 +65,7 @@ public class AiSystemPromptServiceImpl implements AiSystemPromptService {
 		if (patient == null) {
 			return "";
 		}
-		final StringBuilder section = new StringBuilder(512);
+		final StringBuilder section = new StringBuilder(1024);
 		section.append("CONTEXTO DEL PACIENTE VINCULADO A ESTA CONVERSACIÓN\n");
 		if (StringUtils.hasText(patient.displayName())) {
 			section.append("- Nombre en expediente: ").append(patient.displayName().trim()).append('\n');
@@ -74,9 +74,8 @@ public class AiSystemPromptServiceImpl implements AiSystemPromptService {
 			section.append("- patientId interno: ").append(patient.patientId()).append('\n');
 		}
 		section.append(
-				"- Al aceptar un borrador de menú o plan, el sistema asignará la dieta a este paciente por 1 mes.\n");
-		section.append(
-				"- Confirma al nutriólogo, de forma breve, que encontraste a este paciente antes de generar el borrador.\n");
+				"- Al aceptar un borrador de menú o plan, el sistema asignará la dieta a este paciente por 1 mes.\n"
+						+ "- Confirma al nutriólogo, de forma breve, que encontraste a este paciente antes de generar el borrador.\n");
 		if (patient.requerimientoKcal() != null) {
 			section.append("- Objetivo calórico (requerimientoKcal): ")
 				.append(formatNumber(patient.requerimientoKcal()))

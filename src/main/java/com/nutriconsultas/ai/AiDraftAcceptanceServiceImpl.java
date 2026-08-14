@@ -128,8 +128,8 @@ public class AiDraftAcceptanceServiceImpl implements AiDraftAcceptanceService {
 			return new PatientAssignment(pacienteId, saved.getId(), patientAssignmentPath(pacienteId));
 		}
 		catch (IllegalArgumentException ex) {
-			throw new AiDraftLifecycleException(ex.getMessage() != null ? ex.getMessage()
-					: "No se pudo asignar la dieta al paciente.");
+			throw new AiDraftLifecycleException(
+					ex.getMessage() != null ? ex.getMessage() : "No se pudo asignar la dieta al paciente.", ex);
 		}
 	}
 
