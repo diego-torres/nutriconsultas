@@ -22,6 +22,11 @@
         <div id="patientChatThreadView" hidden>
           <div id="patientChatMessages"></div>
           <div id="patientChatComposer">
+            <div id="patientChatEmojiPicker" hidden role="dialog" aria-label="Elegir emoticon"></div>
+            <button type="button" id="patientChatEmojiBtn" title="Emoticones" aria-label="Emoticones"
+              aria-expanded="false" aria-controls="patientChatEmojiPicker">
+              <i class="fas fa-smile" aria-hidden="true"></i>
+            </button>
             <textarea id="patientChatInput" rows="2" maxlength="2000" placeholder="Escribe un mensaje…"></textarea>
             <button type="button" id="patientChatSendBtn" title="Enviar">
               <i class="fas fa-paper-plane"></i>

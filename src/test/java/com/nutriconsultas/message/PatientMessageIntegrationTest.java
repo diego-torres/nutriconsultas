@@ -102,6 +102,23 @@ class PatientMessageIntegrationTest {
 	}
 
 	@Test
+	void nutritionistReplyWithEmojiAppearsInMobileMessageThread() throws Exception {
+		mockMvc
+			.perform(post("/rest/patient-messages/thread/" + linkedPaciente.getId())
+				.with(oidcLogin().idToken(token -> token.subject(NUTRITIONIST_SUB).claim("name", "Nutritionist")))
+				.contentType(MediaType.APPLICATION_JSON)
+				.characterEncoding("UTF-8")
+				.content("{\"body\":\"¡Sigue así! 🥗👍\"}"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.senderRole").value("NUTRITIONIST"))
+			.andExpect(jsonPath("$.body").value("¡Sigue así! 🥗👍"));
+
+		mockMvc.perform(get("/rest/mobile/patient/messages").with(mobileJwt(PATIENT_AUTH_SUB)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.content[0].body").value("¡Sigue así! 🥗👍"));
+	}
+
+	@Test
 	void sendMessageForOtherNutritionistPatientReturnsNotFound() throws Exception {
 		final Paciente otherPatient = pacienteRepository.findByPatientAuthSub("auth0|114-other-patient")
 			.orElseGet(() -> pacienteRepository
