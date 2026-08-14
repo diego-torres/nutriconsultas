@@ -89,6 +89,21 @@ public class PacienteDietaServiceImpl implements PacienteDietaService {
 	}
 
 	@Override
+	public PacienteDieta assignEmptyDieta(@NonNull final Long pacienteId, @NonNull final PacienteDieta pacienteDieta,
+			@NonNull final String userId, final String nombre) {
+		log.info("Assigning empty dieta to paciente {} for user {}", pacienteId, userId);
+		final Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado paciente con id " + pacienteId));
+		final Dieta emptyDieta = dietaService.createEmptyDietaForPatient(pacienteId, userId, nombre);
+
+		final PacienteDieta newAssignment = buildAssignmentShell(paciente, pacienteDieta);
+		newAssignment.setAssignmentType(PacienteDietaAssignmentType.DATE_RANGE);
+		newAssignment.setDieta(emptyDieta);
+
+		return pacienteDietaRepository.save(newAssignment);
+	}
+
+	@Override
 	public PacienteDieta updateAssignment(@NonNull final Long id, @NonNull final PacienteDieta pacienteDieta) {
 		log.info("Updating dieta assignment {}", id);
 		final PacienteDieta existing = loadAssignment(id);

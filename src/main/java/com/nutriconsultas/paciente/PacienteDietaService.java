@@ -18,6 +18,9 @@ public interface PacienteDietaService {
 	PacienteDieta assignWeeklyDieta(@NonNull Long pacienteId, @NonNull Map<Integer, Long> weekdayCatalogDietaIds,
 			@NonNull PacienteDieta pacienteDieta, @NonNull String userId);
 
+	PacienteDieta assignEmptyDieta(@NonNull Long pacienteId, @NonNull PacienteDieta pacienteDieta,
+			@NonNull String userId, String nombre);
+
 	PacienteDieta updateAssignment(@NonNull Long id, @NonNull PacienteDieta pacienteDieta);
 
 	PacienteDieta updateWeeklyAssignment(@NonNull Long id, @NonNull Map<Integer, Long> weekdayCatalogDietaIds,

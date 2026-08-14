@@ -22,6 +22,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DietaServiceImpl implements DietaService {
 
+	private static final String DEFAULT_EMPTY_PATIENT_DIET_NAME = "Plan alimentario";
+
+	private static final List<String> EMPTY_PLAN_INGESTA_NAMES = List.of("Desayuno", "Comida", "Cena");
+
 	@Autowired
 	private DietaRepository dietaRepository;
 
@@ -508,6 +512,40 @@ public class DietaServiceImpl implements DietaService {
 		final Dieta saved = dietaRepository.save(copy);
 		log.info("Created patient diet copy with id {} from source {}", saved.getId(), sourceDietaId);
 		return saved;
+	}
+
+	@Override
+	public Dieta createEmptyDietaForPatient(@NonNull final Long pacienteId, @NonNull final String nutritionistUserId,
+			final String nombre) {
+		log.info("Creating empty patient dieta for assignment");
+		final Dieta dieta = new Dieta();
+		dieta.setNombre(resolveEmptyDietaNombre(nombre));
+		dieta.setUserId(nutritionistUserId);
+		dieta.setPacienteId(pacienteId);
+		dieta.setEnergia(0);
+		dieta.setProteina(0.0);
+		dieta.setLipidos(0.0);
+		dieta.setHidratosDeCarbono(0.0);
+
+		final List<Ingesta> ingestas = new ArrayList<>();
+		for (int index = 0; index < EMPTY_PLAN_INGESTA_NAMES.size(); index++) {
+			final Ingesta ingesta = new Ingesta();
+			ingesta.setNombre(EMPTY_PLAN_INGESTA_NAMES.get(index));
+			ingesta.setOrden(index);
+			ingesta.setDieta(dieta);
+			ingesta.setEnergia(0);
+			ingesta.setProteina(0.0);
+			ingesta.setLipidos(0.0);
+			ingesta.setHidratosDeCarbono(0.0);
+			ingestas.add(ingesta);
+		}
+		dieta.setIngestas(ingestas);
+		return dietaRepository.save(dieta);
+	}
+
+	private static String resolveEmptyDietaNombre(final String nombre) {
+		final boolean hasCustomName = nombre != null && !nombre.isBlank();
+		return hasCustomName ? nombre.trim() : DEFAULT_EMPTY_PATIENT_DIET_NAME;
 	}
 
 	private Dieta buildDietaCopy(final Dieta originalDieta, final String nombre, final String userId,

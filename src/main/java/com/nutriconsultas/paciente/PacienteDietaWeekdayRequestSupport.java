@@ -33,8 +33,12 @@ public final class PacienteDietaWeekdayRequestSupport {
 		return result;
 	}
 
+	public static boolean isEmptyPlanAssignment(final String raw) {
+		return "EMPTY_PLAN".equalsIgnoreCase(raw);
+	}
+
 	public static PacienteDietaAssignmentType parseAssignmentType(final String raw) {
-		if (raw == null || raw.isBlank()) {
+		if (raw == null || raw.isBlank() || isEmptyPlanAssignment(raw)) {
 			return PacienteDietaAssignmentType.DATE_RANGE;
 		}
 		try {
