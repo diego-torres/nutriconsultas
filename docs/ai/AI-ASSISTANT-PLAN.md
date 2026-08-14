@@ -118,7 +118,7 @@ nutriconsultas.ai.enabled=${AI_ENABLED:false}
 nutriconsultas.ai.openai.api-key=${OPENAI_API_KEY:}
 nutriconsultas.ai.openai.model=${OPENAI_MODEL:}
 nutriconsultas.ai.openai.store=${OPENAI_STORE:false}
-nutriconsultas.ai.max-tool-calls=${AI_MAX_TOOL_CALLS:8}
+nutriconsultas.ai.max-tool-calls=${AI_MAX_TOOL_CALLS:16}
 ```
 
 Local `.env` / EC2 `app.env`: see issues #365 and #405.

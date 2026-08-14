@@ -14,8 +14,16 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 
 	private static final int TOOL_AUDIT_MAX_CHARS = 2_000;
 
-	private static final String TOOL_LIMIT_MESSAGE = "Alcancé el límite de consultas al catálogo en este turno. "
-			+ "Responde con la información disponible hasta ahora.";
+	/**
+	 * Nudge for the model after the per-turn tool budget is exhausted. Not shown to the
+	 * nutritionist directly — used only to request a final answer without further tool
+	 * calls.
+	 */
+	static final String TOOL_LIMIT_NUDGE = "Alcancé el límite de consultas al catálogo en este turno. "
+			+ "Responde con la información disponible hasta ahora. No solicites más herramientas.";
+
+	static final String TOOL_LIMIT_SKIPPED_MESSAGE = "Se alcanzó el límite de consultas al catálogo en este turno. "
+			+ "No se ejecutó esta consulta.";
 
 	private final AiProperties properties;
 
@@ -230,14 +238,16 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		OpenAiTokenUsage accumulatedUsage = null;
 		final List<ToolAuditEntry> toolAuditEntries = new ArrayList<>();
 		String assistantContent = null;
+		final List<OpenAiToolDefinition> sessionTools = orchestrationTools.getToolCatalog()
+			.definitionsForSession(context.patientContext());
+		final int maxToolCalls = properties.getMaxToolCalls();
 
 		while (true) {
 			if (streamConsumer != null) {
 				streamConsumer.throwIfCancelled();
 			}
 			final OpenAiChatCompletionResponse response = openAiClientService
-				.chatCompletion(new OpenAiChatCompletionRequest(List.copyOf(conversation),
-						orchestrationTools.getToolCatalog().definitionsForSession(context.patientContext())));
+				.chatCompletion(new OpenAiChatCompletionRequest(List.copyOf(conversation), sessionTools));
 			accumulatedUsage = mergeUsage(accumulatedUsage, response.usage());
 			assistantContent = response.content();
 
@@ -247,22 +257,32 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 			if (streamConsumer != null) {
 				streamConsumer.onStatus("tools", "Consultando catálogo nutricional…");
 			}
-			if (toolCallsExecuted >= properties.getMaxToolCalls()) {
-				assistantContent = TOOL_LIMIT_MESSAGE;
-				orchestrationTools.getAuditLogger()
-					.logMaxToolCallsReached(context.threadId(), properties.getMaxToolCalls());
-				break;
-			}
 
 			conversation.add(OpenAiChatMessage.assistantWithToolCalls(response.content(), response.toolCalls()));
+			boolean budgetExhaustedInBatch = false;
 			for (final OpenAiToolCall toolCall : response.toolCalls()) {
-				if (toolCallsExecuted >= properties.getMaxToolCalls()) {
-					break;
+				if (toolCallsExecuted >= maxToolCalls) {
+					final String skippedJson = skippedToolResultJson();
+					conversation.add(OpenAiChatMessage.tool(toolCall.id(), toolCall.name(), skippedJson));
+					toolAuditEntries.add(new ToolAuditEntry(toolCall.name(), skippedJson));
+					budgetExhaustedInBatch = true;
+					continue;
 				}
 				final String toolResultJson = executeToolCall(context, toolCall);
 				conversation.add(OpenAiChatMessage.tool(toolCall.id(), toolCall.name(), toolResultJson));
 				toolAuditEntries.add(new ToolAuditEntry(toolCall.name(), toolResultJson));
 				toolCallsExecuted++;
+				if (toolCallsExecuted >= maxToolCalls) {
+					budgetExhaustedInBatch = true;
+				}
+			}
+
+			if (budgetExhaustedInBatch) {
+				orchestrationTools.getAuditLogger().logMaxToolCallsReached(context.threadId(), maxToolCalls);
+				final FinalAnswerOutcome finalAnswer = requestFinalAnswerAfterToolLimit(conversation, streamConsumer);
+				accumulatedUsage = mergeUsage(accumulatedUsage, finalAnswer.usage());
+				assistantContent = finalAnswer.content();
+				break;
 			}
 		}
 
@@ -271,6 +291,33 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 		}
 		assistantContent = orchestrationTools.getGuardrails().validateAssistantOutput(assistantContent);
 		return new ToolLoopOutcome(assistantContent, toolCallsExecuted, accumulatedUsage, toolAuditEntries);
+	}
+
+	/**
+	 * Completes the turn after the tool budget is exhausted: every {@code tool_call_id}
+	 * from the last assistant message already has a tool result (executed or skipped).
+	 * Asks the model for a final answer with tools disabled so OpenAI never sees dangling
+	 * tool calls.
+	 */
+	private FinalAnswerOutcome requestFinalAnswerAfterToolLimit(final List<OpenAiChatMessage> conversation,
+			final AiStreamEventConsumer streamConsumer) {
+		if (streamConsumer != null) {
+			streamConsumer.throwIfCancelled();
+			streamConsumer.onStatus("thinking", "Preparando respuesta con la información disponible…");
+		}
+		conversation.add(OpenAiChatMessage.system(TOOL_LIMIT_NUDGE));
+		final OpenAiChatCompletionResponse finalResponse = openAiClientService
+			.chatCompletion(new OpenAiChatCompletionRequest(List.copyOf(conversation), List.of()));
+		String content = finalResponse.content();
+		if (!StringUtils.hasText(content)) {
+			content = "Alcancé el límite de consultas al catálogo en este turno. "
+					+ "Intenta pedir el menú en partes más pequeñas o continúa en el siguiente mensaje.";
+		}
+		return new FinalAnswerOutcome(content, finalResponse.usage());
+	}
+
+	private static String skippedToolResultJson() {
+		return AiToolJsonSerializer.toJson(AiToolResult.error(AiToolErrorCode.RATE_LIMIT, TOOL_LIMIT_SKIPPED_MESSAGE));
 	}
 
 	private String executeToolCall(final AiOrchestrationContext context, final OpenAiToolCall toolCall) {
@@ -337,6 +384,9 @@ public class AiOrchestrationServiceImpl implements AiOrchestrationService {
 	}
 
 	private record ToolAuditEntry(String toolName, String resultJson) {
+	}
+
+	private record FinalAnswerOutcome(String content, OpenAiTokenUsage usage) {
 	}
 
 	private record ToolLoopOutcome(String assistantContent, int toolCallsExecuted, OpenAiTokenUsage tokenUsage,

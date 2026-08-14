@@ -91,7 +91,7 @@ Same Spring mapping as local — see [`LOCAL-AI-SETUP.md`](LOCAL-AI-SETUP.md#env
 | `OPENAI_STORE` | Keep **`false`** unless legal approves provider retention. |
 | `AI_CHAT_MESSAGE_RATE_LIMIT` | App rate limit per nutritionist (default **20**). |
 | `AI_CHAT_MESSAGE_RATE_WINDOW` | Window for above (default **`1h`**). Resilience4j duration format. |
-| `AI_MAX_TOOL_CALLS` | Max tool round-trips per message (default **8**). |
+| `AI_MAX_TOOL_CALLS` | Max tool round-trips per message (default **16**). |
 
 ---
 
@@ -112,7 +112,7 @@ Defense is **layered** — use both OpenAI account controls and app limits.
 | Mechanism | Default | Config |
 |-----------|---------|--------|
 | **Per-nutritionist message limit** | 20 messages / hour | `AI_CHAT_MESSAGE_RATE_LIMIT`, `AI_CHAT_MESSAGE_RATE_WINDOW` |
-| **Tool calls per turn** | 8 max | `AI_MAX_TOOL_CALLS` |
+| **Tool calls per turn** | 16 max | `AI_MAX_TOOL_CALLS` |
 | **Bulk scope guard** | Refuses excessive batch requests | `AI_MAX_DAYS_PER_TURN`, `AI_MAX_DISHES_PER_TURN`, `AI_MAX_MENU_DAYS_PER_TURN` |
 | **Scope classifier** | Optional LLM pre-flight | `AI_SCOPE_CLASSIFIER_ENABLED` (default `true`) |
 | **User message length** | 4000 chars | `AI_MAX_USER_MESSAGE_LENGTH` |
