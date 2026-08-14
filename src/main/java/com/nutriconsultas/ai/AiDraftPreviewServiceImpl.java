@@ -49,7 +49,8 @@ public class AiDraftPreviewServiceImpl implements AiDraftPreviewService {
 				"Platillo (receta)", reviewLabel, payload.name(), summary, payload.portions(), null,
 				payload.nutrientsPerPortion(), toIngredientLines(payload.ingredients()), List.of(),
 				safeList(payload.preparationSteps()), safeList(payload.assumptions()), safeList(payload.warnings()),
-				null);
+				null, draft.getCreatedEntityType(), draft.getCreatedEntityId(), draft.getCreatedEntityName(),
+				createdEntityPath(draft), draft.getPacienteId(), assignsToPatientOnAccept(draft));
 	}
 
 	private AiDraftPreviewView fromMenu(final AiGeneratedDraft draft, final String summary) {
@@ -59,7 +60,9 @@ public class AiDraftPreviewServiceImpl implements AiDraftPreviewService {
 		return new AiDraftPreviewView(draft.getId(), draft.getThread().getId(), draft.getDraftType(), draft.getStatus(),
 				"Menú", reviewLabel, payload.title(), summary, null, null, payload.nutrientsTotal(), List.of(),
 				toMealSlots(payload.ingestas()), List.of(), safeList(payload.assumptions()),
-				safeList(payload.warnings()), payload.validationSummary());
+				safeList(payload.warnings()), payload.validationSummary(), draft.getCreatedEntityType(),
+				draft.getCreatedEntityId(), draft.getCreatedEntityName(), createdEntityPath(draft),
+				draft.getPacienteId(), assignsToPatientOnAccept(draft));
 	}
 
 	private AiDraftPreviewView fromDietPlan(final AiGeneratedDraft draft, final String summary) {
@@ -80,7 +83,21 @@ public class AiDraftPreviewServiceImpl implements AiDraftPreviewService {
 		return new AiDraftPreviewView(draft.getId(), draft.getThread().getId(), draft.getDraftType(), draft.getStatus(),
 				"Plan alimentario", reviewLabel, payload.title(), summary, null, payload.dayCount(),
 				payload.weeklyAverageNutrients(), List.of(), mealSlots, List.of(), safeList(payload.assumptions()),
-				safeList(payload.warnings()), payload.validationSummary());
+				safeList(payload.warnings()), payload.validationSummary(), draft.getCreatedEntityType(),
+				draft.getCreatedEntityId(), draft.getCreatedEntityName(), createdEntityPath(draft),
+				draft.getPacienteId(), assignsToPatientOnAccept(draft));
+	}
+
+	private static boolean assignsToPatientOnAccept(final AiGeneratedDraft draft) {
+		return draft.getPacienteId() != null
+				&& (draft.getDraftType() == AiDraftType.MENU || draft.getDraftType() == AiDraftType.DIET_PLAN);
+	}
+
+	private static String createdEntityPath(final AiGeneratedDraft draft) {
+		if (draft.getCreatedEntityType() == null || draft.getCreatedEntityId() == null) {
+			return null;
+		}
+		return AiDraftCreatedEntityLinks.path(draft.getCreatedEntityType(), draft.getCreatedEntityId());
 	}
 
 	private static List<Map<String, String>> toIngredientLines(final List<RecipeIngredientInput> ingredients) {

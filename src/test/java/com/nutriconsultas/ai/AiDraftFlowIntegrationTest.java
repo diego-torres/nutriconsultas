@@ -188,8 +188,14 @@ class AiDraftFlowIntegrationTest {
 		assertThat(accepted.status()).isEqualTo(AiDraftStatus.ACCEPTED);
 		assertThat(accepted.createdEntityType()).isEqualTo(AiDraftCreatedEntityType.PLATILLO);
 		assertThat(accepted.createdEntityId()).isNotNull();
+		assertThat(accepted.createdEntityName()).isNotBlank();
+		assertThat(accepted.createdEntityPath()).isEqualTo("/admin/platillos/" + accepted.createdEntityId());
+		assertThat(accepted.summary()).contains(accepted.createdEntityName()).doesNotContain("id=");
 		assertThat(platilloRepository.count()).isEqualTo(platillosBefore + 1);
 		assertThat(platilloRepository.findByIdAndUserId(accepted.createdEntityId(), NUTRITIONIST_A)).isPresent();
+		final AiGeneratedDraft savedDraft = draftRepository.findById(draftId).orElseThrow();
+		assertThat(savedDraft.getCreatedEntityName()).isEqualTo(accepted.createdEntityName());
+		assertThat(savedDraft.getCreatedEntityId()).isEqualTo(accepted.createdEntityId());
 	}
 
 	@Test

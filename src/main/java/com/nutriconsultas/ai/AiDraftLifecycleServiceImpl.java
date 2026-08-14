@@ -40,6 +40,9 @@ public class AiDraftLifecycleServiceImpl implements AiDraftLifecycleService {
 		draft.setDraftType(draftType);
 		draft.setJsonPayload(jsonPayload.trim());
 		draft.setStatus(AiDraftStatus.DRAFT);
+		if (thread.getPatient() != null) {
+			draft.setPacienteId(thread.getPatient().getId());
+		}
 		final AiGeneratedDraft saved = draftRepository.save(draft);
 		auditLogger.logDraftCreated(saved.getId(), threadId, draftType);
 		return saved;
@@ -47,11 +50,16 @@ public class AiDraftLifecycleServiceImpl implements AiDraftLifecycleService {
 
 	@Override
 	@Transactional
-	public AiGeneratedDraft acceptDraft(@NonNull final Long draftId, @NonNull final String nutritionistId) {
+	public AiGeneratedDraft acceptDraft(@NonNull final Long draftId, @NonNull final String nutritionistId,
+			@NonNull final AiDraftCreatedEntityType createdEntityType, final long createdEntityId,
+			@NonNull final String createdEntityName) {
 		aiEntitlementGuard.assertCanUseAiAssistant(nutritionistId);
 		final AiGeneratedDraft draft = loadMutableDraft(draftId, nutritionistId);
 		draft.setStatus(AiDraftStatus.ACCEPTED);
 		draft.setAcceptedAt(Instant.now());
+		draft.setCreatedEntityType(createdEntityType);
+		draft.setCreatedEntityId(createdEntityId);
+		draft.setCreatedEntityName(createdEntityName.trim());
 		final AiGeneratedDraft saved = draftRepository.save(draft);
 		auditLogger.logDraftAccepted(saved.getId(), saved.getThread().getId(), saved.getStatus());
 		return saved;

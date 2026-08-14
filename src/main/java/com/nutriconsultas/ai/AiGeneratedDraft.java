@@ -57,6 +57,19 @@ public class AiGeneratedDraft {
 	@Column(name = "accepted_at")
 	private Instant acceptedAt;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "created_entity_type", length = 20)
+	private AiDraftCreatedEntityType createdEntityType;
+
+	@Column(name = "created_entity_id")
+	private Long createdEntityId;
+
+	@Column(name = "created_entity_name", length = 255)
+	private String createdEntityName;
+
+	@Column(name = "paciente_id")
+	private Long pacienteId;
+
 	@PrePersist
 	void onCreate() {
 		if (createdAt == null) {

@@ -51,7 +51,19 @@ public class AiPatientPromptContextResolverImpl implements AiPatientPromptContex
 				paciente.getFinalTotalKcal(), paciente.getPhysiologicalStressActive(), paciente.getGender(),
 				paciente.getPregnancy(), nivelPesoLabel(paciente), paciente.getImc(), pathologyFlags(history),
 				sanitizeAlergias(history != null ? history.getAlergias() : null), activityLevel,
-				nextAppointment.atIso(), nextAppointment.title(), nextAppointment.durationMinutes());
+				nextAppointment.atIso(), nextAppointment.title(), nextAppointment.durationMinutes(),
+				sanitizeDisplayName(paciente.getDisplayName()));
+	}
+
+	private static String sanitizeDisplayName(final String displayName) {
+		if (!StringUtils.hasText(displayName)) {
+			return null;
+		}
+		final String trimmed = displayName.replaceAll("\\p{Cntrl}", " ").trim();
+		if (trimmed.isEmpty()) {
+			return null;
+		}
+		return trimmed.length() <= 120 ? trimmed : trimmed.substring(0, 120);
 	}
 
 	private NextAppointmentSummary resolveNextAppointment(final long patientId) {

@@ -55,6 +55,7 @@ class CreateMenuDraftToolServiceTest {
 		assertThat(result.data().status()).isEqualTo(AiDraftStatus.DRAFT);
 		assertThat(result.data().summary()).contains("Menú balanceado");
 		assertThat(result.data().previewPath()).isEqualTo("/admin/ai?threadId=42&draftId=88");
+		assertThat(result.data().pacienteId()).isNull();
 		verify(draftLifecycleService).createDraft(eq(THREAD_ID), eq(NUTRITIONIST_ID), eq(AiDraftType.MENU), any());
 	}
 

@@ -7,7 +7,8 @@ public interface AiDraftLifecycleService {
 
 	AiGeneratedDraft createDraft(Long threadId, String nutritionistId, AiDraftType draftType, String jsonPayload);
 
-	AiGeneratedDraft acceptDraft(Long draftId, String nutritionistId);
+	AiGeneratedDraft acceptDraft(Long draftId, String nutritionistId, AiDraftCreatedEntityType createdEntityType,
+			long createdEntityId, String createdEntityName);
 
 	AiGeneratedDraft discardDraft(Long draftId, String nutritionistId);
 

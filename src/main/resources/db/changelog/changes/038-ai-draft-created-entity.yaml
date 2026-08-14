@@ -1,0 +1,31 @@
+databaseChangeLog:
+  - changeSet:
+      id: 038-ai-draft-created-entity
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - tableExists:
+            tableName: ai_generated_draft
+        - not:
+            columnExists:
+              tableName: ai_generated_draft
+              columnName: created_entity_id
+      changes:
+        - addColumn:
+            tableName: ai_generated_draft
+            columns:
+              - column:
+                  name: created_entity_type
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_entity_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_entity_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true

@@ -45,6 +45,7 @@ class AiSystemPromptServiceTest {
 		assertThat(prompt).contains("create_menu_draft");
 		assertThat(prompt).contains("create_diet_plan_draft");
 		assertThat(prompt).contains("create_dish_draft");
+		assertThat(prompt).contains("PACIENTE VINCULADO VS PLAN GENERAL");
 		assertThat(prompt).contains("Se ha agregado el siguiente Borrador IA");
 		assertThat(prompt).contains("previewPath");
 		assertThat(prompt).contains("[abrir borrador]({previewPath})");
@@ -66,13 +67,15 @@ class AiSystemPromptServiceTest {
 	void promptIncludesPatientConstraintsWithoutReaskInstruction() {
 		final AiPatientPromptContext patient = new AiPatientPromptContext(42L, 1800.0, 2000.0, true, "F", false,
 				"NORMAL", 23.5, Map.of("hipertension", true, "diabetes", false), "Mariscos", "MODERATE",
-				"2026-07-12T16:00:00Z", "Consulta de seguimiento", 60);
+				"2026-07-12T16:00:00Z", "Consulta de seguimiento", 60, "Ana Demo");
 		final String prompt = service
 			.buildSystemPrompt(new AiSystemPromptContext(Locale.forLanguageTag("es-MX"), null, patient, null, null));
 
-		assertThat(prompt).contains("CONTEXTO DEL PACIENTE");
+		assertThat(prompt).contains("CONTEXTO DEL PACIENTE VINCULADO");
 		assertThat(prompt).contains(AiPromptDelimiters.PATIENT_CONTEXT_OPEN);
 		assertThat(prompt).contains(AiPromptDelimiters.PATIENT_CONTEXT_CLOSE);
+		assertThat(prompt).contains("Ana Demo");
+		assertThat(prompt).contains("patientId interno: 42");
 		assertThat(prompt).contains("1800.0 kcal");
 		assertThat(prompt).contains("2000.0 kcal");
 		assertThat(prompt).contains("Mariscos");
@@ -80,6 +83,7 @@ class AiSystemPromptServiceTest {
 		assertThat(prompt).contains("No preguntes de nuevo el objetivo calórico ni las alergias");
 		assertThat(prompt).contains("Próxima cita programada");
 		assertThat(prompt).contains("Consulta de seguimiento");
+		assertThat(prompt).contains("asignará la dieta a este paciente por 1 mes");
 	}
 
 	@Test

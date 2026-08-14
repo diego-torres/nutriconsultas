@@ -61,6 +61,14 @@ public class AiDraftRestController {
 			body.put("assumptions", preview.assumptions());
 			body.put("warnings", preview.warnings());
 			body.put("validationSummary", preview.validationSummary());
+			if (preview.createdEntityType() != null) {
+				body.put("createdEntityType", preview.createdEntityType().name());
+			}
+			body.put("createdEntityId", preview.createdEntityId());
+			body.put("createdEntityName", preview.createdEntityName());
+			body.put("createdEntityPath", preview.createdEntityPath());
+			body.put("pacienteId", preview.pacienteId());
+			body.put("assignsToPatientOnAccept", preview.assignsToPatientOnAccept());
 			return ResponseEntity.ok(body);
 		}
 		catch (AiDraftLifecycleException ex) {
@@ -84,7 +92,12 @@ public class AiDraftRestController {
 			body.put("status", result.status().name());
 			body.put("createdEntityType", result.createdEntityType().name());
 			body.put("createdEntityId", result.createdEntityId());
+			body.put("createdEntityName", result.createdEntityName());
+			body.put("createdEntityPath", result.createdEntityPath());
 			body.put("summary", result.summary());
+			body.put("pacienteId", result.pacienteId());
+			body.put("pacienteDietaAssignmentId", result.pacienteDietaAssignmentId());
+			body.put("pacienteAssignmentPath", result.pacienteAssignmentPath());
 			return ResponseEntity.ok(body);
 		}
 		catch (AiDraftLifecycleException ex) {

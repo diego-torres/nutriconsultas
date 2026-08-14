@@ -216,6 +216,17 @@
   margin-bottom: 0.25rem;
 }
 
+.ai-chat-draft-created-link a {
+  color: #4e73df;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.ai-chat-draft-created-link a:hover,
+.ai-chat-draft-created-link a:focus {
+  color: #2e59d9;
+}
+
 .ai-chat-draft-section ul {
   margin: 0;
   padding-left: 1.1rem;
