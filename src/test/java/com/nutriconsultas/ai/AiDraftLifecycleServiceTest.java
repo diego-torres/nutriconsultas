@@ -73,6 +73,28 @@ class AiDraftLifecycleServiceTest {
 		assertThat(created.getStatus()).isEqualTo(AiDraftStatus.DRAFT);
 		assertThat(created.getDraftType()).isEqualTo(AiDraftType.MENU);
 		assertThat(created.getAcceptedAt()).isNull();
+		assertThat(created.getPacienteId()).isNull();
+	}
+
+	@Test
+	void createDraftCopiesPacienteIdFromThreadPatient() {
+		final com.nutriconsultas.paciente.Paciente paciente = new com.nutriconsultas.paciente.Paciente();
+		paciente.setId(77L);
+		thread.setPatient(paciente);
+		when(threadRepository.findByIdAndNutritionistId(10L, NUTRITIONIST_A)).thenReturn(Optional.of(thread));
+		when(draftRepository.save(any(AiGeneratedDraft.class))).thenAnswer(invocation -> {
+			final AiGeneratedDraft draft = invocation.getArgument(0);
+			draft.setId(100L);
+			return draft;
+		});
+
+		final AiGeneratedDraft created = service.createDraft(10L, NUTRITIONIST_A, AiDraftType.MENU,
+				"{\"title\":\"Menú lunes\"}");
+
+		assertThat(created.getPacienteId()).isEqualTo(77L);
+		final ArgumentCaptor<AiGeneratedDraft> captor = ArgumentCaptor.forClass(AiGeneratedDraft.class);
+		verify(draftRepository).save(captor.capture());
+		assertThat(captor.getValue().getPacienteId()).isEqualTo(77L);
 	}
 
 	@Test
@@ -92,10 +114,14 @@ class AiDraftLifecycleServiceTest {
 		when(draftRepository.findByIdAndThreadNutritionistId(99L, NUTRITIONIST_A)).thenReturn(Optional.of(draft));
 		when(draftRepository.save(draft)).thenReturn(draft);
 
-		final AiGeneratedDraft accepted = service.acceptDraft(99L, NUTRITIONIST_A);
+		final AiGeneratedDraft accepted = service.acceptDraft(99L, NUTRITIONIST_A, AiDraftCreatedEntityType.PLATILLO,
+				42L, "Tacos");
 
 		assertThat(accepted.getStatus()).isEqualTo(AiDraftStatus.ACCEPTED);
 		assertThat(accepted.getAcceptedAt()).isNotNull();
+		assertThat(accepted.getCreatedEntityType()).isEqualTo(AiDraftCreatedEntityType.PLATILLO);
+		assertThat(accepted.getCreatedEntityId()).isEqualTo(42L);
+		assertThat(accepted.getCreatedEntityName()).isEqualTo("Tacos");
 	}
 
 	@Test
@@ -114,7 +140,8 @@ class AiDraftLifecycleServiceTest {
 	void acceptDraftBlocksCrossTenantAccess() {
 		when(draftRepository.findByIdAndThreadNutritionistId(99L, NUTRITIONIST_B)).thenReturn(Optional.empty());
 
-		assertThatThrownBy(() -> service.acceptDraft(99L, NUTRITIONIST_B)).isInstanceOf(AiDraftLifecycleException.class)
+		assertThatThrownBy(() -> service.acceptDraft(99L, NUTRITIONIST_B, AiDraftCreatedEntityType.PLATILLO, 1L, "X"))
+			.isInstanceOf(AiDraftLifecycleException.class)
 			.hasMessageContaining("Borrador no encontrado");
 
 		verify(draftRepository, never()).save(any());
@@ -125,7 +152,8 @@ class AiDraftLifecycleServiceTest {
 		final AiGeneratedDraft draft = sampleDraft(AiDraftStatus.ACCEPTED);
 		when(draftRepository.findByIdAndThreadNutritionistId(99L, NUTRITIONIST_A)).thenReturn(Optional.of(draft));
 
-		assertThatThrownBy(() -> service.acceptDraft(99L, NUTRITIONIST_A)).isInstanceOf(AiDraftLifecycleException.class)
+		assertThatThrownBy(() -> service.acceptDraft(99L, NUTRITIONIST_A, AiDraftCreatedEntityType.DIETA, 1L, "X"))
+			.isInstanceOf(AiDraftLifecycleException.class)
 			.hasMessageContaining("ya no se puede modificar");
 
 		verify(draftRepository, never()).save(any());

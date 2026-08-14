@@ -1,0 +1,34 @@
+databaseChangeLog:
+  - changeSet:
+      id: 039-ai-draft-paciente
+      author: nutriconsultas
+      preConditions:
+        - onFail: MARK_RAN
+        - tableExists:
+            tableName: ai_generated_draft
+        - not:
+            columnExists:
+              tableName: ai_generated_draft
+              columnName: paciente_id
+      changes:
+        - addColumn:
+            tableName: ai_generated_draft
+            columns:
+              - column:
+                  name: paciente_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+        - addForeignKeyConstraint:
+            baseTableName: ai_generated_draft
+            baseColumnNames: paciente_id
+            referencedTableName: paciente
+            referencedColumnNames: id
+            constraintName: fk_ai_generated_draft_paciente
+            onDelete: SET NULL
+        - createIndex:
+            indexName: idx_ai_generated_draft_paciente_id
+            tableName: ai_generated_draft
+            columns:
+              - column:
+                  name: paciente_id

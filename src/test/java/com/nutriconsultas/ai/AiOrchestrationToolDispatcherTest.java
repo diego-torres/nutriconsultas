@@ -93,7 +93,7 @@ class AiOrchestrationToolDispatcherTest {
 	@Test
 	void dispatchGetPatientAppointmentsUsesLinkedPatientContext() {
 		final AiPatientPromptContext patient = new AiPatientPromptContext(5L, 2795.0, null, false, "M", false, null,
-				null, Map.of(), null, null, null, null, null);
+				null, Map.of(), null, null, null, null, null, null);
 		final PatientAppointmentsData data = new PatientAppointmentsData(List.of(), List.of(), 0);
 		when(getPatientAppointmentsToolService.getAppointments(eq(NUTRITIONIST_ID), eq(5L),
 				eq(PatientAppointmentScope.UPCOMING), eq(3)))
@@ -126,7 +126,7 @@ class AiOrchestrationToolDispatcherTest {
 		when(createDishDraftToolService.createDraft(org.mockito.ArgumentMatchers.eq(NUTRITIONIST_ID),
 				org.mockito.ArgumentMatchers.eq(THREAD_ID), org.mockito.ArgumentMatchers.any()))
 			.thenReturn(AiToolResult.success(new AiDraftCreationData(1L, AiDraftType.DISH, AiDraftStatus.DRAFT,
-					"Borrador IA — Tacos", "/admin/ai?threadId=10&draftId=1")));
+					"Borrador IA — Tacos", "/admin/ai?threadId=10&draftId=1", null)));
 
 		final String json = realSchemaDispatcher.dispatch(context(), CreateDishDraftToolService.TOOL_NAME, """
 				{

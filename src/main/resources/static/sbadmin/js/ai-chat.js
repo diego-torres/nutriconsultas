@@ -286,6 +286,22 @@
     }
 
     var html = '';
+    if (preview.assignsToPatientOnAccept && preview.pacienteId && preview.status === 'DRAFT') {
+      html += '<section class="ai-chat-draft-section"><h5>Asignación al paciente</h5><p>' +
+        'Al aceptar, se asignará al paciente #' + escapeHtml(String(preview.pacienteId)) +
+        ' por 1 mes.</p></section>';
+    }
+    if (preview.status === 'ACCEPTED' && preview.createdEntityPath) {
+      var linkLabel = preview.createdEntityName || 'Ver registro en catálogo';
+      html += '<section class="ai-chat-draft-section ai-chat-draft-created-link">' +
+        '<h5>Registro creado</h5><p><a href="' + escapeHtml(preview.createdEntityPath) + '">' +
+        escapeHtml(linkLabel) + '</a></p></section>';
+    }
+    if (preview.status === 'ACCEPTED' && preview.pacienteId) {
+      html += '<section class="ai-chat-draft-section ai-chat-draft-created-link">' +
+        '<h5>Plan del paciente</h5><p><a href="/admin/pacientes/' +
+        encodeURIComponent(String(preview.pacienteId)) + '/dietas">Ver dietas del paciente</a></p></section>';
+    }
     if (preview.portions != null) {
       html += '<section class="ai-chat-draft-section"><h5>Porciones</h5><p>' +
         escapeHtml(String(preview.portions)) + '</p></section>';
@@ -412,7 +428,9 @@
     }
     confirmDraftAction({
       title: '¿Aceptar borrador?',
-      text: 'Se creará un registro en tu catálogo a partir de este borrador. Revisa que los datos sean correctos.',
+      text: (state.selectedPreview.assignsToPatientOnAccept
+        ? 'Se creará en tu catálogo y se asignará al paciente por 1 mes. Revisa que los datos sean correctos.'
+        : 'Se creará un registro en tu catálogo a partir de este borrador. Revisa que los datos sean correctos.'),
       confirmText: 'Sí, aceptar',
       confirmColor: '#1cc88a'
     }, function () {
@@ -422,9 +440,9 @@
           if (typeof swal === 'function') {
             swal({
               title: 'Borrador aceptado',
-              text: data.summary || 'El borrador se guardó en tu catálogo.',
+              text: data.summary || ('Se creó «' + (data.createdEntityName || 'el registro') + '» en tu catálogo.'),
               type: 'success',
-              timer: 2500
+              timer: 3000
             });
           }
           return loadDrafts(state.threadId);

@@ -110,3 +110,9 @@ databaseChangeLog:
   - include:
       file: changes/037-appointment-question.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/038-ai-draft-created-entity.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: changes/039-ai-draft-paciente.yaml
+      relativeToChangelogFile: true

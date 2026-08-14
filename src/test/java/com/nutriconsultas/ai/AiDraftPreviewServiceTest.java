@@ -55,6 +55,24 @@ class AiDraftPreviewServiceTest {
 		assertThat(preview.warnings()).containsExactly("Revisar sodio");
 		assertThat(preview.portions()).isEqualTo(2);
 		assertThat(preview.nutrients().energiaKcal()).isEqualTo(250);
+		assertThat(preview.createdEntityPath()).isNull();
+	}
+
+	@Test
+	void getPreviewIncludesCreatedEntityLinkWhenAccepted() throws Exception {
+		final AiGeneratedDraft draft = dishDraft();
+		draft.setStatus(AiDraftStatus.ACCEPTED);
+		draft.setCreatedEntityType(AiDraftCreatedEntityType.PLATILLO);
+		draft.setCreatedEntityId(77L);
+		draft.setCreatedEntityName("Tacos de pollo");
+		when(draftRepository.findByIdAndThreadNutritionistId(10L, NUTRITIONIST_ID)).thenReturn(Optional.of(draft));
+
+		final AiDraftPreviewView preview = service.getPreview(10L, NUTRITIONIST_ID);
+
+		assertThat(preview.createdEntityType()).isEqualTo(AiDraftCreatedEntityType.PLATILLO);
+		assertThat(preview.createdEntityId()).isEqualTo(77L);
+		assertThat(preview.createdEntityName()).isEqualTo("Tacos de pollo");
+		assertThat(preview.createdEntityPath()).isEqualTo("/admin/platillos/77");
 	}
 
 	@Test

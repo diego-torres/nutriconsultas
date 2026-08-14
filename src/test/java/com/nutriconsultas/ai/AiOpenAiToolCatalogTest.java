@@ -44,7 +44,7 @@ class AiOpenAiToolCatalogTest {
 		assertThat(catalog.definitionsForSession(null)).hasSize(catalog.definitions().size() - 1);
 
 		final AiPatientPromptContext patient = new AiPatientPromptContext(5L, 1800.0, null, false, "M", false, null,
-				null, Map.of(), null, null, null, null, null);
+				null, Map.of(), null, null, null, null, null, null);
 		assertThat(catalog.definitionsForSession(patient).stream().map(OpenAiToolDefinition::name))
 			.contains(GetPatientAppointmentsToolService.TOOL_NAME);
 	}

@@ -77,7 +77,7 @@ public class CreateDishDraftToolServiceImpl implements CreateDishDraftToolServic
 					jsonPayload);
 			final String summary = DRAFT_LABEL + ": " + input.name().trim();
 			final AiDraftCreationData data = new AiDraftCreationData(draft.getId(), AiDraftType.DISH, draft.getStatus(),
-					summary, AiDraftCreationData.buildPreviewPath(threadId, draft.getId()));
+					summary, AiDraftCreationData.buildPreviewPath(threadId, draft.getId()), draft.getPacienteId());
 			if (log.isInfoEnabled()) {
 				log.info("AI tool create_dish_draft draftId={} threadId={}", draft.getId(), threadId);
 			}

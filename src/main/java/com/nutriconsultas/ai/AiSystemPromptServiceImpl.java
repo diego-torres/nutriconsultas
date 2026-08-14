@@ -19,7 +19,7 @@ public class AiSystemPromptServiceImpl implements AiSystemPromptService {
 
 	static final String SAFETY_MARKER_DRAFT_LABEL = "Borrador IA — revisión del nutriólogo requerida";
 
-	static final String SAFETY_MARKER_NO_ASSIGN = "no asignes dietas al paciente";
+	static final String SAFETY_MARKER_NO_ASSIGN = "no asignes dietas por tu cuenta";
 
 	static final String SAFETY_MARKER_CATALOG_TOOLS = "herramientas del backend";
 
@@ -65,11 +65,17 @@ public class AiSystemPromptServiceImpl implements AiSystemPromptService {
 		if (patient == null) {
 			return "";
 		}
-		final StringBuilder section = new StringBuilder(512);
-		section.append("CONTEXTO DEL PACIENTE (SIN DATOS IDENTIFICABLES)\n");
+		final StringBuilder section = new StringBuilder(1024);
+		section.append("CONTEXTO DEL PACIENTE VINCULADO A ESTA CONVERSACIÓN\n");
+		if (StringUtils.hasText(patient.displayName())) {
+			section.append("- Nombre en expediente: ").append(patient.displayName().trim()).append('\n');
+		}
 		if (patient.patientId() != null) {
 			section.append("- patientId interno: ").append(patient.patientId()).append('\n');
 		}
+		section.append(
+				"- Al aceptar un borrador de menú o plan, el sistema asignará la dieta a este paciente por 1 mes.\n"
+						+ "- Confirma al nutriólogo, de forma breve, que encontraste a este paciente antes de generar el borrador.\n");
 		if (patient.requerimientoKcal() != null) {
 			section.append("- Objetivo calórico (requerimientoKcal): ")
 				.append(formatNumber(patient.requerimientoKcal()))
