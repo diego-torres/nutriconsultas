@@ -241,6 +241,23 @@ public class AiChatRestController {
 		}
 	}
 
+	@GetMapping("/pending-drafts")
+	public ResponseEntity<Map<String, Object>> listPendingDrafts(@AuthenticationPrincipal final OidcUser principal) {
+		final String nutritionistId = nutritionistId(principal);
+		if (nutritionistId == null) {
+			return unauthorized();
+		}
+		try {
+			final List<AiChatDraftSummary> drafts = chatService.listPendingDrafts(nutritionistId);
+			final Map<String, Object> response = successBody();
+			response.put("drafts", toDraftMaps(drafts));
+			return ResponseEntity.ok(response);
+		}
+		catch (final AiChatException ex) {
+			return errorResponse(ex);
+		}
+	}
+
 	@GetMapping("/{threadId}/drafts")
 	public ResponseEntity<Map<String, Object>> listDrafts(@PathVariable @NonNull final Long threadId,
 			@AuthenticationPrincipal final OidcUser principal) {
@@ -343,6 +360,7 @@ public class AiChatRestController {
 		for (final AiChatDraftSummary draft : drafts) {
 			final Map<String, Object> map = new LinkedHashMap<>();
 			map.put("draftId", draft.draftId());
+			map.put("threadId", draft.threadId());
 			map.put("draftType", draft.draftType().name());
 			map.put("status", draft.status().name());
 			map.put("summary", draft.summary());

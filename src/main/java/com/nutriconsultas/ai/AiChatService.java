@@ -1,5 +1,7 @@
 package com.nutriconsultas.ai;
 
+import java.util.List;
+
 import org.springframework.lang.Nullable;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -14,6 +16,11 @@ public interface AiChatService {
 	AiChatThreadDetail getThread(String nutritionistId, long threadId);
 
 	AiChatDraftList listDrafts(String nutritionistId, long threadId);
+
+	/**
+	 * Pending ({@link AiDraftStatus#DRAFT}) drafts owned by the nutritionist across all threads.
+	 */
+	List<AiChatDraftSummary> listPendingDrafts(String nutritionistId);
 
 	AiOrchestrationResult sendMessage(String nutritionistId, long threadId, String message,
 			AiChatPromptContext promptContext);
