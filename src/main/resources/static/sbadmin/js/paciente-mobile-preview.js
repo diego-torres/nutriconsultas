@@ -128,6 +128,16 @@
     return platillos + alimentos;
   }
 
+  var WEEKLY_PLAN_NAME = 'Plan semanal';
+
+  var state = {
+    pacienteId: null,
+    data: null,
+    activeOnly: false,
+    detailCache: {},
+    stack: []
+  };
+
   function statusLabel(status) {
     if (status === 'ACTIVE') {
       return 'Activo';
@@ -135,7 +145,76 @@
     if (status === 'SCHEDULED') {
       return 'Programada';
     }
+    if (status === 'COMPLETED') {
+      return 'Completada';
+    }
+    if (status === 'CANCELLED') {
+      return 'Cancelada';
+    }
     return status || '';
+  }
+
+  function chipClass(status) {
+    if (status === 'ACTIVE') {
+      return 'mnp-chip-active';
+    }
+    if (status === 'COMPLETED') {
+      return 'mnp-chip-completed';
+    }
+    if (status === 'CANCELLED') {
+      return 'mnp-chip-cancelled';
+    }
+    return '';
+  }
+
+  function isWeeklyPlan(plan) {
+    return !!(plan && plan.dietaName === WEEKLY_PLAN_NAME);
+  }
+
+  function planDisplayName(plan) {
+    if (isWeeklyPlan(plan)) {
+      return WEEKLY_PLAN_NAME;
+    }
+    return (plan && plan.dietaName) ? plan.dietaName : 'Plan alimentario';
+  }
+
+  function formatPlanDates(plan) {
+    if (!plan) {
+      return '';
+    }
+    var start = formatLocalDate(plan.startDate);
+    if (!start) {
+      return '';
+    }
+    if (!plan.endDate) {
+      return 'Desde ' + start;
+    }
+    var end = formatLocalDate(plan.endDate);
+    return start + (end ? ' – ' + end : '');
+  }
+
+  function firstPlatilloImage(ingesta) {
+    var platillos = (ingesta && ingesta.platillos) ? ingesta.platillos : [];
+    var i;
+    for (i = 0; i < platillos.length; i++) {
+      if (platillos[i] && platillos[i].imageUrl) {
+        return platillos[i].imageUrl;
+      }
+    }
+    return null;
+  }
+
+  function portionLabel(count, unit) {
+    if (unit) {
+      return String(count != null ? count : 1) + ' ' + unit;
+    }
+    return String(count != null ? count : 1) + ' porción(es)';
+  }
+
+  function cachePlanDetail(detail) {
+    if (detail && detail.assignmentId != null) {
+      state.detailCache[String(detail.assignmentId)] = detail;
+    }
   }
 
   function renderAvatar(avatarUrl, firstName) {
@@ -199,18 +278,7 @@
 
     html += '<div class="mnp-card-title">Tu plan alimenticio</div>';
     if (plan) {
-      html += '<div class="mnp-card">';
-      html += '<div class="d-flex justify-content-between align-items-start">';
-      html += '<div class="mnp-plan-name">' + escapeHtml(plan.dietaName || 'Plan alimentario') + '</div>';
-      html += '<span class="mnp-chip mnp-chip-active">' + escapeHtml(statusLabel(plan.status)) + '</span>';
-      html += '</div>';
-      if (plan.startDate) {
-        html += '<div class="mnp-muted">Desde ' + escapeHtml(formatLocalDate(plan.startDate)) + '</div>';
-      }
-      if (plan.totalKcal != null) {
-        html += '<div class="mnp-plan-kcal mt-1">' + escapeHtml(String(plan.totalKcal)) + ' kcal/día</div>';
-      }
-      html += '</div>';
+      html += renderPlanCard(plan, true);
     } else {
       html += '<div class="mnp-card mnp-card-sage"><div class="mnp-empty">'
         + 'Tu nutriólogo está trabajando en construir tu plan alimentario.</div></div>';
@@ -241,52 +309,279 @@
     return html;
   }
 
-  function renderDiet(data) {
-    var plan = data.activePlan;
-    var detail = data.activePlanDetail;
-    var html = '';
-
-    html += '<div class="mnp-card-title mb-2" style="font-size:1.1rem">Planes de dieta</div>';
-
-    if (!plan) {
-      html += '<div class="mnp-card mnp-card-sage"><div class="mnp-empty">No hay plan activo.</div></div>';
-      return html;
+  function renderPlanCard(plan, tappable) {
+    var html = '<div class="mnp-card';
+    if (tappable && plan.assignmentId != null) {
+      html += ' mnp-tappable" data-mnp-open-plan="' + escapeHtml(String(plan.assignmentId))
+        + '" role="button" tabindex="0">';
+    } else {
+      html += '">';
     }
-
-    html += '<div class="mnp-card">';
-    html += '<div class="d-flex justify-content-between align-items-start">';
-    html += '<div class="mnp-plan-name">' + escapeHtml(plan.dietaName || 'Plan alimentario') + '</div>';
-    html += '<span class="mnp-chip mnp-chip-active">' + escapeHtml(statusLabel(plan.status)) + '</span>';
-    html += '</div>';
+    html += '<div class="mnp-plan-card-row">';
+    html += '<div class="mnp-plan-card-body">';
+    html += '<div class="mnp-plan-name">' + escapeHtml(planDisplayName(plan)) + '</div>';
+    var dates = formatPlanDates(plan);
+    if (dates) {
+      html += '<div class="mnp-plan-dates">' + escapeHtml(dates) + '</div>';
+    }
     if (plan.totalKcal != null) {
       html += '<div class="mnp-plan-kcal">' + escapeHtml(String(plan.totalKcal)) + ' kcal/día</div>';
-    }
-    if (plan.startDate) {
-      html += '<div class="mnp-muted mt-1">Desde ' + escapeHtml(formatLocalDate(plan.startDate)) + '</div>';
+    } else if (isWeeklyPlan(plan)) {
+      html += '<div class="mnp-plan-kcal">Menú según el día de la semana</div>';
     }
     html += '</div>';
+    html += '<span class="mnp-chip ' + chipClass(plan.status) + '">' + escapeHtml(statusLabel(plan.status)) + '</span>';
+    if (tappable && plan.assignmentId != null) {
+      html += '<i class="fas fa-chevron-right mnp-chevron" aria-hidden="true"></i>';
+    }
+    html += '</div></div>';
+    return html;
+  }
 
-    html += '<div class="mnp-card-title">Ingestas del día</div>';
-    html += '<div class="mnp-card">';
-    var ingestas = (detail && detail.ingestas) ? detail.ingestas : [];
-    if (!ingestas.length) {
-      html += '<div class="mnp-empty">Este plan aún no tiene ingestas.</div>';
-    } else {
-      ingestas.forEach(function (ingesta) {
-        var count = itemCount(ingesta);
-        var kcal = ingesta.totalKcal != null ? ingesta.totalKcal : '—';
-        html += '<div class="mnp-ingesta">';
-        html += '<div class="mnp-ingesta-icon"><i class="fas fa-utensils"></i></div>';
-        html += '<div class="mnp-ingesta-body">';
-        html += '<div class="mnp-ingesta-tipo">' + escapeHtml(ingesta.tipo || 'Ingesta') + '</div>';
-        html += '<div class="mnp-ingesta-meta">' + escapeHtml(String(count)) + ' elementos · '
-          + escapeHtml(String(kcal)) + ' kcal</div>';
-        html += '</div></div>';
+  function visiblePlans(data) {
+    var plans = (data && data.plans && data.plans.length) ? data.plans.slice() : [];
+    if (!plans.length && data && data.activePlan) {
+      plans = [data.activePlan];
+    }
+    if (state.activeOnly) {
+      plans = plans.filter(function (plan) {
+        return plan && plan.status === 'ACTIVE';
       });
     }
-    html += '</div>';
+    return plans;
+  }
 
+  function renderDiet(data) {
+    var plans = visiblePlans(data);
+    var html = '<div class="mnp-screen-title mb-2">Planes de dieta</div>';
+    html += '<label class="mnp-filter">';
+    html += '<span>Solo planes activos</span>';
+    html += '<input type="checkbox" id="mnpActiveOnly"' + (state.activeOnly ? ' checked' : '') + '>';
+    html += '</label>';
+    if (!plans.length) {
+      html += '<div class="mnp-card mnp-card-sage"><div class="mnp-empty">No hay planes con estos filtros.</div></div>';
+      return html;
+    }
+    plans.forEach(function (plan) {
+      html += renderPlanCard(plan, true);
+    });
     return html;
+  }
+
+  function renderStackHeader(title) {
+    return '<button type="button" class="mnp-back" id="mnpStackBack">'
+      + '<i class="fas fa-chevron-left" aria-hidden="true"></i>'
+      + '<span>' + escapeHtml(title) + '</span></button>';
+  }
+
+  function renderIngestaCard(ingesta, index) {
+    var count = itemCount(ingesta);
+    var kcal = ingesta.totalKcal != null ? ingesta.totalKcal : '—';
+    var thumb = firstPlatilloImage(ingesta);
+    var html = '<div class="mnp-card mnp-tappable mnp-ingesta-card" data-mnp-open-ingesta="'
+      + index + '" role="button" tabindex="0">';
+    html += '<div class="mnp-ingesta">';
+    if (thumb) {
+      html += '<img class="mnp-thumb" src="' + escapeHtml(thumb) + '" alt="">';
+    } else {
+      html += '<div class="mnp-ingesta-icon"><i class="fas fa-utensils"></i></div>';
+    }
+    html += '<div class="mnp-ingesta-body">';
+    html += '<div class="mnp-ingesta-tipo">' + escapeHtml(ingesta.tipo || 'Ingesta') + '</div>';
+    html += '<div class="mnp-ingesta-meta">' + escapeHtml(String(count)) + ' elementos · '
+      + escapeHtml(String(kcal)) + ' kcal</div>';
+    html += '</div>';
+    html += '<i class="fas fa-chevron-right mnp-chevron" aria-hidden="true"></i>';
+    html += '</div></div>';
+    return html;
+  }
+
+  function renderMealsScreen(detail) {
+    var weekly = isWeeklyPlan(detail);
+    var html = renderStackHeader('Plan alimentario');
+    html += '<div class="mnp-screen-title">' + escapeHtml(planDisplayName(detail)) + '</div>';
+    if (weekly) {
+      html += '<div class="mnp-muted mb-2">Aquí ves el menú de hoy. Tu nutriólogo asignó un plan por día de la semana.</div>';
+    } else if (detail.totalKcal != null) {
+      html += '<div class="mnp-muted mb-2">' + escapeHtml(String(detail.totalKcal)) + ' kcal/día</div>';
+    }
+    html += '<div class="d-flex align-items-center mb-3">';
+    html += '<span class="mnp-chip ' + chipClass(detail.status) + '">' + escapeHtml(statusLabel(detail.status)) + '</span>';
+    var dates = formatPlanDates(detail);
+    if (dates) {
+      html += '<span class="mnp-plan-dates ml-2">' + escapeHtml(dates) + '</span>';
+    }
+    html += '</div>';
+    html += '<div class="mnp-card-title">' + (weekly ? 'Menú de hoy' : 'Ingestas del día') + '</div>';
+    var ingestas = detail.ingestas || [];
+    if (!ingestas.length) {
+      html += '<div class="mnp-empty">No hay ingestas en este plan.</div>';
+    } else {
+      ingestas.forEach(function (ingesta, index) {
+        html += renderIngestaCard(ingesta, index);
+      });
+    }
+    return html;
+  }
+
+  function renderFoodTile(nombre, quantity, kcal, imageUrl) {
+    var html = '<div class="mnp-card">';
+    html += '<div class="mnp-food-tile">';
+    if (imageUrl) {
+      html += '<img class="mnp-thumb" src="' + escapeHtml(imageUrl) + '" alt="">';
+    } else {
+      html += '<div class="mnp-ingesta-icon"><i class="fas fa-utensils"></i></div>';
+    }
+    html += '<div class="mnp-ingesta-body">';
+    html += '<div class="mnp-ingesta-tipo">' + escapeHtml(nombre || '') + '</div>';
+    html += '<div class="mnp-ingesta-meta">' + escapeHtml(quantity) + '</div>';
+    html += '</div>';
+    if (kcal != null) {
+      html += '<div class="mnp-food-kcal">' + escapeHtml(String(kcal)) + ' kcal</div>';
+    }
+    html += '</div></div>';
+    return html;
+  }
+
+  function renderIngestaScreen(detail, index) {
+    var ingestas = (detail && detail.ingestas) ? detail.ingestas : [];
+    var ingesta = ingestas[index];
+    if (!ingesta) {
+      return renderStackHeader('Ingesta') + '<div class="mnp-empty">No se encontró la ingesta.</div>';
+    }
+    var count = itemCount(ingesta);
+    var kcal = ingesta.totalKcal != null ? ingesta.totalKcal : '—';
+    var html = renderStackHeader(ingesta.tipo || 'Ingesta');
+    html += '<div class="mnp-muted mb-3">' + escapeHtml(String(count)) + ' elementos · '
+      + escapeHtml(String(kcal)) + ' kcal</div>';
+    var platillos = ingesta.platillos || [];
+    var alimentos = ingesta.alimentos || [];
+    if (!platillos.length && !alimentos.length) {
+      html += '<div class="mnp-empty">No hay platillos ni alimentos en esta ingesta.</div>';
+      return html;
+    }
+    platillos.forEach(function (platillo) {
+      html += renderFoodTile(platillo.nombre, portionLabel(platillo.porciones, null), platillo.kcal, platillo.imageUrl);
+    });
+    alimentos.forEach(function (alimento) {
+      html += renderFoodTile(alimento.nombre, portionLabel(alimento.porciones, alimento.unidad), alimento.kcal, null);
+    });
+    return html;
+  }
+
+  function hideStack() {
+    state.stack = [];
+    $('#mnpPreviewContent').removeClass('is-stacked');
+    $('#mnpStackPanel').attr('hidden', true).empty();
+  }
+
+  function renderStack() {
+    var top = state.stack.length ? state.stack[state.stack.length - 1] : null;
+    if (!top) {
+      hideStack();
+      return;
+    }
+    var detail = state.detailCache[String(top.assignmentId)];
+    var html = '';
+    if (top.type === 'loading') {
+      html = renderStackHeader('Plan alimentario') + '<div class="mnp-empty">Cargando plan…</div>';
+    } else if (top.type === 'error') {
+      html = renderStackHeader('Plan alimentario')
+        + '<div class="mnp-empty">' + escapeHtml(top.message || 'No se pudo cargar el plan.') + '</div>';
+    } else if (!detail) {
+      html = renderStackHeader('Plan alimentario')
+        + '<div class="mnp-empty">No se pudo cargar el plan.</div>';
+    } else if (top.type === 'ingesta') {
+      html = renderIngestaScreen(detail, top.ingestaIndex);
+    } else {
+      html = renderMealsScreen(detail);
+    }
+    $('#mnpHomePanel, #mnpDietPanel').attr('hidden', true);
+    $('#mnpStackPanel').html(html).removeAttr('hidden');
+    $('#mnpPreviewContent').addClass('is-stacked');
+  }
+
+  function openPlan(assignmentId, fromTab) {
+    if (assignmentId == null || assignmentId === '') {
+      return;
+    }
+    var cached = state.detailCache[String(assignmentId)];
+    if (cached) {
+      state.stack = [{type: 'meals', assignmentId: assignmentId, from: fromTab || 'diet'}];
+      renderStack();
+      return;
+    }
+    state.stack = [{type: 'loading', assignmentId: assignmentId, from: fromTab || 'diet'}];
+    renderStack();
+    $.ajax({
+      url: previewUrl(state.pacienteId) + '/diet-plans/' + assignmentId,
+      method: 'GET',
+      dataType: 'json'
+    }).done(function (payload) {
+      if (!isCurrentPlanRequest(assignmentId)) {
+        return;
+      }
+      if (!payload || payload.success === false || !payload.plan) {
+        state.stack = [{
+          type: 'error',
+          assignmentId: assignmentId,
+          from: fromTab || 'diet',
+          message: (payload && payload.error) || 'No se pudo cargar el plan.'
+        }];
+        renderStack();
+        return;
+      }
+      cachePlanDetail(payload.plan);
+      state.stack = [{type: 'meals', assignmentId: assignmentId, from: fromTab || 'diet'}];
+      renderStack();
+    }).fail(function (xhr) {
+      if (!isCurrentPlanRequest(assignmentId)) {
+        return;
+      }
+      var msg = 'No se pudo cargar el plan.';
+      if (xhr.responseJSON) {
+        msg = xhr.responseJSON.message || xhr.responseJSON.error || msg;
+      }
+      state.stack = [{
+        type: 'error',
+        assignmentId: assignmentId,
+        from: fromTab || 'diet',
+        message: msg
+      }];
+      renderStack();
+    });
+  }
+
+  function isCurrentPlanRequest(assignmentId) {
+    var top = state.stack.length ? state.stack[0] : null;
+    return !!(top && String(top.assignmentId) === String(assignmentId));
+  }
+
+  function openIngesta(index) {
+    var top = state.stack.length ? state.stack[state.stack.length - 1] : null;
+    if (!top || top.assignmentId == null) {
+      return;
+    }
+    state.stack.push({
+      type: 'ingesta',
+      assignmentId: top.assignmentId,
+      from: top.from,
+      ingestaIndex: index
+    });
+    renderStack();
+  }
+
+  function popStack() {
+    if (!state.stack.length) {
+      return;
+    }
+    var leaving = state.stack.pop();
+    if (state.stack.length) {
+      renderStack();
+      return;
+    }
+    hideStack();
+    activateTab(leaving && leaving.from === 'home' ? 'home' : 'diet');
   }
 
   function showError(message) {
@@ -302,6 +597,10 @@
   }
 
   function showContent(data) {
+    state.data = data;
+    state.detailCache = {};
+    cachePlanDetail(data && data.activePlanDetail);
+    hideStack();
     $('#mnpPreviewLoading').hide();
     $('#mnpPreviewError').hide();
     $('#mnpHomePanel').html(renderHome(data));
@@ -311,8 +610,10 @@
   }
 
   function activateTab(tab) {
+    $('#mnpPreviewContent').removeClass('is-stacked');
+    $('#mnpStackPanel').attr('hidden', true);
     $('.mnp-tab').removeClass('active');
-    $('.mnp-panel').attr('hidden', true);
+    $('#mnpHomePanel, #mnpDietPanel').attr('hidden', true);
     if (tab === 'diet') {
       $('#mnpTabDiet').addClass('active');
       $('#mnpDietPanel').removeAttr('hidden');
@@ -324,6 +625,10 @@
 
   function openPreview(pacienteId) {
     var $modal = $('#pacienteMobilePreviewModal');
+    state.pacienteId = pacienteId;
+    state.activeOnly = false;
+    state.detailCache = {};
+    state.stack = [];
     showLoading();
     $modal.modal('show');
 
@@ -356,14 +661,53 @@
       openPreview(pacienteId);
     });
 
+    $(document).on('click', '#mnpTabDiet', function (e) {
+      e.preventDefault();
+      hideStack();
+      activateTab('diet');
+    });
+
     $(document).on('click', '#mnpTabHome', function (e) {
       e.preventDefault();
+      hideStack();
       activateTab('home');
     });
 
-    $(document).on('click', '#mnpTabDiet', function (e) {
+    $(document).on('click', '[data-mnp-open-plan]', function (e) {
       e.preventDefault();
-      activateTab('diet');
+      var assignmentId = $(this).attr('data-mnp-open-plan');
+      var fromTab = $('#mnpHomePanel').attr('hidden') ? 'diet' : 'home';
+      openPlan(assignmentId, fromTab);
+    });
+
+    $(document).on('click', '[data-mnp-open-ingesta]', function (e) {
+      e.preventDefault();
+      openIngesta(Number($(this).attr('data-mnp-open-ingesta')));
+    });
+
+    $(document).on('click', '#mnpStackBack', function (e) {
+      e.preventDefault();
+      popStack();
+    });
+
+    $(document).on('change', '#mnpActiveOnly', function () {
+      state.activeOnly = $(this).is(':checked');
+      if (state.data) {
+        $('#mnpDietPanel').html(renderDiet(state.data));
+      }
+    });
+
+    $(document).on('keydown', '.mnp-tappable', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        $(this).trigger('click');
+      }
+    });
+
+    $('#pacienteMobilePreviewModal').on('hidden.bs.modal', function () {
+      hideStack();
+      state.data = null;
+      state.detailCache = {};
     });
   }
 

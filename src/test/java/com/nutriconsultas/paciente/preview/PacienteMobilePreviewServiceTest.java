@@ -22,6 +22,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.mobile.MobilePatientDietPlanService;
@@ -74,6 +76,8 @@ class PacienteMobilePreviewServiceTest {
 
 		final DietPlanSummaryDto summary = new DietPlanSummaryDto(55L, PacienteDietaStatus.ACTIVE,
 				LocalDate.of(2026, 3, 16), null, null, "Plan hipocalórico", 1800, 90.0, 55.0, 200.0);
+		when(mobilePatientDietPlanService.listDietPlans(eq(10L), eq(0), eq(50), eq(false)))
+			.thenReturn(new PagedResponse<>(List.of(summary), 0, 50, 1, 1, true));
 		when(mobilePatientDietPlanService.listDietPlans(eq(10L), eq(0), eq(1), eq(true)))
 			.thenReturn(new PagedResponse<>(List.of(summary), 0, 1, 1, 1, true));
 
@@ -102,6 +106,7 @@ class PacienteMobilePreviewServiceTest {
 		assertThat(preview.activePlanDetail()).isEqualTo(detail);
 		assertThat(preview.nextVisit()).isEqualTo(visit);
 		assertThat(preview.activePlanDetail().ingestas()).hasSize(1);
+		assertThat(preview.plans()).containsExactly(summary);
 	}
 
 	@Test
@@ -110,6 +115,8 @@ class PacienteMobilePreviewServiceTest {
 		when(pacienteService.findByIdAndUserId(11L, USER_ID)).thenReturn(paciente);
 		when(mobilePatientProgressService.getSnapshot(11L)).thenReturn(new PatientProgressSnapshotDto(null, null, null,
 				null, null, null, null, null, null, null, null, null, null, null));
+		when(mobilePatientDietPlanService.listDietPlans(eq(11L), eq(0), eq(50), eq(false)))
+			.thenReturn(new PagedResponse<>(List.of(), 0, 50, 0, 0, true));
 		when(mobilePatientDietPlanService.listDietPlans(eq(11L), eq(0), eq(1), eq(true)))
 			.thenReturn(new PagedResponse<>(List.of(), 0, 1, 0, 0, true));
 		when(mobilePatientVisitService.listVisits(eq(11L), eq(0), eq(20), eq(EventStatus.SCHEDULED), any(Instant.class),
@@ -122,6 +129,7 @@ class PacienteMobilePreviewServiceTest {
 		assertThat(preview.firstName()).isEqualTo("Juan");
 		assertThat(preview.activePlan()).isNull();
 		assertThat(preview.activePlanDetail()).isNull();
+		assertThat(preview.plans()).isEmpty();
 		assertThat(preview.nextVisit()).isNull();
 		assertThat(preview.nutritionistDisplayName()).isNull();
 		verify(mobilePatientDietPlanService, never()).getDietPlanDetail(any(), any());
@@ -135,6 +143,66 @@ class PacienteMobilePreviewServiceTest {
 			.hasMessageContaining("Paciente no encontrado");
 		verify(mobilePatientProgressService, never()).getSnapshot(any());
 		verify(mobilePatientDietPlanService, never()).listDietPlans(any(), anyInt(), anyInt(), anyBoolean());
+	}
+
+	@Test
+	void buildPreview_includesAllAssignedPlans() {
+		final Paciente paciente = paciente(12L, "Ana Ruiz", "Ana");
+		when(pacienteService.findByIdAndUserId(12L, USER_ID)).thenReturn(paciente);
+		when(mobilePatientProgressService.getSnapshot(12L)).thenReturn(new PatientProgressSnapshotDto(null, null, null,
+				null, null, null, null, null, null, null, null, null, null, null));
+
+		final DietPlanSummaryDto active = new DietPlanSummaryDto(55L, PacienteDietaStatus.ACTIVE,
+				LocalDate.of(2026, 8, 1), null, null, "Plan hipocalórico", 1800, 90.0, 55.0, 200.0);
+		final DietPlanSummaryDto completed = new DietPlanSummaryDto(40L, PacienteDietaStatus.COMPLETED,
+				LocalDate.of(2026, 1, 10), LocalDate.of(2026, 3, 10), null, "Plan previo", 1600, 80.0, 50.0, 180.0);
+		when(mobilePatientDietPlanService.listDietPlans(eq(12L), eq(0), eq(50), eq(false)))
+			.thenReturn(new PagedResponse<>(List.of(active, completed), 0, 50, 2, 1, true));
+		when(mobilePatientDietPlanService.listDietPlans(eq(12L), eq(0), eq(1), eq(true)))
+			.thenReturn(new PagedResponse<>(List.of(active), 0, 1, 1, 1, true));
+
+		final DietPlanDetailDto detail = new DietPlanDetailDto(55L, PacienteDietaStatus.ACTIVE,
+				LocalDate.of(2026, 8, 1), null, null, "Plan hipocalórico", 1800, 90.0, 55.0, 200.0, List.of());
+		when(mobilePatientDietPlanService.getDietPlanDetail(12L, 55L)).thenReturn(detail);
+		when(mobilePatientVisitService.listVisits(eq(12L), eq(0), eq(20), eq(EventStatus.SCHEDULED), any(Instant.class),
+				isNull()))
+			.thenReturn(new PagedResponse<>(List.of(), 0, 20, 0, 0, true));
+		when(nutritionistProfileRepository.findByUserId(USER_ID)).thenReturn(Optional.empty());
+
+		final PatientMobilePreviewDto preview = service.buildPreview(12L, USER_ID);
+
+		assertThat(preview.activePlan()).isEqualTo(active);
+		assertThat(preview.plans()).containsExactly(active, completed);
+	}
+
+	@Test
+	void getPlanDetail_returnsDetailWhenPatientOwned() {
+		when(pacienteService.findByIdAndUserId(10L, USER_ID)).thenReturn(paciente(10L, "María López", "María"));
+		final DietPlanDetailDto detail = new DietPlanDetailDto(55L, PacienteDietaStatus.ACTIVE,
+				LocalDate.of(2026, 3, 16), null, null, "Plan hipocalórico", 1800, 90.0, 55.0, 200.0,
+				List.of(new DietIngestaDto("Desayuno", 450, 20.0, 10.0, 50.0, List.of(), List.of())));
+		when(mobilePatientDietPlanService.getDietPlanDetail(10L, 55L)).thenReturn(detail);
+
+		assertThat(service.getPlanDetail(10L, USER_ID, 55L)).isEqualTo(detail);
+	}
+
+	@Test
+	void getPlanDetail_throwsWhenPatientNotOwned() {
+		when(pacienteService.findByIdAndUserId(10L, USER_ID)).thenReturn(null);
+
+		assertThatThrownBy(() -> service.getPlanDetail(10L, USER_ID, 55L)).isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("Paciente no encontrado");
+		verify(mobilePatientDietPlanService, never()).getDietPlanDetail(any(), any());
+	}
+
+	@Test
+	void getPlanDetail_throwsWhenPlanMissing() {
+		when(pacienteService.findByIdAndUserId(10L, USER_ID)).thenReturn(paciente(10L, "María López", "María"));
+		when(mobilePatientDietPlanService.getDietPlanDetail(10L, 55L))
+			.thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+		assertThatThrownBy(() -> service.getPlanDetail(10L, USER_ID, 55L)).isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("Plan alimentario no encontrado");
 	}
 
 	@Test

@@ -4,9 +4,11 @@ import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.calendar.EventStatus;
 import com.nutriconsultas.mobile.MobilePatientDietPlanService;
@@ -34,6 +36,8 @@ import lombok.extern.slf4j.Slf4j;
 public class PacienteMobilePreviewService {
 
 	private static final int NEXT_VISIT_CANDIDATES = 20;
+
+	private static final int PLAN_LIST_SIZE = 50;
 
 	private final PacienteService pacienteService;
 
@@ -65,6 +69,7 @@ public class PacienteMobilePreviewService {
 		}
 
 		final PatientProgressSnapshotDto progress = mobilePatientProgressService.getSnapshot(pacienteId);
+		final List<DietPlanSummaryDto> plans = resolvePlans(pacienteId);
 		final DietPlanSummaryDto activePlan = resolveActivePlan(pacienteId);
 		final DietPlanDetailDto activePlanDetail = activePlan != null
 				? mobilePatientDietPlanService.getDietPlanDetail(pacienteId, activePlan.assignmentId()) : null;
@@ -79,7 +84,42 @@ public class PacienteMobilePreviewService {
 		}
 
 		return new PatientMobilePreviewDto(firstName, nutritionistDisplayName, avatarUrl, progress, activePlan,
-				activePlanDetail, nextVisit);
+				activePlanDetail, plans, nextVisit);
+	}
+
+	@Transactional(readOnly = true)
+	public DietPlanDetailDto getPlanDetail(final Long pacienteId, final String nutritionistUserId,
+			final Long assignmentId) {
+		final Paciente paciente = pacienteService.findByIdAndUserId(pacienteId, nutritionistUserId);
+		if (paciente == null) {
+			throw new IllegalArgumentException("Paciente no encontrado");
+		}
+		return loadPlanDetail(pacienteId, assignmentId);
+	}
+
+	private DietPlanDetailDto loadPlanDetail(final Long pacienteId, final Long assignmentId) {
+		DietPlanDetailDto detail = null;
+		try {
+			detail = mobilePatientDietPlanService.getDietPlanDetail(pacienteId, assignmentId);
+		}
+		catch (ResponseStatusException ex) {
+			if (ex.getStatusCode() != HttpStatus.NOT_FOUND) {
+				throw new IllegalStateException("No se pudo cargar el plan alimentario", ex);
+			}
+		}
+		if (detail == null) {
+			throw new IllegalArgumentException("Plan alimentario no encontrado");
+		}
+		return detail;
+	}
+
+	private List<DietPlanSummaryDto> resolvePlans(final Long pacienteId) {
+		final PagedResponse<DietPlanSummaryDto> page = mobilePatientDietPlanService.listDietPlans(pacienteId, 0,
+				PLAN_LIST_SIZE, false);
+		if (page == null || page.content() == null) {
+			return List.of();
+		}
+		return page.content();
 	}
 
 	private DietPlanSummaryDto resolveActivePlan(final Long pacienteId) {

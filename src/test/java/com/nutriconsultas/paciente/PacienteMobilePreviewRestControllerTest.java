@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -19,6 +21,7 @@ import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
+import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
 import com.nutriconsultas.paciente.preview.PacienteMobilePreviewService;
 import com.nutriconsultas.paciente.preview.PatientMobilePreviewDto;
 
@@ -36,7 +39,7 @@ class PacienteMobilePreviewRestControllerTest {
 	@Test
 	void getPreview_returnsSuccessPayload() {
 		final PatientMobilePreviewDto preview = new PatientMobilePreviewDto("María", "Lic. Ana", null, null, null, null,
-				null);
+				List.of(), null);
 		when(pacienteMobilePreviewService.buildPreview(eq(1L), eq(NUTRITIONIST_SUB))).thenReturn(preview);
 
 		final ResponseEntity<Map<String, Object>> response = controller.getPreview(1L, principal());
@@ -44,7 +47,8 @@ class PacienteMobilePreviewRestControllerTest {
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getBody()).containsEntry("success", true)
 			.containsEntry("firstName", "María")
-			.containsEntry("nutritionistDisplayName", "Lic. Ana");
+			.containsEntry("nutritionistDisplayName", "Lic. Ana")
+			.containsKey("plans");
 		verify(pacienteMobilePreviewService).buildPreview(1L, NUTRITIONIST_SUB);
 	}
 
@@ -57,6 +61,31 @@ class PacienteMobilePreviewRestControllerTest {
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 		assertThat(response.getBody()).containsEntry("success", false).containsEntry("error", "Paciente no encontrado");
+	}
+
+	@Test
+	void getDietPlanDetail_returnsPlanPayload() {
+		final DietPlanDetailDto plan = new DietPlanDetailDto(55L, PacienteDietaStatus.ACTIVE, LocalDate.of(2026, 3, 16),
+				null, null, "Plan hipocalórico", 1800, 90.0, 55.0, 200.0, List.of());
+		when(pacienteMobilePreviewService.getPlanDetail(eq(1L), eq(NUTRITIONIST_SUB), eq(55L))).thenReturn(plan);
+
+		final ResponseEntity<Map<String, Object>> response = controller.getDietPlanDetail(1L, 55L, principal());
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).containsEntry("success", true).containsEntry("plan", plan);
+		verify(pacienteMobilePreviewService).getPlanDetail(1L, NUTRITIONIST_SUB, 55L);
+	}
+
+	@Test
+	void getDietPlanDetail_returnsNotFoundWhenMissing() {
+		when(pacienteMobilePreviewService.getPlanDetail(eq(1L), eq(NUTRITIONIST_SUB), eq(55L)))
+			.thenThrow(new IllegalArgumentException("Plan alimentario no encontrado"));
+
+		final ResponseEntity<Map<String, Object>> response = controller.getDietPlanDetail(1L, 55L, principal());
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(response.getBody()).containsEntry("success", false)
+			.containsEntry("error", "Plan alimentario no encontrado");
 	}
 
 	private static OidcUser principal() {
