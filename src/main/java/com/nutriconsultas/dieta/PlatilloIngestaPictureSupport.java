@@ -47,16 +47,28 @@ public final class PlatilloIngestaPictureSupport {
 	public static PictureObject resolvePictureObject(@Nullable final PlatilloIngesta platillo) {
 		PictureObject picture = null;
 		if (hasCustomPicture(platillo)) {
-			final String stored = platillo.getStoredImageUrl().trim();
-			if (!stored.contains("..")) {
-				picture = parseS3Key(stored);
-				if (picture == null) {
-					picture = parseAdminPath(stored);
-				}
-				if (picture == null) {
-					picture = parseSourcePlatillo(platillo, stored);
-				}
-			}
+			picture = parseStoredPicture(platillo, platillo.getStoredImageUrl().trim());
+		}
+		return picture;
+	}
+
+	private static PictureObject parseStoredPicture(final PlatilloIngesta platillo, final String stored) {
+		PictureObject picture = null;
+		if (!stored.contains("..")) {
+			picture = firstNonNullPicture(parseS3Key(stored), parseAdminPath(stored),
+					parseSourcePlatillo(platillo, stored));
+		}
+		return picture;
+	}
+
+	private static PictureObject firstNonNullPicture(final PictureObject s3Key, final PictureObject adminPath,
+			final PictureObject sourcePlatillo) {
+		PictureObject picture = s3Key;
+		if (picture == null) {
+			picture = adminPath;
+		}
+		if (picture == null) {
+			picture = sourcePlatillo;
 		}
 		return picture;
 	}

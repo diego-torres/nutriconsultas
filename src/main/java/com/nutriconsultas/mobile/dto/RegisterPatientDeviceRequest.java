@@ -11,5 +11,5 @@ public record RegisterPatientDeviceRequest(@NotNull @Schema(description = "Devic
 		"IOS", "ANDROID" }) PatientDevicePlatform platform,
 		@NotBlank @Size(max = 512) @Schema(minLength = 1, maxLength = 512,
 				description = "APNs or FCM registration token") String token,
-		@Size(max = 50) @Schema(maxLength = 50, description = "Optional mobile app version") String appVersion) {
+		@Size(max = 50) @Schema(maxLength = 50, description = "Optional mobile app version") String appVersion){
 }
