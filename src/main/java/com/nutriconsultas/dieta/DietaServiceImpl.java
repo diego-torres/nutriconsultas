@@ -248,89 +248,13 @@ public class DietaServiceImpl implements DietaService {
 
 	@Override
 	public void recalculateAlimentoIngestaNutrients(@NonNull final AlimentoIngesta alimentoIngesta,
-			@NonNull final Integer portions) {
+			@NonNull final Double portions) {
 		log.info("Recalculating nutrients for AlimentoIngesta with id {} for {} portions", alimentoIngesta.getId(),
 				portions);
 		if (alimentoIngesta.getAlimento() != null) {
-			final Alimento alimento = alimentoIngesta.getAlimento();
-			alimentoIngesta.setPortions(portions);
-
-			// Recalculate nutritional values from original alimento
-			if (alimento.getEnergia() != null) {
-				alimentoIngesta.setEnergia((int) (alimento.getEnergia() * portions));
-			}
-			if (alimento.getProteina() != null) {
-				alimentoIngesta.setProteina(alimento.getProteina() * portions);
-			}
-			if (alimento.getLipidos() != null) {
-				alimentoIngesta.setLipidos(alimento.getLipidos() * portions);
-			}
-			if (alimento.getHidratosDeCarbono() != null) {
-				alimentoIngesta.setHidratosDeCarbono(alimento.getHidratosDeCarbono() * portions);
-			}
-			if (alimento.getPesoBrutoRedondeado() != null) {
-				alimentoIngesta.setPesoBrutoRedondeado(alimento.getPesoBrutoRedondeado() * portions);
-			}
-			if (alimento.getPesoNeto() != null) {
-				alimentoIngesta.setPesoNeto(alimento.getPesoNeto() * portions);
-			}
-			if (alimento.getFibra() != null) {
-				alimentoIngesta.setFibra(alimento.getFibra() * portions);
-			}
-			if (alimento.getVitA() != null) {
-				alimentoIngesta.setVitA(alimento.getVitA() * portions);
-			}
-			if (alimento.getAcidoAscorbico() != null) {
-				alimentoIngesta.setAcidoAscorbico(alimento.getAcidoAscorbico() * portions);
-			}
-			if (alimento.getHierroNoHem() != null) {
-				alimentoIngesta.setHierroNoHem(alimento.getHierroNoHem() * portions);
-			}
-			if (alimento.getPotasio() != null) {
-				alimentoIngesta.setPotasio(alimento.getPotasio() * portions);
-			}
-			if (alimento.getIndiceGlicemico() != null) {
-				alimentoIngesta.setIndiceGlicemico(alimento.getIndiceGlicemico() * portions);
-			}
-			if (alimento.getCargaGlicemica() != null) {
-				alimentoIngesta.setCargaGlicemica(alimento.getCargaGlicemica() * portions);
-			}
-			if (alimento.getAcidoFolico() != null) {
-				alimentoIngesta.setAcidoFolico(alimento.getAcidoFolico() * portions);
-			}
-			if (alimento.getCalcio() != null) {
-				alimentoIngesta.setCalcio(alimento.getCalcio() * portions);
-			}
-			if (alimento.getHierro() != null) {
-				alimentoIngesta.setHierro(alimento.getHierro() * portions);
-			}
-			if (alimento.getSodio() != null) {
-				alimentoIngesta.setSodio(alimento.getSodio() * portions);
-			}
-			if (alimento.getAzucarPorEquivalente() != null) {
-				alimentoIngesta.setAzucarPorEquivalente(alimento.getAzucarPorEquivalente() * portions);
-			}
-			if (alimento.getSelenio() != null) {
-				alimentoIngesta.setSelenio(alimento.getSelenio() * portions);
-			}
-			if (alimento.getFosforo() != null) {
-				alimentoIngesta.setFosforo(alimento.getFosforo() * portions);
-			}
-			if (alimento.getColesterol() != null) {
-				alimentoIngesta.setColesterol(alimento.getColesterol() * portions);
-			}
-			if (alimento.getAgSaturados() != null) {
-				alimentoIngesta.setAgSaturados(alimento.getAgSaturados() * portions);
-			}
-			if (alimento.getAgMonoinsaturados() != null) {
-				alimentoIngesta.setAgMonoinsaturados(alimento.getAgMonoinsaturados() * portions);
-			}
-			if (alimento.getAgPoliinsaturados() != null) {
-				alimentoIngesta.setAgPoliinsaturados(alimento.getAgPoliinsaturados() * portions);
-			}
-			if (alimento.getEtanol() != null) {
-				alimentoIngesta.setEtanol(alimento.getEtanol() * portions);
-			}
+			final double resolvedPortions = AlimentoIngestaPortions.clamp(portions);
+			alimentoIngesta.setPortions(resolvedPortions);
+			AlimentoIngestaNutrientScaler.copyScaled(alimentoIngesta.getAlimento(), alimentoIngesta, resolvedPortions);
 		}
 	}
 

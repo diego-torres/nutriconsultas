@@ -116,3 +116,6 @@ databaseChangeLog:
   - include:
       file: changes/039-ai-draft-paciente.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/040-alimento-ingesta-portions-double.yaml
+      relativeToChangelogFile: true

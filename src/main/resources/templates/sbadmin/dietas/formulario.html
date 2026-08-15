@@ -279,8 +279,9 @@
                       class="form-control"
                       id="alimentoPorciones"
                       value="1"
-                      min="1"
-                      max="3"
+                      min="0.25"
+                      max="10"
+                      step="any"
                       name="porciones" />
                   </div>
                   <div id="alimentoPortionDetails" style="display: none">
@@ -290,16 +291,12 @@
                         type="text"
                         class="form-control"
                         id="alimentoCantidad"
-                        placeholder="Cantidad" />
+                        name="cantidad"
+                        placeholder="Ej. 1/2"
+                        autocomplete="off" />
+                      <small id="alimentoUnidadLeyenda" class="form-text text-muted"></small>
                     </div>
-                    <div class="form-group">
-                      <label for="alimentoUnidad">Unidad</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="alimentoUnidad"
-                        disabled="true" />
-                    </div>
+                    <input type="hidden" id="alimentoUnidad" />
                     <div class="form-group">
                       <label for="alimentoPeso">Peso (g)</label>
                       <input
@@ -611,16 +608,17 @@
               <div class="modal-body">
                 <form th:action="@{/admin/dietas/{id}/alimentos/{alimentoIngestaId}/update(id=${dieta != null ? dieta.id : 0}, alimentoIngestaId=0)}" method="post" id="editAlimentoForm">
                   <div class="form-group">
-                    <label for="editPorcionesAlimento">Porciones</label>
+                    <label for="editCantidadAlimento">Cantidad</label>
                     <input
-                      type="number"
+                      type="text"
                       class="form-control"
-                      id="editPorcionesAlimento"
-                      name="porciones"
+                      id="editCantidadAlimento"
+                      name="cantidad"
                       value="1"
-                      min="1"
-                      max="3"
+                      placeholder="Ej. 1/2"
+                      autocomplete="off"
                       required />
+                    <small id="editUnidadAlimentoLeyenda" class="form-text text-muted"></small>
                   </div>
                   <button type="submit" class="btn btn-primary">Guardar</button>
                 </form>
@@ -1148,7 +1146,7 @@
                                     <button
                                       type="button"
                                       class="btn btn-primary btn-sm"
-                                      th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-porciones=${alimento.portions}"
+                                      th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-cantidad=${alimento.displayCantidad},data-unidad=${alimento.unidad}"
                                       data-toggle="modal"
                                       data-target="#editAlimentoModal"
                                       th:disabled="${isOwner != null && !isOwner}"
@@ -1169,37 +1167,19 @@
                                 </div>
                                 <div class="ingesta-item-details row mt-3">
                                   <div class="col-6 col-md-3 mb-2 mb-md-0">
-                                    <span class="detail-label d-block">Porciones</span>
-                                    <div class="input-group input-group-sm mt-1" style="max-width: 8.5rem;">
-                                      <div class="input-group-prepend">
-                                        <button
-                                          type="button"
-                                          class="btn btn-outline-secondary btn-sm decrease-portion"
-                                          th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-porciones=${alimento.portions}"
-                                          th:disabled="${isOwner != null && !isOwner}"
-                                          title="Disminuir porciones">
-                                          <i class="fas fa-minus"></i>
-                                        </button>
-                                      </div>
-                                      <input
-                                        type="number"
-                                        class="form-control form-control-sm text-center portion-input"
-                                        th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},value=${alimento.portions}"
-                                        min="1"
-                                        max="10"
-                                        readonly
-                                        style="background-color: #fff;" />
-                                      <div class="input-group-append">
-                                        <button
-                                          type="button"
-                                          class="btn btn-outline-secondary btn-sm increase-portion"
-                                          th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-porciones=${alimento.portions}"
-                                          th:disabled="${isOwner != null && !isOwner}"
-                                          title="Aumentar porciones">
-                                          <i class="fas fa-plus"></i>
-                                        </button>
-                                      </div>
-                                    </div>
+                                    <span class="detail-label d-block">Cantidad</span>
+                                    <input
+                                      type="text"
+                                      class="form-control form-control-sm mt-1 inline-alimento-cantidad-input"
+                                      th:attr="data-dieta=${dieta.id},data-ingesta=${ingesta.id},data-alimento=${alimento.id},data-alimento-cant=${alimento.alimento != null ? alimento.alimento.cantSugerida : ''}"
+                                      th:value="${alimento.displayCantidad}"
+                                      th:disabled="${isOwner != null && !isOwner}"
+                                      placeholder="Ej. 1/2"
+                                      autocomplete="off"
+                                      aria-label="Cantidad" />
+                                    <small class="form-text text-muted mt-1"
+                                           th:if="${alimento.unidad != null && !#strings.isEmpty(alimento.unidad)}"
+                                           th:text="${alimento.unidad}">taza</small>
                                   </div>
                                   <div class="col-6 col-md-2 mb-2 mb-md-0">
                                     <span class="detail-label d-block">Calor&iacute;as</span>
@@ -1883,6 +1863,113 @@
             saveInlinePlatilloIngredienteCantidad($(this));
           });
 
+          var inlineAlimentoCantidadSaving = false;
+
+          function sameNumericId(left, right) {
+            return Number(left) === Number(right);
+          }
+
+          function findAlimentoIngestaInDieta(dieta, ingestaId, alimentoId) {
+            var found = null;
+            if (dieta && Array.isArray(dieta.ingestas)) {
+              dieta.ingestas.forEach(function(ingesta) {
+                if (sameNumericId(ingesta.id, ingestaId) && Array.isArray(ingesta.alimentos)) {
+                  ingesta.alimentos.forEach(function(alimento) {
+                    if (sameNumericId(alimento.id, alimentoId)) {
+                      found = alimento;
+                    }
+                  });
+                }
+              });
+            }
+            return found;
+          }
+
+          function saveInlineAlimentoCantidad($input) {
+            if (inlineAlimentoCantidadSaving || $input.prop('disabled')) {
+              return;
+            }
+            var committedValue = $input.data('committed');
+            var newCantidad = String($input.val()).trim();
+            if (committedValue === newCantidad) {
+              return;
+            }
+            var parsedCantidad = window.IngredientWeightRecalc
+              ? window.IngredientWeightRecalc.parseFractionalQuantity(newCantidad)
+              : null;
+            if (parsedCantidad == null || parsedCantidad <= 0) {
+              swal({
+                title: 'Cantidad inválida',
+                text: 'Use un valor fraccional válido (ej. 1/2, 1 1/4).',
+                type: 'error',
+                timer: 5000
+              });
+              $input.val(committedValue);
+              return;
+            }
+            var dietaId = $input.data('dieta');
+            var ingestaId = $input.data('ingesta');
+            var alimentoId = $input.data('alimento');
+            inlineAlimentoCantidadSaving = true;
+            $input.prop('disabled', true);
+            $.ajax({
+              url: '/rest/dietas/' + dietaId + '/ingestas/' + ingestaId + '/alimentos/' + alimentoId + '/cantidad',
+              type: 'PUT',
+              data: { cantidad: newCantidad },
+              dataType: 'json',
+              success: function(response) {
+                if (response && response.data) {
+                  var updatedAlimento = findAlimentoIngestaInDieta(response.data, ingestaId, alimentoId);
+                  var itemCard = $input.closest('.ingesta-item-card');
+                  if (updatedAlimento) {
+                    var displayCantidad = updatedAlimento.displayCantidad || newCantidad;
+                    $input.val(displayCantidad);
+                    $input.data('committed', displayCantidad);
+                    itemCard.find('[data-target="#editAlimentoModal"]').data('cantidad', displayCantidad);
+                    updateNutrientValues(itemCard, updatedAlimento);
+                    updatePieChart(response.data);
+                    showToast('Actualizado', 'La cantidad ha sido actualizada correctamente.', 'success');
+                  } else {
+                    $input.data('committed', newCantidad);
+                    showToast('Actualizado',
+                      'La cantidad ha sido actualizada. Algunos valores pueden necesitar recarga.',
+                      'warning');
+                  }
+                } else {
+                  $input.data('committed', newCantidad);
+                }
+              },
+              error: function(error) {
+                $input.val(committedValue);
+                showToast('Error', error.responseJSON && error.responseJSON.message
+                  ? error.responseJSON.message
+                  : 'No se pudo actualizar la cantidad del alimento.', 'error');
+              },
+              complete: function() {
+                inlineAlimentoCantidadSaving = false;
+                $input.prop('disabled', false);
+              }
+            });
+          }
+
+          $(document).on('focus', '.inline-alimento-cantidad-input', function() {
+            var $input = $(this);
+            if (!$input.data('committed')) {
+              $input.data('committed', String($input.val()).trim());
+            }
+          });
+
+          $(document).on('keydown', '.inline-alimento-cantidad-input', function(event) {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              $(this).blur();
+            }
+          });
+
+          $(document).on('blur', '.inline-alimento-cantidad-input', function() {
+            saveInlineAlimentoCantidad($(this));
+          });
+
           $(document).on('click', '.toggle-platillo-ingredientes', function() {
             var targetSelector = $(this).data('target');
             $(targetSelector).collapse('toggle');
@@ -2286,6 +2373,7 @@
               selectedAlimentoReference = null;
               $('#alimentoCantidad').val('');
               $('#alimentoUnidad').val('');
+              $('#alimentoUnidadLeyenda').text('');
               $('#alimentoPeso').val('');
               return;
             }
@@ -2299,6 +2387,7 @@
                 };
                 $('#alimentoCantidad').val(response.fractionalCantSugerida);
                 $('#alimentoUnidad').val(response.unidad);
+                $('#alimentoUnidadLeyenda').text(response.unidad || '');
                 $('#alimentoPeso').val(response.pesoNeto);
                 syncAlimentoPorcionesFromCantidad();
               }
@@ -2331,8 +2420,11 @@
             if (parsedCantidad == null || !selectedAlimentoReference.cantSugerida) {
               return;
             }
-            var porciones = Math.round(parsedCantidad / selectedAlimentoReference.cantSugerida);
-            porciones = Math.max(1, Math.min(3, porciones));
+            var porciones = parsedCantidad / selectedAlimentoReference.cantSugerida;
+            if (!isFinite(porciones) || porciones <= 0) {
+              return;
+            }
+            porciones = Math.max(0.01, Math.min(100, porciones));
             $('#alimentoPorciones').val(porciones);
           }
 
@@ -2347,6 +2439,7 @@
             modal.find('#tipoPorcion').val('porcion');
             $('#alimentoCantidad').val('');
             $('#alimentoUnidad').val('');
+            $('#alimentoUnidadLeyenda').text('');
             $('#alimentoPeso').val('');
             toggleAlimentoPortionFields();
           });
@@ -2403,12 +2496,14 @@
             var button = $(event.relatedTarget);
             var dietaId = button.data('dieta');
             var alimentoId = button.data('alimento');
-            var porciones = button.data('porciones');
+            var cantidad = button.data('cantidad');
+            var unidad = button.data('unidad');
             var modal = $(this);
             var form = modal.find('#editAlimentoForm');
             var actionUrl = '/admin/dietas/' + dietaId + '/alimentos/' + alimentoId + '/update';
             form.attr('action', actionUrl);
-            modal.find('#editPorcionesAlimento').val(porciones);
+            modal.find('#editCantidadAlimento').val(cantidad || '');
+            modal.find('#editUnidadAlimentoLeyenda').text(unidad || '');
           });
 
           // Handle increase portion buttons for platillos
@@ -2436,34 +2531,6 @@
             
             if (newPortions !== currentPortions) {
               updatePlatilloPortions(dietaId, ingestaId, platilloId, newPortions, button);
-            }
-          });
-
-          // Handle increase portion buttons for alimentos
-          $(document).on('click', '.increase-portion[data-alimento]', function () {
-            var button = $(this);
-            var dietaId = button.data('dieta');
-            var ingestaId = button.data('ingesta');
-            var alimentoId = button.data('alimento');
-            var currentPortions = parseInt(button.data('porciones')) || 1;
-            var newPortions = Math.min(currentPortions + 1, 10);
-            
-            if (newPortions !== currentPortions) {
-              updateAlimentoPortions(dietaId, ingestaId, alimentoId, newPortions, button);
-            }
-          });
-
-          // Handle decrease portion buttons for alimentos
-          $(document).on('click', '.decrease-portion[data-alimento]', function () {
-            var button = $(this);
-            var dietaId = button.data('dieta');
-            var ingestaId = button.data('ingesta');
-            var alimentoId = button.data('alimento');
-            var currentPortions = parseInt(button.data('porciones')) || 1;
-            var newPortions = Math.max(currentPortions - 1, 1);
-            
-            if (newPortions !== currentPortions) {
-              updateAlimentoPortions(dietaId, ingestaId, alimentoId, newPortions, button);
             }
           });
 
@@ -2515,73 +2582,6 @@
                     portionInput.val(updatedPlatillo.portions);
                     itemCard.find('.decrease-portion, .increase-portion').data('porciones', updatedPlatillo.portions);
                     updateNutrientValues(itemCard, updatedPlatillo);
-                    
-                    // Update pie chart if it exists
-                    updatePieChart(dieta);
-                    // Show success toast
-                    showToast('Actualizado', 'Las porciones han sido actualizadas correctamente.', 'success');
-                  } else {
-                    // If we can't find the updated item, update portion number and show warning
-                    portionInput.val(newPortions);
-                    itemCard.find('.decrease-portion, .increase-portion').data('porciones', newPortions);
-                    showToast('Actualizado', 'Las porciones han sido actualizadas. Algunos valores pueden necesitar recarga.', 'warning');
-                  }
-                } else {
-                  // If response structure is unexpected, update portion number and show warning
-                  portionInput.val(newPortions);
-                  itemCard.find('.decrease-portion, .increase-portion').data('porciones', newPortions);
-                  showToast('Actualizado', 'Las porciones han sido actualizadas. Algunos valores pueden necesitar recarga.', 'warning');
-                }
-                // Re-enable buttons
-                itemCard.find('.decrease-portion, .increase-portion').prop('disabled', false);
-              },
-              error: function (error) {
-                var errorMessage = error.responseJSON && error.responseJSON.message 
-                  ? error.responseJSON.message 
-                  : 'Error al actualizar las porciones.';
-                showToast('Error', errorMessage, 'error');
-                // Re-enable buttons
-                itemCard.find('.decrease-portion, .increase-portion').prop('disabled', false);
-              }
-            });
-          }
-
-          // Function to update alimento portions via AJAX
-          function updateAlimentoPortions(dietaId, ingestaId, alimentoId, newPortions, button) {
-            var itemCard = button.closest('.ingesta-item-card');
-            var portionInput = itemCard.find('.portion-input[data-alimento="' + alimentoId + '"]');
-            
-            // Disable buttons during update
-            button.prop('disabled', true);
-            itemCard.find('.decrease-portion, .increase-portion').prop('disabled', true);
-            
-            $.ajax({
-              url: '/rest/dietas/' + dietaId + '/ingestas/' + ingestaId + '/alimentos/' + alimentoId + '/portions',
-              type: 'PUT',
-              data: { portions: newPortions },
-              dataType: 'json',
-              success: function (response) {
-                if (response && response.data) {
-                  var dieta = response.data;
-                  // Find the updated alimento in the response
-                  var updatedAlimento = null;
-                  if (dieta.ingestas && Array.isArray(dieta.ingestas)) {
-                    dieta.ingestas.forEach(function(ingesta) {
-                      if (ingesta.id === ingestaId && ingesta.alimentos && Array.isArray(ingesta.alimentos)) {
-                        ingesta.alimentos.forEach(function(alimento) {
-                          if (alimento.id === alimentoId) {
-                            updatedAlimento = alimento;
-                          }
-                        });
-                      }
-                    });
-                  }
-                  
-                  if (updatedAlimento) {
-                    // Update portion input and buttons
-                    portionInput.val(updatedAlimento.portions);
-                    itemCard.find('.decrease-portion, .increase-portion').data('porciones', updatedAlimento.portions);
-                    updateNutrientValues(itemCard, updatedAlimento);
                     
                     // Update pie chart if it exists
                     updatePieChart(dieta);

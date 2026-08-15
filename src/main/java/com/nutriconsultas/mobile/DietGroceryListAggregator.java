@@ -111,7 +111,7 @@ public final class DietGroceryListAggregator {
 		final MutableGroceryItem item = items.computeIfAbsent(key,
 				ignored -> new MutableGroceryItem(nombre, unidad, categoria));
 		item.mergeCategoria(categoria);
-		final int portions = alimentoIngesta.getPortions() != null ? alimentoIngesta.getPortions() : 1;
+		final double portions = alimentoIngesta.getPortions() != null ? alimentoIngesta.getPortions() : 1.0;
 		item.addFractionQuantity(portions);
 	}
 

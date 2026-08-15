@@ -147,7 +147,7 @@ class MobilePatientDietPlanIntegrationTest {
 
 		final AlimentoIngesta alimento = new AlimentoIngesta();
 		alimento.setName("Pan integral");
-		alimento.setPortions(2);
+		alimento.setPortions(2.0);
 		alimento.setEnergia(120);
 		alimento.setUnidad("rebanada");
 		alimento.setIngesta(ingesta);

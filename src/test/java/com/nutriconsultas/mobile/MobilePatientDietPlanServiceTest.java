@@ -250,7 +250,7 @@ class MobilePatientDietPlanServiceTest {
 		final AlimentoIngesta alimento = new AlimentoIngesta();
 		alimento.setId(40L);
 		alimento.setName("Manzana");
-		alimento.setPortions(1);
+		alimento.setPortions(1.0);
 		alimento.setEnergia(52);
 		alimento.setUnidad("pieza");
 		alimento.setProteina(0.3);

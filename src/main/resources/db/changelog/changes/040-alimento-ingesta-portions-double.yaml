@@ -1,0 +1,25 @@
+databaseChangeLog:
+  - changeSet:
+      id: 040-alimento-ingesta-portions-double-postgresql
+      author: nutriconsultas
+      dbms: postgresql
+      preConditions:
+        - onFail: MARK_RAN
+        - columnExists:
+            tableName: alimento_ingesta
+            columnName: portions
+      changes:
+        - sql:
+            sql: ALTER TABLE alimento_ingesta ALTER COLUMN portions TYPE double precision USING portions::double precision
+  - changeSet:
+      id: 040-alimento-ingesta-portions-double-h2
+      author: nutriconsultas
+      dbms: h2
+      preConditions:
+        - onFail: MARK_RAN
+        - columnExists:
+            tableName: alimento_ingesta
+            columnName: portions
+      changes:
+        - sql:
+            sql: ALTER TABLE alimento_ingesta ALTER COLUMN portions SET DATA TYPE DOUBLE PRECISION

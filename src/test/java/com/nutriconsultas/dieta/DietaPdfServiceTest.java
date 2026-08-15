@@ -140,7 +140,7 @@ public class DietaPdfServiceTest {
 		final AlimentoIngesta alimento = new AlimentoIngesta();
 		alimento.setId(1L);
 		alimento.setName("Alimento de prueba");
-		alimento.setPortions(1);
+		alimento.setPortions(1.0);
 		alimento.setEnergia(100);
 		alimento.setProteina(5.0);
 		alimento.setLipidos(3.0);

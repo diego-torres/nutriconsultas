@@ -165,7 +165,7 @@ public class DietaServiceTest {
 		alimentoIngesta = new AlimentoIngesta();
 		alimentoIngesta.setId(1L);
 		alimentoIngesta.setName("Manzana");
-		alimentoIngesta.setPortions(2);
+		alimentoIngesta.setPortions(2.0);
 		alimentoIngesta.setAlimento(alimento);
 		alimentoIngesta.setUnidad("pieza");
 		alimentoIngesta.setPesoBrutoRedondeado(200);

@@ -243,7 +243,7 @@ class PlatilloFromIngestaServiceTest {
 		row.setAlimento(alimento);
 		row.setName(alimento.getNombreAlimento());
 		row.setUnidad(alimento.getUnidad());
-		row.setPortions(portions);
+		row.setPortions((double) portions);
 		row.setPesoNeto(alimento.getPesoNeto() * portions);
 		row.setPesoBrutoRedondeado(alimento.getPesoBrutoRedondeado() * portions);
 		return row;

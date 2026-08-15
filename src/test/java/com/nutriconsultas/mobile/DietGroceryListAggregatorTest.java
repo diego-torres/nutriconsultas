@@ -44,7 +44,7 @@ class DietGroceryListAggregatorTest {
 		final Ingesta ingesta = ingesta("Desayuno");
 		final AlimentoIngesta alimentoIngesta = new AlimentoIngesta();
 		alimentoIngesta.setName("Manzana");
-		alimentoIngesta.setPortions(2);
+		alimentoIngesta.setPortions(2.0);
 		alimentoIngesta.setUnidad("pieza");
 		alimentoIngesta.setAlimento(manzana);
 		ingesta.setAlimentos(List.of(alimentoIngesta));
@@ -93,7 +93,7 @@ class DietGroceryListAggregatorTest {
 	private static AlimentoIngesta standaloneAlimento(final Alimento alimento, final int portions) {
 		final AlimentoIngesta alimentoIngesta = new AlimentoIngesta();
 		alimentoIngesta.setName(alimento.getNombreAlimento());
-		alimentoIngesta.setPortions(portions);
+		alimentoIngesta.setPortions((double) portions);
 		alimentoIngesta.setUnidad("pieza");
 		alimentoIngesta.setAlimento(alimento);
 		return alimentoIngesta;
