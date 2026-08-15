@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
 import com.nutriconsultas.paciente.preview.PacienteMobilePreviewService;
 import com.nutriconsultas.paciente.preview.PatientMobilePreviewDto;
 import com.nutriconsultas.util.LogRedaction;
@@ -48,6 +49,7 @@ public class PacienteMobilePreviewRestController {
 			body.put("progress", preview.progress());
 			body.put("activePlan", preview.activePlan());
 			body.put("activePlanDetail", preview.activePlanDetail());
+			body.put("plans", preview.plans());
 			body.put("nextVisit", preview.nextVisit());
 			if (log.isDebugEnabled()) {
 				log.debug("Returning mobile preview for patient {}", LogRedaction.redactPaciente(pacienteId));
@@ -56,6 +58,27 @@ public class PacienteMobilePreviewRestController {
 		}
 		catch (IllegalArgumentException ex) {
 			final String message = ex.getMessage() != null ? ex.getMessage() : "Paciente no encontrado";
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("success", false, "error", message));
+		}
+	}
+
+	@GetMapping("/diet-plans/{assignmentId}")
+	public ResponseEntity<Map<String, Object>> getDietPlanDetail(@PathVariable @NonNull final Long pacienteId,
+			@PathVariable @NonNull final Long assignmentId, @AuthenticationPrincipal final OidcUser principal) {
+		final String userId = requireUserId(principal);
+		try {
+			final DietPlanDetailDto plan = pacienteMobilePreviewService.getPlanDetail(pacienteId, userId, assignmentId);
+			final Map<String, Object> body = new LinkedHashMap<>();
+			body.put("success", true);
+			body.put("plan", plan);
+			if (log.isDebugEnabled()) {
+				log.debug("Returning mobile preview diet plan {} for patient {}",
+						LogRedaction.redactPacienteDieta(assignmentId), LogRedaction.redactPaciente(pacienteId));
+			}
+			return ResponseEntity.ok(body);
+		}
+		catch (IllegalArgumentException ex) {
+			final String message = ex.getMessage() != null ? ex.getMessage() : "Plan alimentario no encontrado";
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("success", false, "error", message));
 		}
 	}

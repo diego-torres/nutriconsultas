@@ -355,6 +355,123 @@
   cursor: default;
 }
 
+.mnp-preview-content.is-stacked .mnp-tabbar {
+  display: none;
+}
+
+.mnp-tappable {
+  cursor: pointer;
+}
+
+.mnp-tappable:hover,
+.mnp-tappable:focus {
+  outline: none;
+  border-color: rgba(31, 77, 60, 0.35);
+}
+
+.mnp-plan-card-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+
+.mnp-plan-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.mnp-plan-dates {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mnp-muted);
+  margin: 0.15rem 0 0.2rem;
+}
+
+.mnp-chevron {
+  color: var(--mnp-muted);
+  font-size: 0.75rem;
+  margin-top: 0.4rem;
+  flex-shrink: 0;
+}
+
+.mnp-chip-completed {
+  background: rgba(46, 204, 141, 0.18);
+  color: var(--mnp-forest);
+}
+
+.mnp-chip-cancelled {
+  background: rgba(138, 147, 139, 0.2);
+  color: var(--mnp-muted);
+}
+
+.mnp-back {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: none;
+  background: transparent;
+  color: var(--mnp-forest);
+  font-weight: 700;
+  font-size: 1.05rem;
+  padding: 0 0 0.85rem;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.mnp-back i {
+  font-size: 0.85rem;
+}
+
+.mnp-screen-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 0.25rem;
+}
+
+.mnp-filter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: var(--mnp-surf);
+  border: 1px solid var(--mnp-line);
+  border-radius: 12px;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.mnp-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--mnp-sage);
+  flex-shrink: 0;
+}
+
+.mnp-food-tile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mnp-food-kcal {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--mnp-forest);
+  white-space: nowrap;
+}
+
+.mnp-ingesta-card .mnp-ingesta {
+  padding: 0;
+  border: none;
+}
+
 .mnp-panel[hidden] {
   display: none !important;
 }
