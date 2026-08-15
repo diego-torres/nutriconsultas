@@ -279,7 +279,7 @@ Entities that reference `Paciente` (like `CalendarEvent`, `ClinicalExam`, `Anthr
 1. Use H2 database for tests (configured in test profile)
 2. Use `@SpringBootTest` for integration tests
 3. Use `@WebMvcTest` for controller tests
-4. Use `@MockBean` for mocking dependencies
+4. Use `@MockitoBean` for mocking Spring beans in tests (not deprecated `@MockBean`)
 5. Use Spring Security Test for security testing
 6. Test data in `src/test/resources/`
 
