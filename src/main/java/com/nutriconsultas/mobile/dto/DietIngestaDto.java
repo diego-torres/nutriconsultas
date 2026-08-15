@@ -15,14 +15,14 @@ import com.nutriconsultas.dieta.PlatilloIngesta;
 public record DietIngestaDto(String tipo, Integer totalKcal, Double totalProteina, Double totalGrasas,
 		Double totalCarbohidratos, List<DietPlatilloDto> platillos, List<DietAlimentoDto> alimentos) {
 
-	public static DietIngestaDto fromEntity(final Ingesta ingesta) {
+	public static DietIngestaDto fromEntity(final Ingesta ingesta, final Long assignmentId) {
 		if (ingesta == null) {
 			return null;
 		}
 		final List<DietPlatilloDto> platillos = ingesta.getPlatillos()
 			.stream()
 			.sorted(Comparator.comparingLong(PlatilloIngesta::getId))
-			.map(DietPlatilloDto::fromEntity)
+			.map((final PlatilloIngesta platillo) -> DietPlatilloDto.fromEntity(platillo, assignmentId))
 			.toList();
 		final List<DietAlimentoDto> alimentos = ingesta.getAlimentos()
 			.stream()

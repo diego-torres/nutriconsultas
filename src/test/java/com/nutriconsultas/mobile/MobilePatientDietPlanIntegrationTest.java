@@ -34,12 +34,14 @@ import com.nutriconsultas.dieta.DietaRepository;
 import com.nutriconsultas.dieta.Ingesta;
 import com.nutriconsultas.dieta.IngredientePlatilloIngesta;
 import com.nutriconsultas.dieta.PlatilloIngesta;
+import com.nutriconsultas.dieta.PlatilloIngestaPictureSupport;
 import com.nutriconsultas.dieta.PlatilloIngestaRepository;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
 import com.nutriconsultas.paciente.PacienteRepository;
+import com.nutriconsultas.platillos.PlatilloService;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -65,6 +67,9 @@ class MobilePatientDietPlanIntegrationTest {
 
 	@MockitoBean
 	private DietaPdfService dietaPdfService;
+
+	@MockitoBean
+	private PlatilloService platilloService;
 
 	private Paciente linkedPaciente;
 
@@ -195,6 +200,7 @@ class MobilePatientDietPlanIntegrationTest {
 			.andExpect(jsonPath("$.data.ingestas[0].platillos[0].proteina").value(18.0))
 			.andExpect(jsonPath("$.data.ingestas[0].platillos[0].carbohidratos").value(4.0))
 			.andExpect(jsonPath("$.data.ingestas[0].platillos[0].grasas").value(20.0))
+			.andExpect(jsonPath("$.data.ingestas[0].platillos[0].imageUrl").value("/sbadmin/img/plato-vacio.jpg"))
 			.andExpect(jsonPath("$.data.ingestas[0].alimentos[0].nombre").value("Pan integral"))
 			.andExpect(jsonPath("$.timestamp").exists());
 	}
@@ -255,6 +261,7 @@ class MobilePatientDietPlanIntegrationTest {
 			.andExpect(jsonPath("$.data.description").value("Con verduras"))
 			.andExpect(jsonPath("$.data.videoUrl").value("https://video.example/huevos"))
 			.andExpect(jsonPath("$.data.pdfUrl").value("/uploads/recetas/huevos.pdf"))
+			.andExpect(jsonPath("$.data.imageUrl").value("/sbadmin/img/plato-vacio.jpg"))
 			.andExpect(jsonPath("$.data.ingredientes[0].nombre").value("Huevo"))
 			.andExpect(jsonPath("$.data.ingredientes[0].cantidad").value("2"))
 			.andExpect(jsonPath("$.data.ingredientes[0].unidad").value("pieza"))
@@ -300,6 +307,82 @@ class MobilePatientDietPlanIntegrationTest {
 	void getPlatilloDetailForMissingPlatilloReturnsNotFound() throws Exception {
 		mockMvc
 			.perform(get("/rest/mobile/patient/diet-plans/" + linkedAssignment.getId() + "/platillos/999999")
+				.with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void getPlatilloImageWithLinkedJwtRedirectsWhenNoCustomPicture() throws Exception {
+		mockMvc
+			.perform(get("/rest/mobile/patient/diet-plans/" + linkedAssignment.getId() + "/platillos/"
+					+ linkedPlatilloId + "/image")
+				.with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isFound())
+			.andExpect(header().string(HttpHeaders.LOCATION, PlatilloIngestaPictureSupport.PLACEHOLDER_IMAGE_PATH));
+	}
+
+	@Test
+	void getPlatilloImageWithLinkedJwtReturnsBytesWhenCustomPictureExists() throws Exception {
+		final PlatilloIngesta platillo = platilloIngestaRepository.findById(linkedPlatilloId).orElseThrow();
+		final String originalImageUrl = platillo.getStoredImageUrl();
+		final Long originalSourceId = platillo.getSourcePlatilloId();
+		final byte[] imageBytes = new byte[] { (byte) 0xFF, (byte) 0xD8, 1, 2, 3 };
+		platillo.setImageUrl("platillo/99/picture.jpg");
+		platilloIngestaRepository.saveAndFlush(platillo);
+		when(platilloService.getPicture(99L, "picture.jpg")).thenReturn(imageBytes);
+		try {
+			mockMvc
+				.perform(get("/rest/mobile/patient/diet-plans/" + linkedAssignment.getId() + "/platillos/"
+						+ linkedPlatilloId + "/image")
+					.with(mobileJwt(LINKED_SUB)))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.IMAGE_JPEG))
+				.andExpect(content().bytes(imageBytes));
+		}
+		finally {
+			platillo.setImageUrl(originalImageUrl);
+			platillo.setSourcePlatilloId(originalSourceId);
+			platilloIngestaRepository.saveAndFlush(platillo);
+		}
+	}
+
+	@Test
+	void getPlatilloImageForOtherPatientsAssignmentReturnsNotFound() throws Exception {
+		final Paciente otherPatient = pacienteRepository.findByPatientAuthSub("auth0|mobile-diet-plan-other")
+			.orElseGet(() -> {
+				final Paciente paciente = samplePaciente("auth0|mobile-diet-plan-other");
+				return pacienteRepository.saveAndFlush(paciente);
+			});
+		final PacienteDieta otherAssignment = pacienteDietaRepository.findByPacienteId(otherPatient.getId())
+			.stream()
+			.findFirst()
+			.orElseGet(() -> {
+				final Dieta dieta = new Dieta();
+				dieta.setNombre("Dieta ajena");
+				dieta.setUserId("nutritionist-sub");
+				dieta.setEnergia(1500);
+				final Dieta savedDieta = dietaRepository.saveAndFlush(dieta);
+
+				final PacienteDieta assignment = new PacienteDieta();
+				assignment.setPaciente(otherPatient);
+				assignment.setDieta(savedDieta);
+				assignment.setStatus(PacienteDietaStatus.ACTIVE);
+				assignment.setStartDate(
+						Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+				return pacienteDietaRepository.saveAndFlush(assignment);
+			});
+
+		mockMvc
+			.perform(get("/rest/mobile/patient/diet-plans/" + otherAssignment.getId() + "/platillos/" + linkedPlatilloId
+					+ "/image")
+				.with(mobileJwt(LINKED_SUB)))
+			.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void getPlatilloImageForMissingPlatilloReturnsNotFound() throws Exception {
+		mockMvc
+			.perform(get("/rest/mobile/patient/diet-plans/" + linkedAssignment.getId() + "/platillos/999999/image")
 				.with(mobileJwt(LINKED_SUB)))
 			.andExpect(status().isNotFound());
 	}

@@ -17,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.nutriconsultas.dieta.AlimentoIngesta;
@@ -30,11 +31,13 @@ import com.nutriconsultas.mobile.dto.DietGroceryListDto;
 import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
 import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.mobile.dto.DietPlatilloDetailDto;
+import com.nutriconsultas.mobile.dto.DietPlatilloImageResult;
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
 import com.nutriconsultas.paciente.PacienteDietaService;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
+import com.nutriconsultas.platillos.PlatilloService;
 
 @ExtendWith(MockitoExtension.class)
 class MobilePatientDietPlanServiceTest {
@@ -53,6 +56,9 @@ class MobilePatientDietPlanServiceTest {
 
 	@Mock
 	private PlatilloIngestaRepository platilloIngestaRepository;
+
+	@Mock
+	private PlatilloService platilloService;
 
 	@Test
 	void getGroceryList_returnsAggregatedItemsWhenOwnedByPatient() {
@@ -103,6 +109,7 @@ class MobilePatientDietPlanServiceTest {
 		assertThat(result.description()).isEqualTo("Servir tibia");
 		assertThat(result.nutritionFacts().kcal()).isEqualTo(320);
 		assertThat(result.nutritionFacts().proteina()).isEqualTo(12.5);
+		assertThat(result.imageUrl()).isEqualTo("/sbadmin/img/plato-vacio.jpg");
 	}
 
 	@Test
@@ -110,6 +117,40 @@ class MobilePatientDietPlanServiceTest {
 		when(platilloIngestaRepository.findByIdForPatientAssignment(99L, 5L, 1L)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> service.getPlatilloDetail(1L, 5L, 99L)).isInstanceOf(ResponseStatusException.class)
+			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+			.isEqualTo(HttpStatus.NOT_FOUND);
+	}
+
+	@Test
+	void getPlatilloImage_returnsBytesWhenOwnedByPatient() throws Exception {
+		final PacienteDieta assignment = sampleAssignment(5L, 1L);
+		final PlatilloIngesta platillo = assignment.getDieta().getIngestas().get(0).getPlatillos().get(0);
+		platillo.setImageUrl("platillo/12/picture.jpg");
+		final byte[] bytes = new byte[] { 1, 2, 3 };
+		when(platilloIngestaRepository.findByIdForPatientAssignment(30L, 5L, 1L)).thenReturn(Optional.of(platillo));
+		when(platilloService.getPicture(12L, "picture.jpg")).thenReturn(bytes);
+
+		final Optional<DietPlatilloImageResult> result = service.getPlatilloImage(1L, 5L, 30L);
+
+		assertThat(result).isPresent();
+		assertThat(result.get().content()).isEqualTo(bytes);
+		assertThat(result.get().mediaType()).isEqualTo(MediaType.IMAGE_JPEG);
+	}
+
+	@Test
+	void getPlatilloImage_returnsEmptyWhenNoCustomPicture() {
+		final PacienteDieta assignment = sampleAssignment(5L, 1L);
+		final PlatilloIngesta platillo = assignment.getDieta().getIngestas().get(0).getPlatillos().get(0);
+		when(platilloIngestaRepository.findByIdForPatientAssignment(30L, 5L, 1L)).thenReturn(Optional.of(platillo));
+
+		assertThat(service.getPlatilloImage(1L, 5L, 30L)).isEmpty();
+	}
+
+	@Test
+	void getPlatilloImage_throwsNotFoundWhenMissingOrNotOwned() {
+		when(platilloIngestaRepository.findByIdForPatientAssignment(99L, 5L, 1L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.getPlatilloImage(1L, 5L, 99L)).isInstanceOf(ResponseStatusException.class)
 			.extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
 			.isEqualTo(HttpStatus.NOT_FOUND);
 	}
@@ -135,6 +176,7 @@ class MobilePatientDietPlanServiceTest {
 		assertThat(result.ingestas().get(0).platillos().get(0).proteina()).isEqualTo(12.5);
 		assertThat(result.ingestas().get(0).platillos().get(0).carbohidratos()).isEqualTo(48.0);
 		assertThat(result.ingestas().get(0).platillos().get(0).grasas()).isEqualTo(8.0);
+		assertThat(result.ingestas().get(0).platillos().get(0).imageUrl()).isEqualTo("/sbadmin/img/plato-vacio.jpg");
 		assertThat(result.ingestas().get(0).alimentos()).hasSize(1);
 		assertThat(result.ingestas().get(0).alimentos().get(0).nombre()).isEqualTo("Manzana");
 		assertThat(result.ingestas().get(0).alimentos().get(0).unidad()).isEqualTo("pieza");

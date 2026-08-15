@@ -66,9 +66,16 @@ public class PlatilloIngesta extends AbstractNutrible {
 
 	public String getImageUrl() {
 		if (this.imageUrl == null || this.imageUrl.isBlank()) {
-			return "/sbadmin/img/plato-vacio.jpg";
+			return PlatilloIngestaPictureSupport.PLACEHOLDER_IMAGE_PATH;
 		}
 		return imageUrl;
+	}
+
+	/**
+	 * Stored catalog or S3 image value without the empty-plate default (#598).
+	 */
+	public String getStoredImageUrl() {
+		return this.imageUrl;
 	}
 
 }

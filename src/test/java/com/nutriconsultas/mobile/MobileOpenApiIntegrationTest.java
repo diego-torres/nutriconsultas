@@ -30,12 +30,14 @@ class MobileOpenApiIntegrationTest {
 
 	private static final List<String> REQUIRED_PATHS = List.of("/rest/mobile/patient/visits",
 			"/rest/mobile/patient/visits/{visitId}", "/rest/mobile/patient/diet-plans",
-			"/rest/mobile/patient/diet-plans/{assignmentId}", "/rest/mobile/patient/diet-plans/{assignmentId}/pdf",
-			"/rest/mobile/patient/messages", "/rest/mobile/patient/progress",
-			"/rest/mobile/patient/progress/measurements", "/rest/mobile/patient/me", "/rest/mobile/invitations",
-			"/rest/mobile/invitations/{token}/preview", "/rest/mobile/invitations/by-code/{code}/preview",
-			"/rest/mobile/invitations/{token}/redeem", "/rest/mobile/invitations/by-code/{code}/redeem",
-			"/rest/mobile/invitations/reconcile", "/rest/mobile/invitations/{id}/revoke");
+			"/rest/mobile/patient/diet-plans/{assignmentId}",
+			"/rest/mobile/patient/diet-plans/{assignmentId}/platillos/{platilloIngestaId}/image",
+			"/rest/mobile/patient/diet-plans/{assignmentId}/pdf", "/rest/mobile/patient/messages",
+			"/rest/mobile/patient/progress", "/rest/mobile/patient/progress/measurements", "/rest/mobile/patient/me",
+			"/rest/mobile/invitations", "/rest/mobile/invitations/{token}/preview",
+			"/rest/mobile/invitations/by-code/{code}/preview", "/rest/mobile/invitations/{token}/redeem",
+			"/rest/mobile/invitations/by-code/{code}/redeem", "/rest/mobile/invitations/reconcile",
+			"/rest/mobile/invitations/{id}/revoke");
 
 	@Autowired
 	private MockMvc mockMvc;

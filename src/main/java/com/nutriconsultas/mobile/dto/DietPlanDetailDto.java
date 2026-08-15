@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.nutriconsultas.dieta.Dieta;
+import com.nutriconsultas.dieta.Ingesta;
 import com.nutriconsultas.dieta.IngestaComparators;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
@@ -33,7 +34,7 @@ public record DietPlanDetailDto(Long assignmentId, PacienteDietaStatus status, L
 		final List<DietIngestaDto> ingestas = dieta != null && dieta.getIngestas() != null ? dieta.getIngestas()
 			.stream()
 			.sorted(IngestaComparators.BY_DISPLAY_ORDER)
-			.map(DietIngestaDto::fromEntity)
+			.map((final Ingesta ingesta) -> DietIngestaDto.fromEntity(ingesta, assignment.getId()))
 			.toList() : List.of();
 		return new DietPlanDetailDto(assignment.getId(), assignment.getStatus(), toLocalDate(assignment.getStartDate()),
 				toLocalDate(assignment.getEndDate()), assignment.getNotes(), dietaName,
