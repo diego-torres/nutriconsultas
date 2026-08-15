@@ -72,16 +72,15 @@ public final class AlimentoIngestaPortions {
 	}
 
 	private static Double ratioFromCantidad(final String cantidad, final Alimento alimento) {
-		Double parsed;
+		Double result = null;
 		try {
-			parsed = FractionQuantityParser.parseFractionalQuantity(cantidad);
+			final Double parsed = FractionQuantityParser.parseFractionalQuantity(cantidad);
+			if (parsed != null && parsed > 0) {
+				result = parsed / catalogCantSugerida(alimento);
+			}
 		}
 		catch (final NumberFormatException ex) {
-			parsed = null;
-		}
-		Double result = null;
-		if (parsed != null && parsed > 0) {
-			result = parsed / catalogCantSugerida(alimento);
+			// Invalid fraction text is treated as missing cantidad.
 		}
 		return result;
 	}
