@@ -22,10 +22,10 @@ public class ThyroidPanel {
 	@Column(precision = 5)
 	private Double tsh;
 
-	@Column(precision = 5)
+	@Column(name = "t4_libre", precision = 5)
 	private Double t4Libre;
 
-	@Column(precision = 5)
+	@Column(name = "t3_libre", precision = 5)
 	private Double t3Libre;
 
 	@Column(precision = 5)

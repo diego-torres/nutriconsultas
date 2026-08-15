@@ -2,6 +2,8 @@ package com.nutriconsultas.clinical.exam;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.persistence.Column;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -22,6 +24,17 @@ class ClinicalExamThyroidPanelTest {
 		assertThat(exam.getT4Libre()).isEqualTo(1.2);
 		assertThat(exam.getT3Libre()).isEqualTo(3.1);
 		assertThat(exam.getAntiTpo()).isEqualTo(15.0);
+	}
+
+	@Test
+	void thyroidLibreFields_mapToSnakeCaseLiquibaseColumns() throws NoSuchFieldException {
+		final Column t4 = ThyroidPanel.class.getDeclaredField("t4Libre").getAnnotation(Column.class);
+		final Column t3 = ThyroidPanel.class.getDeclaredField("t3Libre").getAnnotation(Column.class);
+
+		assertThat(t4).isNotNull();
+		assertThat(t3).isNotNull();
+		assertThat(t4.name()).isEqualTo("t4_libre");
+		assertThat(t3.name()).isEqualTo("t3_libre");
 	}
 
 	@Test
