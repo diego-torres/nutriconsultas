@@ -203,12 +203,13 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 	@PutMapping("{dietaId}/ingestas/{ingestaId}/alimentos/{alimentoIngestaId}/portions")
 	public ResponseEntity<ApiResponse<Dieta>> updateAlimentoIngestaPortions(@PathVariable @NonNull final Long dietaId,
 			@PathVariable @NonNull final Long ingestaId, @PathVariable @NonNull final Long alimentoIngestaId,
-			@RequestParam @NonNull final Integer portions, @AuthenticationPrincipal final OidcUser principal) {
+			@RequestParam @NonNull final Double portions, @AuthenticationPrincipal final OidcUser principal) {
 		log.info(
 				"starting updateAlimentoIngestaPortions with dietaId {}, ingestaId {}, alimentoIngestaId {}, portions {}.",
 				dietaId, ingestaId, alimentoIngestaId, portions);
-		if (portions < 1 || portions > 10) {
-			log.warn("Invalid portions value: {}. Must be between 1 and 10.", portions);
+		if (!AlimentoIngestaPortions.isValid(portions)) {
+			log.warn("Invalid portions value: {}. Must be between {} and {}.", portions, AlimentoIngestaPortions.MIN,
+					AlimentoIngestaPortions.MAX);
 			return ResponseEntity.badRequest().build();
 		}
 		if (principal == null) {
@@ -238,6 +239,48 @@ public class DietasRestController extends AbstractGridController<Dieta> {
 		dietaAuthorization.auditSystemDietMutationIfNeeded(principal, saved, "dietas.alimentos.update");
 		log.info("finish updateAlimentoIngestaPortions with dietaId {}, ingestaId {}, "
 				+ "alimentoIngestaId {}, portions {}.", dietaId, ingestaId, alimentoIngestaId, portions);
+		return ResponseEntity.ok(new ApiResponse<Dieta>(saved));
+	}
+
+	@PutMapping("{dietaId}/ingestas/{ingestaId}/alimentos/{alimentoIngestaId}/cantidad")
+	public ResponseEntity<ApiResponse<Dieta>> updateAlimentoIngestaCantidad(@PathVariable @NonNull final Long dietaId,
+			@PathVariable @NonNull final Long ingestaId, @PathVariable @NonNull final Long alimentoIngestaId,
+			@RequestParam @NonNull final String cantidad, @AuthenticationPrincipal final OidcUser principal) {
+		log.info(
+				"starting updateAlimentoIngestaCantidad with dietaId {}, ingestaId {}, alimentoIngestaId {}, cantidad {}.",
+				dietaId, ingestaId, alimentoIngestaId, cantidad);
+		if (principal == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		final Dieta dieta = loadDietaForMutation(dietaId, principal);
+		if (dieta == null) {
+			log.warn("Dieta with id {} not found when trying to update alimentoIngesta cantidad", dietaId);
+			return ResponseEntity.notFound().build();
+		}
+		final AlimentoIngesta alimentoIngesta = dieta.getIngestas()
+			.stream()
+			.filter(ingesta -> ingesta.getId().equals(ingestaId))
+			.findFirst()
+			.flatMap(ingesta -> ingesta.getAlimentos()
+				.stream()
+				.filter(alimento -> alimento.getId().equals(alimentoIngestaId))
+				.findFirst())
+			.orElse(null);
+		if (alimentoIngesta == null || alimentoIngesta.getAlimento() == null) {
+			log.warn("AlimentoIngesta with id {} not found in ingesta {} of dieta {}", alimentoIngestaId, ingestaId,
+					dietaId);
+			return ResponseEntity.notFound().build();
+		}
+		final Double portions = AlimentoIngestaPortions.fromCantidad(cantidad, alimentoIngesta.getAlimento());
+		if (portions == null) {
+			log.warn("Invalid cantidad value: {}.", cantidad);
+			return ResponseEntity.badRequest().build();
+		}
+		dietaService.recalculateAlimentoIngestaNutrients(alimentoIngesta, portions);
+		final Dieta saved = dietaService.saveDieta(dieta);
+		dietaAuthorization.auditSystemDietMutationIfNeeded(principal, saved, "dietas.alimentos.update");
+		log.info("finish updateAlimentoIngestaCantidad with dietaId {}, ingestaId {}, "
+				+ "alimentoIngestaId {}, cantidad {}.", dietaId, ingestaId, alimentoIngestaId, cantidad);
 		return ResponseEntity.ok(new ApiResponse<Dieta>(saved));
 	}
 

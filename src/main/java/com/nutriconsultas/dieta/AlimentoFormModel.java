@@ -13,7 +13,9 @@ public class AlimentoFormModel {
 
 	private Long alimento;
 
-	private Integer porciones;
+	private Double porciones;
+
+	private String cantidad;
 
 	private String tipoPorcion;
 

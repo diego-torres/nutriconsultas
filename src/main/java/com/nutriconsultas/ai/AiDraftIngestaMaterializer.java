@@ -139,7 +139,7 @@ public class AiDraftIngestaMaterializer {
 		final AlimentoIngesta alimentoIngesta = new AlimentoIngesta();
 		alimentoIngesta.setName(alimento.getNombreAlimento());
 		alimentoIngesta.setAlimento(alimento);
-		alimentoIngesta.setPortions(portions);
+		alimentoIngesta.setPortions((double) portions);
 		alimentoIngesta.setUnidad(alimento.getUnidad());
 		if (alimento.getEnergia() != null) {
 			alimentoIngesta.setEnergia(alimento.getEnergia() * portions);

@@ -1,6 +1,8 @@
 package com.nutriconsultas.dieta;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.nutriconsultas.alimentos.Alimento;
+import com.nutriconsultas.model.AbstractFraccionable;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,13 +31,14 @@ public class AlimentoIngesta {
 
 	private String name;
 
-	private Integer portions = 1;
+	private Double portions = 1.0;
 
 	@ManyToOne
 	private Alimento alimento;
 
 	@ManyToOne
 	@JoinColumn(name = "ingesta_id")
+	@JsonBackReference
 	private Ingesta ingesta;
 
 	private String unidad;
@@ -111,5 +114,17 @@ public class AlimentoIngesta {
 
 	@Column(precision = 5)
 	private Double etanol;
+
+	/**
+	 * Suggested catalog quantity scaled by the stored portion multiplier, formatted as a
+	 * cooking fraction for UI and PDF.
+	 * @return display quantity such as {@code 1/2} or {@code 1 1/2}
+	 */
+	public String getDisplayCantidad() {
+		final double multiplier = portions != null && portions > 0 ? portions : 1.0;
+		final double quantity = alimento != null && alimento.getCantSugerida() != null
+				? alimento.getCantSugerida() * multiplier : multiplier;
+		return AbstractFraccionable.formatQuantity(quantity);
+	}
 
 }

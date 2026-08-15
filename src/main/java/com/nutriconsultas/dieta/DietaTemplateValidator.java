@@ -137,7 +137,7 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		final AlimentoIngesta mockAlimento = new AlimentoIngesta();
 		mockAlimento.setId(1L);
 		mockAlimento.setName("Alimento de ejemplo");
-		mockAlimento.setPortions(1);
+		mockAlimento.setPortions(1.0);
 		mockAlimento.setEnergia(100);
 		mockAlimento.setProteina(5.0);
 		mockAlimento.setLipidos(3.0);

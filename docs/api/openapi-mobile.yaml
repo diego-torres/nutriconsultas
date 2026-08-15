@@ -2267,8 +2267,8 @@ components:
         nombre:
           type: string
         porciones:
-          type: integer
-          format: int32
+          type: number
+          format: double
         kcal:
           type: integer
           format: int32

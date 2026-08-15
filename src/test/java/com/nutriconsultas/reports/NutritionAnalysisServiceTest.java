@@ -217,7 +217,7 @@ public class NutritionAnalysisServiceTest {
 		final AlimentoIngesta alimento = new AlimentoIngesta();
 		alimento.setId(1L);
 		alimento.setName("Manzana");
-		alimento.setPortions(2);
+		alimento.setPortions(2.0);
 		alimento.setEnergia(100);
 		alimento.setProteina(0.5);
 		alimento.setLipidos(0.3);

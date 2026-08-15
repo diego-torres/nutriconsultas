@@ -35,27 +35,36 @@ public abstract class AbstractFraccionable extends AbstractNutrible {
 	 * @return formatted string with rounded fractional quantity
 	 */
 	public String getRoundedFractionalCantSugerida() {
-		if (cantSugerida == null) {
-			return "";
-		}
-		final int baseInt = (int) Math.floor(cantSugerida);
-		double bestDiff = Double.MAX_VALUE;
-		int bestIntPart = 0;
-		StandardFraction bestFraction = STANDARD_FRACTIONS[0];
+		return formatQuantity(cantSugerida);
+	}
 
-		for (int intPart = baseInt; intPart <= baseInt + 1; intPart++) {
-			for (final StandardFraction fraction : STANDARD_FRACTIONS) {
-				final double candidate = intPart + fraction.value();
-				final double diff = Math.abs(cantSugerida - candidate);
-				if (isBetterFractionMatch(diff, bestDiff, fraction, bestFraction)) {
-					bestDiff = diff;
-					bestIntPart = intPart;
-					bestFraction = fraction;
+	/**
+	 * Formats a numeric quantity as the nearest standard cooking fraction.
+	 * @param quantity quantity to format
+	 * @return formatted string, or empty when {@code quantity} is null
+	 */
+	public static String formatQuantity(final Double quantity) {
+		String result = "";
+		if (quantity != null) {
+			final int baseInt = (int) Math.floor(quantity);
+			double bestDiff = Double.MAX_VALUE;
+			int bestIntPart = 0;
+			StandardFraction bestFraction = STANDARD_FRACTIONS[0];
+
+			for (int intPart = baseInt; intPart <= baseInt + 1; intPart++) {
+				for (final StandardFraction fraction : STANDARD_FRACTIONS) {
+					final double candidate = intPart + fraction.value();
+					final double diff = Math.abs(quantity - candidate);
+					if (isBetterFractionMatch(diff, bestDiff, fraction, bestFraction)) {
+						bestDiff = diff;
+						bestIntPart = intPart;
+						bestFraction = fraction;
+					}
 				}
 			}
+			result = formatRoundedQuantity(bestIntPart, bestFraction.label());
 		}
-
-		return formatRoundedQuantity(bestIntPart, bestFraction.label());
+		return result;
 	}
 
 	/**

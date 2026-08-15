@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -100,6 +101,8 @@ public class DietaControllerTest {
 		alimento.setNombreAlimento("Pollo");
 		alimento.setClasificacion("CARNES");
 		alimento.setUnidad("pieza");
+		alimento.setCantSugerida(1.0);
+		alimento.setPesoNeto(100);
 		alimento.setEnergia(200);
 		alimento.setProteina(25.0);
 		alimento.setLipidos(10.0);
@@ -450,6 +453,60 @@ public class DietaControllerTest {
 
 	@Test
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testSaveAlimentoWithFractionalCantidad() throws Exception {
+		assertThat(ingesta.getAlimentos()).isEmpty();
+
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/alimentos/save")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("ingestaAlimento", "1")
+				.param("alimento", "1")
+				.param("cantidad", "1/2")
+				.param("tipoPorcion", "porcion")
+				.with(oidcLogin(TEST_USER_ID))
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1?ingesta=1"));
+
+		final ArgumentCaptor<Dieta> dietaCaptor = ArgumentCaptor.forClass(Dieta.class);
+		verify(dietaService).saveDieta(dietaCaptor.capture());
+		final AlimentoIngesta saved = dietaCaptor.getValue().getIngestas().get(0).getAlimentos().get(0);
+		assertThat(saved.getPortions()).isEqualTo(0.5);
+		assertThat(saved.getEnergia()).isEqualTo(100);
+		assertThat(saved.getDisplayCantidad()).isEqualTo("1/2");
+		assertThat(saved.getUnidad()).isEqualTo("pieza");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testSaveAlimentoQuarterCupWhenCatalogSuggestedIsQuarter() throws Exception {
+		alimento.setCantSugerida(0.25);
+		alimento.setUnidad("taza");
+		assertThat(ingesta.getAlimentos()).isEmpty();
+
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/alimentos/save")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("ingestaAlimento", "1")
+				.param("alimento", "1")
+				.param("cantidad", "1/4")
+				.param("tipoPorcion", "porcion")
+				.with(oidcLogin(TEST_USER_ID))
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1?ingesta=1"));
+
+		final ArgumentCaptor<Dieta> dietaCaptor = ArgumentCaptor.forClass(Dieta.class);
+		verify(dietaService).saveDieta(dietaCaptor.capture());
+		final AlimentoIngesta saved = dietaCaptor.getValue().getIngestas().get(0).getAlimentos().get(0);
+		assertThat(saved.getPortions()).isEqualTo(1.0);
+		assertThat(saved.getDisplayCantidad()).isEqualTo("1/4");
+		assertThat(saved.getUnidad()).isEqualTo("taza");
+		assertThat(saved.getEnergia()).isEqualTo(200);
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	public void testSaveAlimentoDefaultsTipoPorcionWhenOmitted() throws Exception {
 		mockMvc
 			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/alimentos/save")
@@ -721,7 +778,7 @@ public class DietaControllerTest {
 		AlimentoIngesta alimentoIngesta = new AlimentoIngesta();
 		alimentoIngesta.setId(1L);
 		alimentoIngesta.setName("Pollo");
-		alimentoIngesta.setPortions(1);
+		alimentoIngesta.setPortions(1.0);
 		alimentoIngesta.setEnergia(200);
 		alimentoIngesta.setProteina(25.0);
 		alimentoIngesta.setLipidos(10.0);
@@ -780,7 +837,7 @@ public class DietaControllerTest {
 		AlimentoIngesta alimentoIngesta = new AlimentoIngesta();
 		alimentoIngesta.setId(2L);
 		alimentoIngesta.setName("Alimento sin referencia");
-		alimentoIngesta.setPortions(1);
+		alimentoIngesta.setPortions(1.0);
 		alimentoIngesta.setIngesta(ingesta);
 		// alimentoIngesta.setAlimento(null); // No alimento reference
 
@@ -803,6 +860,42 @@ public class DietaControllerTest {
 		verify(dietaService, never()).saveDieta(any(Dieta.class));
 
 		log.info("Finishing testUpdateAlimentoIngestaWithoutAlimentoReference");
+	}
+
+	@Test
+	@WithMockUser(username = "admin", roles = { "ADMIN" })
+	public void testUpdateAlimentoIngestaWithCantidadRecalculatesNutrients() throws Exception {
+		final AlimentoIngesta alimentoIngesta = new AlimentoIngesta();
+		alimentoIngesta.setId(1L);
+		alimentoIngesta.setName("Pollo");
+		alimentoIngesta.setPortions(1.0);
+		alimentoIngesta.setEnergia(200);
+		alimentoIngesta.setProteina(25.0);
+		alimentoIngesta.setLipidos(10.0);
+		alimentoIngesta.setHidratosDeCarbono(0.0);
+		alimentoIngesta.setAlimento(alimento);
+		alimentoIngesta.setIngesta(ingesta);
+
+		ingesta.setAlimentos(new ArrayList<>());
+		ingesta.getAlimentos().add(alimentoIngesta);
+
+		mockMvc
+			.perform(MockMvcRequestBuilders.post("/admin/dietas/1/alimentos/1/update")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.param("cantidad", "1/2")
+				.with(oidcLogin(TEST_USER_ID))
+				.with(SecurityMockMvcRequestPostProcessors.csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(MockMvcResultMatchers.redirectedUrl("/admin/dietas/1?ingesta=1"));
+
+		final ArgumentCaptor<Dieta> dietaCaptor = ArgumentCaptor.forClass(Dieta.class);
+		verify(dietaService).saveDieta(dietaCaptor.capture());
+		final AlimentoIngesta updated = dietaCaptor.getValue().getIngestas().get(0).getAlimentos().get(0);
+		assertThat(updated.getPortions()).isEqualTo(0.5);
+		assertThat(updated.getDisplayCantidad()).isEqualTo("1/2");
+		assertThat(updated.getEnergia()).isEqualTo(100);
+		assertThat(updated.getProteina()).isEqualTo(12.5);
+		assertThat(updated.getLipidos()).isEqualTo(5.0);
 	}
 
 	@Test

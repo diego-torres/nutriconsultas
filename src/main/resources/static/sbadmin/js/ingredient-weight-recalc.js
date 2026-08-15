@@ -13,8 +13,13 @@
       return null;
     }
 
-    var hasInteger = trimmed.indexOf(' ') >= 0 || trimmed.indexOf('/') < 0;
-    var hasFraction = trimmed.indexOf('/') >= 0;
+    if (trimmed.indexOf('/') < 0) {
+      var decimalValue = parseFloat(trimmed.replace(',', '.'));
+      return isNaN(decimalValue) ? null : decimalValue;
+    }
+
+    var hasInteger = trimmed.indexOf(' ') >= 0;
+    var hasFraction = true;
     var integerPart = hasInteger ? parseInt(trimmed.split(' ')[0], 10) : 0;
     var numeratorPart;
     var denominatorPart;

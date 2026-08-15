@@ -218,7 +218,7 @@ public class PlatilloFromIngestaServiceImpl implements PlatilloFromIngestaServic
 		if (alimento == null || alimento.getId() == null) {
 			throw new IllegalArgumentException("Alimento de ingesta sin catálogo asociado");
 		}
-		final int portions = alimentoIngesta.getPortions() != null ? alimentoIngesta.getPortions() : 1;
+		final double portions = alimentoIngesta.getPortions() != null ? alimentoIngesta.getPortions() : 1.0;
 		final double catalogCant = alimento.getCantSugerida() != null ? alimento.getCantSugerida() : 1.0;
 		final double cantSugerida = catalogCant * portions;
 		final int pesoNeto = alimentoIngesta.getPesoNeto() != null ? alimentoIngesta.getPesoNeto()

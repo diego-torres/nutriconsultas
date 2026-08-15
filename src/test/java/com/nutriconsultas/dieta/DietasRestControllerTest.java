@@ -30,6 +30,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.nutriconsultas.alimentos.Alimento;
 import com.nutriconsultas.dataTables.paging.Direction;
 import com.nutriconsultas.dataTables.paging.Order;
 import com.nutriconsultas.dataTables.paging.PageArray;
@@ -725,6 +726,87 @@ public class DietasRestControllerTest {
 		assertThat(result).isNotNull();
 		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 		log.info("Finishing testDeleteAlimentoIngestaDietaNotFoundReturnsNotFound");
+	}
+
+	@Test
+	public void testUpdateAlimentoIngestaCantidadRecalculatesFromCatalogServing() {
+		final Long dietaId = 2L;
+		final Long ingestaId = 2L;
+		final Long alimentoIngestaId = 1L;
+
+		final Dieta dieta = new Dieta();
+		dieta.setId(dietaId);
+		dieta.setNombre("Dieta con Alimentos");
+		dieta.setIngestas(new ArrayList<>());
+
+		final Ingesta ingesta = new Ingesta();
+		ingesta.setId(ingestaId);
+		ingesta.setNombre("Desayuno");
+		ingesta.setDieta(dieta);
+		ingesta.setAlimentos(new ArrayList<>());
+
+		final Alimento amaranto = new Alimento();
+		amaranto.setId(10L);
+		amaranto.setCantSugerida(0.25);
+		amaranto.setUnidad("taza");
+		amaranto.setEnergia(200);
+
+		final AlimentoIngesta alimentoIngesta = new AlimentoIngesta();
+		alimentoIngesta.setId(alimentoIngestaId);
+		alimentoIngesta.setName("Amaranto tostado");
+		alimentoIngesta.setPortions(1.0);
+		alimentoIngesta.setAlimento(amaranto);
+		alimentoIngesta.setIngesta(ingesta);
+		ingesta.getAlimentos().add(alimentoIngesta);
+		dieta.getIngestas().add(ingesta);
+
+		stubMutationAccess(dietaId, TEST_USER_ID, dieta);
+		when(dietaService.saveDieta(dieta)).thenReturn(dieta);
+
+		final ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.updateAlimentoIngestaCantidad(dietaId,
+				ingestaId, alimentoIngestaId, "1/4", createMockOidcUser(TEST_USER_ID));
+
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+		verify(dietaService).recalculateAlimentoIngestaNutrients(alimentoIngesta, 1.0);
+		verify(dietaService).saveDieta(dieta);
+	}
+
+	@Test
+	public void testUpdateAlimentoIngestaCantidadInvalidReturnsBadRequest() {
+		final Long dietaId = 2L;
+		final Long ingestaId = 2L;
+		final Long alimentoIngestaId = 1L;
+
+		final Dieta dieta = new Dieta();
+		dieta.setId(dietaId);
+		dieta.setNombre("Dieta con Alimentos");
+		dieta.setIngestas(new ArrayList<>());
+
+		final Ingesta ingesta = new Ingesta();
+		ingesta.setId(ingestaId);
+		ingesta.setNombre("Desayuno");
+		ingesta.setDieta(dieta);
+		ingesta.setAlimentos(new ArrayList<>());
+
+		final Alimento alimento = new Alimento();
+		alimento.setId(10L);
+		alimento.setCantSugerida(1.0);
+
+		final AlimentoIngesta alimentoIngesta = new AlimentoIngesta();
+		alimentoIngesta.setId(alimentoIngestaId);
+		alimentoIngesta.setAlimento(alimento);
+		alimentoIngesta.setIngesta(ingesta);
+		ingesta.getAlimentos().add(alimentoIngesta);
+		dieta.getIngestas().add(ingesta);
+
+		stubMutationAccess(dietaId, TEST_USER_ID, dieta);
+
+		final ResponseEntity<ApiResponse<Dieta>> result = dietasRestController.updateAlimentoIngestaCantidad(dietaId,
+				ingestaId, alimentoIngestaId, "abc", createMockOidcUser(TEST_USER_ID));
+
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+		verify(dietaService, never()).recalculateAlimentoIngestaNutrients(any(), any());
+		verify(dietaService, never()).saveDieta(any());
 	}
 
 	@Test

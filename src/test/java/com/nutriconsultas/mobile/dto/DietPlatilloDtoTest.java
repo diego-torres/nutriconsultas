@@ -52,7 +52,7 @@ class DietPlatilloDtoTest {
 	void fromEntity_alimentoMapsOptionalMacrosWhenPresent() {
 		final AlimentoIngesta alimento = new AlimentoIngesta();
 		alimento.setName("Manzana");
-		alimento.setPortions(1);
+		alimento.setPortions(1.0);
 		alimento.setEnergia(52);
 		alimento.setUnidad("pieza");
 		alimento.setProteina(0.3);

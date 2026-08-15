@@ -3,6 +3,7 @@ package com.nutriconsultas.dieta;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.nutriconsultas.model.AbstractNutrible;
 
@@ -62,6 +63,7 @@ public class PlatilloIngesta extends AbstractNutrible {
 
 	@ManyToOne
 	@JoinColumn(name = "ingesta_id")
+	@JsonBackReference
 	private Ingesta ingesta;
 
 	public String getImageUrl() {
