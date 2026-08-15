@@ -12,7 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
@@ -87,7 +87,7 @@ class AiDraftFlowIntegrationTest {
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
-	@MockBean
+	@MockitoBean
 	private OpenAiClientService openAiClientService;
 
 	private long catalogAlimentoId;
