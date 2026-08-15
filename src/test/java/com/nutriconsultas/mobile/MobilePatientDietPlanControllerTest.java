@@ -6,6 +6,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,6 +25,7 @@ import com.nutriconsultas.mobile.dto.DietGroceryListDto;
 import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
 import com.nutriconsultas.mobile.dto.DietPlatilloDetailDto;
+import com.nutriconsultas.mobile.dto.DietPlatilloImageResult;
 import com.nutriconsultas.mobile.dto.PagedResponse;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
 import com.nutriconsultas.paciente.projection.PacienteAuthView;
@@ -90,6 +93,36 @@ class MobilePatientDietPlanControllerTest {
 		assertThat(response.data().nombre()).isEqualTo("Avena");
 		assertThat(response.timestamp()).isNotNull();
 		verify(mobilePatientDietPlanService).getPlatilloDetail(3L, 7L, 30L);
+	}
+
+	@Test
+	void getPlatilloImage_returnsImageBytesWhenPresent() {
+		final Jwt jwt = jwtWithSub(PATIENT_SUB);
+		final byte[] bytes = new byte[] { 1, 2, 3 };
+		final DietPlatilloImageResult image = new DietPlatilloImageResult(bytes, MediaType.IMAGE_JPEG);
+
+		when(patientAuthService.requireAuthViewByJwt(jwt)).thenReturn(authView(3L));
+		when(mobilePatientDietPlanService.getPlatilloImage(3L, 7L, 30L)).thenReturn(Optional.of(image));
+
+		final ResponseEntity<byte[]> response = controller.getPlatilloImage(jwt, 7L, 30L);
+
+		assertThat(response.getStatusCode().value()).isEqualTo(200);
+		assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.IMAGE_JPEG);
+		assertThat(response.getBody()).isEqualTo(bytes);
+		verify(mobilePatientDietPlanService).getPlatilloImage(3L, 7L, 30L);
+	}
+
+	@Test
+	void getPlatilloImage_redirectsToPlaceholderWhenMissing() {
+		final Jwt jwt = jwtWithSub(PATIENT_SUB);
+
+		when(patientAuthService.requireAuthViewByJwt(jwt)).thenReturn(authView(3L));
+		when(mobilePatientDietPlanService.getPlatilloImage(3L, 7L, 30L)).thenReturn(Optional.empty());
+
+		final ResponseEntity<byte[]> response = controller.getPlatilloImage(jwt, 7L, 30L);
+
+		assertThat(response.getStatusCode().value()).isEqualTo(302);
+		assertThat(response.getHeaders().getFirst(HttpHeaders.LOCATION)).isEqualTo("/sbadmin/img/plato-vacio.jpg");
 	}
 
 	@Test

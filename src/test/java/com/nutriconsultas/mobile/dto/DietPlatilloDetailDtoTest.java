@@ -38,7 +38,7 @@ class DietPlatilloDetailDtoTest {
 		ingrediente.setPlatillo(platillo);
 		platillo.setIngredientes(List.of(ingrediente));
 
-		final DietPlatilloDetailDto dto = DietPlatilloDetailDto.fromEntity(platillo);
+		final DietPlatilloDetailDto dto = DietPlatilloDetailDto.fromEntity(platillo, 7L);
 
 		assertThat(dto.id()).isEqualTo(42L);
 		assertThat(dto.nombre()).isEqualTo("Avena con fruta");
@@ -57,6 +57,19 @@ class DietPlatilloDetailDtoTest {
 		assertThat(dto.nutritionFacts().grasas()).isEqualTo(8.0);
 		assertThat(dto.nutritionFacts().fibra()).isEqualTo(6.0);
 		assertThat(dto.nutritionFacts().sodio()).isEqualTo(120.0);
+	}
+
+	@Test
+	void fromEntity_usesMobileImagePathWhenCustomPictureIsPresent() {
+		final PlatilloIngesta platillo = new PlatilloIngesta();
+		platillo.setId(42L);
+		platillo.setName("Avena con fruta");
+		platillo.setImageUrl("platillo/12/picture.jpg");
+		platillo.setIngredientes(List.of());
+
+		final DietPlatilloDetailDto dto = DietPlatilloDetailDto.fromEntity(platillo, 7L);
+
+		assertThat(dto.imageUrl()).isEqualTo("/rest/mobile/patient/diet-plans/7/platillos/42/image");
 	}
 
 }

@@ -1172,6 +1172,59 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseDietPlatilloDetailDto"
+  /rest/mobile/patient/diet-plans/{assignmentId}/platillos/{platilloIngestaId}/image:
+    get:
+      tags:
+      - Mobile
+      summary: Get platillo image
+      description: Returns custom dish photo bytes for a platillo on the patient's
+        assignment, or redirects to the empty-plate placeholder when no custom photo
+        is set.
+      operationId: getPlatilloImage
+      parameters:
+      - name: assignmentId
+        in: path
+        description: PacienteDieta assignment identifier
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: platilloIngestaId
+        in: path
+        description: PlatilloIngesta identifier within the assignment
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Image bytes
+          content:
+            image/jpeg: {}
+        "302":
+          description: Redirect to empty-plate placeholder when no custom photo is
+            set
+        "401":
+          description: Missing or invalid JWT
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: byte
+        "403":
+          description: Patient account not linked to Auth0 sub
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: byte
+        "404":
+          description: Resource not found or not owned by patient
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: byte
   /rest/mobile/patient/diet-plans/{assignmentId}/pdf:
     get:
       tags:
@@ -2320,6 +2373,8 @@ components:
           type: string
         imageUrl:
           type: string
+          description: Fetchable mobile or static placeholder image path
+          example: /rest/mobile/patient/diet-plans/7/platillos/30/image
     ApiResponseDietPlatilloDetailDto:
       type: object
       properties:
@@ -2343,6 +2398,8 @@ components:
           format: int32
         imageUrl:
           type: string
+          description: Fetchable mobile or static placeholder image path
+          example: /rest/mobile/patient/diet-plans/7/platillos/30/image
         description:
           type: string
         videoUrl:

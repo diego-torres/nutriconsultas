@@ -120,8 +120,8 @@ public class AiDraftAcceptanceServiceImpl implements AiDraftAcceptanceService {
 		shell.setStartDate(Date.valueOf(start));
 		shell.setEndDate(Date.valueOf(start.plusMonths(PATIENT_ASSIGNMENT_MONTHS)));
 		shell.setStatus(PacienteDietaStatus.ACTIVE);
-		shell.setNotes("Asignación automática al aceptar borrador IA (vigencia "
-				+ PATIENT_ASSIGNMENT_MONTHS + " mes).");
+		shell
+			.setNotes("Asignación automática al aceptar borrador IA (vigencia " + PATIENT_ASSIGNMENT_MONTHS + " mes).");
 		try {
 			final PacienteDieta saved = pacienteDietaService.assignDieta(pacienteId, entity.entityId(), shell,
 					nutritionistId);

@@ -1,7 +1,9 @@
 package com.nutriconsultas.mobile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,17 +21,20 @@ import com.nutriconsultas.dieta.DietaPdfService;
 import com.nutriconsultas.dieta.Ingesta;
 import com.nutriconsultas.dieta.IngredientePlatilloIngesta;
 import com.nutriconsultas.dieta.PlatilloIngesta;
+import com.nutriconsultas.dieta.PlatilloIngestaPictureSupport;
 import com.nutriconsultas.dieta.PlatilloIngestaRepository;
 import com.nutriconsultas.mobile.dto.DietGroceryListDto;
 import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
 import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
 import com.nutriconsultas.mobile.dto.DietPlatilloDetailDto;
+import com.nutriconsultas.mobile.dto.DietPlatilloImageResult;
 import com.nutriconsultas.mobile.dto.PagedResponse;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
 import com.nutriconsultas.paciente.PacienteDietaService;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
+import com.nutriconsultas.platillos.PlatilloService;
 import com.nutriconsultas.util.LogRedaction;
 
 import lombok.extern.slf4j.Slf4j;
@@ -48,13 +53,16 @@ public class MobilePatientDietPlanService {
 
 	private final DietaPdfService dietaPdfService;
 
+	private final PlatilloService platilloService;
+
 	public MobilePatientDietPlanService(final PacienteDietaRepository pacienteDietaRepository,
 			final PacienteDietaService pacienteDietaService, final PlatilloIngestaRepository platilloIngestaRepository,
-			final DietaPdfService dietaPdfService) {
+			final DietaPdfService dietaPdfService, final PlatilloService platilloService) {
 		this.pacienteDietaRepository = pacienteDietaRepository;
 		this.pacienteDietaService = pacienteDietaService;
 		this.platilloIngestaRepository = platilloIngestaRepository;
 		this.dietaPdfService = dietaPdfService;
+		this.platilloService = platilloService;
 	}
 
 	@Transactional(readOnly = true)
@@ -99,7 +107,27 @@ public class MobilePatientDietPlanService {
 					platilloIngestaId, LogRedaction.redactPacienteDieta(assignmentId),
 					LogRedaction.redactPaciente(pacienteId));
 		}
-		return DietPlatilloDetailDto.fromEntity(platillo);
+		return DietPlatilloDetailDto.fromEntity(platillo, assignmentId);
+	}
+
+	@Transactional(readOnly = true)
+	public Optional<DietPlatilloImageResult> getPlatilloImage(final Long pacienteId, final Long assignmentId,
+			final Long platilloIngestaId) {
+		final PlatilloIngesta platillo = platilloIngestaRepository
+			.findByIdForPatientAssignment(platilloIngestaId, assignmentId, pacienteId)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		Optional<DietPlatilloImageResult> image = Optional.empty();
+		final PlatilloIngestaPictureSupport.PictureObject picture = PlatilloIngestaPictureSupport
+			.resolvePictureObject(platillo);
+		if (picture != null) {
+			image = loadPictureBytes(picture, assignmentId, platilloIngestaId, pacienteId);
+		}
+		else if (log.isDebugEnabled()) {
+			log.debug("No custom platillo picture platilloIngestaId={} assignmentId={} for patient {}",
+					platilloIngestaId, LogRedaction.redactPacienteDieta(assignmentId),
+					LogRedaction.redactPaciente(pacienteId));
+		}
+		return image;
 	}
 
 	@Transactional(readOnly = true)
@@ -131,6 +159,32 @@ public class MobilePatientDietPlanService {
 					LogRedaction.redactPacienteDieta(assignmentId), LogRedaction.redactPaciente(pacienteId));
 		}
 		return new DietPlanPdfResult(pdfBytes, filename);
+	}
+
+	private Optional<DietPlatilloImageResult> loadPictureBytes(
+			final PlatilloIngestaPictureSupport.PictureObject picture, final Long assignmentId,
+			final Long platilloIngestaId, final Long pacienteId) {
+		Optional<DietPlatilloImageResult> image = Optional.empty();
+		try {
+			final byte[] bytes = platilloService.getPicture(picture.catalogPlatilloId(), picture.fileName());
+			if (bytes != null && bytes.length > 0) {
+				image = Optional.of(new DietPlatilloImageResult(bytes,
+						PlatilloIngestaPictureSupport.resolveMediaType(picture.fileName())));
+			}
+			else if (log.isDebugEnabled()) {
+				log.debug("Missing S3 platillo picture platilloIngestaId={} assignmentId={} for patient {}",
+						platilloIngestaId, LogRedaction.redactPacienteDieta(assignmentId),
+						LogRedaction.redactPaciente(pacienteId));
+			}
+		}
+		catch (final IOException ex) {
+			if (log.isDebugEnabled()) {
+				log.debug("Failed to load platillo picture platilloIngestaId={} assignmentId={} for patient {}",
+						platilloIngestaId, LogRedaction.redactPacienteDieta(assignmentId),
+						LogRedaction.redactPaciente(pacienteId), ex);
+			}
+		}
+		return image;
 	}
 
 	private Dieta resolveEffectiveDieta(final PacienteDieta assignment) {

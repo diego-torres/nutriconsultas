@@ -18,7 +18,8 @@ public interface AiChatService {
 	AiChatDraftList listDrafts(String nutritionistId, long threadId);
 
 	/**
-	 * Pending ({@link AiDraftStatus#DRAFT}) drafts owned by the nutritionist across all threads.
+	 * Pending ({@link AiDraftStatus#DRAFT}) drafts owned by the nutritionist across all
+	 * threads.
 	 */
 	List<AiChatDraftSummary> listPendingDrafts(String nutritionistId);
 

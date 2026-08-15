@@ -20,9 +20,9 @@ class DietPlatilloDtoTest {
 		platillo.setHidratosDeCarbono(48.0);
 		platillo.setLipidos(8.0);
 		platillo.setRecommendations("Servir tibia");
-		platillo.setImageUrl("/uploads/platillo.jpg");
+		platillo.setImageUrl("platillo/12/picture.jpg");
 
-		final DietPlatilloDto dto = DietPlatilloDto.fromEntity(platillo);
+		final DietPlatilloDto dto = DietPlatilloDto.fromEntity(platillo, 7L);
 
 		assertThat(dto.id()).isEqualTo(42L);
 		assertThat(dto.nombre()).isEqualTo("Avena con fruta");
@@ -32,12 +32,20 @@ class DietPlatilloDtoTest {
 		assertThat(dto.carbohidratos()).isEqualTo(48.0);
 		assertThat(dto.grasas()).isEqualTo(8.0);
 		assertThat(dto.recommendations()).isEqualTo("Servir tibia");
-		assertThat(dto.imageUrl()).isEqualTo("/uploads/platillo.jpg");
+		assertThat(dto.imageUrl()).isEqualTo("/rest/mobile/patient/diet-plans/7/platillos/42/image");
+	}
+
+	@Test
+	void fromEntity_usesPlaceholderWhenPlatilloHasNoCustomPicture() {
+		final PlatilloIngesta platillo = new PlatilloIngesta();
+		platillo.setId(42L);
+
+		assertThat(DietPlatilloDto.fromEntity(platillo, 7L).imageUrl()).isEqualTo("/sbadmin/img/plato-vacio.jpg");
 	}
 
 	@Test
 	void fromEntity_returnsNullForNullPlatillo() {
-		assertThat(DietPlatilloDto.fromEntity(null)).isNull();
+		assertThat(DietPlatilloDto.fromEntity(null, 7L)).isNull();
 	}
 
 	@Test

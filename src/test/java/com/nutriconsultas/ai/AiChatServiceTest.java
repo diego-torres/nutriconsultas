@@ -184,8 +184,7 @@ class AiChatServiceTest {
 		draft.setThread(thread);
 		draft.setDraftType(AiDraftType.MENU);
 		draft.setStatus(AiDraftStatus.DRAFT);
-		draft.setJsonPayload(
-				"{\"name\":\"Menú semanal\",\"days\":[],\"label\":\"Borrador IA\"}");
+		draft.setJsonPayload("{\"name\":\"Menú semanal\",\"days\":[],\"label\":\"Borrador IA\"}");
 		draft.setCreatedAt(Instant.now());
 		when(draftRepository.findByNutritionistIdAndStatusOrderByCreatedAtDescIdDesc(NUTRITIONIST_ID,
 				AiDraftStatus.DRAFT))

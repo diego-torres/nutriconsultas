@@ -57,10 +57,9 @@ class AiDraftRestControllerTest {
 
 	@Test
 	void acceptDraftReturnsCreatedEntity() {
-		when(draftAcceptanceService.accept(eq(10L), eq(NUTRITIONIST_ID), any()))
-			.thenReturn(new AiDraftAcceptanceResult(10L, AiDraftType.DISH, AiDraftStatus.ACCEPTED,
-					AiDraftCreatedEntityType.PLATILLO, 42L, "Tacos", "/admin/platillos/42",
-					"Se creó el platillo «Tacos» en tu catálogo.", null, null, null));
+		when(draftAcceptanceService.accept(eq(10L), eq(NUTRITIONIST_ID), any())).thenReturn(new AiDraftAcceptanceResult(
+				10L, AiDraftType.DISH, AiDraftStatus.ACCEPTED, AiDraftCreatedEntityType.PLATILLO, 42L, "Tacos",
+				"/admin/platillos/42", "Se creó el platillo «Tacos» en tu catálogo.", null, null, null));
 
 		final ResponseEntity<Map<String, Object>> response = controller.acceptDraft(10L, principal());
 

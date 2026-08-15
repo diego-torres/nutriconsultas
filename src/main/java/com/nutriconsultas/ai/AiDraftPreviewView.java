@@ -12,8 +12,7 @@ public record AiDraftPreviewView(long draftId, long threadId, AiDraftType draftT
 		String draftTypeLabel, String reviewLabel, @Nullable String title, String summary, @Nullable Integer portions,
 		@Nullable Integer dayCount, @Nullable NutrientSummary nutrients, List<Map<String, String>> ingredients,
 		List<Map<String, Object>> mealSlots, List<String> preparationSteps, List<String> assumptions,
-		List<String> warnings, @Nullable String validationSummary,
-		@Nullable AiDraftCreatedEntityType createdEntityType, @Nullable Long createdEntityId,
-		@Nullable String createdEntityName, @Nullable String createdEntityPath, @Nullable Long pacienteId,
-		boolean assignsToPatientOnAccept) {
+		List<String> warnings, @Nullable String validationSummary, @Nullable AiDraftCreatedEntityType createdEntityType,
+		@Nullable Long createdEntityId, @Nullable String createdEntityName, @Nullable String createdEntityPath,
+		@Nullable Long pacienteId, boolean assignsToPatientOnAccept) {
 }

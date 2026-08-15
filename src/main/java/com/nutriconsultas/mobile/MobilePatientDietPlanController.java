@@ -1,6 +1,10 @@
 package com.nutriconsultas.mobile;
 
+import java.util.Optional;
+
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -11,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nutriconsultas.dieta.PlatilloIngestaPictureSupport;
 import com.nutriconsultas.mobile.config.MobileOpenApiResponses;
 import com.nutriconsultas.mobile.dto.ApiResponse;
 import com.nutriconsultas.mobile.dto.DietGroceryListDto;
@@ -18,6 +23,7 @@ import com.nutriconsultas.mobile.dto.DietPlanDetailDto;
 import com.nutriconsultas.mobile.dto.DietPlanPdfResult;
 import com.nutriconsultas.mobile.dto.DietPlanSummaryDto;
 import com.nutriconsultas.mobile.dto.DietPlatilloDetailDto;
+import com.nutriconsultas.mobile.dto.DietPlatilloImageResult;
 import com.nutriconsultas.mobile.dto.PagedResponse;
 import com.nutriconsultas.util.LogRedaction;
 
@@ -98,6 +104,43 @@ public class MobilePatientDietPlanController extends AbstractMobilePatientContro
 		final DietPlatilloDetailDto detail = mobilePatientDietPlanService.getPlatilloDetail(pacienteId, assignmentId,
 				platilloIngestaId);
 		return ApiResponse.ok(detail);
+	}
+
+	@GetMapping("/{assignmentId}/platillos/{platilloIngestaId}/image")
+	@Operation(summary = "Get platillo image",
+			description = "Returns custom dish photo bytes for a platillo on the patient's assignment, "
+					+ "or redirects to the empty-plate placeholder when no custom photo is set.")
+	@MobileOpenApiResponses.AuthenticatedPatient
+	@MobileOpenApiResponses.NotFoundWhenMissing
+	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Image bytes",
+			content = @Content(mediaType = "image/jpeg"))
+	@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "302",
+			description = "Redirect to empty-plate placeholder when no custom photo is set")
+	public ResponseEntity<byte[]> getPlatilloImage(@AuthenticationPrincipal final Jwt jwt,
+			@Parameter(description = "PacienteDieta assignment identifier") @PathVariable final Long assignmentId,
+			@Parameter(
+					description = "PlatilloIngesta identifier within the assignment") @PathVariable final Long platilloIngestaId) {
+		final Long pacienteId = getAuthenticatedPacienteId(jwt);
+		if (log.isDebugEnabled()) {
+			log.debug("Mobile get platillo image {} assignment {} for patient {}", platilloIngestaId,
+					LogRedaction.redactPacienteDieta(assignmentId), LogRedaction.redactPaciente(pacienteId));
+		}
+		final Optional<DietPlatilloImageResult> image = mobilePatientDietPlanService.getPlatilloImage(pacienteId,
+				assignmentId, platilloIngestaId);
+		final ResponseEntity<byte[]> response;
+		if (image.isEmpty()) {
+			response = ResponseEntity.status(HttpStatus.FOUND)
+				.header(HttpHeaders.LOCATION, PlatilloIngestaPictureSupport.PLACEHOLDER_IMAGE_PATH)
+				.build();
+		}
+		else {
+			final DietPlatilloImageResult result = image.get();
+			response = ResponseEntity.ok()
+				.cacheControl(CacheControl.noStore())
+				.contentType(result.mediaType())
+				.body(result.content());
+		}
+		return response;
 	}
 
 	@GetMapping("/{assignmentId}/grocery-list")
