@@ -1222,19 +1222,13 @@ public class PacienteController extends AbstractAuthorizedController {
 			return ResponseEntity.notFound().build();
 		}
 		verifyPatientOwnership(paciente, userId);
-		// Verify dieta exists and is assigned to this patient
-		final List<PacienteDieta> assignments = pacienteDietaRepository.findByPacienteId(pacienteId);
-		final PacienteDieta pacienteDieta = assignments.stream()
-			.filter(a -> a.getDieta() != null && a.getDieta().getId().equals(dietaId))
-			.findFirst()
-			.orElse(null);
+		final PacienteDieta pacienteDieta = pacienteDietaService.findAssignmentContainingDieta(pacienteId, dietaId);
 		if (pacienteDieta == null) {
 			log.error("Dieta {} is not assigned to patient {}", dietaId, pacienteId);
 			return ResponseEntity.notFound().build();
 		}
-		// Generate PDF with patient information included
 		pacienteDieta.setPaciente(paciente);
-		return dietaPdfService.buildAssignmentPdfResponse(pacienteDieta);
+		return dietaPdfService.buildAssignmentPdfResponse(pacienteDieta, dietaId);
 	}
 
 	/**

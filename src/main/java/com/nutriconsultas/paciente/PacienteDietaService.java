@@ -36,6 +36,9 @@ public interface PacienteDietaService {
 
 	List<PacienteDietaWeekday> findWeekdaySlots(@NonNull Long assignmentId);
 
+	@Nullable
+	PacienteDieta findAssignmentContainingDieta(@NonNull Long pacienteId, @NonNull Long dietaId);
+
 	List<Dieta> resolveDietsForGroceryList(@NonNull PacienteDieta assignment);
 
 	List<DietGroceryListItemDto> buildGroceryList(@NonNull PacienteDieta assignment);
