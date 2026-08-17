@@ -171,6 +171,17 @@ public class IngredientePlatilloIngestaRestControllerTest {
 		final java.util.List<String> row = controller.toStringList(ingrediente);
 
 		assertThat(row.get(1)).contains("inline-platillo-ingesta-cantidad-input");
+		assertThat(row.get(3)).isEqualTo("100");
+	}
+
+	@Test
+	public void testToStringListAllowsNullPesoNeto() {
+		ingrediente.setPesoNeto(null);
+
+		final java.util.List<String> row = controller.toStringList(ingrediente);
+
+		assertThat(row.get(0)).isEqualTo("Arroz");
+		assertThat(row.get(3)).isEmpty();
 	}
 
 }

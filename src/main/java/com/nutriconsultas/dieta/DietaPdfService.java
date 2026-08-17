@@ -18,6 +18,8 @@ import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
+import com.nutriconsultas.paciente.PacienteDietaWeekday;
+import com.nutriconsultas.paciente.PacienteDietaWeekdayRepository;
 import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.profile.NutritionistBrandingHelper;
 import com.nutriconsultas.profile.NutritionistProfile;
@@ -89,6 +91,9 @@ public class DietaPdfService {
 
 	@Autowired
 	private PacienteDietaRepository pacienteDietaRepository;
+
+	@Autowired
+	private PacienteDietaWeekdayRepository pacienteDietaWeekdayRepository;
 
 	@Autowired
 	private PacienteRepository pacienteRepository;
@@ -171,6 +176,12 @@ public class DietaPdfService {
 		if (!assignments.isEmpty()) {
 			return assignments.get(0);
 		}
+		final PacienteDieta weekdayAssignment = pacienteDietaWeekdayRepository.findFirstByDietaId(dietaId)
+			.map(PacienteDietaWeekday::getPacienteDieta)
+			.orElse(null);
+		if (weekdayAssignment != null) {
+			return weekdayAssignment;
+		}
 		if (DietaCatalogConstants.isPatientAssignment(dieta) && dieta.getPacienteId() != null) {
 			return pacienteDietaRepository.findByPacienteId(dieta.getPacienteId())
 				.stream()
@@ -196,7 +207,10 @@ public class DietaPdfService {
 		if (assignment.getDieta() == null || assignment.getDieta().getId() == null) {
 			throw new IllegalArgumentException("Assignment has no dieta");
 		}
-		final Long dietaId = assignment.getDieta().getId();
+		return generatePdfForAssignment(assignment, assignment.getDieta().getId());
+	}
+
+	public byte[] generatePdfForAssignment(@NonNull final PacienteDieta assignment, @NonNull final Long dietaId) {
 		log.info("Generating PDF for assignment id: {} dieta id: {}", assignment.getId(), dietaId);
 		final Dieta dieta = dietaService.getDieta(dietaId);
 		if (dieta == null) {
@@ -206,8 +220,16 @@ public class DietaPdfService {
 	}
 
 	public ResponseEntity<byte[]> buildAssignmentPdfResponse(@NonNull final PacienteDieta assignment) {
-		final byte[] pdfBytes = generatePdfForAssignment(assignment);
-		final Dieta dieta = assignment.getDieta();
+		if (assignment.getDieta() == null || assignment.getDieta().getId() == null) {
+			throw new IllegalArgumentException("Assignment has no dieta");
+		}
+		return buildAssignmentPdfResponse(assignment, assignment.getDieta().getId());
+	}
+
+	public ResponseEntity<byte[]> buildAssignmentPdfResponse(@NonNull final PacienteDieta assignment,
+			@NonNull final Long dietaId) {
+		final byte[] pdfBytes = generatePdfForAssignment(assignment, dietaId);
+		final Dieta dieta = dietaService.getDieta(dietaId);
 		final String fileName = (dieta != null && dieta.getNombre() != null ? dieta.getNombre() : "dieta") + ".pdf";
 		return ResponseEntity.ok()
 			.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")

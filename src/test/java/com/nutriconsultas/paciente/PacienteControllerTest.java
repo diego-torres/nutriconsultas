@@ -80,6 +80,9 @@ public class PacienteControllerTest {
 	private com.nutriconsultas.dieta.DietaRepository dietaRepository;
 
 	@Mock
+	private com.nutriconsultas.dieta.DietaPdfService dietaPdfService;
+
+	@Mock
 	private ClinicalExamService clinicalExamService;
 
 	@Mock
@@ -1157,6 +1160,36 @@ public class PacienteControllerTest {
 		assertThat(result).isEqualTo("redirect:/admin/pacientes/1/dietas");
 		verify(pacienteDietaService).cancelAssignment(1L);
 		log.info("finished testCancelarAsignacionDieta");
+	}
+
+	@Test
+	public void testPrintDietaFromPatientWeeklyWeekdayCopy() {
+		final PacienteDieta weekly = new PacienteDieta();
+		weekly.setId(25L);
+		weekly.setPaciente(paciente);
+		weekly.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
+		final byte[] pdfBytes = new byte[] { 37, 80, 68, 70 };
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteDietaService.findAssignmentContainingDieta(1L, 83L)).thenReturn(weekly);
+		when(dietaPdfService.buildAssignmentPdfResponse(weekly, 83L)).thenReturn(
+				ResponseEntity.ok().contentType(org.springframework.http.MediaType.APPLICATION_PDF).body(pdfBytes));
+
+		final ResponseEntity<byte[]> result = controller.printDietaFromPatient(1L, 83L, principal);
+
+		assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+		assertThat(result.getBody()).isEqualTo(pdfBytes);
+		verify(dietaPdfService).buildAssignmentPdfResponse(weekly, 83L);
+	}
+
+	@Test
+	public void testPrintDietaFromPatientReturnsNotFoundWhenDietaNotAssigned() {
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteDietaService.findAssignmentContainingDieta(1L, 83L)).thenReturn(null);
+
+		final ResponseEntity<byte[]> result = controller.printDietaFromPatient(1L, 83L, principal);
+
+		assertThat(result.getStatusCode().is4xxClientError()).isTrue();
+		verify(dietaPdfService, org.mockito.Mockito.never()).buildAssignmentPdfResponse(any(), any());
 	}
 
 	@Test

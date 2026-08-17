@@ -3,6 +3,7 @@ package com.nutriconsultas.dieta;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -233,7 +234,7 @@ public class IngredientePlatilloIngestaRestController extends AbstractGridContro
 						+ "<i class='fas fa-trash fa-sm fa-fw'></i></button>"
 				: "";
 		return Arrays.asList(row.getAlimento().getNombreAlimento(), buildCantidadCell(row, canModify), row.getUnidad(),
-				row.getPesoNeto().toString(), actions);
+				Objects.toString(row.getPesoNeto(), ""), actions);
 	}
 
 	private String buildCantidadCell(final IngredientePlatilloIngesta row, final boolean canModify) {

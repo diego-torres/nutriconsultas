@@ -3,6 +3,7 @@ package com.nutriconsultas.paciente;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,6 +17,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -410,6 +412,7 @@ public class PacienteDietaServiceTest {
 			saved.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
 			return Optional.of(saved);
 		});
+		when(pacienteDietaWeekdayRepository.findByPacienteDietaIdOrderByDayOfWeekAsc(10L)).thenReturn(List.of());
 		when(pacienteDietaWeekdayRepository.save(any(PacienteDietaWeekday.class)))
 			.thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -424,8 +427,138 @@ public class PacienteDietaServiceTest {
 
 		assertThat(result).isNotNull();
 		assertThat(result.getAssignmentType()).isEqualTo(PacienteDietaAssignmentType.WEEKLY);
-		verify(pacienteDietaWeekdayRepository).deleteByPacienteDietaId(10L);
+		verify(pacienteDietaWeekdayRepository, never()).deleteAll(any());
+		verify(pacienteDietaWeekdayRepository).flush();
 		verify(pacienteDietaWeekdayRepository, org.mockito.Mockito.times(2)).save(any(PacienteDietaWeekday.class));
+	}
+
+	@Test
+	public void testUpdateWeeklyAssignmentKeepsExistingPatientCopyWithoutRecopying() {
+		final PacienteDieta weekly = new PacienteDieta();
+		weekly.setId(10L);
+		weekly.setPaciente(paciente);
+		weekly.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
+		weekly.setStartDate(new Date());
+		weekly.setStatus(PacienteDietaStatus.ACTIVE);
+
+		final PacienteDietaWeekday monday = new PacienteDietaWeekday();
+		monday.setDayOfWeek(1);
+		monday.setDieta(patientCopyDieta);
+
+		when(pacienteDietaRepository.findById(10L)).thenReturn(Optional.of(weekly));
+		when(pacienteDietaRepository.save(weekly)).thenReturn(weekly);
+		when(pacienteDietaWeekdayRepository.findByPacienteDietaIdOrderByDayOfWeekAsc(10L)).thenReturn(List.of(monday));
+		when(pacienteDietaWeekdayRepository.save(any(PacienteDietaWeekday.class)))
+			.thenAnswer(invocation -> invocation.getArgument(0));
+
+		final PacienteDieta metadata = new PacienteDieta();
+		metadata.setStartDate(weekly.getStartDate());
+		metadata.setStatus(PacienteDietaStatus.ACTIVE);
+
+		final PacienteDieta result = service.updateWeeklyAssignment(10L, Map.of(1, 99L), metadata);
+
+		assertThat(result.getId()).isEqualTo(10L);
+		final ArgumentCaptor<PacienteDietaWeekday> slotCaptor = ArgumentCaptor.forClass(PacienteDietaWeekday.class);
+		verify(pacienteDietaWeekdayRepository).save(slotCaptor.capture());
+		assertThat(slotCaptor.getValue().getDieta()).isEqualTo(patientCopyDieta);
+		assertThat(slotCaptor.getValue().getDayOfWeek()).isEqualTo(1);
+		verify(dietaService, never()).copyDietaForPatientAssignment(any(), any(), any());
+		verify(dietaRepository, never()).findById(any());
+	}
+
+	@Test
+	public void testUpdateWeeklyAssignmentReusesThisPatientCopyForNewDay() {
+		final PacienteDieta weekly = new PacienteDieta();
+		weekly.setId(10L);
+		weekly.setPaciente(paciente);
+		weekly.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
+		weekly.setStartDate(new Date());
+		weekly.setStatus(PacienteDietaStatus.ACTIVE);
+
+		when(pacienteDietaRepository.findById(10L)).thenReturn(Optional.of(weekly));
+		when(pacienteDietaRepository.save(weekly)).thenReturn(weekly);
+		when(pacienteDietaWeekdayRepository.findByPacienteDietaIdOrderByDayOfWeekAsc(10L)).thenReturn(List.of());
+		when(dietaRepository.findById(99L)).thenReturn(Optional.of(patientCopyDieta));
+		when(pacienteDietaWeekdayRepository.save(any(PacienteDietaWeekday.class)))
+			.thenAnswer(invocation -> invocation.getArgument(0));
+
+		final PacienteDieta metadata = new PacienteDieta();
+		metadata.setStartDate(weekly.getStartDate());
+		metadata.setStatus(PacienteDietaStatus.ACTIVE);
+
+		service.updateWeeklyAssignment(10L, Map.of(2, 99L), metadata);
+
+		verify(dietaService, never()).copyDietaForPatientAssignment(any(), any(), any());
+		final ArgumentCaptor<PacienteDietaWeekday> slotCaptor = ArgumentCaptor.forClass(PacienteDietaWeekday.class);
+		verify(pacienteDietaWeekdayRepository).save(slotCaptor.capture());
+		assertThat(slotCaptor.getValue().getDayOfWeek()).isEqualTo(2);
+		assertThat(slotCaptor.getValue().getDieta()).isEqualTo(patientCopyDieta);
+	}
+
+	@Test
+	public void testUpdateWeeklyAssignmentCopiesCatalogDietWhenDayChanges() {
+		final PacienteDieta weekly = new PacienteDieta();
+		weekly.setId(10L);
+		weekly.setPaciente(paciente);
+		weekly.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
+		weekly.setStartDate(new Date());
+		weekly.setStatus(PacienteDietaStatus.ACTIVE);
+
+		final PacienteDietaWeekday monday = new PacienteDietaWeekday();
+		monday.setDayOfWeek(1);
+		monday.setDieta(patientCopyDieta);
+
+		final Dieta newCopy = new Dieta();
+		newCopy.setId(200L);
+		newCopy.setPacienteId(1L);
+		newCopy.setUserId(TEST_USER_ID);
+
+		when(pacienteDietaRepository.findById(10L)).thenReturn(Optional.of(weekly));
+		when(pacienteDietaRepository.save(weekly)).thenReturn(weekly);
+		when(pacienteDietaWeekdayRepository.findByPacienteDietaIdOrderByDayOfWeekAsc(10L)).thenReturn(List.of(monday));
+		when(dietaRepository.findById(1L)).thenReturn(Optional.of(sourceDieta));
+		when(dietaService.copyDietaForPatientAssignment(1L, 1L, TEST_USER_ID)).thenReturn(newCopy);
+		when(pacienteDietaWeekdayRepository.save(any(PacienteDietaWeekday.class)))
+			.thenAnswer(invocation -> invocation.getArgument(0));
+
+		final PacienteDieta metadata = new PacienteDieta();
+		metadata.setStartDate(weekly.getStartDate());
+		metadata.setStatus(PacienteDietaStatus.ACTIVE);
+
+		service.updateWeeklyAssignment(10L, Map.of(1, 1L), metadata);
+
+		verify(dietaService).copyDietaForPatientAssignment(1L, 1L, TEST_USER_ID);
+		final ArgumentCaptor<PacienteDietaWeekday> slotCaptor = ArgumentCaptor.forClass(PacienteDietaWeekday.class);
+		verify(pacienteDietaWeekdayRepository).save(slotCaptor.capture());
+		assertThat(slotCaptor.getValue().getDieta()).isEqualTo(newCopy);
+	}
+
+	@Test
+	public void testUpdateWeeklyAssignmentRejectsOtherPatientCopy() {
+		final PacienteDieta weekly = new PacienteDieta();
+		weekly.setId(10L);
+		weekly.setPaciente(paciente);
+		weekly.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
+		weekly.setStartDate(new Date());
+		weekly.setStatus(PacienteDietaStatus.ACTIVE);
+
+		final Dieta otherPatientCopy = new Dieta();
+		otherPatientCopy.setId(50L);
+		otherPatientCopy.setPacienteId(999L);
+
+		when(pacienteDietaRepository.findById(10L)).thenReturn(Optional.of(weekly));
+		when(pacienteDietaRepository.save(weekly)).thenReturn(weekly);
+		when(pacienteDietaWeekdayRepository.findByPacienteDietaIdOrderByDayOfWeekAsc(10L)).thenReturn(List.of());
+		when(dietaRepository.findById(50L)).thenReturn(Optional.of(otherPatientCopy));
+
+		final PacienteDieta metadata = new PacienteDieta();
+		metadata.setStartDate(weekly.getStartDate());
+		metadata.setStatus(PacienteDietaStatus.ACTIVE);
+
+		assertThatThrownBy(() -> service.updateWeeklyAssignment(10L, Map.of(1, 50L), metadata))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("dieta exclusiva de otro paciente");
+		verify(dietaService, never()).copyDietaForPatientAssignment(any(), any(), any());
 	}
 
 	@Test
@@ -475,6 +608,51 @@ public class PacienteDietaServiceTest {
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("No se ha encontrado paciente");
 		verify(dietaService, org.mockito.Mockito.never()).createEmptyDietaForPatient(any(), any(), any());
+	}
+
+	@Test
+	public void testFindAssignmentContainingDietaMatchesDateRangeCopy() {
+		when(pacienteDietaRepository.findByPacienteId(1L)).thenReturn(List.of(pacienteDieta));
+
+		final PacienteDieta result = service.findAssignmentContainingDieta(1L, 99L);
+
+		assertThat(result).isEqualTo(pacienteDieta);
+		verify(pacienteDietaWeekdayRepository, never()).findFirstByDietaId(any());
+	}
+
+	@Test
+	public void testFindAssignmentContainingDietaMatchesWeeklyWeekdayCopy() {
+		final PacienteDieta weekly = new PacienteDieta();
+		weekly.setId(25L);
+		weekly.setPaciente(paciente);
+		weekly.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
+		final PacienteDietaWeekday monday = new PacienteDietaWeekday();
+		monday.setPacienteDieta(weekly);
+		monday.setDayOfWeek(1);
+		monday.setDieta(patientCopyDieta);
+		when(pacienteDietaRepository.findByPacienteId(1L)).thenReturn(List.of(weekly));
+		when(pacienteDietaWeekdayRepository.findFirstByDietaId(99L)).thenReturn(Optional.of(monday));
+
+		final PacienteDieta result = service.findAssignmentContainingDieta(1L, 99L);
+
+		assertThat(result).isEqualTo(weekly);
+	}
+
+	@Test
+	public void testFindAssignmentContainingDietaRejectsOtherPatientWeekday() {
+		final Paciente otherPaciente = new Paciente();
+		otherPaciente.setId(2L);
+		final PacienteDieta otherWeekly = new PacienteDieta();
+		otherWeekly.setId(30L);
+		otherWeekly.setPaciente(otherPaciente);
+		otherWeekly.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
+		final PacienteDietaWeekday monday = new PacienteDietaWeekday();
+		monday.setPacienteDieta(otherWeekly);
+		monday.setDieta(patientCopyDieta);
+		when(pacienteDietaRepository.findByPacienteId(1L)).thenReturn(List.of());
+		when(pacienteDietaWeekdayRepository.findFirstByDietaId(99L)).thenReturn(Optional.of(monday));
+
+		assertThat(service.findAssignmentContainingDieta(1L, 99L)).isNull();
 	}
 
 	@Test

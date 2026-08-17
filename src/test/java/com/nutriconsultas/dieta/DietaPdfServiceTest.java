@@ -26,6 +26,8 @@ import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
+import com.nutriconsultas.paciente.PacienteDietaWeekday;
+import com.nutriconsultas.paciente.PacienteDietaWeekdayRepository;
 import com.nutriconsultas.paciente.PacienteRepository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +45,9 @@ public class DietaPdfServiceTest {
 
 	@Mock
 	private PacienteDietaRepository pacienteDietaRepository;
+
+	@Mock
+	private PacienteDietaWeekdayRepository pacienteDietaWeekdayRepository;
 
 	@Mock
 	private PacienteRepository pacienteRepository;
@@ -226,6 +231,49 @@ public class DietaPdfServiceTest {
 		assertThatThrownBy(() -> dietaPdfService.generatePdfForAssignment(pacienteDieta))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("no dieta");
+	}
+
+	@Test
+	public void testGeneratePdfForAssignmentWithExplicitDietaId() {
+		final PacienteDieta weekly = new PacienteDieta();
+		weekly.setId(25L);
+		weekly.setStatus(PacienteDietaStatus.ACTIVE);
+
+		when(dietaService.getDieta(83L)).thenReturn(dieta);
+		when(templateEngine.process(eq("sbadmin/dietas/printable"), any(Context.class)))
+			.thenReturn("<html><body>Test</body></html>");
+
+		final byte[] pdfBytes = dietaPdfService.generatePdfForAssignment(weekly, 83L);
+
+		assertThat(pdfBytes).isNotNull();
+		assertThat(pdfBytes.length).isGreaterThan(0);
+	}
+
+	@Test
+	public void testGeneratePdfResolvesWeeklyWeekdayAssignment() {
+		dieta.setPacienteId(3L);
+		final Paciente paciente = new Paciente();
+		paciente.setId(3L);
+		final PacienteDieta weekly = new PacienteDieta();
+		weekly.setId(25L);
+		weekly.setPaciente(paciente);
+		weekly.setStatus(PacienteDietaStatus.ACTIVE);
+		final PacienteDietaWeekday monday = new PacienteDietaWeekday();
+		monday.setPacienteDieta(weekly);
+		monday.setDieta(dieta);
+
+		when(dietaService.getDieta(1L)).thenReturn(dieta);
+		when(pacienteDietaRepository.findByDietaId(1L)).thenReturn(new ArrayList<>());
+		when(pacienteDietaWeekdayRepository.findFirstByDietaId(1L)).thenReturn(Optional.of(monday));
+		when(templateEngine.process(eq("sbadmin/dietas/printable"), any(Context.class)))
+			.thenReturn("<html><body>Test</body></html>");
+
+		final ArgumentCaptor<Context> contextCaptor = ArgumentCaptor.forClass(Context.class);
+		dietaPdfService.generatePdf(1L, true);
+
+		verify(templateEngine).process(eq("sbadmin/dietas/printable"), contextCaptor.capture());
+		assertThat(contextCaptor.getValue().getVariable("pacienteDieta")).isEqualTo(weekly);
+		assertThat(contextCaptor.getValue().getVariable("paciente")).isEqualTo(paciente);
 	}
 
 }

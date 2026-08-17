@@ -166,6 +166,27 @@ public class PacienteDietaServiceImpl implements PacienteDietaService {
 
 	@Override
 	@Transactional(readOnly = true)
+	@Nullable
+	public PacienteDieta findAssignmentContainingDieta(@NonNull final Long pacienteId, @NonNull final Long dietaId) {
+		PacienteDieta result = null;
+		for (final PacienteDieta assignment : pacienteDietaRepository.findByPacienteId(pacienteId)) {
+			if (assignment.getDieta() != null && dietaId.equals(assignment.getDieta().getId())) {
+				result = assignment;
+				break;
+			}
+		}
+		if (result == null) {
+			result = pacienteDietaWeekdayRepository.findFirstByDietaId(dietaId)
+				.map(PacienteDietaWeekday::getPacienteDieta)
+				.filter(assignment -> assignment.getPaciente() != null
+						&& pacienteId.equals(assignment.getPaciente().getId()))
+				.orElse(null);
+		}
+		return result;
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public List<Dieta> resolveDietsForGroceryList(@NonNull final PacienteDieta assignment) {
 		if (assignment.isWeeklyAssignment()) {
 			final List<Dieta> diets = new ArrayList<>();
@@ -236,50 +257,81 @@ public class PacienteDietaServiceImpl implements PacienteDietaService {
 
 	private void mergeWeekdaySlots(final PacienteDieta assignment, final Map<Integer, Long> weekdayCatalogDietaIds,
 			final Long pacienteId, final String userId) {
+		final List<PacienteDietaWeekday> existingSlots = pacienteDietaWeekdayRepository
+			.findByPacienteDietaIdOrderByDayOfWeekAsc(assignment.getId());
 		final Map<Integer, PacienteDietaWeekday> existingByDay = new LinkedHashMap<>();
-		for (final PacienteDietaWeekday slot : pacienteDietaWeekdayRepository
-			.findByPacienteDietaIdOrderByDayOfWeekAsc(assignment.getId())) {
+		for (final PacienteDietaWeekday slot : existingSlots) {
 			if (slot.getDayOfWeek() != null) {
 				existingByDay.put(slot.getDayOfWeek(), slot);
 			}
 		}
-		pacienteDietaWeekdayRepository.deleteByPacienteDietaId(assignment.getId());
+		removeWeekdaySlots(existingSlots);
 		final Map<Integer, Long> normalized = normalizeWeekdayMap(weekdayCatalogDietaIds);
 		for (final int day : PacienteDietaWeekdayLabels.ISO_DAYS_MONDAY_FIRST) {
-			final Long catalogDietaId = normalized.get(day);
-			if (catalogDietaId != null) {
-				persistWeekdaySlot(assignment, day, catalogDietaId, pacienteId, userId);
+			final Long submittedDietaId = normalized.get(day);
+			if (submittedDietaId != null) {
+				applyWeekdaySelection(assignment, day, submittedDietaId, existingByDay.get(day), pacienteId, userId);
 			}
 			else if (existingByDay.containsKey(day)) {
-				final PacienteDietaWeekday retained = existingByDay.get(day);
-				final PacienteDietaWeekday slot = new PacienteDietaWeekday();
-				slot.setPacienteDieta(assignment);
-				slot.setDayOfWeek(day);
-				slot.setDieta(retained.getDieta());
-				pacienteDietaWeekdayRepository.save(slot);
+				retainWeekdaySlot(assignment, day, existingByDay.get(day));
 			}
 		}
 	}
 
 	private void replaceWeekdaySlots(final PacienteDieta assignment, final Map<Integer, Long> weekdayCatalogDietaIds,
 			final Long pacienteId, final String userId) {
-		pacienteDietaWeekdayRepository.deleteByPacienteDietaId(assignment.getId());
+		removeWeekdaySlots(pacienteDietaWeekdayRepository.findByPacienteDietaIdOrderByDayOfWeekAsc(assignment.getId()));
 		final Map<Integer, Long> normalized = normalizeWeekdayMap(weekdayCatalogDietaIds);
 		for (final Map.Entry<Integer, Long> entry : normalized.entrySet()) {
 			persistWeekdaySlot(assignment, entry.getKey(), entry.getValue(), pacienteId, userId);
 		}
 	}
 
-	private void persistWeekdaySlot(final PacienteDieta assignment, final int day, final Long catalogDietaId,
-			final Long pacienteId, final String userId) {
-		final Dieta sourceDieta = dietaRepository.findById(catalogDietaId)
-			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado dieta con id " + catalogDietaId));
-		assertAssignableCatalogDieta(sourceDieta);
-		final Dieta patientCopy = dietaService.copyDietaForPatientAssignment(catalogDietaId, pacienteId, userId);
+	private void removeWeekdaySlots(final List<PacienteDietaWeekday> existingSlots) {
+		if (!existingSlots.isEmpty()) {
+			pacienteDietaWeekdayRepository.deleteAll(existingSlots);
+		}
+		pacienteDietaWeekdayRepository.flush();
+	}
+
+	private void applyWeekdaySelection(final PacienteDieta assignment, final int day, final Long submittedDietaId,
+			final PacienteDietaWeekday existingSlot, final Long pacienteId, final String userId) {
+		if (existingSlot != null && existingSlot.getDieta() != null
+				&& submittedDietaId.equals(existingSlot.getDieta().getId())) {
+			retainWeekdaySlot(assignment, day, existingSlot);
+		}
+		else {
+			persistWeekdaySlot(assignment, day, submittedDietaId, pacienteId, userId);
+		}
+	}
+
+	private void retainWeekdaySlot(final PacienteDieta assignment, final int day,
+			final PacienteDietaWeekday existingSlot) {
 		final PacienteDietaWeekday slot = new PacienteDietaWeekday();
 		slot.setPacienteDieta(assignment);
 		slot.setDayOfWeek(day);
-		slot.setDieta(patientCopy);
+		slot.setDieta(existingSlot.getDieta());
+		pacienteDietaWeekdayRepository.save(slot);
+	}
+
+	private void persistWeekdaySlot(final PacienteDieta assignment, final int day, final Long submittedDietaId,
+			final Long pacienteId, final String userId) {
+		final Dieta sourceDieta = dietaRepository.findById(submittedDietaId)
+			.orElseThrow(() -> new IllegalArgumentException("No se ha encontrado dieta con id " + submittedDietaId));
+		final Dieta slotDieta;
+		if (DietaCatalogConstants.isPatientAssignment(sourceDieta)) {
+			if (!Objects.equals(pacienteId, sourceDieta.getPacienteId())) {
+				throw new IllegalArgumentException("No se puede asignar una dieta exclusiva de otro paciente");
+			}
+			slotDieta = sourceDieta;
+		}
+		else {
+			slotDieta = dietaService.copyDietaForPatientAssignment(submittedDietaId, pacienteId, userId);
+		}
+		final PacienteDietaWeekday slot = new PacienteDietaWeekday();
+		slot.setPacienteDieta(assignment);
+		slot.setDayOfWeek(day);
+		slot.setDieta(slotDieta);
 		pacienteDietaWeekdayRepository.save(slot);
 	}
 

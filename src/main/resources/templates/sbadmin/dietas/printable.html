@@ -329,7 +329,7 @@
 		<div class="ingesta-content">
 			<!-- Platillos -->
 			<div th:each="platillo : ${ingesta.platillos}" class="platillo-item">
-				<div class="item-name" th:text="${platillo.name + (platillo.portions != null && platillo.portions > 1 ? ' (' + platillo.portions + ' porciones)' : '')}">Platillo</div>
+				<div class="item-name" th:text="${platillo.name}">Platillo</div>
 				<div class="item-details">
 					<div th:if="${platillo.recommendations != null && !platillo.recommendations.isEmpty()}" class="recommendations" th:text="${'Recomendaciones: ' + platillo.recommendations}"></div>
 					<div th:if="${platillo.ingredientes != null && !platillo.ingredientes.isEmpty()}">
@@ -379,7 +379,7 @@
 
 			<!-- Alimentos -->
 			<div th:each="alimento : ${ingesta.alimentos}" class="alimento-item">
-				<div class="item-name" th:text="${alimento.name + (alimento.portions != null && alimento.portions > 1 ? ' (' + alimento.displayCantidad + ' porción' + (alimento.portions > 1 ? 'es' : '') + ')' : '')}">Alimento</div>
+				<div class="item-name" th:text="${alimento.name}">Alimento</div>
 				<div class="item-details" th:if="${alimento.alimento != null && (alimento.alimento.cantSugerida != null || alimento.unidad != null)}">
 					<div style="margin-top: 3px;">
 						<span th:text="${alimento.displayCantidad}"></span>
