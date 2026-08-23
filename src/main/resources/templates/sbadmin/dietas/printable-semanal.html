@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<!--
+	TEMPLATE: sbadmin/dietas/printable-semanal.html
+
+	PURPOSE:
+	Printable PDF for a weekly (multi-day) patient meal plan.
+	Cover page with patient info and weekday overview, then one section per day.
+
+	REQUIRED MODEL VARIABLES:
+	- weeklyDays: List<DietaPdfService.WeeklyDietPdfDay>
+	- paciente: Paciente entity (optional)
+	- pacienteDieta: PacienteDieta entity (optional)
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+	<meta charset="UTF-8" />
+	<title>Plan de Alimentación Semanal</title>
+	<style>
+		@page {
+			size: A4 portrait;
+			margin: 1.2cm;
+		}
+		body {
+			font-family: Arial, sans-serif;
+			font-size: 9pt;
+			line-height: 1.25;
+			color: #333;
+		}
+		.cover-page {
+			margin-bottom: 0;
+			page-break-after: always;
+		}
+		.header {
+			border-bottom: 2px solid #4e73df;
+			padding-bottom: 8px;
+			margin-bottom: 10px;
+		}
+		.header h1 {
+			color: #4e73df;
+			margin: 0;
+			font-size: 16pt;
+		}
+		.header p {
+			margin: 2px 0;
+			color: #666;
+			font-size: 8pt;
+		}
+		.patient-info {
+			background-color: #f8f9fc;
+			padding: 8px 10px;
+			border-radius: 4px;
+			margin-bottom: 10px;
+		}
+		.patient-info h2 {
+			margin: 0 0 6px 0;
+			color: #4e73df;
+			font-size: 11pt;
+		}
+		.patient-info table {
+			width: 100%;
+			border-collapse: collapse;
+		}
+		.patient-info td {
+			padding: 2px 6px;
+			border-bottom: 1px solid #e3e6f0;
+			font-size: 8.5pt;
+		}
+		.patient-info td:first-child {
+			font-weight: bold;
+			width: 38%;
+		}
+		.week-overview {
+			margin-bottom: 8px;
+		}
+		.week-overview h2 {
+			color: #4e73df;
+			font-size: 13pt;
+			margin: 0 0 6px 0;
+		}
+		.week-overview table {
+			width: 100%;
+			border-collapse: collapse;
+		}
+		.week-overview th, .week-overview td {
+			padding: 4px 6px;
+			text-align: left;
+			border-bottom: 1px solid #e3e6f0;
+			font-size: 8.5pt;
+		}
+		.week-overview th {
+			background-color: #4e73df;
+			color: white;
+			font-weight: bold;
+		}
+		.day-section {
+			margin-bottom: 12px;
+		}
+		.day-section-break {
+			page-break-before: always;
+		}
+		.dieta-info h2 {
+			color: #4e73df;
+			font-size: 13pt;
+			margin: 0 0 6px 0;
+		}
+		table.ingesta-block {
+			width: 100%;
+			border-collapse: collapse;
+			margin-bottom: 10px;
+		}
+		table.ingesta-block tr {
+			page-break-inside: avoid;
+		}
+		table.ingesta-block td.ingesta-cell {
+			padding: 0;
+			vertical-align: top;
+		}
+		.ingesta-keep-together {
+			display: block;
+			page-break-inside: avoid;
+		}
+		.ingesta-header {
+			display: block;
+			background-color: #4e73df;
+			color: white;
+			padding: 6px 10px;
+			font-size: 11pt;
+			font-weight: bold;
+			border-radius: 4px 4px 0 0;
+			page-break-after: avoid;
+		}
+		.ingesta-content {
+			display: block;
+			border: 1px solid #e3e6f0;
+			border-top: none;
+			padding: 8px 10px;
+		}
+		.platillo-item, .alimento-item {
+			display: block;
+			margin-bottom: 8px;
+			padding-bottom: 8px;
+			border-bottom: 1px solid #e3e6f0;
+			page-break-inside: avoid;
+		}
+		.platillo-item:last-child, .alimento-item:last-child {
+			border-bottom: none;
+			margin-bottom: 0;
+			padding-bottom: 0;
+		}
+		.item-name {
+			font-weight: bold;
+			font-size: 9.5pt;
+			color: #2c3e50;
+			margin-bottom: 3px;
+		}
+		.item-details {
+			font-size: 8pt;
+			color: #666;
+			margin-left: 10px;
+		}
+		.item-details table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 3px;
+		}
+		.item-details th, .item-details td {
+			padding: 2px 4px;
+			text-align: left;
+			border-bottom: 1px solid #e3e6f0;
+			font-size: 7.5pt;
+		}
+		.item-details th {
+			background-color: #f8f9fc;
+			font-weight: bold;
+		}
+		.ingrediente-item {
+			margin-left: 12px;
+			font-size: 7.5pt;
+			color: #555;
+			line-height: 1.2;
+		}
+		.nutrition-summary {
+			background-color: #f8f9fc;
+			padding: 6px 8px;
+			border-radius: 4px;
+			margin-top: 6px;
+			page-break-inside: avoid;
+		}
+		.nutrition-summary table {
+			width: 100%;
+			border-collapse: collapse;
+		}
+		.nutrition-summary th, .nutrition-summary td {
+			padding: 3px 5px;
+			text-align: left;
+			border-bottom: 1px solid #e3e6f0;
+			font-size: 8pt;
+		}
+		.nutrition-summary th {
+			background-color: #4e73df;
+			color: white;
+			font-weight: bold;
+		}
+		.nutrition-summary .total-row {
+			font-weight: bold;
+			background-color: #e3e6f0;
+		}
+		.nutrition-summary--compact {
+			margin-top: 0;
+			margin-bottom: 8px;
+		}
+		.footer {
+			margin-top: 12px;
+			padding-top: 8px;
+			border-top: 1px solid #e3e6f0;
+			text-align: center;
+			color: #666;
+			font-size: 7.5pt;
+		}
+		.recommendations {
+			font-style: italic;
+			color: #666;
+			margin-top: 3px;
+			font-size: 7.5pt;
+		}
+		.ingredientes-label {
+			margin: 3px 0;
+			font-size: 8pt;
+		}
+	</style>
+	<style th:replace="~{sbadmin/fragments/pdf-nutritionist-logo :: logoStyles}"></style>
+</head>
+<body>
+	<div class="cover-page">
+	<div class="header">
+		<table style="width: 100%; border-collapse: collapse;">
+			<tr>
+				<td style="vertical-align: bottom;">
+					<h1>Plan de Alimentación Semanal</h1>
+					<p>Minutriporcion - Consulta Nutricional</p>
+					<div th:replace="~{sbadmin/fragments/pdf-nutritionist-credentials :: credentials}"></div>
+				</td>
+				<td th:replace="~{sbadmin/fragments/pdf-nutritionist-logo :: logoCell}"></td>
+			</tr>
+		</table>
+	</div>
+
+	<div th:if="${paciente != null}" class="patient-info">
+		<h2>Información del Paciente</h2>
+		<table>
+			<tr>
+				<td>Nombre:</td>
+				<td th:text="${paciente.name}"></td>
+			</tr>
+			<tr th:if="${paciente.dob != null}">
+				<td>Fecha de Nacimiento:</td>
+				<td th:text="${#dates.format(paciente.dob, 'dd/MM/yyyy')}"></td>
+			</tr>
+			<tr th:if="${paciente.gender != null}">
+				<td>Género:</td>
+				<td th:text="${paciente.gender == 'M' ? 'Masculino' : (paciente.gender == 'F' ? 'Femenino' : paciente.gender)}"></td>
+			</tr>
+			<tr th:if="${paciente.peso != null}">
+				<td>Peso:</td>
+				<td th:text="${#numbers.formatDecimal(paciente.peso, 1, 2) + ' kg'}"></td>
+			</tr>
+			<tr th:if="${paciente.estatura != null}">
+				<td>Estatura:</td>
+				<td th:text="${#numbers.formatDecimal(paciente.estatura, 1, 2) + ' m'}"></td>
+			</tr>
+			<tr th:if="${pacienteDieta != null && pacienteDieta.startDate != null}">
+				<td>Fecha de Inicio:</td>
+				<td th:text="${#dates.format(pacienteDieta.startDate, 'dd/MM/yyyy')}"></td>
+			</tr>
+			<tr th:if="${pacienteDieta != null && pacienteDieta.endDate != null}">
+				<td>Fecha de Fin:</td>
+				<td th:text="${#dates.format(pacienteDieta.endDate, 'dd/MM/yyyy')}"></td>
+			</tr>
+			<tr th:if="${pacienteDieta != null && pacienteDieta.notes != null && !pacienteDieta.notes.isEmpty()}">
+				<td>Notas:</td>
+				<td th:text="${pacienteDieta.notes}"></td>
+			</tr>
+		</table>
+	</div>
+
+	<div class="week-overview" th:if="${weeklyDays != null}">
+		<h2>Resumen de la semana</h2>
+		<table>
+			<tr>
+				<th>Día</th>
+				<th>Dieta</th>
+				<th>Energía</th>
+			</tr>
+			<tr th:each="day : ${weeklyDays}">
+				<td th:text="${day.dayLabel}">Lunes</td>
+				<td th:text="${day.dieta != null ? day.dieta.nombre : '-'}">Dieta</td>
+				<td th:text="${day.totalEnergia != null ? (#numbers.formatDecimal(day.totalEnergia, 1, 0) + ' kcal') : '—'}">0 kcal</td>
+			</tr>
+		</table>
+	</div>
+	</div>
+
+	<div th:each="day, iter : ${weeklyDays}"
+		 th:class="${iter.first} ? 'day-section' : 'day-section day-section-break'"
+		 th:with="ingestas=${day.ingestas}, ingestaTotals=${day.ingestaTotals}">
+		<div class="dieta-info">
+			<h2>
+				<span th:text="${day.dayLabel}">Lunes</span>
+				<span th:if="${day.dieta != null}" th:text="${' — ' + day.dieta.nombre}"> — Dieta</span>
+			</h2>
+		</div>
+		<div class="nutrition-summary nutrition-summary--compact">
+			<table>
+				<tr>
+					<th colspan="2">Resumen Nutricional del Día</th>
+				</tr>
+				<tr class="total-row">
+					<td>Energía Total:</td>
+					<td th:text="${day.totalEnergia != null ? (#numbers.formatDecimal(day.totalEnergia, 1, 2) + ' kcal') : '0.00 kcal'}"></td>
+				</tr>
+				<tr class="total-row">
+					<td>Proteína Total:</td>
+					<td th:text="${day.totalProteina != null ? (#numbers.formatDecimal(day.totalProteina, 1, 2) + ' g') : '0.00 g'}"></td>
+				</tr>
+				<tr class="total-row">
+					<td>Lípidos Total:</td>
+					<td th:text="${day.totalLipidos != null ? (#numbers.formatDecimal(day.totalLipidos, 1, 2) + ' g') : '0.00 g'}"></td>
+				</tr>
+				<tr class="total-row">
+					<td>Hidratos de Carbono Total:</td>
+					<td th:text="${day.totalHidratosDeCarbono != null ? (#numbers.formatDecimal(day.totalHidratosDeCarbono, 1, 2) + ' g') : '0.00 g'}"></td>
+				</tr>
+			</table>
+		</div>
+
+		<table th:each="ingesta : ${ingestas}" class="ingesta-block">
+			<tr>
+				<td class="ingesta-cell">
+			<div class="ingesta-keep-together">
+			<div class="ingesta-header" th:text="${ingesta.nombre}">Ingesta</div>
+			<div class="ingesta-content">
+				<div th:each="platillo : ${ingesta.platillos}" class="platillo-item">
+					<div class="item-name" th:text="${platillo.name}">Platillo</div>
+					<div class="item-details">
+						<div th:if="${platillo.recommendations != null && !platillo.recommendations.isEmpty()}" class="recommendations" th:text="${'Recomendaciones: ' + platillo.recommendations}"></div>
+						<div th:if="${platillo.ingredientes != null && !platillo.ingredientes.isEmpty()}">
+							<p class="ingredientes-label"><strong>Ingredientes:</strong></p>
+							<div th:each="ingrediente : ${platillo.ingredientes}" class="ingrediente-item" th:with="showInGrams=${ingrediente.shouldDisplayWeightInGrams(ingrediente.unidad)}">
+								<span th:text="${(ingrediente.alimento != null && ingrediente.alimento.nombreAlimento != null) ? ingrediente.alimento.nombreAlimento : (ingrediente.description != null ? ingrediente.description : '')}"></span>
+								<span th:if="${showInGrams}" th:text="${' - ' + #numbers.formatDecimal(ingrediente.pesoBrutoRedondeado, 1, 2) + ' g'}"></span>
+								<span th:if="${ingrediente.cantSugerida != null && !showInGrams}" th:text="${' - ' + ingrediente.getRoundedFractionalCantSugerida()}"></span>
+								<span th:if="${ingrediente.unidad != null && !showInGrams}" th:text="${' ' + ingrediente.unidad}"></span>
+							</div>
+						</div>
+						<div th:if="${platillo.pesoBrutoRedondeado != null || platillo.pesoNeto != null}" class="nutrition-summary">
+							<table>
+								<tr>
+									<th>Información Nutricional</th>
+									<th>Valor</th>
+								</tr>
+								<tr th:if="${platillo.pesoBrutoRedondeado != null}">
+									<td>Peso Bruto:</td>
+									<td th:text="${#numbers.formatDecimal(platillo.pesoBrutoRedondeado, 1, 2) + ' g'}"></td>
+								</tr>
+								<tr th:if="${platillo.pesoNeto != null}">
+									<td>Peso Neto:</td>
+									<td th:text="${#numbers.formatDecimal(platillo.pesoNeto, 1, 2) + ' g'}"></td>
+								</tr>
+								<tr th:if="${platillo.energia != null}">
+									<td>Energía:</td>
+									<td th:text="${#numbers.formatDecimal(platillo.energia, 1, 2) + ' kcal'}"></td>
+								</tr>
+								<tr th:if="${platillo.proteina != null}">
+									<td>Proteína:</td>
+									<td th:text="${#numbers.formatDecimal(platillo.proteina, 1, 2) + ' g'}"></td>
+								</tr>
+								<tr th:if="${platillo.lipidos != null}">
+									<td>Lípidos:</td>
+									<td th:text="${#numbers.formatDecimal(platillo.lipidos, 1, 2) + ' g'}"></td>
+								</tr>
+								<tr th:if="${platillo.hidratosDeCarbono != null}">
+									<td>Hidratos de Carbono:</td>
+									<td th:text="${#numbers.formatDecimal(platillo.hidratosDeCarbono, 1, 2) + ' g'}"></td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+
+				<div th:each="alimento : ${ingesta.alimentos}" class="alimento-item">
+					<div class="item-name" th:text="${alimento.name}">Alimento</div>
+					<div class="item-details" th:if="${alimento.alimento != null && (alimento.alimento.cantSugerida != null || alimento.unidad != null)}">
+						<div style="margin-top: 3px;">
+							<span th:text="${alimento.displayCantidad}"></span>
+							<span th:if="${alimento.unidad != null}" th:text="${' ' + alimento.unidad}"></span>
+						</div>
+					</div>
+				</div>
+
+				<div class="nutrition-summary" th:if="${ingestaTotals != null && ingestaTotals.containsKey(ingesta.id)}" th:with="totals=${ingestaTotals.get(ingesta.id)}">
+					<table>
+						<tr>
+							<th colspan="2">Resumen Nutricional - <span th:text="${ingesta.nombre}"></span></th>
+						</tr>
+						<tr>
+							<td>Energía Total:</td>
+							<td th:text="${totals != null && totals.totalEnergia != null ? (#numbers.formatDecimal(totals.totalEnergia, 1, 2) + ' kcal') : '0.00 kcal'}"></td>
+						</tr>
+						<tr>
+							<td>Proteína Total:</td>
+							<td th:text="${totals != null && totals.totalProteina != null ? (#numbers.formatDecimal(totals.totalProteina, 1, 2) + ' g') : '0.00 g'}"></td>
+						</tr>
+						<tr>
+							<td>Lípidos Total:</td>
+							<td th:text="${totals != null && totals.totalLipidos != null ? (#numbers.formatDecimal(totals.totalLipidos, 1, 2) + ' g') : '0.00 g'}"></td>
+						</tr>
+						<tr>
+							<td>Hidratos de Carbono Total:</td>
+							<td th:text="${totals != null && totals.totalHidratosDeCarbono != null ? (#numbers.formatDecimal(totals.totalHidratosDeCarbono, 1, 2) + ' g') : '0.00 g'}"></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			</div>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	<div class="footer">
+		<p>Este documento fue generado el <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}"></span></p>
+		<p>Minutriporcion - Consulta Nutricional Profesional</p>
+	</div>
+</body>
+</html>

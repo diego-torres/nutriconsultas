@@ -24,6 +24,7 @@ import org.thymeleaf.context.Context;
 
 import com.nutriconsultas.paciente.Paciente;
 import com.nutriconsultas.paciente.PacienteDieta;
+import com.nutriconsultas.paciente.PacienteDietaAssignmentType;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
 import com.nutriconsultas.paciente.PacienteDietaWeekday;
@@ -274,6 +275,82 @@ public class DietaPdfServiceTest {
 		verify(templateEngine).process(eq("sbadmin/dietas/printable"), contextCaptor.capture());
 		assertThat(contextCaptor.getValue().getVariable("pacienteDieta")).isEqualTo(weekly);
 		assertThat(contextCaptor.getValue().getVariable("paciente")).isEqualTo(paciente);
+	}
+
+	@Test
+	public void testGenerateWeeklyPdfIncludesWeekdayDietas() {
+		final Paciente paciente = new Paciente();
+		paciente.setId(3L);
+		final PacienteDieta weekly = new PacienteDieta();
+		weekly.setId(25L);
+		weekly.setPaciente(paciente);
+		weekly.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
+		final PacienteDietaWeekday monday = new PacienteDietaWeekday();
+		monday.setDayOfWeek(1);
+		monday.setDieta(dieta);
+
+		when(pacienteDietaWeekdayRepository.findByPacienteDietaIdOrderByDayOfWeekAsc(25L)).thenReturn(List.of(monday));
+		when(dietaService.getDieta(1L)).thenReturn(dieta);
+		when(templateEngine.process(eq("sbadmin/dietas/printable-semanal"), any(Context.class)))
+			.thenReturn("<html><body>Weekly</body></html>");
+
+		final ArgumentCaptor<Context> contextCaptor = ArgumentCaptor.forClass(Context.class);
+		final byte[] pdfBytes = dietaPdfService.generateWeeklyPdf(weekly);
+
+		assertThat(pdfBytes).isNotNull();
+		assertThat(pdfBytes.length).isGreaterThan(0);
+		verify(templateEngine).process(eq("sbadmin/dietas/printable-semanal"), contextCaptor.capture());
+		@SuppressWarnings("unchecked")
+		final List<DietaPdfService.WeeklyDietPdfDay> days = (List<DietaPdfService.WeeklyDietPdfDay>) contextCaptor
+			.getValue()
+			.getVariable("weeklyDays");
+		assertThat(days).hasSize(1);
+		assertThat(days.get(0).getDayLabel()).isEqualTo("Lunes");
+		assertThat(days.get(0).getDieta()).isEqualTo(dieta);
+		assertThat(contextCaptor.getValue().getVariable("paciente")).isEqualTo(paciente);
+	}
+
+	@Test
+	public void testGenerateWeeklyPdfThrowsWhenNotWeekly() {
+		final PacienteDieta assignment = new PacienteDieta();
+		assignment.setId(25L);
+		assignment.setAssignmentType(PacienteDietaAssignmentType.DATE_RANGE);
+
+		assertThatThrownBy(() -> dietaPdfService.generateWeeklyPdf(assignment))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("not a weekly plan");
+	}
+
+	@Test
+	public void testGenerateWeeklyPdfThrowsWhenNoDays() {
+		final PacienteDieta weekly = new PacienteDieta();
+		weekly.setId(25L);
+		weekly.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
+		when(pacienteDietaWeekdayRepository.findByPacienteDietaIdOrderByDayOfWeekAsc(25L)).thenReturn(List.of());
+
+		assertThatThrownBy(() -> dietaPdfService.generateWeeklyPdf(weekly)).isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("no days");
+	}
+
+	@Test
+	public void testBuildWeeklyAssignmentPdfResponseSetsFilename() {
+		final PacienteDieta weekly = new PacienteDieta();
+		weekly.setId(25L);
+		weekly.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
+		final PacienteDietaWeekday monday = new PacienteDietaWeekday();
+		monday.setDayOfWeek(1);
+		monday.setDieta(dieta);
+		when(pacienteDietaWeekdayRepository.findByPacienteDietaIdOrderByDayOfWeekAsc(25L)).thenReturn(List.of(monday));
+		when(dietaService.getDieta(1L)).thenReturn(dieta);
+		when(templateEngine.process(eq("sbadmin/dietas/printable-semanal"), any(Context.class)))
+			.thenReturn("<html><body>Weekly</body></html>");
+
+		final org.springframework.http.ResponseEntity<byte[]> response = dietaPdfService
+			.buildWeeklyAssignmentPdfResponse(weekly);
+
+		assertThat(response.getHeaders().getFirst(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION))
+			.contains("plan-semanal.pdf");
+		assertThat(response.getBody()).isNotEmpty();
 	}
 
 }

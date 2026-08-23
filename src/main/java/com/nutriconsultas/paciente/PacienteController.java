@@ -1232,6 +1232,38 @@ public class PacienteController extends AbstractAuthorizedController {
 	}
 
 	/**
+	 * Downloads a PDF of a weekly (multi-day) meal plan assigned to a patient.
+	 * @param pacienteId the patient ID
+	 * @param id the PacienteDieta assignment ID
+	 * @param principal the authenticated nutritionist
+	 * @return PDF attachment, 401 when unauthenticated, or 404 when not found
+	 */
+	@GetMapping(path = "/admin/pacientes/{pacienteId}/dietas/{id}/plan.pdf")
+	public ResponseEntity<byte[]> printWeeklyDietaFromPatient(@PathVariable @NonNull final Long pacienteId,
+			@PathVariable @NonNull final Long id, @AuthenticationPrincipal final OidcUser principal) {
+		log.debug("Generating weekly meal plan PDF for assignment {} and patient {}", id, pacienteId);
+		final String userId = getUserId(principal);
+		if (userId == null) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		final Paciente paciente = pacienteRepository.findByIdAndUserId(pacienteId, userId).orElse(null);
+		if (paciente == null) {
+			log.error("Patient with id {} not found for user {}", pacienteId, userId);
+			return ResponseEntity.notFound().build();
+		}
+		verifyPatientOwnership(paciente, userId);
+		final PacienteDieta assignment = pacienteDietaService.findById(id);
+		if (assignment.getPaciente() == null || !pacienteId.equals(assignment.getPaciente().getId())) {
+			throw new IllegalArgumentException("La asignación no pertenece al paciente");
+		}
+		if (!assignment.isWeeklyAssignment()) {
+			throw new IllegalArgumentException("La asignación no es un plan semanal");
+		}
+		assignment.setPaciente(paciente);
+		return dietaPdfService.buildWeeklyAssignmentPdfResponse(assignment);
+	}
+
+	/**
 	 * Calculates age from date of birth.
 	 * @param dob Date of birth
 	 * @return Age in years, or null if dob is null or in the future
