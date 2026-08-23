@@ -34,10 +34,11 @@ Sign in with Apple creates a **new** Auth0 `sub`. It **cannot** attach to an alr
 | Review email | `app-review+ios@minutriporcion.com` | Synthetic; not a real patient |
 | Auth0 `user_id` / JWT `sub` | `auth0\|6a8b3c7c6adac7dd61cf238c` | Created 2026-08-23; `email_verified=true`; `app_metadata.invited=true` |
 | Password | **1Password** | Item suggestion: `Minutriporcion / App Store Review / iOS` |
-| Primary `Paciente` id | _TBD — create in web_ | `status=ACTIVE`, labeled App Review |
-| Nutritionist `userId` | _TBD_ | Must have an **active subscription** (create-patient is entitlement-gated) |
-| Spare invitation human code | _TBD — 1Password + ASC notes_ | Second `Paciente`; do **not** redeem with the email/password user |
-| Spare invitation expires | _TBD_ | Re-issue before day 14 / before each submit |
+| Primary `Paciente` id | **35** | `Alex Demo Review`, `status=ACTIVE`, email matches Auth0, `patientAuthSub` linked 2026-08-23 |
+| Nutritionist | Diego A. Torres | Production nutritionist with an **active subscription** (create-patient succeeded) |
+| Spare `Paciente` id | **36** | `Alex Demo SIWA Fallback` — `INVITED`; `patientAuthSub` unset |
+| Spare invitation human code | **1Password + ASC notes** | Issued 2026-08-23; do **not** redeem with the email/password user |
+| Spare invitation expires | 2026-09-06 | Re-issue before day 14 / before each App Store submit |
 
 `app_metadata.invited=true` is **required**. The Auth0 Post-Login Action [`patient-invitation-gate.js`](../auth0/actions/patient-invitation-gate.js) denies **first** login (`logins_count === 1`) unless `app_metadata.invited === true` **or** a valid `invitation_token` is passed. A pre-linked review user does not send an invitation token, so a missing `invited` flag looks like a broken app.
 

@@ -18,7 +18,7 @@ Canonical cross-repo contracts for the `[Mobile API]` track. Indexed from [`../.
 | [`APPOINTMENT-QUESTIONS-CONTRACT.md`](APPOINTMENT-QUESTIONS-CONTRACT.md) | Appointment question reminders CRUD (#587); OpenAPI twin |
 | [`APP-REVIEW-DEMO-PATIENT.md`](APP-REVIEW-DEMO-PATIENT.md) | Production App Store Review demo patient runbook (#607–#610); ops only, no API change |
 
-**Status (2026-08-23):** [#607](https://github.com/diego-torres/nutriconsultas/issues/607)–[#610](https://github.com/diego-torres/nutriconsultas/issues/610) App Store Review demo patient — ops runbook; remaining production web seed/link. [#587](https://github.com/diego-torres/nutriconsultas/issues/587) appointment question reminders — backend `in-progress` (`mobile-api/appointment-questions`).
+**Status (2026-08-23):** [#607](https://github.com/diego-torres/nutriconsultas/issues/607) App Store Review demo patient — prod paciente **35** linked + Home seeded; spare invite **36**. Remaining: 1Password / ASC notes + iOS pass. [#587](https://github.com/diego-torres/nutriconsultas/issues/587) appointment question reminders — backend `in-progress` (`mobile-api/appointment-questions`).
 
 **Status (2026-08-11):** Epic [#573](https://github.com/diego-torres/nutriconsultas/issues/573) mobile push — ~~#574~~–~~#577~~ backend contract/docs. (Older grocery status below retained.)
 

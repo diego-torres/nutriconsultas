@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Subscription (parallel):** [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) · **Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-08-23 — **#607–#610** App Store 2.1 App Review demo patient (ops; mobile [#149](https://github.com/Escanor4323/nutriconsultas-mobile/issues/149)). **#605** optional `dob` on `PATCH /patient/me` (mobile #151). **#598** platillo image; **#587** appointment questions; #558 social reconcile planning.
+**Last updated:** 2026-08-23 — **#607** App Review demo patient: prod **35** linked/seeded, spare **36** issued; remaining 1Password/ASC + iOS pass (mobile [#149](https://github.com/Escanor4323/nutriconsultas-mobile/issues/149)). **#605** optional `dob` on `PATCH /patient/me` (mobile #151). **#598** platillo image; **#587** appointment questions; #558 social reconcile planning.
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116, #132–#141 invitation onboarding) plus the directly-related `[Dashboard]` IMC gauge (#106) and **integration prerequisites** that gate schema work (#156, #46). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -200,10 +200,10 @@ No new mobile endpoints. Production **ops fixture** so App Review can finish a p
 
 | # | Title | URL | State | Notes |
 |---|-------|-----|-------|-------|
-| **607** | Epic — production App Review demo patient | https://github.com/diego-torres/nutriconsultas/issues/607 | **in-progress** | Runbook [`docs/mobile-api/APP-REVIEW-DEMO-PATIENT.md`](docs/mobile-api/APP-REVIEW-DEMO-PATIENT.md). Do **not** add bypass / multi-use invite |
-| 608 | Ops — Auth0 email/password + link `patientAuthSub` | https://github.com/diego-torres/nutriconsultas/issues/608 | **in-progress** | Prod Auth0 user created (`app_metadata.invited`); web `Paciente` + Afiliación link remaining; secrets in 1Password / ASC only |
-| 610 | Ops — seed synthetic visits, diet, progress, messages | https://github.com/diego-torres/nutriconsultas/issues/610 | **open** | Web UI; not Liquibase PHI; after #608 link |
-| 609 | Ops — spare PENDING invitation + 14-day re-issue | https://github.com/diego-torres/nutriconsultas/issues/609 | **open** | SIWA fallback; second `Paciente`; do not redeem with #608 user |
+| **607** | Epic — production App Review demo patient | https://github.com/diego-torres/nutriconsultas/issues/607 | **in-progress** | Prod paciente **35** linked + Home seeded; spare invite **36**. Remaining: 1Password + ASC notes + iOS screenshot pass (mobile #149). Do **not** add bypass / multi-use invite |
+| 608 | Ops — Auth0 email/password + link `patientAuthSub` | https://github.com/diego-torres/nutriconsultas/issues/608 | **done** | Auth0 user + paciente 35 `ACTIVE` + `patientAuthSub` linked (badge Vinculado) |
+| 610 | Ops — seed synthetic visits, diet, progress, messages | https://github.com/diego-torres/nutriconsultas/issues/610 | **done** | Paciente 35: visit, ACTIVE diet (plantilla 01), anthropometry/progress, nutritionist message |
+| 609 | Ops — spare PENDING invitation + 14-day re-issue | https://github.com/diego-torres/nutriconsultas/issues/609 | **done** | Paciente 36 `INVITED`; preview 200; expires 2026-09-06; code in 1Password / ASC only |
 
 ---
 
