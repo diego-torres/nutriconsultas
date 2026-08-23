@@ -64,6 +64,25 @@ class MobilePatientOnboardingServiceTest {
 	}
 
 	@Test
+	void updateProfile_activatesWhenDobOmitted() {
+		final Paciente paciente = sampleOnboardingPaciente(9L);
+		paciente.setDob(null);
+		paciente.setAvatarId(PacienteAvatarCatalog.DEFAULT_FEMALE_ID);
+		when(pacienteRepository.findById(9L)).thenReturn(Optional.of(paciente));
+		when(pacienteRepository.save(any(Paciente.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(pacienteDietaRepository.findByPacienteIdAndStatus(9L,
+				com.nutriconsultas.paciente.PacienteDietaStatus.ACTIVE))
+			.thenReturn(List.of());
+
+		final PatientOnboardingProfileDto updated = service.updateProfile(9L,
+				new PatchPatientOnboardingProfileRequest(null, null, null, null, null, null, null));
+
+		assertThat(updated.status()).isEqualTo(PacienteStatus.ACTIVE);
+		assertThat(updated.profileComplete()).isTrue();
+		assertThat(updated.dob()).isNull();
+	}
+
+	@Test
 	void updateProfile_rejectsInvalidAvatar() {
 		final Paciente paciente = sampleOnboardingPaciente(9L);
 		when(pacienteRepository.findById(9L)).thenReturn(Optional.of(paciente));

@@ -17,8 +17,10 @@ public final class PatientOnboardingCompleteness {
 		if (paciente == null) {
 			return false;
 		}
-		return StringUtils.hasText(paciente.getName()) && paciente.getDob() != null
-				&& isValidGender(paciente.getGender()) && StringUtils.hasText(paciente.getDisplayName())
+		// Date of birth is optional (App Store 5.1.1 / #605). Name, display name,
+		// gender, and avatar remain required to reach ACTIVE.
+		return StringUtils.hasText(paciente.getName()) && isValidGender(paciente.getGender())
+				&& StringUtils.hasText(paciente.getDisplayName())
 				&& PacienteAvatarCatalog.isValid(paciente.getAvatarId());
 	}
 
