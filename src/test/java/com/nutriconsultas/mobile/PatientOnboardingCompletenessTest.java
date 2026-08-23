@@ -30,6 +30,15 @@ class PatientOnboardingCompletenessTest {
 		assertThat(PatientOnboardingCompleteness.isComplete(paciente)).isTrue();
 	}
 
+	@Test
+	void isComplete_returnsTrueWhenDobMissing() {
+		final Paciente paciente = samplePaciente(PacienteStatus.ONBOARDING);
+		paciente.setAvatarId(PacienteAvatarCatalog.DEFAULT_FEMALE_ID);
+		paciente.setDob(null);
+
+		assertThat(PatientOnboardingCompleteness.isComplete(paciente)).isTrue();
+	}
+
 	private static Paciente samplePaciente(final PacienteStatus status) {
 		final Paciente paciente = new Paciente();
 		paciente.setName("María López");
