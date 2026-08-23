@@ -63,7 +63,7 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 
 **Current next issue (public booking):** None — epic ~~#245~~ **done**; ~~#246~~, ~~#247~~, ~~#248~~, ~~#297~~, ~~#300~~, ~~#302~~ done. Deferred follow-ups need new issues. See [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md).
 
-**Current next issue (mobile):** [#587 — Appointment question reminders](https://github.com/diego-torres/nutriconsultas/issues/587) (`in-progress`, branch `mobile-api/appointment-questions`). [#353 — Grocery list for patient diet plan](https://github.com/diego-torres/nutriconsultas/issues/353) (`in-progress`). ~~#354~~ ~~#352~~ **done** (PR [#357](https://github.com/diego-torres/nutriconsultas/pull/357)).
+**Current next issue (mobile):** [#607 — App Store Review demo patient](https://github.com/diego-torres/nutriconsultas/issues/607) (`in-progress`, ops; runbook [`docs/mobile-api/APP-REVIEW-DEMO-PATIENT.md`](docs/mobile-api/APP-REVIEW-DEMO-PATIENT.md)). [#587 — Appointment question reminders](https://github.com/diego-torres/nutriconsultas/issues/587) (`in-progress`, branch `mobile-api/appointment-questions`). [#353 — Grocery list for patient diet plan](https://github.com/diego-torres/nutriconsultas/issues/353) (`in-progress`). ~~#354~~ ~~#352~~ **done** (PR [#357](https://github.com/diego-torres/nutriconsultas/pull/357)).
 
 **Current next issue (mobile social reconcile):** [#569](https://github.com/diego-torres/nutriconsultas/issues/569) track docs (or ops [#561](https://github.com/diego-torres/nutriconsultas/issues/561)–[#563](https://github.com/diego-torres/nutriconsultas/issues/563) in parallel). Epic [#560](https://github.com/diego-torres/nutriconsultas/issues/560). Planning source [#558](https://github.com/diego-torres/nutriconsultas/issues/558) / mobile [#124](https://github.com/Escanor4323/nutriconsultas-mobile/issues/124). See [`ISSUE-MOBILE-SOCIAL-RECONCILE.md`](ISSUE-MOBILE-SOCIAL-RECONCILE.md) and [Planning — #558](#planning--558-auth0-social-login-reconcile-alignment).
 
@@ -467,9 +467,9 @@ gh pr create ...
 
 | Field | Value |
 |-------|-------|
-| **Next issue** | None — Phase 2 invitation onboarding **complete** (~~#141~~) |
-| **Status** | **Complete** — new issues needed for next mobile sprint |
-| **Just completed** | [#141 — Invitation security hardening](https://github.com/diego-torres/nutriconsultas/issues/141) — [`INVITATION-SECURITY-AUDIT.md`](docs/mobile-api/INVITATION-SECURITY-AUDIT.md) |
+| **Next issue** | [#607](https://github.com/diego-torres/nutriconsultas/issues/607) App Store Review demo patient (ops) — runbook [`docs/mobile-api/APP-REVIEW-DEMO-PATIENT.md`](docs/mobile-api/APP-REVIEW-DEMO-PATIENT.md); remaining web link + seed (#608–#610, #609) |
+| **Status** | **In progress** — Auth0 review user created in prod; `Paciente` link and clinical seed are nutritionist-web ops |
+| **Just completed** | Runbook for #607–#610 (this PR) |
 
 ### Upcoming gates
 

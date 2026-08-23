@@ -15,6 +15,8 @@ registro de consultorio de nutrición
 
 **On `main` (2026-06-23):** Mobile **Phase 2 invitation onboarding complete** (~~#141~~). Subscription **registered track complete** (~~#244~~ ✓ on `subscription/244-contact-form-prefill`; ~~#314~~ ~~#188~~ ~~#186~~ ~~#220~~ ~~#207~~ ~~#208~~ ~~#209~~ done). Nutritionist web: all registered epics **complete** (#221–#242, #271–#272). Public booking: epic ~~#245~~ **done** (v1); ~~#246~~–~~#302~~ shipped.
 
+**Ops (2026-08-23):** App Store Review demo patient [#607](https://github.com/diego-torres/nutriconsultas/issues/607)–[#610](https://github.com/diego-torres/nutriconsultas/issues/610) — production fixture runbook [`docs/mobile-api/APP-REVIEW-DEMO-PATIENT.md`](docs/mobile-api/APP-REVIEW-DEMO-PATIENT.md) (no new mobile API).
+
 ### In-app support (Soporte)
 
 **Issue registry:** [`ISSUE-SUPPORT.md`](ISSUE-SUPPORT.md) · **Plan:** [`docs/support/SUPPORT-TICKETS-PLAN.md`](docs/support/SUPPORT-TICKETS-PLAN.md) · **Workflow:** [`SUPPORT-WORKFLOW.md`](SUPPORT-WORKFLOW.md)
