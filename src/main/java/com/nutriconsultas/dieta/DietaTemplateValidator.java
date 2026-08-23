@@ -290,6 +290,31 @@ public class DietaTemplateValidator extends BaseTemplateValidator {
 		variables.put("logoBase64", NutritionistBrandingHelper.MOCK_LOGO_DATA_URI);
 		NutritionistBrandingHelper.addPdfLogoDimensionVariables(variables,
 				NutritionistBrandingHelper.MOCK_LOGO_DATA_URI);
+
+		final DietaPdfService.WeeklyDietPdfDay mockWeeklyDay = new DietaPdfService.WeeklyDietPdfDay();
+		mockWeeklyDay.setDayOfWeek(1);
+		mockWeeklyDay.setDayLabel("Lunes");
+		mockWeeklyDay.setDieta(mockDieta);
+		mockWeeklyDay.setIngestas(mockDieta.getIngestas());
+		mockWeeklyDay.setIngestaTotals(copyIngestaTotals(variables.get("ingestaTotals")));
+		mockWeeklyDay.setTotalEnergia((Integer) variables.get("totalEnergia"));
+		mockWeeklyDay.setTotalProteina((Double) variables.get("totalProteina"));
+		mockWeeklyDay.setTotalLipidos((Double) variables.get("totalLipidos"));
+		mockWeeklyDay.setTotalHidratosDeCarbono((Double) variables.get("totalHidratosDeCarbono"));
+		variables.put("weeklyDays", java.util.List.of(mockWeeklyDay));
+	}
+
+	private java.util.Map<Long, DietaPdfService.IngestaNutritionalTotals> copyIngestaTotals(final Object source) {
+		final java.util.Map<Long, DietaPdfService.IngestaNutritionalTotals> copied = new java.util.HashMap<>();
+		if (source instanceof java.util.Map<?, ?> totalsMap) {
+			for (final java.util.Map.Entry<?, ?> entry : totalsMap.entrySet()) {
+				if (entry.getKey() instanceof Long key
+						&& entry.getValue() instanceof DietaPdfService.IngestaNutritionalTotals value) {
+					copied.put(key, value);
+				}
+			}
+		}
+		return copied;
 	}
 
 	/**

@@ -1,7 +1,10 @@
 package com.nutriconsultas.dieta;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,7 @@ import com.nutriconsultas.paciente.PacienteDieta;
 import com.nutriconsultas.paciente.PacienteDietaRepository;
 import com.nutriconsultas.paciente.PacienteDietaStatus;
 import com.nutriconsultas.paciente.PacienteDietaWeekday;
+import com.nutriconsultas.paciente.PacienteDietaWeekdayLabels;
 import com.nutriconsultas.paciente.PacienteDietaWeekdayRepository;
 import com.nutriconsultas.paciente.PacienteRepository;
 import com.nutriconsultas.profile.NutritionistBrandingHelper;
@@ -75,6 +79,31 @@ public class DietaPdfService {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class IngestaNutritionalTotals {
+
+		private Integer totalEnergia;
+
+		private Double totalProteina;
+
+		private Double totalLipidos;
+
+		private Double totalHidratosDeCarbono;
+
+	}
+
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class WeeklyDietPdfDay {
+
+		private Integer dayOfWeek;
+
+		private String dayLabel;
+
+		private Dieta dieta;
+
+		private List<Ingesta> ingestas;
+
+		private Map<Long, IngestaNutritionalTotals> ingestaTotals;
 
 		private Integer totalEnergia;
 
@@ -237,29 +266,133 @@ public class DietaPdfService {
 			.body(pdfBytes);
 	}
 
+	/**
+	 * Generates a multi-day PDF for a weekly {@link PacienteDieta} assignment.
+	 *
+	 * <p>
+	 * The document includes a cover page (patient, dates, day overview) followed by each
+	 * weekday dieta with ingestas and nutritional totals.
+	 * @param assignment weekly patient diet assignment
+	 * @return PDF document as byte array
+	 * @throws IllegalArgumentException if the assignment is not weekly or has no days
+	 */
+	public byte[] generateWeeklyPdf(@NonNull final PacienteDieta assignment) {
+		log.info("Generating weekly PDF for assignment id: {}", assignment.getId());
+		if (!assignment.isWeeklyAssignment()) {
+			throw new IllegalArgumentException("Assignment is not a weekly plan");
+		}
+		if (assignment.getId() == null) {
+			throw new IllegalArgumentException("Assignment has no id");
+		}
+		final List<PacienteDietaWeekday> slots = pacienteDietaWeekdayRepository
+			.findByPacienteDietaIdOrderByDayOfWeekAsc(assignment.getId());
+		final List<WeeklyDietPdfDay> weeklyDays = new ArrayList<>();
+		for (final PacienteDietaWeekday slot : slots) {
+			final WeeklyDietPdfDay day = buildWeeklyDay(slot);
+			if (day != null) {
+				weeklyDays.add(day);
+			}
+		}
+		if (weeklyDays.isEmpty()) {
+			throw new IllegalArgumentException("Weekly assignment has no days");
+		}
+		return buildWeeklyPdf(assignment, weeklyDays);
+	}
+
+	public ResponseEntity<byte[]> buildWeeklyAssignmentPdfResponse(@NonNull final PacienteDieta assignment) {
+		final byte[] pdfBytes = generateWeeklyPdf(assignment);
+		return ResponseEntity.ok()
+			.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"plan-semanal.pdf\"")
+			.contentType(MediaType.parseMediaType("application/pdf"))
+			.body(pdfBytes);
+	}
+
 	private byte[] buildPdf(final Dieta dieta, final PacienteDieta assignment) {
-		// Prepare context for Thymeleaf template
-		// Template will conditionally render patient info based on these variables
 		final Context context = new Context();
 		context.setVariable("dieta", dieta);
 		context.setVariable("pacienteDieta", assignment);
 		context.setVariable("paciente", resolvePaciente(dieta, assignment));
-
-		// Sort ingestas by display order
-		final List<Ingesta> sortedIngestas = dieta.getIngestas()
-			.stream()
-			.sorted(IngestaComparators.BY_DISPLAY_ORDER)
-			.collect(Collectors.toList());
-		sortedIngestas.forEach(ingesta -> {
-			if (ingesta.getAlimentos() != null) {
-				ingesta.getAlimentos().sort(AlimentoIngestaComparators.BY_DISPLAY_ORDER);
-			}
-		});
+		final List<Ingesta> sortedIngestas = sortedIngestas(dieta);
 		context.setVariable("ingestas", sortedIngestas);
+		context.setVariable("ingestaTotals", buildIngestaTotals(sortedIngestas));
+		context.setVariable("totalEnergia", calculateTotalEnergia(dieta));
+		context.setVariable("totalProteina", calculateTotalProteina(dieta));
+		context.setVariable("totalLipidos", calculateTotalLipidos(dieta));
+		context.setVariable("totalHidratosDeCarbono", calculateTotalHidratosDeCarbono(dieta));
+		applyBranding(context, dieta.getUserId());
+		final String html = templateEngine.process("sbadmin/dietas/printable", context);
+		return htmlToPdf(html);
+	}
 
-		// Calculate nutritional totals per ingesta and store in a map
-		final java.util.Map<Long, IngestaNutritionalTotals> ingestaTotals = new java.util.HashMap<>();
-		for (final Ingesta ingesta : sortedIngestas) {
+	private WeeklyDietPdfDay buildWeeklyDay(final PacienteDietaWeekday slot) {
+		WeeklyDietPdfDay result = null;
+		if (slot != null && slot.getDieta() != null && slot.getDieta().getId() != null) {
+			final Dieta dieta = dietaService.getDieta(slot.getDieta().getId());
+			if (dieta != null) {
+				final int dayOfWeek = slot.getDayOfWeek() != null ? slot.getDayOfWeek() : 0;
+				final List<Ingesta> ingestas = sortedIngestas(dieta);
+				final WeeklyDietPdfDay day = new WeeklyDietPdfDay();
+				day.setDayOfWeek(slot.getDayOfWeek());
+				day.setDayLabel(PacienteDietaWeekdayLabels.labelForDay(dayOfWeek));
+				day.setDieta(dieta);
+				day.setIngestas(ingestas);
+				day.setIngestaTotals(buildIngestaTotals(ingestas));
+				day.setTotalEnergia(calculateTotalEnergia(dieta));
+				day.setTotalProteina(calculateTotalProteina(dieta));
+				day.setTotalLipidos(calculateTotalLipidos(dieta));
+				day.setTotalHidratosDeCarbono(calculateTotalHidratosDeCarbono(dieta));
+				result = day;
+			}
+		}
+		return result;
+	}
+
+	private byte[] buildWeeklyPdf(final PacienteDieta assignment, final List<WeeklyDietPdfDay> weeklyDays) {
+		final Context context = new Context();
+		context.setVariable("weeklyDays", weeklyDays);
+		context.setVariable("pacienteDieta", assignment);
+		context.setVariable("paciente", assignment.getPaciente());
+		applyBranding(context, resolveWeeklyBrandingUserId(assignment, weeklyDays));
+		final String html = templateEngine.process("sbadmin/dietas/printable-semanal", context);
+		return htmlToPdf(html);
+	}
+
+	private String resolveWeeklyBrandingUserId(final PacienteDieta assignment,
+			final List<WeeklyDietPdfDay> weeklyDays) {
+		String userId = null;
+		if (assignment.getPaciente() != null && assignment.getPaciente().getUserId() != null) {
+			userId = assignment.getPaciente().getUserId();
+		}
+		else {
+			for (final WeeklyDietPdfDay day : weeklyDays) {
+				if (day.getDieta() != null && day.getDieta().getUserId() != null) {
+					userId = day.getDieta().getUserId();
+					break;
+				}
+			}
+		}
+		return userId;
+	}
+
+	private List<Ingesta> sortedIngestas(final Dieta dieta) {
+		List<Ingesta> result = List.of();
+		if (dieta.getIngestas() != null) {
+			result = dieta.getIngestas()
+				.stream()
+				.sorted(IngestaComparators.BY_DISPLAY_ORDER)
+				.collect(Collectors.toList());
+			result.forEach(ingesta -> {
+				if (ingesta.getAlimentos() != null) {
+					ingesta.getAlimentos().sort(AlimentoIngestaComparators.BY_DISPLAY_ORDER);
+				}
+			});
+		}
+		return result;
+	}
+
+	private Map<Long, IngestaNutritionalTotals> buildIngestaTotals(final List<Ingesta> ingestas) {
+		final Map<Long, IngestaNutritionalTotals> ingestaTotals = new HashMap<>();
+		for (final Ingesta ingesta : ingestas) {
 			final IngestaNutritionalTotals totals = new IngestaNutritionalTotals();
 			totals.setTotalEnergia(calculateTotalEnergia(ingesta));
 			totals.setTotalProteina(calculateTotalProteina(ingesta));
@@ -267,30 +400,18 @@ public class DietaPdfService {
 			totals.setTotalHidratosDeCarbono(calculateTotalHidratosDeCarbono(ingesta));
 			ingestaTotals.put(ingesta.getId(), totals);
 		}
-		context.setVariable("ingestaTotals", ingestaTotals);
+		return ingestaTotals;
+	}
 
-		// Calculate total nutritional values for the dieta
-		context.setVariable("totalEnergia", calculateTotalEnergia(dieta));
-		context.setVariable("totalProteina", calculateTotalProteina(dieta));
-		context.setVariable("totalLipidos", calculateTotalLipidos(dieta));
-		context.setVariable("totalHidratosDeCarbono", calculateTotalHidratosDeCarbono(dieta));
-
-		// Inject nutritionist profile branding for PDF header
-		// Dieta.userId identifies the owning nutritionist tenant
-		if (dieta.getUserId() != null) {
-			final NutritionistProfile profile = nutritionistProfileService.getOrCreateProfile(dieta.getUserId());
-			final String logoBase64 = nutritionistProfileService.getLogoAsBase64DataUri(dieta.getUserId());
+	private void applyBranding(final Context context, final String userId) {
+		if (userId != null) {
+			final NutritionistProfile profile = nutritionistProfileService.getOrCreateProfile(userId);
+			final String logoBase64 = nutritionistProfileService.getLogoAsBase64DataUri(userId);
 			NutritionistBrandingHelper.addBrandingVariables(context, profile, logoBase64);
 		}
 		else {
 			NutritionistBrandingHelper.addBrandingVariables(context, null, null);
 		}
-
-		// Render Thymeleaf template to HTML
-		final String html = templateEngine.process("sbadmin/dietas/printable", context);
-
-		// Convert HTML to PDF using Flying Saucer
-		return htmlToPdf(html);
 	}
 
 	private Paciente resolvePaciente(final Dieta dieta, final PacienteDieta assignment) {

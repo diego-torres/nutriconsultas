@@ -1182,6 +1182,57 @@ public class PacienteControllerTest {
 	}
 
 	@Test
+	public void testPrintWeeklyDietaFromPatient() {
+		final PacienteDieta weekly = new PacienteDieta();
+		weekly.setId(25L);
+		weekly.setPaciente(paciente);
+		weekly.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
+		final byte[] pdfBytes = new byte[] { 37, 80, 68, 70 };
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteDietaService.findById(25L)).thenReturn(weekly);
+		when(dietaPdfService.buildWeeklyAssignmentPdfResponse(weekly)).thenReturn(
+				ResponseEntity.ok().contentType(org.springframework.http.MediaType.APPLICATION_PDF).body(pdfBytes));
+
+		final ResponseEntity<byte[]> result = controller.printWeeklyDietaFromPatient(1L, 25L, principal);
+
+		assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+		assertThat(result.getBody()).isEqualTo(pdfBytes);
+		verify(dietaPdfService).buildWeeklyAssignmentPdfResponse(weekly);
+	}
+
+	@Test
+	public void testPrintWeeklyDietaFromPatientThrowsWhenNotWeekly() {
+		final PacienteDieta assignment = new PacienteDieta();
+		assignment.setId(25L);
+		assignment.setPaciente(paciente);
+		assignment.setAssignmentType(PacienteDietaAssignmentType.DATE_RANGE);
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteDietaService.findById(25L)).thenReturn(assignment);
+
+		assertThatThrownBy(() -> controller.printWeeklyDietaFromPatient(1L, 25L, principal))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("plan semanal");
+		verify(dietaPdfService, org.mockito.Mockito.never()).buildWeeklyAssignmentPdfResponse(any());
+	}
+
+	@Test
+	public void testPrintWeeklyDietaFromPatientThrowsWhenAssignmentBelongsToOtherPatient() {
+		final Paciente otherPatient = new Paciente();
+		otherPatient.setId(99L);
+		final PacienteDieta weekly = new PacienteDieta();
+		weekly.setId(25L);
+		weekly.setPaciente(otherPatient);
+		weekly.setAssignmentType(PacienteDietaAssignmentType.WEEKLY);
+		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
+		when(pacienteDietaService.findById(25L)).thenReturn(weekly);
+
+		assertThatThrownBy(() -> controller.printWeeklyDietaFromPatient(1L, 25L, principal))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("no pertenece");
+		verify(dietaPdfService, org.mockito.Mockito.never()).buildWeeklyAssignmentPdfResponse(any());
+	}
+
+	@Test
 	public void testPrintDietaFromPatientReturnsNotFoundWhenDietaNotAssigned() {
 		when(pacienteRepository.findByIdAndUserId(1L, TEST_USER_ID)).thenReturn(java.util.Optional.of(paciente));
 		when(pacienteDietaService.findAssignmentContainingDieta(1L, 83L)).thenReturn(null);
