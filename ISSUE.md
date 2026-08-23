@@ -6,7 +6,7 @@ Living index of the GitHub issues that build the **patient mobile API** (`/rest/
 **Workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Subscription (parallel):** [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) · **Nutritionist web (parallel):** [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md)
 **Mobile consumer:** [Escanor4323/nutriconsultas-mobile](https://github.com/Escanor4323/nutriconsultas-mobile) (Flutter/GetX, patient app)
 **Canonical contract:** [`docs/mobile-api/ALIGNMENT-SPEC.md`](docs/mobile-api/ALIGNMENT-SPEC.md) (§F8 schema) · [`docs/mobile-api/mobile-api-roadmap-v2.md`](docs/mobile-api/mobile-api-roadmap-v2.md) (endpoint specs)
-**Last updated:** 2026-08-14 — **#598** patient-accessible platillo image (`mobile-api/598-patient-platillo-image`). **#587** appointment question reminders (`mobile-api/appointment-questions`). #558 Auth0 social reconcile planning; **#529** patient profile photo; #353 grocery list (`mobile-api/353-grocery-list`). ~~#354~~ ~~#352~~ **done** (PR [#357](https://github.com/diego-torres/nutriconsultas/pull/357)). ~~#349~~ **done** (PR [#356](https://github.com/diego-torres/nutriconsultas/pull/356)).
+**Last updated:** 2026-08-23 — **#607** App Review demo patient: prod **35** linked/seeded, spare **36** issued; remaining 1Password/ASC + iOS pass (mobile [#149](https://github.com/Escanor4323/nutriconsultas-mobile/issues/149)). **#605** optional `dob` on `PATCH /patient/me` (mobile #151). **#598** platillo image; **#587** appointment questions; #558 social reconcile planning.
 
 > **Scope of this file.** This registry tracks the `[Mobile API]` issues (#91–#99, #107–#116, #132–#141 invitation onboarding) plus the directly-related `[Dashboard]` IMC gauge (#106) and **integration prerequisites** that gate schema work (#156, #46). The repo's many closed web/admin issues (#1–#90) are nutritionist-web features and are **out of scope** here except where a mobile endpoint reuses their code (cross-referenced in [Data contracts](#data-contracts)).
 
@@ -194,6 +194,19 @@ Extended diet plan DTOs and endpoints for mobile home/diet detail flows.
 
 ---
 
+## App Store — 1.0.0 (14) (filed 2026-08-23)
+
+No new mobile endpoints. Production **ops fixture** so App Review can finish a patient session (Guideline 2.1). Consumer: [mobile #149](https://github.com/Escanor4323/nutriconsultas-mobile/issues/149). Optional DOB is [#605](https://github.com/diego-torres/nutriconsultas/issues/605) (mobile #151), not this table.
+
+| # | Title | URL | State | Notes |
+|---|-------|-----|-------|-------|
+| **607** | Epic — production App Review demo patient | https://github.com/diego-torres/nutriconsultas/issues/607 | **in-progress** | Prod paciente **35** linked + Home seeded; spare invite **36**. Remaining: 1Password + ASC notes + iOS screenshot pass (mobile #149). Do **not** add bypass / multi-use invite |
+| 608 | Ops — Auth0 email/password + link `patientAuthSub` | https://github.com/diego-torres/nutriconsultas/issues/608 | **done** | Auth0 user + paciente 35 `ACTIVE` + `patientAuthSub` linked (badge Vinculado) |
+| 610 | Ops — seed synthetic visits, diet, progress, messages | https://github.com/diego-torres/nutriconsultas/issues/610 | **done** | Paciente 35: visit, ACTIVE diet (plantilla 01), anthropometry/progress, nutritionist message |
+| 609 | Ops — spare PENDING invitation + 14-day re-issue | https://github.com/diego-torres/nutriconsultas/issues/609 | **done** | Paciente 36 `INVITED`; preview 200; expires 2026-09-06; code in 1Password / ASC only |
+
+---
+
 ## Data contracts
 
 Each mobile feature consumes these backend endpoints. Two-way linking with the mobile registry ([`mobile/ISSUE.md`](../mobile/ISSUE.md) → "Backend cross-reference").
@@ -212,6 +225,8 @@ Each mobile feature consumes these backend endpoints. Two-way linking with the m
 | 558 | Auth0 social login reconcile alignment (planning) | mobile [#124](https://github.com/Escanor4323/nutriconsultas-mobile/issues/124) | Auth + profile | **open (planning)** — reconcile-by-code security review, reconcile matrix contract docs, `GET`/`PATCH /patient/me` alignment, `email_verified` end-to-end. Reconcile itself already ships via #136/PR #345; see [Resolved decisions](#558-resolved-decisions). |
 | **587** | Preguntas para la próxima cita | mobile [#143](https://github.com/Escanor4323/nutriconsultas-mobile/issues/143) | Read + write | `GET/POST/PATCH/DELETE /rest/mobile/patient/appointment-questions`; contract [`docs/mobile-api/APPOINTMENT-QUESTIONS-CONTRACT.md`](docs/mobile-api/APPOINTMENT-QUESTIONS-CONTRACT.md) |
 | **598** | Foto de platillo en plan de dieta | mobile [#145](https://github.com/Escanor4323/nutriconsultas-mobile/issues/145) | Read-only | `GET /rest/mobile/patient/diet-plans/{assignmentId}/platillos/{platilloIngestaId}/image`; DTO `imageUrl` is a fetchable mobile/static path |
+| **605** | `PATCH /patient/me` — `dob` optional for `ACTIVE` | mobile [#151](https://github.com/Escanor4323/nutriconsultas-mobile/issues/151) | Write | App Store 5.1.1 |
+| **607–610** | Production App Review demo patient (ops) | mobile [#149](https://github.com/Escanor4323/nutriconsultas-mobile/issues/149) | Ops | Existing #91–#99 + #107/#109/#136; no new API |
 
 **Common contract for every #91–#99** (ALIGNMENT-SPEC §"CORRECTED SCOPE"):
 - Auth: OAuth2 Resource Server JWT, separate `@Order(1)` `SecurityFilterChain`, stateless.
