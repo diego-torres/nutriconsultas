@@ -52,6 +52,21 @@ class PatientInvitationGateScriptInteropTest {
 		assertThat(verifyViaNode(script, SECRET, tamperedJws)).isEqualTo("null");
 	}
 
+	@Test
+	@EnabledIf("isNodeAvailable")
+	void auth0ActionScript_allowsAppleAndGoogleAsSocial() throws Exception {
+		final Path script = Path.of("scripts/test-patient-invitation-gate.cjs").toAbsolutePath();
+		final Process process = new ProcessBuilder("node", script.toString(), "selftest")
+			.directory(Path.of("").toAbsolutePath().toFile())
+			.redirectErrorStream(true)
+			.start();
+		final boolean finished = process.waitFor(30, TimeUnit.SECONDS);
+		assertThat(finished).as("node selftest timed out").isTrue();
+		assertThat(process.exitValue()).as("node selftest failed").isZero();
+		final String out = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8).trim();
+		assertThat(out).isEqualTo("ok");
+	}
+
 	private static String verifyViaNode(final Path script, final String secret, final String compactJws)
 			throws Exception {
 		final Process process = new ProcessBuilder("node", script.toString(), "verify", secret, compactJws)

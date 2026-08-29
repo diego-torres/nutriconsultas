@@ -121,6 +121,26 @@ function readInvitationToken(event) {
 	return null;
 }
 
+/**
+ * Native Sign in with Apple / Google. `access.deny` after those providers
+ * succeed leaves ASWebAuthenticationSession hanging (App Store 2.1(a)).
+ * Mobile invitation entry + API onboarding remain the invite gate.
+ */
+function isSocialConnection(event) {
+	const strategy = event.connection?.strategy;
+	if (strategy === 'apple' || strategy === 'google-oauth2') {
+		return true;
+	}
+	const identities = event.user?.identities;
+	if (!Array.isArray(identities)) {
+		return false;
+	}
+	return identities.some((identity) => {
+		const provider = identity && identity.provider;
+		return provider === 'apple' || provider === 'google-oauth2';
+	});
+}
+
 async function validateInvitationToken(event) {
 	const token = readInvitationToken(event);
 	if (!token) {
@@ -153,6 +173,9 @@ exports.onExecutePostLogin = async (event, api) => {
 	if (loginsCount !== 1) {
 		return;
 	}
+	if (isSocialConnection(event)) {
+		return;
+	}
 	const valid = await validateInvitationToken(event);
 	if (!valid) {
 		api.access.deny(DENY_CODE, DENY_MESSAGE);
@@ -163,6 +186,7 @@ exports.onExecutePostLogin = async (event, api) => {
 
 // Exported for Node interop tests (scripts/test-patient-invitation-gate.mjs).
 if (typeof module !== 'undefined') {
-	module.exports.verifyOfflineJws = verifyOfflineJws;
-	module.exports.isCompactJws = isCompactJws;
+module.exports.verifyOfflineJws = verifyOfflineJws;
+module.exports.isCompactJws = isCompactJws;
+module.exports.isSocialConnection = isSocialConnection;
 }

@@ -249,7 +249,7 @@ linkage / admin invite-assign) into concrete issues across both repos. Built ON 
 - Invitations are TOKEN-BOUND, not email-bound. Email (esp. Apple private-relay / Google) is NOT a reliable join key.
 - The backend `redeem` call is the REAL security gate: no `patientAuthSub → Paciente` mapping ⇒ no patient data (403
   "onboarding required" everywhere except redeem/onboarding). A valid Auth0 JWT is ALWAYS required — a leaked token alone yields nothing.
-- Auth0 gating MUST be a Post-Login Action (`logins_count===1`), NOT Pre-User-Registration (which never fires for social).
+- Auth0 gating MUST be a Post-Login Action (`logins_count===1`), NOT Pre-User-Registration (which never fires for social). First **database** login still requires a valid `invitation_token`. First **Apple/Google** login is allowed without a token so native Sign in with Apple can complete; redeem + API 403 remain the data gate (#626).
 - Store only the token HASH; never log raw tokens. Patient status machine: INVITED → ONBOARDING → ACTIVE (+ REVOKED/EXPIRED).
 - Firebase Dynamic Links is dead (25 Aug 2025): native Universal/App Links + manual-code fallback is the durable path; vendor deferred-linking is optional/later.
 
@@ -264,7 +264,7 @@ linkage / admin invite-assign) into concrete issues across both repos. Built ON 
 | B6 | #137 | CurrentPatient resolver + onboarding data gate (403 onboarding required) |
 | B7 | #138 | PATCH & GET /rest/mobile/patient/me — onboarding profile + status→ACTIVE |
 | B8 | #139 | POST /rest/mobile/invitations/{id}/revoke — nutritionist invalidates |
-| B9 | #140 | Auth0 Post-Login Action gate — first-login invitation validation (Google/Apple + DB) |
+| B9 | #140 | Auth0 Post-Login Action gate — first **database** login invitation validation; Apple/Google first login allowed (see #626) |
 | B10 | #141 | Security hardening — rate limits, enumeration protection, no-token logging |
 
 ### F9.3 — Mobile issues (Escanor4323/nutriconsultas-mobile, patient-facing)
