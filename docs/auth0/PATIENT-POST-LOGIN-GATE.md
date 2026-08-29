@@ -44,7 +44,7 @@ sequenceDiagram
 1. Nutritionist creates invite (#134) → deep link with **raw URL token** (43-char base64url).
 2. Patient app stores token from deep link.
 3. On Auth0 `authorize`, pass custom query param **`invitation_token`** (see [mobile #64](https://github.com/Escanor4323/nutriconsultas-mobile/issues/64)).
-4. Post-Login Action validates on `logins_count === 1`, stamps `app_metadata.invited = true` on success.
+4. Post-Login Action validates on `logins_count === 1` for **database** first login, stamps `app_metadata.invited = true` on success. **Apple/Google first login is allowed without a token** so native Sign in with Apple can complete; the app then routes unlinked sessions to invitation entry.
 5. Backend **redeem** (#136) and **onboarding gate** (#137) remain authoritative regardless of Auth0 outcome.
 
 ---
@@ -59,9 +59,10 @@ Source: [`docs/auth0/actions/patient-invitation-gate.js`](actions/patient-invita
 |-----------|----------|
 | `app_metadata.invited === true` | Allow (skip gate) |
 | `logins_count !== 1` | Allow (legacy / returning users; not first login) |
-| `logins_count === 1` | Require valid `invitation_token` |
+| First login, Apple or Google (`connection.strategy` `apple` / `google-oauth2`) | **Allow** — do not `access.deny`, do not stamp `invited`. Native Sign in with Apple hangs if Auth0 denies after Apple identity succeeds (App Store 2.1(a) / mobile [#164](https://github.com/Escanor4323/nutriconsultas-mobile/issues/164), backend [#626](https://github.com/diego-torres/nutriconsultas/issues/626)). Mobile invitation entry + redeem + API 403 remain the invite gate. |
+| First login, database connection | Require valid `invitation_token` |
 | Valid token | `api.user.setAppMetadata('invited', true)` |
-| Invalid / missing token | `api.access.deny('invitation_required', …)` |
+| Invalid / missing token (database) | `api.access.deny('invitation_required', …)` |
 
 ### Validation modes (either/or)
 
