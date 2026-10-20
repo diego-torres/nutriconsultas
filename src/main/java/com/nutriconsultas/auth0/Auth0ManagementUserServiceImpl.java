@@ -114,12 +114,29 @@ public class Auth0ManagementUserServiceImpl implements Auth0ManagementUserServic
 		if (!userDeleteEnabled) {
 			throw new IllegalStateException("Auth0 user deletion is disabled by configuration");
 		}
-		executeVoidWithRetry("delete user", () -> {
+		deleteAuth0User(auth0UserId, "delete user");
+	}
+
+	@Override
+	public void deleteUserForAccountClosure(final String auth0UserId) {
+		requireConfiguredUserId(auth0UserId);
+		deleteAuth0User(auth0UserId, "delete user for account closure");
+	}
+
+	private void deleteAuth0User(final String auth0UserId, final String operation) {
+		executeVoidWithRetry(operation, () -> {
 			final String token = tokenProvider.obtainToken();
 			restClient.delete()
 				.uri("https://{domain}/api/v2/users/{userId}", tokenProvider.getDomain(), auth0UserId)
 				.header("Authorization", "Bearer " + token)
 				.retrieve()
+				.onStatus(status -> status.value() == 404, (request, response) -> {
+					response.getBody().readAllBytes();
+					if (log.isInfoEnabled()) {
+						log.info("Auth0 user already absent during {} userIdHash={}", operation,
+								auth0UserId.hashCode());
+					}
+				})
 				.toBodilessEntity();
 		});
 	}

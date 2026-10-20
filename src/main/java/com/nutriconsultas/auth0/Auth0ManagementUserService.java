@@ -21,4 +21,12 @@ public interface Auth0ManagementUserService {
 
 	void deleteUser(String auth0UserId);
 
+	/**
+	 * Deletes the Auth0 user because the patient asked to close their account. Ignores
+	 * {@code app.auth0.management.user-delete-enabled}, which only gates Apple webhook
+	 * automation. A missing user (HTTP 404) is treated as already deleted.
+	 * @param auth0UserId Auth0 {@code user_id} (the mobile JWT {@code sub})
+	 */
+	void deleteUserForAccountClosure(String auth0UserId);
+
 }

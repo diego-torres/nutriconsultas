@@ -11,7 +11,7 @@ registro de consultorio de nutrición
 
 ### Patient mobile API
 
-**Agent workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Issue registries:** [`ISSUE.md`](ISSUE.md) (mobile) · [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) (subscription) · [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) (nutritionist web) · [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md) (public booking) · [`ISSUE-SUPPORT.md`](ISSUE-SUPPORT.md) (in-app support) · **Contract docs:** [`docs/mobile-api/README.md`](docs/mobile-api/README.md)
+**Agent workflow:** [`AGENT-WORKFLOW.md`](AGENT-WORKFLOW.md) · **Issue registries:** [`ISSUE.md`](ISSUE.md) (mobile) · [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md) (subscription) · [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md) (nutritionist web) · [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md) (public booking) · [`ISSUE-SUPPORT.md`](ISSUE-SUPPORT.md) (in-app support) · [`ISSUE-GUEST-PATIENTS.md`](ISSUE-GUEST-PATIENTS.md) (guest patients) · **Contract docs:** [`docs/mobile-api/README.md`](docs/mobile-api/README.md)
 
 **On `main` (2026-06-23):** Mobile **Phase 2 invitation onboarding complete** (~~#141~~). Subscription **registered track complete** (~~#244~~ ✓ on `subscription/244-contact-form-prefill`; ~~#314~~ ~~#188~~ ~~#186~~ ~~#220~~ ~~#207~~ ~~#208~~ ~~#209~~ done). Nutritionist web: all registered epics **complete** (#221–#242, #271–#272). Public booking: epic ~~#245~~ **done** (v1); ~~#246~~–~~#302~~ shipped.
 
@@ -22,6 +22,12 @@ registro de consultorio de nutrición
 **Issue registry:** [`ISSUE-SUPPORT.md`](ISSUE-SUPPORT.md) · **Plan:** [`docs/support/SUPPORT-TICKETS-PLAN.md`](docs/support/SUPPORT-TICKETS-PLAN.md) · **Workflow:** [`SUPPORT-WORKFLOW.md`](SUPPORT-WORKFLOW.md)
 
 Epic [#540](https://github.com/diego-torres/nutriconsultas/issues/540): topbar menu **Perfil / Soporte / Acerca de / Salir**, nutritionist tickets, platform-admin triage, and **Acerca de** version display. **NEXT:** [#545](https://github.com/diego-torres/nutriconsultas/issues/545) nutritionist Soporte UI (after ~~#542~~).
+
+### Guest patients
+
+**Issue registry:** [`ISSUE-GUEST-PATIENTS.md`](ISSUE-GUEST-PATIENTS.md) · **Plan:** [`docs/paciente/GUEST-PATIENTS-PLAN.md`](docs/paciente/GUEST-PATIENTS-PLAN.md) · **Workflow:** [`GUEST-PATIENTS-WORKFLOW.md`](GUEST-PATIENTS-WORKFLOW.md)
+
+Epic [#612](https://github.com/diego-torres/nutriconsultas/issues/612): app use **without a nutritionist** (30-day TTL, private foods/dishes, weight/BMI, request appointment). Mobile epic [Escanor4323/nutriconsultas-mobile#152](https://github.com/Escanor4323/nutriconsultas-mobile/issues/152). **NEXT:** [#613](https://github.com/diego-torres/nutriconsultas/issues/613) docs on `main`.
 
 ### Application version
 

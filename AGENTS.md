@@ -628,6 +628,12 @@ Issue registry: [`ISSUE-SUPPORT.md`](ISSUE-SUPPORT.md). Plan: [`docs/support/SUP
 
 **Epic #540–#548** (2026-07-13): Topbar **Perfil / Soporte / Acerca de / Salir**; nutritionist own tickets + create form; platform-admin triage (user, subscription, title; update/close; activos/cerrados filter); Acerca de app version + README bump process. **Track complete** — ~~#540–#548~~ **done**. Orthogonal to public `ContactInquiry`.
 
+## Guest patients (tracking)
+
+Issue registry: [`ISSUE-GUEST-PATIENTS.md`](ISSUE-GUEST-PATIENTS.md). Plan: [`docs/paciente/GUEST-PATIENTS-PLAN.md`](docs/paciente/GUEST-PATIENTS-PLAN.md). Workflow: [`GUEST-PATIENTS-WORKFLOW.md`](GUEST-PATIENTS-WORKFLOW.md).
+
+**Epic #612–#624** (2026-08-23): Guest patients use the mobile app **without a nutritionist** (limited): catalogs, private platillos/foods, weight/BMI, nutritionist directory, appointment **request**. Records last **30 days**; platform maintenance purges expired guests (**not** #220). Mobile: [Escanor4323/nutriconsultas-mobile#152](https://github.com/Escanor4323/nutriconsultas-mobile/issues/152)–[#162](https://github.com/Escanor4323/nutriconsultas-mobile/issues/162). **NEXT:** [#613](https://github.com/diego-torres/nutriconsultas/issues/613). Orthogonal to App Review [#607](https://github.com/diego-torres/nutriconsultas/issues/607) and public booking #300.
+
 ## Mobile social reconcile (tracking)
 
 Issue registry: [`ISSUE-MOBILE-SOCIAL-RECONCILE.md`](ISSUE-MOBILE-SOCIAL-RECONCILE.md). Planning: [#558](https://github.com/diego-torres/nutriconsultas/issues/558). Mobile: [Escanor4323/nutriconsultas-mobile#124](https://github.com/Escanor4323/nutriconsultas-mobile/issues/124).

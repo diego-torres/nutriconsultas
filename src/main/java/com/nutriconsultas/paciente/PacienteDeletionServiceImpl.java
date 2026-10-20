@@ -10,6 +10,7 @@ import org.springframework.util.StringUtils;
 
 import com.nutriconsultas.appointmentquestion.AppointmentQuestionRepository;
 import com.nutriconsultas.calendar.CalendarEvent;
+import com.nutriconsultas.device.PatientDeviceRepository;
 import com.nutriconsultas.calendar.CalendarEventService;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurementService;
@@ -54,6 +55,9 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 	@Autowired
 	private AppointmentQuestionRepository appointmentQuestionRepository;
 
+	@Autowired
+	private PatientDeviceRepository patientDeviceRepository;
+
 	public PacienteDeletionServiceImpl(final PacienteRepository pacienteRepository,
 			final PatientMessageRepository patientMessageRepository,
 			final PatientInvitationRepository patientInvitationRepository,
@@ -97,6 +101,7 @@ public class PacienteDeletionServiceImpl implements PacienteDeletionService {
 	}
 
 	private void deleteRelatedHistory(final Long pacienteId) {
+		patientDeviceRepository.deleteByPacienteId(pacienteId);
 		patientMessageRepository.deleteByPacienteId(pacienteId);
 		appointmentQuestionRepository.deleteByPacienteId(pacienteId);
 		final List<PatientInvitation> invitations = patientInvitationRepository.findByPacienteId(pacienteId);

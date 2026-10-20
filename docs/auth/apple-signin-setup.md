@@ -155,7 +155,7 @@ update:users_app_metadata
 
 Configured via `AUTH0_MGMT_CLIENT_ID`, `AUTH0_MGMT_CLIENT_SECRET`, `AUTH0_MGMT_DOMAIN` on the app host.
 
-Add `update:users` / `delete:users` only after product/legal approval ([#511](https://github.com/diego-torres/nutriconsultas/issues/511) Phase 4). User deletion remains disabled by default in application code.
+`update:users` is for relay metadata. Grant `delete:users` as well: patient-initiated account deletion (`DELETE /rest/mobile/account`, App Store 5.1.1(v)) calls the Management API even while `AUTH0_MGMT_USER_DELETE_ENABLED` stays `false`. That flag still blocks Apple webhook automation from deleting users.
 
 ---
 

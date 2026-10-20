@@ -67,6 +67,8 @@ public final class MobileApiErrorResponses {
 
 	public static final String KEY_AUTH_FAILED = "error.auth.failed";
 
+	public static final String KEY_ACCOUNT_DELETION_UNAVAILABLE = "error.account.deletion_unavailable";
+
 	private final MessageSource messageSource;
 
 	private final ObjectMapper objectMapper;

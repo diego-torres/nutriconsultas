@@ -61,6 +61,14 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 |------|---------|
 | [`ISSUE-MOBILE-SOCIAL-RECONCILE.md`](ISSUE-MOBILE-SOCIAL-RECONCILE.md) | `[Mobile Social Reconcile]` epic #560–#569 (planning #558 / mobile #124) |
 
+**Parallel track (guest patients — no nutritionist, 30-day TTL; do not mix into #607 / #300 / #220 PRs unless coupled):**
+
+| File | Purpose |
+|------|---------|
+| [`ISSUE-GUEST-PATIENTS.md`](ISSUE-GUEST-PATIENTS.md) | `[Guest Patients]` epic #612–#624; mobile epic [Escanor4323/nutriconsultas-mobile#152](https://github.com/Escanor4323/nutriconsultas-mobile/issues/152) |
+| [`GUEST-PATIENTS-WORKFLOW.md`](GUEST-PATIENTS-WORKFLOW.md) | Agent workflow for guest patients |
+| [`docs/paciente/GUEST-PATIENTS-PLAN.md`](docs/paciente/GUEST-PATIENTS-PLAN.md) | Product decisions, schema, API surface |
+
 **Current next issue (public booking):** None — epic ~~#245~~ **done**; ~~#246~~, ~~#247~~, ~~#248~~, ~~#297~~, ~~#300~~, ~~#302~~ done. Deferred follow-ups need new issues. See [`ISSUE-PUBLIC-BOOKING.md`](ISSUE-PUBLIC-BOOKING.md).
 
 **Current next issue (mobile):** [#607 — App Store Review demo patient](https://github.com/diego-torres/nutriconsultas/issues/607) (`in-progress`, ops fixture in prod: paciente 35 + spare 36; remaining 1Password/ASC notes + iOS pass — runbook [`docs/mobile-api/APP-REVIEW-DEMO-PATIENT.md`](docs/mobile-api/APP-REVIEW-DEMO-PATIENT.md)). [#587 — Appointment question reminders](https://github.com/diego-torres/nutriconsultas/issues/587) (`in-progress`, branch `mobile-api/appointment-questions`). [#353 — Grocery list for patient diet plan](https://github.com/diego-torres/nutriconsultas/issues/353) (`in-progress`). ~~#354~~ ~~#352~~ **done** (PR [#357](https://github.com/diego-torres/nutriconsultas/pull/357)).
@@ -74,6 +82,8 @@ How AI agents (and humans pairing with them) ship the **patient mobile API** on 
 **Current next issue (AI assistant):** None — registered implementation track **complete** (#360–#450). Production rollout: [`RELEASE-CHECKLIST.md`](docs/ai/RELEASE-CHECKLIST.md) (#408). See [`ISSUE-AI-ASSISTANT.md`](ISSUE-AI-ASSISTANT.md).
 
 **Current next issue (support):** None — `[Support]` track **complete** (#540–#548). See [`ISSUE-SUPPORT.md`](ISSUE-SUPPORT.md).
+
+**Current next issue (guest patients):** [#613](https://github.com/diego-torres/nutriconsultas/issues/613) land plan/registry on `main`. Epic [#612](https://github.com/diego-torres/nutriconsultas/issues/612). Mobile [#152](https://github.com/Escanor4323/nutriconsultas-mobile/issues/152). See [`ISSUE-GUEST-PATIENTS.md`](ISSUE-GUEST-PATIENTS.md).
 
 ---
 

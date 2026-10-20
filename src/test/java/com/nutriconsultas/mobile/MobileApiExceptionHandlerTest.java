@@ -55,6 +55,20 @@ class MobileApiExceptionHandlerTest {
 	}
 
 	@Test
+	void handleAccountDeletionUnavailableReturnsLocalized503() {
+		LocaleContextHolder.setLocale(Locale.ENGLISH);
+		when(messageSource.getMessage(MobileApiErrorResponses.KEY_ACCOUNT_DELETION_UNAVAILABLE, null, Locale.ENGLISH))
+			.thenReturn("We could not delete your account. Try again.");
+
+		final ResponseEntity<ApiResponse<Void>> response = handler
+			.handleAccountDeletionUnavailable(new AccountDeletionUnavailableException());
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().message()).isEqualTo("We could not delete your account. Try again.");
+	}
+
+	@Test
 	void handlePatientNotLinkedReturnsLocalized403() {
 		LocaleContextHolder.setLocale(Locale.ENGLISH);
 		when(messageSource.getMessage(MobileApiErrorResponses.KEY_PATIENT_NOT_LINKED, null, Locale.ENGLISH))

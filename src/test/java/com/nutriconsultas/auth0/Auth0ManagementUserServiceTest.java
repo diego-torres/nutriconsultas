@@ -6,6 +6,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withNoContent;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import java.util.Optional;
@@ -13,6 +15,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
@@ -73,6 +76,28 @@ class Auth0ManagementUserServiceTest {
 	void deleteUserIsDisabledByDefault() {
 		assertThatThrownBy(() -> service.deleteUser("apple|001234.abc")).isInstanceOf(IllegalStateException.class)
 			.hasMessageContaining("disabled");
+	}
+
+	@Test
+	void deleteUserForAccountClosureIgnoresWebhookFlag() {
+		mockServer.expect(requestTo("https://" + DOMAIN + "/api/v2/users/apple%7C001234.abc"))
+			.andExpect(method(HttpMethod.DELETE))
+			.andRespond(withNoContent());
+
+		service.deleteUserForAccountClosure("apple|001234.abc");
+
+		mockServer.verify();
+	}
+
+	@Test
+	void deleteUserForAccountClosureTreatsMissingUserAsSuccess() {
+		mockServer.expect(requestTo("https://" + DOMAIN + "/api/v2/users/apple%7C001234.abc"))
+			.andExpect(method(HttpMethod.DELETE))
+			.andRespond(withStatus(HttpStatus.NOT_FOUND));
+
+		service.deleteUserForAccountClosure("apple|001234.abc");
+
+		mockServer.verify();
 	}
 
 	@Test
