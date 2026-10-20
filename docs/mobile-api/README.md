@@ -18,7 +18,7 @@ Canonical cross-repo contracts for the `[Mobile API]` track. Indexed from [`../.
 | [`APPOINTMENT-QUESTIONS-CONTRACT.md`](APPOINTMENT-QUESTIONS-CONTRACT.md) | Appointment question reminders CRUD (#587); OpenAPI twin |
 | [`APP-REVIEW-DEMO-PATIENT.md`](APP-REVIEW-DEMO-PATIENT.md) | Production App Store Review demo patient runbook (#607–#610); ops only, no API change |
 
-**Status (2026-08-23):** [#607](https://github.com/diego-torres/nutriconsultas/issues/607) App Store Review demo patient — prod paciente **35** linked + Home seeded; spare invite **36**. Remaining: 1Password / ASC notes + iOS pass. [#587](https://github.com/diego-torres/nutriconsultas/issues/587) appointment question reminders — backend `in-progress` (`mobile-api/appointment-questions`).
+**Status (2026-08-23):** Guest patients epic [#612](https://github.com/diego-torres/nutriconsultas/issues/612) filed (`ISSUE-GUEST-PATIENTS.md`; mobile [#152](https://github.com/Escanor4323/nutriconsultas-mobile/issues/152)). [#607](https://github.com/diego-torres/nutriconsultas/issues/607) App Store Review demo patient — prod paciente **35** linked + Home seeded; spare invite **36**. Remaining: 1Password / ASC notes + iOS pass. [#587](https://github.com/diego-torres/nutriconsultas/issues/587) appointment question reminders — backend `in-progress` (`mobile-api/appointment-questions`).
 
 **Status (2026-08-11):** Epic [#573](https://github.com/diego-torres/nutriconsultas/issues/573) mobile push — ~~#574~~–~~#577~~ backend contract/docs. (Older grocery status below retained.)
 
@@ -51,6 +51,16 @@ Canonical cross-repo contracts for the `[Mobile API]` track. Indexed from [`../.
 **Nutritionist web NEXT:** None — all registered epics complete (~~#271~~–~~#272~~ system catalog create; ~~#285~~ done; ~~#281~~ done; ~~#280~~ done; ~~#238~~ done; ~~#237~~ done; ~~#236~~ done; ~~#259~~ done; platillo ownership ~~#257–#258~~ done; diet catalog ~~#232–#235~~ done; ~~#221–#223~~ MPX epic done).
 
 **Subscription NEXT:** Registered track **complete** (~~#244~~ ✓ on `subscription/244-contact-form-prefill`; ~~#314~~ ~~#188~~ ~~#186~~ ~~#220~~ ~~#207~~ ~~#208~~ ~~#209~~ ~~#211~~ ~~#210~~ ~~#187~~ ~~#190~~ on `main`).
+
+## Parallel track (guest patients)
+
+| File | What it is |
+|------|-----------|
+| [`../../ISSUE-GUEST-PATIENTS.md`](../../ISSUE-GUEST-PATIENTS.md) | Guest patients epic #612–#624 |
+| [`../../GUEST-PATIENTS-WORKFLOW.md`](../../GUEST-PATIENTS-WORKFLOW.md) | Agent workflow |
+| [`../paciente/GUEST-PATIENTS-PLAN.md`](../paciente/GUEST-PATIENTS-PLAN.md) | Product / schema / API plan |
+
+**Guest patients NEXT:** [#613](https://github.com/diego-torres/nutriconsultas/issues/613) docs on `main`. Mobile epic [#152](https://github.com/Escanor4323/nutriconsultas-mobile/issues/152).
 
 ## Provenance / drift
 

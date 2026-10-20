@@ -19,6 +19,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.nutriconsultas.appointmentquestion.AppointmentQuestionRepository;
 import com.nutriconsultas.calendar.CalendarEvent;
+import com.nutriconsultas.device.PatientDeviceRepository;
 import com.nutriconsultas.calendar.CalendarEventService;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurement;
 import com.nutriconsultas.clinical.exam.AnthropometricMeasurementService;
@@ -75,12 +76,16 @@ class PacienteDeletionServiceTest {
 	@Mock
 	private AppointmentQuestionRepository appointmentQuestionRepository;
 
+	@Mock
+	private PatientDeviceRepository patientDeviceRepository;
+
 	private Paciente paciente;
 
 	@BeforeEach
 	void setUp() {
 		ReflectionTestUtils.setField(service, "pacientePhotoService", pacientePhotoService);
 		ReflectionTestUtils.setField(service, "appointmentQuestionRepository", appointmentQuestionRepository);
+		ReflectionTestUtils.setField(service, "patientDeviceRepository", patientDeviceRepository);
 		paciente = new Paciente();
 		paciente.setId(7L);
 		paciente.setUserId(USER_ID);
@@ -114,6 +119,7 @@ class PacienteDeletionServiceTest {
 
 		service.deletePatientWithHistory(7L, USER_ID);
 
+		verify(patientDeviceRepository).deleteByPacienteId(7L);
 		verify(patientMessageRepository).deleteByPacienteId(7L);
 		verify(appointmentQuestionRepository).deleteByPacienteId(7L);
 		verify(patientInvitationRepository).deleteAll(List.of(invitation));

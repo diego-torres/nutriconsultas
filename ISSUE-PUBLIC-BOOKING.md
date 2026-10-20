@@ -5,7 +5,7 @@ Living index of GitHub issues for **public appointment scheduling** — shareabl
 **Repo:** [diego-torres/nutriconsultas](https://github.com/diego-torres/nutriconsultas)  
 **Last updated:** 2026-06-21 — Epic ~~#245~~ **done** (v1 shipped). All child issues **#246–#248**, **#297**, **#300**, **#302** complete.
 
-> **Scope.** Public routes (`/consultas/{id}/agendar-cita` or equivalent), availability configuration, and calendar blocks. Nutritionist admin UI pieces may live in `/admin/**` but this track owns the **public booking product**. Mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Nutritionist web (non-booking): [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md).
+> **Scope.** Public routes (`/consultas/{id}/agendar-cita` or equivalent), availability configuration, and calendar blocks. Nutritionist admin UI pieces may live in `/admin/**` but this track owns the **public booking product**. Mobile API: [`ISSUE.md`](ISSUE.md). Subscription: [`ISSUE-SUBSCRIPTION.md`](ISSUE-SUBSCRIPTION.md). Nutritionist web (non-booking): [`ISSUE-NUTRITIONIST-WEB.md`](ISSUE-NUTRITIONIST-WEB.md). **Guest patients** ([`ISSUE-GUEST-PATIENTS.md`](ISSUE-GUEST-PATIENTS.md) #612): authenticated app users **without** a nutritionist; they **reuse availability** (#246) but **must not** use the #300 create-patient-under-nutritionist path.
 
 ---
 

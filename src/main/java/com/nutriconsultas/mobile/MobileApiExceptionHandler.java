@@ -199,6 +199,14 @@ public class MobileApiExceptionHandler {
 		return ResponseEntity.status(ex.getStatusCode()).body(errorResponses.error(messageKey));
 	}
 
+	@ExceptionHandler(AccountDeletionUnavailableException.class)
+	public ResponseEntity<ApiResponse<Void>> handleAccountDeletionUnavailable(
+			final AccountDeletionUnavailableException ex) {
+		log.warn("Mobile account deletion failed");
+		return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+			.body(errorResponses.error(MobileApiErrorResponses.KEY_ACCOUNT_DELETION_UNAVAILABLE));
+	}
+
 	@ExceptionHandler(RequestNotPermitted.class)
 	public ResponseEntity<ApiResponse<Void>> handleRateLimitExceeded(final RequestNotPermitted ex) {
 		if (log.isDebugEnabled()) {

@@ -41,4 +41,9 @@ public class NoOpAuth0ManagementUserService implements Auth0ManagementUserServic
 		throw new IllegalStateException("Auth0 Management API is not configured");
 	}
 
+	@Override
+	public void deleteUserForAccountClosure(final String auth0UserId) {
+		throw new IllegalStateException("Auth0 Management API is not configured");
+	}
+
 }
